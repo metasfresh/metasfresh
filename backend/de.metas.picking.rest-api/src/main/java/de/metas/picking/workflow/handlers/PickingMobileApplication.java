@@ -381,6 +381,8 @@
 					.bestBeforeDate(json.getBestBeforeDate())
 					.isSetLotNo(json.isSetLotNo())
 					.lotNo(json.getLotNo())
+					.isCloseTarget(json.isCloseTarget())
+					//
 					.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
 							.map(HUQRCode::fromGlobalQRCodeJsonString)
 							.orElse(null))
@@ -457,4 +459,16 @@
 					});
 
 		}
+
+		public WFProcess closePickTarget(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		{
+			return changeWFProcessById(
+					wfProcessId,
+					(wfProcess, pickingJob) -> {
+						wfProcess.assertHasAccess(callerId);
+						return pickingJobRestService.closePickTarget(pickingJob);
+					});
+
+		}
+
 	}

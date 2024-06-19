@@ -46,6 +46,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.PickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
@@ -105,6 +106,7 @@ public class PickingJobPickCommand
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -132,6 +134,8 @@ public class PickingJobPickCommand
 	private final boolean isSetLotNo;
 	private final String lotNo;
 
+	private final boolean isCloseTarget;
+
 	//
 	// State
 	@NonNull private PickingJob pickingJob;
@@ -140,7 +144,7 @@ public class PickingJobPickCommand
 
 	@Builder
 	private PickingJobPickCommand(
-			final @NonNull PickingJobRepository pickingJobRepository,
+			final @NonNull PickingJobService pickingJobService, final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingCandidateService pickingCandidateService,
 			final @NonNull HUQRCodesService huQRCodesService,
 			final @NonNull InventoryService inventoryService,
@@ -162,11 +166,13 @@ public class PickingJobPickCommand
 			final boolean isSetBestBeforeDate,
 			final @Nullable LocalDate bestBeforeDate,
 			final boolean isSetLotNo,
-			final @Nullable String lotNo)
+			final @Nullable String lotNo,
+			final boolean isCloseTarget)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 		validateCatchWeight(catchWeightBD, pickFromHUQRCode);
 
+		this.pickingJobService = pickingJobService;
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingCandidateService = pickingCandidateService;
 		this.huQRCodesService = huQRCodesService;
@@ -248,6 +254,8 @@ public class PickingJobPickCommand
 		this.bestBeforeDate = bestBeforeDate;
 		this.isSetLotNo = isSetLotNo;
 		this.lotNo = lotNo;
+
+		this.isCloseTarget = isCloseTarget;
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -293,6 +301,11 @@ public class PickingJobPickCommand
 		pickingJob = pickingJob.withChangedStep(
 				stepId,
 				step -> updateStepFromPickingCandidate(step, pickedHUs));
+
+		if (isCloseTarget)
+		{
+			this.pickingJob = pickingJobService.closePickTarget(this.pickingJob);
+		}
 
 		pickingJobRepository.save(pickingJob);
 	}

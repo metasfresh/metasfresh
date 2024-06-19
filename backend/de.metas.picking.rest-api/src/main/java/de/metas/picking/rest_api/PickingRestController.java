@@ -78,6 +78,15 @@ public class PickingRestController
 		return workflowRestController.toJson(wfProcess);
 	}
 
+	@PostMapping("/job/{wfProcessId}/target/close")
+	public JsonWFProcess closeTarget(
+			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr)
+	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final WFProcess wfProcess = pickingMobileApplication.closePickTarget(wfProcessId, Env.getLoggedUserId());
+		return workflowRestController.toJson(wfProcess);
+	}
+
 	@PostMapping("/events")
 	public void postEvents(
 			@RequestBody @NonNull final JsonPickingEventsList eventsList)

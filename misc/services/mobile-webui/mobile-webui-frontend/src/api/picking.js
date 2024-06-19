@@ -49,6 +49,7 @@ export const postStepPicked = ({
   bestBeforeDate,
   setLotNo,
   lotNo,
+  isCloseTarget = false,
 }) => {
   return postEvent({
     wfProcessId,
@@ -67,6 +68,7 @@ export const postStepPicked = ({
     bestBeforeDate,
     setLotNo,
     lotNo,
+    isCloseTarget,
   });
 };
 

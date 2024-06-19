@@ -158,4 +158,10 @@ public class PickingJobRestService
 	{
 		return pickingJobService.setPickTarget(pickingJob, target);
 	}
+
+	public PickingJob closePickTarget(@NonNull final PickingJob pickingJob)
+	{
+		return pickingJobService.closePickTarget(pickingJob);
+	}
+
 }
