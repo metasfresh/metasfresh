@@ -56,8 +56,9 @@ import java.util.List;
  */
 @Value
 @Builder
-public class NewInvoiceCandidate
+public class InvoiceCandidateUpsertRequest
 {
+	@Nullable InvoiceCandidateId invoiceCandidateId;
 	OrgId orgId;
 
 	ExternalId externalHeaderId;
@@ -125,7 +126,8 @@ public class NewInvoiceCandidate
 
 
 
-	private NewInvoiceCandidate(
+	private InvoiceCandidateUpsertRequest(
+			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final OrgId orgId,
 
 			@Nullable final ExternalId externalHeaderId,
@@ -160,6 +162,7 @@ public class NewInvoiceCandidate
 			@Nullable final FlatrateTermId flatrateTermId,
 			@Nullable final ContractSpecificPrice contractSpecificPrice)
 	{
+		this.invoiceCandidateId = invoiceCandidateId;
 		this.orgId = orgId;
 
 		this.externalLineId = externalLineId;

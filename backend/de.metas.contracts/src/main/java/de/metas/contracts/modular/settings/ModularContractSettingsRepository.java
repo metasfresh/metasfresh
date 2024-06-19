@@ -75,9 +75,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-public class ModularContractSettingsDAO
+public class ModularContractSettingsRepository
 {
-	private final static Logger logger = LogManager.getLogger(ModularContractSettingsDAO.class);
+	private final static Logger logger = LogManager.getLogger(ModularContractSettingsRepository.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -148,7 +148,7 @@ public class ModularContractSettingsDAO
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_Type.class)
 				.stream()
-				.map(ModularContractSettingsDAO::fromRecord)
+				.map(ModularContractSettingsRepository::fromRecord)
 				.collect(ModularContractTypeMap.collect());
 	}
 
@@ -229,6 +229,7 @@ public class ModularContractSettingsDAO
 				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()))
 				.additionalInterestDays(settingsRecord.getAddInterestDays())
 				.interestPercent(Percent.of(settingsRecord.getInterestRate()))
+				.interimPricePercent(Percent.of(settingsRecord.getInterimPricePercent()))
 				.storageCostStartDate(LocalDateAndOrgId.ofTimestamp(settingsRecord.getStorageCostStartDate(),
 						OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
 						orgDAO::getTimeZone))

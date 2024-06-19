@@ -55,9 +55,9 @@ public class InvoiceHeaderImplBuilder
 
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
 
-	@Setter
-	@Getter
-	private boolean takeDocTypeFromPool = false;
+
+	@Getter @Setter private boolean takeDocTypeFromPool = false;
+	@Getter @Setter private boolean isCreditedInvoiceReinvoicable = false;
 
 	private DocTypeId docTypeInvoiceId = null;
 
@@ -127,7 +127,7 @@ public class InvoiceHeaderImplBuilder
 	@Nullable
 	@Getter
 	private String invoiceAdditionalText;
-	
+
 	@Setter
 	@Getter
 	private boolean notShowOriginCountry;
@@ -197,7 +197,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setPOReference(getPOReference());
 		invoiceHeader.setExternalId(getExternalId());
 		invoiceHeader.setEMail(getEmail());
-		
+
 		invoiceHeader.setPaymentRule(getPaymentRule());
 
 		invoiceHeader.setAD_InputDataSource_ID(getAD_InputDataSource_ID());
@@ -223,6 +223,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setYearId(YearId.ofRepoIdOrNull(getHarvesting_Year_ID()));
 		invoiceHeader.setWarehouseId(WarehouseId.ofRepoIdOrNull(getM_Warehouse_ID()));
 		invoiceHeader.setAuctionId(AuctionId.ofRepoIdOrNull(auctionId));
+		invoiceHeader.setCreditedInvoiceReinvoicable(isCreditedInvoiceReinvoicable());
 
 		return invoiceHeader;
 	}

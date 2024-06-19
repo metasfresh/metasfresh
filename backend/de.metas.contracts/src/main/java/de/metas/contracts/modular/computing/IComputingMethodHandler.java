@@ -22,42 +22,26 @@
 
 package de.metas.contracts.modular.computing;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.money.Money;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_UOM;
 
-import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 /**
  * Implementors should be annotated with {@link org.springframework.stereotype.Component},
  * so that one instance per class is initialized and injected into {@link ModularContractComputingMethodHandlerRegistry}.
  * <p>
- * At this stage I think there will be one implementation for {@link org.compiere.model.I_C_Order},
- * one for {@link de.metas.inout.model.I_M_InOut} and so on.
  * When implementing another handler, please be sure to also add a model interceptor such as {@link de.metas.contracts.modular.interceptor.C_Order}.
  */
 public interface IComputingMethodHandler
 {
-	ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
-	IProductBL productBL = Services.get(IProductBL.class);
-
 	@NonNull
 	ComputingMethodType getComputingMethodType();
 
@@ -78,28 +62,9 @@ public interface IComputingMethodHandler
 	@NonNull
 	Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef);
 
-	/**
-	 * This is the default implementation, used by yet-unimplemented methods. Its result ensures the IC is not created.
-	 */
-	default @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final Quantity qty = Quantity.of(BigDecimal.ZERO, stockUOM);
+	@NonNull
+	ComputingResponse compute(@NonNull ComputingRequest request);
 
-		return ComputingResponse.builder()
-				.ids(ImmutableSet.of())
-				.price(ProductPrice.builder()
-						.productId(request.getProductId())
-						.money(Money.zero(request.getCurrencyId()))
-						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-						.build())
-				.qty(qty)
-				.build();
-	}
-
-	default @NonNull Stream<ProductId> streamContractSpecificPricedProductIds(@NonNull final ModularContractModuleId moduleId)
-	{
-		return Stream.of(modularContractSettingsDAO.getByModuleId(moduleId)
-				.getProductId());
-	}
+	@NonNull
+	Stream<ProductId> streamContractSpecificPricedProductIds(@NonNull ModularContractModuleId moduleId);
 }

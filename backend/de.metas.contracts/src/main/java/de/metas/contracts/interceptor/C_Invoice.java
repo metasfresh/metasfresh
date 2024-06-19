@@ -1,14 +1,29 @@
 package de.metas.contracts.interceptor;
 
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.impl.CustomerRetentionRepository;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.contracts.impl.CustomerRetentionRepository;
-import de.metas.invoice.InvoiceId;
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -34,8 +49,15 @@ import de.metas.invoice.InvoiceId;
 
 @Interceptor(I_C_Invoice.class)
 @Component
+@RequiredArgsConstructor
 public class C_Invoice
 {
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final ModularContractLogService modularContractLogService;
+
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void updateCustomerRetention(final I_C_Invoice invoice)
 	{
@@ -44,5 +66,30 @@ public class C_Invoice
 
 		customerRetentionRepo.updateCustomerRetentionOnInvoiceComplete(invoiceId);
 
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_VOID })
+	public void unprocessModularContractLogs(final I_C_Invoice invoice)
+	{
+		final DocTypeId docTypeId = DocTypeId.ofRepoId(invoice.getC_DocType_ID());
+		if ((!docTypeBL.isFinalInvoiceOrFinalCreditMemo(docTypeId)
+				&& !docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId))
+				&& !docTypeBL.isDownPayment(docTypeId))
+		{
+			return;
+		}
+
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+		final Collection<InvoiceCandidateId> invoiceCandidateIds = invoiceCandDAO.retrieveInvoiceCandidateIds(invoiceId);
+		modularContractLogService.unprocessLogsForICs(invoiceCandidateIds);
+		if (docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId))
+		{
+			final Set<FlatrateTermId> contractIds = invoiceBL.getLines(invoiceId)
+					.stream()
+					.map(I_C_InvoiceLine::getC_Flatrate_Term_ID)
+					.map(FlatrateTermId::ofRepoId)
+					.collect(Collectors.toSet());
+			flatrateBL.reverseDefinitiveInvoice(contractIds);
+		}
 	}
 }

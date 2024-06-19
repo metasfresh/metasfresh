@@ -27,7 +27,7 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -49,11 +49,11 @@ public class C_Flatrate_Conditions
 
 	private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 	
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final ModularContractSettingsRepository modularContractSettingsRepository;
 
-	public C_Flatrate_Conditions(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
+	public C_Flatrate_Conditions(@NonNull final ModularContractSettingsRepository modularContractSettingsRepository)
 	{
-		this.modularContractSettingsDAO = modularContractSettingsDAO;
+		this.modularContractSettingsRepository = modularContractSettingsRepository;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
@@ -86,7 +86,7 @@ public class C_Flatrate_Conditions
 
 	private void validateModularContractSettings(@NonNull final ConditionsId conditionsId)
 	{
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateConditionsId(conditionsId);
+		final ModularContractSettings settings = modularContractSettingsRepository.getByFlatrateConditionsId(conditionsId);
 		settings.assertHasModules();
 
 		calendarBL.checkCorrectCalendar(settings.getCalendarId());

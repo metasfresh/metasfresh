@@ -121,6 +121,8 @@ public interface IFlatrateBL extends ISingletonService
 
 	void prepareForDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
 
+	void reverseDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
+
 	/**
 	 * term to extend
 	 * forceExtend - will create a new term, even if the given <code>term</code> has <code>IsAutoRenew='N'</code>

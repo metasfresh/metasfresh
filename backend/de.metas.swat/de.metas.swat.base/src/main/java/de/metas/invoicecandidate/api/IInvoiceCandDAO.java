@@ -132,6 +132,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	Iterator<I_C_Invoice_Candidate> retrieveForInvoiceSchedule(I_C_InvoiceSchedule invoiceSchedule);
 
+	@NonNull
+	Collection<InvoiceCandidateId> retrieveInvoiceCandidateIds(@NonNull InvoiceId invoiceId);
+
 	/**
 	 * Returns all ICs that have the given <code>headerAggregationKey</code>.
 	 */

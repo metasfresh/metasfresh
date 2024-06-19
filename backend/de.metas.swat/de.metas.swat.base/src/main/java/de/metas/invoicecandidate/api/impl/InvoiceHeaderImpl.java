@@ -113,6 +113,8 @@ import java.util.Optional;
 
 	@Setter
 	private boolean isTakeDocTypeFromPool;
+	@Getter @Setter
+	private boolean isCreditedInvoiceReinvoicable = false;
 
 	// 06630
 	@Setter

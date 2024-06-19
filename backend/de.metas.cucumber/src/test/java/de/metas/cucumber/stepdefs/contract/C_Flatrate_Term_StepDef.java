@@ -159,10 +159,10 @@ public class C_Flatrate_Term_StepDef
 
 			final I_C_Flatrate_Term contractRecord = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
 			contractRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			
+
 			contractRecord.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
 			contractRecord.setC_UOM_ID(conditions.getC_UOM_ID());
-			
+
 			contractRecord.setC_Flatrate_Data_ID(flatrateData.getC_Flatrate_Data_ID());
 			contractRecord.setBill_BPartner_ID(billPartner.getC_BPartner_ID());
 			contractRecord.setBill_Location_ID(billPartnerLocation.getC_BPartner_Location_ID());
@@ -191,8 +191,8 @@ public class C_Flatrate_Term_StepDef
 			{
 				final I_M_Product product = productTable.get(productIdentifier);
 				contractRecord.setM_Product_ID(product.getM_Product_ID());
-			} 
-			else 
+			}
+			else
 			{
 				contractRecord.setM_Product_ID(conditions.getM_Product_Flatrate_ID());
 			}
@@ -426,11 +426,10 @@ public class C_Flatrate_Term_StepDef
 
 		assertThat(contract.getC_FlatrateTerm_Next()).isNull();  // contract not extended yet
 
-		final Integer ad_PInstance_ID = Integer.valueOf(pInstanceID);
-		assertThat(ad_PInstance_ID).isNotNull();
+        assertThat(pInstanceID).isNotNull();
 
 		final IFlatrateBL.ContractExtendingRequest contractExtendingRequest = IFlatrateBL.ContractExtendingRequest.builder()
-				.AD_PInstance_ID(PInstanceId.ofRepoId(ad_PInstance_ID))
+				.AD_PInstance_ID(PInstanceId.ofRepoId(pInstanceID))
 				.contract(contract)
 				.forceExtend(true)
 				.forceComplete(false)
@@ -470,6 +469,18 @@ public class C_Flatrate_Term_StepDef
 		assertThat(nextContract).isNotNull(); // next term created & contract extended
 	}
 
+	@Then("^C_Flatrate_Term identified by (.*) is not extended$")
+	public void c_flatrate_termIsNotExtended(@NonNull final String contractIdentifier)
+	{
+		assertThat(contractIdentifier).isNotBlank();
+
+		final I_C_Flatrate_Term contract = contractTable.get(contractIdentifier);
+		assertThat(contract).isNotNull();
+
+		final I_C_Flatrate_Term nextContract = contract.getC_FlatrateTerm_Next();
+		assertThat(nextContract).isNull(); // next term not created & contract not extended
+	}
+
 	@And("^the C_Flatrate_Term identified by (.*) is completed$")
 	public void the_C_Flatrate_Term_IsCompleted(@NonNull final String identifier)
 	{
@@ -482,7 +493,7 @@ public class C_Flatrate_Term_StepDef
 	public void the_C_Flatrate_Term_has_DataEntries(@NonNull final String identifier, final String countStr)
 	{
 		final int count = NumberUtils.asInt(countStr);
-		
+
 		final I_C_Flatrate_Term flatrateTermRecord = contractTable.get(identifier);
 		assertThat(flatrateTermRecord)
 				.as("Missing C_Flatrate_Term record for identifier=%s", identifier)
