@@ -9,7 +9,6 @@ import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -79,7 +78,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -115,10 +113,6 @@ public class PickingJobPickCommand
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 
 	//
-	// Sysconfigs
-	private static final String SYSCONFIG_PickCUsFromCUs = "PickingJobPickCommand.PickCUsFromCUs";
-
-	//
 	// Params
 	@NonNull private final PickingJobLineId lineId;
 	@NonNull private final PickingUnit pickingUnit;
@@ -129,7 +123,6 @@ public class PickingJobPickCommand
 	@Nullable private final QtyRejectedWithReason qtyRejectedCUs;
 	@Nullable private final Quantity catchWeight;
 	private final boolean isPickWholeTU;
-	private final boolean isPickCUsFromCUs;
 	private final boolean checkIfAlreadyPacked;
 	private final boolean createInventoryForMissingQty;
 
@@ -255,12 +248,6 @@ public class PickingJobPickCommand
 		this.bestBeforeDate = bestBeforeDate;
 		this.isSetLotNo = isSetLotNo;
 		this.lotNo = lotNo;
-
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		// NOTE: because picking CUs into TU is not performant at all and because this feature was not requested in this issue,
-		// we decided to turn it off and pick CUs to CUs and later, on shipment, to aggregate CUs to TU (and TUs to LU).
-		// this.isPickCUsFromCUs = sysConfigBL.getBooleanValue(SYSCONFIG_PickCUsFromCUs, true);
-		this.isPickCUsFromCUs = false;
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -463,7 +450,7 @@ public class PickingJobPickCommand
 		final LocatorId pickFromLocatorId = pickFrom.getPickFromLocatorId();
 
 		final PackToHUsProducer.PackToInfo packToInfo = packToHUsProducer.extractPackToInfo(
-				isPickCUsFromCUs ? PackToSpec.VIRTUAL : step.getPackToSpec(),
+				step.getPackToSpec(),
 				pickingJob.getDeliveryBPLocationId(),
 				pickFromLocatorId);
 
@@ -785,7 +772,6 @@ public class PickingJobPickCommand
 				.build();
 	}
 
-	// TODO improve or delete!
 	private void addToTargetLU(final List<PickedToHU> pickedToHUs)
 	{
 		if (pickedToHUs.isEmpty())
