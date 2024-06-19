@@ -1179,7 +1179,7 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, tableId)
 				//collect flatrate terms
 				.andCollect(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, I_C_Flatrate_Term.class)
-				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_Record_ID)
+				.orderByDescending(I_C_Flatrate_Term.COLUMNNAME_Created)
 				.create()
 				.first(I_C_Flatrate_Term.class); // could be more than one, but all belong to the same contract and have same billing infos
 
