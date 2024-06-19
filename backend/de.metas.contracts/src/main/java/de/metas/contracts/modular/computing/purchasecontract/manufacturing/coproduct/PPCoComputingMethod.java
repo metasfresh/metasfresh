@@ -110,6 +110,7 @@ public class PPCoComputingMethod extends AbstractComputingMethodHandler
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.price(pricePerStockUOM)
 				.qty(qtyInStockUOM)
 				.build();

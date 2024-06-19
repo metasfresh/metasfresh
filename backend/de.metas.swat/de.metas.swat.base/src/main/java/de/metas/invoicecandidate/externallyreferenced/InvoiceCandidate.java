@@ -30,7 +30,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.NewInvoiceCandidate;
+import de.metas.invoicecandidate.InvoiceCandidateUpsertRequest;
 import de.metas.invoicecandidate.spi.ILCandHandlerId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -63,36 +63,37 @@ import java.util.List;
 @Data
 public class InvoiceCandidate
 {
-	public static InvoiceCandidate.InvoiceCandidateBuilder createBuilder(@NonNull final NewInvoiceCandidate newIC)
+	public static InvoiceCandidate.InvoiceCandidateBuilder createBuilder(@NonNull final InvoiceCandidateUpsertRequest upsertRequest)
 	{
 		return InvoiceCandidate
 				.builder()
-				.billPartnerInfo(newIC.getBillPartnerInfo())
-				.dateOrdered(newIC.getDateOrdered())
-				.discountOverride(newIC.getDiscountOverride())
-				.externalHeaderId(newIC.getExternalHeaderId())
-				.externalLineId(newIC.getExternalLineId())
-				.invoiceDocTypeId(newIC.getInvoiceDocTypeId())
-				.invoiceRuleOverride(newIC.getInvoiceRuleOverride())
-				.invoicingUomId(newIC.getInvoicingUomId())
-				.lineDescription(newIC.getLineDescription())
-				.orgId(newIC.getOrgId())
-				.poReference(newIC.getPoReference())
-				.presetDateInvoiced(newIC.getPresetDateInvoiced())
-				.priceEnteredOverride(newIC.getPriceEnteredOverride())
-				.productId(newIC.getProductId())
-				.qtyDelivered(newIC.getQtyDelivered())
-				.qtyOrdered(newIC.getQtyOrdered())
-				.soTrx(newIC.getSoTrx())
-				.projectId(newIC.getProjectId())
-				.invoiceDetailItems(newIC.getInvoiceDetailItems())
-				.activityId(newIC.getActivityId())
-				.paymentTermId(newIC.getPaymentTermId())
-				.harvestYearAndCalendarId(newIC.getHarvestYearAndCalendarId())
-				.isInterimInvoice(newIC.isInterimInvoice())
-				.handlerId(newIC.getHandlerId())
-				.isManual(newIC.isManual())
-				.flatrateTermId(newIC.getFlatrateTermId());
+				.id(upsertRequest.getInvoiceCandidateId())
+				.billPartnerInfo(upsertRequest.getBillPartnerInfo())
+				.dateOrdered(upsertRequest.getDateOrdered())
+				.discountOverride(upsertRequest.getDiscountOverride())
+				.externalHeaderId(upsertRequest.getExternalHeaderId())
+				.externalLineId(upsertRequest.getExternalLineId())
+				.invoiceDocTypeId(upsertRequest.getInvoiceDocTypeId())
+				.invoiceRuleOverride(upsertRequest.getInvoiceRuleOverride())
+				.invoicingUomId(upsertRequest.getInvoicingUomId())
+				.lineDescription(upsertRequest.getLineDescription())
+				.orgId(upsertRequest.getOrgId())
+				.poReference(upsertRequest.getPoReference())
+				.presetDateInvoiced(upsertRequest.getPresetDateInvoiced())
+				.priceEnteredOverride(upsertRequest.getPriceEnteredOverride())
+				.productId(upsertRequest.getProductId())
+				.qtyDelivered(upsertRequest.getQtyDelivered())
+				.qtyOrdered(upsertRequest.getQtyOrdered())
+				.soTrx(upsertRequest.getSoTrx())
+				.projectId(upsertRequest.getProjectId())
+				.invoiceDetailItems(upsertRequest.getInvoiceDetailItems())
+				.activityId(upsertRequest.getActivityId())
+				.paymentTermId(upsertRequest.getPaymentTermId())
+				.harvestYearAndCalendarId(upsertRequest.getHarvestYearAndCalendarId())
+				.isInterimInvoice(upsertRequest.isInterimInvoice())
+				.handlerId(upsertRequest.getHandlerId())
+				.isManual(upsertRequest.isManual())
+				.flatrateTermId(upsertRequest.getFlatrateTermId());
 	}
 
 	private final OrgId orgId;

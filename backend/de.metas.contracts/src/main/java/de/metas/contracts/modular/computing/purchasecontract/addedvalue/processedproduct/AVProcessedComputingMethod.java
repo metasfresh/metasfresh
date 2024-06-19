@@ -117,6 +117,7 @@ public class AVProcessedComputingMethod extends AbstractComputingMethodHandler
 				.ids(logs.getIds())
 				.price(computingMethodService.productPriceToUOM(price, stockUOMId))
 				.qty(computingMethodService.getQtySumInStockUOM(logs))
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.build();
 	}
 }

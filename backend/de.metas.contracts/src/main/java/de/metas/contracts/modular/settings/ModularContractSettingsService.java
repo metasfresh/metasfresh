@@ -34,6 +34,7 @@ import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
@@ -55,6 +56,7 @@ public class ModularContractSettingsService
 	public static final String AD_ELEMENT_DEFINITIVE_INVOICE = "DefinitiveInvoice";
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private ModularContractSettingsRepository modularContractSettingsRepository;
 
 	private static final AdMessageKey ERROR_MSG_NO_FLATRATE_TERM_CONDITIONS = AdMessageKey.of("de.metas.contracts.modular.settings.missingFlatrateTermCondition");
@@ -122,6 +124,12 @@ public class ModularContractSettingsService
 		return getModuleContractType(modularContractModuleId).isMatching(computingMethodType);
 	}
 
+	public boolean isMatchingComputingMethodType(@NonNull final ModularContractTypeId modularContractTypeId, @NonNull final ComputingMethodType computingMethodType)
+	{
+		final ModularContractType contractType = modularContractSettingsRepository.getContractTypeById(modularContractTypeId);
+		return contractType.isMatching(computingMethodType);
+	}
+
 	private void createInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId)
 	{
 		modularContractSettingsRepository.createModule(
@@ -143,7 +151,7 @@ public class ModularContractSettingsService
 		final ProductId moduleProductId;
 		final ModularContractType moduleContractType;
 		final ProductId processedProductId = modularContractSettings.getProcessedProductId();
-		if(processedProductId != null)
+		if (processedProductId != null)
 		{
 			moduleProductId = processedProductId;
 			moduleContractType = modularContractSettingsRepository.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct);
@@ -196,6 +204,7 @@ public class ModularContractSettingsService
 			modularContractSettingsRepository.updateModule(existingModuleConfig, ModularContractModuleUpdateRequest.builder()
 					.modularContractTypeId(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct)
 					.productId(processedProductId)
+					.moduleName(productBL.getProductName(processedProductId))
 					.build());
 		}
 		else
@@ -203,6 +212,7 @@ public class ModularContractSettingsService
 			modularContractSettingsRepository.updateModule(existingModuleConfig, ModularContractModuleUpdateRequest.builder()
 					.modularContractTypeId(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct)
 					.productId(rawProductId)
+					.moduleName(productBL.getProductName(rawProductId))
 					.build());
 		}
 	}
