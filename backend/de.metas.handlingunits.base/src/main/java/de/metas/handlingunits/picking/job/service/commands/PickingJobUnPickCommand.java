@@ -184,7 +184,7 @@ public class PickingJobUnPickCommand
 
 		if (unpickToHU == null)
 		{
-			HUTransformService.newInstance().extractToTopLevel(huIdAndQRCodeList);
+			newHUTransformService().extractToTopLevel(huIdAndQRCodeList);
 		}
 		else
 		{
@@ -195,6 +195,13 @@ public class PickingJobUnPickCommand
 					.build()
 					.execute();
 		}
+	}
+
+	private HUTransformService newHUTransformService()
+	{
+		return HUTransformService.builder()
+				.huQRCodesService(huQRCodesService)
+				.build();
 	}
 
 	private PickingJob reinitializePickingTargetIfDestroyed(final PickingJob pickingJob)
