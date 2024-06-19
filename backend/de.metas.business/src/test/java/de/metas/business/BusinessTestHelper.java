@@ -18,9 +18,11 @@ import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -46,6 +48,7 @@ import org.eevolution.model.I_PP_Product_BOMVersions;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
@@ -210,7 +213,7 @@ public class BusinessTestHelper
 		product.setC_UOM_ID(UomId.toRepoId(uomId));
 		product.setProductType(ProductType.Item.getCode());
 		product.setIsStocked(true);
-		product.setM_Product_Category_ID(ProductCategoryId.toRepoId(createStandardProductCategory()));
+		product.setM_Product_Category_ID(ProductCategoryId.toRepoId(getOrCreateStandardProductCategory()));
 
 		if (weightKg != null)
 		{
@@ -231,11 +234,20 @@ public class BusinessTestHelper
 		return ProductCategoryId.ofRepoId(category.getM_Product_Category_ID());
 	}
 
-	private ProductCategoryId createStandardProductCategory()
+	private ProductCategoryId getOrCreateStandardProductCategory()
 	{
-		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
-		category.setM_Product_Category_ID(ProductCategoryId.toRepoId(defaultProductCategoryId));
-		category.setName("StandardProductCategory");
+		final Optional<I_M_Product_Category> existingCategory = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product_Category.class)
+				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID, defaultProductCategoryId)
+				.create()
+				.firstOnlyOptional();
+
+		final I_M_Product_Category category = existingCategory.orElse(newInstance(I_M_Product_Category.class));
+
+		if(Check.isBlank(category.getName()))
+		{
+			category.setName("StandardProductCategory");
+		}
+
 		save(category);
 
 		return ProductCategoryId.ofRepoId(category.getM_Product_Category_ID());
