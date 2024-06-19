@@ -161,10 +161,9 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 		final Quantity qty = amount.signum() == 0
 				? Quantity.of(BigDecimal.ZERO, stockUOM)
 				: Quantity.of(BigDecimal.ONE, stockUOM);
+		final ImmutableSet<ModularContractLogEntryId> logEntryIds = logEntryIdsCollector.build();
 
-		final ModularContractLogEntriesList logs = modularContractLogService.getModularContractLogEntries(ModularContractLogQuery.builder()
-				.entryIds(logEntryIdsCollector.build())
-				.build());
+		final ModularContractLogEntriesList logs = logEntryIds.isEmpty() ?  ModularContractLogEntriesList.EMPTY : getModularContractLogEntries(request, logEntryIds);
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
@@ -176,6 +175,17 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 						.build())
 				.qty(qty)
 				.build();
+	}
+
+	private @NonNull ModularContractLogEntriesList getModularContractLogEntries(final @NonNull ComputingRequest request, final ImmutableSet<ModularContractLogEntryId> logEntryIds)
+	{
+		return modularContractLogService.getModularContractLogEntries(ModularContractLogQuery.builder()
+				.entryIds(logEntryIds)
+				.flatrateTermId(request.getFlatrateTermId())
+				.computingMethodType(getComputingMethodType())
+				.billable(true)
+				.processed(false)
+				.build());
 	}
 
 	@NonNull

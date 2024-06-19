@@ -40,76 +40,31 @@ import java.time.LocalDate;
 @Builder
 public class Product
 {
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	ProductId id;
-
-	@NonNull
-	UomId uomId;
-
-	@NonNull
-	String productNo;
-
-	@Nullable
-	ProductCategoryId productCategoryId;
-
-	@NonNull
-	ITranslatableString name;
-
-	@NonNull
-	@Builder.Default
-	ITranslatableString description = TranslatableStrings.empty();
-
-	@NonNull
-	@Builder.Default
-	ITranslatableString documentNote = TranslatableStrings.empty();
-
-	@NonNull
-	String productType;
-
-	@Nullable
-	String ean;
-
-	@Nullable
-	String gtin;
-
-	@Nullable
-	Boolean discontinued;
-
-	@Nullable
-	LocalDate discontinuedFrom;
-
-	@Nullable
-	Boolean active;
-
-	@Nullable
-	BPartnerId manufacturerId;
-
-	@Nullable
-	String packageSize;
-
-	@Nullable
-	BigDecimal weight;
-
+	@NonNull OrgId orgId;
+	@NonNull ProductId id;
+	@NonNull UomId uomId;
+	@Nullable UomId packingUomId;
+	@NonNull String productNo;
+	@Nullable ProductCategoryId productCategoryId;
+	@Nullable String productCategoryName;
+	@NonNull ITranslatableString name;
+	@Nullable String value;
+	@NonNull @Builder.Default ITranslatableString description = TranslatableStrings.empty();
+	@NonNull @Builder.Default ITranslatableString documentNote = TranslatableStrings.empty();
+	@NonNull String productType;
+	@Nullable String ean;
+	@Nullable String gtin;
+	@Nullable Boolean discontinued;
+	@Nullable LocalDate discontinuedFrom;
+	@Nullable Boolean active;
+	@Nullable BPartnerId manufacturerId;
+	@Nullable String packageSize;
+	@Nullable BigDecimal weight;
 	boolean stocked;
-
-	@Nullable
-	CommodityNumberId commodityNumberId;
-
-	@Nullable
-	SectionCodeId sectionCodeId;
-
+	@Nullable CommodityNumberId commodityNumberId;
+	@Nullable SectionCodeId sectionCodeId;
 	boolean purchased;
-
-	@Nullable
-	String sapProductHierarchy;
-
-
-	@Nullable
-	String guaranteeMonths;
-
-	@Nullable
-	String warehouseTemperature;
+	@Nullable String sapProductHierarchy;
+	@Nullable String guaranteeMonths;
+	@Nullable String warehouseTemperature;
 }

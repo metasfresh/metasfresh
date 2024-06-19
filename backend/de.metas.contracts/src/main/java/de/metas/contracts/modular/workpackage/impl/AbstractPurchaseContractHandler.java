@@ -123,7 +123,7 @@ public abstract class AbstractPurchaseContractHandler extends AbstractModularCon
 		final String description = msgBL.getBaseLanguageMsg(msgToUse, productName, quantity);
 
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(modularContractRecord.getBill_BPartner_ID());
-		final ProductPrice priceActual = flatrateBL.extractPriceActual(modularContractRecord);
+		final ProductPrice priceActual = flatrateBL.extractPriceActual(flatrateTermRecord);
 		final Money amount = quantity != null && priceActual != null
 				? priceActual.computeAmount(quantity)
 				: null;

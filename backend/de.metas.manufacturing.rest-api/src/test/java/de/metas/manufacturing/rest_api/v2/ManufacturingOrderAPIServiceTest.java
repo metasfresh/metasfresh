@@ -72,7 +72,6 @@ import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditIte
 import de.metas.manufacturing.rest_api.ExportSequenceNumberProvider;
 import de.metas.manufacturing.rest_api.ManufacturingOrderExportAuditRepository;
 import de.metas.manufacturing.rest_api.ManufacturingOrderReportAuditRepository;
-import org.eevolution.api.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -118,7 +117,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class ManufacturingOrderAPIServiceTest
@@ -159,7 +158,7 @@ public class ManufacturingOrderAPIServiceTest
 		apiService = ManufacturingOrderAPIService.builder()
 				.orderExportAuditRepo(orderExportAuditRepo)
 				.orderReportAuditRepo(orderReportAuditRepo)
-				.productRepo(new ProductRepository())
+				.productRepo(ProductRepository.newInstanceForUnitTesting())
 				.jsonObjectMapper(JsonObjectMapperHolder.newJsonObjectMapper())
 				.huReservationService(huReservationService)
 				.exportSequenceNumberProvider(exportSequenceNumberProvider)
@@ -172,7 +171,7 @@ public class ManufacturingOrderAPIServiceTest
 		{
 			return jsonObjectMapper.writeValueAsString(obj);
 		}
-		catch (JsonProcessingException ex)
+		catch (final JsonProcessingException ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
@@ -182,15 +181,15 @@ public class ManufacturingOrderAPIServiceTest
 	private PPOrderId createManufacturingOrder(
 			@Nullable final APIExportStatus exportStatus,
 			@Nullable final Instant canBeExportedFrom,
-			@Nullable ProductId productId,
-			@Nullable String qtyOrdered,
-			@Nullable LocatorId locatorId,
-			@Nullable ResourceId plantId,
-			@Nullable Instant dateOrdered,
-			@Nullable OrderLineId salesOrderLineId,
+			@Nullable final ProductId productId,
+			@Nullable final String qtyOrdered,
+			@Nullable final LocatorId locatorId,
+			@Nullable final ResourceId plantId,
+			@Nullable final Instant dateOrdered,
+			@Nullable final OrderLineId salesOrderLineId,
 			//
-			@Nullable ProductId bomLine_componentId,
-			@Nullable String bomLine_qtyRequired)
+			@Nullable final ProductId bomLine_componentId,
+			@Nullable final String bomLine_qtyRequired)
 	{
 		final I_PP_Order order = newInstance(I_PP_Order.class);
 		{
