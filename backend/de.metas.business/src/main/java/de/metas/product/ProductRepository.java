@@ -27,7 +27,6 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -82,19 +81,6 @@ public class ProductRepository
 				.stream()
 				.map(ProductRepository::ofBPartnerProductRecord)
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	public void inactivateBpartnerProducts(@NonNull final List<BPartnerId> bPartnerIdList, @NonNull final ProductId productId)
-	{
-
-		queryBL.createQueryBuilder(I_C_BPartner_Product.class)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
-				.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bPartnerIdList)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_C_BPartner_Product.COLUMNNAME_IsActive, false)
-				.execute();
 	}
 
 	public Product getById(@NonNull final ProductId id)
@@ -200,7 +186,7 @@ public class ProductRepository
 		saveRecord(record);
 	}
 
-	public BPartnerProduct createBPartnerProduct(@NonNull final CreateBPartnerProductRequest request)
+	public void createBPartnerProduct(@NonNull final CreateBPartnerProductRequest request)
 	{
 		final I_C_BPartner_Product bPartnerProduct = newInstance(I_C_BPartner_Product.class);
 
@@ -266,8 +252,6 @@ public class ProductRepository
 		}
 
 		saveRecord(bPartnerProduct);
-
-		return ofBPartnerProductRecord(bPartnerProduct);
 	}
 
 	public void updateBPartnerProduct(@NonNull final BPartnerProduct request)
@@ -393,6 +377,7 @@ public class ProductRepository
 				.sapProductHierarchy(productRecord.getSAP_ProductHierarchy())
 				.guaranteeMonths(productRecord.getGuaranteeMonths())
 				.warehouseTemperature(productRecord.getWarehouse_temperature())
+				.procurementStatus(productRecord.getProcurementStatus())
 				.build();
 	}
 

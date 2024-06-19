@@ -31,9 +31,6 @@ import de.metas.ad_reference.ADRefListItem;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.currency.CurrencyRepository;
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.ad_reference.ReferenceId;
-import de.metas.currency.CurrencyRepository;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.ProductWithDemandSupply;
@@ -44,7 +41,6 @@ import de.metas.money.MoneyService;
 import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceProvider;
 import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceRequest;
 import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceService;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.product.ResourceId;
@@ -58,7 +54,6 @@ import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.IColorRepository;
 import de.metas.util.MFColor;
-import de.metas.util.IColorRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -67,8 +62,6 @@ import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseRepository;
 import org.compiere.Adempiere;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Product;
 import org.springframework.stereotype.Service;
 
@@ -302,10 +295,8 @@ public class MaterialCockpitRowFactory
 
 		private Optional<MFColor> getProcurementStatusColor(@NonNull final ProductId productId)
 		{
-			final I_M_Product product = productBL.getById(productId);
-
 			return adReferenceService.getRefListById(PROCUREMENTSTATUS_Reference_ID)
-					.getItemByValue(product.getProcurementStatus())
+					.getItemByValue(cache.getProductById(productId).getProcurementStatus())
 					.map(ADRefListItem::getColorId)
 					.map(colorRepository::getColorById);
 		}
