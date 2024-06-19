@@ -70,6 +70,7 @@ public class PickingJobStepPickFromMap
 
 	public PickingJobStepPickFrom getPickFromByHUQRCode(@NonNull final HUQRCode qrCode)
 	{
+		// TODO match by actual picked HU?!
 		return map.values()
 				.stream()
 				.filter(pickFrom -> HUQRCode.equals(pickFrom.getPickFromHU().getQrCode(), qrCode))

@@ -16,16 +16,9 @@ import javax.annotation.Nullable;
 public class JsonPickingTarget
 {
 	@NonNull String id;
-
 	@NonNull String caption;
-
-	//
-	// New HU
 	@Nullable HuPackingInstructionsId luPIId;
-
-	//
-	// Created HU
-	@Nullable HuId huId;
+	@Nullable HuId luId;
 
 	public static JsonPickingTarget of(@NonNull final PickingTarget target)
 	{
@@ -33,7 +26,7 @@ public class JsonPickingTarget
 				.id(target.getId())
 				.caption(target.getCaption())
 				.luPIId(target.getLuPIId())
-				.huId(target.getHuId())
+				.luId(target.getLuId())
 				.build();
 	}
 
@@ -42,7 +35,7 @@ public class JsonPickingTarget
 		return PickingTarget.builder()
 				.caption(caption)
 				.luPIId(luPIId)
-				.huId(huId)
+				.luId(luId)
 				.build();
 	}
 }

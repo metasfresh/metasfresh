@@ -23,6 +23,7 @@
 package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonClearanceStatus;
 import de.metas.common.handlingunits.JsonClearanceStatusInfo;
@@ -402,7 +403,7 @@ public class HandlingUnitsService
 	{
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodeService)
-				.husToMove(ImmutableList.of(HUIdAndQRCode.builder()
+				.husToMove(ImmutableSet.of(HUIdAndQRCode.builder()
 						.huQRCode(request.getHuQRCode())
 						.huId(request.getHuId())
 						.build()))
