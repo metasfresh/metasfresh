@@ -154,3 +154,10 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 /* DDL */  select update_Process_Para_Translation_From_AD_Element(543096)
 ;
 
+-- Process: ModCntr_Specific_Price_Update_Selection(de.metas.contracts.modular.process.ModCntr_Specific_Price_Update_Selection)
+-- Table: C_Flatrate_Term
+-- EntityType: de.metas.contracts
+-- 2024-06-19T06:44:16.107Z
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585401,540320,541497,TO_TIMESTAMP('2024-06-19 09:44:15.848','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y',TO_TIMESTAMP('2024-06-19 09:44:15.848','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','Y','N','N')
+;
+
