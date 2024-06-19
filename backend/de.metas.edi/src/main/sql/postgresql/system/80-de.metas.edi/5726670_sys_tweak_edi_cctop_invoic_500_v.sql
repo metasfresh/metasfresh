@@ -7,7 +7,7 @@ CREATE OR REPLACE VIEW public.edi_cctop_invoic_500_v AS
 SELECT SUM(il.qtyEntered)                                                                                                            AS QtyInvoiced,
        CASE
            WHEN u.x12de355 = 'TU' THEN 'PCE'
-                                              ELSE u.x12de355
+                                  ELSE u.x12de355
        END                                                                                                                           AS eancom_uom, /* C_InvoiceLine's UOM */
        CASE
            WHEN u_ordered.x12de355 IN ('TU', 'COLI') THEN CEIL(il.QtyInvoiced / GREATEST(ol.QtyItemCapacity, 1))
@@ -31,7 +31,7 @@ SELECT SUM(il.qtyEntered)                                                       
        t.rate,
        CASE /* be lenient if il.price_uom_id is not set; see https://github.com/metasfresh/metasfresh/issues/6458 */
            WHEN COALESCE(u_price.x12de355, u.x12de355) = 'TU' THEN 'PCE'
-                                                                          ELSE COALESCE(u_price.x12de355, u.x12de355)
+                                                              ELSE COALESCE(u_price.x12de355, u.x12de355)
        END                                                                                                                           AS eancom_price_uom /* C_InvoiceLine's Price-UOM */,
        CASE
            WHEN t.rate = 0 THEN 'Y'
@@ -99,17 +99,17 @@ GROUP BY il.c_invoice_id,
          t.rate,
          (CASE
               WHEN u.x12de355 = 'TU' THEN 'PCE'
-                                                    ELSE u.x12de355
-             END),
+                                     ELSE u.x12de355
+          END),
          (CASE /* be lenient if il.price_uom_id is not set; see https://github.com/metasfresh/metasfresh/issues/6458 */
               WHEN COALESCE(u_price.x12de355, u.x12de355) = 'TU' THEN 'PCE'
-                                                                                ELSE COALESCE(u_price.x12de355, u.x12de355)
-             END),
+                                                                 ELSE COALESCE(u_price.x12de355, u.x12de355)
+          END),
          (
              CASE
-              WHEN u_ordered.x12de355 IN ('TU', 'COLI') THEN CEIL(il.QtyInvoiced / GREATEST(ol.QtyItemCapacity, 1))
-                                                        ELSE uomconvert(il.M_Product_ID, p.C_UOM_ID, u_ordered.C_UOM_ID, il.QtyInvoiced)
-          END),
+                 WHEN u_ordered.x12de355 IN ('TU', 'COLI') THEN CEIL(il.QtyInvoiced / GREATEST(ol.QtyItemCapacity, 1))
+                                                           ELSE uomconvert(il.M_Product_ID, p.C_UOM_ID, u_ordered.C_UOM_ID, il.QtyInvoiced)
+             END),
          u_ordered.x12de355,
          (CASE
               WHEN t.rate = 0 THEN 'Y'
