@@ -122,6 +122,12 @@ public class ModularContractSettingsService
 		return getModuleContractType(modularContractModuleId).isMatching(computingMethodType);
 	}
 
+	public boolean isMatchingComputingMethodType(@NonNull final ModularContractTypeId modularContractTypeId, @NonNull final ComputingMethodType computingMethodType)
+	{
+		final ModularContractType contractType = modularContractSettingsRepository.getContractTypeById(modularContractTypeId);
+		return contractType.isMatching(computingMethodType);
+	}
+
 	private void createInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId)
 	{
 		modularContractSettingsRepository.createModule(
