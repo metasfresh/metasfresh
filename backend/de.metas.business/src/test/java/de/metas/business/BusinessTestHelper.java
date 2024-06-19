@@ -231,7 +231,7 @@ public class BusinessTestHelper
 		return ProductCategoryId.ofRepoId(category.getM_Product_Category_ID());
 	}
 
-	public ProductCategoryId createStandardProductCategory()
+	private ProductCategoryId createStandardProductCategory()
 	{
 		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
 		category.setM_Product_Category_ID(ProductCategoryId.toRepoId(defaultProductCategoryId));
