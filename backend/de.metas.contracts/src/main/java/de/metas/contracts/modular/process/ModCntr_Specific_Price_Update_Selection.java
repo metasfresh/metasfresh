@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.process;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Module;
@@ -55,6 +56,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 public class ModCntr_Specific_Price_Update_Selection extends JavaProcess implements IProcessPrecondition
 {
@@ -88,7 +90,7 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		final IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter  = context.getQueryFilter(I_C_Flatrate_Term.class);
+		final IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter = context.getQueryFilter(I_C_Flatrate_Term.class);
 
 		queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.filter(flatrateTermFilter)
@@ -111,12 +113,11 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 
 	public ImmutableSet<ModCntrSpecificPriceId> retrieveContractSpecificPricesFromSelection()
 	{
-
 		final IQueryBuilder<I_ModCntr_Specific_Price> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_M_Product_ID, p_M_Product_ID)
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_UOM_ID, p_C_UOM_ID)
-				.addInArrayFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, getSelectedIncludedRecordIds(I_ModCntr_Specific_Price.class))
+				.addInArrayFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, getSelectedContracts())
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Currency_ID, p_C_Currency_ID);
 
 		if (p_ModCntr_Type_ID != null)
@@ -155,6 +156,14 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 				.create()
 				.listIds(ModCntrSpecificPriceId::ofRepoId);
 
+	}
+
+	private Set<FlatrateTermId> getSelectedContracts()
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
+				.create()
+				.listIds(FlatrateTermId::ofRepoId);
 	}
 
 	private void updatePrice(final ModCntrSpecificPriceId contractPriceId)
