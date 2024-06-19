@@ -3,10 +3,11 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregationIdentifier;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRowCache;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
@@ -59,9 +60,9 @@ import static de.metas.util.Check.assumeNotNull;
 @RequiredArgsConstructor
 public class CountingSubRowBucket
 {
-	@Getter(AccessLevel.NONE) private final transient IProductBL productBL = Services.get(IProductBL.class);
 	@Getter(AccessLevel.NONE) private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
+	@NonNull private final MaterialCockpitRowCache cache;
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
 	@NonNull private final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier;
 
@@ -90,7 +91,8 @@ public class CountingSubRowBucket
 
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
-		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(cockpitRecord.getM_Product_ID());
+		final I_C_UOM uom = cache.getUomByProductId(productId);
 
 		qtyStockEstimateCountAtDate = addToNullable(qtyStockEstimateCountAtDate, cockpitRecord.getQtyStockEstimateCount_AtDate(), uom);
 		qtyStockEstimateTimeAtDate = TimeUtil.max(qtyStockEstimateTimeAtDate, TimeUtil.asInstant(cockpitRecord.getQtyStockEstimateTime_AtDate()));
@@ -105,7 +107,8 @@ public class CountingSubRowBucket
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
 	{
-		final I_C_UOM uom = productBL.getStockUOM(stockRecord.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(stockRecord.getM_Product_ID());
+		final I_C_UOM uom = cache.getUomByProductId(productId);
 
 		qtyOnHandStock = addToNullable(qtyOnHandStock, stockRecord.getQtyOnHand(), uom);
 
@@ -129,6 +132,7 @@ public class CountingSubRowBucket
 
 		return MaterialCockpitRow.countingSubRowBuilder()
 				.lookups(rowLookups)
+				.cache(cache)
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId().getRepoId())
 				.detailsRowAggregationIdentifier(detailsRowAggregationIdentifier)

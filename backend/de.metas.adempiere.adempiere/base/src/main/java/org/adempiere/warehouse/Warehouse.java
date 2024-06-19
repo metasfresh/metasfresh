@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,12 +20,9 @@
  * #L%
  */
 
-package de.metas.resource;
+package org.adempiere.warehouse;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
-import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,21 +31,10 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class Resource
+public class Warehouse
 {
-	@NonNull OrgId orgId;
-	@NonNull ResourceId resourceId;
-	boolean isActive;
-	@NonNull String value;
-	@NonNull ITranslatableString name;
-	@Nullable String description;
-	@Nullable ResourceGroupId resourceGroupId;
-	@NonNull ResourceTypeId resourceTypeId;
-	@Nullable ManufacturingResourceType manufacturingResourceType;
-
-	@Nullable UserId responsibleId;
-
-	@Nullable String internalName;
-
-	public boolean isPlant() {return manufacturingResourceType != null && manufacturingResourceType.isPlant();}
+    @NonNull WarehouseId warehouseId;
+    @NonNull String name;
+    @Nullable ResourceId resourceId;
+    boolean active;
 }

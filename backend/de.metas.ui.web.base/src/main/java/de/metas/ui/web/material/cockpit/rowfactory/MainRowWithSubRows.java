@@ -8,20 +8,18 @@ import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.printing.esb.base.util.Check;
-import de.metas.product.IProductBL;
+import de.metas.product.ResourceId;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregationIdentifier;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow.MainRowBuilder;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRowCache;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
-import de.metas.util.Services;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Warehouse;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,22 +49,27 @@ import java.util.Map;
 
 @Data
 @EqualsAndHashCode(of = "productIdAndDate")
-@RequiredArgsConstructor
 public class MainRowWithSubRows
 {
+	@NonNull private final MaterialCockpitRowCache cache;
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
-	@NonNull private final MainRowBucketId productIdAndDate;
 
-	@NonNull
-	private final MainRowBucket mainRow = new MainRowBucket();
-	@NonNull
-	private final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> dimensionGroupSubRows = new LinkedHashMap<>();
-	@NonNull
-	private final Map<MaterialCockpitDetailsRowAggregationIdentifier, CountingSubRowBucket> countingSubRows = new LinkedHashMap<>();
-	@NonNull
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final MainRowBucketId productIdAndDate;
+	@NonNull private final MainRowBucket mainRow = new MainRowBucket();
+	@NonNull private final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> dimensionGroupSubRows = new LinkedHashMap<>();
+	@NonNull private final Map<MaterialCockpitDetailsRowAggregationIdentifier, CountingSubRowBucket> countingSubRows = new LinkedHashMap<>();
+
+	@Builder
+	private MainRowWithSubRows(
+			@NonNull final MaterialCockpitRowCache cache,
+			@NonNull final MaterialCockpitRowLookups rowLookups,
+			@NonNull final MainRowBucketId productIdAndDate)
+	{
+		this.cache = cache;
+		this.rowLookups = rowLookups;
+
+		this.productIdAndDate = productIdAndDate;
+	}
 
 	public void addEmptyAttributesSubrowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
@@ -75,18 +78,17 @@ public class MainRowWithSubRows
 
 	private DimensionGroupSubRowBucket newSubRowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
-		return new DimensionGroupSubRowBucket(rowLookups, dimensionSpecGroup);
+		return new DimensionGroupSubRowBucket(rowLookups, dimensionSpecGroup, cache);
 	}
 
-	public void addEmptyCountingSubrowBucket(final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier)
+	public void addEmptyCountingSubRowBucket(final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier)
 	{
 		countingSubRows.computeIfAbsent(detailsRowAggregationIdentifier, this::newCountingSubRowBucket);
 	}
 
 	private CountingSubRowBucket newCountingSubRowBucket(final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier)
 	{
-		return new CountingSubRowBucket(rowLookups,
-										detailsRowAggregationIdentifier);
+		return new CountingSubRowBucket(cache, rowLookups, detailsRowAggregationIdentifier);
 	}
 
 	public void addCockpitRecord(
@@ -100,31 +102,24 @@ public class MainRowWithSubRows
 		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(cockpitRecord.getM_Warehouse_ID());
 		if (warehouseId != null)
 		{
-			final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
-			ppPlantId = warehouse.getPP_Plant_ID();
+			ppPlantId = getPlantId(warehouseId);
 		}
 
-		if (cockpitRecord.getQtyStockEstimateCount_AtDate().signum() != 0 || ppPlantId > 0)
+		if (detailsRowAggregation.isPlant() && (cockpitRecord.getQtyStockEstimateCount_AtDate().signum() != 0 || ppPlantId > 0))
 		{
-			if (detailsRowAggregation.isPlant())
-			{
-				final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
-						.aggregationId(ppPlantId)
-						.build();
-				addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
-				addedToAtLeastOneBucket = true;
-			}
+			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
+					.aggregationId(ppPlantId)
+					.build();
+			addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
+			addedToAtLeastOneBucket = true;
 		}
-		if (cockpitRecord.getQtyStockEstimateCount_AtDate().signum() != 0 || warehouseId != null)
+		if (detailsRowAggregation.isWarehouse() && (cockpitRecord.getQtyStockEstimateCount_AtDate().signum() != 0 || warehouseId != null))
 		{
-			if (detailsRowAggregation.isWarehouse())
-			{
-				final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
-						.aggregationId(WarehouseId.toRepoId(warehouseId))
-						.build();
-				addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
-				addedToAtLeastOneBucket = true;
-			}
+			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
+					.aggregationId(WarehouseId.toRepoId(warehouseId))
+					.build();
+			addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
+			addedToAtLeastOneBucket = true;
 		}
 		if (!addedToAtLeastOneBucket)
 		{
@@ -339,8 +334,7 @@ public class MainRowWithSubRows
 
 	private int getPlantId(final WarehouseId warehouseId)
 	{
-		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(warehouseId);
-		return warehouseRecord.getPP_Plant_ID();
+		return ResourceId.toRepoId(cache.getWarehouseById(warehouseId).getResourceId());
 	}
 
 	/**
@@ -360,6 +354,7 @@ public class MainRowWithSubRows
 	public MaterialCockpitRow createMainRowWithSubRows()
 	{
 		final MainRowBuilder mainRowBuilder = MaterialCockpitRow.mainRowBuilder()
+				.cache(cache)
 				.lookups(rowLookups)
 				.productId(productIdAndDate.getProductId())
 				.date(productIdAndDate.getDate())
