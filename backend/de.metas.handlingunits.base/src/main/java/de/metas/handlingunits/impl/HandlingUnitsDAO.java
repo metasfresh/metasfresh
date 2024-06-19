@@ -442,6 +442,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull HuPackingInstructionsId piId,
+			@Nullable String itemType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		final I_M_HU_PI_Version version = retrievePICurrentVersion(piId);
+		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType, bpartnerId);
+		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
+	}
+
+	@Override
 	public List<I_M_HU_PI_Item> retrievePIItems(
 			@NonNull final I_M_HU_PI handlingUnit,
 			@Nullable final BPartnerId bpartnerId)
@@ -453,6 +464,14 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public List<I_M_HU_PI_Item> retrievePIItems(
 			@NonNull final I_M_HU_PI_Version version,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return retrievePIItems(version, null, bpartnerId);
+	}
+
+	private List<I_M_HU_PI_Item> retrievePIItems(
+			@NonNull final I_M_HU_PI_Version version,
+			@Nullable String expectedItemType,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(version);
@@ -470,7 +489,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				continue;
 			}
 
+			// Skip if item type does not match
 			final String itemType = piItem.getItemType();
+			if (expectedItemType != null && !expectedItemType.equals(itemType))
+			{
+				continue;
+			}
 
 			//
 			// In case item is of type HandlingUnit, we need to filter by BPartner
@@ -849,7 +873,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				piIdsToCheck = ImmutableSet.of();
 			}
 		}
-		
+
 		if (luPIVersionIds.isEmpty())
 		{
 			return ImmutableSet.of();

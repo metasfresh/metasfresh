@@ -469,6 +469,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	I_M_HU_PI getPI(@NonNull HuPackingInstructionsItemId piItemId);
 
+	HuPackingInstructionsIdAndCaption getEffectivePackingInstructionsIdAndCaption(@NonNull I_M_HU hu);
+
 	HuPackingInstructionsId getPackingInstructionsId(@NonNull HuPackingInstructionsItemId piItemId);
 
 	I_M_HU_PI getPI(@NonNull I_M_HU_PI_Item piItem);
