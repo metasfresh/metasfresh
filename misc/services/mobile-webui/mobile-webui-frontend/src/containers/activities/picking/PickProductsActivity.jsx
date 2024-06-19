@@ -40,7 +40,11 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   return (
     <div className="mt-5">
       <ButtonWithIndicator
-        caption={currentPickTarget?.caption ?? 'New LU'}
+        caption={
+          currentPickTarget?.caption
+            ? trl('activities.picking.pickingTarget.Current') + ': ' + currentPickTarget?.caption
+            : trl('activities.picking.pickingTarget.New')
+        }
         disabled={!isUserEditable}
         onClick={onSelectPickTargetClick}
       />

@@ -33,6 +33,12 @@ export const setPickTarget = ({ wfProcessId, target }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
+export const closePickTarget = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/target/close`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
 export const postStepPicked = ({
   wfProcessId,
   activityId,
