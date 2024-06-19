@@ -33,6 +33,7 @@ import de.metas.contracts.modular.interest.log.ModularLogInterest;
 import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
@@ -161,13 +162,18 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 				? Quantity.of(BigDecimal.ZERO, stockUOM)
 				: Quantity.of(BigDecimal.ONE, stockUOM);
 
+		final ModularContractLogEntriesList logs = modularContractLogService.getModularContractLogEntries(ModularContractLogQuery.builder()
+				.entryIds(logEntryIdsCollector.build())
+				.build());
+
 		return ComputingResponse.builder()
-				.ids(logEntryIdsCollector.build())
+				.ids(logs.getIds())
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.price(ProductPrice.builder()
-							   .productId(request.getProductId())
-							   .money(amount.negate())
-							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-							   .build())
+						.productId(request.getProductId())
+						.money(amount.negate())
+						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+						.build())
 				.qty(qty)
 				.build();
 	}

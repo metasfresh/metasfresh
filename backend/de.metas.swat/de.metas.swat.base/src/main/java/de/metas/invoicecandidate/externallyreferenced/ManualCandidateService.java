@@ -28,7 +28,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.invoicecandidate.ContractSpecificPrice;
-import de.metas.invoicecandidate.NewInvoiceCandidate;
+import de.metas.invoicecandidate.InvoiceCandidateUpsertRequest;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.money.Money;
@@ -67,7 +67,7 @@ public class ManualCandidateService
 	/**
 	 * Invokes different metasfresh services to complement additional fields such as the price.
 	 */
-	public InvoiceCandidate createInvoiceCandidate(@NonNull final NewInvoiceCandidate newIC)
+	public InvoiceCandidate upsertInvoiceCandidate(@NonNull final InvoiceCandidateUpsertRequest newIC)
 	{
 		final InvoiceCandidate.InvoiceCandidateBuilder candidate = InvoiceCandidate.createBuilder(newIC);
 

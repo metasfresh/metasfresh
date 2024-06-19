@@ -127,6 +127,7 @@ public class StorageCostComputingMethod extends AbstractComputingMethodHandler
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.price(priceWithStockUOM)
 				.qty(storageCosts.isZero() ? Quantitys.zero(stockUOMId) : Quantitys.one(stockUOMId))
 				.build();

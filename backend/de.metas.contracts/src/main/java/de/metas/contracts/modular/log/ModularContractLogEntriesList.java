@@ -3,6 +3,7 @@ package de.metas.contracts.modular.log;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
@@ -101,6 +102,12 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 	public ProductId getSingleProductId()
 	{
 		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getProductId);
+	}
+
+	@Nullable
+	public InvoiceCandidateId getSingleInvoiceCandidateIdOrNull()
+	{
+		return CollectionUtils.extractSingleElementOrDefault(list, ModularContractLogEntry::getInvoiceCandidateId, null);
 	}
 
 	@NonNull

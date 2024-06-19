@@ -1561,7 +1561,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		return glnsLoadingCache.getSingleBPartnerLocationId(query);
 	}
-	
+
 	private static GLNQuery toGLNQuery(@NonNull final BPartnerQuery query)
 	{
 		return GLNQuery.builder()
@@ -2027,5 +2027,17 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		return bpLocation != null ? SalesRegionId.optionalOfRepoId(bpLocation.getC_SalesRegion_ID()) : Optional.empty();
+	}
+
+	@Override
+	@NonNull
+	public List<String> getOtherLocationNamesOfBPartner(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerLocationId bPartnerLocationId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bPartnerLocationId)
+				.create()
+				.listDistinct(I_C_BPartner_Location.COLUMNNAME_Name, String.class);
 	}
 }

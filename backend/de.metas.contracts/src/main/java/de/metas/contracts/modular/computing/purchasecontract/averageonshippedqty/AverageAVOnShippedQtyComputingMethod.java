@@ -33,10 +33,11 @@ import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
@@ -62,11 +63,10 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMetho
 {
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
-
-	private final CurrencyPrecision precision = CurrencyPrecision.ofInt(4);
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
@@ -117,11 +117,12 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMetho
 
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
 
-		final Money money = computeAverageAmount(logs)
+		final Money money = computeAverageAmount(logs, request.getCurrencyId())
 				.orElseGet(() -> Money.zero(request.getCurrencyId()));
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.price(ProductPrice.builder()
 						.productId(request.getProductId())
 						.money(money)
@@ -137,7 +138,7 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMetho
 		return ComputingMethodType.AverageAddedValueOnShippedQuantity;
 	}
 
-	public Optional<Money> computeAverageAmount(@NonNull final ModularContractLogEntriesList logs)
+	public Optional<Money> computeAverageAmount(@NonNull final ModularContractLogEntriesList logs, @NonNull final CurrencyId currencyId)
 	{
 		final Optional<Money> totalMoney = logs.stream()
 				.map(ModularContractLogEntry::getAmount)
@@ -154,7 +155,7 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMetho
 			return Optional.empty();
 		}
 
-		final Money weightedAvgMoney = totalMoney.get().divide(totalQuantity.get().toBigDecimal(), precision);
+		final Money weightedAvgMoney = totalMoney.get().divide(totalQuantity.get().toBigDecimal(), currencyBL.getStdPrecision(currencyId));
 		return Optional.of(weightedAvgMoney);
 	}
 
