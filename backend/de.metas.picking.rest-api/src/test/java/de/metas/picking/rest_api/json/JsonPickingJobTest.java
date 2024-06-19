@@ -157,6 +157,14 @@ class JsonPickingJobTest
 				.locatorName("locatorName")
 				.huQRCode(randomJsonDisplayableQRCode())
 				.qtyPicked(new BigDecimal("111.222"))
+				.actuallyPickedHUs(ImmutableList.of(
+						JsonPickingJobStepPickFromHU.builder()
+								.huQRCode(JsonDisplayableQRCode.builder()
+										.code("code")
+										.displayable("displayable")
+										.build())
+								.build()
+				))
 				.build();
 	}
 
