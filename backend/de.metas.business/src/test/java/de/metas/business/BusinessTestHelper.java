@@ -22,8 +22,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -209,6 +209,7 @@ public class BusinessTestHelper
 		product.setC_UOM_ID(UomId.toRepoId(uomId));
 		product.setProductType(ProductType.Item.getCode());
 		product.setIsStocked(true);
+		product.setM_Product_Category_ID(ProductCategoryId.toRepoId(createProductCategory("Standard", null)));
 
 		if (weightKg != null)
 		{

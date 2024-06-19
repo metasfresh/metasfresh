@@ -217,7 +217,7 @@ class ResourceRepository
 				return ImmutableSet.of();
 			}
 
-			return allActive.stream()
+			return streamAllActive()
 					.filter(resource -> groupIds.contains(resource.getResourceGroupId()))
 					.map(Resource::getResourceId)
 					.collect(ImmutableSet.toImmutableSet());
@@ -243,7 +243,7 @@ class ResourceRepository
 
 		public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
 		{
-			return allActive.stream()
+			return streamAllActive()
 					.filter(resource -> UserId.equals(resource.getResponsibleId(), userId))
 					.map(Resource::getResourceId)
 					.collect(ImmutableSet.toImmutableSet());
