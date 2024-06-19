@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.Product;
@@ -115,7 +116,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_ProductName, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20) })
-	private final String productName;
+	private final ITranslatableString productName;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
 			captionKey = I_M_Product.COLUMNNAME_M_Product_Category_ID, //
@@ -337,8 +338,8 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_M_Product_ID, //
 			widgetType = DocumentFieldWidgetType.Lookup, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_M_Product_ID, //
-			layouts = {@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 280, //
-			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)},
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 280, //
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) },
 			zoomInto = true)
 	private final LookupValue product;
 
@@ -411,7 +412,7 @@ public class MaterialCockpitRow implements IViewRow
 		final Product cockpitProduct = cache.getProductById(productId);
 
 		this.productValue = cockpitProduct.getValue();
-		this.productName = cockpitProduct.getName().getDefaultValue();
+		this.productName = cockpitProduct.getName();
 
 		this.productCategoryOrSubRowName = cockpitProduct.getProductCategoryName();
 
@@ -423,7 +424,6 @@ public class MaterialCockpitRow implements IViewRow
 		this.manufacturer = lookups.lookupBPartnerById(manufacturerId);
 
 		this.product = lookups.lookupProductById(this.productId);
-
 
 		this.packageSize = cockpitProduct.getPackageSize();
 
@@ -536,7 +536,7 @@ public class MaterialCockpitRow implements IViewRow
 
 		final Product cockpitProduct = cache.getProductById(this.productId);
 		this.productValue = cockpitProduct.getValue();
-		this.productName = cockpitProduct.getName().getDefaultValue();
+		this.productName = cockpitProduct.getName();
 		this.productCategoryOrSubRowName = dimensionGroupName;
 
 		final UomId uomId = CoalesceUtil.coalesce(cockpitProduct.getPackingUomId(), cockpitProduct.getUomId());
@@ -626,11 +626,11 @@ public class MaterialCockpitRow implements IViewRow
 				aggregatorName = msgBL.getMsg(Env.getCtx(), "de.metas.ui.web.material.cockpit.MaterialCockpitRow.No_Plant_Info");
 			}
 		}
-		else if(detailsRowAggregation.isWarehouse())
+		else if (detailsRowAggregation.isWarehouse())
 		{
 
 			final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(detailsRowAggregationIdentifier.getAggregationId());
-			if(warehouseId != null)
+			if (warehouseId != null)
 			{
 				aggregatorName = cache.getWarehouseById(warehouseId).getName();
 			}
@@ -658,7 +658,7 @@ public class MaterialCockpitRow implements IViewRow
 
 		final Product cockpitProduct = cache.getProductById(this.productId);
 		this.productValue = cockpitProduct.getValue();
-		this.productName = cockpitProduct.getName().getDefaultValue();
+		this.productName = cockpitProduct.getName();
 		this.productCategoryOrSubRowName = aggregatorName;
 
 		final UomId uomId = CoalesceUtil.coalesce(cockpitProduct.getPackingUomId(), cockpitProduct.getUomId());
