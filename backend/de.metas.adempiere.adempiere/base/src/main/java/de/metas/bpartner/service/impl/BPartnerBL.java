@@ -894,4 +894,11 @@ public class BPartnerBL implements IBPartnerBL
 																				  .bpartnerId(bPartnerId)
 																				  .build()));
 	}
+
+	@Override
+	@NonNull
+	public List<String> getOtherLocationNamesOfBPartner(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerLocationId bPartnerLocationId)
+	{
+		return bpartnersRepo.getOtherLocationNamesOfBPartner(bPartnerId, bPartnerLocationId);
+	}
 }

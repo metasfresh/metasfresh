@@ -215,7 +215,8 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 		final ModuleConfig moduleConfig = createInvoiceCandidateRequest.getModuleConfig();
 		final YearAndCalendarId yearAndCalendarId = createInvoiceCandidateRequest.getYearAndCalendarId();
 
-		final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
+		final ComputingResponse computingResponse = getComputingMethodResponse(createInvoiceCandidateRequest);
+		final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.loadOrNew(computingResponse.getInvoiceCandidateId(), I_C_Invoice_Candidate.class);
 
 		invoiceCandidate.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_Flatrate_Term.class));
 		invoiceCandidate.setRecord_ID(modularContract.getC_Flatrate_Term_ID());
@@ -240,8 +241,6 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 		invoiceCandidate.setM_PricingSystem_ID(PricingSystemId.toRepoId(createInvoiceCandidateRequest.getPricingSystemId()));
 		//
 		invoiceCandidate.setModCntr_Module_ID(moduleConfig.getId().getModularContractModuleId().getRepoId());
-
-		final ComputingResponse computingResponse = getComputingMethodResponse(createInvoiceCandidateRequest);
 
 		setPriceAndQty(invoiceCandidate, computingResponse);
 

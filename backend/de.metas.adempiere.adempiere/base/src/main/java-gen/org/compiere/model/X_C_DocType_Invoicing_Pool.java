@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_DocType_Invoicing_Pool
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType_Invoicing_Pool extends org.compiere.model.PO implements I_C_DocType_Invoicing_Pool, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 130875898L;
+	private static final long serialVersionUID = 277173468L;
 
     /** Standard Constructor */
     public X_C_DocType_Invoicing_Pool (final Properties ctx, final int C_DocType_Invoicing_Pool_ID, @Nullable final String trxName)
@@ -47,6 +47,18 @@ public class X_C_DocType_Invoicing_Pool extends org.compiere.model.PO implements
 	public int getC_DocType_Invoicing_Pool_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_Invoicing_Pool_ID);
+	}
+
+	@Override
+	public void setIsCreditedInvoiceReinvoicable (final boolean IsCreditedInvoiceReinvoicable)
+	{
+		set_Value (COLUMNNAME_IsCreditedInvoiceReinvoicable, IsCreditedInvoiceReinvoicable);
+	}
+
+	@Override
+	public boolean isCreditedInvoiceReinvoicable() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCreditedInvoiceReinvoicable);
 	}
 
 	@Override

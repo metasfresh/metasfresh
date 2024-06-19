@@ -75,9 +75,9 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
-import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.copy_with_details.CopyRecordSupport;
 import de.metas.document.DocBaseType;
@@ -221,8 +221,6 @@ public class FlatrateBL implements IFlatrateBL
 	public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm");
 
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
-
-	public final static AdMessageKey MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED = AdMessageKey.of("MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED");
 
 	public final static String MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS = "@MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS@";
 
@@ -1182,7 +1180,10 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		if (!isExtendableContract(request.getContract()))
 		{
-			throw new AdempiereException(MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED, request.getContract());
+			// avoid ad_issue if extension is simply not allowed in scheduled process
+			// throw new AdempiereException(MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED, request.getContract());
+			logger.debug("Skipping contract No {}, because of extension not allowed transition", request.getContract().getDocumentNo());
+			return;
 		}
 
 		final Map<Integer, String> seenFlatrateCondition = new LinkedHashMap<>();
@@ -2457,7 +2458,7 @@ public class FlatrateBL implements IFlatrateBL
 				.builder()
 				.flatrateTermId(flatrateTermId)
 				.computingMethodTypes(ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS)
-				.isComputingMethodTypeActive(false)
+				.isOnlyActiveComputingMethodTypes(false)
 				.billable(true)
 				.processed(false)
 				.build());
@@ -2677,5 +2678,11 @@ public class FlatrateBL implements IFlatrateBL
 	public void prepareForDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
 	{
 		flatrateDAO.prepareForDefinitiveInvoice(contractIds);
+	}
+
+	@Override
+	public void reverseDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
+	{
+		flatrateDAO.reverseDefinitiveInvoice(contractIds);
 	}
 }

@@ -628,8 +628,23 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.list();//
 	}
 
+@Override
 	@NonNull
 	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidates(@NonNull final InvoiceId invoiceId)
+	{
+		return toInvoiceCandidateQuery(invoiceId)
+				.list();
+	}
+
+	@NonNull
+	@Override
+	public Collection<InvoiceCandidateId> retrieveInvoiceCandidateIds(@NonNull final InvoiceId invoiceId)
+	{
+		return toInvoiceCandidateQuery(invoiceId)
+				.listIds(InvoiceCandidateId::ofRepoId);
+	}
+
+	private IQuery<I_C_Invoice_Candidate> toInvoiceCandidateQuery(final @NonNull InvoiceId invoiceId)
 	{
 		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
@@ -639,8 +654,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				//collect related invoice candidates
 				.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID)
 				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
+				.create();
 	}
 
 	@Override
