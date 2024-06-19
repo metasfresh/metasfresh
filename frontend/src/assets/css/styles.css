@@ -14,7 +14,7 @@
 @import './inbox.css';
 @import 'indicator.scss';
 @import 'window-indicator.scss';
-@import './inputs.css';
+@import './inputs.scss';
 @import './notification.css';
 @import './panel.css';
 @import './overlayfield.css';
