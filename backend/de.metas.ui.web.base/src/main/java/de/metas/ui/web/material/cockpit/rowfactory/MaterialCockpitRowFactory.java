@@ -33,6 +33,7 @@ import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.ProductId;
+import de.metas.product.ProductRepository;
 import de.metas.product.ResourceId;
 import de.metas.resource.ResourceService;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
@@ -41,11 +42,14 @@ import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowCache;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehouseRepository;
 import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
@@ -61,6 +65,9 @@ public class MaterialCockpitRowFactory
 {
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
 	@NonNull private final ResourceService resourceService;
+	@NonNull private final ProductRepository productRepository;
+	@NonNull private final WarehouseRepository warehouseRepository;
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@VisibleForTesting
 	public static MaterialCockpitRowFactory newInstanceForUnitTesting(final MaterialCockpitRowLookups rowLookups)
@@ -68,7 +75,9 @@ public class MaterialCockpitRowFactory
 		Adempiere.assertUnitTestMode();
 		return new MaterialCockpitRowFactory(
 				rowLookups,
-				ResourceService.newInstanceForJUnitTesting()
+				ResourceService.newInstanceForJUnitTesting(),
+				ProductRepository.newInstanceForUnitTesting(),
+				WarehouseRepository.newInstanceForUnitTesting()
 		);
 	}
 
@@ -92,9 +101,16 @@ public class MaterialCockpitRowFactory
 	@VisibleForTesting
 	CreateRowsCommand newCreateRowsCommand(final @NonNull CreateRowsRequest request)
 	{
+		final MaterialCockpitRowCache cache = MaterialCockpitRowCache.builder()
+				.productRepository(productRepository)
+				.warehouseRepository(warehouseRepository)
+				.uomDAO(uomDAO)
+				.build();
+
 		return CreateRowsCommand.builder()
 				.rowLookups(rowLookups)
 				.resourceService(resourceService)
+				.cache(cache)
 				//
 				.request(request)
 				//
@@ -107,15 +123,14 @@ public class MaterialCockpitRowFactory
 	{
 		@NonNull private final MaterialCockpitRowLookups rowLookups;
 		@NonNull private final ResourceService resourceService;
+		@NonNull private MaterialCockpitRowCache cache;
 
 		@NonNull private final CreateRowsRequest request;
-		
-		@NonNull private final MaterialCockpitRowCache cache = new MaterialCockpitRowCache();
 
 		public List<MaterialCockpitRow> execute()
 		{
 			cache.warmUpProducts(request.getProductIdsToListEvenIfEmpty());
-			
+
 			final Map<MainRowBucketId, MainRowWithSubRows> emptyRowBuckets = createEmptyRowBuckets(
 					request.getProductIdsToListEvenIfEmpty(),
 					request.getDate(),

@@ -8,13 +8,12 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
-import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.warehouse.Warehouse;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseRepository;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import java.util.Collection;
@@ -23,11 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Builder
 public class MaterialCockpitRowCache
 {
-	@NonNull private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
-	@NonNull private final WarehouseRepository warehouseRepository = SpringContextHolder.instance.getBean(WarehouseRepository.class);
-	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final ProductRepository productRepository;
+	@NonNull private final WarehouseRepository warehouseRepository;
+	@NonNull private final IUOMDAO uomDAO;
 
 	private final HashMap<ProductId, Product> productsCache = new HashMap<>();
 	private final HashMap<UomId, I_C_UOM> uomsCache = new HashMap<>();
