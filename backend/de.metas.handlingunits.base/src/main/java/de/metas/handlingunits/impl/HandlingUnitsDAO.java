@@ -32,6 +32,7 @@ import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUAndItemsDAO;
@@ -55,6 +56,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -440,6 +442,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull HuPackingInstructionsId piId,
+			@Nullable String itemType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		final I_M_HU_PI_Version version = retrievePICurrentVersion(piId);
+		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType, bpartnerId);
+		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
+	}
+
+	@Override
 	public List<I_M_HU_PI_Item> retrievePIItems(
 			@NonNull final I_M_HU_PI handlingUnit,
 			@Nullable final BPartnerId bpartnerId)
@@ -451,6 +464,14 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public List<I_M_HU_PI_Item> retrievePIItems(
 			@NonNull final I_M_HU_PI_Version version,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return retrievePIItems(version, null, bpartnerId);
+	}
+
+	private List<I_M_HU_PI_Item> retrievePIItems(
+			@NonNull final I_M_HU_PI_Version version,
+			@Nullable String expectedItemType,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(version);
@@ -468,7 +489,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				continue;
 			}
 
+			// Skip if item type does not match
 			final String itemType = piItem.getItemType();
+			if (expectedItemType != null && !expectedItemType.equals(itemType))
+			{
+				continue;
+			}
 
 			//
 			// In case item is of type HandlingUnit, we need to filter by BPartner
@@ -720,10 +746,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		//
 		// Fetch only those PI Items which have set our BPartner or who don't have set a BPartner at all
 		// ... and put first those with specific partner
-		piItemsQueryBuilder.addInArrayOrAllFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId);
+		piItemsQueryBuilder.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId);
 		piItemsQueryBuilder.orderBy()
 				.addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last) // lines with BPartner set, first
-				.addColumn(I_M_HU_PI_Item.COLUMN_M_HU_PI_Item_ID, Direction.Ascending, Nulls.Last) // just to have a predictable order
+				.addColumn(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID, Direction.Ascending, Nulls.Last) // just to have a predictable order
 		;
 
 		//
@@ -792,6 +818,105 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 				.create()
 				.first();
+	}
+
+	@Override
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIs(
+			@NonNull final Set<HuPackingInstructionsItemId> piItemIds,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		if (piItemIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final HashSet<HuPackingInstructionsVersionId> luPIVersionIds = new HashSet<>();
+
+		//
+		// Iterate PIs, level by level, up to the top and collect LU PI Versions
+		Set<HuPackingInstructionsId> piIdsToCheck = retrievePIIdsByPIItemIds(piItemIds);
+		while (!piIdsToCheck.isEmpty())
+		{
+			final HashSet<HuPackingInstructionsVersionId> parentPIVersionIdsToCheck = new HashSet<>();
+
+			queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
+					.addOnlyActiveRecordsFilter()
+					.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_Included_HU_PI_ID, piIdsToCheck)
+					.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId)
+					.andCollect(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, I_M_HU_PI_Version.class)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.stream()
+					.forEach(piVersion -> {
+						final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(piVersion.getM_HU_PI_Version_ID());
+
+						if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(piVersion.getHU_UnitType()))
+						{
+							luPIVersionIds.add(piVersionId);
+						}
+						else
+						{
+							parentPIVersionIdsToCheck.add(piVersionId);
+						}
+					});
+
+			if (!parentPIVersionIdsToCheck.isEmpty())
+			{
+				piIdsToCheck = queryBL.createQueryBuilder(I_M_HU_PI_Version.class)
+						.addOnlyActiveRecordsFilter()
+						.addInArrayFilter(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID, parentPIVersionIdsToCheck)
+						.create()
+						.listIds(HuPackingInstructionsId::ofRepoId);
+			}
+			else
+			{
+				piIdsToCheck = ImmutableSet.of();
+			}
+		}
+
+		if (luPIVersionIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		//
+		// Get all identified LU PIs and their caption
+		return queryBL.createQueryBuilder(I_M_HU_PI_Version.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_PI_Version.COLUMN_M_HU_PI_Version_ID, luPIVersionIds)
+				.addEqualsFilter(I_M_HU_PI_Version.COLUMN_HU_UnitType, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit)
+				.andCollect(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_ID, I_M_HU_PI.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(HandlingUnitsDAO::extractHuPackingInstructionsIdAndCaption)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private Set<HuPackingInstructionsId> retrievePIIdsByPIItemIds(final Collection<HuPackingInstructionsItemId> piItemIds)
+	{
+		if (piItemIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMN_M_HU_PI_Item_ID, piItemIds)
+				.andCollect(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, I_M_HU_PI_Version.class)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_ID, I_M_HU_PI.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(HuPackingInstructionsId::ofRepoId);
+
+	}
+
+	private static HuPackingInstructionsIdAndCaption extractHuPackingInstructionsIdAndCaption(final I_M_HU_PI huPI)
+	{
+		return HuPackingInstructionsIdAndCaption.of(
+				HuPackingInstructionsId.ofRepoId(huPI.getM_HU_PI_ID()),
+				huPI.getName());
 	}
 
 	@NonNull

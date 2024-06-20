@@ -25,7 +25,6 @@ package de.metas.picking.rest_api.json;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
@@ -33,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -138,13 +138,13 @@ class JsonPickingJobTest
 	}
 
 	@SuppressWarnings("SameParameterValue")
-	private ImmutableMap<String, JsonPickingJobStepPickFrom> randomJsonPickingJobStepPickFromMap(final int count)
+	private List<JsonPickingJobStepPickFrom> randomJsonPickingJobStepPickFromMap(final int count)
 	{
-		ImmutableMap.Builder<String, JsonPickingJobStepPickFrom> result = ImmutableMap.builder();
+		ImmutableList.Builder<JsonPickingJobStepPickFrom> result = ImmutableList.builder();
 		for (int i = 1; i <= count; i++)
 		{
 			final JsonPickingJobStepPickFrom pickFrom = randomJsonPickingJobStepPickFrom();
-			result.put(pickFrom.getAlternativeId(), pickFrom);
+			result.add(pickFrom);
 		}
 		return result.build();
 	}
@@ -157,8 +157,14 @@ class JsonPickingJobTest
 				.locatorName("locatorName")
 				.huQRCode(randomJsonDisplayableQRCode())
 				.qtyPicked(new BigDecimal("111.222"))
-				.qtyRejected(new BigDecimal("111.333"))
-				.qtyRejectedReasonCode("qtyRejectedReasonCode")
+				.actuallyPickedHUs(ImmutableList.of(
+						JsonPickingJobStepPickFromHU.builder()
+								.huQRCode(JsonDisplayableQRCode.builder()
+										.code("code")
+										.displayable("displayable")
+										.build())
+								.build()
+				))
 				.build();
 	}
 

@@ -1,10 +1,15 @@
 package de.metas.handlingunits.picking.job.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.Check;
 import de.metas.dao.ValueRestriction;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
@@ -16,6 +21,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.PickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
@@ -46,6 +52,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -57,6 +64,7 @@ import java.util.stream.Stream;
 public class PickingJobService
 {
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
@@ -296,6 +304,7 @@ public class PickingJobService
 			case PICK:
 			{
 				PickingJobPickCommand.builder()
+						.pickingJobService(this)
 						.pickingJobRepository(pickingJobRepository)
 						.pickingCandidateService(pickingCandidateService)
 						.huQRCodesService(huQRCodesService)
@@ -319,8 +328,10 @@ public class PickingJobService
 						.bestBeforeDate(event.getBestBeforeDate())
 						.isSetLotNo(event.isSetLotNo())
 						.lotNo(event.getLotNo())
+						.isCloseTarget(event.isCloseTarget())
 						//
 						.build().execute();
+
 				return getById(pickingJob.getId());
 			}
 			case UNPICK:
@@ -466,4 +477,63 @@ public class PickingJobService
 		pickingJobRepository.save(pickingJobChanged);
 		return pickingJobChanged;
 	}
+
+	public List<PickingTarget> getAvailableTargets(@NonNull final PickingJob pickingJob)
+	{
+		final ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds = getTuPIItemIds(pickingJob);
+
+		return handlingUnitsBL.getLUPIs(tuPIItemIds, pickingJob.getCustomerId())
+				.stream()
+				.map(PickingJobService::toPickingTarget)
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	private static ImmutableSet<HuPackingInstructionsItemId> getTuPIItemIds(final @NonNull PickingJob pickingJob)
+	{
+		return pickingJob.getLines()
+				.stream()
+				.map(line -> line.getPackingInfo().getPiItemId())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static PickingTarget toPickingTarget(@NonNull final HuPackingInstructionsIdAndCaption luPIAndCaption)
+	{
+		return PickingTarget.builder()
+				.caption(luPIAndCaption.getCaption())
+				.luPIId(luPIAndCaption.getId())
+				.build();
+	}
+
+	public PickingJob setPickTarget(@NonNull final PickingJob pickingJob, @Nullable final PickingTarget target)
+	{
+		final PickingJob pickingJobChanged = pickingJob.withPickTarget(target);
+		if (Util.equals(pickingJob, pickingJobChanged))
+		{
+			return pickingJob;
+		}
+
+		pickingJobRepository.save(pickingJobChanged);
+		return pickingJobChanged;
+	}
+
+	public PickingJob closePickTarget(final PickingJob pickingJob)
+	{
+		final PickingTarget pickingTarget = pickingJob.getPickTarget().orElse(null);
+		if (pickingTarget == null)
+		{
+			return pickingJob;
+		}
+
+		PickingJob pickingJobChanged = setPickTarget(pickingJob, null);
+
+		final HuId luId = pickingTarget.getLuId();
+		if (luId != null)
+		{
+			huQRCodesService.print(luId);
+		}
+
+		return pickingJobChanged;
+	}
+
 }
