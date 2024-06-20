@@ -61,7 +61,7 @@ public class MoveHUCommand
 				.build();
 
 		this.huQRCodesService = huQRCodesService;
-		this.requestItems = requestItems;
+		this.requestItems = ImmutableSet.copyOf(requestItems);
 		this.targetQRCode = targetQRCode;
 		this.placeAggHusOnNewLUsWhenMoving = shouldPlaceAggTUsOnNewLUAfterMove(targetQRCode, warehouseDAO);
 	}

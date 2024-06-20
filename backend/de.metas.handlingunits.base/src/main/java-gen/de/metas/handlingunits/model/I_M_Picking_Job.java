@@ -290,6 +290,71 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
 
 	/**
+	 * Set Approved.
+	 * Indicates if this document requires approval
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsApproved (boolean IsApproved);
+
+	/**
+	 * Get Approved.
+	 * Indicates if this document requires approval
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isApproved();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsApproved = new ModelColumn<>(I_M_Picking_Job.class, "IsApproved", null);
+	String COLUMNNAME_IsApproved = "IsApproved";
+
+	/**
+	 * Set Picking Review Required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickingReviewRequired (boolean IsPickingReviewRequired);
+
+	/**
+	 * Get Picking Review Required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPickingReviewRequired();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsPickingReviewRequired = new ModelColumn<>(I_M_Picking_Job.class, "IsPickingReviewRequired", null);
+	String COLUMNNAME_IsPickingReviewRequired = "IsPickingReviewRequired";
+
+	/**
+	 * Set Ready To Review.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReadyToReview (boolean IsReadyToReview);
+
+	/**
+	 * Get Ready To Review.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReadyToReview();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsReadyToReview = new ModelColumn<>(I_M_Picking_Job.class, "IsReadyToReview", null);
+	String COLUMNNAME_IsReadyToReview = "IsReadyToReview";
+
+	/**
 	 * Set LU.
 	 * Loading Unit
 	 *

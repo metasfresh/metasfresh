@@ -178,26 +178,26 @@ public class PickingJobUnPickCommand
 
 	private void moveToTargetHU(@NonNull final List<PickingJobStepPickedToHU> pickedToHUs)
 	{
-		final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = pickedToHUs.stream()
-				.map(PickingJobStepPickedToHU::getActualPickedHU)
-				.map(HUInfo::toHUIdAndQRCode)
-				.collect(ImmutableSet.toImmutableSet());
-
 		if (unpickToHU == null)
 		{
+			final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = pickedToHUs.stream()
+					.map(PickingJobStepPickedToHU::getActualPickedHU)
+					.map(HUInfo::toHUIdAndQRCode)
+					.collect(ImmutableSet.toImmutableSet());
+
 			newHUTransformService().extractToTopLevel(huIdAndQRCodeList);
 		}
 		else
 		{
-		final ImmutableList<MoveHURequestItem> requestItems = pickedToHUs.stream()
-				.map(PickingJobStepPickedToHU::getActualPickedHUId)
-				.map(HUIdAndQRCode::ofHuId)
-				.map(MoveHURequestItem::ofHUIdAndQRCode)
-				.collect(ImmutableList.toImmutableList());
+			final ImmutableSet<MoveHURequestItem> requestItems = pickedToHUs.stream()
+					.map(PickingJobStepPickedToHU::getActualPickedHU)
+					.map(HUInfo::toHUIdAndQRCode)
+					.map(MoveHURequestItem::ofHUIdAndQRCode)
+					.collect(ImmutableSet.toImmutableSet());
 
 			MoveHUCommand.builder()
 					.huQRCodesService(huQRCodesService)
-				.requestItems(requestItems)
+					.requestItems(requestItems)
 					.targetQRCode(unpickToHU.toGlobalQRCode())
 					.build()
 					.execute();
