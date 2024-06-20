@@ -24,8 +24,8 @@ class Tab extends PureComponent {
       const query = toOrderBysCommaSeparatedString(orderBy);
 
       if (singleRowView) {
-        fetchTab({ tabId, windowId, docId, query }).then((res) => {
-          if (res.length) {
+        fetchTab({ tabId, windowId, docId, query }).then((rows) => {
+          if (rows.length) {
             onChange && onChange();
           }
         });

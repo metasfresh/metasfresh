@@ -178,6 +178,7 @@ export function createTableData(rawData) {
     // of entries as otherwise we're just passing references to frozen objects
     columns: rawData.elements ? cloneDeep(rawData.elements) : undefined,
     rows: rawData.result ? cloneDeep(rawData.result) : undefined,
+    orderBys: rawData.orderBys,
     defaultOrderBys: rawData.defaultOrderBys
       ? rawData.defaultOrderBys
       : undefined,
