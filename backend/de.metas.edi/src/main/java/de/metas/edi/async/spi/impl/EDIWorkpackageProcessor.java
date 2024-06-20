@@ -49,6 +49,7 @@ import java.util.Set;
 
 public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 {
+	// If enabled, the EDI document will be computed for each shipment. Note: when the sys config is enabled, the 'EXP_M_InOut_Desadv_V' EXP_Format must be manually activated and the default 'EDI_Exp_Desadv' inactivated.
 	public final static String SYS_CONFIG_OneDesadvPerShipment = "de.metas.edi.OneDesadvPerShipment";
 
 	// Services
