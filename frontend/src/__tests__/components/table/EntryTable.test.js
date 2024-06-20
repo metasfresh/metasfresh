@@ -19,7 +19,7 @@ import EntryTable from '../../../components/table/EntryTable';
 
 const mockStore = configureStore([]);
 const createStore = function(state = {}) {
-  return merge(
+  const res = merge(
     {
       appHandler: {
         ...appHandlerState,
@@ -30,6 +30,8 @@ const createStore = function(state = {}) {
     },
     state
   );
+
+  return res;
 };
 
 const props = {
@@ -77,7 +79,7 @@ describe('EntryTable', () => {
     );
     expect(html).toContain(`Tab1-Section2-Line1-Field2`);
     expect(html).toContain(
-      `form-group row form-group-table widgetType-Composed widgetType-Composed-2 form-field-100006 form-field-100006_Info`
+      `form-group form-group-table form-field-100006 form-field-100006_Info`
     );
   });
 });

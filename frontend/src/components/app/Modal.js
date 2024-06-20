@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { startProcess } from '../../api/process';
+import { startProcess } from '../../api';
 import { openFile, processNewRecord } from '../../actions/GenericActions';
 import {
   updateCommentsPanelOpenFlag
@@ -12,9 +12,11 @@ import {
 import {
   callAPI,
   closeModal,
+  createProcess,
   createWindow,
   fetchChangeLog,
   fireUpdateData,
+  handleProcessResponse,
   patch,
   resetPrintingOptions,
 } from '../../actions/WindowActions';
@@ -35,10 +37,6 @@ import PrintingOptions from './PrintingOptions';
 
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
-import {
-  createProcess,
-  handleProcessResponse,
-} from '../../actions/ProcessActions';
 import ChangeCurrentWorkplace, {
   STATIC_MODAL_TYPE_ChangeCurrentWorkplace,
 } from './ChangeCurrentWorkplace';
@@ -457,12 +455,12 @@ class Modal extends Component {
         try {
           response = await startProcess(windowId, layout.pinstanceId);
 
-          const action = handleProcessResponse({
+          const action = handleProcessResponse(
             response,
-            processId: windowId,
-            pinstanceId: layout.pinstanceId,
-            parentId,
-          });
+            windowId,
+            layout.pinstanceId,
+            parentId
+          );
 
           await dispatch(action);
 
@@ -588,9 +586,6 @@ class Modal extends Component {
       layout,
       staticModalType,
       printingOptions,
-      //
-      indicator,
-      isDocumentNotSaved,
       //
       indicator,
       isDocumentNotSaved,

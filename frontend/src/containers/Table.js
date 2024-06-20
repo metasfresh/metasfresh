@@ -1,16 +1,16 @@
 import counterpart from 'counterpart';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { getZoomIntoWindow, deleteRequest } from '../api';
+import { deleteRequest, getZoomIntoWindow } from '../api';
 import { containerPropTypes } from '../utils/tableHelpers';
 import { mapIncluded } from '../utils/documentListHelper';
 import { isGermanLanguage } from '../utils/locale';
-import { getTableId, getTable } from '../reducers/tables';
+import { getTable, getTableId } from '../reducers/tables';
 import {
-  updateTableSelection,
-  deselectTableRows,
   collapseTableRow,
+  deselectTableRows,
   setActiveSort,
+  updateTableSelection,
 } from '../actions/TableActions';
 import { showIncludedView } from '../actions/ViewActions';
 import { openModal, updatePropertyValue } from '../actions/WindowActions';
@@ -191,7 +191,7 @@ class TableContainer extends PureComponent {
   handleZoomInto = (fieldName) => {
     const { entity, windowId, docId, tabId, viewId, selected } = this.props;
 
-    return getZoomIntoWindow(
+    getZoomIntoWindow(
       entity,
       windowId,
       docId,

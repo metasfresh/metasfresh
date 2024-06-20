@@ -1,11 +1,11 @@
-import { get, find } from 'lodash';
+import { find, get } from 'lodash';
 import { createSelector } from 'reselect';
 
 import {
   ADD_VIEW_LOCATION_DATA,
   CREATE_VIEW,
-  CREATE_VIEW_SUCCESS,
   CREATE_VIEW_ERROR,
+  CREATE_VIEW_SUCCESS,
   DELETE_VIEW,
   FETCH_DOCUMENT_ERROR,
   FETCH_DOCUMENT_PENDING,
@@ -15,9 +15,9 @@ import {
   FETCH_LAYOUT_SUCCESS,
   FETCH_LOCATION_CONFIG_ERROR,
   FETCH_LOCATION_CONFIG_SUCCESS,
+  FILTER_VIEW_ERROR,
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
-  FILTER_VIEW_ERROR,
   RESET_VIEW,
   SET_INCLUDED_VIEW,
   TOGGLE_INCLUDED_VIEW,
@@ -394,7 +394,7 @@ export default function viewHandler(state = initialState, action) {
           [`${id}`]: {
             ...view,
             pending: false,
-            //notFound: true, // don't set notFound to true because in case the filter failed, we still want to keep current data
+            notFound: true,
             error,
           },
         },

@@ -40,7 +40,7 @@ const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
 const createStore = function(state = {}) {
-  return merge(
+  const res = merge(
     {
       appHandler: {
         ...appHandlerState,
@@ -59,6 +59,8 @@ const createStore = function(state = {}) {
     },
     state
   );
+
+  return res;
 };
 
 describe('InlineTabWrapper component', () => {
@@ -227,7 +229,7 @@ describe('InlineTabWrapper component', () => {
     const htmlOutput = wrapper.html();
 
     expect(htmlOutput).toContain(
-      `<div class="form-group row widgetType-Text form-field-BPartnerName">`
+      `<div class="form-group form-field-BPartnerName">`
     );
     expect(htmlOutput).toContain(`<i class="meta-icon-close-alt">`);
   });

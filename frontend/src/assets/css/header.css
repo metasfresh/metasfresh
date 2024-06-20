@@ -1,4 +1,4 @@
-@import './variables.scss';
+@import './variables.css';
 
 .header-sticky-distance{
     padding-top: 55px;

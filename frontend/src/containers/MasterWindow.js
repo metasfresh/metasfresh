@@ -120,13 +120,8 @@ class MasterWindowContainer extends PureComponent {
 
   isActiveTab(tabId) {
     const { master } = this.props;
-    const activeTab = master.layout.activeTab;
-    if (!activeTab) {
-      console.log('No active activeTab found', { master });
-      return false;
-    }
 
-    return tabId === activeTab;
+    return tabId === master.layout.activeTab;
   }
 
   mergeDataIntoIncludedTab({ response, tabId }) {

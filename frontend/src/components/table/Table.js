@@ -130,7 +130,7 @@ export default class Table extends PureComponent {
   handleClick = (e, item) => {
     const { keyProperty, selected, onSelect, onDeselect, featureType } =
       this.props;
-    const disableMultiSel = featureType === 'SEARCH';
+    const disableMultiSel = featureType === 'SEARCH' ? true : false;
     const id = item[keyProperty];
 
     this.clearMultiSelectionStartIdx();
@@ -343,7 +343,6 @@ export default class Table extends PureComponent {
       supportOpenRecord,
       focusOnFieldName,
       modalVisible,
-      isModal,
       isGerman,
       activeSort,
       page,
@@ -398,7 +397,6 @@ export default class Table extends PureComponent {
           item,
           focusOnFieldName,
           modalVisible,
-          isModal,
           isGerman,
           activeSort,
           updatePropertyValue,

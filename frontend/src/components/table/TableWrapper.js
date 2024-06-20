@@ -4,8 +4,9 @@ import classnames from 'classnames';
 import currentDevice from 'current-device';
 import counterpart from 'counterpart';
 import { DROPDOWN_OFFSET_SMALL } from '../../constants/Constants';
-import { handleOpenNewTab, componentPropTypes } from '../../utils/tableHelpers';
-import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
+import { componentPropTypes, handleOpenNewTab } from '../../utils/tableHelpers';
+import DocumentListContextShortcuts
+  from '../keyshortcuts/DocumentListContextShortcuts';
 import TableContextShortcuts from '../keyshortcuts/TableContextShortcuts';
 import { getTableId } from '../../reducers/tables';
 
@@ -296,7 +297,7 @@ class TableWrapper extends PureComponent {
    * @method fwdUpdateHeight
    * @summary - Forward the update height to the child component Table.
    *            This is needed to call the table height update from within TableContextMenu
-   * @param {number} height
+   * @param {integer} height
    */
   fwdUpdateHeight = (height) => {
     this.table.updateHeight(height);

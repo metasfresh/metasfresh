@@ -140,7 +140,6 @@ export function clearTableData(id) {
  * @summary Used to set the flag to enable/disable table navigation. Used by some widgets (like attributes)
  *
  * @param {string} id - table id
- * @param {boolean} active
  */
 export function setTableNavigation(id, active) {
   return {
