@@ -69,7 +69,7 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 	@NonNull private final ModularContractSettingsService modularContractSettingsService = SpringContextHolder.instance.getBean(ModularContractSettingsService.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private static final AdMessageKey DIFFERENT_CURRENCIES_MESSAGE = AdMessageKey.of("Different_Currencies"); static final AdMessageKey DIFFERENT_CURRENCIES_MESSAGE = AdMessageKey.of("Different_Currencies");
+	private static final AdMessageKey DIFFERENT_CURRENCIES_MESSAGE = AdMessageKey.of("Different_Currencies");
 	private static final AdMessageKey DIFFERENT_CONTRACTS_MESSAGE = AdMessageKey.of("Different_Contracts");
 
 	@Param(parameterName = "M_Product_ID", mandatory = true)
@@ -121,7 +121,7 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 	@Override
 	protected String doIt()
 	{
-		retrieveContractSpecificPricesFromSelection().stream()
+		retrieveContractSpecificPricesFromSelection()
 				.forEach(this::updatePrice);
 
 		return MSG_OK;
@@ -129,7 +129,7 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 
 	private void updatePrice(final ModCntrSpecificPriceId contractPriceId)
 	{
-		ModCntrSpecificPrice newContractPrice = modularContractPriceService.updateById(contractPriceId, contractPrice -> contractPrice.toBuilder()
+		final ModCntrSpecificPrice newContractPrice = modularContractPriceService.updateById(contractPriceId, contractPrice -> contractPrice.toBuilder()
 				.amount(Money.of(p_price, p_C_Currency_ID))
 				.uomId(p_C_UOM_ID)
 				.minValue(p_minValue)
