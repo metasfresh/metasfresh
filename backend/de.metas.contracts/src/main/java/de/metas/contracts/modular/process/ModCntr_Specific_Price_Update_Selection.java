@@ -38,8 +38,11 @@ import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -51,14 +54,14 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Set;
 
-public class ModCntr_Specific_Price_Update_Selection extends JavaProcess implements IProcessPrecondition
+public class ModCntr_Specific_Price_Update_Selection extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	@NonNull private final ModularContractLogService contractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
 	@NonNull private final ModularContractPriceService modularContractPriceService = SpringContextHolder.instance.getBean(ModularContractPriceService.class);
@@ -66,13 +69,16 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 	@NonNull private final ModularContractSettingsService modularContractSettingsService = SpringContextHolder.instance.getBean(ModularContractSettingsService.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@Param(parameterName = "M_Product_ID")
+	private static final AdMessageKey DIFFERENT_CURRENCIES_MESSAGE = AdMessageKey.of("Different_Currencies"); static final AdMessageKey DIFFERENT_CURRENCIES_MESSAGE = AdMessageKey.of("Different_Currencies");
+	private static final AdMessageKey DIFFERENT_CONTRACTS_MESSAGE = AdMessageKey.of("Different_Contracts");
+
+	@Param(parameterName = "M_Product_ID", mandatory = true)
 	private ProductId p_M_Product_ID;
 
 	@Param(parameterName = "ModCntr_Type_ID")
 	private ModularContractTypeId p_ModCntr_Type_ID;
 
-	@Param(parameterName = "Price")
+	@Param(parameterName = "Price", mandatory = true)
 	private BigDecimal p_price;
 
 	@Param(parameterName = "MinValue")
@@ -81,23 +87,33 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 	@Param(parameterName = "Price_Old")
 	private BigDecimal p_Price_Old;
 
-	@Param(parameterName = "C_UOM_ID")
+	@Param(parameterName = "C_UOM_ID", mandatory = true)
 	private UomId p_C_UOM_ID;
 
-	@Param(parameterName = "C_Currency_ID")
+	private final static String PARAM_C_CURRENCY_ID = "C_Currency_ID";
+	@Param(parameterName = PARAM_C_CURRENCY_ID, mandatory = true)
 	private CurrencyId p_C_Currency_ID;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		final IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter = context.getQueryFilter(I_C_Flatrate_Term.class);
+		if (countCurrencies() > 1)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason(DIFFERENT_CURRENCIES_MESSAGE);
+		}
 
-		queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.filter(flatrateTermFilter)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
+		final int notModularContractCnt = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.filter(context.getQueryFilter(I_C_Flatrate_Term.class))
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Currency_ID, DocStatus.Completed)
-				.create();
+				.create()
+				.count();
+
+		if (notModularContractCnt > 0)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason(DIFFERENT_CONTRACTS_MESSAGE);
+		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
@@ -109,6 +125,22 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 				.forEach(this::updatePrice);
 
 		return MSG_OK;
+	}
+
+	private void updatePrice(final ModCntrSpecificPriceId contractPriceId)
+	{
+		ModCntrSpecificPrice newContractPrice = modularContractPriceService.updateById(contractPriceId, contractPrice -> contractPrice.toBuilder()
+				.amount(Money.of(p_price, p_C_Currency_ID))
+				.uomId(p_C_UOM_ID)
+				.minValue(p_minValue)
+				.build());
+
+		contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()
+						.unitPrice(newContractPrice.getProductPrice())
+						.flatrateTermId(newContractPrice.flatrateTermId())
+						.modularContractModuleId(newContractPrice.modularContractModuleId())
+						.build(),
+				logHandlerRegistry);
 	}
 
 	public ImmutableSet<ModCntrSpecificPriceId> retrieveContractSpecificPricesFromSelection()
@@ -166,20 +198,29 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 				.listIds(FlatrateTermId::ofRepoId);
 	}
 
-	private void updatePrice(final ModCntrSpecificPriceId contractPriceId)
+	private int countCurrencies()
 	{
-		ModCntrSpecificPrice newContractPrice = modularContractPriceService.updateById(contractPriceId, contractPrice -> contractPrice.toBuilder()
-				.amount(Money.of(p_price, p_C_Currency_ID))
-				.uomId(p_C_UOM_ID)
-				.minValue(p_minValue)
-				.build());
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
+				.create()
+				.listDistinct(I_C_Flatrate_Term.COLUMNNAME_C_Currency_ID)
+				.size();
 
-		contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()
-						.unitPrice(newContractPrice.getProductPrice())
-						.flatrateTermId(newContractPrice.flatrateTermId())
-						.modularContractModuleId(newContractPrice.modularContractModuleId())
-						.build(),
-				logHandlerRegistry);
+	}
+
+	@Nullable
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		if (PARAM_C_CURRENCY_ID.equals(parameter.getColumnName()))
+		{
+			return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+					.addOnlyActiveRecordsFilter()
+					.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
+					.create()
+					.first(I_C_Flatrate_Term.COLUMNNAME_C_Currency_ID, Integer.class);
+		}
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
 }
