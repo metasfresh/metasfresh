@@ -307,4 +307,12 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(modularContract);
 		return handler.getRecordsToLock(modularContract);
 	}
+
+	@Override
+	public void setIsInEffect(final I_C_Invoice_Candidate ic)
+	{
+		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
+		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
+		ic.setIsInEffect(handler.isInEffect(ic));
+	}
 }
