@@ -5,8 +5,7 @@ import currentDevice from 'current-device';
 import counterpart from 'counterpart';
 import { DROPDOWN_OFFSET_SMALL } from '../../constants/Constants';
 import { componentPropTypes, handleOpenNewTab } from '../../utils/tableHelpers';
-import DocumentListContextShortcuts
-  from '../keyshortcuts/DocumentListContextShortcuts';
+import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
 import TableContextShortcuts from '../keyshortcuts/TableContextShortcuts';
 import { getTableId } from '../../reducers/tables';
 

@@ -6,9 +6,7 @@ import classnames from 'classnames';
 
 import { startProcess } from '../../api';
 import { openFile, processNewRecord } from '../../actions/GenericActions';
-import {
-  updateCommentsPanelOpenFlag
-} from '../../actions/CommentsPanelActions';
+import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
   callAPI,
   closeModal,

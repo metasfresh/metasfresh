@@ -5,8 +5,7 @@ import classnames from 'classnames';
 
 import { getWidgetField, shouldPatch } from '../../utils/widgetHelpers';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
-import BarcodeScannerBtn
-  from '../../components/widget/BarcodeScanner/BarcodeScannerBtn';
+import BarcodeScannerBtn from '../../components/widget/BarcodeScanner/BarcodeScannerBtn';
 import WidgetRenderer from './WidgetRenderer';
 import DevicesWidget from './Devices/DevicesWidget';
 import Tooltips from '../tooltips/Tooltips';
