@@ -127,6 +127,21 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 		return MSG_OK;
 	}
 
+	@Nullable
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		if (PARAM_C_CURRENCY_ID.equals(parameter.getColumnName()))
+		{
+			return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+					.addOnlyActiveRecordsFilter()
+					.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
+					.create()
+					.first(I_C_Flatrate_Term.COLUMNNAME_C_Currency_ID, Integer.class);
+		}
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+	}
+
 	private void updatePrice(final ModCntrSpecificPriceId contractPriceId)
 	{
 		final ModCntrSpecificPrice newContractPrice = modularContractPriceService.updateById(contractPriceId, contractPrice -> contractPrice.toBuilder()
@@ -206,21 +221,6 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 				.listDistinct(I_C_Flatrate_Term.COLUMNNAME_C_Currency_ID)
 				.size();
 
-	}
-
-	@Nullable
-	@Override
-	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
-	{
-		if (PARAM_C_CURRENCY_ID.equals(parameter.getColumnName()))
-		{
-			return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-					.addOnlyActiveRecordsFilter()
-					.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
-					.create()
-					.first(I_C_Flatrate_Term.COLUMNNAME_C_Currency_ID, Integer.class);
-		}
-		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
 }
