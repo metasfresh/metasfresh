@@ -24,6 +24,8 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
@@ -108,8 +110,8 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		// Amounts
 		m_AllocatedAmt = line.getAmount();
 		setAmount(m_AllocatedAmt);
-		m_DiscountAmt = line.getDiscountAmt();
-		m_WriteOffAmt = line.getWriteOffAmt();
+		m_DiscountAmt = Money.of(line.getDiscountAmt(), doc.getCurrencyId());
+		m_WriteOffAmt = Money.of(line.getWriteOffAmt(), doc.getCurrencyId());
 		m_OverUnderAmt = line.getOverUnderAmt();
 		m_PaymentWriteOffAmt = line.getPaymentWriteOffAmt();
 	}    // DocLine_Allocation
@@ -133,8 +135,8 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	private final I_C_CashLine cashLine;
 
 	private final BigDecimal m_AllocatedAmt;
-	private final BigDecimal m_DiscountAmt;
-	private final BigDecimal m_WriteOffAmt;
+	private final Money m_DiscountAmt;
+	private final Money m_WriteOffAmt;
 	private final BigDecimal m_OverUnderAmt;
 	private final BigDecimal m_PaymentWriteOffAmt;
 
@@ -149,7 +151,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		final StringBuilder sb = new StringBuilder("DocLine_Allocation[");
 		sb.append(get_ID())
 				.append(",Amt=").append(getAllocatedAmt())
-				.append(",Discount=").append(getDiscountAmt())
+				.append(",Discount=").append(getDiscountAmt().toBigDecimal())
 				.append(",WriteOff=").append(getWriteOffAmt())
 				.append(",OverUnderAmt=").append(getOverUnderAmt())
 				.append(" - C_Payment_ID=").append(_payment)
@@ -180,14 +182,14 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	/**
 	 * @return Returns the discountAmt.
 	 */
-	public BigDecimal getDiscountAmt()
+	public Money getDiscountAmt()
 	{
 		return m_DiscountAmt;
 	}
 
-	public BigDecimal getDiscountAmt_CMAdjusted()
+	public Money getDiscountAmt_CMAdjusted()
 	{
-		BigDecimal discountAmt = getDiscountAmt();
+		Money discountAmt = getDiscountAmt();
 		if (isCreditMemoInvoice())
 		{
 			discountAmt = discountAmt.negate();
@@ -206,14 +208,14 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	/**
 	 * @return Returns the writeOffAmt.
 	 */
-	public BigDecimal getWriteOffAmt()
+	public Money getWriteOffAmt()
 	{
 		return m_WriteOffAmt;
 	}
 
-	public BigDecimal getWriteOffAmt_CMAdjusted()
+	public Money getWriteOffAmt_CMAdjusted()
 	{
-		BigDecimal writeOffAmt = getWriteOffAmt();
+		Money writeOffAmt = getWriteOffAmt();
 		if (isCreditMemoInvoice())
 		{
 			writeOffAmt = writeOffAmt.negate();
@@ -367,16 +369,12 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return creditMemoInvoice;
 	}
 
-	/**
-	 * Get Invoice C_Currency_ID
-	 *
-	 * @return 0 if no invoice -1 if not found
-	 */
-	public int getInvoiceC_Currency_ID()
+	@NonNull
+	public CurrencyId getInvoiceCurrencyId()
 	{
-		final I_C_Invoice invoice = getC_Invoice();
-		return invoice == null ? -1 : invoice.getC_Currency_ID();
-	}    // getInvoiceC_Currency_ID
+		final I_C_Invoice invoice = Check.assumeNotNull(getC_Invoice(), "invoice not null");
+		return CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+	}
 
 	public OrgId getInvoiceOrgId()
 	{

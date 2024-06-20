@@ -1,34 +1,36 @@
 package de.metas.purchasecandidate.material.event;
 
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Optional;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_DiscountSchema;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_M_DiscountSchema;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.impl.MRPContextFactory;
 import de.metas.pricing.conditions.BreakValueType;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.user.UserRepository;
+import de.metas.util.Services;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_DiscountSchema;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.sql.Timestamp;
+import java.util.Optional;
+
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -54,16 +56,17 @@ import de.metas.user.UserRepository;
 
 public class PurchaseCandidateAdvisedEventCreatorTest
 {
-	private I_PP_Product_Planning productPlanningRecord;
+	private ProductPlanning productPlanning;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		productPlanningRecord = newInstance(I_PP_Product_Planning.class);
-		productPlanningRecord.setIsPurchased("Y");
-		save(productPlanningRecord);
+		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+		this.productPlanning = productPlanningDAO.save(ProductPlanning.builder()
+				.isPurchased(true)
+				.build());
 	}
 
 	@Test
@@ -72,6 +75,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		final I_M_DiscountSchema discountSchemaRecord = newInstance(I_M_DiscountSchema.class);
 		discountSchemaRecord.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
 		discountSchemaRecord.setBreakValueType(BreakValueType.QUANTITY.getCode());
+		discountSchemaRecord.setValidFrom(Timestamp.valueOf("2017-01-01 10:10:10.0"));
 		save(discountSchemaRecord);
 
 		final I_C_BPartner bPartnerVendorRecord = newInstance(I_C_BPartner.class);
@@ -86,7 +90,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 
 		final MRPContextFactory mrpContextFactory = new MRPContextFactory();
 		final IMutableMRPContext mrpContext = mrpContextFactory.createInitialMRPContext();
-		mrpContext.setProductPlanning(productPlanningRecord);
+		mrpContext.setProductPlanning(productPlanning);
 
 		final PurchaseCandidateAdvisedEventCreator purchaseCandidateAdvisedEventCreator = new PurchaseCandidateAdvisedEventCreator(
 				new PurchaseOrderDemandMatcher(),
@@ -99,7 +103,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 						mrpContext);
 
 		assertThat(purchaseAdvisedEvent).isPresent();
-		assertThat(purchaseAdvisedEvent.get().getProductPlanningId()).isEqualTo(productPlanningRecord.getPP_Product_Planning_ID());
+		assertThat(purchaseAdvisedEvent.get().getProductPlanningId()).isEqualTo(productPlanning.getIdNotNull().getRepoId());
 		assertThat(purchaseAdvisedEvent.get().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
 		assertThat(purchaseAdvisedEvent.get().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
 	}

@@ -38,9 +38,9 @@ import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersReport;
 import de.metas.common.manufacturing.v2.JsonResponseReceiveFromManufacturingOrder;
 import de.metas.common.manufacturing.v2.Outcome;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.JsonErrorItem;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
@@ -72,8 +72,6 @@ import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditIte
 import de.metas.manufacturing.rest_api.ExportSequenceNumberProvider;
 import de.metas.manufacturing.rest_api.ManufacturingOrderExportAuditRepository;
 import de.metas.manufacturing.rest_api.ManufacturingOrderReportAuditRepository;
-import de.metas.manufacturing.rest_api.v2.ManufacturingOrderAPIService;
-import org.eevolution.api.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -99,6 +97,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_BOM;
@@ -118,7 +117,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class ManufacturingOrderAPIServiceTest
@@ -240,6 +239,7 @@ public class ManufacturingOrderAPIServiceTest
 			{
 				order.setDateOrdered(TimeUtil.asTimestamp(dateOrdered));
 				order.setDateStartSchedule(TimeUtil.asTimestamp(dateOrdered));
+				order.setDatePromised(TimeUtil.asTimestamp(dateOrdered));
 			}
 
 			if (salesOrderLineId != null)

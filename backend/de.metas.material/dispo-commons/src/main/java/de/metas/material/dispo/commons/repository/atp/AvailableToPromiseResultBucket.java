@@ -1,9 +1,6 @@
 package de.metas.material.dispo.commons.repository.atp;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.material.commons.attributes.AttributesKeyMatcher;
-import de.metas.material.commons.attributes.AttributesKeyPattern;
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
 import de.metas.material.commons.attributes.clasifiers.WarehouseClassifier;
@@ -14,6 +11,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.mm.attributes.keys.AttributesKeyMatcher;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

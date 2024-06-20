@@ -16,16 +16,15 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
+import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 /**
  * 	Maintain AD_Table_ID/Record_ID constraint
@@ -33,7 +32,7 @@ import de.metas.logging.LogManager;
  *  @author Jorg Janke
  *  @version $Id: PO_Record.java,v 1.4 2006/07/30 00:58:04 jjanke Exp $
  */
-public class PO_Record
+class PO_Record
 {
 	/**	Parent Tables		*/
 	private static int[]	s_parents =	new int[]{

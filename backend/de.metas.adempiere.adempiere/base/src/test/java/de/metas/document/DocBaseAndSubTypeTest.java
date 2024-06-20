@@ -1,8 +1,8 @@
 package de.metas.document;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -31,14 +31,14 @@ public class DocBaseAndSubTypeTest
 	@Test
 	public void ofDocBaseTypeAndSubType()
 	{
-		assertThat(DocBaseAndSubType.of("docBaseType", "docSubType"))
-				.isSameAs(DocBaseAndSubType.of("docBaseType", "docSubType"));
+		assertThat(DocBaseAndSubType.of(DocBaseType.SalesOrder, "docSubType"))
+				.isSameAs(DocBaseAndSubType.of(DocBaseType.SalesOrder, "docSubType"));
 	}
 
 	@Test
 	public void ofDocBaseType()
 	{
-		assertThat(DocBaseAndSubType.of("docBaseType"))
-				.isSameAs(DocBaseAndSubType.of("docBaseType"));
+		assertThat(DocBaseAndSubType.of(DocBaseType.SalesOrder))
+				.isSameAs(DocBaseAndSubType.of(DocBaseType.SalesOrder));
 	}
 }

@@ -4,16 +4,23 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.product.IssuingToleranceSpec;
+import de.metas.product.IssuingToleranceValueType;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -22,17 +29,20 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.X_C_DocType;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMCreateRequest;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMLineId;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
@@ -113,6 +123,17 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.create()
 				.list();
 
+	}
+
+	@Override
+	public Optional<ProductBOMLineId> getBomLineByProductId(@NonNull final  ProductBOMId productBOMId, @NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, productBOMId)
+				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.firstIdOnlyOptional(ProductBOMLineId::ofRepoId);
 	}
 
 	@Override
@@ -443,6 +464,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 
 		final IQueryBuilder<I_PP_Product_BOM> productBOMQueryBuilder = queryBL
 				.createQueryBuilder(I_PP_Product_BOM.class)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_DocStatus, X_PP_Product_BOM.DOCSTATUS_Completed)
 				.addOnlyActiveRecordsFilter();
 
 		if (bomType != null)
@@ -471,11 +493,40 @@ public class ProductBOMDAO implements IProductBOMDAO
 	{
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.adOrgId(orgId.getRepoId())
-				.docBaseType(X_C_DocType.DOCBASETYPE_BillOfMaterialVersion)
+				.docBaseType(DocBaseType.BillOfMaterialVersion)
 				.adClientId(Env.getAD_Client_ID())
 				.build();
 
 		return docTypeDAO.getDocTypeId(query);
+	}
+
+	public static Optional<IssuingToleranceSpec> extractIssuingToleranceSpec(@NonNull final I_PP_Product_BOMLine bomLine)
+	{
+		if (!bomLine.isEnforceIssuingTolerance())
+		{
+			return Optional.empty();
+		}
+
+		final IssuingToleranceValueType valueType = IssuingToleranceValueType.ofNullableCode(bomLine.getIssuingTolerance_ValueType());
+		if (valueType == null)
+		{
+			throw new FillMandatoryException(I_M_Product.COLUMNNAME_IssuingTolerance_ValueType);
+		}
+		else if (valueType == IssuingToleranceValueType.PERCENTAGE)
+		{
+			final Percent percent = Percent.of(bomLine.getIssuingTolerance_Perc());
+			return Optional.of(IssuingToleranceSpec.ofPercent(percent));
+		}
+		else if (valueType == IssuingToleranceValueType.QUANTITY)
+		{
+			final UomId uomId = UomId.ofRepoId(bomLine.getIssuingTolerance_UOM_ID());
+			final Quantity qty = Quantitys.create(bomLine.getIssuingTolerance_Qty(), uomId);
+			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
+		}
+		else
+		{
+			throw new AdempiereException("Unknown valueType: " + valueType);
+		}
 	}
 
 	@Value

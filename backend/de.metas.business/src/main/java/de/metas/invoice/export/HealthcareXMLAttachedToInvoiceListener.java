@@ -1,22 +1,6 @@
 package de.metas.invoice.export;
 
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.compiere.util.MimeType.TYPE_XML;
-
-import java.io.ByteArrayInputStream;
-
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.util.MimeType;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentTags;
@@ -30,6 +14,8 @@ import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.xml.XmlIntrospectionUtil;
@@ -41,6 +27,17 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlBiller;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlPatient;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.MimeType;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.io.ByteArrayInputStream;
+
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L

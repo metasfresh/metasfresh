@@ -23,6 +23,8 @@
 package de.metas.handlingunits;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,20 +41,18 @@ public class ClearanceStatusInfo
 	@Nullable
 	String clearanceNote;
 
-	@NonNull
-	public static ClearanceStatusInfo of(@NonNull final ClearanceStatus clearanceStatus, @Nullable final String clearanceNote)
-	{
-		return ClearanceStatusInfo.builder()
-				.clearanceStatus(clearanceStatus)
-				.clearanceNote(clearanceNote)
-				.build();
-	}
+	@Nullable
+	InstantAndOrgId clearanceDate;
 
 	@Nullable
 	public static ClearanceStatusInfo ofHU(@NonNull final I_M_HU hu)
 	{
 		return ClearanceStatus.ofCodeOptional(hu.getClearanceStatus())
-				.map(status -> ClearanceStatusInfo.of(status, hu.getClearanceNote()))
+				.map(status -> ClearanceStatusInfo.builder()
+						.clearanceDate(InstantAndOrgId.ofTimestamp(hu.getClearanceDate(), OrgId.ofRepoId(hu.getAD_Org_ID())))
+						.clearanceNote(hu.getClearanceNote())
+						.clearanceStatus(status)
+						.build())
 				.orElse(null);
 	}
 }

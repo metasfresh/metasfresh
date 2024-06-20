@@ -1,12 +1,5 @@
 package de.metas.acct.tax.impl;
 
-import java.util.Optional;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Tax_Acct;
-import org.compiere.model.MAccount;
-
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
@@ -18,6 +11,12 @@ import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Tax_Acct;
+import org.compiere.model.MAccount;
+
+import java.util.Optional;
 
 public class TaxAcctBL implements ITaxAcctBL
 {
@@ -98,7 +97,6 @@ public class TaxAcctBL implements ITaxAcctBL
 				.addEqualsFilter(I_C_Tax_Acct.COLUMNNAME_C_Tax_ID, key.getTaxId())
 				.addEqualsFilter(I_C_Tax_Acct.COLUMNNAME_C_AcctSchema_ID, key.getAcctSchemaId())
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
 				.create()
 				.firstOnlyNotNull(I_C_Tax_Acct.class);
 	}

@@ -22,18 +22,8 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.product.ProductId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.test.ErrorMessage;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.ArrayList;
-import java.util.List;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.test.ErrorMessage;
@@ -97,6 +87,10 @@ public abstract class AbstractHUTest
 	protected I_M_Attribute attr_CountryMadeIn;
 	protected I_M_Attribute attr_Volume;
 	protected I_M_Attribute attr_FragileSticker;
+
+	protected I_M_Attribute attr_Age;
+
+	protected I_M_Attribute attr_AgeOffset;
 
 	/**
 	 * See {@link de.metas.handlingunits.HUTestHelper#attr_WeightGross}
@@ -198,6 +192,9 @@ public abstract class AbstractHUTest
 		attr_WeightNet = helper.attr_WeightNet;
 		attr_WeightTare = helper.attr_WeightTare;
 		attr_WeightTareAdjust = helper.attr_WeightTareAdjust;
+
+		attr_Age = helper.attr_Age;
+		attr_AgeOffset = helper.attr_AgeOffset;
 
 		attr_QualityDiscountPercent = helper.attr_QualityDiscountPercent;
 		attr_QualityNotice = helper.attr_QualityNotice;

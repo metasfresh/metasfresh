@@ -1,17 +1,5 @@
 package de.metas.ui.web.pporder.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -33,6 +21,16 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -68,9 +66,9 @@ public class PackingInfoProcessParams
 	@Param(parameterName = PARAM_M_HU_PI_Item_ID)
 	private int lu_PI_Item_ID;
 	//
-	public static final String PARAM_QtyCU = "QtyCU";
-	@Param(parameterName = PARAM_QtyCU)
-	private BigDecimal qtyCU;
+	public static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
+	@Param(parameterName = PARAM_QtyCUsPerTU)
+	private BigDecimal qtyCUsPerTU;
 	//
 	public static final String PARAM_QtyTU = "QtyTU";
 	@Param(parameterName = PARAM_QtyTU)
@@ -110,8 +108,8 @@ public class PackingInfoProcessParams
 				return defaultLUTUConfig.getM_HU_PI_Item_Product_ID();
 			case PARAM_M_HU_PI_Item_ID:
 				return defaultLUTUConfig.getM_LU_HU_PI_Item_ID();
-			case PARAM_QtyCU:
-				return defaultLUTUConfig.getQtyCU();
+			case PARAM_QtyCUsPerTU:
+				return defaultLUTUConfig.getQtyCUsPerTU();
 			case PARAM_QtyTU:
 				return defaultLUTUConfig.getQtyTU();
 			case PARAM_QtyLU:
@@ -234,7 +232,7 @@ public class PackingInfoProcessParams
 		final I_M_HU_PI_Item_Product pip = availableHUPIItemProductRecords.get(0);
 		defaultLUTUConfig.setM_HU_PI_Item_Product_ID(pip.getM_HU_PI_Item_Product_ID());
 		defaultLUTUConfig.setM_TU_HU_PI_ID(pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI_ID());
-		defaultLUTUConfig.setQtyCU(pip.getQty());
+		defaultLUTUConfig.setQtyCUsPerTU(pip.getQty());
 
 		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, bpartnerId);
 		if (luPIItems.isEmpty())
@@ -357,13 +355,13 @@ public class PackingInfoProcessParams
 		// Validate parameters
 		final int lu_PI_Item_ID = getLuPiItemId(); // not mandatory
 		final HUPIItemProductId M_HU_PI_Item_Product_ID = getTU_HU_PI_Item_Product_ID();
-		final BigDecimal qtyCU = getQtyCU();
+		final BigDecimal qtyCU = getQtyCUsPerTU();
 
 		final BigDecimal qtyTU = M_HU_PI_Item_Product_ID.isVirtualHU() ? BigDecimal.ONE : this.qtyTU;
 
 		if (qtyCU == null || qtyCU.signum() <= 0)
 		{
-			throw new FillMandatoryException(PARAM_QtyCU);
+			throw new FillMandatoryException(PARAM_QtyCUsPerTU);
 		}
 		if (qtyTU == null || qtyTU.signum() <= 0)
 		{
@@ -375,7 +373,7 @@ public class PackingInfoProcessParams
 				.copyToNew(I_M_HU_LUTU_Configuration.class);
 
 		// CU
-		lutuConfigNew.setQtyCU(qtyCU);
+		lutuConfigNew.setQtyCUsPerTU(qtyCU);
 		lutuConfigNew.setIsInfiniteQtyCU(false);
 
 		// TU
@@ -393,7 +391,7 @@ public class PackingInfoProcessParams
 			final HUPIItemProductId M_HU_PI_Item_Product_ID,
 			@NonNull final BigDecimal qtyTU)
 	{
-		final I_M_HU_PI_Item_Product tuPIItemProduct = Services.get(IHUPIItemProductDAO.class).getById(M_HU_PI_Item_Product_ID);
+		final I_M_HU_PI_Item_Product tuPIItemProduct = Services.get(IHUPIItemProductDAO.class).getRecordById(M_HU_PI_Item_Product_ID);
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
 
 		lutuConfigNew.setM_HU_PI_Item_Product_ID(tuPIItemProduct.getM_HU_PI_Item_Product_ID());
@@ -453,20 +451,18 @@ public class PackingInfoProcessParams
 		this.tu_HU_PI_Item_Product_ID = tu_HU_PI_Item_Product_ID;
 	}
 
-	public BigDecimal getQtyCU()
+	public BigDecimal getQtyCUsPerTU()
 	{
-		return qtyCU;
+		return qtyCUsPerTU;
 	}
 
-	public void setQtyCU(final BigDecimal qtyCU)
+	public void setQtyCUsPerTU(final BigDecimal qtyCU)
 	{
-		this.qtyCU = qtyCU;
+		this.qtyCUsPerTU = qtyCU;
 	}
 
 	/**
 	 * Called from the process class to set the TU qty from the process parameter.
-	 * 
-	 * @param qtyTU
 	 */
 	public void setQtyTU(final BigDecimal qtyTU)
 	{

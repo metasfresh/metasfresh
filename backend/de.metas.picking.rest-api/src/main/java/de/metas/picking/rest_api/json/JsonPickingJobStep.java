@@ -25,6 +25,8 @@ package de.metas.picking.rest_api.json;
 import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,6 +35,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.function.Function;
 
 @Value
 @Builder
@@ -40,7 +43,9 @@ import java.util.Map;
 public class JsonPickingJobStep
 {
 	@NonNull String pickingStepId;
+	@NonNull JsonCompleteStatus completeStatus;
 
+	@NonNull String productId;
 	@NonNull String productName;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
@@ -53,21 +58,27 @@ public class JsonPickingJobStep
 	// PickFrom alternatives
 	@NonNull Map<String, JsonPickingJobStepPickFrom> pickFromAlternatives;
 
-	public static JsonPickingJobStep of(final PickingJobStep step, final JsonOpts jsonOpts)
+	public static JsonPickingJobStep of(
+			final PickingJobStep step,
+			final JsonOpts jsonOpts,
+			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
-		final JsonPickingJobStepPickFrom mainPickFrom = JsonPickingJobStepPickFrom.of(step.getPickFrom(PickingJobStepPickFromKey.MAIN));
+		final JsonPickingJobStepPickFrom mainPickFrom = JsonPickingJobStepPickFrom.of(
+				step.getPickFrom(PickingJobStepPickFromKey.MAIN), jsonOpts, getUOMSymbolById);
 
-		ImmutableMap<String, JsonPickingJobStepPickFrom> pickFromAlternatives = step.getPickFromKeys()
+		final ImmutableMap<String, JsonPickingJobStepPickFrom> pickFromAlternatives = step.getPickFromKeys()
 				.stream()
 				.filter(PickingJobStepPickFromKey::isAlternative)
 				.map(step::getPickFrom)
-				.map(JsonPickingJobStepPickFrom::of)
+				.map(pickFrom -> JsonPickingJobStepPickFrom.of(pickFrom, jsonOpts, getUOMSymbolById))
 				.collect(ImmutableMap.toImmutableMap(JsonPickingJobStepPickFrom::getAlternativeId, alt -> alt));
 
 		return builder()
 				.pickingStepId(step.getId().getAsString())
+				.completeStatus(JsonCompleteStatus.of(step.getProgress()))
+				.productId(step.getProductId().getAsString())
 				.productName(step.getProductName().translate(adLanguage))
 				.uom(step.getQtyToPick().getUOMSymbol())
 				.qtyToPick(step.getQtyToPick().toBigDecimal())

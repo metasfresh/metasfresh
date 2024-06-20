@@ -1,12 +1,19 @@
 de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNewAndGet_then_getById=[ {
   "docStatus" : "Drafted",
   "header" : {
+    "allowPickingAnyHU" : false,
     "customerName" : "bpname-3",
     "deliveryBPLocationId" : {
       "bpartnerId" : 3,
       "repoId" : 4
     },
+    "deliveryDate" : "2021-11-02T07:39:16Z",
     "deliveryRenderedAddress" : "deliveryRenderedAddress",
+    "handoverLocationId" : {
+      "bpartnerId" : 3,
+      "repoId" : 4
+    },
+    "isAllowPickingAnyHU" : false,
     "lockedBy" : 5,
     "preparationDate" : "2021-11-02T07:39:16Z",
     "salesOrderDocumentNo" : "docno-2"
@@ -14,12 +21,32 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
   "id" : 1000000,
   "lines" : [ {
     "id" : 1000000,
+    "isManuallyClosed" : false,
+    "packingInfo" : {
+      "allowAnyProduct" : true,
+      "finiteTU" : false,
+      "id" : 6789,
+      "infiniteCapacity" : true,
+      "name" : "infinite-6789",
+      "piItemId" : 123
+    },
+    "pickingUnit" : "CU",
     "productId" : 6,
     "productName" : "productName-6",
+    "productNo" : "productNo-6",
     "progress" : "NOT_STARTED",
+    "qtyPicked" : "0 Ea",
+    "qtyRejected" : "0 Ea",
+    "qtyRemainingToPick" : "100 Ea",
     "qtyToPick" : "100 Ea",
+    "salesOrderAndLineId" : {
+      "orderId" : 2,
+      "orderLineId" : 8
+    },
+    "shipmentScheduleId" : 7,
     "steps" : [ {
       "id" : 1000000,
+      "isGeneratedOnFly" : false,
       "packToSpec" : {
         "tuPackingInstructionsId" : 6789
       },
@@ -74,8 +101,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
             }
           }
         },
-        "progress" : "NOT_STARTED",
-        "qtyPickedSum" : null
+        "progress" : "NOT_STARTED"
       },
       "productId" : 6,
       "productName" : "productName-6",

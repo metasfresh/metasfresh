@@ -11,6 +11,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -164,4 +165,9 @@ public class BPartnerContactId implements RepoIdAware
 	{
 		return bpartnerId.getRepoId() + "-" + userId.getRepoId();
 	}
+	public static boolean equals(@Nullable final BPartnerContactId id1, @Nullable final BPartnerContactId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
+
 }

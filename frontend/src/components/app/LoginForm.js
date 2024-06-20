@@ -7,19 +7,18 @@ import { withRouter } from 'react-router-dom';
 import classnames from 'classnames';
 
 import {
-  getUserLang,
   checkLoginRequest,
   loginCompletionRequest,
   loginRequest,
 } from '../../api';
-import { loginSuccess } from '../../actions/AppActions';
+import { connectionError, loginSuccess } from '../../actions/AppActions';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
-import { connectionError } from '../../actions/AppActions';
 import { BAD_GATEWAY_ERROR } from '../../constants/Constants';
+import { getUserLang } from '../../api/userSession';
 
 /**
  * @file Class based component.

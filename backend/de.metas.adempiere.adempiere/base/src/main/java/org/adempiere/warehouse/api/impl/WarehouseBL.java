@@ -54,6 +54,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class WarehouseBL implements IWarehouseBL
 {
@@ -292,5 +293,13 @@ public class WarehouseBL implements IWarehouseBL
 	public Warehouse createWarehouse(@NonNull final CreateWarehouseRequest request)
 	{
 		return warehouseDAO.createWarehouse(request);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull final WarehouseId warehouseId)
+	{
+		final Set<WarehouseId> pickFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
+		return warehouseDAO.getLocatorIdsByWarehouseIds(pickFromWarehouseIds);
 	}
 }

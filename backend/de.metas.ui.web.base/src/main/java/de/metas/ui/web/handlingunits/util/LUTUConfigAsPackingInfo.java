@@ -1,16 +1,13 @@
 package de.metas.ui.web.handlingunits.util;
 
-import java.math.BigDecimal;
-
-import lombok.NonNull;
-import org.compiere.model.I_C_UOM;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.util.Check;
+import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -82,7 +79,7 @@ class LUTUConfigAsPackingInfo implements IHUPackingInfo
 	@Override
 	public BigDecimal getQtyCUsPerTU()
 	{
-		return lutuConfig.getQtyCU();
+		return lutuConfig.getQtyCUsPerTU();
 	}
 
 	@Override

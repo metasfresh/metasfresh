@@ -1,8 +1,23 @@
 import toast from 'react-hot-toast';
 import { unboxAxiosResponse } from './index';
 import { trl } from './translations';
+import { isError } from 'lodash';
 
-export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage }) => {
+export const toastErrorFromObj = (obj) => {
+  console.log('toastErrorFromObj', { obj });
+  if (!obj) {
+    // shall not happen
+    console.error('toastErrorFromObj called without any error');
+  } else if (isError(obj)) {
+    toastError({ axiosError: obj });
+  } else if (typeof obj === 'object') {
+    toastError(obj);
+  } else {
+    toastError({ plainMessage: `${obj}` });
+  }
+};
+
+export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage, context }) => {
   let message;
   if (axiosError) {
     message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError, fallbackMessageKey });
@@ -15,7 +30,7 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
     return;
   }
 
-  console.trace('toast error: ', { message, axiosError });
+  console.trace('toast error: ', { message, axiosError, context });
   toast(message, { type: 'error', style: { color: 'white' } });
 };
 

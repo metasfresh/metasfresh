@@ -1,14 +1,10 @@
 package de.metas.costing;
 
-import java.util.NoSuchElementException;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import org.compiere.model.X_M_CostElement;
-
-import com.google.common.collect.ImmutableMap;
-
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
+import lombok.NonNull;
+import org.compiere.model.X_M_CostElement;
 
 /*
  * #%L
@@ -32,7 +28,7 @@ import lombok.Getter;
  * #L%
  */
 
-public enum CostingMethod
+public enum CostingMethod implements ReferenceListAwareEnum
 {
 	StandardCosting(X_M_CostElement.COSTINGMETHOD_StandardCosting), //
 	AveragePO(X_M_CostElement.COSTINGMETHOD_AveragePO), //
@@ -42,7 +38,8 @@ public enum CostingMethod
 	AverageInvoice(X_M_CostElement.COSTINGMETHOD_AverageInvoice), //
 	LastInvoice(X_M_CostElement.COSTINGMETHOD_LastInvoice), //
 	UserDefined(X_M_CostElement.COSTINGMETHOD_UserDefined), //
-	ExternalProcessing(X_M_CostElement.COSTINGMETHOD__) //
+	ExternalProcessing(X_M_CostElement.COSTINGMETHOD__), //
+	MovingAverageInvoice(X_M_CostElement.COSTINGMETHOD_MovingAverageInvoice)//
 
 	;
 
@@ -58,24 +55,13 @@ public enum CostingMethod
 
 	public static CostingMethod ofNullableCode(final String code)
 	{
-		if (code == null)
-		{
-			return null;
-		}
-		return ofCode(code);
+		return code != null ? ofCode(code) : null;
 	}
 
-	public static CostingMethod ofCode(final String code)
+	public static CostingMethod ofCode(@NonNull final String code)
 	{
-		final CostingMethod costingMethod = code2type.get(code);
-		if (costingMethod == null)
-		{
-			throw new NoSuchElementException("No " + CostingMethod.class + " found for code: " + code);
-		}
-		return costingMethod;
+		return index.ofCode(code);
 	}
 
-	private static final ImmutableMap<String, CostingMethod> code2type = Stream.of(values())
-			.collect(ImmutableMap.toImmutableMap(CostingMethod::getCode, Function.identity()));
-
+	private static final ReferenceListAwareEnums.ValuesIndex<CostingMethod> index = ReferenceListAwareEnums.index(values());
 }

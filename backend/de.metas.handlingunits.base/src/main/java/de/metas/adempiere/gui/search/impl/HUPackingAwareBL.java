@@ -22,16 +22,7 @@ package de.metas.adempiere.gui.search.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.apps.search.IInfoSimple;
-import org.compiere.model.I_C_UOM;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -47,6 +38,12 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.apps.search.IInfoSimple;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 public class HUPackingAwareBL implements IHUPackingAwareBL
 {
@@ -223,7 +220,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	{
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(huPackingAware.getM_HU_PI_Item_Product_ID());
 		return piItemProductId != null
-				? piPIItemProductBL.getById(piItemProductId)
+				? piPIItemProductBL.getRecordById(piItemProductId)
 				: null;
 	}
 

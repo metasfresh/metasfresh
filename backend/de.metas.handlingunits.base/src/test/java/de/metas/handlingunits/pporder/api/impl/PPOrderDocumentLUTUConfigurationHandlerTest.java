@@ -1,17 +1,5 @@
 package de.metas.handlingunits.pporder.api.impl;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -21,8 +9,19 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.product.ProductId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -85,7 +84,7 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 		final I_M_HU_LUTU_Configuration lutuConfiguration = PPOrderDocumentLUTUConfigurationHandler.instance
 				.createNewLUTUConfiguration(ppOrder);
 
-		assertThat(lutuConfiguration.getQtyCU()).isEqualByComparingTo(TEN);
+		assertThat(lutuConfiguration.getQtyCUsPerTU()).isEqualByComparingTo(TEN);
 		assertThat(lutuConfiguration.getQtyTU()).as("our CUs fit into one TU").isEqualByComparingTo(ONE);
 		assertThat(lutuConfiguration.getQtyLU()).isEqualByComparingTo("1");
 	}
@@ -101,7 +100,7 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 		final I_M_HU_LUTU_Configuration lutuConfiguration = PPOrderDocumentLUTUConfigurationHandler.instance
 				.createNewLUTUConfiguration(ppOrder);
 
-		assertThat(lutuConfiguration.getQtyCU()).isEqualByComparingTo("10");
+		assertThat(lutuConfiguration.getQtyCUsPerTU()).isEqualByComparingTo("10");
 		assertThat(lutuConfiguration.getQtyTU()).isEqualByComparingTo("3");
 		assertThat(lutuConfiguration.getQtyLU()).isEqualByComparingTo("4");
 	}
@@ -116,7 +115,7 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 				.createNewLUTUConfiguration(ppOrder);
 
 		assertThat(lutuConfiguration.isInfiniteQtyCU()).isTrue();
-		assertThat(lutuConfiguration.getQtyCU()).isEqualByComparingTo(ZERO);
+		assertThat(lutuConfiguration.getQtyCUsPerTU()).isEqualByComparingTo(ZERO);
 	}
 
 	private I_PP_Order createPPOrder(final I_M_HU_PI_Item_Product piTU_Item_Product, final BigDecimal qtyOrdered)

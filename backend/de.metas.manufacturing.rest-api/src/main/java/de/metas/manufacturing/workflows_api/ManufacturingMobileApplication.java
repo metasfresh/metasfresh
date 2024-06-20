@@ -7,6 +7,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.manufacturing.config.MobileUIManufacturingConfig;
+import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTarget;
@@ -14,6 +16,9 @@ import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonH
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateRequest;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEventResult;
+import de.metas.product.ResourceId;
+import de.metas.report.PrintCopies;
+import de.metas.resource.UserWorkstationService;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
@@ -23,58 +28,88 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.service.ClientId;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
 @Component
 public class ManufacturingMobileApplication implements WorkflowBasedMobileApplication
 {
 	@VisibleForTesting
-	public static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("mfg");
+	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("mfg");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.manufacturing.appName");
-	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
-			.id(HANDLER_ID)
-			.caption(TranslatableStrings.adMessage(MSG_Caption))
-			.build();
 
+	private final MobileUIManufacturingConfigRepository userProfileRepository;
 	private final ManufacturingRestService manufacturingRestService;
 	private final ManufacturingWorkflowLaunchersProvider wfLaunchersProvider;
 	private final HUQRCodesService huQRCodesService;
+	private final UserWorkstationService userWorkstationService;
 
 	public ManufacturingMobileApplication(
+			@NonNull final MobileUIManufacturingConfigRepository userProfileRepository,
 			@NonNull final ManufacturingRestService manufacturingRestService,
-			@NonNull final HUQRCodesService huQRCodesService)
+			@NonNull final HUQRCodesService huQRCodesService,
+			@NonNull final UserWorkstationService userWorkstationService)
 	{
+		this.userProfileRepository = userProfileRepository;
 		this.manufacturingRestService = manufacturingRestService;
 		this.wfLaunchersProvider = new ManufacturingWorkflowLaunchersProvider(manufacturingRestService);
 		this.huQRCodesService = huQRCodesService;
+		this.userWorkstationService = userWorkstationService;
 	}
 
 	@Override
-	@NonNull
-	public MobileApplicationInfo getApplicationInfo() {return APPLICATION_INFO;}
+	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
 
 	@Override
-	public WorkflowLaunchersList provideLaunchers(
-			@NonNull final UserId userId,
-			@NonNull final QueryLimit suggestedLimit,
-			@NonNull final Duration maxStaleAccepted)
+	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull final UserId loggedUserId)
 	{
-		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit);
+		final MobileUIManufacturingConfig config = userProfileRepository.getConfig(loggedUserId, ClientId.METASFRESH);
+		return MobileApplicationInfo.builder()
+				.id(APPLICATION_ID)
+				.caption(TranslatableStrings.adMessage(MSG_Caption))
+				.requiresWorkstation(config.getIsScanResourceRequired().isTrue())
+				//.showFilters(true)
+				.build();
+	}
+
+	@Override
+	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
+	{
+		final ResourceId workstationId = getFilterByWorkstationId(query.getUserId());
+		return wfLaunchersProvider.provideLaunchers(query, workstationId);
+	}
+
+	@Nullable
+	private ResourceId getFilterByWorkstationId(final UserId userId)
+	{
+		final MobileApplicationInfo applicationInfo = getApplicationInfo(userId);
+		return applicationInfo.isRequiresWorkstation()
+				? userWorkstationService.getUserWorkstationId(userId).orElse(null)
+				: null;
+	}
+
+	@Override
+	public WorkflowLaunchersFacetGroupList getFacets(final WorkflowLaunchersFacetQuery query)
+	{
+		return wfLaunchersProvider.getFacets(query);
 	}
 
 	@Override
@@ -88,6 +123,13 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	}
 
 	@Override
+	public WFProcess continueWorkflow(final WFProcessId wfProcessId, final UserId callerId)
+	{
+		final ManufacturingJob job = manufacturingRestService.assignJob(toPPOrderId(wfProcessId), callerId);
+		return ManufacturingRestService.toWFProcess(job);
+	}
+
+	@Override
 	public void abort(final WFProcessId wfProcessId, final UserId callerId)
 	{
 		final ManufacturingJob job = getManufacturingJob(wfProcessId);
@@ -97,7 +139,7 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	@Override
 	public void abortAll(final UserId callerId)
 	{
-		throw new UnsupportedOperationException(); // TODO
+		manufacturingRestService.abortAllJobs(callerId);
 	}
 
 	@Override
@@ -109,12 +151,18 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 
 	private ManufacturingJob getManufacturingJob(final WFProcessId wfProcessId)
 	{
-		final PPOrderId ppOrderId = wfProcessId.getRepoId(PPOrderId::ofRepoId);
+		final PPOrderId ppOrderId = toPPOrderId(wfProcessId);
 		return manufacturingRestService.getJobById(ppOrderId);
 	}
 
 	@NonNull
-	private static ManufacturingJob getManufacturingJob(final WFProcess wfProcess)
+	private static PPOrderId toPPOrderId(final WFProcessId wfProcessId)
+	{
+		return wfProcessId.getRepoId(PPOrderId::ofRepoId);
+	}
+
+	@NonNull
+	public static ManufacturingJob getManufacturingJob(final WFProcess wfProcess)
 	{
 		return wfProcess.getDocumentAs(ManufacturingJob.class);
 	}
@@ -124,6 +172,23 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	{
 		final WFProcess wfProcess = getWFProcessById(wfProcessId);
 		return remappingFunction.apply(wfProcess);
+	}
+
+	private WFProcess changeWFProcessById(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final BiFunction<WFProcess, ManufacturingJob, ManufacturingJob> remappingFunction)
+	{
+		final WFProcess wfProcess = getWFProcessById(wfProcessId);
+		return mapDocument(wfProcess, job -> remappingFunction.apply(wfProcess, job));
+	}
+
+	public static WFProcess mapDocument(@NonNull final WFProcess wfProcess, @NonNull final UnaryOperator<ManufacturingJob> mapper)
+	{
+		final ManufacturingJob job = getManufacturingJob(wfProcess);
+		final ManufacturingJob jobChanged = mapper.apply(job);
+		return !Objects.equals(job, jobChanged)
+				? ManufacturingRestService.toWFProcess(jobChanged)
+				: wfProcess;
 	}
 
 	@Override
@@ -147,10 +212,11 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 		final WFProcessId wfProcessId = WFProcessId.ofString(event.getWfProcessId());
 		final WFProcess changedWFProcess = changeWFProcessById(
 				wfProcessId,
-				wfProcess -> {
+				(wfProcess, job) -> {
 					wfProcess.assertHasAccess(callerId);
-					return wfProcess.<ManufacturingJob>mapDocument(job -> manufacturingRestService.processEvent(job, event));
-				});
+					return manufacturingRestService.processEvent(job, event);
+				}
+		);
 
 		return extractProcessEventResult(changedWFProcess, event);
 	}
@@ -191,13 +257,17 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 
 		final List<HUQRCode> qrCodes = huQRCodesService.generate(
 				HUQRCodeGenerateRequest.builder()
-						.count(request.getQtyTUs().toInt())
-						.huPackingInstructionsId(request.getTuPackingInstructionsId())
+						.count(request.getNumberOfHUs())
+						.huPackingInstructionsId(request.getHuPackingInstructionsId())
 						.productId(finishedGoodsReceiveLine.getProductId())
 						.attributes(toHUQRCodeGenerateRequestAttributesList(finishedGoodsReceiveLine.getAttributes()))
 						.build());
 
-		huQRCodesService.print(qrCodes);
+		final PrintCopies copies = request.getNumberOfCopies() != null
+				? PrintCopies.ofInt(request.getNumberOfCopies()).minimumOne()
+				: PrintCopies.ONE;
+
+		huQRCodesService.print(qrCodes, copies);
 	}
 
 	private static List<HUQRCodeGenerateRequest.Attribute> toHUQRCodeGenerateRequestAttributesList(@NonNull final ImmutableAttributeSet attributes)
@@ -243,5 +313,11 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 						return resultBuilder.valueListId(attributes.getAttributeValueIdOrNull(attributeCode)).build();
 					}
 				});
+	}
+
+	@Override
+	public void logout(final @NonNull UserId userId)
+	{
+		abortAll(userId);
 	}
 }

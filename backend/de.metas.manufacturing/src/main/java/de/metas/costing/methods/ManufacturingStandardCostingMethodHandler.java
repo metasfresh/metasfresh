@@ -21,7 +21,6 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.material.planning.IResourceProductService;
-import org.eevolution.api.PPOrderBOMLineId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -37,6 +36,7 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
@@ -123,6 +123,11 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
+			if (actualResourceId.isNoResource())
+			{
+				return Optional.empty();
+			}
+
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
@@ -138,6 +143,11 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 			else
 			{
 				final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
+				if (actualResourceId.isNoResource())
+				{
+					return Optional.empty();
+				}
+
 				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 
 				final Duration totalDurationReported = costCollectorsService.getTotalDurationReported(cc);

@@ -51,7 +51,7 @@ public class DataTableUtil
 	 */
 	private static int recordIdentifierFallback = 0;
 
-	private static final String NULL_STRING = "null";
+	public static final String NULL_STRING = "null";
 
 	/**
 	 * @param fallbackPrefix if the given dataTableRow has no {@value StepDefConstants#TABLECOLUMN_IDENTIFIER} column,
@@ -178,7 +178,7 @@ public class DataTableUtil
 	public String extractStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
 		final String string = dataTableRow.get(columnName);
-		if (Check.isBlank(string))
+		if (string == null || Check.isBlank(string))
 		{
 			throw new AdempiereException("Missing value for columnName=" + columnName).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);

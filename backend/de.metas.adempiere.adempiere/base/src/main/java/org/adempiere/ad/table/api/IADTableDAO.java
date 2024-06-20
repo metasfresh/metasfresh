@@ -22,6 +22,7 @@
 
 package org.adempiere.ad.table.api;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -36,6 +37,7 @@ import org.compiere.model.I_AD_SQLColumn_SourceTableColumn;
 import org.compiere.model.I_AD_Table;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -43,16 +45,15 @@ import java.util.Set;
 
 public interface IADTableDAO extends ISingletonService
 {
+	AdColumnId retrieveColumnId(String tableName, String columnName);
+
 	/**
 	 * @return {@link I_AD_Column} if column was found
 	 * @throws AdempiereException if table was not found
 	 * @throws AdempiereException if column was not found
 	 */
+	@Deprecated
 	I_AD_Column retrieveColumn(String tableName, String columnName);
-
-	I_AD_Column retrieveColumnById(@NonNull AdColumnId columnId);
-
-	I_AD_Column retrieveColumn(AdTableId tableId, String columnName);
 
 	AdColumnId retrieveColumnId(AdTableId tableId, String columnName);
 
@@ -65,6 +66,7 @@ public interface IADTableDAO extends ISingletonService
 	 * @return {@link I_AD_Column} if column was found, or <code>null</code> otherwise
 	 * @throws AdempiereException if table was not found
 	 */
+	@Deprecated
 	I_AD_Column retrieveColumnOrNull(String tableName, String columnName);
 
 	/**
@@ -72,6 +74,11 @@ public interface IADTableDAO extends ISingletonService
 	 * @throws AdempiereException if table was not found
 	 */
 	boolean hasColumnName(String tableName, String columnName);
+
+	default boolean hasColumnName(@NonNull TableName tableName, @NonNull String columnName)
+	{
+		return hasColumnName(tableName.getAsString(), columnName);
+	}
 
 	/**
 	 * @return ColumnName or null
@@ -93,6 +100,8 @@ public interface IADTableDAO extends ISingletonService
 		}
 		return retrieveTableName(AdTableId.ofRepoId(adTableId));
 	}
+
+	Optional<String> getTableNameIfPresent(@NonNull AdTableId adTableId);
 
 	/**
 	 * @param tableName, can be case insensitive
@@ -188,6 +197,11 @@ public interface IADTableDAO extends ISingletonService
 	void validate(I_AD_SQLColumn_SourceTableColumn record);
 
 	@NonNull TooltipType getTooltipTypeByTableName(@NonNull String tableName);
+
+	MinimalColumnInfo getMinimalColumnInfo(@NonNull String tableName, @NonNull String columnName);
+
+	MinimalColumnInfo getMinimalColumnInfo(@NonNull AdColumnId adColumnId);
+	ImmutableList<MinimalColumnInfo> getMinimalColumnInfosByIds(@NonNull Collection<AdColumnId> adColumnIds);
 
 	void updateColumnNameByAdElementId(
 			@NonNull AdElementId adElementId,

@@ -16,29 +16,7 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.MTax;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
@@ -64,6 +42,25 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.MTax;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /**
  * Post MatchInv Documents.
@@ -296,25 +293,25 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// Case: the not invoiced receipts line is null (i.e. ZERO costs)
 		if (dr_NotInvoicedReceipts == null)
 		{
-			ipvAmount = cr_InventoryClearing.getSourceBalance();
+			ipvAmount = cr_InventoryClearing.getSourceBalance().toBigDecimal();
 			ipvCurrencyId = cr_InventoryClearing.getCurrencyId();
 		}
 		// Case: the inventory clearing line is null (i.e. ZERO invoiced amount)
 		else if (cr_InventoryClearing == null)
 		{
-			ipvAmount = dr_NotInvoicedReceipts.getSourceBalance().negate();
+			ipvAmount = dr_NotInvoicedReceipts.getSourceBalance().toBigDecimal().negate();
 			ipvCurrencyId = dr_NotInvoicedReceipts.getCurrencyId();
 		}
 		// Case: both lines are not null and same currency
 		else if (CurrencyId.equals(dr_NotInvoicedReceipts.getCurrencyId(), cr_InventoryClearing.getCurrencyId()))
 		{
-			ipvAmount = cr_InventoryClearing.getSourceBalance().add(dr_NotInvoicedReceipts.getSourceBalance()).negate();
+			ipvAmount = cr_InventoryClearing.getSourceBalance().add(dr_NotInvoicedReceipts.getSourceBalance()).toBigDecimal().negate();
 			ipvCurrencyId = cr_InventoryClearing.getCurrencyId();
 		}
 		// Case: both lines are not null but different currency
 		else
 		{
-			ipvAmount = cr_InventoryClearing.getAcctBalance().add(dr_NotInvoicedReceipts.getAcctBalance()).negate();
+			ipvAmount = cr_InventoryClearing.getAcctBalance().add(dr_NotInvoicedReceipts.getAcctBalance()).toBigDecimal().negate();
 			ipvCurrencyId = as.getCurrencyId();
 		}
 

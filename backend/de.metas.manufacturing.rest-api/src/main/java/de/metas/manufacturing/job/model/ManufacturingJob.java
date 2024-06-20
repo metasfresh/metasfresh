@@ -14,6 +14,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderRoutingActivityId;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
@@ -62,6 +63,11 @@ public class ManufacturingJob
 		this.activities = activities;
 	}
 
+	public static boolean equals(@Nullable ManufacturingJob job1, @Nullable ManufacturingJob job2)
+	{
+		return Objects.equals(job1, job2);
+	}
+
 	public void assertUserReporting()
 	{
 		if (!allowUserReporting)
@@ -90,6 +96,7 @@ public class ManufacturingJob
 	}
 
 	public ManufacturingJob withChangedRawMaterialsIssueStep(
+			@NonNull final PPOrderRoutingActivityId activityId,
 			@NonNull final PPOrderIssueScheduleId issueScheduleId,
 			@NonNull UnaryOperator<RawMaterialsIssueStep> mapper)
 	{
@@ -98,7 +105,11 @@ public class ManufacturingJob
 			throw new AdempiereException("Cannot find issue step");
 		}
 
-		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(activities, activity -> activity.withChangedRawMaterialsIssueStep(issueScheduleId, mapper));
+		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(
+				activities,
+				activity -> PPOrderRoutingActivityId.equals(activity.getOrderRoutingActivityId(), activityId)
+						? activity.withChangedRawMaterialsIssueStep(issueScheduleId, mapper)
+						: activity);
 		return withActivities(activitiesNew);
 	}
 

@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventory, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2100316678L;
+	private static final long serialVersionUID = -419045156L;
 
     /** Standard Constructor */
     public X_I_Inventory (final Properties ctx, final int I_Inventory_ID, @Nullable final String trxName)
@@ -251,7 +251,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 
 	/** 
 	 * ExplicitCostPrice AD_Reference_ID=541571
-	 * Reference name: ExplicitCostPrice
+	 * Reference name: Explizite Kosten
 	 */
 	public static final int EXPLICITCOSTPRICE_AD_Reference_ID=541571;
 	/** Yes = Y */
@@ -414,6 +414,18 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	public boolean isLotBlocked() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsLotBlocked);
+	}
+
+	@Override
+	public void setIsUpdateQtyBookedFromFactAcct (final boolean IsUpdateQtyBookedFromFactAcct)
+	{
+		set_Value (COLUMNNAME_IsUpdateQtyBookedFromFactAcct, IsUpdateQtyBookedFromFactAcct);
+	}
+
+	@Override
+	public boolean isUpdateQtyBookedFromFactAcct() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUpdateQtyBookedFromFactAcct);
 	}
 
 	@Override
@@ -588,6 +600,18 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
+	}
+
+	@Override
+	public void setProductAcctValue (final @Nullable java.lang.String ProductAcctValue)
+	{
+		set_Value (COLUMNNAME_ProductAcctValue, ProductAcctValue);
+	}
+
+	@Override
+	public java.lang.String getProductAcctValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductAcctValue);
 	}
 
 	@Override

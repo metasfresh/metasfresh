@@ -22,6 +22,7 @@
 
 package de.metas.pricing.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.lang.SOTrx;
@@ -64,7 +65,11 @@ public interface IPriceListDAO extends ISingletonService
 	@Nullable
 	I_M_PricingSystem getPricingSystemById(@Nullable PricingSystemId pricingSystemId);
 
+	@NonNull
 	PricingSystemId getPricingSystemIdByValue(String value);
+
+	@Nullable
+	PricingSystemId getPricingSystemIdByValueOrNull(String value);
 
 	@Nullable
 	I_M_PriceList getById(@Nullable PriceListId priceListId);
@@ -161,6 +166,8 @@ public interface IPriceListDAO extends ISingletonService
 
 	Stream<I_M_ProductPrice> retrieveProductPrices(PriceListVersionId priceListVersionId, Set<ProductId> productIdsToExclude);
 
+	ImmutableList<I_M_ProductPrice> retrieveProductPrices(PriceListVersionId priceListVersionId, ProductId productId);
+
 	/**
 	 * Retrieves product prices records of the given price list version
 	 *
@@ -206,7 +213,7 @@ public interface IPriceListDAO extends ISingletonService
 
 	PricingSystemId getPricingSystemId(PriceListId priceListId);
 
-	void updateProductPricesIsActive(@NonNull final IQueryFilter<I_M_Product> productFilter, @NonNull final LocalDate date, final boolean newIsActiveValue);
+	void updateProductPricesIsActive(@NonNull final IQueryFilter<I_M_Product> productFilter, @Nullable final LocalDate date, final boolean newIsActiveValue);
 
 	CurrencyId getCurrencyId(final PriceListId priceListId);
 

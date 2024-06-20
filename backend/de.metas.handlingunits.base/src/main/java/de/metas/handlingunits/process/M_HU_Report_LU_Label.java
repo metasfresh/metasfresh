@@ -3,7 +3,6 @@ package de.metas.handlingunits.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.process.AdProcessId;
@@ -93,7 +92,7 @@ public class M_HU_Report_LU_Label extends JavaProcess implements IProcessPrecond
 
 	private void generateQrCode(@NonNull final HuId huId)
 	{
-		huQRCodesService.generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuId(huId));
+		huQRCodesService.generateForExistingHU(huId);
 	}
 
 	private ReportResult printLabel(@NonNull final HuId huId)

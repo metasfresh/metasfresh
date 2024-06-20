@@ -1,9 +1,9 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
-
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionEvaluator.BooleanEvaluator;
@@ -12,11 +12,9 @@ import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
 import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.util.Check;
-import lombok.NonNull;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @JsonSerialize(using = JsonLogicExpressionSerializer.class)
 /* package */final class LogicExpression extends AbstractLogicExpression
@@ -108,7 +106,7 @@ import lombok.NonNull;
 	{
 		if (constantValue == null)
 		{
-			throw new ExpressionEvaluationException("Not a constant expression: " + this);
+			throw ExpressionEvaluationException.newWithPlainMessage("Not a constant expression: " + this);
 		}
 		return constantValue;
 	}
@@ -216,7 +214,7 @@ import lombok.NonNull;
 		else
 		{
 			// unknown operator
-			throw new ExpressionEvaluationException("Unknown operator: " + operator);
+			throw ExpressionEvaluationException.newWithTranslatableMessage("Unknown operator: " + operator);
 		}
 	}
 

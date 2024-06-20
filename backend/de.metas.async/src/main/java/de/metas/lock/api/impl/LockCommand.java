@@ -22,20 +22,7 @@ package de.metas.lock.api.impl;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.concurrent.Future;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.concurrent.CloseableReentrantLock;
-import org.adempiere.util.concurrent.FutureValue;
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.LockOwner;
@@ -46,6 +33,17 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.concurrent.CloseableReentrantLock;
+import org.adempiere.util.concurrent.FutureValue;
+import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.concurrent.Future;
 
 /* package */class LockCommand implements ILockCommand
 {
@@ -99,7 +97,7 @@ import lombok.NonNull;
 		}
 		else
 		{
-			try (final CloseableReentrantLock ignored = parentLock.mutex)
+			try (final CloseableReentrantLock ignored = parentLock.mutex.open())
 			{
 				LockAlreadyClosedException.throwIfClosed(parentLock);
 				final ILock lock = lockDatabase.lock(this);

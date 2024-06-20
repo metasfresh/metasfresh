@@ -52,6 +52,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.reservation.HUReservationRepository;
@@ -67,6 +68,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
@@ -92,6 +94,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -338,7 +341,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU_Item> retrieveItemsNoCache(final Collection<HuId> huIds)
+	public List<I_M_HU_Item> retrieveAllItemsNoCache(final Collection<HuId> huIds)
 	{
 		if (huIds.isEmpty())
 		{
@@ -347,13 +350,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		return queryBL.createQueryBuilder(I_M_HU_Item.class)
 				.addInArrayFilter(I_M_HU_Item.COLUMN_M_HU_ID, huIds)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter() // all, including not active
 				.create()
 				.list();
 	}
 
 	@Override
-	public List<I_M_HU> retrieveIncludedHUsNoCache(final Set<HuItemId> huItemIds)
+	public List<I_M_HU> retrieveAllIncludedHUsNoCache(final Set<HuItemId> huItemIds)
 	{
 		if (huItemIds.isEmpty())
 		{
@@ -362,13 +365,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		return queryBL.createQueryBuilder(I_M_HU.class)
 				.addInArrayFilter(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID, huItemIds)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter() // all, including not active
 				.create()
 				.list();
 	}
 
 	@Override
-	public List<I_M_HU_Item_Storage> retrieveItemStoragesNoCache(final Set<HuItemId> huItemIds)
+	public List<I_M_HU_Item_Storage> retrieveAllItemStoragesNoCache(final Set<HuItemId> huItemIds)
 	{
 		if (huItemIds.isEmpty())
 		{
@@ -377,13 +380,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		return queryBL.createQueryBuilder(I_M_HU_Item_Storage.class)
 				.addInArrayFilter(I_M_HU_Item_Storage.COLUMNNAME_M_HU_Item_ID, huItemIds)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter() // all, including not active
 				.create()
 				.list();
 	}
 
 	@Override
-	public List<I_M_HU_Storage> retrieveStoragesNoCache(final Set<HuId> huIds)
+	public List<I_M_HU_Storage> retrieveAllStoragesNoCache(final Set<HuId> huIds)
 	{
 		if (huIds.isEmpty())
 		{
@@ -392,7 +395,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		return queryBL.createQueryBuilder(I_M_HU_Storage.class)
 				.addInArrayFilter(I_M_HU_Storage.COLUMNNAME_M_HU_ID, huIds)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter() // all, including not active
 				.create()
 				.list();
 	}
@@ -438,7 +441,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	@Override
 	public List<I_M_HU_PI_Item> retrievePIItems(
-			@NonNull final I_M_HU_PI handlingUnit, 
+			@NonNull final I_M_HU_PI handlingUnit,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(handlingUnit);
@@ -609,7 +612,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		}
 		return piVersion;
 	}
-
 
 	@Override
 	public I_M_HU_PI_Version retrievePICurrentVersionOrNull(@NonNull final I_M_HU_PI pi)
@@ -1015,5 +1017,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			hu.setIsReserved(reserved);
 			saveHU(hu);
 		}
+	}
+
+	@Override
+	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo)
+	{
+		return createHUQueryBuilder()
+				.setHUStatus(X_M_HU.HUSTATUS_Active)
+				.setOnlyTopLevelHUs()
+				.addOnlyWithAttribute(AttributeConstants.HU_ExternalLotNumber, externalLotNo)
+				.createQuery()
+				.firstIdOnlyOptional(HuId::ofRepoId);
 	}
 }

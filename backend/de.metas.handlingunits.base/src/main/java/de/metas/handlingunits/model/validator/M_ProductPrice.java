@@ -106,7 +106,7 @@ public class M_ProductPrice
 					.markAsUserValidationError();
 		}
 
-		final I_M_HU_PI_Item_Product packingMaterial = huPIItemProductBL.getById(packingMaterialPriceId);
+		final I_M_HU_PI_Item_Product packingMaterial = huPIItemProductBL.getRecordById(packingMaterialPriceId);
 
 		if (huCapacityBL.isInfiniteCapacity(packingMaterial))
 		{

@@ -86,7 +86,7 @@ public class CustomerReturnLUTUConfigurationHandler
 
 		//
 		// Update LU/TU configuration
-		updateLUTUConfigurationFromPPOrder(lutuConfiguration, documentLine);
+		updateLUTUConfigurationFromDocumentLine(lutuConfiguration, documentLine);
 
 		// NOTE: don't save it
 
@@ -94,7 +94,7 @@ public class CustomerReturnLUTUConfigurationHandler
 	}
 
 	@Override
-	public void updateLUTUConfigurationFromPPOrder(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, @NonNull final I_M_InOutLine documentLine)
+	public void updateLUTUConfigurationFromDocumentLine(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, @NonNull final I_M_InOutLine documentLine)
 	{
 		final I_M_InOut customerReturn = documentLine.getM_InOut();
 		//
@@ -114,16 +114,21 @@ public class CustomerReturnLUTUConfigurationHandler
 		// Set HUStatus=Planning because receipt schedules are always about planning
 		lutuConfiguration.setHUStatus(X_M_HU.HUSTATUS_Planning);
 
-		lutuConfiguration.setQtyTU(documentLine.getQtyEnteredTU());
 		lutuConfiguration.setQtyLU(BigDecimal.ONE);
 		lutuConfiguration.setIsInfiniteQtyLU(false);
+
+		lutuConfiguration.setQtyTU(documentLine.getQtyEnteredTU().signum() == 0 ? BigDecimal.ONE: documentLine.getQtyEnteredTU());
+		lutuConfiguration.setIsInfiniteQtyTU(false);
+
+		lutuConfiguration.setQtyCUsPerTU(documentLine.getMovementQty());
+		lutuConfiguration.setIsInfiniteQtyCU(false);
 	}
 
 	@Override
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product(@NonNull final I_M_InOutLine inOutLine)
 	{
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNone(inOutLine.getM_HU_PI_Item_Product_ID());
-		return piItemProductBL.getById(piItemProductId);
+		return piItemProductBL.getRecordById(piItemProductId);
 	}
 
 	@Override

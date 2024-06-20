@@ -1,6 +1,5 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.AttributesKey;
@@ -12,6 +11,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;

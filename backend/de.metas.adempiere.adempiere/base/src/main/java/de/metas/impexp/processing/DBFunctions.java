@@ -3,14 +3,13 @@
  */
 package de.metas.impexp.processing;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.util.List;
 
 /*
  * #%L
@@ -48,4 +47,8 @@ public class DBFunctions
 	@NonNull
 	@Default
 	private final List<DBFunction> availableAfterRowFunctions = ImmutableList.of();
+
+	@NonNull
+	@Default
+	private final List<DBFunction> availableAfterAllFunctions = ImmutableList.of();
 }

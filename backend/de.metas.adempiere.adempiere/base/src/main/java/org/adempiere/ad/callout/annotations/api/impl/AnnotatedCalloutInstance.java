@@ -22,11 +22,12 @@ package org.adempiere.ad.callout.annotations.api.impl;
  * #L%
  */
 
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.api.ICalloutMethodPointcut;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
@@ -35,13 +36,10 @@ import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public final class AnnotatedCalloutInstance implements ICalloutInstance
 {
@@ -160,7 +158,7 @@ public final class AnnotatedCalloutInstance implements ICalloutInstance
 		}
 		catch (final Exception e)
 		{
-			throw CalloutExecutionException.of(e)
+			throw CalloutExecutionException.wrapIfNeeded(e)
 					.setCalloutExecutor(executor)
 					.setCalloutInstance(this)
 					.setField(field);

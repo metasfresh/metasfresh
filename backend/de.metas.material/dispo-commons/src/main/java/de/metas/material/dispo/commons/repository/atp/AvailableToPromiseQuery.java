@@ -3,8 +3,6 @@ package de.metas.material.dispo.commons.repository.atp;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
-import de.metas.material.commons.attributes.AttributesKeyPattern;
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
@@ -12,6 +10,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 

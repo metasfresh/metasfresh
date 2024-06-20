@@ -1,16 +1,14 @@
 package de.metas.banking.payment.paymentallocation.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
+import de.metas.banking.payment.paymentallocation.service.AllocationAmounts.AllocationAmountsBuilder;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import de.metas.banking.payment.paymentallocation.service.AllocationAmounts.AllocationAmountsBuilder;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -96,12 +94,12 @@ public class AllocationAmountsTest
 		public void differentCurrencies()
 		{
 			final AllocationAmountsBuilder builder = AllocationAmounts.builder()
-					.discountAmt(Money.of(1, CurrencyId.ofRepoId(1)))
-					.invoiceProcessingFee(Money.of(2, CurrencyId.ofRepoId(2)));
+					.discountAmt(Money.of(1, CurrencyId.EUR))
+					.invoiceProcessingFee(Money.of(2, CurrencyId.USD));
 
 			assertThatThrownBy(builder::build)
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageStartingWith("Moneys shall have the same currency");
+					.hasMessageStartingWith("All given Money(s) shall have the same currency");
 		}
 	}
 

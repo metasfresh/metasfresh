@@ -1,23 +1,20 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.Check;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.util.Check;
-
 import javax.annotation.Nullable;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @JsonSerialize(using = JsonLogicExpressionSerializer.class)
 /* package */final class LogicTuple extends AbstractLogicExpression
@@ -170,7 +167,7 @@ import javax.annotation.Nullable;
 	{
 		if (constantValue == null)
 		{
-			throw new ExpressionEvaluationException("Not a constant expression: " + this);
+			throw ExpressionEvaluationException.newWithTranslatableMessage("Not a constant expression: " + this);
 		}
 		return constantValue;
 	}

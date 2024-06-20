@@ -77,6 +77,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.X_M_Product;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;

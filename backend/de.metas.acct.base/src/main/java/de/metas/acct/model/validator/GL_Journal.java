@@ -1,21 +1,20 @@
 package de.metas.acct.model.validator;
 
+import de.metas.acct.gljournal.IGLJournalLineDAO;
+import de.metas.acct.gljournal.IGLJournalLineGroup;
+import de.metas.acct.impexp.GLJournalImportProcess;
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.impexp.processing.IImportProcessFactory;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.I_I_GLJournal;
 import org.compiere.model.ModelValidator;
-
-import de.metas.acct.gljournal.IGLJournalLineDAO;
-import de.metas.acct.gljournal.IGLJournalLineGroup;
-import de.metas.acct.impexp.GLJournalImportProcess;
-import de.metas.impexp.processing.IImportProcessFactory;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 @Interceptor(I_GL_Journal.class)
 public class GL_Journal

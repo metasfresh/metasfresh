@@ -33,7 +33,6 @@ import de.metas.location.LocationId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTemplate
@@ -83,7 +82,10 @@ public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTe
 		setBill_Location_ID(BPartnerLocationId.toRepoId(from.getBpartnerLocationId()));
 		setBill_Location_Value_ID(LocationId.toRepoId(from.getLocationId()));
 		setBill_User_ID(BPartnerContactId.toRepoId(from.getContactId()));
-		setBillToAddress(from.getBpartnerAddress());
+		if (from.getBpartnerAddress()!=null)
+		{
+			setBillToAddress(from.getBpartnerAddress());
+		}
 	}
 
 	default void setFrom(@NonNull final BPartnerInfo from)
@@ -92,7 +94,6 @@ public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTe
 		setBill_Location_ID(BPartnerLocationId.toRepoId(from.getBpartnerLocationId()));
 		setBill_Location_Value_ID(LocationId.toRepoId(from.getLocationId()));
 		setBill_User_ID(BPartnerContactId.toRepoId(from.getContactId()));
-		setBillToAddress(null);
 	}
 
 	default BPartnerLocationAndCaptureId getBPartnerLocationAndCaptureId()

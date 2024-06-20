@@ -1,101 +1,87 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for M_Allergen
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_Allergen extends org.compiere.model.PO implements I_M_Allergen, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -776062942L;
+	private static final long serialVersionUID = 1730419304L;
 
     /** Standard Constructor */
-    public X_M_Allergen (Properties ctx, int M_Allergen_ID, String trxName)
+    public X_M_Allergen (final Properties ctx, final int M_Allergen_ID, @Nullable final String trxName)
     {
       super (ctx, M_Allergen_ID, trxName);
-      /** if (M_Allergen_ID == 0)
-        {
-			setM_Allergen_ID (0);
-			setName (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_Allergen (Properties ctx, ResultSet rs, String trxName)
+    public X_M_Allergen (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
+	/** Load Meta Data */
 	@Override
-	public void setDescription (java.lang.String Description)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setColor (final @Nullable java.lang.String Color)
+	{
+		set_Value (COLUMNNAME_Color, Color);
+	}
+
+	@Override
+	public java.lang.String getColor() 
+	{
+		return get_ValueAsString(COLUMNNAME_Color);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set M_Allergen.
-		@param M_Allergen_ID M_Allergen	  */
 	@Override
-	public void setM_Allergen_ID (int M_Allergen_ID)
+	public void setM_Allergen_ID (final int M_Allergen_ID)
 	{
 		if (M_Allergen_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Allergen_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Allergen_ID, Integer.valueOf(M_Allergen_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Allergen_ID, M_Allergen_ID);
 	}
 
-	/** Get M_Allergen.
-		@return M_Allergen	  */
 	@Override
-	public int getM_Allergen_ID () 
+	public int getM_Allergen_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Allergen_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Allergen_ID);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 }

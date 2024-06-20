@@ -1,12 +1,13 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_BP_PrintFormat
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_BP_PrintFormat 
 {
 
@@ -51,7 +52,7 @@ public interface I_C_BP_PrintFormat
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Druck - Format.
+	 * Set Print Format.
 	 * Data Print Format
 	 *
 	 * <br>Type: TableDir
@@ -61,7 +62,7 @@ public interface I_C_BP_PrintFormat
 	void setAD_PrintFormat_ID (int AD_PrintFormat_ID);
 
 	/**
-	 * Get Druck - Format.
+	 * Get Print Format.
 	 * Data Print Format
 	 *
 	 * <br>Type: TableDir
@@ -145,6 +146,26 @@ public interface I_C_BP_PrintFormat
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
+	 * Set Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+
+	/**
+	 * Get Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_ID();
+
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/**
 	 * Set Geschäftspartner - Druck - Format.
 	 *
 	 * <br>Type: ID
@@ -213,6 +234,29 @@ public interface I_C_BP_PrintFormat
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Copies.
+	 * Overwrites the number of copies set in the document type for given addresses.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDocumentCopies_Override (int DocumentCopies_Override);
+
+	/**
+	 * Get Copies.
+	 * Overwrites the number of copies set in the document type for given addresses.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getDocumentCopies_Override();
+
+	ModelColumn<I_C_BP_PrintFormat, Object> COLUMN_DocumentCopies_Override = new ModelColumn<>(I_C_BP_PrintFormat.class, "DocumentCopies_Override", null);
+	String COLUMNNAME_DocumentCopies_Override = "DocumentCopies_Override";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -234,6 +278,31 @@ public interface I_C_BP_PrintFormat
 
 	ModelColumn<I_C_BP_PrintFormat, Object> COLUMN_IsActive = new ModelColumn<>(I_C_BP_PrintFormat.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_C_BP_PrintFormat, Object> COLUMN_SeqNo = new ModelColumn<>(I_C_BP_PrintFormat.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Get Updated.

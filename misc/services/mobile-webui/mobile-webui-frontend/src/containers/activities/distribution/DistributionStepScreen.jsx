@@ -6,13 +6,10 @@ import { trl } from '../../../utils/translations';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { getStepById } from '../../../reducers/wfProcesses';
-import {
-  distributionStepDropToScreenLocation,
-  distributionStepPickFromScreenLocation,
-} from '../../../routes/distribution';
+import { distributionStepDropToScreenLocation, distributionStepPickFromScreenLocation, } from '../../../routes/distribution';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-import { toQRCodeDisplayable } from '../../../utils/huQRCodes';
+import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
 
 const HIDE_UNDO_BUTTONS = true; // hide them because they are not working
 

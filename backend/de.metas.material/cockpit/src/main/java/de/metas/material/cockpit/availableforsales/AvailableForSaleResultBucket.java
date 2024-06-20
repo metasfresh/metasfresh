@@ -23,9 +23,6 @@
 package de.metas.material.cockpit.availableforsales;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.material.commons.attributes.AttributesKeyMatcher;
-import de.metas.material.commons.attributes.AttributesKeyPattern;
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
@@ -34,6 +31,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.mm.attributes.keys.AttributesKeyMatcher;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

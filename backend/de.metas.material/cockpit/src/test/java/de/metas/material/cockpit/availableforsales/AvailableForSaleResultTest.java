@@ -23,17 +23,16 @@
 package de.metas.material.cockpit.availableforsales;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 
 public class AvailableForSaleResultTest
 {

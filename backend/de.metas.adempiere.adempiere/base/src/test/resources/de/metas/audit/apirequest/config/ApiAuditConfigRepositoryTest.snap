@@ -5,6 +5,7 @@ de.metas.audit.apirequest.config.ApiAuditConfigRepositoryTest.getActiveConfigsBy
       "active" : true,
       "orgId" : 1,
       "seqNo" : 10,
+      "isBypassAudit" : false,
       "forceProcessedAsync" : true,
       "keepRequestDays" : 101,
       "keepRequestBodyDays" : 100,

@@ -1,9 +1,10 @@
 package de.metas.payment.esr.model.validator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import java.util.StringJoiner;
-
+import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
@@ -11,11 +12,9 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.ModelValidator;
 
-import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.i18n.AdMessageKey;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.StringJoiner;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 /*
  * #%L
@@ -62,7 +61,7 @@ public class C_PaySelection
 
 		if (joiner.length() != 0)
 		{
-			throw new AdempiereException(MSG_PaySelectionLines_No_ESRReference, new Object[] { joiner.toString() });
+			throw new AdempiereException(MSG_PaySelectionLines_No_ESRReference, joiner.toString());
 		}
 
 	}

@@ -10,6 +10,7 @@ import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidatePojoSupplier;
@@ -18,7 +19,6 @@ import de.metas.product.ResourceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -82,7 +82,7 @@ public class ProductionAdvisedEventCreatorTest
 	{
 		final IMutableMRPContext mrpContext = Mockito.mock(IMutableMRPContext.class);
 		Mockito.when(mrpContext.getProductPlanning())
-				.thenReturn(newInstance(I_PP_Product_Planning.class));
+				.thenReturn(ProductPlanning.builder().build());
 
 		Mockito.when(ppOrderCandidateDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
 				.thenReturn(true);

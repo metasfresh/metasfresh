@@ -33,6 +33,7 @@ import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -47,7 +48,6 @@ import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
@@ -145,7 +145,7 @@ public class DDOrderLowLevelService
 	}
 
 	@javax.annotation.Nullable
-	public I_S_Resource findPlantFromOrNull(final I_DD_OrderLine ddOrderLine)
+	public ResourceId findPlantFromOrNull(final I_DD_OrderLine ddOrderLine)
 	{
 		Check.assumeNotNull(ddOrderLine, LiberoException.class, "ddOrderLine not null");
 
@@ -153,9 +153,9 @@ public class DDOrderLowLevelService
 		// First, if we were asked to keep the target plant, let's do it
 		if (ddOrderLine.isKeepTargetPlant())
 		{
-			final I_S_Resource plantTo = ddOrderLine.getDD_Order().getPP_Plant();
-			final I_S_Resource plantFrom = plantTo;
-			return plantFrom;
+			final ResourceId plantToId = ResourceId.ofRepoIdOrNull(ddOrderLine.getDD_Order().getPP_Plant_ID());
+			final ResourceId plantFromId = plantToId;
+			return plantFromId;
 		}
 
 		//
@@ -361,5 +361,10 @@ public class DDOrderLowLevelService
 
 		final UomId stockingUomId = productBL.getStockUOMId(productId);
 		ddOrderLine.setC_UOM_ID(stockingUomId.getRepoId());
+	}
+
+	public void deleteOrders(@NonNull final DeleteOrdersQuery deleteOrdersQuery)
+	{
+		ddOrderLowLevelDAO.deleteOrders(deleteOrdersQuery);
 	}
 }

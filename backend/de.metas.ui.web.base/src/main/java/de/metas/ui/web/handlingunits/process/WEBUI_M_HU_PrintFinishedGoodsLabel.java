@@ -1,16 +1,7 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.DB;
-import org.springframework.context.annotation.Profile;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.report.HUReportService;
@@ -28,10 +19,16 @@ import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.report.HUReportAwareViewRowAsHUToReport;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.util.DB;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
+
+import java.util.List;
 
 /*
  * #%L
@@ -96,7 +93,7 @@ public class WEBUI_M_HU_PrintFinishedGoodsLabel
 	protected String doIt() throws Exception
 	{
 
-		final HUToReport hu = getSingleSelectedRow().getAsHUToReport();
+		final HUToReport hu = HUReportAwareViewRowAsHUToReport.of(getSingleSelectedRow());
 
 		// create selection
 		final List<HuId> distinctHuIds = ImmutableList.of(hu.getHUId());

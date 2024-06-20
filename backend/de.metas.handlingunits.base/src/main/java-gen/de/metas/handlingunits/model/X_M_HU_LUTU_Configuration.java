@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_LUTU_Configuration
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements I_M_HU_LUTU_Configuration, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -270391989L;
+	private static final long serialVersionUID = -2018209887L;
 
     /** Standard Constructor */
     public X_M_HU_LUTU_Configuration (final Properties ctx, final int M_HU_LUTU_Configuration_ID, @Nullable final String trxName)
@@ -287,15 +287,15 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setQtyCU (final BigDecimal QtyCU)
+	public void setQtyCUsPerTU (final BigDecimal QtyCUsPerTU)
 	{
-		set_Value (COLUMNNAME_QtyCU, QtyCU);
+		set_Value (COLUMNNAME_QtyCUsPerTU, QtyCUsPerTU);
 	}
 
 	@Override
-	public BigDecimal getQtyCU() 
+	public BigDecimal getQtyCUsPerTU() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCU);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCUsPerTU);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

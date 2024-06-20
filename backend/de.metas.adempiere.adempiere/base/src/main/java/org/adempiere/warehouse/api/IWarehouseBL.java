@@ -22,6 +22,7 @@
 
 package org.adempiere.warehouse.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.location.DocumentLocation;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
@@ -95,4 +96,7 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);
+
+	@NonNull
+	ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull WarehouseId warehouseId);
 }

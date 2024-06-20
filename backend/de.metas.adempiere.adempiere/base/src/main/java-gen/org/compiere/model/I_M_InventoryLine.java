@@ -53,7 +53,7 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Zugewiesen an.
+	 * Set Assigned to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -62,7 +62,7 @@ public interface I_M_InventoryLine
 	void setAssignedTo (@Nullable java.lang.String AssignedTo);
 
 	/**
-	 * Get Zugewiesen an.
+	 * Get Assigned to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -74,8 +74,7 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_AssignedTo = "AssignedTo";
 
 	/**
-	 * Set Kosten.
-	 * Additional document charges
+	 * Set Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -84,8 +83,7 @@ public interface I_M_InventoryLine
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Kosten.
-	 * Additional document charges
+	 * Get Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -276,7 +274,6 @@ public interface I_M_InventoryLine
 
 	/**
 	 * Set Counted.
-	 * Count number of not empty elements
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -286,7 +283,6 @@ public interface I_M_InventoryLine
 
 	/**
 	 * Get Counted.
-	 * Count number of not empty elements
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -298,7 +294,7 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_IsCounted = "IsCounted";
 
 	/**
-	 * Set IsExplicitCostPrice.
+	 * Set Override Cost Price.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -307,7 +303,7 @@ public interface I_M_InventoryLine
 	void setIsExplicitCostPrice (boolean IsExplicitCostPrice);
 
 	/**
-	 * Get IsExplicitCostPrice.
+	 * Get Override Cost Price.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -595,7 +591,30 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_QtyInternalUse = "QtyInternalUse";
 
 	/**
-	 * Set Storno-Zeile.
+	 * Set Rendered QR Code.
+	 * It's the QR code which is directly incorporated in the QR code image. Nothing more, nothing less.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRenderedQRCode (@Nullable java.lang.String RenderedQRCode);
+
+	/**
+	 * Get Rendered QR Code.
+	 * It's the QR code which is directly incorporated in the QR code image. Nothing more, nothing less.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRenderedQRCode();
+
+	ModelColumn<I_M_InventoryLine, Object> COLUMN_RenderedQRCode = new ModelColumn<>(I_M_InventoryLine.class, "RenderedQRCode", null);
+	String COLUMNNAME_RenderedQRCode = "RenderedQRCode";
+
+	/**
+	 * Set Reverse Line.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -604,7 +623,7 @@ public interface I_M_InventoryLine
 	void setReversalLine_ID (int ReversalLine_ID);
 
 	/**
-	 * Get Storno-Zeile.
+	 * Get Reverse Line.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false

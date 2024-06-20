@@ -337,8 +337,8 @@ public interface I_I_Inventory
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Datum der letzten Inventur.
-	 * Datum der letzten Inventur
+	 * Set Date last inventory count.
+	 * Date of Last Inventory Count
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -347,8 +347,8 @@ public interface I_I_Inventory
 	void setDateLastInventory (@Nullable java.sql.Timestamp DateLastInventory);
 
 	/**
-	 * Get Datum der letzten Inventur.
-	 * Datum der letzten Inventur
+	 * Get Date last inventory count.
+	 * Date of Last Inventory Count
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -360,8 +360,8 @@ public interface I_I_Inventory
 	String COLUMNNAME_DateLastInventory = "DateLastInventory";
 
 	/**
-	 * Set Eingangsdatum.
-	 * Datum, zu dem ein Produkt empfangen wurde
+	 * Set Date received.
+	 * Date a product was received
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -370,8 +370,8 @@ public interface I_I_Inventory
 	void setDateReceived (@Nullable java.sql.Timestamp DateReceived);
 
 	/**
-	 * Get Eingangsdatum.
-	 * Datum, zu dem ein Produkt empfangen wurde
+	 * Get Date received.
+	 * Date a product was received
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -404,7 +404,7 @@ public interface I_I_Inventory
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Explizite Kosten.
+	 * Set Override Cost Price.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -413,7 +413,7 @@ public interface I_I_Inventory
 	void setExplicitCostPrice (java.lang.String ExplicitCostPrice);
 
 	/**
-	 * Get Explizite Kosten.
+	 * Get Override Cost Price.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -534,7 +534,7 @@ public interface I_I_Inventory
 	String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
 
 	/**
-	 * Set Import - Warenbestand.
+	 * Set Import Inventory.
 	 * Import Inventory Transactions
 	 *
 	 * <br>Type: ID
@@ -544,7 +544,7 @@ public interface I_I_Inventory
 	void setI_Inventory_ID (int I_Inventory_ID);
 
 	/**
-	 * Get Import - Warenbestand.
+	 * Get Import Inventory.
 	 * Import Inventory Transactions
 	 *
 	 * <br>Type: ID
@@ -689,6 +689,27 @@ public interface I_I_Inventory
 	String COLUMNNAME_IsLotBlocked = "IsLotBlocked";
 
 	/**
+	 * Set Update Qty Booked From FactAcct.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateQtyBookedFromFactAcct (boolean IsUpdateQtyBookedFromFactAcct);
+
+	/**
+	 * Get Update Qty Booked From FactAcct.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateQtyBookedFromFactAcct();
+
+	ModelColumn<I_I_Inventory, Object> COLUMN_IsUpdateQtyBookedFromFactAcct = new ModelColumn<>(I_I_Inventory.class, "IsUpdateQtyBookedFromFactAcct", null);
+	String COLUMNNAME_IsUpdateQtyBookedFromFactAcct = "IsUpdateQtyBookedFromFactAcct";
+
+	/**
 	 * Set Locator Key.
 	 * Key of the Warehouse Locator
 	 *
@@ -712,8 +733,7 @@ public interface I_I_Inventory
 	String COLUMNNAME_LocatorValue = "LocatorValue";
 
 	/**
-	 * Set Los-Nr..
-	 * Los-Nummer (alphanumerisch)
+	 * Set Lot No..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -722,8 +742,7 @@ public interface I_I_Inventory
 	void setLot (@Nullable java.lang.String Lot);
 
 	/**
-	 * Get Los-Nr..
-	 * Los-Nummer (alphanumerisch)
+	 * Get Lot No..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -924,6 +943,27 @@ public interface I_I_Inventory
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
+	 * Set Product Account Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductAcctValue (@Nullable java.lang.String ProductAcctValue);
+
+	/**
+	 * Get Product Account Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProductAcctValue();
+
+	ModelColumn<I_I_Inventory, Object> COLUMN_ProductAcctValue = new ModelColumn<>(I_I_Inventory.class, "ProductAcctValue", null);
+	String COLUMNNAME_ProductAcctValue = "ProductAcctValue";
+
+	/**
 	 * Set Product Value.
 	 * Product identifier;
  "val-<search key>", "ext-<external id>" or internal M_Product_ID
@@ -970,7 +1010,7 @@ public interface I_I_Inventory
 	String COLUMNNAME_QtyCount = "QtyCount";
 
 	/**
-	 * Set Serien-Nr..
+	 * Set Serial No.
 	 * Product Serial Number
 	 *
 	 * <br>Type: String
@@ -980,7 +1020,7 @@ public interface I_I_Inventory
 	void setSerNo (@Nullable java.lang.String SerNo);
 
 	/**
-	 * Get Serien-Nr..
+	 * Get Serial No.
 	 * Product Serial Number
 	 *
 	 * <br>Type: String
@@ -993,7 +1033,7 @@ public interface I_I_Inventory
 	String COLUMNNAME_SerNo = "SerNo";
 
 	/**
-	 * Set Geschäftspartner.
+	 * Set Vendor.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1002,7 +1042,7 @@ public interface I_I_Inventory
 	void setSubProducer_BPartner_ID (int SubProducer_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
+	 * Get Vendor.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1150,7 +1190,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Set Aisle.
-	 * X-Dimension, z.B. Gang
+	 * X dimension, e.g., Aisle
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1160,7 +1200,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Get Aisle.
-	 * X-Dimension, z.B. Gang
+	 * X dimension, e.g., Aisle
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1172,7 +1212,7 @@ public interface I_I_Inventory
 	String COLUMNNAME_X = "X";
 
 	/**
-	 * Set Regal.
+	 * Set Rack.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1181,7 +1221,7 @@ public interface I_I_Inventory
 	void setX1 (@Nullable java.lang.String X1);
 
 	/**
-	 * Get Regal.
+	 * Get Rack.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1194,7 +1234,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Set Tray.
-	 * Y-Dimension, z.B. Fach
+	 * Y dimension, e.g., Bin
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1204,7 +1244,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Get Tray.
-	 * Y-Dimension, z.B. Fach
+	 * Y dimension, e.g., Bin
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1217,7 +1257,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Set Level.
-	 * Z-Dimension, z.B. Ebene
+	 * Z dimension, e.g., Level
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1227,7 +1267,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Get Level.
-	 * Z-Dimension, z.B. Ebene
+	 * Z dimension, e.g., Level
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

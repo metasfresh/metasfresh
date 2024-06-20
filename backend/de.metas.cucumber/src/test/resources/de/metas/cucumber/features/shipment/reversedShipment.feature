@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: reversed shipment
 
   Background:
@@ -37,9 +38,9 @@ Feature: reversed shipment
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | inv_1                     | inv_l_1                       | p_1                     | 0       | 10       | PCE          |
     When the inventory identified by inv_1 is completed
-    And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
-      | inv_l_1                       | hu_1               |
+    And after not more than 60s, M_HU are found:
+      | Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | HUStatus | IsActive |
+      | hu_1       | null                     | null                              | A        | Y        |
     And M_HU_Storage are validated
       | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
       | hu_s_1     | hu_1               | p_1                     | 10  |

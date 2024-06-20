@@ -48,7 +48,6 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Doc_Invoice;
 import org.compiere.model.IQuery.Aggregate;
@@ -76,16 +75,20 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	private final transient IProductDAO producDAO = Services.get(IProductDAO.class);
 	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
 
-	private final OrderGroupRepository orderGroupRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
+	private final OrderGroupRepository orderGroupRepo;
 
 	private BigDecimal _includedTaxAmt = BigDecimal.ZERO;
 	private BigDecimal _qtyReceived = null;
 
 	private final String SYS_CONFIG_M_Product_Acct_Consider_CompensationSchema = "M_Product_Acct_Consider_CompensationSchema";
 
-	public DocLine_Invoice(final I_C_InvoiceLine invoiceLine, final Doc_Invoice doc)
+	public DocLine_Invoice(
+			@NonNull final OrderGroupRepository orderGroupRepo,
+			@NonNull final I_C_InvoiceLine invoiceLine,
+			@NonNull final Doc_Invoice doc)
 	{
 		super(InterfaceWrapperHelper.getPO(invoiceLine), doc);
+		this.orderGroupRepo = orderGroupRepo;
 
 		setIsTaxIncluded(invoiceBL.isTaxIncluded(invoiceLine));
 

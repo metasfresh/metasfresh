@@ -7,12 +7,16 @@ import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.order.OrderLineId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.ManufacturingOrderQuery;
@@ -83,15 +87,42 @@ public class PPOrderDAO implements IPPOrderDAO
 		return toSqlQueryBuilder(query).create().iterateAndStream();
 	}
 
+	@Override
+	public int getLastSeqNoPerOrderDate(@NonNull final I_PP_Order ppOrder)
+	{
+		final int lastSeqNo = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Order.class, ppOrder)
+				.addEqualsFilter(I_PP_Order.COLUMN_DateOrdered, ppOrder.getDateOrdered(), DateTruncQueryFilterModifier.DAY)
+				.create()
+				.aggregate(I_M_ProductPrice.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, Integer.class);
+
+		return SeqNo.ofInt(lastSeqNo).next().toInt();
+	}
+
 	private IQueryBuilder<I_PP_Order> toSqlQueryBuilder(final ManufacturingOrderQuery query)
 	{
 		final IQueryBuilder<I_PP_Order> queryBuilder = queryBL.createQueryBuilder(I_PP_Order.class)
 				.addOnlyActiveRecordsFilter();
 
 		// Plant
-		if (query.getPlantId() != null)
+		if (!query.getOnlyPlantIds().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_PP_Order.COLUMN_S_Resource_ID, query.getPlantId());
+			queryBuilder.addInArrayFilter(I_PP_Order.COLUMN_S_Resource_ID, query.getOnlyPlantIds());
+		}
+
+		// Workstation
+		if (!query.getOnlyWorkstationIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_PP_Order.COLUMN_WorkStation_ID, query.getOnlyWorkstationIds());
+		}
+
+		// Plant or workstation
+		if (!query.getOnlyPlantOrWorkstationIds().isEmpty())
+		{
+			queryBuilder.addCompositeQueryFilter()
+					.setJoinOr()
+					.addInArrayFilter(I_PP_Order.COLUMN_S_Resource_ID, query.getOnlyPlantOrWorkstationIds())
+					.addInArrayFilter(I_PP_Order.COLUMN_WorkStation_ID, query.getOnlyPlantOrWorkstationIds());
 		}
 
 		// Warehouse
@@ -117,7 +148,14 @@ public class PPOrderDAO implements IPPOrderDAO
 		}
 		if (query.getCanBeExportedFrom() != null)
 		{
-			queryBuilder.addCompareFilter(I_PP_Order.COLUMN_CanBeExportedFrom, LESS_OR_EQUAL, asTimestamp(query.getCanBeExportedFrom()));
+			queryBuilder.addCompareFilter(I_PP_Order.COLUMNNAME_CanBeExportedFrom, LESS_OR_EQUAL, asTimestamp(query.getCanBeExportedFrom()));
+		}
+
+		//
+		// DatePromised
+		if (query.getDatePromisedDay() != null)
+		{
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, query.getDatePromisedDay(), DateTruncQueryFilterModifier.DAY);
 		}
 
 		//

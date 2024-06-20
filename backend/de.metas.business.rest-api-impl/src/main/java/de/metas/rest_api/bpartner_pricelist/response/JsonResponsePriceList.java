@@ -1,17 +1,16 @@
 package de.metas.rest_api.bpartner_pricelist.response;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
-
 import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.rest_api.utils.JsonErrors;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import java.util.List;
 
 /*
  * #%L
@@ -42,7 +41,7 @@ public class JsonResponsePriceList
 {
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Singular
-	private List<JsonResponsePrice> prices;
+	List<JsonResponsePrice> prices;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Singular

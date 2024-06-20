@@ -1,38 +1,6 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
-import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.compiere.SpringContextHolder;
-
 import com.jgoodies.common.base.Objects;
-
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -56,10 +24,17 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.SpringContextHolder;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Creates TUs.
- *
+ * <p>
  * But, instead of using standard capacity definition of given TU PI,
  * we will use a constrained capacity which is provided via {@link #addCapacityConstraint(Capacity)}.
  *
@@ -114,13 +89,11 @@ import lombok.ToString;
 		{
 			return;
 		}
-		capacities.forEach(c -> addCapacityConstraint(c));
+		capacities.forEach(this::addCapacityConstraint);
 	}
 
 	/**
 	 * Sets how many TUs produce (maximum). After those TUs are produced this producer will stop.
-	 *
-	 * @param maxTUs
 	 */
 	public void setMaxTUs(final int maxTUs)
 	{
@@ -134,6 +107,7 @@ import lombok.ToString;
 	 *
 	 * @param parentItem
 	 */
+	@SuppressWarnings("LombokSetterMayBeUsed")
 	public void setParentItem(final I_M_HU_Item parentItem)
 	{
 		this.parentItem = parentItem;
@@ -144,6 +118,7 @@ import lombok.ToString;
 	 *
 	 * @param parentPIItem
 	 */
+	@SuppressWarnings("LombokSetterMayBeUsed")
 	public void setParentPIItem(final I_M_HU_PI_Item parentPIItem)
 	{
 		this.parentPIItem = parentPIItem;
@@ -180,19 +155,18 @@ import lombok.ToString;
 	}
 
 	/**
-	 * Allocates the given request to the given <code>tuHU</code>, using {@link UpperBoundAllocationStrategy}.
+	 * Allocates the given request to the given <code>tuHU</code>, using UpperBoundAllocationStrategy.
 	 * <p>
 	 * If the given {@code tuHU} is actually an aggregate VHU and if the request's qty would only partially fill one of the TUs represented within the given {@code tuHU},
 	 * then this method allocates nothing, but generates a HU item so that the remaining qty will be allocated not to an aggregate VHU, but to a "real" one.
 	 *
 	 * @param tuHU TU to load. might also be the VHU of the LU's aggregation item.
-	 * @param request
 	 * @return allocation result
 	 */
 	@Override
 	protected IAllocationResult loadHU(final I_M_HU tuHU, final IAllocationRequest request)
 	{
-		final Capacity capacityPerTU = getCapacity(request, tuHU);
+		final Capacity capacityPerTU = getCapacity(request);
 
 		if (handlingUnitsBL.isAggregateHU(tuHU))
 		{
@@ -239,10 +213,8 @@ import lombok.ToString;
 	 * Get the capacity of the given {@code tu}. Hint: also check the comments in this method.
 	 *
 	 * @param request the request which contains e.g. the product in question.
-	 * @param hu the HU of we want to find the capacity.
-	 * @return
 	 */
-	private Capacity getCapacity(final IAllocationRequest request, final I_M_HU hu)
+	private Capacity getCapacity(final IAllocationRequest request)
 	{
 		final ProductId productId = request.getProductId();
 		final Capacity capacityToUse;
@@ -265,9 +237,7 @@ import lombok.ToString;
 
 			final I_M_HU_PI_Item_Product itemProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(materialPIItems.get(0), getBPartnerId(), request.getProductId(), request.getDate());
 
-			final Capacity capacity = capacityBL.getCapacity(itemProduct, request.getProductId(), request.getC_UOM());
-
-			capacityToUse = capacity;
+			capacityToUse = capacityBL.getCapacity(itemProduct, request.getProductId(), request.getC_UOM());
 		}
 		else
 		{

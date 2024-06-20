@@ -7,14 +7,12 @@ import com.google.common.collect.SetMultimap;
 import de.metas.cache.CCache;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
-import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -78,7 +76,7 @@ public class PickingBOMService
 				.attributeSetInstanceId(asiId)
 				.build();
 
-		final I_PP_Product_Planning productPlanning = productPlanningsRepo.find(productPlanningQuery).orElse(null);
+		final ProductPlanning productPlanning = productPlanningsRepo.find(productPlanningQuery).orElse(null);
 		if (productPlanning == null)
 		{
 			return Optional.empty();
@@ -87,9 +85,9 @@ public class PickingBOMService
 		return extractPickingOrderConfig(productPlanning);
 	}
 
-	public Optional<PickingOrderConfig> extractPickingOrderConfig(@NonNull final I_PP_Product_Planning productPlanning)
+	public Optional<PickingOrderConfig> extractPickingOrderConfig(@NonNull final ProductPlanning productPlanning)
 	{
-		if (!StringUtils.toBoolean(productPlanning.getIsManufactured()))
+		if (!productPlanning.isManufactured())
 		{
 			return Optional.empty();
 		}
@@ -98,7 +96,7 @@ public class PickingBOMService
 			return Optional.empty();
 		}
 
-		final ResourceId plantId = ResourceId.ofRepoIdOrNull(productPlanning.getS_Resource_ID());
+		final ResourceId plantId = productPlanning.getPlantId();
 		if (plantId == null)
 		{
 			throw new FillMandatoryException("PP_Plant_ID")
@@ -106,7 +104,7 @@ public class PickingBOMService
 					.appendParametersToMessage();
 		}
 
-		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoIdOrNull(productPlanning.getPP_Product_BOMVersions_ID());
+		final ProductBOMVersionsId bomVersionsId = productPlanning.getBomVersionsId();
 		if (bomVersionsId == null)
 		{
 			throw new FillMandatoryException("PP_Product_BOMVersions_ID")
@@ -115,14 +113,14 @@ public class PickingBOMService
 		}
 
 		final ProductBOMId bomId = bomsRepo.getLatestBOMByVersion(bomVersionsId)
-				.orElseThrow(() -> new MrpException("@FillMandatory@ @PP_Product_BOM_ID@ ( @M_Product_ID@=" + productPlanning.getM_Product_ID() + ")"));
+				.orElseThrow(() -> new MrpException("@FillMandatory@ @PP_Product_BOM_ID@ ( @M_Product_ID@=" + productPlanning.getProductId() + ")"));
 
 		return Optional.of(PickingOrderConfig.builder()
-								   .productPlanningId(ProductPlanningId.ofRepoId(productPlanning.getPP_Product_Planning_ID()))
-								   .plantId(plantId)
-								   .bomId(bomId)
-								   .plannerId(UserId.ofRepoIdOrNull(productPlanning.getPlanner_ID()))
-								   .build());
+				.productPlanningId(productPlanning.getIdNotNull())
+				.plantId(plantId)
+				.bomId(bomId)
+				.plannerId(productPlanning.getPlannerId())
+				.build());
 	}
 
 	public PickingBOMsReversedIndex getPickingBOMsReversedIndex()

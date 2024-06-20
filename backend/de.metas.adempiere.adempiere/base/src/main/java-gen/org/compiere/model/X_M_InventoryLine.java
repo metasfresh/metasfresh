@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_InventoryLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2143151694L;
+	private static final long serialVersionUID = 294919304L;
 
     /** Standard Constructor */
     public X_M_InventoryLine (final Properties ctx, final int M_InventoryLine_ID, @Nullable final String trxName)
@@ -380,6 +380,18 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInternalUse);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setRenderedQRCode (final @Nullable java.lang.String RenderedQRCode)
+	{
+		set_Value (COLUMNNAME_RenderedQRCode, RenderedQRCode);
+	}
+
+	@Override
+	public java.lang.String getRenderedQRCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_RenderedQRCode);
 	}
 
 	@Override

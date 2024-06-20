@@ -5,25 +5,58 @@ const translations = {
     network: {
       noResponse: 'Verbindung Fehler',
     },
+    qrCode: {
+      invalid: 'Ungültiger QR Code',
+    },
+  },
+  errorScreen: {
+    retryButton: 'Erneut versuchen',
   },
   general: {
+    Yes: 'Ja',
+    No: 'Nein',
+    OK: 'OK',
+    DocumentNo: 'Dokument Nr',
     Product: 'Produkt',
+    ProductValue: 'Artikelnummer',
     Locator: 'Lagerort',
     QRCode: 'QR-Code',
     QtyToPick: 'Pick Menge',
+    QtyToPick_Total: 'Pick Menge (total)',
     QtyPicked: 'Menge gepickt',
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
-    QtyRejected: 'Menge verworfen',
+    QtyRejected: 'verworfen',
+    Qty: 'Qty',
+    QtyTU: 'Gebindemenge',
+    CatchWeight: 'Gewicht',
+    PackingItemName: 'Packvorschrift',
+    BestBeforeDate: 'MHD',
+    LotNo: 'Lot-Nr',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
+    closeText: 'Schließen',
+    clearText: 'Lösen',
+    reOpenText: 'Wieder öffnen',
     scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',
+    filter: {
+      showResults: 'Ergebnisse anzeigen (%(count)s)',
+      clearFilters: 'Filter löschen',
+    },
+    workplace: 'Arbeitsplatz',
+    workstation: 'Arbeitsstation',
   },
   login: {
     submitButton: 'Login',
+    alternativeMethods: 'Wechseln zu...',
+    authMethod: {
+      qrCode: 'QR Code',
+      userAndPass: 'Passwort',
+    },
   },
+  logout: 'Abmelden',
   mobileui: {
     manufacturing: {
       appName: 'Produktion',
@@ -33,6 +66,13 @@ const translations = {
     },
     distribution: {
       appName: 'Bereitstellung',
+    },
+  },
+  components: {
+    BarcodeScannerComponent: {
+      scanTextPlaceholder: 'scan...',
+      scanWorkplacePlaceholder: 'Arbeitsplatz scannen...',
+      scanWorkstationPlaceholder: 'Arbeitsstation scannen...',
     },
   },
   activities: {
@@ -45,12 +85,22 @@ const translations = {
       PickHU: 'HU kommissionieren',
       scanQRCode: 'QR scannen',
       notEligibleHUBarcode: 'HU Code passt nicht',
-      invalidQtyPicked: 'Falsche Menge gepickt',
+      qtyAboveMax: '%(qtyDiff)s über max', // TODO verify trl
+      notPositiveQtyNotAllowed: 'Null oder negative Menge nicht erlaubt', // TODO verify trl
       confirmDone: 'OK',
       rejectedPrompt: 'Es gibt %(qtyRejected)s %(uom)s ungepickte Mengen. Warum?',
       unPickBtn: 'Rückgängig',
       target: 'Soll',
       picked: 'Ist',
+      switchToManualInput: 'Manuell',
+      switchToQrCodeInput: 'QR scannen',
+      skip: 'Überspringen',
+      scanTargetHU: 'Ziel HU scannen',
+      qrcode: {
+        missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
+        differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
+        differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem in der Pickingzeile überein',
+      },
     },
     distribution: {
       DistributionLine: 'Bereitstellung Zeile',
@@ -79,6 +129,8 @@ const translations = {
         packing: 'Verpackung',
         qtyTUs: 'Anzahl TUs',
         print: 'Drucken',
+        numberOfHUs: 'Anzahl der Gebinde',
+        numberOfCopies: 'Kopien',
       },
       issues: {
         target: 'Zuf. Soll',

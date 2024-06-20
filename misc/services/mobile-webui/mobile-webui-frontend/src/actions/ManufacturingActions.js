@@ -1,12 +1,8 @@
-import {
-  UPDATE_MANUFACTURING_ISSUE_QTY,
-  UPDATE_MANUFACTURING_RECEIPT_QTY,
-  UPDATE_MANUFACTURING_RECEIPT_TARGET,
-} from '../constants/ManufacturingActionTypes';
+import { UPDATE_MANUFACTURING_ISSUE_QTY, UPDATE_MANUFACTURING_RECEIPT_QTY, UPDATE_MANUFACTURING_RECEIPT_TARGET, } from '../constants/ManufacturingActionTypes';
 
 import { getLineById, getWfProcess } from '../reducers/wfProcesses';
 import { postManufacturingIssueEvent, postManufacturingReceiveEvent } from '../api/manufacturing';
-import { toQRCodeString } from '../utils/huQRCodes';
+import { toQRCodeString } from '../utils/qrCode/hu';
 
 const updateManufacturingIssueQty = ({ wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode }) => {
   return {
@@ -27,6 +23,7 @@ export const updateManufacturingIssue = ({
   activityId,
   lineId,
   stepId,
+  huWeightGrossBeforeIssue,
   qtyIssued,
   qtyRejected,
   qtyRejectedReasonCode,
@@ -48,6 +45,7 @@ export const updateManufacturingIssue = ({
         issueTo: {
           issueStepId: id,
           huQRCode: toQRCodeString(huQRCode),
+          huWeightGrossBeforeIssue,
           qtyIssued,
           qtyRejected,
           qtyRejectedReasonCode,

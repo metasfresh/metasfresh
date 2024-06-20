@@ -4,17 +4,13 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
-import {
-  getActivityById,
-  getQtyRejectedReasonsFromActivity,
-  getStepByIdFromActivity,
-} from '../../../reducers/wfProcesses';
+import { getActivityById, getQtyRejectedReasonsFromActivity, getStepByIdFromActivity, } from '../../../reducers/wfProcesses';
 import { postDistributionPickFrom } from '../../../api/distribution';
 import { updateDistributionPickFrom } from '../../../actions/DistributionActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import { toQRCodeString } from '../../../utils/huQRCodes';
+import { toQRCodeString } from '../../../utils/qrCode/hu';
 
 const DistributionStepPickFromScreen = () => {
   const {
@@ -66,7 +62,7 @@ const DistributionStepPickFromScreen = () => {
   return (
     <ScanHUAndGetQtyComponent
       eligibleBarcode={toQRCodeString(huQRCode)}
-      qtyCaption={trl('general.QtyToMove')}
+      qtyTargetCaption={trl('general.QtyToMove')}
       onResult={onResult}
     />
   );

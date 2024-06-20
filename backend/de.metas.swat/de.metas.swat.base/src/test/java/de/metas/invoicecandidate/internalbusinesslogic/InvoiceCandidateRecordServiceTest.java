@@ -7,6 +7,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
@@ -347,7 +348,7 @@ class InvoiceCandidateRecordServiceTest
 		icRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		icRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
 		icRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery);
-		icRecord.setInvoicableQtyBasedOn(X_C_Invoice_Candidate.INVOICABLEQTYBASEDON_CatchWeight);
+		icRecord.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.CatchWeight.getCode());
 		icRecord.setQtyOrdered(TWENTY);
 		icRecord.setQtyEntered(EIGHTY);
 		icRecord.setC_UOM_ID(icUomRecord.getC_UOM_ID());

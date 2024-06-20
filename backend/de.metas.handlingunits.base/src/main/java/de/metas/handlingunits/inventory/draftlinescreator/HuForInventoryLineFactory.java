@@ -1,9 +1,5 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
-import java.util.stream.Stream;
-
-import org.springframework.stereotype.Service;
-
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine.HuForInventoryLineBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -13,6 +9,9 @@ import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -59,7 +58,7 @@ public class HuForInventoryLineFactory
 			@NonNull final HuForInventoryLineBuilder huForInventoryLineBuilder,
 			@NonNull final IHUProductStorage huProductStorage)
 	{
-		final AttributesKey attributesKey = handlingUnitsBL.getStorageRelevantAttributesKey(huProductStorage.getM_HU());
+		final AttributesKey attributesKey = handlingUnitsBL.getAttributesKeyForInventory(huProductStorage.getM_HU());
 		final Quantity qty = huProductStorage.getQty();
 		
 		return huForInventoryLineBuilder

@@ -3,11 +3,11 @@ import { ViewHeader } from '../ViewHeader';
 import ScreenToaster from '../../components/ScreenToaster';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { getApplicationInfoById } from '../../reducers/applications';
 import PropTypes from 'prop-types';
-import { getCaptionFromHeaders } from '../../reducers/headers';
+import { getCaptionFromHeaders, useHomeLocation } from '../../reducers/headers';
 import { isWfProcessLoaded } from '../../reducers/wfProcesses';
 import { trl } from '../../utils/translations';
+import { useApplicationInfo } from '../../reducers/applications';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useHistory();
@@ -16,17 +16,14 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   // If the required process was not loaded,
   // then redirect to home
   const redirectToHome = isWFProcessRequiredButNotLoaded();
-  if (redirectToHome) {
-    useEffect(() => {
-      if (redirectToHome) {
-        history.push('/');
-      }
-    }, [redirectToHome]);
+  useEffect(() => {
+    if (redirectToHome) {
+      history.push('/');
+    }
+  }, [redirectToHome]);
 
-    return null;
-  }
-
-  const applicationInfo = getApplicationInfo(applicationId) ?? {};
+  const applicationInfo = useApplicationInfo({ applicationId });
+  const homeLocation = useHomeLocation();
 
   const captionFromHeaders = useSelector((state) => getCaptionFromHeaders(state));
   const caption = captionFromHeaders ? captionFromHeaders : applicationInfo.caption;
@@ -35,10 +32,13 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
     document.title = caption;
   }, [caption]);
 
+  if (redirectToHome) {
+    return null;
+  }
   return (
     <div className="app-container">
       <div className="app-header">
-        <div className="columns is-mobile is-size-3">
+        <div className="columns is-mobile">
           <div className="column is-2 app-icon">
             <span className="icon">
               <i className={applicationInfo.iconClassNames} />
@@ -57,7 +57,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
       <div className="app-footer">
         <div className="columns is-mobile">
           <div className="column is-half">
-            <button className="button is-fullwidth is-size-4" onClick={() => history.goBack()}>
+            <button className="button is-fullwidth" onClick={() => history.goBack()}>
               <span className="icon">
                 <i className="fas fa-chevron-left" />
               </span>
@@ -65,9 +65,9 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
             </button>
           </div>
           <div className="column is-half">
-            <button className="button is-fullwidth is-size-4" onClick={() => history.push('/')}>
+            <button className="button is-fullwidth" onClick={() => history.push(homeLocation.location)}>
               <span className="icon">
-                <i className="fas fa-home" />
+                <i className={homeLocation.iconClassName} />
               </span>
               <span>{trl('general.Home')}</span>
             </button>
@@ -81,18 +81,6 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
 ApplicationLayout.propTypes = {
   applicationId: PropTypes.string,
   Component: PropTypes.any.isRequired,
-};
-
-const getApplicationInfo = (knownApplicationId) => {
-  let applicationId;
-  if (knownApplicationId) {
-    applicationId = knownApplicationId;
-  } else {
-    const routerMatch = useRouteMatch();
-    applicationId = routerMatch.params.applicationId;
-  }
-
-  return useSelector((state) => getApplicationInfoById({ state, applicationId }));
 };
 
 const isWFProcessRequiredButNotLoaded = () => {

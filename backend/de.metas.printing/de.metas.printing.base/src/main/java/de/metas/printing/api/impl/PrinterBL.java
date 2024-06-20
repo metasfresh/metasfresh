@@ -1,13 +1,3 @@
-package de.metas.printing.api.impl;
-
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 /*
  * #%L
  * de.metas.printing.base
@@ -30,18 +20,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
-import javax.print.attribute.standard.MediaSize;
-
-import de.metas.printing.HardwarePrinterId;
-import de.metas.printing.LogicalPrinterId;
-import de.metas.user.UserId;
-import org.adempiere.model.PlainContextAware;
+package de.metas.printing.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
-
+import de.metas.printing.HardwarePrinterId;
+import de.metas.printing.LogicalPrinterId;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrinterBL;
 import de.metas.printing.api.IPrintingDAO;
@@ -55,9 +38,22 @@ import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.printing.model.I_AD_Printer_Matching;
 import de.metas.printing.model.I_AD_Printer_Tray;
 import de.metas.printing.model.X_AD_PrinterHW;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.print.attribute.standard.MediaSize;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class PrinterBL implements IPrinterBL
 {

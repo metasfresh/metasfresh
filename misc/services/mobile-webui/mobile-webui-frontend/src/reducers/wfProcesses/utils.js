@@ -1,11 +1,6 @@
 import { current, isDraft } from 'immer';
 import * as CompleteStatus from '../../constants/CompleteStatus';
-import {
-  computeActivityDataStoredInitialValue,
-  computeActivityStatus,
-  mergeActivityDataStored,
-  normalizeComponentProps,
-} from './activityStateHandlers';
+import { computeActivityDataStoredInitialValue, computeActivityStatus, mergeActivityDataStored, normalizeComponentProps, } from './activityStateHandlers';
 
 /**
  * Updates isUserEditable flag for all activities.
@@ -17,10 +12,16 @@ export const updateUserEditable = ({ draftWFProcess }) => {
     ? current(draftWFProcess.activityIdsInOrder)
     : draftWFProcess.activityIdsInOrder;
 
+  const isWFProcessing = activityIdsInOrder.some(
+    (activityId) => !!draftWFProcess.activities[activityId]?.dataStored?.processing
+  );
+
   activityIdsInOrder.forEach((activityId) => {
     const currentActivity = draftWFProcess.activities[activityId];
 
-    if (currentActivity.dataStored.isAlwaysAvailableToUser) {
+    if (isWFProcessing) {
+      currentActivity.dataStored.isUserEditable = false;
+    } else if (currentActivity.dataStored.isAlwaysAvailableToUser) {
       currentActivity.dataStored.isUserEditable = true;
       // NOTE: activities which are always available to user shall be always editable
       // They are out of the normal flow when talking about making a previous activity readonly because current activity is completed.
@@ -88,6 +89,7 @@ const computeActivityIsUserEditable = ({ currentActivity, previousActivity }) =>
 
 export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
   draftWFProcess.headerProperties = fromWFProcess.headerProperties;
+  draftWFProcess.isAllowAbort = !!fromWFProcess.isAllowAbort;
 
   if (!draftWFProcess.activities) {
     draftWFProcess.activities = {};
@@ -156,6 +158,7 @@ const mergeActivityToState = ({ draftActivity, fromActivity }) => {
   draftActivity.activityId = fromActivity.activityId; // for new activities
   draftActivity.caption = fromActivity.caption;
   draftActivity.componentType = fromActivity.componentType;
+  draftActivity.userInstructions = fromActivity.userInstructions;
 
   const componentPropsNormalized = normalizeComponentProps({
     componentType: fromActivity.componentType,

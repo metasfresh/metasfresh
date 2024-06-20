@@ -1,11 +1,15 @@
 package de.metas.product.model.interceptor;
 
+import com.google.common.collect.Iterators;
 import de.metas.i18n.AdMessageKey;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
+import de.metas.product.impl.ProductDAO;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UOMConversionsMap;
 import de.metas.util.Services;
@@ -23,7 +27,10 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -48,7 +55,7 @@ import java.util.Optional;
  */
 @Interceptor(I_M_Product.class)
 @Callout(I_M_Product.class)
-@Component()
+@Component
 public class M_Product
 {
 
@@ -57,6 +64,7 @@ public class M_Product
 	private static final AdMessageKey MSG_PRODUCT_ALREADY_USED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.MSG_PRODUCT_ALREADY_USED");
 
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final IUOMConversionDAO uomConversionsDAO = Services.get(IUOMConversionDAO.class);
 
@@ -68,6 +76,12 @@ public class M_Product
 	public void registerCallouts()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeSave(final @NonNull I_M_Product product)
+	{
+		ProductDAO.extractIssuingToleranceSpec(product); // validate
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
@@ -122,6 +136,25 @@ public class M_Product
 		{
 			throw new AdempiereException(productUsedMessage.get()).markAsUserValidationError();
 		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_M_Product.COLUMNNAME_Weight })
+	public void updateOrderWeight(@NonNull final I_M_Product product)
+	{
+		final List<OrderId> orderIdsToBeUpdated = orderBL.getUnprocessedIdsBy(ProductId.ofRepoId(product.getM_Product_ID()));
+
+		Iterators.partition(orderIdsToBeUpdated.iterator(), 100)
+				.forEachRemaining(this::setWeightFromLines);
+	}
+
+	private void setWeightFromLines(@NonNull final List<OrderId> orderIds)
+	{
+		orderBL.getByIds(orderIds)
+				.forEach(order -> {
+					orderBL.setWeightFromLines(order);
+
+					saveRecord(order);
+				});
 	}
 
 	private Optional<AdMessageKey> checkExistingUOMConversions(@NonNull final ProductId productId)

@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:orderCandidate
+@ghActions:run_on_executor3
 Feature: Process order candidate and automatically generate shipment and invoice for it
   As a user
   I create an order candidate and the process EP will automatically generate shipment schedule, shipment, invoice candidate and invoice

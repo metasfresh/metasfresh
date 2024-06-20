@@ -45,7 +45,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
@@ -55,6 +54,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -258,13 +258,13 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	IHUQueryBuilder createHUQueryBuilder();
 
-	List<I_M_HU_Item> retrieveItemsNoCache(Collection<HuId> huIds);
+	List<I_M_HU_Item> retrieveAllItemsNoCache(Collection<HuId> huIds);
 
-	List<I_M_HU> retrieveIncludedHUsNoCache(Set<HuItemId> huItemIds);
+	List<I_M_HU> retrieveAllIncludedHUsNoCache(Set<HuItemId> huItemIds);
 
-	List<I_M_HU_Item_Storage> retrieveItemStoragesNoCache(Set<HuItemId> huItemIds);
+	List<I_M_HU_Item_Storage> retrieveAllItemStoragesNoCache(Set<HuItemId> huItemIds);
 
-	List<I_M_HU_Storage> retrieveStoragesNoCache(Set<HuId> huIds);
+	List<I_M_HU_Storage> retrieveAllStoragesNoCache(Set<HuId> huIds);
 
 	/**
 	 * Retrieve the packing materials of the given {@code hu}.<br>
@@ -322,4 +322,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);
 
 	void save(@NonNull I_M_HU_PI huPi);
+
+	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
 }

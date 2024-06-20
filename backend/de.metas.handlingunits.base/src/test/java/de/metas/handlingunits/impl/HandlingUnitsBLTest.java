@@ -12,6 +12,8 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -123,7 +125,11 @@ public class HandlingUnitsBLTest
 			final I_M_HU_Item cu = createHU(tu);
 
 			//when
-			final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.of(ClearanceStatus.Locked,"LockedNote");
+			final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.builder()
+					.clearanceStatus(ClearanceStatus.Locked)
+					.clearanceNote("LockedNote")
+					.clearanceDate(InstantAndOrgId.ofTimestamp(helper.getTodayTimestamp(), OrgId.ofRepoId(lu.getAD_Org_ID())))
+					.build();
 			handlingUnitsBL.setClearanceStatusRecursively(HuId.ofRepoId(lu.getM_HU_ID()), clearanceStatusInfo);
 
 			//then
@@ -149,7 +155,11 @@ public class HandlingUnitsBLTest
 			final I_M_HU_Item cu = createHU(tu);
 
 			//when
-			final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.of(ClearanceStatus.Locked,"LockedNote");
+			final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.builder()
+					.clearanceStatus(ClearanceStatus.Locked)
+					.clearanceNote("LockedNote")
+					.clearanceDate(InstantAndOrgId.ofTimestamp(helper.getTodayTimestamp(), OrgId.ofRepoId(lu.getAD_Org_ID())))
+					.build();
 			handlingUnitsBL.setClearanceStatusRecursively(HuId.ofRepoId(tu.getM_HU_ID()), clearanceStatusInfo);
 
 			//then
@@ -197,7 +207,11 @@ public class HandlingUnitsBLTest
 			final I_M_HU_Item tu = createHU(lu);
 			final I_M_HU_Item cu = createHU(tu);
 
-			final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.of(ClearanceStatus.Locked,"Locked HU");
+			final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.builder()
+					.clearanceStatus(ClearanceStatus.Locked)
+					.clearanceNote("Locked HU")
+					.clearanceDate(InstantAndOrgId.ofTimestamp(helper.getTodayTimestamp(), OrgId.ofRepoId(lu.getAD_Org_ID())))
+					.build();
 			handlingUnitsBL.setClearanceStatusRecursively(HuId.ofRepoId(lu.getM_HU_ID()), clearanceStatusInfo);
 
 			//when

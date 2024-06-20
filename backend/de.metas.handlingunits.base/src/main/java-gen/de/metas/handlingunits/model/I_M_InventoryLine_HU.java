@@ -1,8 +1,9 @@
 package de.metas.handlingunits.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_InventoryLine_HU
  *  @author metasfresh (generated) 
@@ -52,28 +53,6 @@ public interface I_M_InventoryLine_HU
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -97,6 +76,28 @@ public interface I_M_InventoryLine_HU
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Active.
@@ -285,6 +286,29 @@ public interface I_M_InventoryLine_HU
 
 	ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_QtyInternalUse = new ModelColumn<>(I_M_InventoryLine_HU.class, "QtyInternalUse", null);
 	String COLUMNNAME_QtyInternalUse = "QtyInternalUse";
+
+	/**
+	 * Set Rendered QR Code.
+	 * It's the QR code which is directly incorporated in the QR code image. Nothing more, nothing less.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRenderedQRCode (@Nullable java.lang.String RenderedQRCode);
+
+	/**
+	 * Get Rendered QR Code.
+	 * It's the QR code which is directly incorporated in the QR code image. Nothing more, nothing less.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRenderedQRCode();
+
+	ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_RenderedQRCode = new ModelColumn<>(I_M_InventoryLine_HU.class, "RenderedQRCode", null);
+	String COLUMNNAME_RenderedQRCode = "RenderedQRCode";
 
 	/**
 	 * Get Updated.

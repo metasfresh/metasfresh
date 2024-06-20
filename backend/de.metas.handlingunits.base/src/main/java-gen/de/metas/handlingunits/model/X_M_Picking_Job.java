@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Picking_Job
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1637187471L;
+	private static final long serialVersionUID = -177451413L;
 
     /** Standard Constructor */
     public X_M_Picking_Job (final Properties ctx, final int M_Picking_Job_ID, @Nullable final String trxName)
@@ -92,6 +92,18 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
+	public void setDeliveryDate (final java.sql.Timestamp DeliveryDate)
+	{
+		set_Value (COLUMNNAME_DeliveryDate, DeliveryDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getDeliveryDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DeliveryDate);
+	}
+
+	@Override
 	public void setDeliveryToAddress (final java.lang.String DeliveryToAddress)
 	{
 		set_ValueNoCheck (COLUMNNAME_DeliveryToAddress, DeliveryToAddress);
@@ -142,6 +154,18 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	public java.lang.String getDocStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocStatus);
+	}
+
+	@Override
+	public void setIsAllowPickingAnyHU (final boolean IsAllowPickingAnyHU)
+	{
+		set_Value (COLUMNNAME_IsAllowPickingAnyHU, IsAllowPickingAnyHU);
+	}
+
+	@Override
+	public boolean isAllowPickingAnyHU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowPickingAnyHU);
 	}
 
 	@Override
@@ -211,5 +235,35 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public void setHandover_Location_ID (final int Handover_Location_ID)
+	{
+		if (Handover_Location_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_Handover_Location_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_Handover_Location_ID, Handover_Location_ID);
+	}
+
+	@Override
+	public int getHandover_Location_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Handover_Location_ID);
+	}
+
+	@Override
+	public void setHandover_Partner_ID (final int Handover_Partner_ID)
+	{
+		if (Handover_Partner_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_Handover_Partner_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_Handover_Partner_ID, Handover_Partner_ID);
+	}
+
+	@Override
+	public int getHandover_Partner_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Handover_Partner_ID);
 	}
 }

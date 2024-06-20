@@ -1,33 +1,8 @@
 package de.metas.bpartner.product.stats;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.I_C_BPartner_Product_Stats;
-import org.compiere.model.I_C_BPartner_Product_Stats_InOut_Online_v;
-import org.compiere.model.I_C_BPartner_Product_Stats_Invoice_Online_V;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStats.LastInvoiceInfo;
 import de.metas.invoice.InvoiceId;
@@ -39,6 +14,28 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.I_C_BPartner_Product_Stats;
+import org.compiere.model.I_C_BPartner_Product_Stats_InOut_Online_v;
+import org.compiere.model.I_C_BPartner_Product_Stats_Invoice_Online_V;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -63,7 +60,7 @@ import lombok.NonNull;
  */
 
 @Repository
-class BPartnerProductStatsRepository
+public class BPartnerProductStatsRepository
 {
 	public ImmutableMap<ProductId, BPartnerProductStats> getByPartnerAndProducts(@NonNull final BPartnerId bpartnerId,
 			@NonNull final Set<ProductId> productIds)
@@ -73,7 +70,7 @@ class BPartnerProductStatsRepository
 		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_C_BPartner_Product_Stats.class)
 				.addEqualsFilter(I_C_BPartner_Product_Stats.COLUMN_C_BPartner_ID, bpartnerId)
 				.addInArrayFilter(I_C_BPartner_Product_Stats.COLUMN_M_Product_ID, productIds).create()
-				.stream(I_C_BPartner_Product_Stats.class).map(record -> toBPartnerProductStats(record))
+				.stream(I_C_BPartner_Product_Stats.class).map(BPartnerProductStatsRepository::toBPartnerProductStats)
 				.collect(ImmutableMap.toImmutableMap(BPartnerProductStats::getProductId, Function.identity()));
 	}
 
@@ -95,7 +92,7 @@ class BPartnerProductStatsRepository
 		return bpartnerStatsQueryBuilder
 				.create()
 				.stream(I_C_BPartner_Product_Stats.class)
-				.map(record -> toBPartnerProductStats(record))
+				.map(BPartnerProductStatsRepository::toBPartnerProductStats)
 				.collect(ImmutableList.toImmutableList());
 	}
 

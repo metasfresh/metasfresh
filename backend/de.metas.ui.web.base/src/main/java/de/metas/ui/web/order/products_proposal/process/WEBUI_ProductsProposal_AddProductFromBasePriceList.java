@@ -1,13 +1,12 @@
 package de.metas.ui.web.order.products_proposal.process;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowAddRequest;
 import de.metas.ui.web.order.products_proposal.view.ProductsProposalView;
+
+import java.util.List;
 
 /*
  * #%L
@@ -69,6 +68,7 @@ public class WEBUI_ProductsProposal_AddProductFromBasePriceList extends Products
 		return ProductsProposalRowAddRequest.builder()
 				.product(row.getProduct())
 				.asiDescription(row.getAsiDescription())
+				.asiId(row.getAsiId())
 				.priceListPrice(row.getPrice().getUserEnteredPrice())
 				.lastShipmentDays(row.getLastShipmentDays())
 				.copiedFromProductPriceId(row.getProductPriceId())

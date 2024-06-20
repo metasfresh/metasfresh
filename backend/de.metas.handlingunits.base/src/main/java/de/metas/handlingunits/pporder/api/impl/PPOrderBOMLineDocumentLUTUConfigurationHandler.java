@@ -22,10 +22,6 @@ package de.metas.handlingunits.pporder.api.impl;
  * #L%
  */
 
-import java.util.Properties;
-
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -34,11 +30,15 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.Properties;
 
 /**
  * Handles {@link I_PP_Order_BOMLine} lines from which we are able to receive materials
@@ -74,7 +74,7 @@ import lombok.NonNull;
 				cuUOMId,
 				bpartnerId,
 				true); // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
-		updateLUTUConfigurationFromPPOrder(lutuConfiguration, ppOrderBOMLine);
+		updateLUTUConfigurationFromDocumentLine(lutuConfiguration, ppOrderBOMLine);
 
 		return lutuConfiguration;
 	}
@@ -103,10 +103,10 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public void updateLUTUConfigurationFromPPOrder(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, @NonNull final I_PP_Order_BOMLine documentLine)
+	public void updateLUTUConfigurationFromDocumentLine(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, @NonNull final I_PP_Order_BOMLine documentLine)
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(documentLine.getPP_Order(), I_PP_Order.class);
-		PPOrderDocumentLUTUConfigurationHandler.instance.updateLUTUConfigurationFromPPOrder(lutuConfiguration, ppOrder);
+		PPOrderDocumentLUTUConfigurationHandler.instance.updateLUTUConfigurationFromDocumentLine(lutuConfiguration, ppOrder);
 	}
 
 	@Override

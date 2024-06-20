@@ -1,18 +1,17 @@
 package org.eevolution.api;
 
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.LocatorId;
-import org.eevolution.model.I_PP_Order_BOMLine;
-
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.LocatorId;
+import org.eevolution.model.I_PP_Order_BOMLine;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -39,18 +38,20 @@ import lombok.Value;
 @Value
 public class ComponentIssueCreateRequest
 {
-	I_PP_Order_BOMLine orderBOMLine;
-	LocatorId locatorId;
-	AttributeSetInstanceId attributeSetInstanceId;
-	ZonedDateTime movementDate;
-	Quantity qtyIssue;
-	Quantity qtyScrap;
-	Quantity qtyReject;
+	@NonNull I_PP_Order_BOMLine orderBOMLine;
+	@NonNull ProductId productId;
+	@NonNull LocatorId locatorId;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
+	@NonNull ZonedDateTime movementDate;
+	@NonNull Quantity qtyIssue;
+	@NonNull Quantity qtyScrap;
+	@NonNull Quantity qtyReject;
 	int pickingCandidateId;
 
 	@Builder
 	private ComponentIssueCreateRequest(
 			@NonNull final I_PP_Order_BOMLine orderBOMLine,
+			@Nullable ProductId productId,
 			@NonNull final LocatorId locatorId,
 			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
 			@Nullable final ZonedDateTime movementDate,
@@ -60,6 +61,7 @@ public class ComponentIssueCreateRequest
 			final int pickingCandidateId)
 	{
 		this.orderBOMLine = orderBOMLine;
+		this.productId = productId != null ? productId : ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
 		this.locatorId = locatorId;
 		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 		this.movementDate = movementDate != null ? movementDate : SystemTime.asZonedDateTime();

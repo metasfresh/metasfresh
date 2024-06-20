@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.service;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingSlotAllocateRequest;
+import de.metas.handlingunits.picking.PickingSlotConnectedComponent;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.i18n.BooleanWithReason;
@@ -16,7 +17,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PickingJobSlotService
+public class PickingJobSlotService implements PickingSlotConnectedComponent
 {
 	private final IHUPickingSlotBL pickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final PickingJobRepository pickingJobRepository;
@@ -57,7 +58,7 @@ public class PickingJobSlotService
 
 	public void release(
 			@NonNull final PickingSlotId pickingSlotId,
-			@SuppressWarnings("unused") @NonNull final PickingJobId pickingJobId)
+			@NonNull final PickingJobId pickingJobId)
 	{
 		if (!pickingJobRepository.hasDraftJobsUsingPickingSlot(pickingSlotId, pickingJobId))
 		{
@@ -65,4 +66,9 @@ public class PickingJobSlotService
 		}
 	}
 
+	@Override
+	public boolean hasAllocationsForSlot(@NonNull final PickingSlotId slotId)
+	{
+		return pickingJobRepository.hasDraftJobsUsingPickingSlot(slotId, null);
+	}
 }

@@ -32,11 +32,13 @@ import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -53,7 +55,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util;
@@ -115,6 +116,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 
 		final IStorageEngine storageEngine = storageEngineService.getStorageEngine();
 		final IStorageQuery storageQuery = storageEngine.newStorageQuery();
+		storageQuery.addBPartnerId(null);
 		storageQuery.addWarehouseId(warehouseId);
 		final Map<ArrayKey, RawMaterialsReturnDDOrderLineCandidate> key2candidate = new HashMap<>();
 
@@ -230,16 +232,16 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		final int shipperId = candidate.getDD_NetworkDistributionLine().getM_Shipper_ID();
 		final OrgId orgId = candidate.getOrgId();
 		final BPartnerLocationId orgBPLocationId = candidate.getOrgBPLocationId();
-		final int salesRepId = candidate.getPlanner_ID();
+		final UserId salesRepId = candidate.getPlannerId();
 		final WarehouseId warehouseInTrasitId = candidate.getInTransitWarehouseId();
-		final I_S_Resource rawMaterialsPlant = candidate.getRawMaterialsPlant();
+		final ResourceId rawMaterialsPlantId = candidate.getRawMaterialsPlantId();
 
 		final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstance(I_DD_Order.class, context);
 		ddOrder.setAD_Org_ID(orgId.getRepoId());
-		ddOrder.setPP_Plant(rawMaterialsPlant);
+		ddOrder.setPP_Plant_ID(ResourceId.toRepoId(rawMaterialsPlantId));
 		ddOrder.setC_BPartner_ID(orgBPLocationId != null ? orgBPLocationId.getBpartnerId().getRepoId() : -1);
 		ddOrder.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(orgBPLocationId));
-		ddOrder.setSalesRep_ID(salesRepId);
+		ddOrder.setSalesRep_ID(UserId.toRepoId(salesRepId));
 
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)

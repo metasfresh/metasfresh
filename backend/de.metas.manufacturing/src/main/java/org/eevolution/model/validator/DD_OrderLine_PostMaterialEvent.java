@@ -27,6 +27,9 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderDeletedEvent;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DDOrderUtil;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.util.Services;
@@ -41,6 +44,8 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+
 import static de.metas.distribution.ddorder.lowlevel.interceptor.DD_Order_PostMaterialEvent.createAndInitPPOrderPojoBuilder;
 import static de.metas.distribution.ddorder.lowlevel.interceptor.DD_Order_PostMaterialEvent.createDDOrderLinePojo;
 
@@ -51,6 +56,7 @@ public class DD_OrderLine_PostMaterialEvent
 	private final ReplenishInfoRepository replenishInfoRepository;
 	private final PostMaterialEventService postMaterialEventService;
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 	public DD_OrderLine_PostMaterialEvent(
 			@NonNull final ReplenishInfoRepository replenishInfoRepository,
@@ -79,8 +85,9 @@ public class DD_OrderLine_PostMaterialEvent
 		final I_DD_Order ddOrder = ddOrderLineRecord.getDD_Order();
 		final DDOrder.DDOrderBuilder ddOrderBuilder = createAndInitPPOrderPojoBuilder(ddOrder);
 
+		final ProductPlanning productPlanning = getProductPlanning(ddOrder);
 		final int durationDays = DDOrderUtil.calculateDurationDays(
-				ddOrder.getPP_Product_Planning(), oldDDOrderLine.getDD_NetworkDistributionLine());
+				productPlanning, oldDDOrderLine.getDD_NetworkDistributionLine());
 
 		ddOrderBuilder.lines(ImmutableList.of(createDDOrderLinePojo(replenishInfoRepository, oldDDOrderLine, ddOrder, durationDays)));
 
@@ -95,5 +102,12 @@ public class DD_OrderLine_PostMaterialEvent
 				.build();
 
 		postMaterialEventService.postEventAsync(event);
+	}
+
+	@Nullable
+	private ProductPlanning getProductPlanning(final @NonNull I_DD_Order ddOrderRecord)
+	{
+		final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoIdOrNull(ddOrderRecord.getPP_Product_Planning_ID());
+		return productPlanningId != null ? productPlanningDAO.getById(productPlanningId) : null;
 	}
 }

@@ -102,6 +102,10 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_RabbitMQRESTAPI = "RabbitMQ";
 	/** GRSSignum = GRS */
 	public static final String TYPE_GRSSignum = "GRS";
+	/** Leich & Mehl = LM */
+	public static final String TYPE_LeichMehl = "LM";
+	/** PrintingClient = PC */
+	public static final String TYPE_PrintingClient = "PC";
 	/** Pro Care Management = PCM */
 	public static final String TYPE_ProCareManagement = "PCM";
 	@Override
