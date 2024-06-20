@@ -1,6 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor7
-Feature: workflow rest controller tests
+Feature: picking rest controller tests
 
   Background:
     Given infrastructure and metasfresh are running

@@ -77,7 +77,7 @@ PickStepButton.propTypes = {
   pickFrom: PropTypes.object.isRequired,
   qtyToPick: PropTypes.number.isRequired,
   altStepId: PropTypes.string,
-  pickFromAlternatives: PropTypes.object,
+  pickFromAlternatives: PropTypes.array,
   uom: PropTypes.string.isRequired,
   catchWeightUOM: PropTypes.string,
   disabled: PropTypes.bool,

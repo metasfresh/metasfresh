@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Picking_Job
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1026697317L;
+	private static final long serialVersionUID = -1308424535L;
 
     /** Standard Constructor */
     public X_M_Picking_Job (final Properties ctx, final int M_Picking_Job_ID, @Nullable final String trxName)
@@ -157,6 +157,36 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
+	public void setHandOver_Location_ID (final int HandOver_Location_ID)
+	{
+		if (HandOver_Location_ID < 1) 
+			set_Value (COLUMNNAME_HandOver_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_HandOver_Location_ID, HandOver_Location_ID);
+	}
+
+	@Override
+	public int getHandOver_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_HandOver_Location_ID);
+	}
+
+	@Override
+	public void setHandOver_Partner_ID (final int HandOver_Partner_ID)
+	{
+		if (HandOver_Partner_ID < 1) 
+			set_Value (COLUMNNAME_HandOver_Partner_ID, null);
+		else 
+			set_Value (COLUMNNAME_HandOver_Partner_ID, HandOver_Partner_ID);
+	}
+
+	@Override
+	public int getHandOver_Partner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_HandOver_Partner_ID);
+	}
+
+	@Override
 	public void setIsAllowPickingAnyHU (final boolean IsAllowPickingAnyHU)
 	{
 		set_Value (COLUMNNAME_IsAllowPickingAnyHU, IsAllowPickingAnyHU);
@@ -169,39 +199,57 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
-	public void setIsApproved (final boolean IsApproved)
+	public de.metas.handlingunits.model.I_M_HU getM_LU_HU()
 	{
-		set_Value (COLUMNNAME_IsApproved, IsApproved);
+		return get_ValueAsPO(COLUMNNAME_M_LU_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
 
 	@Override
-	public boolean isApproved() 
+	public void setM_LU_HU(final de.metas.handlingunits.model.I_M_HU M_LU_HU)
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsApproved);
+		set_ValueFromPO(COLUMNNAME_M_LU_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_LU_HU);
 	}
 
 	@Override
-	public void setIsPickingReviewRequired (final boolean IsPickingReviewRequired)
+	public void setM_LU_HU_ID (final int M_LU_HU_ID)
 	{
-		set_Value (COLUMNNAME_IsPickingReviewRequired, IsPickingReviewRequired);
+		if (M_LU_HU_ID < 1) 
+			set_Value (COLUMNNAME_M_LU_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_LU_HU_ID, M_LU_HU_ID);
 	}
 
 	@Override
-	public boolean isPickingReviewRequired() 
+	public int getM_LU_HU_ID() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPickingReviewRequired);
+		return get_ValueAsInt(COLUMNNAME_M_LU_HU_ID);
 	}
 
 	@Override
-	public void setIsReadyToReview (final boolean IsReadyToReview)
+	public de.metas.handlingunits.model.I_M_HU_PI getM_LU_HU_PI()
 	{
-		set_Value (COLUMNNAME_IsReadyToReview, IsReadyToReview);
+		return get_ValueAsPO(COLUMNNAME_M_LU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
 	}
 
 	@Override
-	public boolean isReadyToReview() 
+	public void setM_LU_HU_PI(final de.metas.handlingunits.model.I_M_HU_PI M_LU_HU_PI)
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsReadyToReview);
+		set_ValueFromPO(COLUMNNAME_M_LU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, M_LU_HU_PI);
+	}
+
+	@Override
+	public void setM_LU_HU_PI_ID (final int M_LU_HU_PI_ID)
+	{
+		if (M_LU_HU_PI_ID < 1) 
+			set_Value (COLUMNNAME_M_LU_HU_PI_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_LU_HU_PI_ID, M_LU_HU_PI_ID);
+	}
+
+	@Override
+	public int getM_LU_HU_PI_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_LU_HU_PI_ID);
 	}
 
 	@Override
@@ -271,35 +319,5 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
-	}
-
-	@Override
-	public void setHandover_Location_ID (final int Handover_Location_ID)
-	{
-		if (Handover_Location_ID < 1)
-			set_ValueNoCheck (COLUMNNAME_Handover_Location_ID, null);
-		else
-			set_ValueNoCheck (COLUMNNAME_Handover_Location_ID, Handover_Location_ID);
-	}
-
-	@Override
-	public int getHandover_Location_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_Handover_Location_ID);
-	}
-
-	@Override
-	public void setHandover_Partner_ID (final int Handover_Partner_ID)
-	{
-		if (Handover_Partner_ID < 1)
-			set_ValueNoCheck (COLUMNNAME_Handover_Partner_ID, null);
-		else
-			set_ValueNoCheck (COLUMNNAME_Handover_Partner_ID, Handover_Partner_ID);
-	}
-
-	@Override
-	public int getHandover_Partner_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_Handover_Partner_ID);
 	}
 }

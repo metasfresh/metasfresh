@@ -82,8 +82,8 @@ class PickingJobCreateRepoHelper
 		record.setIsPickingReviewRequired(request.isPickingReviewRequired());
 		record.setIsReadyToReview(false);
 		record.setIsApproved(false);
-		record.setHandover_Location_ID(BPartnerLocationId.toRepoId(request.getHandoverLocationId()));
-		record.setHandover_Partner_ID(BPartnerId.toRepoId(request.getHandoverLocationId().getBpartnerId()));
+		record.setHandOver_Location_ID(BPartnerLocationId.toRepoId(request.getHandoverLocationId()));
+		record.setHandOver_Partner_ID(BPartnerId.toRepoId(request.getHandoverLocationId().getBpartnerId()));
 		InterfaceWrapperHelper.save(record);
 
 		loader.addAlreadyLoadedFromDB(record);
