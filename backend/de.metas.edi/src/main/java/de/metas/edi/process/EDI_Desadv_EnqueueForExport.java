@@ -78,7 +78,7 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (!sysConfigBL.getBooleanValue(EDIWorkpackageProcessor.SYS_CONFIG_OneDesadvPerShipment, false))
+		if (sysConfigBL.getBooleanValue(EDIWorkpackageProcessor.SYS_CONFIG_OneDesadvPerShipment, false))
 		{
 			return ProcessPreconditionsResolution.reject();
 		}

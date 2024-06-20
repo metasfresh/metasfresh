@@ -30,3 +30,49 @@ UPDATE EXP_Format SET IsActive='N',Updated=TO_TIMESTAMP('2024-06-20 09:48:50.246
 UPDATE EXP_Format SET IsActive='Y',Updated=TO_TIMESTAMP('2024-06-20 09:48:51.776000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE EXP_Format_ID=540405
 ;
 
+-- Value: EDI_Desadv_InOut_EnqueueForExport
+-- Classname: de.metas.edi.process.EDI_Desadv_InOut_EnqueueForExport
+-- 2024-06-20T10:40:20.208Z
+UPDATE AD_Process SET Description='Übergibt alle Lieferavis-Datensätze, die noch nicht erfolgreich gesendet wurden, an die EDI-Sendewarteschlange ',Updated=TO_TIMESTAMP('2024-06-20 10:40:20.207000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585400
+;
+
+-- Process: EDI_Desadv_InOut_EnqueueForExport(de.metas.edi.process.EDI_Desadv_InOut_EnqueueForExport)
+-- 2024-06-20T10:40:25.648Z
+UPDATE AD_Process_Trl SET Description='Übergibt alle Lieferavis-Datensätze, die noch nicht erfolgreich gesendet wurden, an die EDI-Sendewarteschlange ',Updated=TO_TIMESTAMP('2024-06-20 10:40:25.648000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585400
+;
+
+-- Process: EDI_Desadv_InOut_EnqueueForExport(de.metas.edi.process.EDI_Desadv_InOut_EnqueueForExport)
+-- 2024-06-20T10:40:27.288Z
+UPDATE AD_Process_Trl SET Description='Übergibt alle Lieferavis-Datensätze, die noch nicht erfolgreich gesendet wurden, an die EDI-Sendewarteschlange ',Updated=TO_TIMESTAMP('2024-06-20 10:40:27.288000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585400
+;
+
+-- Process: EDI_Desadv_InOut_EnqueueForExport(de.metas.edi.process.EDI_Desadv_InOut_EnqueueForExport)
+-- 2024-06-20T10:40:30.912Z
+UPDATE AD_Process_Trl SET Description='Übergibt alle Lieferavis-Datensätze, die noch nicht erfolgreich gesendet wurden, an die EDI-Sendewarteschlange ',Updated=TO_TIMESTAMP('2024-06-20 10:40:30.912000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585400
+;
+
+-- Process: EDI_Desadv_InOut_EnqueueForExport(de.metas.edi.process.EDI_Desadv_InOut_EnqueueForExport)
+-- 2024-06-20T10:40:33.174Z
+UPDATE AD_Process_Trl SET Description='Übergibt alle Lieferavis-Datensätze, die noch nicht erfolgreich gesendet wurden, an die EDI-Sendewarteschlange ',Updated=TO_TIMESTAMP('2024-06-20 10:40:33.173000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=585400
+;
+
+-- Process: EDI_Desadv_InOut_EnqueueForExport(de.metas.edi.process.EDI_Desadv_InOut_EnqueueForExport)
+-- 2024-06-20T10:40:35.374Z
+UPDATE AD_Process_Trl SET Description='Übergibt alle Lieferavis-Datensätze, die noch nicht erfolgreich gesendet wurden, an die EDI-Sendewarteschlange ',Updated=TO_TIMESTAMP('2024-06-20 10:40:35.374000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=585400
+;
+
+-- Process: EDI_Desadv_InOut_EnqueueForExport(de.metas.edi.process.EDI_Desadv_InOut_EnqueueForExport)
+-- 2024-06-20T10:40:40.111Z
+UPDATE AD_Process_Trl SET Name='EDI DESADV Auswahl senden',Updated=TO_TIMESTAMP('2024-06-20 10:40:40.110000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585400
+;
+
+-- Process: EDI_Desadv_InOut_EnqueueForExport(de.metas.edi.process.EDI_Desadv_InOut_EnqueueForExport)
+-- 2024-06-20T10:40:41.923Z
+UPDATE AD_Process_Trl SET Name='EDI DESADV Auswahl senden',Updated=TO_TIMESTAMP('2024-06-20 10:40:41.923000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=585400
+;
+
+-- Process: EDI_Desadv_InOut_EnqueueForExport(de.metas.edi.process.EDI_Desadv_InOut_EnqueueForExport)
+-- 2024-06-20T10:40:44.531Z
+UPDATE AD_Process_Trl SET Name='EDI DESADV Auswahl senden',Updated=TO_TIMESTAMP('2024-06-20 10:40:44.530000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=585400
+;
+
