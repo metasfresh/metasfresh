@@ -100,7 +100,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		return JsonFinishedGoodsReceiveLine.builder()
 				.id(line.getId().toJson())
 				.coproduct(line.getCoProductBOMLineId() != null)
-				.productName(line.getProductName().translate(adLanguage))
+				.productName(line.getProductValueAndProductName().translate(adLanguage))
 				.uom(line.getQtyToReceive().getUOMSymbol())
 				.hazardSymbols(getJsonHazardSymbols(line.getProductId(), adLanguage))
 				.allergens(getJsonAllergens(line.getProductId(), adLanguage))

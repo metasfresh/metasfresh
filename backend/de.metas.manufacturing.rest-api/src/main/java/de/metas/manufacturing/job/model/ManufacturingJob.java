@@ -27,7 +27,7 @@ public class ManufacturingJob
 	@NonNull PPOrderId ppOrderId;
 	@NonNull String documentNo;
 	@Nullable BPartnerId customerId;
-	@NonNull ZonedDateTime datePromised;
+	@NonNull ZonedDateTime dateStartSchedule;
 	@Nullable UserId responsibleId;
 	boolean allowUserReporting;
 
@@ -41,7 +41,7 @@ public class ManufacturingJob
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final String documentNo,
 			@Nullable final BPartnerId customerId,
-			@NonNull final ZonedDateTime datePromised,
+			@NonNull final ZonedDateTime dateStartSchedule,
 			@Nullable final UserId responsibleId,
 			final boolean allowUserReporting,
 			//
@@ -57,7 +57,7 @@ public class ManufacturingJob
 		this.ppOrderId = ppOrderId;
 		this.documentNo = documentNo;
 		this.customerId = customerId;
-		this.datePromised = datePromised;
+		this.dateStartSchedule = dateStartSchedule;
 		this.responsibleId = responsibleId;
 		this.allowUserReporting = allowUserReporting;
 		this.activities = activities;

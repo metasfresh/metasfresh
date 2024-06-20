@@ -59,6 +59,9 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	public String getLocatorName(@NonNull final LocatorId locatorId) {return warehouseBL.getLocatorNameById(locatorId);}
 
 	public ITranslatableString getProductName(@NonNull final ProductId productId) {return productBL.getProductNameTrl(productId);}
+	
+	@NonNull
+	public String getProductValue(@NonNull final ProductId productId) {return productBL.getProductValue(productId);}
 
 	public I_PP_Order getPPOrderRecordById(@NonNull final PPOrderId ppOrderId) {return ppOrderBL.getById(ppOrderId);}
 
@@ -68,9 +71,10 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 
 	public ImmutableList<I_PP_Order_BOMLine> getOrderBOMLines(@NonNull final PPOrderId ppOrderId) {return ImmutableList.copyOf(ppOrderBOMBL.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class));}
 
-	public ZonedDateTime getDatePromised(final I_PP_Order ppOrder)
+	@NonNull
+	public ZonedDateTime getDateStartSchedule(@NonNull final I_PP_Order ppOrder)
 	{
-		return InstantAndOrgId.ofTimestamp(ppOrder.getDatePromised(), ppOrder.getAD_Org_ID()).toZonedDateTime(orgDAO::getTimeZone);
+		return InstantAndOrgId.ofTimestamp(ppOrder.getDateStartSchedule(), ppOrder.getAD_Org_ID()).toZonedDateTime(orgDAO::getTimeZone);
 	}
 
 	public PPOrderQuantities getQuantities(@NonNull final I_PP_Order order) {return ppOrderBOMBL.getQuantities(order);}

@@ -107,11 +107,11 @@ public class ManufacturingWorkflowLaunchersProvider
 				TranslatableStrings.builder()
 						.append(manufacturingJobReference.getDocumentNo())
 						.append(" | ")
-						.append(manufacturingJobReference.getProductName())
+						.append(manufacturingJobReference.getProductValueAndProductName())
 						.append(" | ")
 						.appendQty(manufacturingJobReference.getQtyRequiredToProduce().toBigDecimal(), manufacturingJobReference.getQtyRequiredToProduce().getUOMSymbol())
 						.append(" | ")
-						.appendDateTime(manufacturingJobReference.getDatePromised())
+						.appendDateTime(manufacturingJobReference.getDateStartSchedule())
 						.build()
 		);
 	}

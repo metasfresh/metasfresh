@@ -37,7 +37,7 @@ public class JsonRawMaterialsIssueLine
 			@NonNull final JsonOpts jsonOpts)
 	{
 		return builder()
-				.productName(from.getProductName().translate(jsonOpts.getAdLanguage()))
+				.productName(from.getProductValueAndProductName().translate(jsonOpts.getAdLanguage()))
 				.uom(from.getQtyToIssue().getUOMSymbol())
 				.isWeightable(from.isWeightable())
 				.qtyToIssue(from.getQtyToIssue().toBigDecimal())
