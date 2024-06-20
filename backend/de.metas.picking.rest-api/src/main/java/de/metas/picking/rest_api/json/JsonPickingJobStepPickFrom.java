@@ -61,6 +61,10 @@ public class JsonPickingJobStepPickFrom
 							.map(JsonPickingJobStepPickFromHU::of)
 							.collect(ImmutableList.toImmutableList()));
 		}
+		else
+		{
+			builder.actuallyPickedHUs(ImmutableList.of());
+		}
 
 		return builder.build();
 	}
