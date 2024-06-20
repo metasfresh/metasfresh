@@ -11,3 +11,13 @@ SET AD_Reference_ID = 30
 WHERE AD_Reference_ID IN (18, 19)
 ;
 
+UPDATE AD_UI_Element
+SET UIStyle=''
+WHERE AD_Field_ID IN (SELECT AD_Field_ID
+                      FROM AD_Field
+                      WHERE AD_Reference_ID = 30
+                         OR AD_Column_ID IN (SELECT AD_Column_ID
+                                             FROM AD_Column
+                                             WHERE AD_Reference_ID = 30))
+;
+
