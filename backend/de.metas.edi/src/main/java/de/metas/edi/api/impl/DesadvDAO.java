@@ -353,7 +353,7 @@ public class DesadvDAO implements IDesadvDAO
 	{
 		return queryBL.createQueryBuilder(I_M_InOut_Desadv_V.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InOut_Desadv_V.COLUMNNAME_M_InOut_ID, shipmentId.getRepoId())
+				.addEqualsFilter(I_M_InOut_Desadv_V.COLUMNNAME_M_InOut_ID, shipmentId)
 				.create()
 				.firstOnlyNotNull(I_M_InOut_Desadv_V.class);
 	}

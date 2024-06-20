@@ -49,7 +49,7 @@ public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 	/**
 	 * EXP_Format.Value for exporting InOut EDI documents
 	 */
-	private static final String CST_DESADV_EXP_FORMAT = "EDI_Exp_Desadv_InOut";
+	private static final String CST_DESADV_EXP_FORMAT = "EDI_Exp_Desadv";
 
 	public EDI_DESADV_InOut_Export(final I_M_InOut_Desadv_V inoutDesadv, final String tableIdentifier, final ClientId clientId)
 	{

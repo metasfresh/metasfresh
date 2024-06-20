@@ -485,28 +485,3 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- 2024-06-17T01:11:38.660Z
 /* DDL */  select update_Column_Translation_From_AD_Element(576948) 
 ;
-
--- Table: M_InOut_DesadvLine_V
--- Table: M_InOut_DesadvLine_V
--- 2024-06-17T01:55:29.819Z
-INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CopyColumnsFromTable,Created,CreatedBy,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsEnableRemoteCacheInvalidation,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,PersonalDataCategory,ReplicationType,TableName,TooltipType,Updated,UpdatedBy) VALUES ('3',0,0,0,542415,'N',TO_TIMESTAMP('2024-06-17 01:55:29.671000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.esb.edi','N','Y','N','N','Y','N','N','N','N','N',0,'M_InOut_DesadvLine_V','NP','L','M_InOut_DesadvLine_V','DTI',TO_TIMESTAMP('2024-06-17 01:55:29.671000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2024-06-17T01:55:29.823Z
-INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Table_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Table_ID=542415 AND NOT EXISTS (SELECT 1 FROM AD_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Table_ID=t.AD_Table_ID)
-;
-
--- 2024-06-17T01:55:29.896Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556349,TO_TIMESTAMP('2024-06-17 01:55:29.834000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000000,50000,'Table M_InOut_DesadvLine_V',1,'Y','N','Y','Y','M_InOut_DesadvLine_V','N',1000000,TO_TIMESTAMP('2024-06-17 01:55:29.834000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2024-06-17T01:55:29.927Z
-CREATE SEQUENCE M_INOUT_DESADVLINE_V_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1000000
-;
-
--- Column: EDI_DesadvLine.QtyItemCapacity
--- Column: EDI_DesadvLine.QtyItemCapacity
--- 2024-06-17T02:08:06.828Z
-UPDATE AD_Column SET IsLazyLoading='Y',Updated=TO_TIMESTAMP('2024-06-17 02:08:06.828000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=571153
-;
-
