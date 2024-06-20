@@ -81,73 +81,6 @@ Feature: mobileUI Picking - Pick TUs from CU
     
     
     
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
-  @from:cucumber
-  Scenario: When PickingJobPickCommand.PickCUsFromCUs=Y
-    When set sys config boolean value true for sys config PickingJobPickCommand.PickCUsFromCUs
-    And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | SO         | true    | customer                 | 2024-03-26  |
-    And metasfresh contains C_OrderLines:
-      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | SO                    | L1         | product                 | 160        | TUx4                                   |
-    And the order identified by SO is completed
-    And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
-      | shipmentSchedule | L1                        | N             |
-
-    And start picking job for sales order identified by SO
-    And scan picking slot identified by 200.0
-    And pick lines
-      | PickingLine.byProduct | PickFromHU | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
-      | product               | pickFromCU | 3         | 1           | N                     | 2027-03-01     | 9876  |
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
-      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed |
-      |                   |              | 12        | vhu1   | 0     | -          | 0     | -          | N         |
-    And M_HU are validated:
-      | M_HU_ID | HUStatus |
-      | vhu1    | S        |
-
-    And complete picking job
-
-    Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
-      | shipmentSchedule                 | shipment              | CO            |
-
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
-      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |
-      |                   |              | 12        | vhu1   | 1     | tu1        | 1     | lu1        | Y         | shipmentLine   |
-      |                   |              | -4        | vhu1   | 1     | tu1        | 1     | lu1        | Y         | shipmentLine   |
-      |                   |              | +4        | vhu2   | 1     | tu2        | 1     | lu1        | Y         | shipmentLine   |
-      |                   |              | -4        | vhu1   | 1     | tu1        | 1     | lu1        | Y         | shipmentLine   |
-      |                   |              | +4        | vhu3   | 1     | tu3        | 1     | lu1        | Y         | shipmentLine   |
-
-    And validate the created shipment lines by id
-      | Identifier   | M_Product_ID | movementqty | QtyDeliveredCatch | QtyEnteredTU | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID |
-      | shipmentLine | product      | 12          |                   | 3            | TUx4                    | asi                       |
-
-    And M_HU are validated:
-      | M_HU_ID | HUStatus |
-      | tu1     | E        |
-      | tu2     | E        |
-      | tu3     | E        |
-      | lu1     | E        |
-
-    And M_HU_Attribute is validated
-      | M_HU_ID     | M_Attribute_ID.Value | Value | ValueDate  |
-      | tu1,tu2,tu3 | HU_BestBeforeDate    |       | 2027-03-01 |
-      | lu1         | HU_BestBeforeDate    |       | 2027-03-01 |
-      | tu1,tu2,tu3 | Lot-Nummer           | 9876  |            |
-      | lu1         | Lot-Nummer           | 9876  |            |
-
-    And validate M_AttributeInstance:
-      | M_AttributeSetInstance_ID | AttributeCode     | Value                 |
-      | asi                       | HU_BestBeforeDate | 2027-03-01 00:00:00.0 |
-      | asi                       | Lot-Nummer        | 9876                  |
-
     
 
     
@@ -160,9 +93,8 @@ Feature: mobileUI Picking - Pick TUs from CU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
-  Scenario: When PickingJobPickCommand.PickCUsFromCUs=N
-    When set sys config boolean value false for sys config PickingJobPickCommand.PickCUsFromCUs
-    And metasfresh contains C_Orders:
+  Scenario: Pick TUs from CU standard case
+    When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
     And metasfresh contains C_OrderLines:
