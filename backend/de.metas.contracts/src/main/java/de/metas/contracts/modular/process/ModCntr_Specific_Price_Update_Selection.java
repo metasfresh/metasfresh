@@ -106,7 +106,6 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 				.filter(context.getQueryFilter(I_C_Flatrate_Term.class))
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Currency_ID, DocStatus.Completed)
 				.create()
 				.count();
 
