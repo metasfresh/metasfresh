@@ -95,6 +95,16 @@ public class ModularLogInterestRepository
 		getQueryBuilder(query).create().delete();
 	}
 
+	public int deleteByModularContractLogEntryId(@NonNull final ModularContractLogEntryId logId)
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_Interest.class)
+				.setJoinOr()
+				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_ShippingNotification_ModCntr_Log_ID, logId)
+				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_InterimInvoice_ModCntr_Log_ID, logId)
+				.create()
+				.delete();
+	}
+
 	@NonNull
 	public List<ModularLogInterest> getForShippingNotificationLogId(
 			@NonNull final InterestRunId interestRunId,

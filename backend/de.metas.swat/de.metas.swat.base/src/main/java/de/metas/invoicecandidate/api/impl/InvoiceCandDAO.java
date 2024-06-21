@@ -1992,4 +1992,14 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	{
 		return InterfaceWrapperHelper.load(invoiceLineAllocId, I_C_Invoice_Line_Alloc.class);
 	}
+
+	@Override
+	public void setIsActive(@NonNull final Collection<InvoiceCandidateId> ids, final boolean isActive)
+	{
+		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, ids)
+				.create()
+				.update(queryBL.createCompositeQueryUpdater(I_C_Invoice_Candidate.class)
+						.addSetColumnValue(I_C_Invoice_Candidate.COLUMNNAME_IsActive, isActive));
+	}
 }
