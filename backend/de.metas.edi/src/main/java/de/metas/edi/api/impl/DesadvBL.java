@@ -75,7 +75,6 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -133,18 +132,20 @@ public class DesadvBL implements IDesadvBL
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final transient ISSCC18CodeBL sscc18CodeService = Services.get(ISSCC18CodeBL.class);
-	private final transient HURepository huRepository;
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final transient IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final EDIDesadvInOutLineDAO desadvInOutLineDAO = SpringContextHolder.instance.getBean(EDIDesadvInOutLineDAO.class);
+
+	private final HURepository huRepository;
+	private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
 
 	// @VisibleForTesting
-	public DesadvBL(@NonNull final HURepository huRepository)
+	public DesadvBL(@NonNull final HURepository huRepository, @NonNull final EDIDesadvInOutLineDAO desadvInOutLineDAO)
 	{
 		this.huRepository = huRepository;
+		this.desadvInOutLineDAO = desadvInOutLineDAO;
 	}
 
 	@Override

@@ -64,7 +64,7 @@ class DesadvBLTest
 	{
 		AdempiereTestHelper.get().init();
 
-		desadvBL = new DesadvBL(new HURepository());
+		desadvBL = new DesadvBL(new HURepository(), new EDIDesadvInOutLineDAO());
 
 		eachUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("each", X12DE355.EACH).getC_UOM_ID());
 		coliUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("coli", X12DE355.COLI).getC_UOM_ID());
