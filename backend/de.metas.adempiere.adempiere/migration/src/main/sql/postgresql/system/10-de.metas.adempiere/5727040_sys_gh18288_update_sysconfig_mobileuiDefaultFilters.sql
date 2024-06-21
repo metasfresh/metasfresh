@@ -5,3 +5,8 @@ Following values are available:
  TodayDateStartSchedule - show only those which have the DateStartSchedule as today.',Updated=TO_TIMESTAMP('2024-06-21 14:49:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541519
 ;
 
+UPDATE ad_sysconfig
+SET value = REPLACE(value, 'TodayDatePromised', 'TodayDateStartSchedule'), Updated=TO_TIMESTAMP('2024-06-21 14:49:46', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=99
+WHERE name = 'mobileui.manufacturing.defaultFilters'
+  AND value LIKE '%TodayDatePromised%'
+;
