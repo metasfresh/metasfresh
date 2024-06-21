@@ -338,9 +338,9 @@ public class ManufacturingJobService
 			queryBuilder.onlyWorkstationId(query.getWorkstationId());
 		}
 
-		if (defaultFilters.contains(ManufacturingJobDefaultFilter.TodayDatePromised))
+		if (defaultFilters.contains(ManufacturingJobDefaultFilter.TodayDateStartSchedule))
 		{
-			queryBuilder.datePromisedDay(query.getNow());
+			queryBuilder.dateStartScheduleDay(query.getNow());
 		}
 
 		//

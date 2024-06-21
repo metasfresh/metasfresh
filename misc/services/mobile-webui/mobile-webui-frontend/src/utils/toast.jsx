@@ -44,29 +44,6 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
   );
 };
 
-export const toastNotification = ({ messageKey, plainMessage }) => {
-  let message;
-  if (messageKey) {
-    message = trl(messageKey);
-  } else if (plainMessage) {
-    message = plainMessage;
-  } else {
-    console.error('toastNotification called without any message');
-    return;
-  }
-
-  toast.custom(
-    (t) => (
-      <div className="toastSuccessContainer" onClick={() => toast.dismiss(t.id)}>
-        <span>{message}</span>
-      </div>
-    ),
-    {
-      duration: 86400000,
-    }
-  );
-};
-
 export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fallbackMessageKey = null }) => {
   // console.log('extractUserFriendlyErrorMessageFromAxiosError', { axiosError });
 
@@ -89,13 +66,6 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
   }
 
   return trl('error.PleaseTryAgain');
-};
-
-export const extractErrorResponseFromAxiosError = (axiosError) => {
-  if (!axiosError || !axiosError.response || !axiosError.response.data) {
-    return undefined;
-  }
-  return unboxAxiosResponse(axiosError.response);
 };
 
 function extractUserFriendlyErrorSingleErrorObject(error) {

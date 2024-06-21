@@ -88,10 +88,10 @@ class ManufacturingJobServiceTest
 		void allEnumValues()
 		{
 			// IMPORTANT: set the value as plain string to also enforce the name of the enums are not changed on refactoring
-			sysConfigDAO.setValue(ManufacturingJobService.SYSCONFIG_defaultFilters, "UserPlant, TodayDatePromised", ClientAndOrgId.SYSTEM);
+			sysConfigDAO.setValue(ManufacturingJobService.SYSCONFIG_defaultFilters, "UserPlant, TodayDateStartSchedule", ClientAndOrgId.SYSTEM);
 
 			Assertions.assertThat(manufacturingJobService.getDefaultFilters().toSet())
-					.contains(ManufacturingJobDefaultFilter.UserPlant, ManufacturingJobDefaultFilter.TodayDatePromised);
+					.contains(ManufacturingJobDefaultFilter.UserPlant, ManufacturingJobDefaultFilter.TodayDateStartSchedule);
 		}
 	}
 }
