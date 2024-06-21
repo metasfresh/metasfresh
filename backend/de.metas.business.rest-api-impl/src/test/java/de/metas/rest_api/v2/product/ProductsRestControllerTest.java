@@ -111,7 +111,7 @@ public class ProductsRestControllerTest
 																					  new RuntimeParametersRepository(),
 																					  externalServices,
 																					  new JsonExternalSystemRetriever());
-		final ProductRepository productRepository = new ProductRepository();
+		final ProductRepository productRepository = ProductRepository.newInstanceForUnitTesting();
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 
 		final ExternalReferenceRepository externalReferenceRepository =

@@ -161,3 +161,233 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585401,540320,541497,TO_TIMESTAMP('2024-06-19 09:44:15.848','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y',TO_TIMESTAMP('2024-06-19 09:44:15.848','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','Y','N','N')
 ;
 
+
+-- Process: ModCntr_Specific_Price_Update_Selection(de.metas.contracts.modular.process.ModCntr_Specific_Price_Update_Selection)
+-- 2024-06-19T12:58:50.537Z
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-06-19 15:58:50.536','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585401
+;
+
+-- Process: ModCntr_Specific_Price_Update_Selection(de.metas.contracts.modular.process.ModCntr_Specific_Price_Update_Selection)
+-- 2024-06-19T12:58:52.512Z
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-06-19 15:58:52.512','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585401
+;
+
+-- Process: ModCntr_Specific_Price_Update_Selection(de.metas.contracts.modular.process.ModCntr_Specific_Price_Update_Selection)
+-- 2024-06-19T12:59:03.106Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Update contract price - selection',Updated=TO_TIMESTAMP('2024-06-19 15:59:03.106','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585401
+;
+
+-- Process: ModCntr_Specific_Price_Update_Selection(de.metas.contracts.modular.process.ModCntr_Specific_Price_Update_Selection)
+-- ParameterName: MinValue
+-- 2024-06-19T13:02:10.261Z
+UPDATE AD_Process_Para SET DisplayLogic='@ModCntr_Type_ID@=540024 | @ModCntr_Type_ID@=540025',Updated=TO_TIMESTAMP('2024-06-19 16:02:10.261','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542850
+;
+
+-- Process: ModCntr_Specific_Price_Update_Selection(de.metas.contracts.modular.process.ModCntr_Specific_Price_Update_Selection)
+-- ParameterName: Price_Old
+-- 2024-06-19T13:02:13.869Z
+UPDATE AD_Process_Para SET DisplayLogic='@ModCntr_Type_ID@=540024 | @ModCntr_Type_ID@=540025',Updated=TO_TIMESTAMP('2024-06-19 16:02:13.869','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542852
+;
+
+-- Process: ModCntr_Specific_Price_Update_Selection(de.metas.contracts.modular.process.ModCntr_Specific_Price_Update_Selection)
+-- ParameterName: M_Product_ID
+-- 2024-06-19T13:04:31.749Z
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,AD_Reference_Value_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,454,0,585401,542853,29,540272,'M_Product_ID',TO_TIMESTAMP('2024-06-19 16:04:31.502','YYYY-MM-DD HH24:MI:SS.US'),100,'Produkt, Leistung, Artikel','de.metas.contracts',0,'Bezeichnet eine Einheit, die in dieser Organisation gekauft oder verkauft wird.','Y','N','Y','N','Y','N','Produkt',70,TO_TIMESTAMP('2024-06-19 16:04:31.502','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2024-06-19T13:04:31.752Z
+INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_Para_ID=542853 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
+;
+
+-- 2024-06-19T13:04:31.755Z
+/* DDL */  select update_Process_Para_Translation_From_AD_Element(454)
+;
+
+-- Process: ModCntr_Specific_Price_Update_Selection(de.metas.contracts.modular.process.ModCntr_Specific_Price_Update_Selection)
+-- ParameterName: M_Product_ID
+-- 2024-06-19T13:04:34.661Z
+UPDATE AD_Process_Para SET SeqNo=5,Updated=TO_TIMESTAMP('2024-06-19 16:04:34.661','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542853
+;
+
+-- Process: ModCntr_Specific_Price_Update_Selection(de.metas.contracts.modular.process.ModCntr_Specific_Price_Update_Selection)
+-- ParameterName: M_Product_ID
+-- 2024-06-19T13:06:58.703Z
+UPDATE AD_Process_Para SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2024-06-19 16:06:58.703','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542853
+;
+
+-- Column: ModCntr_Specific_Price.MinValue
+-- 2024-06-19T14:50:06.010Z
+UPDATE AD_Column SET DefaultValue='', IsMandatory='N',Updated=TO_TIMESTAMP('2024-06-19 17:50:06.01','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588321
+;
+
+-- 2024-06-19T14:50:10.300Z
+INSERT INTO t_alter_column values('modcntr_specific_price','MinValue','NUMERIC',null,null)
+;
+
+-- 2024-06-19T14:50:10.313Z
+INSERT INTO t_alter_column values('modcntr_specific_price','MinValue',null,'NULL',null)
+;
+
+-- Column: ModCntr_Specific_Price.MinValue
+-- 2024-06-19T15:01:19.452Z
+UPDATE AD_Column SET MandatoryLogic='@IsScalePrice@=Y',Updated=TO_TIMESTAMP('2024-06-19 18:01:19.452','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588321
+;
+
+
+update ModCntr_Type set isactive='Y' where ModCntr_Type_ID in (540010, 540009,540008);
+
+
+-- Name: ModCntr_Type(process)
+-- 2024-06-19T15:36:27.333Z
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541873,TO_TIMESTAMP('2024-06-19 18:36:27.152','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','N','ModCntr_Type(process)',TO_TIMESTAMP('2024-06-19 18:36:27.152','YYYY-MM-DD HH24:MI:SS.US'),100,'T')
+;
+
+-- 2024-06-19T15:36:27.336Z
+INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Reference_ID=541873 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
+;
+
+-- Reference: ModCntr_Type(process)
+-- Table: ModCntr_Type
+-- Key: ModCntr_Type.ModCntr_Type_ID
+-- 2024-06-19T15:38:25.032Z
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,586747,0,541873,542337,TO_TIMESTAMP('2024-06-19 18:38:25.027','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','N','N',TO_TIMESTAMP('2024-06-19 18:38:25.027','YYYY-MM-DD HH24:MI:SS.US'),100,'ModCntr_Type_ID not in (540010, 540009,540008)')
+;
+
+-- Name: ModCntr_Type(process)
+-- 2024-06-19T15:39:47.806Z
+UPDATE AD_Reference SET Help='Definitive and Informative Computing Methods should not selectable in modular settings lines',Updated=TO_TIMESTAMP('2024-06-19 18:39:47.804','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Reference_ID=541873
+;
+
+-- 2024-06-19T15:39:47.809Z
+UPDATE AD_Reference_Trl trl SET Help='Definitive and Informative Computing Methods should not selectable in modular settings lines' WHERE AD_Reference_ID=541873 AND AD_Language='de_DE'
+;
+
+-- Name: ModCntr_Type for Processed Product
+-- 2024-06-19T15:43:31.154Z
+UPDATE AD_Val_Rule SET Code='@M_Product_ID/-1@ = @M_Processed_Product_ID/-1@ OR modcntr_type.modularcontracthandlertype != ''SalesOnProcessedProduct'' OR (modcntr_type.modcntr_type_id!=540008 AND modcntr_type.modcntr_type_id!=540009 AND modcntr_type.modcntr_type_id!=540010)',Updated=TO_TIMESTAMP('2024-06-19 18:43:31.152','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540674
+;
+
+-- Process: ModCntr_Specific_Price_Update_Selection(de.metas.contracts.modular.process.ModCntr_Specific_Price_Update_Selection)
+-- ParameterName: ModCntr_Type_ID
+-- 2024-06-19T15:43:50.194Z
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=541873,Updated=TO_TIMESTAMP('2024-06-19 18:43:50.194','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542851
+;
+
+-- Reference: ModCntr_Type
+-- Table: ModCntr_Type
+-- Key: ModCntr_Type.ModCntr_Type_ID
+-- 2024-06-19T15:46:36.882Z
+UPDATE AD_Ref_Table SET WhereClause='ModCntr_Type_ID not in (540010, 540009,540008)',Updated=TO_TIMESTAMP('2024-06-19 18:46:36.882','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Reference_ID=541861
+;
+
+-- Name: ModCntr_Type for Processed Product
+-- 2024-06-19T15:46:46.558Z
+UPDATE AD_Val_Rule SET Code='@M_Product_ID/-1@ = @M_Processed_Product_ID/-1@ OR modcntr_type.modularcontracthandlertype != ''SalesOnProcessedProduct'' ',Updated=TO_TIMESTAMP('2024-06-19 18:46:46.556','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540674
+;
+
+
+-- Process: ModCntr_Specific_Price_Update_Selection(de.metas.contracts.modular.process.ModCntr_Specific_Price_Update_Selection)
+-- ParameterName: C_Currency_ID
+-- 2024-06-20T06:42:22.806Z
+UPDATE AD_Process_Para SET DefaultValue='@C_Currency_ID@',Updated=TO_TIMESTAMP('2024-06-20 09:42:22.806','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542848
+;
+
+
+-- Process: ModCntr_Specific_Price_Update_Selection(de.metas.contracts.modular.process.ModCntr_Specific_Price_Update_Selection)
+-- ParameterName: C_Currency_ID
+-- 2024-06-20T06:42:22.806Z
+UPDATE AD_Process_Para SET DefaultValue='@C_Currency_ID@',Updated=TO_TIMESTAMP('2024-06-20 09:42:22.806','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542848
+;
+
+-- Value: Different_Currencies
+-- 2024-06-20T06:58:46.124Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545425,0,TO_TIMESTAMP('2024-06-20 09:58:45.915','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Contracts have different currencies!','E',TO_TIMESTAMP('2024-06-20 09:58:45.915','YYYY-MM-DD HH24:MI:SS.US'),100,'Different_Currencies')
+;
+
+-- 2024-06-20T06:58:46.127Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545425 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Value: Different_Currencies
+-- 2024-06-20T06:59:55.613Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Verträge haben unterschiedliche Währungen!',Updated=TO_TIMESTAMP('2024-06-20 09:59:55.612','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545425
+;
+
+-- Value: Different_Currencies
+-- 2024-06-20T06:59:57.928Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-06-20 09:59:57.928','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545425
+;
+
+-- Value: Different_Currencies
+-- 2024-06-20T07:00:02.418Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Verträge haben unterschiedliche Währungen!',Updated=TO_TIMESTAMP('2024-06-20 10:00:02.418','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545425
+;
+
+-- 2024-06-20T07:00:02.420Z
+UPDATE AD_Message SET MsgText='Verträge haben unterschiedliche Währungen!' WHERE AD_Message_ID=545425
+;
+
+-- Value: Different_Contracts
+-- 2024-06-20T07:00:31.433Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545426,0,TO_TIMESTAMP('2024-06-20 10:00:31.325','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Selection contains different contract types!','E',TO_TIMESTAMP('2024-06-20 10:00:31.325','YYYY-MM-DD HH24:MI:SS.US'),100,'Different_Contracts')
+;
+
+-- 2024-06-20T07:00:31.436Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545426 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Value: Different_Contracts
+-- 2024-06-20T07:00:57.079Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Auswahl beinhaltet unterschiedliche Vertragsarten!',Updated=TO_TIMESTAMP('2024-06-20 10:00:57.079','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545426
+;
+
+-- 2024-06-20T07:00:57.081Z
+UPDATE AD_Message SET MsgText='Auswahl beinhaltet unterschiedliche Vertragsarten!' WHERE AD_Message_ID=545426
+;
+
+-- Value: Different_Contracts
+-- 2024-06-20T07:01:01.599Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Auswahl beinhaltet unterschiedliche Vertragsarten!',Updated=TO_TIMESTAMP('2024-06-20 10:01:01.599','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545426
+;
+
+-- Value: Different_Contracts
+-- 2024-06-20T07:01:03.833Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-06-20 10:01:03.833','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545426
+;
+
+
+-- Element: Price_Old
+-- 2024-06-20T07:22:22.514Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Preis alt', PrintName='Preis alt',Updated=TO_TIMESTAMP('2024-06-20 10:22:22.514','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=543096 AND AD_Language='de_CH'
+;
+
+-- 2024-06-20T07:22:22.521Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543096,'de_CH')
+;
+
+-- Element: Price_Old
+-- 2024-06-20T07:22:26.071Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-06-20 10:22:26.071','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=543096 AND AD_Language='en_US'
+;
+
+-- 2024-06-20T07:22:26.075Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543096,'en_US')
+;
+
+-- Element: Price_Old
+-- 2024-06-20T07:22:29.840Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Preis alt', PrintName='Preis alt',Updated=TO_TIMESTAMP('2024-06-20 10:22:29.84','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=543096 AND AD_Language='de_DE'
+;
+
+-- 2024-06-20T07:22:29.842Z
+UPDATE AD_Element SET Name='Preis alt', PrintName='Preis alt' WHERE AD_Element_ID=543096
+;
+
+-- 2024-06-20T07:22:30.301Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(543096,'de_DE')
+;
+
+-- 2024-06-20T07:22:30.303Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543096,'de_DE')
+;
+

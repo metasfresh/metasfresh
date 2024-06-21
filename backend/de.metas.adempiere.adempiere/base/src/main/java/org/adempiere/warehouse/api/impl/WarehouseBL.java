@@ -310,7 +310,7 @@ public class WarehouseBL implements IWarehouseBL
 
 	private void updateWarehouseLocation(@NonNull final WarehouseId warehouseId, @NonNull final LocationId locationId)
 	{
-		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		final I_M_Warehouse warehouse = warehouseDAO.getByIdInTrx(warehouseId);
 		warehouse.setC_Location_ID(locationId.getRepoId());
 
 		save(warehouse);
