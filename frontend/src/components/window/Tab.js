@@ -3,7 +3,6 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import { fetchTab } from '../../actions/WindowActions';
-import { toOrderBysCommaSeparatedString } from '../../utils/windowHelpers';
 
 class Tab extends PureComponent {
   constructor(props) {
@@ -21,16 +20,14 @@ class Tab extends PureComponent {
     } = this.props;
 
     if (docId && queryOnActivate) {
-      const query = toOrderBysCommaSeparatedString(orderBy);
-
       if (singleRowView) {
-        fetchTab({ tabId, windowId, docId, query }).then((rows) => {
+        fetchTab({ tabId, windowId, docId, orderBy }).then((rows) => {
           if (rows.length) {
             onChange && onChange();
           }
         });
       } else {
-        fetchTab({ tabId, windowId, docId, query }).then(() => {
+        fetchTab({ tabId, windowId, docId, orderBy }).then(() => {
           onChange && onChange();
         });
       }
