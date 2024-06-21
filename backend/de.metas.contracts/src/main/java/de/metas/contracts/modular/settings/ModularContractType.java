@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.settings;
 
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty.ColumnOption;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,7 +38,7 @@ public class ModularContractType
 	@NonNull ComputingMethodType computingMethodType;
 	@Nullable String value;
 	@Nullable String name;
-	@Nullable String columnName;
+	@Nullable ColumnOption columnOption;
 
 	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
 	{

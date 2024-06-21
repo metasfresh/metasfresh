@@ -97,7 +97,7 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		if (countCurrencies() > 1)
+		if (countCurrencies(context) > 1)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason(DIFFERENT_CURRENCIES_MESSAGE);
 		}
@@ -109,7 +109,7 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 				.create()
 				.count();
 
-		if (notModularContractCnt > 0)
+		if (countNonModularContractTypes(context) > 0)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason(DIFFERENT_CONTRACTS_MESSAGE);
 		}
@@ -212,13 +212,25 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 				.listIds(FlatrateTermId::ofRepoId);
 	}
 
-	private int countCurrencies()
+	private int countCurrencies(final @NonNull IProcessPreconditionsContext context)
 	{
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
+				.addFilter(context.getQueryFilter(I_C_Flatrate_Term.class))
 				.create()
 				.listDistinct(I_C_Flatrate_Term.COLUMNNAME_C_Currency_ID)
 				.size();
+
+	}
+
+
+	private int countNonModularContractTypes(final @NonNull IProcessPreconditionsContext context)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.filter(context.getQueryFilter(I_C_Flatrate_Term.class))
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.create()
+				.count();
 
 	}
 
