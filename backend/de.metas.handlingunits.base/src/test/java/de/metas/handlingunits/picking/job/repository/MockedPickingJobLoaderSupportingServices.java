@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
@@ -96,6 +97,12 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 				.name(TranslatableStrings.anyLanguage("infinite-" + huPIItemProductId.getRepoId()))
 				.piItemId(HuPackingInstructionsItemId.ofRepoId(123))
 				.build();
+	}
+
+	@Override
+	public String getPICaption(@NonNull final HuPackingInstructionsId piId)
+	{
+		return "PI-" + piId.getRepoId();
 	}
 
 	@Override

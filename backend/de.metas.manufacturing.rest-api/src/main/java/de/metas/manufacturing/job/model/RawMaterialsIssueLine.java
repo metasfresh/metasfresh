@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -124,5 +126,16 @@ public class RawMaterialsIssueLine
 	public boolean containsRawMaterialsIssueStep(final PPOrderIssueScheduleId issueScheduleId)
 	{
 		return steps.stream().anyMatch(step -> PPOrderIssueScheduleId.equals(step.getId(), issueScheduleId));
+	}
+
+	@NonNull
+	public ITranslatableString getProductValueAndProductName()
+	{
+		final TranslatableStringBuilder message = TranslatableStrings.builder()
+				.append(getProductValue())
+				.append(" ")
+				.append(getProductName());
+
+		return message.build();
 	}
 }

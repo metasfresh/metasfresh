@@ -62,8 +62,8 @@ public final class PickingJob
 
 	@NonNull private final PickingJobHeader header;
 
-	@Getter
-	@NonNull private final Optional<PickingSlotIdAndCaption> pickingSlot;
+	@NonNull @Getter private final Optional<PickingSlotIdAndCaption> pickingSlot;
+	@NonNull @Getter private final Optional<PickingTarget> pickTarget;
 
 	@Getter
 	@NonNull private final ImmutableList<PickingJobLine> lines;
@@ -83,10 +83,12 @@ public final class PickingJob
 	private final PickingJobProgress progress;
 
 	@Builder(toBuilder = true)
+	@SuppressWarnings("OptionalAssignedToNull")
 	private PickingJob(
 			final @NonNull PickingJobId id,
 			final @NonNull PickingJobHeader header,
 			final @Nullable Optional<PickingSlotIdAndCaption> pickingSlot,
+			final @Nullable Optional<PickingTarget> pickTarget,
 			final @NonNull ImmutableList<PickingJobLine> lines,
 			final @NonNull ImmutableSet<PickingJobPickFromAlternative> pickFromAlternatives,
 			final @NonNull PickingJobDocStatus docStatus,
@@ -97,8 +99,8 @@ public final class PickingJob
 
 		this.id = id;
 		this.header = header;
-		//noinspection OptionalAssignedToNull
 		this.pickingSlot = pickingSlot != null ? pickingSlot : Optional.empty();
+		this.pickTarget = pickTarget != null ? pickTarget : Optional.empty();
 		this.lines = lines;
 		this.pickFromAlternatives = pickFromAlternatives;
 		this.docStatus = docStatus;
@@ -163,6 +165,13 @@ public final class PickingJob
 	public boolean isNothingPicked() {return getProgress().isNotStarted();}
 
 	public Optional<PickingSlotId> getPickingSlotId() {return pickingSlot.map(PickingSlotIdAndCaption::getPickingSlotId);}
+
+	public PickingJob withPickTarget(@Nullable final PickingTarget pickTarget)
+	{
+		return PickingTarget.equals(this.pickTarget.orElse(null), pickTarget)
+				? this
+				: toBuilder().pickTarget(Optional.ofNullable(pickTarget)).build();
+	}
 
 	public PickingJob withPickingSlot(@Nullable final PickingSlotIdAndCaption pickingSlot)
 	{

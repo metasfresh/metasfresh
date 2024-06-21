@@ -536,7 +536,7 @@ public class HandlingUnitsService
 
 		return MoveHUCommand.builder()
 				.huQRCodesService(huQRCodeService)
-				.requestItems(ImmutableList.of(moveHURequestItem))
+				.requestItems(ImmutableSet.of(moveHURequestItem))
 				.targetQRCode(request.getTargetQRCode())
 				.build()
 				.execute();
@@ -546,14 +546,14 @@ public class HandlingUnitsService
 	{
 		final Map<HUQRCodeUniqueId, HuId> huQrCodeId2HuId = huQRCodeService.getHuIds(request.getHuQrCodes());
 
-		final List<MoveHURequestItem> moveHURequestItems = request.getHuQrCodes()
+		final Set<MoveHURequestItem> moveHURequestItems = request.getHuQrCodes()
 				.stream()
 				.map(huQrCode -> HUIdAndQRCode.builder()
 						.huQRCode(huQrCode)
 						.huId(huQrCodeId2HuId.get(huQrCode.getId()))
 						.build())
 				.map(MoveHURequestItem::ofHUIdAndQRCode)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableSet.toImmutableSet());
 
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodeService)

@@ -8,13 +8,16 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 @Jacksonized
 public class PickingJobStepPickedToHU
 {
 	@NonNull HuId pickFromHUId;
-	@NonNull HuId actualPickedHUId;
+	@NonNull HUInfo actualPickedHU;
 	@NonNull Quantity qtyPicked;
+	@Nullable Quantity catchWeight;
 	@NonNull PickingCandidateId pickingCandidateId;
 }

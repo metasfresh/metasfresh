@@ -29,6 +29,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.ClearanceStatusInfo;
+import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUCapacityBL;
@@ -69,6 +70,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.movement.HUIdAndQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
@@ -128,7 +130,15 @@ public class HUTransformService
 
 	public static HUTransformService newInstance()
 	{
-		return builder().build();
+		final IHUContext huContext = HUContextHolder.getCurrentOrNull();
+		if (huContext == null)
+		{
+			return builder().build();
+		}
+		else
+		{
+			return newInstance(huContext);
+		}
 	}
 
 	public static HUTransformService newInstance(@NonNull final IHUContext huContext)
@@ -184,6 +194,15 @@ public class HUTransformService
 
 	private static IMutableHUContext createHUContext(final @Nullable Properties ctx, final @Nullable String trxName)
 	{
+		if (ctx == null && trxName == null)
+		{
+			final IMutableHUContext current = HUContextHolder.getCurrentOrNull();
+			if (current != null)
+			{
+				return current;
+			}
+		}
+		
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 		final Properties effectiveCtx = ctx != null ? ctx : Env.getCtx();
@@ -766,7 +785,7 @@ public class HUTransformService
 			{
 				return ImmutableList.of();
 			}
-			
+
 			return tuToNewTUs(sourceHU, BigDecimal.valueOf(qtyTU));
 		}
 		else
@@ -1445,6 +1464,20 @@ public class HUTransformService
 	}
 
 	@NonNull
+	public Set<HuId> extractToTopLevel(@NonNull final Set<HUIdAndQRCode> huIdAndQRCodes)
+	{
+		return huIdAndQRCodes.stream()
+				.map(this::extractToTopLevel)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public HuId extractToTopLevel(@NonNull final HUIdAndQRCode huIdAndQRCode)
+	{
+		return extractToTopLevel(huIdAndQRCode.getHuId(), huIdAndQRCode.getHuQRCode());
+	}
+
+	@NonNull
 	public HuId extractToTopLevel(@NonNull final HuId huId, @Nullable final HUQRCode huQRCode)
 	{
 		if (huQRCode != null)
@@ -1587,8 +1620,17 @@ public class HUTransformService
         return trxManager.callInThreadInheritedTrx(() ->tusToLU(tusOrVhus, existingLU, null));
 	}
 
+	public HuId tuIdsToExistingLUId(
+			@NonNull final Set<HuId> tusOrVhuIds,
+			@NonNull final HuId existingLUId)
+	{
+		final List<I_M_HU> tusOrVhus = handlingUnitsBL.getByIds(tusOrVhuIds);
+		final I_M_HU existingLU = handlingUnitsBL.getById(existingLUId);
+		return trxManager.callInThreadInheritedTrx(() -> tusToLU(tusOrVhus, existingLU, null));
+	}
+
 	private HuId tusToLU(
-			@NonNull final List<I_M_HU> tusOrVhus,
+			@NonNull final Collection<I_M_HU> tusOrVhus,
 			@Nullable final I_M_HU existingLU,
 			@Nullable final HuPackingInstructionsItemId newLUPIItemId)
 	{
