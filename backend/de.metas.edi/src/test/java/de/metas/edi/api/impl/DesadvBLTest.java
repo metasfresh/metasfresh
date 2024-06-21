@@ -11,7 +11,6 @@ import de.metas.handlingunits.generichumodel.HURepository;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.pricing.InvoicableQtyBasedOn;
-import de.metas.inout.InOutLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
