@@ -151,12 +151,6 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public I_M_Warehouse getByIdInTrx(@NonNull final WarehouseId warehouseId)
-	{
-		return load(warehouseId, I_M_Warehouse.class);
-	}
-
-	@Override
 	public List<I_M_Warehouse> getByIds(final Collection<WarehouseId> warehouseIds)
 	{
 		return getByIds(warehouseIds, I_M_Warehouse.class);
