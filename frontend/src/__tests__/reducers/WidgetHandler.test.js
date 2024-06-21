@@ -1,11 +1,12 @@
 import { merge } from 'merge-anything';
 
 import * as ACTION_TYPES from '../../constants/ActionTypes';
-import reducer, { initialState, } from '../../reducers/widgetHandler';
+import reducer, {
+  initialState, 
+} from '../../reducers/widgetHandler';
 import { parseToDisplay } from '../../utils/documentListHelper';
 
-import fixtures
-  from '../../../test_setup/fixtures/independent_widgets/reducers.json';
+import fixtures from '../../../test_setup/fixtures/independent_widgets/reducers.json';
 
 const createState = function(state = {}) {
   return merge(

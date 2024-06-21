@@ -1,17 +1,17 @@
-import { original, produce } from 'immer';
+import { produce, original } from 'immer';
 
 import {
-  DELETE_ATTRIBUTES,
-  DELETE_QUICKINPUT,
   FETCH_ATTRIBUTES_DATA,
   FETCH_ATTRIBUTES_LAYOUT,
+  DELETE_ATTRIBUTES,
+  PATCH_ATTRIBUTES,
+  SET_ATTRIBUTES_DATA,
   FETCH_QUICKINPUT_DATA,
   FETCH_QUICKINPUT_LAYOUT,
-  PATCH_ATTRIBUTES,
-  PATCH_QUICKINPUT_DONE,
-  PATCH_QUICKINPUT_PENDING,
-  SET_ATTRIBUTES_DATA,
+  DELETE_QUICKINPUT,
   SET_QUICKINPUT_DATA,
+  PATCH_QUICKINPUT_PENDING,
+  PATCH_QUICKINPUT_DONE,
 } from '../constants/ActionTypes';
 import { parseToDisplay } from '../utils/documentListHelper';
 

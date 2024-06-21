@@ -4,12 +4,12 @@ import { connect } from 'react-redux';
 import { isEmpty } from 'lodash';
 
 import {
-  allowShortcut,
-  closeModal,
-  disableShortcut,
   openModal,
+  closeModal,
   patch,
   updatePropertyValue,
+  allowShortcut,
+  disableShortcut,
 } from '../actions/WindowActions';
 import { setTableNavigation } from '../actions/TableActions';
 import { getCellWidgetData } from '../utils/tableHelpers';
@@ -18,11 +18,11 @@ import {
   getData,
   getElementWidgetData,
   getElementWidgetFields,
-  getInlineTabLayout,
-  getInlineTabWidgetFields,
   getMasterDocStatus,
   getProcessWidgetData,
   getProcessWidgetFields,
+  getInlineTabLayout,
+  getInlineTabWidgetFields,
 } from '../reducers/windowHandler';
 
 import MasterWidget from '../components/widget/MasterWidget';

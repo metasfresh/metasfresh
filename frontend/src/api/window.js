@@ -1,4 +1,4 @@
-import { delete as del, get, post } from 'axios';
+import { post, get, delete as del } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';

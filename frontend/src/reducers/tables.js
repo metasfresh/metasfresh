@@ -1,5 +1,5 @@
-import { original, produce } from 'immer';
-import { difference, forEach, get } from 'lodash';
+import { produce, original } from 'immer';
+import { get, difference, forEach } from 'lodash';
 import { createSelector } from 'reselect';
 import { merge } from 'merge-anything';
 

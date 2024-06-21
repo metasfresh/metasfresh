@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import Separator from '../Separator';
 import Column from './Column';
-import { INITIALLY_CLOSED, INITIALLY_OPEN } from '../../constants/Constants';
+import { INITIALLY_OPEN, INITIALLY_CLOSED } from '../../constants/Constants';
 
 class Section extends PureComponent {
   render() {

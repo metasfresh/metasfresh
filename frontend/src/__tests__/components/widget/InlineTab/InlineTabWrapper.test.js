@@ -1,40 +1,29 @@
 import React from 'react';
 import nock from 'nock';
-import { mount, shallow } from 'enzyme';
+import { shallow, mount } from 'enzyme';
 import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
 import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
 
 import viewHandler from '../../../../reducers/viewHandler';
-import InlineTabWrapper, {
-  InlineTabWrapper as DisconnectedInlineTabWrapper
-} from '../../../../components/widget/InlineTabWrapper';
+import
+  InlineTabWrapper,
+  { InlineTabWrapper as DisconnectedInlineTabWrapper }
+from '../../../../components/widget/InlineTabWrapper';
 import hotkeys from '../../../../../test_setup/fixtures/hotkeys.json';
 import keymap from '../../../../../test_setup/fixtures/keymap.json';
-import {
-  ShortcutProvider
-} from '../../../../components/keyshortcuts/ShortcutProvider';
-import {
-  initialState as appHandlerState
-} from '../../../../reducers/appHandler';
-import {
-  initialState as windowHandlerState
-} from '../../../../reducers/windowHandler';
+import { ShortcutProvider } from '../../../../components/keyshortcuts/ShortcutProvider';
+import { initialState as appHandlerState } from '../../../../reducers/appHandler';
+import { initialState as windowHandlerState } from '../../../../reducers/windowHandler';
 import tablesHandler from '../../../../reducers/tables';
 
-import props
-  from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_wrapper.json';
-import tabData
-  from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data.json';
-import inlineTabStoreMore
-  from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data_more.json';
-import inlineTabStore
-  from '../../../../../test_setup/fixtures/widget/inlinetab/inlineTabStore.json';
-import addNewData
-  from '../../../../../test_setup/fixtures/widget/inlinetab/addNewData.json';
-import inlineTabInvalid
-  from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_invalid.json';
+import props from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_wrapper.json';
+import tabData from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data.json';
+import inlineTabStoreMore from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data_more.json';
+import inlineTabStore from '../../../../../test_setup/fixtures/widget/inlinetab/inlineTabStore.json';
+import addNewData from '../../../../../test_setup/fixtures/widget/inlinetab/addNewData.json';
+import inlineTabInvalid from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_invalid.json';
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);

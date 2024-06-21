@@ -1,16 +1,16 @@
 import counterpart from 'counterpart';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { deleteRequest, getZoomIntoWindow } from '../api';
+import { getZoomIntoWindow, deleteRequest } from '../api';
 import { containerPropTypes } from '../utils/tableHelpers';
 import { mapIncluded } from '../utils/documentListHelper';
 import { isGermanLanguage } from '../utils/locale';
-import { getTable, getTableId } from '../reducers/tables';
+import { getTableId, getTable } from '../reducers/tables';
 import {
-  collapseTableRow,
-  deselectTableRows,
-  setActiveSort,
   updateTableSelection,
+  deselectTableRows,
+  collapseTableRow,
+  setActiveSort,
 } from '../actions/TableActions';
 import { showIncludedView } from '../actions/ViewActions';
 import { openModal, updatePropertyValue } from '../actions/WindowActions';

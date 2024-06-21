@@ -1,21 +1,19 @@
 import React from 'react';
-import { mount, shallow } from 'enzyme';
+import { shallow, render, mount } from 'enzyme';
+import renderer from 'react-test-renderer';
 import nock from 'nock';
 import { omit } from 'lodash';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
-import {
-  initialState as widgetHandlerState
-} from '../../../reducers/widgetHandler';
+
+import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
+import { initialState as widgetHandlerState } from '../../../reducers/widgetHandler';
 import { parseToDisplay } from '../../../utils/documentListHelper';
 
-import quickInputData
-  from '../../../../test_setup/fixtures/table/table_quickinput.json';
-import ConnectedTableQuickInput, {
-  TableQuickInput
-} from '../../../components/table/TableQuickInput';
+import quickInputData from '../../../../test_setup/fixtures/table/table_quickinput.json';
+import ConnectedTableQuickInput, { TableQuickInput } from '../../../components/table/TableQuickInput';
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);

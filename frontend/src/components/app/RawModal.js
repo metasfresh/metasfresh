@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { advSearchRequest, deleteViewRequest, patchRequest } from '../../api';
+import { deleteViewRequest, advSearchRequest, patchRequest } from '../../api';
 import { PATCH_RESET } from '../../constants/ActionTypes';
 
 import { unsetIncludedView } from '../../actions/ViewActions';

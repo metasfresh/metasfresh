@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { forEach, get } from 'lodash';
 
 import { connectWS, disconnectWS } from '../utils/websockets';
-import { getRowsData, getTabRequest } from '../api';
+import { getTabRequest, getRowsData } from '../api';
 import { getTab } from '../utils';
 
 import { getTableId } from '../reducers/tables';
@@ -18,8 +18,8 @@ import {
 } from '../actions/WindowActions';
 import {
   deleteTable,
-  updateTabRowsData,
   updateTabTableData,
+  updateTabRowsData,
 } from '../actions/TableActions';
 
 import MasterWindow from '../components/app/MasterWindow';

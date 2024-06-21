@@ -10,9 +10,9 @@ import { deleteRequest } from '../../api';
 import { duplicateRequest, openFile } from '../../actions/GenericActions';
 import {
   openModal,
-  openPrintingOptionsModal,
-  resetPrintingOptions,
   setPrintingOptions,
+  resetPrintingOptions,
+  openPrintingOptionsModal,
 } from '../../actions/WindowActions';
 import { setBreadcrumb } from '../../actions/MenuActions';
 

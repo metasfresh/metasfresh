@@ -11,12 +11,13 @@ import {
   loginCompletionRequest,
   loginRequest,
 } from '../../api';
-import { connectionError, loginSuccess } from '../../actions/AppActions';
+import { loginSuccess } from '../../actions/AppActions';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
+import { connectionError } from '../../actions/AppActions';
 import { BAD_GATEWAY_ERROR } from '../../constants/Constants';
 import { getUserLang } from '../../api/userSession';
 

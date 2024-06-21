@@ -1,19 +1,15 @@
 import React from 'react';
-import { shallow } from 'enzyme';
+import { shallow, mount } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
 
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
-import {
-  initialState as windowHandlerState
-} from '../../../reducers/windowHandler';
+import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 import tablesHandler, { getTableId } from '../../../reducers/tables';
 
-import entryTableProps
-  from '../../../../test_setup/fixtures/table/entry_table_props.json';
-import entryTableData
-  from '../../../../test_setup/fixtures/table/entry_table_data.json';
+import entryTableProps from '../../../../test_setup/fixtures/table/entry_table_props.json';
+import entryTableData from '../../../../test_setup/fixtures/table/entry_table_data.json';
 
 import EntryTable from '../../../components/table/EntryTable';
 

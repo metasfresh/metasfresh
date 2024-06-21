@@ -10,13 +10,13 @@ import {
 } from '../utils/locale';
 import {
   addNotification,
-  connectionError,
+  setProcessSaved,
   initHotkeys,
   initKeymap,
   setLanguages,
-  setProcessSaved,
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api';
+import { connectionError } from '../actions/AppActions';
 // import PluginsRegistry from '../services/PluginsRegistry';
 import { useAuth } from '../hooks/useAuth';
 import useConstructor from '../hooks/useConstructor';

@@ -5,11 +5,11 @@ import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 import { completeRequest } from '../../api';
 import {
-  deleteQuickInput,
   fetchQuickInputData,
   fetchQuickInputLayout,
-  patchQuickInput,
+  deleteQuickInput,
   setQuickinputData,
+  patchQuickInput,
 } from '../../actions/IndependentWidgetsActions';
 
 import WidgetWrapper from '../../containers/WidgetWrapper';

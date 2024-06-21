@@ -7,33 +7,29 @@ import { openInNewTab } from '../utils/index';
 
 import {
   ACTIVATE_TAB,
-  ALLOW_OUTSIDE_CLICK,
   ALLOW_SHORTCUT,
+  ALLOW_OUTSIDE_CLICK,
   CHANGE_INDICATOR_STATE,
   CLEAR_MASTER_DATA,
-  CLOSE_FILTER_BOX,
   CLOSE_MODAL,
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
-  DISABLE_OUTSIDE_CLICK,
+  CLOSE_FILTER_BOX,
   DISABLE_SHORTCUT,
+  DISABLE_OUTSIDE_CLICK,
+  INIT_WINDOW,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
-  INIT_WINDOW,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
   PATCH_FAILURE,
   PATCH_REQUEST,
   PATCH_SUCCESS,
-  RESET_PRINTING_OPTIONS,
-  SET_PRINTING_OPTIONS,
   SET_RAW_MODAL_DESCRIPTION,
   SET_RAW_MODAL_TITLE,
-  SET_SPINNER,
   SORT_TAB,
   TOGGLE_OVERLAY,
-  TOGGLE_PRINTING_OPTION,
   UNSELECT_TAB,
   UPDATE_DATA_FIELD_PROPERTY,
   UPDATE_DATA_INCLUDED_TABS_INFO,
@@ -44,44 +40,49 @@ import {
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
+  SET_PRINTING_OPTIONS,
+  RESET_PRINTING_OPTIONS,
+  TOGGLE_PRINTING_OPTION,
+  SET_SPINNER,
 } from '../constants/ActionTypes';
-import { createView, setIncludedView, unsetIncludedView } from './ViewActions';
+import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
-import { preFormatPostDATA, toggleFullScreen } from '../utils';
+import { toggleFullScreen, preFormatPostDATA } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
 import {
-  formatParentUrl,
   getData,
+  patchRequest,
   getLayout,
   getProcessData,
-  getTabLayoutRequest,
   getTabRequest,
-  patchRequest,
   startProcess,
+  formatParentUrl,
+  getTabLayoutRequest,
 } from '../api';
 
 import { getTableId } from '../reducers/tables';
 import { findViewByViewId } from '../reducers/viewHandler';
 import {
   addNotification,
-  deleteNotification,
   setNotificationProgress,
   setProcessPending,
   setProcessSaved,
+  deleteNotification,
 } from './AppActions';
 import { openFile } from './GenericActions';
+import { unsetIncludedView, setIncludedView } from './ViewActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import {
   updateCommentsPanel,
-  updateCommentsPanelOpenFlag,
   updateCommentsPanelTextInput,
+  updateCommentsPanelOpenFlag,
 } from './CommentsPanelActions';
 import {
   createTabTable,
-  updateTableRowProperty,
-  updateTableSelection,
   updateTabTable,
+  updateTableSelection,
+  updateTableRowProperty,
 } from './TableActions';
 import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
 import { STATIC_MODAL_TYPE_ChangeCurrentWorkplace } from '../components/app/ChangeCurrentWorkplace';
