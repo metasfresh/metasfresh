@@ -6,6 +6,7 @@ import { merge } from 'merge-anything';
 import * as types from '../constants/ActionTypes';
 import { SORT_TAB } from '../constants/ActionTypes';
 import { doesSelectionExist } from '../utils/documentListHelper';
+import { NUMERIC_FIELD_TYPES } from '../constants/Constants';
 
 export const initialTableState = {
   windowId: null,
@@ -116,11 +117,25 @@ const compareRows = ({ row1, row2, orderBys }) => {
 };
 
 const extractValueToCompare = (row, fieldName) => {
-  let value = row?.fieldsByName?.[fieldName]?.value;
-  if (value?.caption) {
-    value = value.caption;
+  const field = row?.fieldsByName?.[fieldName];
+  if (!field) {
+    return undefined;
   }
-  return value;
+
+  let value = field.value;
+  const widgetType = field.widgetType;
+
+  if (NUMERIC_FIELD_TYPES.includes(widgetType)) {
+    if (value == null) {
+      return null;
+    }
+    return Number(value);
+  } else {
+    if (value?.caption) {
+      value = value.caption;
+    }
+    return value;
+  }
 };
 
 const compareValues = ({ value1, value2, ascending }) => {
