@@ -28,7 +28,9 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.inout.InOutId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.util.lang.IContextAware;
@@ -125,4 +127,10 @@ public interface IDesadvDAO extends ISingletonService
 	 * @return the max {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack#COLUMNNAME_Line} value for the given desadvId.
 	 */
 	int retrieveMaxDesadvPackLine(@NonNull EDIDesadvId desadvId);
+
+	@NonNull
+	List<I_M_InOut> retrieveShipmentsPendingExport(@NonNull I_EDI_Desadv desadv);
+
+	@NonNull
+	I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull InOutId shipmentId);
 }
