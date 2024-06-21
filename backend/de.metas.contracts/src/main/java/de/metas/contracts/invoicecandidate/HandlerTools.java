@@ -5,13 +5,10 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.modular.log.ModularContractLogQuery;
-import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
-import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -228,15 +225,5 @@ public class HandlerTools
 				.appendParametersToMessage()
 				.setParameter("term", term)
 				.setParameter("icRecord", icRecord);
-	}
-
-	public boolean isInEffect(@NonNull final I_C_Invoice_Candidate ic)
-	{
-		return SpringContextHolder.instance.getBean(ModularContractLogService.class)
-				.streamModularContractLogEntries(ModularContractLogQuery.builder()
-						.invoiceCandidateId(InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID()))
-						.build())
-				.findFirst()
-				.isPresent();
 	}
 }

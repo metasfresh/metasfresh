@@ -249,9 +249,4 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 		return modularContractLogEntries;
 	}
 
-	@Override
-	public boolean isInEffect(final @NonNull I_C_Invoice_Candidate ic)
-	{
-		return HandlerTools.isInEffect(ic);
-	}
 }

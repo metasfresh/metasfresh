@@ -186,10 +186,4 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 	{
 		return ImmutableList.of(term);
 	}
-
-	default boolean isInEffect(@NonNull final I_C_Invoice_Candidate ic)
-	{
-		//keep in sync with default value in de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.setIsInEffect
-		return true;
-	}
 }

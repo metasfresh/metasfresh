@@ -28,7 +28,6 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
-import de.metas.contracts.invoicecandidate.HandlerTools;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
@@ -417,9 +416,4 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 		return !term.isReadyForDefinitiveInvoice();
 	}
 
-	@Override
-	public boolean isInEffect(final @NonNull I_C_Invoice_Candidate ic)
-	{
-		return HandlerTools.isInEffect(ic);
-	}
 }
