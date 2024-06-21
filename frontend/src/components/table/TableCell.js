@@ -67,12 +67,14 @@ class TableCell extends PureComponent {
     }
 
     const { onKeyDown, property, isReadonly, tableCellData } = this.props;
+    const widgetType = tableCellData?.widgetType;
+
     onKeyDown &&
       onKeyDown({
         event,
         property,
         readonly: isReadonly,
-        isAttributeWidget: tableCellData.widgetType === 'ProductAttributes',
+        isAttributeWidget: widgetType === 'ProductAttributes',
       });
   };
 
