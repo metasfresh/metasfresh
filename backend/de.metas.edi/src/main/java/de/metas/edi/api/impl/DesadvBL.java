@@ -3,6 +3,7 @@ package de.metas.edi.api.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -10,6 +11,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.edi.api.EDIDesadvLinePackId;
+import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
@@ -1125,6 +1127,14 @@ public class DesadvBL implements IDesadvBL
 			createSingleMsg(desadvsRecords, minimumSumPercentage).ifPresent(result::add);
 		}
 		return result.build();
+	}
+
+	public void propagateEDIStatus(@NonNull final I_EDI_Desadv desadv)
+	{
+		desadvDAO.retrieveShipmentsWithStatus(desadv, ImmutableSet.of(EDIExportStatus.SendingStarted))
+				.stream()
+				.peek(shipment -> shipment.setEDI_ExportStatus(desadv.getEDI_ExportStatus()))
+				.forEach(inOutBL::save);
 	}
 
 	private Optional<ITranslatableString> createSingleMsg(

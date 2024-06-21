@@ -22,12 +22,7 @@ package de.metas.edi.api;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
@@ -38,6 +33,11 @@ import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.i18n.ITranslatableString;
 import de.metas.report.ReportResultData;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 public interface IDesadvBL extends ISingletonService
 {
@@ -98,4 +98,6 @@ public interface IDesadvBL extends ISingletonService
 
 	/** Iterate the given list and create user-friendly messages for all desadvs whose delivered quantity (fulfillment) is below their respective treshold. */
 	ImmutableList<ITranslatableString> createMsgsForDesadvsBelowMinimumFulfilment(ImmutableList<I_EDI_Desadv> desadvRecords);
+
+	void propagateEDIStatus(@NonNull I_EDI_Desadv desadv);
 }
