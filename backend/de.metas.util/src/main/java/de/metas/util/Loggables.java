@@ -110,11 +110,6 @@ public final class Loggables
 		return new LoggableWithLogger(get(), logger, level);
 	}
 
-	public static ILoggable withLogger(@NonNull final ILoggable loggable, @NonNull final Logger logger, @NonNull final Level level)
-	{
-		return new LoggableWithLogger(loggable, logger, level);
-	}
-
 	@NonNull
 	public static ILoggable withFallbackToLogger(@NonNull final Logger logger, @NonNull final Level level)
 	{
