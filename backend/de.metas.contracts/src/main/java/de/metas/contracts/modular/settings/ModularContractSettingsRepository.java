@@ -40,6 +40,7 @@ import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty.ColumnOption;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -159,7 +160,7 @@ public class ModularContractSettingsRepository
 				.value(record.getValue())
 				.name(record.getName())
 				.computingMethodType(ComputingMethodType.ofCode(record.getModularContractHandlerType()))
-				.columnName(record.getColumnName())
+				.columnOption(record.getColumnName() != null ? ColumnOption.valueOf(record.getColumnName()) : null)
 				.build();
 	}
 
