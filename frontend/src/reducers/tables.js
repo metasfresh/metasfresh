@@ -4,7 +4,9 @@ import { createSelector } from 'reselect';
 import { merge } from 'merge-anything';
 
 import * as types from '../constants/ActionTypes';
+import { SORT_TAB } from '../constants/ActionTypes';
 import { doesSelectionExist } from '../utils/documentListHelper';
+import { NUMERIC_FIELD_TYPES } from '../constants/Constants';
 import { shallowEqual, useSelector } from 'react-redux';
 
 export const initialTableState = {
@@ -89,6 +91,77 @@ export const getSupportAttribute = (selected, rows) => {
   }
   return false;
 };
+
+const addRowToArray = ({ orderedRows, rowToAdd, orderBys }) => {
+  if (!orderedRows.length) {
+    orderedRows.push(rowToAdd);
+    return;
+  }
+
+  for (let i = 0; i < orderedRows.length; i++) {
+    const currentRow = orderedRows[i];
+    const cmp = compareRows({ row1: currentRow, row2: rowToAdd, orderBys });
+    if (cmp > 0) {
+      orderedRows.splice(i, 0, rowToAdd);
+      return;
+    }
+  }
+
+  orderedRows.push(rowToAdd);
+};
+
+const compareRows = ({ row1, row2, orderBys }) => {
+  for (const orderBy of orderBys) {
+    const { fieldName, ascending } = orderBy;
+    const value1 = extractValueToCompare(row1, fieldName);
+    const value2 = extractValueToCompare(row2, fieldName);
+    const cmp = compareValues({ value1, value2, ascending });
+    if (cmp !== 0) {
+      return cmp;
+    }
+  }
+};
+
+const extractValueToCompare = (row, fieldName) => {
+  const field = row?.fieldsByName?.[fieldName];
+  if (!field) {
+    return undefined;
+  }
+
+  let value = field.value;
+  const widgetType = field.widgetType;
+
+  if (NUMERIC_FIELD_TYPES.includes(widgetType)) {
+    if (value == null) {
+      return null;
+    }
+    return Number(value);
+  } else {
+    if (value?.caption) {
+      value = value.caption;
+    }
+    return value;
+  }
+};
+
+const compareValues = ({ value1, value2, ascending }) => {
+  if (value1 == null && value2 == null) {
+    return 0;
+  } else if (value1 == value2) {
+    return 0;
+  } else if (value1 < value2) {
+    return ascending ? -1 : +1;
+  } else {
+    //if(value1 > value2)
+    return ascending ? +1 : -1;
+  }
+};
+
+//
+//
+// ------------------------
+//
+//
 
 const reducer = produce((draftState, action) => {
   switch (action.type) {
@@ -242,7 +315,8 @@ const reducer = produce((draftState, action) => {
           rows = rows.filter((row) => !removed[row.rowId]);
         }
 
-        // find&replace updated rows (unfortunately it's a table so we'll have to traverse it)
+        //
+        // find&replace updated rows (unfortunately it's a table, so we'll have to traverse it)
         if (changed && Object.values(changed).length) {
           rows = rows.map((row) => {
             if (changed[row.rowId]) {
@@ -258,8 +332,20 @@ const reducer = produce((draftState, action) => {
       } else {
         rows = [];
       }
-      // added rows
-      forEach(changed, (value) => rows.push(value));
+
+      //
+      // Add remaining rows
+      if (changed) {
+        const rowsToAdd = Object.values(changed);
+        if (rowsToAdd.length) {
+          const orderBys = original(
+            draftState[id].orderBys ?? draftState[id].defaultOrderBys
+          );
+          rowsToAdd.forEach((rowToAdd) =>
+            addRowToArray({ orderedRows: rows, rowToAdd, orderBys })
+          );
+        }
+      }
 
       draftState[id].rows = rows;
 
@@ -354,6 +440,26 @@ const reducer = produce((draftState, action) => {
           `Table with ID ${id} is not present in state. Skip setting navigationActive=${active}`
         );
       }
+
+      return;
+    }
+
+    case SORT_TAB: {
+      const {
+        scope,
+        windowId,
+        docId,
+        tabId,
+        field: fieldName,
+        asc: ascending,
+      } = action;
+
+      if (scope !== 'master') {
+        return;
+      }
+
+      const tableId = getTableId({ windowId, docId, tabId });
+      draftState[tableId].orderBys = [{ fieldName, ascending }];
 
       return;
     }

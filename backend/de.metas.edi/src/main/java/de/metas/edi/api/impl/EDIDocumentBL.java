@@ -32,6 +32,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.exception.EDIFillMandatoryException;
@@ -41,12 +42,16 @@ import de.metas.edi.model.I_C_BPartner_Location;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
+import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.edi.process.export.impl.EDI_DESADVExport;
+import de.metas.edi.process.export.impl.EDI_DESADV_InOut_Export;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inout.InOutId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
@@ -78,6 +83,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	private static final String ERR_NotExistsShipmentForOrderError = "NotExistsShipmentForOrderError";
 
 	private static final Logger logger = LogManager.getLogger(EDIDocumentBL.class);
+	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 
 	@Override
 	public boolean updateEdiEnabled(@NonNull final I_EDI_Document_Extension document)
@@ -149,7 +155,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			if (!hasInOuts)
 			{
 				feedback.add(new EDIMissingDependencyException(EDIDocumentBL.ERR_NotExistsShipmentForOrderError,
-						org.compiere.model.I_C_Invoice.COLUMNNAME_C_Order_ID, order.getDocumentNo()));
+															   org.compiere.model.I_C_Invoice.COLUMNNAME_C_Order_ID, order.getDocumentNo()));
 			}
 		}
 
@@ -268,7 +274,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		if (Check.isEmpty(ediLocation.getGLN(), true))
 		{
 			feedback.add(new EDIFillMandatoryException(org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bpLocation.getName(),
-					I_C_BPartner_Location.COLUMNNAME_GLN));
+													   I_C_BPartner_Location.COLUMNNAME_GLN));
 		}
 
 		return feedback;
@@ -326,6 +332,14 @@ public class EDIDocumentBL implements IEDIDocumentBL
 
 			final I_EDI_Desadv desadv = InterfaceWrapperHelper.create(ctx, recordId, I_EDI_Desadv.class, trxName);
 			export = new EDI_DESADVExport(desadv, tableIdentifier, clientId);
+		}
+		else if (I_M_InOut.Table_Name.equals(tableName))
+		{
+			final String tableIdentifier = I_M_InOut.COLUMNNAME_M_InOut_ID;
+			verifyRecordId(recordId, tableIdentifier);
+
+			final I_M_InOut_Desadv_V desadvInOut = desadvDAO.getInOutDesadvByInOutId(InOutId.ofRepoId(recordId));
+			export = new EDI_DESADV_InOut_Export(desadvInOut, tableIdentifier, clientId);
 		}
 		else
 		{

@@ -260,7 +260,7 @@ class MasterWindowContainer extends PureComponent {
 
     updateTabLayout(windowId, activeTabId)
       .then(() => {
-        getTabRequest(activeTabId, windowId, docId, orderBy).then((rows) =>
+        getTabRequest(activeTabId, windowId, docId, orderBy).then(({ rows }) =>
           updateTabTableData(tableId, rows)
         );
       })
@@ -300,21 +300,18 @@ class MasterWindowContainer extends PureComponent {
       master,
       params: { windowId, docId },
     } = this.props;
-    const orderBy = (asc ? '+' : '-') + field;
-    const dataId = master.docId;
-    const activeTabId = master.layout.activeTab;
 
-    if (!activeTabId) {
+    const activeTabId = master.layout.activeTab;
+    if (tabId !== activeTabId) {
       return;
     }
-    const tableId = getTableId({
-      windowId,
-      docId,
-      tabId: activeTabId,
-    });
 
-    sortTab('master', tabId, field, asc);
-    getTabRequest(tabId, windowId, dataId, orderBy).then((rows) => {
+    const orderBy = (asc ? '+' : '-') + field;
+    const dataId = master.docId;
+    const tableId = getTableId({ windowId, docId, tabId });
+
+    sortTab({ scope: 'master', windowId, docId, tabId, field, asc });
+    getTabRequest(tabId, windowId, dataId, orderBy).then(({ rows }) => {
       updateTabTableData(tableId, rows);
     });
   };

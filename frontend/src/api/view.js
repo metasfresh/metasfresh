@@ -2,6 +2,7 @@ import axios, { delete as del, get, patch, post } from 'axios';
 
 import { createPatchRequestPayload, getQueryString } from '../utils';
 import { prepareFilterForBackend } from '../utils/filterHelpers';
+import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
 
 export function getData({
   entity,
@@ -17,7 +18,7 @@ export function getData({
 }) {
   let queryParams = getQueryString({
     advanced: fetchAdvancedFields,
-    orderBy: orderBy,
+    orderBy: orderBy ? toOrderBysCommaSeparatedString(orderBy) : null,
   });
 
   return get(

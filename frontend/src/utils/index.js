@@ -286,20 +286,6 @@ export function leftTrim(str) {
   return str.replace(/^\s+/, '');
 }
 
-/**
- * @method formatSortingQuery
- * @summary format's the ordering parameters prefixing them with asc/desc sign
- */
-export function formatSortingQuery(orderBy) {
-  if (orderBy && orderBy.map) {
-    return orderBy.map((sortParam) => {
-      return `${sortParam.ascending ? '+' : '-'}${sortParam.fieldName}`;
-    });
-  }
-
-  return orderBy;
-}
-
 export const isBlank = (str) => {
   return !str || str.length === 0 || str.trim().length === 0;
 };

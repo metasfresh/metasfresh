@@ -70,17 +70,19 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     docId: docId,
     tabId: tabId,
     rowId: null, // all rows
-    orderBy: formatSortingQuery(orderBy),
+    orderBy,
   })
-    .then(
-      (res) =>
-        res.data &&
-        res.data.result &&
-        res.data.result.map((row) => ({
+    .then((res) => {
+      const rows =
+        res?.data?.result?.map((row) => ({
           ...row,
           fieldsByName: parseToDisplay(row.fieldsByName),
-        }))
-    )
+        })) ?? [];
+
+      const orderBys = res?.data?.orderBys ?? [];
+
+      return { rows, orderBys };
+    })
     .catch((error) => {
       // eslint-disable-next-line no-console
       console.error('getTabRequest error: ', error);

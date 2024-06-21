@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { fetchTab } from '../../actions/WindowActions';
-import { toOrderBysCommaSeparatedString } from '../../utils/windowHelpers';
 
 const Tab = ({
   children,
@@ -19,18 +18,16 @@ const Tab = ({
   useEffect(() => {
     let fetchTabRequest = null;
     if (docId && queryOnActivate && onChange) {
-      const query = toOrderBysCommaSeparatedString(orderBy);
-
-      fetchTabRequest = dispatch(fetchTab({ tabId, windowId, docId, query }));
+      fetchTabRequest = dispatch(fetchTab({ tabId, windowId, docId, orderBy }));
       if (singleRowView) {
-        fetchTabRequest.then((res) => {
-          if (res.length) {
-            onChange();
+        fetchTabRequest.then((rows) => {
+          if (rows.length) {
+            onChange && onChange();
           }
         });
       } else {
         fetchTabRequest.then(() => {
-          onChange();
+          onChange && onChange();
         });
       }
     }
