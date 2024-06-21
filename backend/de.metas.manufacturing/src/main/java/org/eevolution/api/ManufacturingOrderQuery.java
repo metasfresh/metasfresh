@@ -47,7 +47,7 @@ public class ManufacturingOrderQuery
 	@NonNull @Singular ImmutableSet<ResourceId> onlyWorkstationIds;
 	@Nullable WarehouseId warehouseId;
 	@NonNull @Builder.Default ValueRestriction<UserId> responsibleId = ValueRestriction.any();
-	@Nullable Instant datePromisedDay;
+	@Nullable Instant dateStartScheduleDay;
 
 	@Nullable APIExportStatus exportStatus;
 	@Nullable Instant canBeExportedFrom;
