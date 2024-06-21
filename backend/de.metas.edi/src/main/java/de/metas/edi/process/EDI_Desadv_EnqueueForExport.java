@@ -45,6 +45,7 @@ import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -66,6 +67,8 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 	private final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -74,6 +77,12 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
+
+		if (sysConfigBL.getBooleanValue(EDIWorkpackageProcessor.SYS_CONFIG_OneDesadvPerShipment, false))
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
