@@ -18,7 +18,7 @@ export function getData({
 }) {
   let queryParams = getQueryString({
     advanced: fetchAdvancedFields,
-    orderBy: toOrderBysCommaSeparatedString(orderBy),
+    orderBy: orderBy ? toOrderBysCommaSeparatedString(orderBy) : null,
   });
 
   return get(
