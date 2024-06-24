@@ -123,9 +123,17 @@ public class C_Campaign_Price
 						.setCountryId(countryId)
 						.setPriceDate(TimeUtil.asLocalDate(record.getValidFrom(),timeZone))
 						.setFailIfNotCalculated();
-				final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
-				record.setC_TaxCategory_ID(pricingResult.getTaxCategoryId().getRepoId());
-				record.setInvoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn().getCode());
+				final IPricingResult pricingResult;
+				try
+				{
+					pricingResult = pricingBL.calculatePrice(pricingContext);
+					record.setC_TaxCategory_ID(pricingResult.getTaxCategoryId().getRepoId());
+					record.setInvoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn().getCode());
+				}
+				catch (final Exception e)
+				{
+					record.setM_PricingSystem_ID(-1);
+				}
 			}
 		}
 		else {
@@ -189,6 +197,12 @@ public class C_Campaign_Price
 	{
 		if (record.getC_BPartner_ID() <= 0 && record.getC_BP_Group_ID() <= 0 && record.getM_PricingSystem_ID() <= 0)
 		{
+			if (record.getM_Product_ID() <= 0) {
+				throw new FillMandatoryException(I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID);
+			}
+			if (record.getM_PricingSystem_ID() <= 0) {
+				throw new FillMandatoryException(I_C_Campaign_Price.COLUMNNAME_M_PricingSystem_ID);
+			}
 			throw new FillMandatoryException(I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID);
 		}
 	}
