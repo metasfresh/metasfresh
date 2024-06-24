@@ -51,7 +51,7 @@ SELECT p.AD_Org_ID,
        p.c_currency_id                  AS C_Currency_ID,
        c.ISO_Code                       AS currency_code,
        p.PayAmt                         AS payAmt,
-       paymentAvailable(p.C_Payment_ID) AS openAmt,
+       paymentavailable(p.C_Payment_ID) AS openAmt,
        p.MultiplierAP::numeric          AS multiplierAP,
        p.C_ConversionType_ID            AS C_ConversionType_ID,
        p.source_currency_id             AS FixedConversion_SourceCurrency_ID,
@@ -68,6 +68,7 @@ WHERE (
   AND p.Processed = 'Y'
   AND p.C_Charge_ID IS NULL
   AND ($2 IS NULL OR $2 = 0 OR p.AD_Org_ID = $2)
+  AND paymentavailable(p.C_Payment_ID) != 0
 ORDER BY p.DateTrx, p.DocumentNo
     ;
 $BODY$

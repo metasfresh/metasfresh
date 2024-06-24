@@ -68,6 +68,7 @@ SELECT priceuomconvert(p.M_Product_ID,
                                     SELECT prev_currentcostprice
                                     FROM x
                                     WHERE dateAcct > p_Date
+                                    ORDER BY dateAcct
                                     LIMIT 1), cost.currentCostPrice),
                        p.c_uom_id,
                        p_c_uom_id,

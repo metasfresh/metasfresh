@@ -25,6 +25,8 @@ package de.metas.cucumber.stepdefs;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.copy_with_details.CopyRecordRequest;
+import de.metas.copy_with_details.CopyRecordService;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -38,6 +40,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
@@ -54,8 +57,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.copy.CopyRecordRequest;
-import org.adempiere.model.copy.CopyRecordService;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
@@ -72,6 +73,7 @@ import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -106,6 +108,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
 public class C_Order_StepDef
 {
+	private final Logger logger = LogManager.getLogger(C_Order_StepDef.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
@@ -161,12 +164,12 @@ public class C_Order_StepDef
 					.map(I_AD_Org::getAD_Org_ID)
 					.orElse(StepDefConstants.ORG_ID.getRepoId());
 
-			final Integer bPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
+			final Integer bPartnerID = bpartnerTable.getOptional(bpartnerIdentifier)
 					.map(I_C_BPartner::getC_BPartner_ID)
 					.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
 
 			final I_C_Order order = newInstance(I_C_Order.class);
-			order.setC_BPartner_ID(bPartnerId);
+			order.setC_BPartner_ID(bPartnerID);
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 			order.setDropShip_BPartner_ID(dropShipPartnerId);
@@ -333,10 +336,12 @@ public class C_Order_StepDef
 			case reactivated:
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				logger.info("Order {} was reactivated", order);
 				break;
 			case completed:
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				logger.info("Order {} was completed", order);
 				break;
 			default:
 				throw new AdempiereException("Unhandled C_Order action")
@@ -440,7 +445,7 @@ public class C_Order_StepDef
 
 	@Then("a PurchaseOrder with externalId {string} is created after not more than {int} seconds and has values")
 	public void verifyOrder(final String externalId, final int timeoutSec,
-			@NonNull final DataTable dataTable) throws InterruptedException
+							@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final Map<String, String> dataTableRow = dataTable.asMaps().get(0);
 
@@ -537,6 +542,7 @@ public class C_Order_StepDef
 		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+
 		final Integer expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
 				.map(I_C_BPartner::getC_BPartner_ID)
 				.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
@@ -545,7 +551,6 @@ public class C_Order_StepDef
 		final Integer expectedBPartnerLocation = bpartnerLocationTable.getOptional(bpartnerLocationIdentifier)
 				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 				.orElseGet(() -> Integer.parseInt(bpartnerLocationIdentifier));
-
 		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
 		final String docbasetype = DataTableUtil.extractStringForColumnName(row, "docbasetype");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
@@ -649,13 +654,13 @@ public class C_Order_StepDef
 		}
 
 		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_POReference);
-		if(Check.isNotBlank(poReference))
+		if (Check.isNotBlank(poReference))
 		{
 			assertThat(order.getPOReference()).isEqualTo(poReference);
 		}
 
 		final String internalName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName);
-		if(Check.isNotBlank(internalName))
+		if (Check.isNotBlank(internalName))
 		{
 			final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
 			assertThat(order.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
@@ -664,7 +669,7 @@ public class C_Order_StepDef
 
 	@Then("the following group compensation order lines were created for externalHeaderId: {string}")
 	public void verifyOrderLines(final String externalHeaderId,
-			@NonNull final DataTable dataTable)
+								 @NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)

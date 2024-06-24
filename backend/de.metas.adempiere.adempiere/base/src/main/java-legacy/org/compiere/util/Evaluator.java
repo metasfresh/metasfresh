@@ -16,8 +16,9 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.util.List;
-
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -25,9 +26,7 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.List;
 
 
 /**
@@ -139,12 +138,12 @@ public class Evaluator
 			int second = expression.indexOf('@', first+1);
 			if (second == -1)
 			{
-				s_log.error("No second @ in Logic: " + expression);
+				s_log.error("No second @ in Logic: {}", expression);
 				return null;
 			}
 			String variable = expression.substring(first+1, second);
 			String eval = getValue(source, variable);
-			s_log.trace(variable + "=" + eval);
+			s_log.trace("{}={}", variable, eval);
 			if (Check.isEmpty(eval, true))
 			{
 				eval = Env.getContext(Env.getCtx(), variable);

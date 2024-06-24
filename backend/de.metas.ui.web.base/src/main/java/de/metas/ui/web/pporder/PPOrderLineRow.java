@@ -3,22 +3,20 @@ package de.metas.ui.web.pporder;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.PPOrderQtyId;
 import de.metas.handlingunits.pporder.api.PPOrderQtyStatus;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.quantity.Quantitys;
-import de.metas.ui.web.window.datatypes.ColorValue;
-import de.metas.ui.web.window.descriptor.WidgetSize;
-import de.metas.uom.UOMConversionContext;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.HUEditorRowType;
+import de.metas.ui.web.handlingunits.report.HUReportAwareViewRow;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowAttributesProvider;
@@ -27,11 +25,14 @@ import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -39,12 +40,16 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -69,7 +74,7 @@ import java.util.function.Supplier;
  */
 
 @ToString
-public class PPOrderLineRow implements IViewRow
+public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 {
 	@Getter
 	private final DocumentPath documentPath;
@@ -100,6 +105,8 @@ public class PPOrderLineRow implements IViewRow
 
 	@Getter
 	private final HuId huId;
+	@Nullable private final String huUnitType;
+	@Nullable private final BPartnerId huBPartnerId;
 	@Getter
 	private final boolean sourceHU;
 	@Getter
@@ -138,7 +145,10 @@ public class PPOrderLineRow implements IViewRow
 	@ViewColumn(captionKey = "HUStatus", widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80))
 	private final JSONLookupValue huStatus;
 
-	@ViewColumn(captionKey = "Status", widgetType = DocumentFieldWidgetType.Color, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90))
+	@ViewColumn(captionKey = "HUClearanceStatus", widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90))
+	private final JSONLookupValue clearanceStatus;
+
+	@ViewColumn(captionKey = "Status", widgetType = DocumentFieldWidgetType.Color, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100))
 	private ColorValue lineStatusColor;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<PPOrderLineRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PPOrderLineRow.class);
@@ -151,24 +161,28 @@ public class PPOrderLineRow implements IViewRow
 	@lombok.Builder(builderMethodName = "builderForIssuedOrReceivedHU", builderClassName = "BuilderForIssuedOrReceivedHU")
 	private PPOrderLineRow(
 			@NonNull final PPOrderLineRowId rowId,
-			@NonNull final PPOrderLineType type,
+			@NonNull final HUEditorRowType type,
 			@NonNull final I_PP_Order_Qty ppOrderQty,
 			final boolean parentRowReadonly,
 			@Nullable final Supplier<? extends IViewRowAttributes> attributesSupplier,
 			@Nullable final String code, // can be null if type=HU_Storage
+			@Nullable final BPartnerId huBPartnerId,
 			@Nullable final JSONLookupValue product,
 			@Nullable final String packingInfo,  // can be null if type=HU_Storage
 			@NonNull final Quantity quantity,
 			@NonNull final List<PPOrderLineRow> includedRows,
 			@NonNull final Boolean topLevelHU,
-			@NonNull final JSONLookupValue huStatus)
+			@NonNull final JSONLookupValue huStatus,
+			@Nullable final JSONLookupValue clearanceStatus)
 	{
 		this.rowId = rowId;
-		this.type = type;
+		this.type = PPOrderLineType.ofHUEditorRowType(type);
 
 		this.orderId = PPOrderId.ofRepoId(ppOrderQty.getPP_Order_ID());
 		this.orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(ppOrderQty.getPP_Order_BOMLine_ID());
 		this.huId = HuId.ofRepoId(ppOrderQty.getM_HU_ID());
+		this.huUnitType = type.toHUUnitTypeOrNull();
+		this.huBPartnerId = huBPartnerId;
 		this.ppOrderQtyId = PPOrderQtyId.ofRepoId(ppOrderQty.getPP_Order_Qty_ID());
 
 		this.issueOrReceiveCandidateStatus = PPOrderQtyStatus.ofProcessedFlag(ppOrderQty.isProcessed());
@@ -179,6 +193,7 @@ public class PPOrderLineRow implements IViewRow
 		this.uom = JSONLookupValueTool.createUOMLookupValue(quantity.getUOM());
 		this.packingInfo = packingInfo;
 		this.code = code;
+		this.clearanceStatus = clearanceStatus;
 
 		this.sourceHU = false;
 		this.topLevelHU = topLevelHU;
@@ -213,6 +228,8 @@ public class PPOrderLineRow implements IViewRow
 		this.orderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 		this.orderBOMLineId = null;
 		this.huId = null;
+		this.huUnitType = null;
+		this.huBPartnerId = null;
 		this.ppOrderQtyId = null;
 
 		this.processed = processed;
@@ -234,8 +251,8 @@ public class PPOrderLineRow implements IViewRow
 				.getQtyRequiredToProduce();
 
 		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
-															  rowId.toDocumentId(),
-															  ppOrder.getM_AttributeSetInstance_ID());
+				rowId.toDocumentId(),
+				ppOrder.getM_AttributeSetInstance_ID());
 
 		this.includedRows = ImmutableList.copyOf(includedRows);
 
@@ -249,6 +266,11 @@ public class PPOrderLineRow implements IViewRow
 
 		this.issueMethod = null;
 
+		this.clearanceStatus = includedRows.stream()
+				.map(PPOrderLineRow::getClearanceStatus)
+				.filter(Objects::nonNull)
+				.findFirst()
+				.orElse(null);
 	}
 
 	@lombok.Builder(builderMethodName = "builderForPPOrderBomLine", builderClassName = "BuilderForPPOrderBomLine")
@@ -269,6 +291,8 @@ public class PPOrderLineRow implements IViewRow
 		this.orderId = PPOrderId.ofRepoId(ppOrderBomLine.getPP_Order_ID());
 		this.orderBOMLineId = PPOrderBOMLineId.ofRepoId(ppOrderBomLine.getPP_Order_BOMLine_ID());
 		this.huId = null;
+		this.huUnitType = null;
+		this.huBPartnerId = null;
 		this.ppOrderQtyId = null;
 
 		this.processed = processed;
@@ -308,6 +332,7 @@ public class PPOrderLineRow implements IViewRow
 		this.issueMethod = BOMComponentIssueMethod.ofNullableCode(ppOrderBomLine.getIssueMethod());
 
 		this.lineStatusColor = computeLineStatusColor(this.qtyPlan, this.qty);
+		this.clearanceStatus = null;
 	}
 
 	@lombok.Builder(builderMethodName = "builderForSourceHU", builderClassName = "BuilderForSourceHU")
@@ -322,7 +347,8 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final JSONLookupValue uom,
 			@NonNull final Quantity qty,
 			@NonNull final Boolean topLevelHU,
-			@NonNull final JSONLookupValue huStatus)
+			@NonNull final JSONLookupValue huStatus,
+			@Nullable final JSONLookupValue clearanceStatus)
 	{
 		this.rowId = rowId;
 		this.type = type;
@@ -330,6 +356,8 @@ public class PPOrderLineRow implements IViewRow
 		this.orderId = null;
 		this.orderBOMLineId = null;
 		this.huId = huId;
+		this.huUnitType = null; // N/A
+		this.huBPartnerId = null; // N/A
 		this.ppOrderQtyId = null;
 
 		this.processed = true;
@@ -356,13 +384,14 @@ public class PPOrderLineRow implements IViewRow
 		this.documentPath = computeDocumentPath();
 
 		this.issueMethod = null;
+		this.clearanceStatus = clearanceStatus;
 	}
 
 	@VisibleForTesting
 	static ColorValue computeLineStatusColor(@NonNull final Quantity qtyPlan, @NonNull final Quantity qtyIssued)
 	{
 		final boolean issued;
-		if(qtyPlan.signum() >= 0)
+		if (qtyPlan.signum() >= 0)
 		{
 			issued = qtyPlan.compareTo(qtyIssued) <= 0;
 		}
@@ -445,6 +474,11 @@ public class PPOrderLineRow implements IViewRow
 		return uom == null ? null : UomId.ofRepoIdOrNull(uom.getKeyAsInt());
 	}
 
+	private JSONLookupValue getClearanceStatus()
+	{
+		return clearanceStatus;
+	}
+
 	@Nullable
 	public I_C_UOM getUom()
 	{
@@ -495,4 +529,17 @@ public class PPOrderLineRow implements IViewRow
 		return attributes;
 	}
 
+	@Override
+	public String getHUUnitTypeOrNull() {return huUnitType;}
+
+	@Override
+	public BPartnerId getBpartnerId() {return huBPartnerId;}
+
+	@Override
+	public boolean isTopLevel() {return topLevelHU;}
+
+	@Override
+	public Stream<HUReportAwareViewRow> streamIncludedHUReportAwareRows() {return getIncludedRows().stream().map(PPOrderLineRow::toHUReportAwareViewRow);}
+
+	private HUReportAwareViewRow toHUReportAwareViewRow() {return this;}
 }

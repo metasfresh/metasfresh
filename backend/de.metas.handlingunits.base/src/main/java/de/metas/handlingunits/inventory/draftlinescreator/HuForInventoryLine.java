@@ -1,10 +1,7 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.warehouse.LocatorId;
-
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -12,6 +9,9 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.LocatorId;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -42,8 +42,8 @@ public class HuForInventoryLine
 	@NonNull
 	OrgId orgId;
 
-	@NonNull
-	HuId huId;
+	@Nullable HuId huId;
+	@Nullable HUQRCode huQRCode;
 
 	@NonNull
 	Quantity quantityBooked;
@@ -65,7 +65,8 @@ public class HuForInventoryLine
 	@Builder
 	private HuForInventoryLine(
 			@NonNull final OrgId orgId,
-			@NonNull final HuId huId,
+			@Nullable final HuId huId,
+			@Nullable final HUQRCode huQRCode,
 			@NonNull final Quantity quantityBooked,
 			@Nullable final Quantity quantityCount,
 			@NonNull final ProductId productId,
@@ -77,6 +78,7 @@ public class HuForInventoryLine
 
 		this.orgId = orgId;
 		this.huId = huId;
+		this.huQRCode = huQRCode;
 		this.quantityBooked = quantityBooked;
 		this.quantityCount = quantityCount;
 

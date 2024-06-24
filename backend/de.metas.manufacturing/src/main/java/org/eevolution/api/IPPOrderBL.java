@@ -5,6 +5,7 @@ import de.metas.material.planning.pporder.OrderQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -13,6 +14,7 @@ import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public interface IPPOrderBL extends ISingletonService
@@ -103,5 +105,9 @@ public interface IPPOrderBL extends ISingletonService
 
 	void setC_OrderLine(@NonNull PPOrderId ppOrderId, @NonNull OrderLineId orderLineId);
 
-	void postPPOrderCreatedEvent(@NonNull final I_PP_Order ppOrder);
+	void postPPOrderCreatedEvent(@NonNull I_PP_Order ppOrder);
+
+	void completeDocument(@NonNull I_PP_Order ppOrder);
+
+	Set<ProductId> getProductIdsToIssue(@NonNull PPOrderId ppOrderId);
 }

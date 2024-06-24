@@ -8,6 +8,7 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.process.ProcessHandlerType;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -208,6 +209,12 @@ public interface IView
 
 	<T> List<T> retrieveModelsByIds(DocumentIdsSelection rowIds, Class<T> modelClass);
 
+	@NonNull
+	default <T> Stream<T> streamModelsByIds(@NonNull final DocumentIdsSelection rowIds, @NonNull final Class<T> modelClass)
+	{
+		return retrieveModelsByIds(rowIds, modelClass).stream();
+	}
+
 	/**
 	 * @return a stream which contains only the {@link IViewRow}s which given <code>rowId</code>s.
 	 * If a {@link IViewRow} was not found for given ID, this method simply ignores it.
@@ -227,7 +234,7 @@ public interface IView
 		return ViewActionDescriptorsList.EMPTY;
 	}
 
-	default boolean isConsiderTableRelatedProcessDescriptors(@NonNull final DocumentIdsSelection selectedRowIds)
+	default boolean isConsiderTableRelatedProcessDescriptors(@NonNull final ProcessHandlerType processHandlerType, @NonNull final DocumentIdsSelection selectedRowIds)
 	{
 		return true;
 	}

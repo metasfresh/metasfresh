@@ -10,6 +10,7 @@ import de.metas.util.Services;
 import de.metas.util.StreamUtils;
 import lombok.NonNull;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -39,7 +40,6 @@ import java.util.stream.Stream;
  * A {@link ViewBasedProcessTemplate} implementation template which add convenient functionalities around {@link HUEditorView}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 {
@@ -82,7 +82,6 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 		return getView().streamByIds(selectedRowIds);
 	}
 
-
 	protected final Stream<HuId> streamSelectedHUIds(@NonNull final Select select)
 	{
 		return streamSelectedHUIds(HUEditorRowFilter.select(select));
@@ -111,4 +110,15 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 				.dice(huIds, 100)
 				.flatMap(huIdsChunk -> handlingUnitsRepo.getByIds(huIdsChunk).stream());
 	}
+
+	protected final void addHUIdsAndInvalidateView(Collection<HuId> huIds)
+	{
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+
+		getView().addHUIdsAndInvalidate(huIds);
+	}
+
 }

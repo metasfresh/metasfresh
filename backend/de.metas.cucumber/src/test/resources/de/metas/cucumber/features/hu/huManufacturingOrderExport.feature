@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Handling unit export from manufacturing order
 
   Background:
@@ -21,9 +22,9 @@ Feature: Handling unit export from manufacturing order
       | locatorHauptlager       | warehouseStd              | Hauptlager |
 
     And metasfresh contains M_Products:
-      | Identifier              | Name                 |
-      | manufacturingProduct_HU | manufacturingProduct |
-      | componentProduct_HU     | componentProduct     |
+      | Identifier              | Name                 | HUClearanceStatus |
+      | manufacturingProduct_HU | manufacturingProduct | L                 |
+      | componentProduct_HU     | componentProduct     |                   |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name            |
@@ -58,8 +59,8 @@ Feature: Handling unit export from manufacturing order
       | ppOrder_manufacturing  | MOP         | manufacturingProduct_HU | 10         | testResource             | 2022-01-05T23:59:00.00Z | 2022-01-05T23:59:00.00Z | 2022-01-05T23:59:00.00Z | Y                |
 
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier |
-      | huLuTuConfig                          | ppOrder_manufacturing  | ppOrderTU          | N               | 0     | N               | 1     | N               | 10    | huItemManufacturingProduct         |
+      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | huLuTuConfig                          | ppOrder_manufacturing  | ppOrderTU          | N               | 0     | N               | 1     | N               | 10          | huItemManufacturingProduct         |
 
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
@@ -94,9 +95,9 @@ Feature: Handling unit export from manufacturing order
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then validate "retrieve hu" response:
-      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote           |
-      | ppOrderTU          | TU         | ppOrderCU   | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                       | Gesperrt                    | Erwartet Freigabe durch GRS |
-      | ppOrderCU          | CU         |             | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                       | Gesperrt                    | Erwartet Freigabe durch GRS |
+      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote |
+      | ppOrderTU          | TU         | ppOrderCU   | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Hergestellt       |
+      | ppOrderCU          | CU         |             | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Hergestellt       |
 
     And deactivate ExternalSystem_Config
       | ExternalSystem_Config_ID.Identifier |

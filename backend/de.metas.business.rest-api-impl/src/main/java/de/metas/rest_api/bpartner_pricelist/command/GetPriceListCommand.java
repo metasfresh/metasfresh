@@ -124,17 +124,11 @@ public class GetPriceListCommand
 	{
 		countryId = servicesFacade.getCountryIdByCountryCode(countryCode);
 
-		bpartnerId = servicesFacade.getBPartnerId(bpartnerIdentifier, null).orElse(null);
-		if (bpartnerId == null)
-		{
-			throw new AdempiereException("No BPartner found for " + bpartnerIdentifier);
-		}
+		bpartnerId = servicesFacade.getBPartnerId(bpartnerIdentifier, null)
+				.orElseThrow(() -> new AdempiereException("No BPartner found for " + bpartnerIdentifier));
 
-		pricingSystemId = servicesFacade.getPricingSystemId(bpartnerId, soTrx).orElse(null);
-		if (pricingSystemId == null)
-		{
-			throw new AdempiereException("No pricing system defined for " + bpartnerId);
-		}
+		pricingSystemId = servicesFacade.getPricingSystemId(bpartnerId, soTrx)
+				.orElseThrow(() -> new AdempiereException("No pricing system defined for " + bpartnerId));
 
 		final PriceListsCollection priceLists = servicesFacade.getPriceListsCollection(pricingSystemId);
 		final I_M_PriceList priceList = priceLists.getPriceList(countryId, soTrx).orElse(null);

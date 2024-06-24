@@ -3,6 +3,7 @@
   "qrCode": "QR code",
   "locator": "Locator",
   "HUStatus": "Status",
+  "numberOfAggregatedHUs": "Aggregated HUs count",
   "product": "Product",
   "clearanceStatus": "Clearance Status",
   "clearanceNote": "Clearance Note",
@@ -14,13 +15,23 @@
     },
     "move": {
       "buttonCaption": "Move",
-      "scanTarget": "Scan target"
+      "scanTarget": "Scan target",
+      "qtyTULabel": "TU Qty"
     },
     "scanAgain": {
       "buttonCaption": "Scan again"
     },
     "setClearance": {
       "buttonCaption": "Change HU clearance"
+    },
+    "setCurrentLocator": {
+      "buttonCaption": "Change current locator"
+    },
+    "changeQty": {
+      "buttonCaption": "Change qty",
+      "qtyLabel": "Qty",
+      "descriptionLabel": "Description",
+      "allowedOnlyForSingleProducts": "The action can be performed only for a single product."
     }
   }
 }

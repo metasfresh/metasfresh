@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_InventoryLine_HU
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_InventoryLine_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1755209737L;
+	private static final long serialVersionUID = 459794261L;
 
     /** Standard Constructor */
     public X_M_InventoryLine_HU (final Properties ctx, final int M_InventoryLine_HU_ID, @Nullable final String trxName)
@@ -183,5 +183,17 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInternalUse);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setRenderedQRCode (final @Nullable java.lang.String RenderedQRCode)
+	{
+		set_Value (COLUMNNAME_RenderedQRCode, RenderedQRCode);
+	}
+
+	@Override
+	public java.lang.String getRenderedQRCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_RenderedQRCode);
 	}
 }

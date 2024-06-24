@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.impex.InputDataSourceId;
@@ -293,10 +294,16 @@ public class InvoiceHeaderImplBuilder
 		}
 		else if (!BPartnerInfo.equals(this.billTo, billTo))
 		{
-			if (!BPartnerInfo.equals(this.billTo.withLocationId(null), billTo.withLocationId(null)))
+			if (!BPartnerInfo.equals(this.billTo.withLocationId(null).withContactId(null), billTo.withLocationId(null).withContactId(null)))
 			{
 				throw new AdempiereException("BillTo not matching: new=" + billTo + ", previous=" + this.billTo);
 			}
+		}
+
+
+		if(this.billTo.getContactId() != null && !BPartnerContactId.equals(billTo.getContactId(), this.billTo.getContactId()))
+		{
+			this.billTo = billTo.withContactId(null);
 		}
 	}
 

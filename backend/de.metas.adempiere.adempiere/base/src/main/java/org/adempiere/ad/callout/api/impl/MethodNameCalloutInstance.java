@@ -1,8 +1,8 @@
 package org.adempiere.ad.callout.api.impl;
 
-import java.util.Objects;
-import java.util.function.Supplier;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import de.metas.util.Check;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
@@ -12,14 +12,12 @@ import org.adempiere.ad.callout.exceptions.CalloutInitException;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.compiere.util.Util;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-
-import de.metas.util.Check;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 public final class MethodNameCalloutInstance implements ICalloutInstance
 {
-	public static final Supplier<ICalloutInstance> supplier(final String methodNameFQ)
+	public static Supplier<ICalloutInstance> supplier(final String methodNameFQ)
 	{
 		Check.assumeNotEmpty(methodNameFQ, "methodNameFQ not empty");
 
@@ -128,7 +126,7 @@ public final class MethodNameCalloutInstance implements ICalloutInstance
 		}
 		catch (final Exception e)
 		{
-			throw new CalloutExecutionException(e.getLocalizedMessage(), e)
+			throw CalloutExecutionException.wrapIfNeeded(e)
 					.setCalloutExecutor(executor)
 					.setCalloutInstance(this)
 					.setField(field);

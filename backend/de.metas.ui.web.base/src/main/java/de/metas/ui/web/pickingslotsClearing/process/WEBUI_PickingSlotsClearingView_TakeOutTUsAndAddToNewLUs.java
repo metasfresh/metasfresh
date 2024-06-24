@@ -117,6 +117,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutTUsAndAddToNewLUs extends Pic
 		final LULoader luLoader = new LULoader(huContext);
 
 		hus.forEach(luLoader::addTU);
+		luLoader.close();
 
 		Loggables.withLogger(log, Level.DEBUG).addLog("*** doIt(): created the following HUs: {}" , luLoader.getLU_HUs());
 

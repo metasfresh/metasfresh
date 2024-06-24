@@ -1,59 +1,38 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for AD_Table
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 85997389L;
+	private static final long serialVersionUID = -88752471L;
 
     /** Standard Constructor */
-    public X_AD_Table (Properties ctx, int AD_Table_ID, String trxName)
+    public X_AD_Table (final Properties ctx, final int AD_Table_ID, @Nullable final String trxName)
     {
       super (ctx, AD_Table_ID, trxName);
-      /** if (AD_Table_ID == 0)
-        {
-			setAccessLevel (null); // 4
-			setAD_Table_ID (0);
-			setEntityType (null); // U
-			setIsAutocomplete (false); // N
-			setIsChangeLog (false);
-			setIsDeleteable (true); // Y
-			setIsEnableRemoteCacheInvalidation (false); // N
-			setIsHighVolume (false);
-			setIsSecurityEnabled (false);
-			setIsView (false); // N
-			setName (null);
-			setPersonalDataCategory (null); // NP
-			setReplicationType (null); // L
-			setTableName (null);
-			setTooltipType (null); // DTI
-        } */
     }
 
     /** Load Constructor */
-    public X_AD_Table (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_Table (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	/** 
 	 * AccessLevel AD_Reference_ID=5
@@ -72,71 +51,43 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	public static final String ACCESSLEVEL_SystemPlusClient = "6";
 	/** ClientOnly = 2 */
 	public static final String ACCESSLEVEL_ClientOnly = "2";
-	/** Set Berechtigungsstufe.
-		@param AccessLevel 
-		Access Level required
-	  */
 	@Override
-	public void setAccessLevel (java.lang.String AccessLevel)
+	public void setAccessLevel (final java.lang.String AccessLevel)
 	{
-
 		set_Value (COLUMNNAME_AccessLevel, AccessLevel);
 	}
 
-	/** Get Berechtigungsstufe.
-		@return Access Level required
-	  */
 	@Override
-	public java.lang.String getAccessLevel () 
+	public java.lang.String getAccessLevel() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AccessLevel);
+		return get_ValueAsString(COLUMNNAME_AccessLevel);
 	}
 
-	/** Set Auto Complete Min Length.
-		@param ACTriggerLength 
-		Identifier autocomplete trigger length
-	  */
 	@Override
-	public void setACTriggerLength (int ACTriggerLength)
+	public void setACTriggerLength (final int ACTriggerLength)
 	{
-		set_Value (COLUMNNAME_ACTriggerLength, Integer.valueOf(ACTriggerLength));
+		set_Value (COLUMNNAME_ACTriggerLength, ACTriggerLength);
 	}
 
-	/** Get Auto Complete Min Length.
-		@return Identifier autocomplete trigger length
-	  */
 	@Override
-	public int getACTriggerLength () 
+	public int getACTriggerLength() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_ACTriggerLength);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_ACTriggerLength);
 	}
 
-	/** Set DB-Tabelle.
-		@param AD_Table_ID 
-		Database Table information
-	  */
 	@Override
-	public void setAD_Table_ID (int AD_Table_ID)
+	public void setAD_Table_ID (final int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, AD_Table_ID);
 	}
 
-	/** Get DB-Tabelle.
-		@return Database Table information
-	  */
 	@Override
-	public int getAD_Table_ID () 
+	public int getAD_Table_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
 
 	@Override
@@ -146,34 +97,24 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	}
 
 	@Override
-	public void setAD_Val_Rule(org.compiere.model.I_AD_Val_Rule AD_Val_Rule)
+	public void setAD_Val_Rule(final org.compiere.model.I_AD_Val_Rule AD_Val_Rule)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class, AD_Val_Rule);
 	}
 
-	/** Set Dynamische Validierung.
-		@param AD_Val_Rule_ID 
-		Dynamic Validation Rule
-	  */
 	@Override
-	public void setAD_Val_Rule_ID (int AD_Val_Rule_ID)
+	public void setAD_Val_Rule_ID (final int AD_Val_Rule_ID)
 	{
 		if (AD_Val_Rule_ID < 1) 
 			set_Value (COLUMNNAME_AD_Val_Rule_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Val_Rule_ID, Integer.valueOf(AD_Val_Rule_ID));
+			set_Value (COLUMNNAME_AD_Val_Rule_ID, AD_Val_Rule_ID);
 	}
 
-	/** Get Dynamische Validierung.
-		@return Dynamic Validation Rule
-	  */
 	@Override
-	public int getAD_Val_Rule_ID () 
+	public int getAD_Val_Rule_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Val_Rule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Val_Rule_ID);
 	}
 
 	@Override
@@ -183,66 +124,94 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	}
 
 	@Override
-	public void setAD_Window(org.compiere.model.I_AD_Window AD_Window)
+	public void setAD_Window(final org.compiere.model.I_AD_Window AD_Window)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class, AD_Window);
 	}
 
-	/** Set Fenster.
-		@param AD_Window_ID 
-		Data entry or display window
-	  */
 	@Override
-	public void setAD_Window_ID (int AD_Window_ID)
+	public void setAD_Window_ID (final int AD_Window_ID)
 	{
 		if (AD_Window_ID < 1) 
 			set_Value (COLUMNNAME_AD_Window_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Window_ID, Integer.valueOf(AD_Window_ID));
+			set_Value (COLUMNNAME_AD_Window_ID, AD_Window_ID);
 	}
 
-	/** Get Fenster.
-		@return Data entry or display window
-	  */
 	@Override
-	public int getAD_Window_ID () 
+	public int getAD_Window_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Window_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Window_ID);
 	}
 
-	/** Set Copy Columns From Table.
-		@param CopyColumnsFromTable Copy Columns From Table	  */
+	/** 
+	 * CloningEnabled AD_Reference_ID=541757
+	 * Reference name: AD_Table_CloningEnabled
+	 */
+	public static final int CLONINGENABLED_AD_Reference_ID=541757;
+	/** Enabled = E */
+	public static final String CLONINGENABLED_Enabled = "E";
+	/** Disabled = D */
+	public static final String CLONINGENABLED_Disabled = "D";
+	/** Auto = A */
+	public static final String CLONINGENABLED_Auto = "A";
 	@Override
-	public void setCopyColumnsFromTable (java.lang.String CopyColumnsFromTable)
+	public void setCloningEnabled (final java.lang.String CloningEnabled)
+	{
+		set_Value (COLUMNNAME_CloningEnabled, CloningEnabled);
+	}
+
+	@Override
+	public java.lang.String getCloningEnabled() 
+	{
+		return get_ValueAsString(COLUMNNAME_CloningEnabled);
+	}
+
+	@Override
+	public void setCopyColumnsFromTable (final @Nullable java.lang.String CopyColumnsFromTable)
 	{
 		set_Value (COLUMNNAME_CopyColumnsFromTable, CopyColumnsFromTable);
 	}
 
-	/** Get Copy Columns From Table.
-		@return Copy Columns From Table	  */
 	@Override
-	public java.lang.String getCopyColumnsFromTable () 
+	public java.lang.String getCopyColumnsFromTable() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CopyColumnsFromTable);
+		return get_ValueAsString(COLUMNNAME_CopyColumnsFromTable);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	/** 
+	 * DownlineCloningStrategy AD_Reference_ID=541755
+	 * Reference name: AD_Table_DownlineCloningStrategy
+	 */
+	public static final int DOWNLINECLONINGSTRATEGY_AD_Reference_ID=541755;
+	/** Skip = S */
+	public static final String DOWNLINECLONINGSTRATEGY_Skip = "S";
+	/** Auto = A */
+	public static final String DOWNLINECLONINGSTRATEGY_Auto = "A";
+	/** OnlyIncluded = I */
+	public static final String DOWNLINECLONINGSTRATEGY_OnlyIncluded = "I";
+	@Override
+	public void setDownlineCloningStrategy (final java.lang.String DownlineCloningStrategy)
+	{
+		set_Value (COLUMNNAME_DownlineCloningStrategy, DownlineCloningStrategy);
+	}
+
+	@Override
+	public java.lang.String getDownlineCloningStrategy() 
+	{
+		return get_ValueAsString(COLUMNNAME_DownlineCloningStrategy);
 	}
 
 	/** 
@@ -250,276 +219,148 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	 * Reference name: _EntityTypeNew
 	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
-	/** Set Entitäts-Art.
-		@param EntityType 
-		Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public void setEntityType (java.lang.String EntityType)
+	public void setEntityType (final java.lang.String EntityType)
 	{
-
 		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
-	/** Get Entitäts-Art.
-		@return Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public java.lang.String getEntityType () 
+	public java.lang.String getEntityType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
+		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
 
-	/** Set Kommentar/Hilfe.
-		@param Help 
-		Comment or Hint
-	  */
 	@Override
-	public void setHelp (java.lang.String Help)
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Kommentar/Hilfe.
-		@return Comment or Hint
-	  */
 	@Override
-	public java.lang.String getHelp () 
+	public java.lang.String getHelp() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Help);
+		return get_ValueAsString(COLUMNNAME_Help);
 	}
 
-	/** Set Import Table.
-		@param ImportTable 
-		Import Table Columns from Database
-	  */
 	@Override
-	public void setImportTable (java.lang.String ImportTable)
+	public void setImportTable (final @Nullable java.lang.String ImportTable)
 	{
 		set_Value (COLUMNNAME_ImportTable, ImportTable);
 	}
 
-	/** Get Import Table.
-		@return Import Table Columns from Database
-	  */
 	@Override
-	public java.lang.String getImportTable () 
+	public java.lang.String getImportTable() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ImportTable);
+		return get_ValueAsString(COLUMNNAME_ImportTable);
 	}
 
-	/** Set Autocomplete.
-		@param IsAutocomplete 
-		Automatic completion for textfields
-	  */
 	@Override
-	public void setIsAutocomplete (boolean IsAutocomplete)
+	public void setIsAutocomplete (final boolean IsAutocomplete)
 	{
-		set_Value (COLUMNNAME_IsAutocomplete, Boolean.valueOf(IsAutocomplete));
+		set_Value (COLUMNNAME_IsAutocomplete, IsAutocomplete);
 	}
 
-	/** Get Autocomplete.
-		@return Automatic completion for textfields
-	  */
 	@Override
-	public boolean isAutocomplete () 
+	public boolean isAutocomplete() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsAutocomplete);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsAutocomplete);
 	}
 
-	/** Set Änderungen protokollieren.
-		@param IsChangeLog 
-		Maintain a log of changes
-	  */
 	@Override
-	public void setIsChangeLog (boolean IsChangeLog)
+	public void setIsChangeLog (final boolean IsChangeLog)
 	{
-		set_Value (COLUMNNAME_IsChangeLog, Boolean.valueOf(IsChangeLog));
+		set_Value (COLUMNNAME_IsChangeLog, IsChangeLog);
 	}
 
-	/** Get Änderungen protokollieren.
-		@return Maintain a log of changes
-	  */
 	@Override
-	public boolean isChangeLog () 
+	public boolean isChangeLog() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsChangeLog);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsChangeLog);
 	}
 
-	/** Set Records deleteable.
-		@param IsDeleteable 
-		Indicates if records can be deleted from the database
-	  */
 	@Override
-	public void setIsDeleteable (boolean IsDeleteable)
+	public void setIsDeleteable (final boolean IsDeleteable)
 	{
-		set_Value (COLUMNNAME_IsDeleteable, Boolean.valueOf(IsDeleteable));
+		set_Value (COLUMNNAME_IsDeleteable, IsDeleteable);
 	}
 
-	/** Get Records deleteable.
-		@return Indicates if records can be deleted from the database
-	  */
 	@Override
-	public boolean isDeleteable () 
+	public boolean isDeleteable() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsDeleteable);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsDeleteable);
 	}
 
-	/** Set Enable remote cache invalidation.
-		@param IsEnableRemoteCacheInvalidation Enable remote cache invalidation	  */
 	@Override
-	public void setIsEnableRemoteCacheInvalidation (boolean IsEnableRemoteCacheInvalidation)
+	public void setIsEnableRemoteCacheInvalidation (final boolean IsEnableRemoteCacheInvalidation)
 	{
-		set_Value (COLUMNNAME_IsEnableRemoteCacheInvalidation, Boolean.valueOf(IsEnableRemoteCacheInvalidation));
+		set_Value (COLUMNNAME_IsEnableRemoteCacheInvalidation, IsEnableRemoteCacheInvalidation);
 	}
 
-	/** Get Enable remote cache invalidation.
-		@return Enable remote cache invalidation	  */
 	@Override
-	public boolean isEnableRemoteCacheInvalidation () 
+	public boolean isEnableRemoteCacheInvalidation() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsEnableRemoteCacheInvalidation);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsEnableRemoteCacheInvalidation);
 	}
 
-	/** Set High Volume.
-		@param IsHighVolume 
-		Use Search instead of Pick list
-	  */
 	@Override
-	public void setIsHighVolume (boolean IsHighVolume)
+	public void setIsHighVolume (final boolean IsHighVolume)
 	{
-		set_Value (COLUMNNAME_IsHighVolume, Boolean.valueOf(IsHighVolume));
+		set_Value (COLUMNNAME_IsHighVolume, IsHighVolume);
 	}
 
-	/** Get High Volume.
-		@return Use Search instead of Pick list
-	  */
 	@Override
-	public boolean isHighVolume () 
+	public boolean isHighVolume() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsHighVolume);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsHighVolume);
 	}
 
-	/** Set Security enabled.
-		@param IsSecurityEnabled 
-		If security is enabled, user access to data can be restricted via Roles
-	  */
 	@Override
-	public void setIsSecurityEnabled (boolean IsSecurityEnabled)
+	public void setIsSecurityEnabled (final boolean IsSecurityEnabled)
 	{
-		set_Value (COLUMNNAME_IsSecurityEnabled, Boolean.valueOf(IsSecurityEnabled));
+		set_Value (COLUMNNAME_IsSecurityEnabled, IsSecurityEnabled);
 	}
 
-	/** Get Security enabled.
-		@return If security is enabled, user access to data can be restricted via Roles
-	  */
 	@Override
-	public boolean isSecurityEnabled () 
+	public boolean isSecurityEnabled() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSecurityEnabled);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsSecurityEnabled);
 	}
 
-	/** Set Ansicht.
-		@param IsView 
-		This is a view
-	  */
 	@Override
-	public void setIsView (boolean IsView)
+	public void setIsView (final boolean IsView)
 	{
-		set_Value (COLUMNNAME_IsView, Boolean.valueOf(IsView));
+		set_Value (COLUMNNAME_IsView, IsView);
 	}
 
-	/** Get Ansicht.
-		@return This is a view
-	  */
 	@Override
-	public boolean isView () 
+	public boolean isView() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsView);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsView);
 	}
 
-	/** Set Reihenfolge.
-		@param LoadSeq Reihenfolge	  */
 	@Override
-	public void setLoadSeq (int LoadSeq)
+	public void setLoadSeq (final int LoadSeq)
 	{
-		set_ValueNoCheck (COLUMNNAME_LoadSeq, Integer.valueOf(LoadSeq));
+		set_ValueNoCheck (COLUMNNAME_LoadSeq, LoadSeq);
 	}
 
-	/** Get Reihenfolge.
-		@return Reihenfolge	  */
 	@Override
-	public int getLoadSeq () 
+	public int getLoadSeq() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_LoadSeq);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_LoadSeq);
 	}
 
-	/** Set Name.
-		@param Name Name	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Name	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	/** 
@@ -533,21 +374,16 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	public static final String PERSONALDATACATEGORY_Personal = "P";
 	/** SensitivePersonal = SP */
 	public static final String PERSONALDATACATEGORY_SensitivePersonal = "SP";
-	/** Set Datenschutz-Kategorie.
-		@param PersonalDataCategory Datenschutz-Kategorie	  */
 	@Override
-	public void setPersonalDataCategory (java.lang.String PersonalDataCategory)
+	public void setPersonalDataCategory (final java.lang.String PersonalDataCategory)
 	{
-
 		set_Value (COLUMNNAME_PersonalDataCategory, PersonalDataCategory);
 	}
 
-	/** Get Datenschutz-Kategorie.
-		@return Datenschutz-Kategorie	  */
 	@Override
-	public java.lang.String getPersonalDataCategory () 
+	public java.lang.String getPersonalDataCategory() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PersonalDataCategory);
+		return get_ValueAsString(COLUMNNAME_PersonalDataCategory);
 	}
 
 	@Override
@@ -557,34 +393,24 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	}
 
 	@Override
-	public void setPO_Window(org.compiere.model.I_AD_Window PO_Window)
+	public void setPO_Window(final org.compiere.model.I_AD_Window PO_Window)
 	{
 		set_ValueFromPO(COLUMNNAME_PO_Window_ID, org.compiere.model.I_AD_Window.class, PO_Window);
 	}
 
-	/** Set PO Window.
-		@param PO_Window_ID 
-		Purchase Order Window
-	  */
 	@Override
-	public void setPO_Window_ID (int PO_Window_ID)
+	public void setPO_Window_ID (final int PO_Window_ID)
 	{
 		if (PO_Window_ID < 1) 
 			set_Value (COLUMNNAME_PO_Window_ID, null);
 		else 
-			set_Value (COLUMNNAME_PO_Window_ID, Integer.valueOf(PO_Window_ID));
+			set_Value (COLUMNNAME_PO_Window_ID, PO_Window_ID);
 	}
 
-	/** Get PO Window.
-		@return Purchase Order Window
-	  */
 	@Override
-	public int getPO_Window_ID () 
+	public int getPO_Window_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PO_Window_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PO_Window_ID);
 	}
 
 	/** 
@@ -598,59 +424,40 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	public static final String REPLICATIONTYPE_Merge = "M";
 	/** Reference = R */
 	public static final String REPLICATIONTYPE_Reference = "R";
-	/** Set Replication Type.
-		@param ReplicationType 
-		Type of Data Replication
-	  */
 	@Override
-	public void setReplicationType (java.lang.String ReplicationType)
+	public void setReplicationType (final java.lang.String ReplicationType)
 	{
-
 		set_Value (COLUMNNAME_ReplicationType, ReplicationType);
 	}
 
-	/** Get Replication Type.
-		@return Type of Data Replication
-	  */
 	@Override
-	public java.lang.String getReplicationType () 
+	public java.lang.String getReplicationType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ReplicationType);
+		return get_ValueAsString(COLUMNNAME_ReplicationType);
 	}
 
-	/** Set Name der DB-Tabelle.
-		@param TableName Name der DB-Tabelle	  */
 	@Override
-	public void setTableName (java.lang.String TableName)
+	public void setTableName (final java.lang.String TableName)
 	{
 		set_Value (COLUMNNAME_TableName, TableName);
 	}
 
-	/** Get Name der DB-Tabelle.
-		@return Name der DB-Tabelle	  */
 	@Override
-	public java.lang.String getTableName () 
+	public java.lang.String getTableName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TableName);
+		return get_ValueAsString(COLUMNNAME_TableName);
 	}
 
-	/** Set Technical note.
-		@param TechnicalNote 
-		A note that is not indended for the user documentation, but for developers, customizers etc
-	  */
 	@Override
-	public void setTechnicalNote (java.lang.String TechnicalNote)
+	public void setTechnicalNote (final @Nullable java.lang.String TechnicalNote)
 	{
 		set_Value (COLUMNNAME_TechnicalNote, TechnicalNote);
 	}
 
-	/** Get Technical note.
-		@return A note that is not indended for the user documentation, but for developers, customizers etc
-	  */
 	@Override
-	public java.lang.String getTechnicalNote () 
+	public java.lang.String getTechnicalNote() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TechnicalNote);
+		return get_ValueAsString(COLUMNNAME_TechnicalNote);
 	}
 
 	/** 
@@ -664,20 +471,50 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	public static final String TOOLTIPTYPE_TableIdentifier = "T";
 	/** Description = D */
 	public static final String TOOLTIPTYPE_Description = "D";
-	/** Set Tooltip Type.
-		@param TooltipType Tooltip Type	  */
 	@Override
-	public void setTooltipType (java.lang.String TooltipType)
+	public void setTooltipType (final java.lang.String TooltipType)
 	{
-
 		set_Value (COLUMNNAME_TooltipType, TooltipType);
 	}
 
-	/** Get Tooltip Type.
-		@return Tooltip Type	  */
 	@Override
-	public java.lang.String getTooltipType () 
+	public java.lang.String getTooltipType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TooltipType);
+		return get_ValueAsString(COLUMNNAME_TooltipType);
+	}
+
+	@Override
+	public void setWEBUI_View_PageLength (final int WEBUI_View_PageLength)
+	{
+		set_Value (COLUMNNAME_WEBUI_View_PageLength, WEBUI_View_PageLength);
+	}
+
+	@Override
+	public int getWEBUI_View_PageLength() 
+	{
+		return get_ValueAsInt(COLUMNNAME_WEBUI_View_PageLength);
+	}
+
+	/** 
+	 * WhenChildCloningStrategy AD_Reference_ID=541756
+	 * Reference name: AD_Table_CloningStrategy
+	 */
+	public static final int WHENCHILDCLONINGSTRATEGY_AD_Reference_ID=541756;
+	/** Skip = S */
+	public static final String WHENCHILDCLONINGSTRATEGY_Skip = "S";
+	/** AllowCloning = A */
+	public static final String WHENCHILDCLONINGSTRATEGY_AllowCloning = "A";
+	/** AlwaysInclude = I */
+	public static final String WHENCHILDCLONINGSTRATEGY_AlwaysInclude = "I";
+	@Override
+	public void setWhenChildCloningStrategy (final java.lang.String WhenChildCloningStrategy)
+	{
+		set_Value (COLUMNNAME_WhenChildCloningStrategy, WhenChildCloningStrategy);
+	}
+
+	@Override
+	public java.lang.String getWhenChildCloningStrategy() 
+	{
+		return get_ValueAsString(COLUMNNAME_WhenChildCloningStrategy);
 	}
 }

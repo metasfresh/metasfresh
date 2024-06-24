@@ -257,6 +257,30 @@ public class ProductRepository
 	}
 
 	@NonNull
+	public static BPartnerProduct ofBPartnerProductRecord(@NonNull final I_C_BPartner_Product record)
+	{
+
+		return BPartnerProduct.builder()
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.bPartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
+				.active(record.isActive())
+				.seqNo(record.getSeqNo())
+				.productNo(record.getProductNo())
+				.description(record.getDescription())
+				.cuEAN(record.getEAN_CU())
+				.customerLabelName(record.getCustomerLabelName())
+				.gtin(record.getGTIN())
+				.ingredients(record.getIngredients())
+				.currentVendor(record.isCurrentVendor())
+				.isExcludedFromSales(record.isExcludedFromSale())
+				.exclusionFromSalesReason(record.getExclusionFromSaleReason())
+				.isExcludedFromPurchase(record.isExcludedFromPurchase())
+				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
+				.dropShip(record.isDropShip())
+				.usedForVendor(record.isUsedForVendor())
+				.build();
+	}
+	@NonNull
 	private I_M_Product getRecordById(@NonNull final ProductId id)
 	{
 		return queryBL.createQueryBuilder(I_M_Product.class)
@@ -377,30 +401,5 @@ public class ProductRepository
 		record.setExclusionFromPurchaseReason(bPartnerProduct.getExclusionFromPurchaseReason());
 
 		return record;
-	}
-
-	@NonNull
-	private static BPartnerProduct ofBPartnerProductRecord(@NonNull final I_C_BPartner_Product record)
-	{
-
-		return BPartnerProduct.builder()
-				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.bPartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
-				.active(record.isActive())
-				.seqNo(record.getSeqNo())
-				.productNo(record.getProductNo())
-				.description(record.getDescription())
-				.cuEAN(record.getEAN_CU())
-				.customerLabelName(record.getCustomerLabelName())
-				.gtin(record.getGTIN())
-				.ingredients(record.getIngredients())
-				.currentVendor(record.isCurrentVendor())
-				.isExcludedFromSales(record.isExcludedFromSale())
-				.exclusionFromSalesReason(record.getExclusionFromSaleReason())
-				.isExcludedFromPurchase(record.isExcludedFromPurchase())
-				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
-				.dropShip(record.isDropShip())
-				.usedForVendor(record.isUsedForVendor())
-				.build();
 	}
 }

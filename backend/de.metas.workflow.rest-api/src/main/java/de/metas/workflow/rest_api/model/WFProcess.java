@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import de.metas.i18n.ITranslatableString;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
@@ -36,6 +35,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 
@@ -46,12 +46,10 @@ public final class WFProcess
 	@NonNull private final WFProcessId id;
 
 	@Getter
-	@NonNull private final UserId invokerId;
-
-	@Getter
-	@NonNull private final ITranslatableString caption;
+	@Nullable private final UserId responsibleId;
 
 	@NonNull private final WFProcessStatus status;
+	@Getter private final boolean isAllowAbort;
 
 	@NonNull private final Object document;
 
@@ -62,21 +60,21 @@ public final class WFProcess
 	@Builder(toBuilder = true)
 	private WFProcess(
 			@NonNull final WFProcessId id,
-			@NonNull final UserId invokerId,
-			@NonNull final ITranslatableString caption,
+			@Nullable final UserId responsibleId,
 			@NonNull final Object document,
+			@Nullable final Boolean isAllowAbort,
 			@NonNull final ImmutableList<WFActivity> activities)
 	{
 		Check.assumeNotEmpty(activities, "activities is not empty");
 
 		this.id = id;
-		this.invokerId = invokerId;
-		this.caption = caption;
+		this.responsibleId = responsibleId;
 		this.document = document;
 		this.activities = activities;
 
 		this.activitiesById = Maps.uniqueIndex(this.activities, WFActivity::getId);
 		this.status = computeStatusFromActivities(this.activities);
+		this.isAllowAbort = computeIsAllowAbort(isAllowAbort, this.status);
 	}
 
 	private static WFProcessStatus computeStatusFromActivities(@NonNull final ImmutableList<WFActivity> activities)
@@ -89,6 +87,18 @@ public final class WFProcess
 		return WFProcessStatus.computeFromActivityStatuses(activityStatuses);
 	}
 
+	private static boolean computeIsAllowAbort(@Nullable final Boolean isAllowAbort, @NonNull final WFProcessStatus status)
+	{
+		if (isAllowAbort != null)
+		{
+			return isAllowAbort;
+		}
+		else
+		{
+			return status.isNotStarted();
+		}
+	}
+
 	public void assertHasAccess(@NonNull final UserId userId)
 	{
 		if (!hasAccess(userId))
@@ -99,22 +109,12 @@ public final class WFProcess
 
 	public boolean hasAccess(@NonNull final UserId userId)
 	{
-		return UserId.equals(getInvokerId(), userId);
+		return UserId.equals(getResponsibleId(), userId);
 	}
 
 	public <T> T getDocumentAs(@NonNull final Class<T> type)
 	{
 		return type.cast(document);
-	}
-
-	public <T> WFProcess mapDocument(@NonNull final UnaryOperator<T> remappingFunction)
-	{
-		//noinspection unchecked
-		final T document = (T)this.document;
-		final T documentNew = remappingFunction.apply(document);
-		return !Objects.equals(document, documentNew)
-				? toBuilder().document(documentNew).build()
-				: this;
 	}
 
 	public WFActivity getActivityById(@NonNull final WFActivityId id)

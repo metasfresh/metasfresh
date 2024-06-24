@@ -22,6 +22,7 @@
 
 package org.eevolution.productioncandidate.service;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -40,7 +41,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
@@ -135,7 +136,9 @@ public class PPOrderCandidatePojoConverter
 									 .qtyRequired(qtyEnteredInStockUOM.toBigDecimal())
 									 .qtyDelivered(qtyProcessedInStockUOM.toBigDecimal())
 									 .plantId(ResourceId.ofRepoId(ppOrderCandidateRecord.getS_Resource_ID()))
+									 .workstationId(ResourceId.ofRepoIdOrNull(ppOrderCandidateRecord.getWorkStation_ID()))
 									 .materialDispoGroupId(getMaterialDispoGroupIdOrNull(ppOrderCandidateRecord))
+									 .packingMaterialId(HUPIItemProductId.ofRepoIdOrNull(ppOrderCandidateRecord.getM_HU_PI_Item_Product_ID()))
 									 .build())
 				.lines(toPPOrderLineCandidates(ppOrderCandidateRecord))
 				.build();

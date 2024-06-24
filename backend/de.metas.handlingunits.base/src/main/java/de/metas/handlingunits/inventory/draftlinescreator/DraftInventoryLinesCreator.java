@@ -10,6 +10,7 @@ import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
 import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregationKey;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.logging.LogManager;
@@ -56,7 +57,7 @@ import java.util.Set;
  */
 public class DraftInventoryLinesCreator
 {
-	private final static transient Logger logger = LogManager.getLogger(DraftInventoryLinesCreator.class);
+	private final static Logger logger = LogManager.getLogger(DraftInventoryLinesCreator.class);
 
 	@NonNull
 	private final InventoryLinesCreationCtx inventoryLinesCreationCtx;
@@ -100,15 +101,15 @@ public class DraftInventoryLinesCreator
 						strategy.getClass().getSimpleName(), strategy.getMaxLocatorsAllowed());
 				break;
 			}
-			if (!preAddedHuIds.contains(hu.getHuId()))
+
+			if (hu.getHuId() != null && preAddedHuIds.contains(hu.getHuId()))
 			{
-				createOrUpdateInventoryLine(hu);
+				loggable.addLog("M_HU_ID={} is already assigned to M_Inventory_ID={}; -> not trying to add it again",
+						HuId.toRepoId(hu.getHuId()), InventoryId.toRepoId(inventoryId));
+				continue;
 			}
-			else
-			{
-				loggable.addLog("M_HU_ID={} is already assinged to M_Inventory_ID={}; -> not trying to add it again",
-						HuId.toRepoId(hu.getHuId()),InventoryId.toRepoId(inventoryId));
-			}
+
+			createOrUpdateInventoryLine(hu);
 			countInventoryLines++;
 		}
 
@@ -176,6 +177,7 @@ public class DraftInventoryLinesCreator
 
 		return InventoryLineHU.builder()
 				.huId(huForInventoryLine.getHuId())
+				.huQRCode(huForInventoryLine.getHuQRCode())
 				.qtyBook(quantityBooked)
 				.qtyCount(quantityCount)
 				.build();

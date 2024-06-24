@@ -24,11 +24,11 @@ package de.metas.material.cockpit.availableforsales;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.material.commons.attributes.AttributesKeyMatcher;
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
 import de.metas.product.ProductId;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.keys.AttributesKeyMatcher;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;

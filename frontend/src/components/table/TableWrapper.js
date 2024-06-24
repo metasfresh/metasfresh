@@ -296,7 +296,7 @@ class TableWrapper extends PureComponent {
    * @method fwdUpdateHeight
    * @summary - Forward the update height to the child component Table.
    *            This is needed to call the table height update from within TableContextMenu
-   * @param {number} height
+   * @param {integer} height
    */
   fwdUpdateHeight = (height) => {
     this.table.updateHeight(height);

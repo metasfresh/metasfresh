@@ -22,20 +22,28 @@ package de.metas.util;
  * #L%
  */
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /**
  * An {@link ILoggable} which does nothing
  *
  * @author tsa
- *
  */
 final class NullLoggable implements ILoggable
 {
 	public static final NullLoggable instance = new NullLoggable();
 
-	public static boolean isNull(final ILoggable loggable)
+	public static boolean isNull(@Nullable final ILoggable loggable)
 	{
 		return loggable == null || loggable == NullLoggable.instance;
+	}
+
+	@NonNull
+	public static ILoggable boxIfNull(@Nullable final ILoggable loggable)
+	{
+		return loggable != null ? loggable : NullLoggable.instance;
 	}
 
 	private NullLoggable()

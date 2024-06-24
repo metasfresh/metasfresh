@@ -159,6 +159,13 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>de.metas.manufacturing</groupId>
+            <artifactId>de.metas.manufacturing.webui</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
 
         <dependency>
             <groupId>de.metas.banking</groupId>

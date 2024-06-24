@@ -73,6 +73,8 @@ public class JsonErrorItem
 
 	@Nullable
 	String issueCategory;
+	
+	@Nullable String frontendUrl;
 
 	/**
 	 * Local exception.
@@ -93,7 +95,8 @@ public class JsonErrorItem
 			@JsonProperty("orgCode") @Nullable final String orgCode,
 			@JsonProperty("sourceClassName") @Nullable final String sourceClassName,
 			@JsonProperty("sourceMethodName") @Nullable final String sourceMethodName,
-			@JsonProperty("issueCategory") @Nullable final String issueCategory,
+			@JsonProperty("issueCategory") @Nullable final String issueCategory, 
+			@JsonProperty("frontendUrl") String frontendUrl,
 			@Nullable final Throwable throwable)
 	{
 		this.message = message;
@@ -106,6 +109,7 @@ public class JsonErrorItem
 		this.sourceMethodName = sourceMethodName;
 		this.issueCategory = issueCategory;
 		this.orgCode = orgCode;
+		this.frontendUrl = frontendUrl;
 		this.throwable = throwable;
 	}
 

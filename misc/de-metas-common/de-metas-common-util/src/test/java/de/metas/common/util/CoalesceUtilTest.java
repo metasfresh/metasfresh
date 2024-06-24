@@ -22,11 +22,9 @@
 
 package de.metas.common.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
-import de.metas.common.util.CoalesceUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.*;
 
 public class CoalesceUtilTest
 {
@@ -46,16 +44,16 @@ public class CoalesceUtilTest
 	{
 		{
 			final T actual = CoalesceUtil.coalesce(value1, value2, value3);
-			Assert.assertSame(expected, actual);
+			assertThat(actual).isSameAs(expected);
 		}
 		{
 			final Object actual = CoalesceUtil.coalesce(new Object[] { value1, value2, value3 });
-			Assert.assertSame(expected, actual);
+			assertThat(actual).isSameAs(expected);
 		}
 	}
 
 	@Test
-	public void coalesceIntIds()
+	public void firstGreaterThanZero()
 	{
 		assertThat(CoalesceUtil.firstGreaterThanZero(0, 3, 1)).isEqualTo(3);
 	}

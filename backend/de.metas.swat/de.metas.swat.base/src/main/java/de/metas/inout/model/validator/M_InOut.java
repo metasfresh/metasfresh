@@ -28,6 +28,7 @@ import java.util.List;
 @Interceptor(I_M_InOut.class)
 public class M_InOut
 {
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 
 	@Init
@@ -72,7 +73,7 @@ public class M_InOut
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			Services.get(IInOutBL.class).deleteMatchInvs(inoutRecord); // task 08531
+			inoutBL.deleteMatchInvs(inoutRecord); // task 08531
 		}
 	}
 
@@ -81,7 +82,7 @@ public class M_InOut
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			final boolean isReversal = Services.get(IInOutBL.class).isReversal(inoutRecord);
+			final boolean isReversal = inoutBL.isReversal(inoutRecord);
 
 			// do nothing in case of reversal
 			if (!isReversal)
@@ -137,7 +138,14 @@ public class M_InOut
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			Services.get(IInOutBL.class).invalidateStatistics(inoutRecord);
+			inoutBL.invalidateStatistics(inoutRecord);
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_M_InOut.COLUMNNAME_C_DocType_ID})
+	public void beforeSave_updateDescriptionAndDescriptionBottom(final I_M_InOut inoutRecord)
+	{
+		inoutBL.updateDescriptionAndDescriptionBottomFromDocType(inoutRecord);
 	}
 }

@@ -23,15 +23,21 @@
 package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.inout.InOutId;
 import org.compiere.model.I_M_InOut;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
 public class M_InOut_StepDefData extends StepDefData<I_M_InOut>
+		implements StepDefDataGetIdAware<InOutId, I_M_InOut>
 {
 	public M_InOut_StepDefData()
 	{
 		super(I_M_InOut.class);
 	}
+
+	@Override
+	public InOutId extractIdFromRecord(final I_M_InOut record) {return InOutId.ofRepoId(record.getM_InOut_ID());}
 }

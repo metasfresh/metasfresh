@@ -1,9 +1,7 @@
 package de.metas.order.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
@@ -20,10 +18,10 @@ import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLine;
+import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.OrderLineRepository;
-import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -160,7 +158,7 @@ final class OrderLinePriceCalculator
 		//
 		// Prices
 		priceAndDiscount.applyTo(orderLine);
-		orderLine.setInvoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn().getRecordString());
+		orderLine.setInvoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn().getCode());
 		orderLine.setPriceList(pricingResult.getPriceList());
 		orderLine.setPriceStd(pricingResult.getPriceStd());
 		orderLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); // 07090: when setting a priceActual, we also need to specify a PriceUOM

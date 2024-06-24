@@ -4,7 +4,6 @@ package org.compiere.model;
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_DataImport
  *  @author metasfresh (generated) 

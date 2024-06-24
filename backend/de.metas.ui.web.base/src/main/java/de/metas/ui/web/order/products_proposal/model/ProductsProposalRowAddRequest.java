@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 /*
  * #%L
@@ -45,6 +46,9 @@ public class ProductsProposalRowAddRequest
 	@NonNull
 	@Default
 	ProductASIDescription asiDescription = ProductASIDescription.NONE;
+
+	@Nullable
+	AttributeSetInstanceId asiId;
 
 	@NonNull
 	Amount priceListPrice;

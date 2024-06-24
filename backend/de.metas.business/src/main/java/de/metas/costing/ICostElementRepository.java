@@ -1,12 +1,11 @@
 package de.metas.costing;
 
+import lombok.NonNull;
+import org.adempiere.service.ClientId;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import org.adempiere.service.ClientId;
-
-import lombok.NonNull;
 
 /*
  * #%L
@@ -44,12 +43,11 @@ public interface ICostElementRepository
 
 	List<CostElement> getMaterialCostingMethods(ClientId adClientId);
 
-	List<CostElement> getNonCostingMethods(ClientId adClientId);
-
 	List<CostElement> getByCostingMethod(CostingMethod costingMethod);
 
 	Set<CostElementId> getActiveCostElementIds();
 
 	Set<CostElementId> getIdsByCostingMethod(CostingMethod costingMethod);
 
+	List<CostElement> getMaterialCostingElementsForCostingMethod(@NonNull CostingMethod costingMethod);
 }

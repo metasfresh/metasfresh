@@ -1,5 +1,9 @@
 package de.metas.printing.model;
 
+import org.adempiere.model.ModelColumn;
+import org.compiere.model.I_C_Workplace;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for AD_Printer_Config
  *  @author metasfresh (generated) 
@@ -250,4 +254,31 @@ public interface I_AD_Printer_Config
 
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Workplace.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Workplace_ID (int C_Workplace_ID);
+
+	/**
+	 * Get Workplace.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Workplace_ID();
+
+	@Nullable
+	org.compiere.model.I_C_Workplace getC_Workplace();
+
+	void setC_Workplace(@Nullable org.compiere.model.I_C_Workplace C_Workplace);
+
+	ModelColumn<I_AD_Printer_Config, I_C_Workplace> COLUMN_C_Workplace_ID = new ModelColumn<>(I_AD_Printer_Config.class, "C_Workplace_ID", org.compiere.model.I_C_Workplace.class);
+	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
+
 }

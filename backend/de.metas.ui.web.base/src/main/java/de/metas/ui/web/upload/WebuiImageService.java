@@ -1,9 +1,12 @@
 package de.metas.ui.web.upload;
 
-import java.io.IOException;
-import java.time.format.DateTimeFormatter;
-
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.common.util.time.SystemTime;
+import de.metas.image.AdImage;
+import de.metas.image.AdImageRepository;
+import de.metas.printing.esb.base.util.Check;
+import de.metas.util.FileUtil;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MImage;
@@ -12,12 +15,8 @@ import org.compiere.util.MimeType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.printing.esb.base.util.Check;
-import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.util.FileUtil;
-import lombok.NonNull;
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 
 /*
  * #%L
@@ -29,12 +28,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,6 +44,10 @@ import lombok.NonNull;
 public class WebuiImageService
 {
 	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss");
+
+	private final AdImageRepository adImageRepository;
+
+	public WebuiImageService(final AdImageRepository adImageRepository) {this.adImageRepository = adImageRepository;}
 
 	public WebuiImageId uploadImage(final MultipartFile file) throws IOException
 	{
@@ -63,7 +66,7 @@ public class WebuiImageService
 	}
 
 	@VisibleForTesting
-	static final String normalizeUploadFilename(final String name, final String contentType)
+	static String normalizeUploadFilename(final String name, final String contentType)
 	{
 		final String fileExtension = MimeType.getExtensionByType(contentType);
 
@@ -84,12 +87,7 @@ public class WebuiImageService
 
 	public WebuiImage getWebuiImage(@NonNull final WebuiImageId imageId, final int maxWidth, final int maxHeight)
 	{
-		final MImage adImage = MImage.get(Env.getCtx(), imageId.getRepoId());
-		if (adImage == null || adImage.getAD_Image_ID() <= 0)
-		{
-			throw new EntityNotFoundException("Image id not found: " + imageId);
-		}
-
+		final AdImage adImage = adImageRepository.getById(imageId.toAdImageId());
 		return WebuiImage.of(adImage, maxWidth, maxHeight);
 	}
 }

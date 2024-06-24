@@ -44,7 +44,7 @@ registerHandler({
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
     draftActivityDataStored.currentValue = fromActivity.componentProps.currentValue;
     draftActivityDataStored.validOptions = fromActivity.componentProps.validOptions;
-    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.componentProps.isAlwaysAvailableToUser ?? false;
+    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
     draftActivityDataStored.completeStatus = computeActivityStatus({ draftActivityDataStored });
   },
 });

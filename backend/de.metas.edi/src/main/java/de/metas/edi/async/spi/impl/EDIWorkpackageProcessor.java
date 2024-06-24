@@ -24,31 +24,27 @@ package de.metas.edi.async.spi.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import de.metas.edi.model.I_EDI_Document_Extension;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
+import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.util.Env;
+import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 {

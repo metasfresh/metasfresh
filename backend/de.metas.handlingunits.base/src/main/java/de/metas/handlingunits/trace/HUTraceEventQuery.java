@@ -1,12 +1,6 @@
 package de.metas.handlingunits.trace;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.OptionalInt;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.inout.ShipmentScheduleId;
@@ -18,6 +12,11 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import lombok.With;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 /*
  * #%L

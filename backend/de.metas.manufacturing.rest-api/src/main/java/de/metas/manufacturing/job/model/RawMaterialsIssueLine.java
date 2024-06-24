@@ -4,11 +4,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.UOMType;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.Percent;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.NonNull;
@@ -24,8 +23,9 @@ public class RawMaterialsIssueLine
 {
 	@NonNull ProductId productId;
 	@NonNull ITranslatableString productName;
+	boolean isWeightable;
 	@NonNull Quantity qtyToIssue;
-	@Nullable Percent qtyToIssueTolerance;
+	@Nullable IssuingToleranceSpec issuingToleranceSpec;
 	@NonNull ImmutableList<RawMaterialsIssueStep> steps;
 
 	@NonNull Quantity qtyIssued; // computed
@@ -35,14 +35,16 @@ public class RawMaterialsIssueLine
 	private RawMaterialsIssueLine(
 			@NonNull final ProductId productId,
 			@NonNull final ITranslatableString productName,
+			final boolean isWeightable,
 			@NonNull final Quantity qtyToIssue,
-			@Nullable final Percent qtyToIssueTolerance,
+			@Nullable final IssuingToleranceSpec issuingToleranceSpec,
 			@NonNull final ImmutableList<RawMaterialsIssueStep> steps)
 	{
 		this.productId = productId;
 		this.productName = productName;
+		this.isWeightable = isWeightable;
 		this.qtyToIssue = qtyToIssue;
-		this.qtyToIssueTolerance = qtyToIssueTolerance;
+		this.issuingToleranceSpec = issuingToleranceSpec;
 		this.steps = steps;
 
 		this.qtyIssued = computeQtyIssued(this.steps).orElseGet(qtyToIssue::toZero);
@@ -80,15 +82,15 @@ public class RawMaterialsIssueLine
 
 	public Optional<Quantity> getQtyToIssueMin()
 	{
-		return qtyToIssueTolerance != null
-				? Optional.of(qtyToIssue.subtract(qtyToIssueTolerance))
+		return issuingToleranceSpec != null
+				? Optional.of(issuingToleranceSpec.subtractFrom(qtyToIssue))
 				: Optional.empty();
 	}
 
 	public Optional<Quantity> getQtyToIssueMax()
 	{
-		return qtyToIssueTolerance != null
-				? Optional.of(qtyToIssue.add(qtyToIssueTolerance))
+		return issuingToleranceSpec != null
+				? Optional.of(issuingToleranceSpec.addTo(qtyToIssue))
 				: Optional.empty();
 	}
 
@@ -113,10 +115,5 @@ public class RawMaterialsIssueLine
 	public boolean containsRawMaterialsIssueStep(final PPOrderIssueScheduleId issueScheduleId)
 	{
 		return steps.stream().anyMatch(step -> PPOrderIssueScheduleId.equals(step.getId(), issueScheduleId));
-	}
-
-	public boolean isWeightable()
-	{
-		return UOMType.ofNullableCodeOrOther(qtyToIssue.getUOM().getUOMType()).isWeight();
 	}
 }

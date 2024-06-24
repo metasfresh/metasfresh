@@ -9,6 +9,9 @@ import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -52,6 +55,7 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 {
 	private static final Logger logger = LogManager.getLogger(DDOrderRequestedEventHandler.class);
 
+	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	private final DDOrderProducer ddOrderProducer;
 
 	public DDOrderRequestedEventHandler(@NonNull final DDOrderProducer ddOrderProducer)
@@ -92,7 +96,9 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 					"Created ddOrder; DD_Order_ID={}; DocumentNo={}",
 					ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
 
-			if (ddOrderRecord.getPP_Product_Planning().isDocComplete())
+			final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoId(ddOrderRecord.getPP_Product_Planning_ID());
+			final ProductPlanning productPlanning = productPlanningDAO.getById(productPlanningId);
+			if (productPlanning.isDocComplete())
 			{
 				Services.get(IDocumentBL.class).processEx(ddOrderRecord, ACTION_Complete, STATUS_Completed);
 				Loggables.withLogger(logger, Level.DEBUG).addLog(

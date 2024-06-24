@@ -22,14 +22,12 @@ package de.metas.invoice.service.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_Invoice;
-
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
+import org.compiere.model.I_C_Invoice;
+
+import java.math.BigDecimal;
 
 public class PlainInvoiceBL extends AbstractInvoiceBL
 {
@@ -46,12 +44,6 @@ public class PlainInvoiceBL extends AbstractInvoiceBL
 		final BigDecimal grandTotalAmt = getGrandTotalAbs(invoice);
 
 		return writeOffAmt.compareTo(grandTotalAmt) == 0;
-	}
-
-	@Override
-	public int copyLinesFrom(final I_C_Invoice fromInvoice, final I_C_Invoice toInvoice, final boolean counter, final boolean setOrderRef, final boolean setInvoiceRef)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

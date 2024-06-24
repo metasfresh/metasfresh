@@ -508,18 +508,18 @@ public class ShipmentScheduleWithHU
 			return retrievePiipForReferencedRecord();
 		}
 
-		final I_M_HU topLevelHU = getTopLevelHU();
-		if (topLevelHU == null)
+		final I_M_HU tuOrVhu = CoalesceUtil.coalesce(getM_TU_HU(), getVHU());
+		if (tuOrVhu == null)
 		{
 			return retrievePiipForReferencedRecord();
 		}
 
-		if (topLevelHU.getM_HU_PI_Item_Product_ID() > 0)
+		if (tuOrVhu.getM_HU_PI_Item_Product_ID() > 0)
 		{
-			return IHandlingUnitsBL.extractPIItemProductOrNull(topLevelHU);
+			return IHandlingUnitsBL.extractPIItemProductOrNull(tuOrVhu);
 		}
 
-		final ImmutableList<I_M_HU_Item> huMaterialItems = Services.get(IHandlingUnitsDAO.class).retrieveItems(topLevelHU).stream()
+		final ImmutableList<I_M_HU_Item> huMaterialItems = Services.get(IHandlingUnitsDAO.class).retrieveItems(tuOrVhu).stream()
 				.filter(item -> X_M_HU_Item.ITEMTYPE_Material.equals(item.getItemType()))
 				.collect(ImmutableList.toImmutableList());
 		if (huMaterialItems.isEmpty())
@@ -527,7 +527,7 @@ public class ShipmentScheduleWithHU
 			return retrievePiipForReferencedRecord();
 		}
 
-		Check.assume(huMaterialItems.size() == 1, "Each hu has just one M_HU_Item with type={}; hu={}; huMaterialItems={}", X_M_HU_Item.ITEMTYPE_Material, topLevelHU, huMaterialItems);
+		Check.assume(huMaterialItems.size() == 1, "Each hu has just one M_HU_Item with type={}; hu={}; huMaterialItems={}", X_M_HU_Item.ITEMTYPE_Material, tuOrVhu, huMaterialItems);
 		final I_M_HU_Item huMaterialItem = huMaterialItems.get(0);
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);

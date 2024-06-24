@@ -157,14 +157,14 @@ public class DemandCandiateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(candidate);
 
-		candidateRepositoryWriteService.deleteCandidatebyId(candidate.getId());
+		candidateRepositoryWriteService.deleteCandidateById(candidate.getId());
 
 		final Optional<Candidate> childStockCandidate = candidateRepository.retrieveSingleChild(candidate.getId());
 		if (!childStockCandidate.isPresent())
 		{
 			return; // nothing to do
 		}
-		final DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidatebyId(childStockCandidate.get().getId());
+		final DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidateById(childStockCandidate.get().getId());
 
 		final DateAndSeqNo timeOfDeletedStock = stockDeleteResult.getPreviousTime();
 

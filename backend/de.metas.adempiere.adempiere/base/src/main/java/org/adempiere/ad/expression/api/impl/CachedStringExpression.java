@@ -1,14 +1,8 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
+import de.metas.util.Check;
 import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -20,10 +14,13 @@ import org.compiere.util.Evaluatee2;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.util.Check;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /*
  * #%L
@@ -218,7 +215,7 @@ public final class CachedStringExpression implements ICachedStringExpression
 				{
 					if (failIfNotFound)
 					{
-						throw new ExpressionEvaluationException("@NotFound@: " + parameterName);
+						throw ExpressionEvaluationException.newWithTranslatableMessage("@NotFound@: " + parameterName);
 					}
 
 					continue;

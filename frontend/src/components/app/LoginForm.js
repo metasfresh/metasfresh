@@ -7,7 +7,6 @@ import { withRouter } from 'react-router-dom';
 import classnames from 'classnames';
 
 import {
-  getUserLang,
   checkLoginRequest,
   loginCompletionRequest,
   loginRequest,
@@ -20,6 +19,7 @@ import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
 import { connectionError } from '../../actions/AppActions';
 import { BAD_GATEWAY_ERROR } from '../../constants/Constants';
+import { getUserLang } from '../../api/userSession';
 
 /**
  * @file Class based component.

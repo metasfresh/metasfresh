@@ -40,6 +40,7 @@ public class ExternalSystems
 		registerExternalSystem(OtherExternalSystem.OTHER);
 		registerExternalSystem(WoocommerceExternalSystem.WOOCOMMERCE);
 		registerExternalSystem(GRSSignumExternalSystem.GRSSIGNUM);
+		registerExternalSystem(LeichUndMehlExternalSystem.LEICHUNDMEHL);
 		registerExternalSystem(PCMExternalSystem.PROCAREMANAGEMENT);
 	}
 

@@ -1,10 +1,9 @@
 package de.metas.costing;
 
-import org.adempiere.service.ClientId;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 
 /*
  * #%L
@@ -31,12 +30,12 @@ import lombok.Value;
 @Value
 public class CostElement
 {
-	CostElementId id;
-	String name;
-	CostElementType costElementType;
-	CostingMethod costingMethod;
+	@NonNull CostElementId id;
+	@NonNull String name;
+	@NonNull CostElementType costElementType;
+	@NonNull CostingMethod costingMethod;
 	boolean allowUserChangingCurrentCosts;
-	ClientId clientId;
+	@NonNull ClientId clientId;
 
 	@Builder
 	private CostElement(
@@ -55,15 +54,10 @@ public class CostElement
 		this.clientId = clientId;
 	}
 
-	public boolean isMaterialCostingMethod()
-	{
-		return getCostElementType().isMaterial()
-				&& getCostingMethod() != null;
-	}
+	public boolean isMaterial() {return this.costElementType.isMaterial();}
 
-	public boolean isActivityControlElement()
-	{
-		return getCostElementType().isActivityControlElement();
-	}
+	public boolean isMaterialCostingMethod(@NonNull final CostingMethod costingMethod) {return isMaterial() && costingMethod.equals(this.costingMethod);}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	public boolean isActivityControlElement() {return this.costElementType.isActivityControlElement();}
 }

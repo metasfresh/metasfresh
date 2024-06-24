@@ -42,9 +42,11 @@ import java.util.Set;
 
 public interface IHUInOutBL extends ISingletonService
 {
-	I_M_InOut getById(InOutId inoutId);
+	de.metas.handlingunits.model.I_M_InOut getById(InOutId inoutId);
 
 	<T extends I_M_InOut> T getById(InOutId inoutId, @NonNull Class<T> type);
+
+	I_M_InOutLine getLineById(@NonNull InOutLineId inoutLineId);
 
 	<T extends org.compiere.model.I_M_InOutLine> List<T> retrieveLines(I_M_InOut inOut, Class<T> inoutLineClass);
 
@@ -109,8 +111,6 @@ public interface IHUInOutBL extends ISingletonService
 	 * @return true if the given inOut is an empties return (e.g. of just pallets or boxes), false otherwise.
 	 */
 	boolean isEmptiesReturn(I_M_InOut inout);
-	
-	void moveHUsToQualityReturnWarehouse(List<I_M_HU> husToReturn);
 
 	void setAssignedHandlingUnits(I_M_InOut inout, List<I_M_HU> hus);
 

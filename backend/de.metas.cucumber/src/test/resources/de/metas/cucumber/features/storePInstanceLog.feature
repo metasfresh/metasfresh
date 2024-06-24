@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: pInstanceLog store using metasfresh api
   As a REST-API invoker
   I want to be able to store external pInstanceLog

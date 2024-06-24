@@ -125,9 +125,9 @@ class JsonInsertInvoiceCandidateServiceTest
 		new ProductPriceBuilder(
 				pricingTestHelper.getDefaultPriceListVerion(),
 				productRecord)
-						.setTaxCategoryId(pricingTestHelper.getTaxCategoryId())
-						.setPrice(20)
-						.build();
+				.setTaxCategoryId(pricingTestHelper.getTaxCategoryId())
+				.setPrice(20)
+				.build();
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setM_PricingSystem_ID(pricingTestHelper.getDefaultPricingSystem().getM_PricingSystem_ID());

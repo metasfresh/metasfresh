@@ -151,7 +151,7 @@ public class M_HU_LUTU_Configuration_StepDef
 					.baseLUTUConfiguration(lutuConfigDefault)
 					.qtyLU(lutuConfigDefault.getQtyLU())
 					.qtyTU(lutuConfigDefault.getQtyTU())
-					.qtyCU(lutuConfigDefault.getQtyCU())
+					.qtyCUsPerTU(lutuConfigDefault.getQtyCUsPerTU())
 					.tuHUPIItemProductID(tuHuPiProduct.getM_HU_PI_Item_Product_ID())
 					.luHUPIID(luHuPi.getM_HU_PI_ID())
 					.build();
@@ -175,11 +175,11 @@ public class M_HU_LUTU_Configuration_StepDef
 
 			final BigDecimal qtyLU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyLU);
 			final BigDecimal qtyTU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyTU);
-			final BigDecimal qtyCU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyCU);
+			final BigDecimal qtyCUsPerTU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyCUsPerTU);
 
 			assertThat(lutuConfig.getQtyLU()).isEqualTo(qtyLU);
 			assertThat(lutuConfig.getQtyTU()).isEqualTo(qtyTU);
-			assertThat(lutuConfig.getQtyCU()).isEqualTo(qtyCU);
+			assertThat(lutuConfig.getQtyCUsPerTU()).isEqualTo(qtyCUsPerTU);
 		}
 	}
 
@@ -271,14 +271,14 @@ public class M_HU_LUTU_Configuration_StepDef
 		final String piProductItemIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer huPiItemProductId = huPiItemProductTable.getOptional(piProductItemIdentifier)
 				.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
-				.orElseGet(() -> Integer.parseInt(piProductItemIdentifier));;
+				.orElseGet(() -> Integer.parseInt(piProductItemIdentifier));
 		assertThat(huPiItemProductId).isNotNull();
 
 		final boolean isInfiniteQtyCU = DataTableUtil.extractBooleanForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyCU);
-		final BigDecimal qtyCU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyCU);
+		final BigDecimal qtyCUsPerTU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyCUsPerTU);
 
 		// CU
-		lutuConfig.setQtyCU(qtyCU);
+		lutuConfig.setQtyCUsPerTU(qtyCUsPerTU);
 		lutuConfig.setIsInfiniteQtyCU(isInfiniteQtyCU);
 
 		// TU

@@ -61,9 +61,11 @@ public class MaterialCockpitFilters
 				ProductFilterUtil.createFilterDescriptor());
 	}
 
+	@NonNull
 	public DocumentFilterList createAutoFilters()
 	{
-		return DocumentFilterList.of(DateFilterUtil.createFilterToday());
+		return DocumentFilterList.of(DateFilterUtil.createFilterToday(),
+									 ProductFilterUtil.createFilterActiveProducts());
 	}
 
 	public DocumentFilterList extractDocumentFilters(@NonNull final CreateViewRequest request)

@@ -619,17 +619,29 @@ jobs:
     runs-on: ubuntu-latest
     needs: [init, backend, frontend, cucumber-build]
     strategy:
-      max-parallel: 4
+      max-parallel: 10
       fail-fast: false
       matrix:
         profile: [profile1, profile2, catchall]
         include:
           - profile: profile1
-            params: -Dcucumber.filter.tags="@ghActions:run_on_executor1 and not @ignore"
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor1 and not @flaky and not @ignore"
           - profile: profile2
-            params: -Dcucumber.filter.tags="@ghActions:run_on_executor2 and not @ignore"
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor2 and not @flaky and not @ignore"
+          - profile: profile3
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor3 and not @flaky and not @ignore"
+          - profile: profile4
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor4 and not @flaky and not @ignore"
+          - profile: profile5
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor5 and not @flaky and not @ignore"
+          - profile: profile6
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor6 and not @flaky and not @ignore"
+          - profile: profile7
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor7 and not @flaky and not @ignore"
+          - profile: flaky
+            params: -Dcucumber.filter.tags="@ghActions:flaky and not @ignore"
           - profile: catchall
-            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ignore"
+            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ignore"
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3

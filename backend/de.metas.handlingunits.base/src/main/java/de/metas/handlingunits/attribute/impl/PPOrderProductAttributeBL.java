@@ -39,8 +39,6 @@ import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -63,6 +61,8 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
@@ -302,7 +302,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		final IHUAttributesDAO huAttributesRepo = Services.get(IHUAttributesDAO.class);
 
 		final AttributeId serialNoAttributeId = serialNoContext.isPresent()
-				? attributesRepo.retrieveAttributeIdByValue(AttributeConstants.ATTR_SerialNo)
+				? attributesRepo.getAttributeIdByCode(AttributeConstants.ATTR_SerialNo)
 				: null;
 
 		final List<I_M_HU_Attribute> existingHUAttributes = huAttributesRepo.retrieveAttributesOrdered(hu).getHuAttributes();

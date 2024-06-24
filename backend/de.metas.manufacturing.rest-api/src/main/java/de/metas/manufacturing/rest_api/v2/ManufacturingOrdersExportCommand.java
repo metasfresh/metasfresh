@@ -28,9 +28,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrderBOMLine;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersBulk;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.JsonQuantity;
-import de.metas.common.shipping.v2.JsonProduct;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
@@ -49,14 +46,11 @@ import de.metas.organization.OrgId;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
-import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
-import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
@@ -67,7 +61,6 @@ import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
 import java.time.Instant;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -139,7 +132,9 @@ final class ManufacturingOrdersExportCommand
 			{
 				try
 				{
-					jsonOrders.add(toJson(order));
+					final MapToJsonResponseManufacturingOrderRequest request = buildMapToResponseManufacturingOrderRequest(order);
+
+					jsonOrders.add(JsonConverter.toJson(request));
 					auditCollector.item(createExportedAuditItem(order));
 				}
 				catch (final Exception ex)
@@ -162,64 +157,6 @@ final class ManufacturingOrdersExportCommand
 					.hasMoreItems(query.getLimit().isLimitHitOrExceeded(jsonOrders))
 					.build();
 		}
-	}
-
-	private JsonResponseManufacturingOrder toJson(@NonNull final I_PP_Order order)
-	{
-		final PPOrderId orderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
-		final Quantity qtyToProduce = ppOrderBOMBL.getQuantities(order).getQtyRequiredToProduce();
-
-		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
-		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-		final String orgCode = orgDAO.retrieveOrgValue(orgId);
-
-		return JsonResponseManufacturingOrder.builder()
-				.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
-				.orgCode(orgCode)
-				.documentNo(order.getDocumentNo())
-				.description(StringUtils.trimBlankToNull(order.getDescription()))
-				.finishGoodProduct(toJsonProduct(ProductId.ofRepoId(order.getM_Product_ID())))
-				.qtyToProduce(toJsonQuantity(qtyToProduce))
-				.dateOrdered(TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone))
-				.dateStartSchedule(TimeUtil.asZonedDateTime(order.getDateStartSchedule(), timeZone))
-				.components(getBOMLinesByOrderId(orderId)
-						.stream()
-						.map(this::toJson)
-						.collect(ImmutableList.toImmutableList()))
-				.build();
-	}
-
-	private JsonResponseManufacturingOrderBOMLine toJson(@NonNull final I_PP_Order_BOMLine bomLine)
-	{
-		final Quantity qtyRequiredToIssue = ppOrderBOMBL.getQtyRequiredToIssue(bomLine);
-		return JsonResponseManufacturingOrderBOMLine.builder()
-				.componentType(bomLine.getComponentType())
-				.product(toJsonProduct(ProductId.ofRepoId(bomLine.getM_Product_ID())))
-				.qty(toJsonQuantity(qtyRequiredToIssue))
-				.build();
-	}
-
-	private JsonProduct toJsonProduct(@NonNull final ProductId productId)
-	{
-		final Product product = getProductById(productId);
-
-		return JsonProduct.builder()
-				.productNo(product.getProductNo())
-				.name(product.getName().translate(adLanguage))
-				.description(product.getDescription().translate(adLanguage))
-				.documentNote(product.getDocumentNote().translate(adLanguage))
-				.packageSize(product.getPackageSize())
-				.weight(product.getWeight())
-				.stocked(product.isStocked())
-				.build();
-	}
-
-	private JsonQuantity toJsonQuantity(@NonNull final Quantity qty)
-	{
-		return JsonQuantity.builder()
-				.qty(qty.toBigDecimal())
-				.uomCode(qty.getX12DE355().getCode())
-				.build();
 	}
 
 	private static ManufacturingOrderExportAuditItem createExportedAuditItem(@NonNull final I_PP_Order order)
@@ -308,5 +245,27 @@ final class ManufacturingOrdersExportCommand
 			_orders = ppOrderDAO.retrieveManufacturingOrders(query);
 		}
 		return _orders;
+	}
+
+	@NonNull
+	private MapToJsonResponseManufacturingOrderRequest buildMapToResponseManufacturingOrderRequest(@NonNull final I_PP_Order ppOrder)
+	{
+		return  MapToJsonResponseManufacturingOrderRequest
+				.builder()
+				.productRepository(productRepo)
+				.orgDAO(orgDAO)
+				.ppOrderBOMBL(ppOrderBOMBL)
+				.order(ppOrder)
+				.components(getBOMLines(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID())))
+				.build();
+	}
+
+	@NonNull
+	private ImmutableList<JsonResponseManufacturingOrderBOMLine> getBOMLines(@NonNull final PPOrderId ppOrderId)
+	{
+		return getBOMLinesByOrderId(ppOrderId)
+				.stream()
+				.map(bomLine -> JsonConverter.toJson(bomLine, ppOrderBOMBL, productRepo))
+				.collect(ImmutableList.toImmutableList());
 	}
 }

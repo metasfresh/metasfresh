@@ -22,10 +22,6 @@
 
 package de.metas.common.procurement.sync.protocol.request_to_procurementweb;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
 import de.metas.common.procurement.sync.protocol.dto.SyncConfirmation;
 import lombok.Builder;

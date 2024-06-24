@@ -1,40 +1,7 @@
 package de.metas.contracts.refund;
 
-import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
-import static de.metas.util.collections.CollectionUtils.singleElement;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import de.metas.document.dimension.DimensionFactory;
-import de.metas.document.dimension.DimensionService;
-import de.metas.document.dimension.OrderLineDimensionFactory;
-import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
-import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -45,8 +12,11 @@ import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -59,6 +29,31 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static de.metas.contracts.refund.RefundTestTools.CONTRACT_END_DATE;
+import static de.metas.contracts.refund.RefundTestTools.CONTRACT_START_DATE;
+import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
+import static de.metas.util.collections.CollectionUtils.singleElement;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -95,8 +90,6 @@ public class CandidateAssignmentServiceTest
 	private static final BigDecimal SIXTEEN = new BigDecimal("16");
 	private static final BigDecimal TWENTY = new BigDecimal("20");
 	private static final BigDecimal HUNDRED = new BigDecimal("100");
-
-	private static final LocalDate NOW = LocalDate.now();
 
 	private AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository;
 
@@ -761,8 +754,8 @@ public class CandidateAssignmentServiceTest
 
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).isEmpty(); // guard
 		final RefundContract refundContract = RefundContract.builder()
-				.startDate(NOW)
-				.endDate(NOW.plusDays(5))
+				.startDate(CONTRACT_START_DATE)
+				.endDate(CONTRACT_END_DATE)
 				.refundConfig(refundConfig1)
 				.refundConfig(refundConfig2)
 				.bPartnerId(RefundTestTools.BPARTNER_ID)

@@ -173,7 +173,7 @@ public class UserAuthTokenRepository
 				// Even if the record's AD_Client_ID is 0 (because we are the metasfresh-user with AD_User_ID=100), we return the metasfresh-client for our API access.
 				//.clientId(ClientId.ofRepoId(userAuthTokenPO.getAD_Client_ID()))
 				.clientId(ClientId.METASFRESH)
-				
+
 				.orgId(OrgId.ofRepoId(userAuthTokenPO.getAD_Org_ID()))
 				.roleId(RoleId.ofRepoId(userAuthTokenPO.getAD_Role_ID()))
 				.build();
@@ -214,10 +214,21 @@ public class UserAuthTokenRepository
 
 	public void deleteUserAuthTokenByUserId(@NonNull final UserId userId)
 	{
-		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User_AuthToken.class)
+		queryBL.createQueryBuilder(I_AD_User_AuthToken.class)
 				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_User_ID, userId)
 				.create()
 				.delete();
+	}
+
+	@NonNull
+	public UserAuthToken getById(@NonNull final UserAuthTokenId id)
+	{
+		final I_AD_User_AuthToken record = queryBL.createQueryBuilder(I_AD_User_AuthToken.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMNNAME_AD_User_AuthToken_ID, id)
+				.create()
+				.firstOnlyNotNull(I_AD_User_AuthToken.class);
+
+		return fromRecord(record);
 	}
 }

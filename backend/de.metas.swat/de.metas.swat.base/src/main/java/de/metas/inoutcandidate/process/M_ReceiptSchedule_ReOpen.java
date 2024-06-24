@@ -1,15 +1,5 @@
 package de.metas.inoutcandidate.process;
 
-import java.util.Iterator;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.util.TrxRunnable;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -19,6 +9,15 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.util.TrxRunnable;
+
+import java.util.Iterator;
 
 /**
  * Re-open closed receipt schedule.
@@ -45,8 +44,8 @@ public class M_ReceiptSchedule_ReOpen extends JavaProcess implements IProcessPre
 		}
 
 		// Make sure at least one receipt schedule is closed
-		final boolean someSchedsAreClosed = context.getSelectedModels(I_M_ReceiptSchedule.class).stream()
-				.anyMatch(receiptSchedule -> receiptScheduleBL.isClosed(receiptSchedule));
+		final boolean someSchedsAreClosed = context.streamSelectedModels(I_M_ReceiptSchedule.class)
+				.anyMatch(receiptScheduleBL::isClosed);
 
 		if (!someSchedsAreClosed)
 		{

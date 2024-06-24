@@ -2,6 +2,7 @@ package de.metas.process;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -68,6 +69,9 @@ public interface IProcessPreconditionsContext
 	 */
 	@Deprecated
 	<T> List<T> getSelectedModels(final Class<T> modelClass);
+	
+	@NonNull
+	<T> Stream<T> streamSelectedModels(@NonNull final Class<T> modelClass);
 
 	/**
 	 * @return single Record_ID; throws exception otherwise

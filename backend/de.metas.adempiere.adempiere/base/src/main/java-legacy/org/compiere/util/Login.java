@@ -6,7 +6,6 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IPostingService;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.common.util.time.SystemTime;
-import de.metas.i18n.Language;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -23,6 +22,7 @@ import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.hash.HashableString;
 import lombok.NonNull;
 import org.adempiere.ad.service.ISystemBL;
@@ -225,12 +225,9 @@ public class Login
 
 		//
 		// Use user's AD_Language, if any
-		if (!Check.isEmpty(user.getAD_Language()))
-		{
-			Language language = Language.getLanguage(user.getAD_Language());
-			language = Env.verifyLanguageFallbackToBase(language);
-			ctx.setAD_Language(language.getAD_Language());
-		}
+		StringUtils.trimBlankToOptional(user.getAD_Language())
+				.map(Env::verifyLanguageFallbackToBase)
+				.ifPresent(ctx::setAD_Language);
 
 		//
 		// Get user's roles

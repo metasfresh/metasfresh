@@ -20,6 +20,7 @@ import org.adempiere.mm.attributes.AttributeValueId;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -226,6 +227,13 @@ public final class AttributesKey implements Comparable<AttributesKey>
 	public boolean contains(@NonNull final AttributesKey attributesKey)
 	{
 		return parts.containsAll(attributesKey.parts);
+	}
+
+	public AttributesKey getIntersection(@NonNull final AttributesKey attributesKey)
+	{
+		final HashSet<AttributesKeyPart> ownMutableParts = new HashSet<>(parts);
+		ownMutableParts.retainAll(attributesKey.parts);
+		return AttributesKey.ofParts(ownMutableParts);
 	}
 
 	/**

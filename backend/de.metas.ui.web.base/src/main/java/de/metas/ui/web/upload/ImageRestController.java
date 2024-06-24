@@ -1,9 +1,13 @@
 package de.metas.ui.web.upload;
 
-import java.io.IOException;
-
+import de.metas.i18n.BooleanWithReason;
+import de.metas.ui.web.cache.ETagResponseEntityBuilder;
+import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import lombok.NonNull;
 import org.compiere.model.I_AD_Image;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,11 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
-import de.metas.ui.web.cache.ETagResponseEntityBuilder;
-import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import java.io.IOException;
 
 /*
  * #%L
@@ -49,11 +49,16 @@ public class ImageRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/image";
 
-	@Autowired
-	private UserSession userSession;
+	private final UserSession userSession;
+	private final WebuiImageService imageService;
 
-	@Autowired
-	private WebuiImageService imageService;
+	public ImageRestController(
+			@NonNull final UserSession userSession,
+			@NonNull final WebuiImageService imageService)
+	{
+		this.userSession = userSession;
+		this.imageService = imageService;
+	}
 
 	private JSONOptions newJSONOptions()
 	{
@@ -81,7 +86,7 @@ public class ImageRestController
 		return ETagResponseEntityBuilder.ofETagAware(request, getWebuiImage(imageId, maxWidth, maxHeight))
 				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
-				.jsonOptions(() -> newJSONOptions())
+				.jsonOptions(this::newJSONOptions)
 				.toResponseEntity((responseBuilder, webuiImage) -> webuiImage.toResponseEntity(responseBuilder));
 	}
 
@@ -94,10 +99,10 @@ public class ImageRestController
 
 	private void assertUserHasAccess(final WebuiImage image)
 	{
-		final boolean hasAccess = userSession.getUserRolePermissions().canView(image.getAdClientId(), image.getAdOrgId(), I_AD_Image.Table_ID, image.getAdImageId());
-		if (!hasAccess)
+		final BooleanWithReason hasAccess = userSession.getUserRolePermissions().checkCanView(image.getAdClientId(), image.getAdOrgId(), I_AD_Image.Table_ID, image.getAdImageId().getRepoId());
+		if (hasAccess.isFalse())
 		{
-			throw new EntityNotFoundException("No access to image: " + image.getAdImageId());
+			throw new EntityNotFoundException(hasAccess.getReason());
 		}
 	}
 }

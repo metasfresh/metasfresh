@@ -1,8 +1,5 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_PriceList_Version;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUDocumentHandler;
@@ -14,6 +11,8 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_PriceList_Version;
 
 public class OrderPricingHUDocumentHandler implements IHUDocumentHandler
 {
@@ -38,7 +37,7 @@ public class OrderPricingHUDocumentHandler implements IHUDocumentHandler
 			final HUPIItemProductId packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(productPrice.getM_HU_PI_Item_Product_ID());
 			if (packingMaterialId != null)
 			{
-				return Services.get(IHUPIItemProductDAO.class).getById(packingMaterialId);
+				return Services.get(IHUPIItemProductDAO.class).getRecordById(packingMaterialId);
 			}
 		}
 

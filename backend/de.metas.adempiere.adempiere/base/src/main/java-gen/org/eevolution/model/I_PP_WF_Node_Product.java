@@ -5,47 +5,18 @@ import org.adempiere.model.ModelColumn;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
-/**
- * Generated Interface for PP_WF_Node_Product
- *
- * @author metasfresh (generated)
+/** Generated Interface for PP_WF_Node_Product
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_PP_WF_Node_Product
+public interface I_PP_WF_Node_Product 
 {
 
 	String Table_Name = "PP_WF_Node_Product";
 
-	//	/** AD_Table_ID=53016 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-	String COLUMNNAME_AD_WF_Node_ID = "AD_WF_Node_ID";
-	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_ConfigurationLevel = new ModelColumn<>(I_PP_WF_Node_Product.class, "ConfigurationLevel", null);
-	String COLUMNNAME_ConfigurationLevel = "ConfigurationLevel";
-	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Created = new ModelColumn<>(I_PP_WF_Node_Product.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_EntityType = new ModelColumn<>(I_PP_WF_Node_Product.class, "EntityType", null);
-	String COLUMNNAME_EntityType = "EntityType";
-	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_IsActive = new ModelColumn<>(I_PP_WF_Node_Product.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
-	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_IsSubcontracting = new ModelColumn<>(I_PP_WF_Node_Product.class, "IsSubcontracting", null);
-	String COLUMNNAME_IsSubcontracting = "IsSubcontracting";
-	String COLUMNNAME_M_Product_ID = "M_Product_ID";
-	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_PP_WF_Node_Product_ID = new ModelColumn<>(I_PP_WF_Node_Product.class, "PP_WF_Node_Product_ID", null);
-	String COLUMNNAME_PP_WF_Node_Product_ID = "PP_WF_Node_Product_ID";
-	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Qty = new ModelColumn<>(I_PP_WF_Node_Product.class, "Qty", null);
-	String COLUMNNAME_Qty = "Qty";
-	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_SeqNo = new ModelColumn<>(I_PP_WF_Node_Product.class, "SeqNo", null);
-	String COLUMNNAME_SeqNo = "SeqNo";
-	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Specification = new ModelColumn<>(I_PP_WF_Node_Product.class, "Specification", null);
-	String COLUMNNAME_Specification = "Specification";
-	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Updated = new ModelColumn<>(I_PP_WF_Node_Product.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Yield = new ModelColumn<>(I_PP_WF_Node_Product.class, "Yield", null);
-	String COLUMNNAME_Yield = "Yield";
+//	/** AD_Table_ID=53016 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+
 
 	/**
 	 * Get Client.
@@ -57,6 +28,18 @@ public interface I_PP_WF_Node_Product
 	 */
 	int getAD_Client_ID();
 
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
+
 	/**
 	 * Get Organisation.
 	 * Organisational entity within client
@@ -67,19 +50,21 @@ public interface I_PP_WF_Node_Product
 	 */
 	int getAD_Org_ID();
 
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Start Node.
+	 * Workflow Node, step or process
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID(int AD_Org_ID);
+	void setAD_WF_Node_ID (int AD_WF_Node_ID);
 
 	/**
-	 * Get Knoten.
-	 * Workflow Node (activity), step or process
+	 * Get Start Node.
+	 * Workflow Node, step or process
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -87,34 +72,52 @@ public interface I_PP_WF_Node_Product
 	 */
 	int getAD_WF_Node_ID();
 
+	String COLUMNNAME_AD_WF_Node_ID = "AD_WF_Node_ID";
+
 	/**
-	 * Set Knoten.
-	 * Workflow Node (activity), step or process
+	 * Set Workflow.
+	 * Workflow or combination of tasks
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_WF_Node_ID(int AD_WF_Node_ID);
+	void setAD_Workflow_ID (int AD_Workflow_ID);
 
 	/**
-	 * Get Configuration LEVEL.
+	 * Get Workflow.
+	 * Workflow or combination of tasks
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Workflow_ID();
+
+	String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
+
+	/**
+	 * Set Configuration Level.
+	 * Configuration Level for this parameter
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable
-	java.lang.String getConfigurationLevel();
+	void setConfigurationLevel (@Nullable java.lang.String ConfigurationLevel);
 
 	/**
-	 * Set Configuration LEVEL.
+	 * Get Configuration Level.
+	 * Configuration Level for this parameter
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setConfigurationLevel(@Nullable java.lang.String ConfigurationLevel);
+	@Nullable java.lang.String getConfigurationLevel();
+
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_ConfigurationLevel = new ModelColumn<>(I_PP_WF_Node_Product.class, "ConfigurationLevel", null);
+	String COLUMNNAME_ConfigurationLevel = "ConfigurationLevel";
 
 	/**
 	 * Get Created.
@@ -126,6 +129,9 @@ public interface I_PP_WF_Node_Product
 	 */
 	java.sql.Timestamp getCreated();
 
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Created = new ModelColumn<>(I_PP_WF_Node_Product.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
 	/**
 	 * Get Created By.
 	 * User who created this records
@@ -136,10 +142,21 @@ public interface I_PP_WF_Node_Product
 	 */
 	int getCreatedBy();
 
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
 	/**
-	 * Get Entitäts-Art.
-	 * Dictionary Entity Type;
-	 * Determines ownership and synchronization
+	 * Set Entity Type.
+	 * Entity Type
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setEntityType (java.lang.String EntityType);
+
+	/**
+	 * Get Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -147,16 +164,8 @@ public interface I_PP_WF_Node_Product
 	 */
 	java.lang.String getEntityType();
 
-	/**
-	 * Set Entitäts-Art.
-	 * Dictionary Entity Type;
-	 * Determines ownership and synchronization
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setEntityType(java.lang.String EntityType);
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_EntityType = new ModelColumn<>(I_PP_WF_Node_Product.class, "EntityType", null);
+	String COLUMNNAME_EntityType = "EntityType";
 
 	/**
 	 * Set Active.
@@ -166,7 +175,7 @@ public interface I_PP_WF_Node_Product
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive(boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -178,6 +187,9 @@ public interface I_PP_WF_Node_Product
 	 */
 	boolean isActive();
 
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_IsActive = new ModelColumn<>(I_PP_WF_Node_Product.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+
 	/**
 	 * Set Is Subcontracting.
 	 *
@@ -185,7 +197,7 @@ public interface I_PP_WF_Node_Product
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsSubcontracting(boolean IsSubcontracting);
+	void setIsSubcontracting (boolean IsSubcontracting);
 
 	/**
 	 * Get Is Subcontracting.
@@ -195,6 +207,19 @@ public interface I_PP_WF_Node_Product
 	 * <br>Virtual Column: false
 	 */
 	boolean isSubcontracting();
+
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_IsSubcontracting = new ModelColumn<>(I_PP_WF_Node_Product.class, "IsSubcontracting", null);
+	String COLUMNNAME_IsSubcontracting = "IsSubcontracting";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
 	 * Get Product.
@@ -206,15 +231,16 @@ public interface I_PP_WF_Node_Product
 	 */
 	int getM_Product_ID();
 
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
 	/**
-	 * Set Product.
-	 * Product, Service, Item
+	 * Set Manufacturing Products.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_ID(int M_Product_ID);
+	void setPP_WF_Node_Product_ID (int PP_WF_Node_Product_ID);
 
 	/**
 	 * Get Manufacturing Products.
@@ -225,14 +251,18 @@ public interface I_PP_WF_Node_Product
 	 */
 	int getPP_WF_Node_Product_ID();
 
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_PP_WF_Node_Product_ID = new ModelColumn<>(I_PP_WF_Node_Product.class, "PP_WF_Node_Product_ID", null);
+	String COLUMNNAME_PP_WF_Node_Product_ID = "PP_WF_Node_Product_ID";
+
 	/**
-	 * Set Manufacturing Products.
+	 * Set Quantity.
+	 * Quantity
 	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPP_WF_Node_Product_ID(int PP_WF_Node_Product_ID);
+	void setQty (@Nullable BigDecimal Qty);
 
 	/**
 	 * Get Quantity.
@@ -244,20 +274,24 @@ public interface I_PP_WF_Node_Product
 	 */
 	BigDecimal getQty();
 
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Qty = new ModelColumn<>(I_PP_WF_Node_Product.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
+
 	/**
-	 * Set Quantity.
-	 * Quantity
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQty(@Nullable BigDecimal Qty);
+	void setSeqNo (int SeqNo);
 
 	/**
 	 * Get SeqNo.
 	 * Method of ordering records;
-	 * lowest number comes first
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -265,26 +299,8 @@ public interface I_PP_WF_Node_Product
 	 */
 	int getSeqNo();
 
-	/**
-	 * Set SeqNo.
-	 * Method of ordering records;
-	 * lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSeqNo(int SeqNo);
-
-	/**
-	 * Get Specification.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable
-	java.lang.String getSpecification();
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_SeqNo = new ModelColumn<>(I_PP_WF_Node_Product.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Specification.
@@ -293,7 +309,19 @@ public interface I_PP_WF_Node_Product
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSpecification(@Nullable java.lang.String Specification);
+	void setSpecification (@Nullable java.lang.String Specification);
+
+	/**
+	 * Get Specification.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSpecification();
+
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Specification = new ModelColumn<>(I_PP_WF_Node_Product.class, "Specification", null);
+	String COLUMNNAME_Specification = "Specification";
 
 	/**
 	 * Get Updated.
@@ -305,6 +333,9 @@ public interface I_PP_WF_Node_Product
 	 */
 	java.sql.Timestamp getUpdated();
 
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Updated = new ModelColumn<>(I_PP_WF_Node_Product.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+
 	/**
 	 * Get Updated By.
 	 * User who updated this records
@@ -314,6 +345,18 @@ public interface I_PP_WF_Node_Product
 	 * <br>Virtual Column: false
 	 */
 	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Yield %.
+	 * The Yield is the percentage of a lot that is expected to be of acceptable wuality may fall below 100 percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setYield (@Nullable BigDecimal Yield);
 
 	/**
 	 * Get Yield %.
@@ -325,13 +368,6 @@ public interface I_PP_WF_Node_Product
 	 */
 	BigDecimal getYield();
 
-	/**
-	 * Set Yield %.
-	 * The Yield is the percentage of a lot that is expected to be of acceptable wuality may fall below 100 percent
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setYield(@Nullable BigDecimal Yield);
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Yield = new ModelColumn<>(I_PP_WF_Node_Product.class, "Yield", null);
+	String COLUMNNAME_Yield = "Yield";
 }

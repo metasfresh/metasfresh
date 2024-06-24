@@ -5,6 +5,7 @@ export * from './actions/TabTypes';
 export * from './actions/FilterTypes';
 export * from './actions/Actions';
 export * from './actions/InlineTabTypes';
+export * from './actions/WindowActions';
 
 /**
  * @constant
@@ -20,7 +21,7 @@ export const OPEN_MODAL = 'OPEN_MODAL';
 
 /**
  * @constant
- * @type {string} Clear/reset modal state
+ * @type {string} ToDo: Description for the constant.
  */
 export const CLOSE_MODAL = 'CLOSE_MODAL';
 
@@ -283,7 +284,7 @@ export const SET_RAW_MODAL_DESCRIPTION = 'SET_RAW_MODAL_DESCRIPTION';
 
 /**
  * @constant
- * @type {string} Clear/reset rawModal state
+ * @type {string} ToDo: Description for the constant.
  */
 export const CLOSE_RAW_MODAL = 'CLOSE_RAW_MODAL';
 

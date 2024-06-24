@@ -1,13 +1,7 @@
 package de.metas.order;
 
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -17,6 +11,11 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -83,4 +82,7 @@ public class OrderLine
 
 	@NonNull
 	SOTrx soTrx;
+
+	@Nullable
+	HUPIItemProductId huPIItemProductId;
 }

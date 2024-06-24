@@ -177,9 +177,9 @@ public class StringUtilsTest
 	@Test
 	public void test_cleanWhitespace()
 	{
-		assertThat(StringUtils.cleanWhitespace("")).isEqualTo("");
-		assertThat(StringUtils.cleanWhitespace(" ")).isEqualTo("");
-		assertThat(StringUtils.cleanWhitespace(" \t\n ")).isEqualTo("");
+		assertThat(StringUtils.cleanWhitespace("")).isEmpty();
+		assertThat(StringUtils.cleanWhitespace(" ")).isEmpty();
+		assertThat(StringUtils.cleanWhitespace(" \t\n ")).isEmpty();
 		assertThat(StringUtils.cleanWhitespace(" \taaaa\n ")).isEqualTo("aaaa");
 		assertThat(StringUtils.cleanWhitespace("CH34 8914 4463 3729 49 43 8")).isEqualTo("CH3489144463372949438");
 
@@ -208,15 +208,33 @@ public class StringUtilsTest
 	class trimBlankToOptional
 	{
 		@Test
-		void nullValue() { assertThat(StringUtils.trimBlankToOptional(null)).isEmpty(); }
+		void nullValue() {assertThat(StringUtils.trimBlankToOptional(null)).isEmpty();}
 
 		@Test
-		void empty() { assertThat(StringUtils.trimBlankToOptional("")).isEmpty(); }
+		void empty() {assertThat(StringUtils.trimBlankToOptional("")).isEmpty();}
 
 		@Test
-		void blank() { assertThat(StringUtils.trimBlankToOptional("   \t   ")).isEmpty(); }
+		void blank() {assertThat(StringUtils.trimBlankToOptional("   \t   ")).isEmpty();}
 
 		@Test
-		void nonBlank() { assertThat(StringUtils.trimBlankToOptional("   \taaa\r\n   ")).contains("aaa"); }
+		void nonBlank() {assertThat(StringUtils.trimBlankToOptional("   \taaa\r\n   ")).contains("aaa");}
+	}
+
+	@Nested
+	class trimBlankToNullAndMap
+	{
+		String append2(String s) {return s + "2";}
+
+		@Test
+		void nullValue() {assertThat(StringUtils.trimBlankToNullAndMap(null, this::append2)).isNull();}
+
+		@Test
+		void empty() {assertThat(StringUtils.trimBlankToNullAndMap("", this::append2)).isNull();}
+
+		@Test
+		void blank() {assertThat(StringUtils.trimBlankToNullAndMap("   \t   ", this::append2)).isNull();}
+
+		@Test
+		void nonBlank() {assertThat(StringUtils.trimBlankToNullAndMap("   \taaa\r\n   ", this::append2)).contains("aaa2");}
 	}
 }

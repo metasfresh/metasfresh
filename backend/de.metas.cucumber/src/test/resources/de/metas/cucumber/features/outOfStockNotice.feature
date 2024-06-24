@@ -1,3 +1,4 @@
+@ghActions:run_on_executor6
 Feature: warehouse out of stock notice
 
   Background:
@@ -17,8 +18,8 @@ Feature: warehouse out of stock notice
       | ol_2       | i_2                       | p_3                     | PCE          | 10       | 0       |
     And the inventory identified by i_2 is completed
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                  | Value                  | OPT.Description              | OPT.IsActive |
-      | ps_1       | pricing_system_name_3 | pricing_system_value_3 | pricing_system_description_4 | true         |
+      | Identifier | Name                  | Value                   | OPT.Description              | OPT.IsActive |
+      | ps_1       | pricing_system_name_8 | pricing_system_value_8 | pricing_system_description_8 | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name              | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_4 | null            | true  | false         | 2              | true         |

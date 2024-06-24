@@ -23,11 +23,11 @@
 package de.metas.util.collections;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSetMultimap;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 class CollectionUtilsTest
 {
@@ -65,5 +65,60 @@ class CollectionUtilsTest
 					.isInstanceOf(RuntimeException.class)
 					.hasMessageStartingWith("The given collection needs to have ZERO or ONE item");
 		}
+	}
+
+	@Nested
+	class map
+	{
+		@Test
+		void noChange()
+		{
+			final ImmutableList<String> list = ImmutableList.of("1", "2", "3");
+			final ImmutableList<String> listChanged = CollectionUtils.map(list, item -> item);
+			assertThat(listChanged).isSameAs(list);
+		}
+
+		@Test
+		void oneElementChanged()
+		{
+			final ImmutableList<String> list = ImmutableList.of("1", "2", "3");
+			final ImmutableList<String> listChanged = CollectionUtils.map(list, item -> item.equals("2") ? "99" : item);
+			assertThat(listChanged).containsExactly("1", "99", "3");
+		}
+
+		@Test
+		void oneElementRemoved()
+		{
+			final ImmutableList<String> list = ImmutableList.of("1", "2", "3");
+			final ImmutableList<String> listChanged = CollectionUtils.map(list, item -> item.equals("2") ? null : item);
+			assertThat(listChanged).containsExactly("1", "3");
+		}
+	}
+
+	@Nested
+	class mapKeys_SetMultimap
+	{
+		@Test
+		void empty()
+		{
+			final ImmutableSetMultimap<Object, Object> multimap = ImmutableSetMultimap.of();
+			assertThat(CollectionUtils.mapKeys(multimap, k -> k)).isSameAs(multimap);
+		}
+
+		@Test
+		void noChange()
+		{
+			final ImmutableSetMultimap<Integer, String> multimap = ImmutableSetMultimap.of(1, "one", 2, "two");
+			assertThat(CollectionUtils.mapKeys(multimap, k -> k)).isSameAs(multimap);
+		}
+
+		@Test
+		void oneElementChanged()
+		{
+			final ImmutableSetMultimap<Integer, String> multimap = ImmutableSetMultimap.of(1, "one", 2, "two");
+			assertThat(CollectionUtils.mapKeys(multimap, k -> k == 1 ? k * 10 : k))
+					.isEqualTo(ImmutableSetMultimap.of(10, "one", 2, "two"));
+		}
+
 	}
 }

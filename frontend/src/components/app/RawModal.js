@@ -62,6 +62,11 @@ class RawModal extends Component {
     }
   }
 
+  /**
+   * @method showTooltip
+   * @summary ToDo: Describe the method.
+   * @param {*} type
+   */
   showTooltip = (type) => {
     this.setState({
       visibleTooltips: {
@@ -71,6 +76,11 @@ class RawModal extends Component {
     });
   };
 
+  /**
+   * @method hideTooltip
+   * @summary ToDo: Describe the method.
+   * @param {*} type
+   */
   hideTooltip = (type) => {
     this.setState({
       visibleTooltips: {
@@ -160,6 +170,12 @@ class RawModal extends Component {
     });
   };
 
+  /**
+   * @async
+   * @method handleClose
+   * @summary ToDo: Describe the method.
+   * @param {*} type
+   */
   handleClose = async (type) => {
     const { dispatch, viewId, windowId, requests, rawModal, featureType } =
       this.props;
@@ -202,6 +218,11 @@ class RawModal extends Component {
     }
   };
 
+  /**
+   * @async
+   * @method removeModal
+   * @summary ToDo: Describe the method.
+   */
   removeModal = async () => {
     const { dispatch, modalVisible, windowId, viewId } = this.props;
 
@@ -222,6 +243,10 @@ class RawModal extends Component {
     }
   };
 
+  /**
+   * @method renderButtons
+   * @summary ToDo: Describe the method.
+   */
   renderButtons = () => {
     const { modalVisible, rawModal, windowId, modalTableSelectedId } =
       this.props;
@@ -274,6 +299,10 @@ class RawModal extends Component {
     return buttonsArray;
   };
 
+  /**
+   * @method generateShortcuts
+   * @summary ToDo: Describe the method.
+   */
   generateShortcuts = () => {
     let { allowedCloseActions } = this.props;
     const shortcutActions = {};

@@ -1,7 +1,14 @@
 package de.metas.inoutcandidate.api.impl;
 
-import java.util.List;
-
+import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.warehouse.LocatorId;
@@ -11,16 +18,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
-import org.eevolution.model.I_PP_Product_Planning;
 
-import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
+import java.util.List;
 
 /*
  * #%L
@@ -48,7 +47,6 @@ import de.metas.util.Services;
  * Default destination warehouse provider.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */final class DefaultFromOrderLineWarehouseDestProvider implements IReceiptScheduleWarehouseDestProvider
 {
@@ -77,7 +75,7 @@ import de.metas.util.Services;
 		// see: http://dewiki908/mediawiki/index.php/05940_Wareneingang_Lagerumbuchung
 		final I_M_Product product = Services.get(IProductDAO.class).getById(context.getM_Product_ID());
 		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoIdOrNull(product.getM_Locator_ID());
-		final I_M_Locator locator = locatorId == null? null : warehouseDAO.getLocatorById(locatorId);
+		final I_M_Locator locator = locatorId == null ? null : warehouseDAO.getLocatorById(locatorId);
 		if (locator != null && locator.getM_Locator_ID() > 0)
 		{
 			return locator.getM_Warehouse();
@@ -106,19 +104,19 @@ import de.metas.util.Services;
 				// no warehouse, no plant
 				.build();
 
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query).orElse(null);
+		final ProductPlanning productPlanning = productPlanningDAO.find(query).orElse(null);
 		if (productPlanning == null)
 		{
 			return null;
 		}
 
-		final I_DD_NetworkDistribution distributionNetwork = productPlanning.getDD_NetworkDistribution();
-		if (distributionNetwork == null)
+		if (productPlanning.getDistributionNetworkId() == null)
 		{
 			return null;
 		}
 
 		final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
+		final I_DD_NetworkDistribution distributionNetwork = distributionNetworkDAO.getById(productPlanning.getDistributionNetworkId());
 		final List<I_DD_NetworkDistributionLine> distributionNetworkLines = distributionNetworkDAO
 				.retrieveNetworkLinesBySourceWarehouse(distributionNetwork, context.getM_Warehouse_ID());
 

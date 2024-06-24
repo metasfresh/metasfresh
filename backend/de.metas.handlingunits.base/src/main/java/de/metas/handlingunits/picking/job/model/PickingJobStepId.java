@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,22 +39,6 @@ import java.util.Objects;
 @Value
 public class PickingJobStepId implements RepoIdAware
 {
-	@JsonCreator
-	public static PickingJobStepId ofRepoId(final int repoId)
-	{
-		return new PickingJobStepId(repoId);
-	}
-
-	public static PickingJobStepId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? new PickingJobStepId(repoId) : null;
-	}
-
-	public static int toRepoId(final PickingJobStepId id)
-	{
-		return id != null ? id.getRepoId() : -1;
-	}
-
 	int repoId;
 
 	private PickingJobStepId(final int repoId)
@@ -70,6 +55,31 @@ public class PickingJobStepId implements RepoIdAware
 
 	public String getAsString() {return String.valueOf(getRepoId());}
 
+	public static int toRepoId(final PickingJobStepId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
+
+	@JsonCreator
+	public static PickingJobStepId ofRepoId(final int repoId)
+	{
+		return new PickingJobStepId(repoId);
+	}
+
+	public static PickingJobStepId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new PickingJobStepId(repoId) : null;
+	}
+
+	@Nullable
+	public static PickingJobStepId ofNullableString(@Nullable final String string)
+	{
+		return StringUtils.trimBlankToOptional(string)
+				.map(PickingJobStepId::ofString)
+				.orElse(null);
+	}
+
+	@NonNull
 	public static PickingJobStepId ofString(@NonNull final String string)
 	{
 		try

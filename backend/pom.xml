@@ -64,6 +64,7 @@
 
         <module>de.metas.manufacturing</module>
         <module>de.metas.manufacturing.rest-api</module>
+        <module>de.metas.manufacturing.webui</module>
 
         <module>de.metas.adempiere.libero.liberoHR</module>
 
@@ -692,7 +693,7 @@
                 </plugins>
             </build>
         </profile>
-
+        
         <profile>
             <!-- If there is a maven java-legacy sources directory, this profile will
                 activate and add the directory as another sources directory -->

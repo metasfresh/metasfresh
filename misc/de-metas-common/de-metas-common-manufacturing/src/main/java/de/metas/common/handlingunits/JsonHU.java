@@ -39,9 +39,9 @@ import java.util.List;
 @Jacksonized
 public class JsonHU
 {
-	@NonNull String id;
-	@NonNull String huStatus;
-	@NonNull String huStatusCaption;
+	@Nullable String id;
+	@Nullable String huStatus;
+	@Nullable String huStatusCaption;
 
 	@NonNull String displayName;
 
@@ -95,9 +95,9 @@ public class JsonHU
 	Boolean isDisposalPending;
 
 	public JsonHU(
-			@NonNull final String id,
-			@NonNull final String huStatus,
-			@NonNull final String huStatusCaption,
+			@Nullable final String id,
+			@Nullable final String huStatus,
+			@Nullable final String huStatusCaption,
 			@NonNull final String displayName,
 			@Nullable final JsonHUQRCode qrCode,
 			@Nullable final String warehouseValue,

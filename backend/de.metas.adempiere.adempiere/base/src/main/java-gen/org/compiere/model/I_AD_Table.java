@@ -1,51 +1,44 @@
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for AD_Table
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_AD_Table 
 {
 
-    /** TableName=AD_Table */
-    public static final String Table_Name = "AD_Table";
+	String Table_Name = "AD_Table";
 
-    /** AD_Table_ID=100 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=100 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 4 - System
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
-
-    /** Load Meta Data */
 
 	/**
-	 * Set Berechtigungsstufe.
+	 * Set Data Access Level.
 	 * Access Level required
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAccessLevel (java.lang.String AccessLevel);
+	void setAccessLevel (java.lang.String AccessLevel);
 
 	/**
-	 * Get Berechtigungsstufe.
+	 * Get Data Access Level.
 	 * Access Level required
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAccessLevel();
+	java.lang.String getAccessLevel();
 
-    /** Column definition for AccessLevel */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_AccessLevel = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "AccessLevel", null);
-    /** Column name AccessLevel */
-    public static final String COLUMNNAME_AccessLevel = "AccessLevel";
+	ModelColumn<I_AD_Table, Object> COLUMN_AccessLevel = new ModelColumn<>(I_AD_Table.class, "AccessLevel", null);
+	String COLUMNNAME_AccessLevel = "AccessLevel";
 
 	/**
 	 * Set Auto Complete Min Length.
@@ -55,7 +48,7 @@ public interface I_AD_Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setACTriggerLength (int ACTriggerLength);
+	void setACTriggerLength (int ACTriggerLength);
 
 	/**
 	 * Get Auto Complete Min Length.
@@ -65,307 +58,322 @@ public interface I_AD_Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getACTriggerLength();
+	int getACTriggerLength();
 
-    /** Column definition for ACTriggerLength */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_ACTriggerLength = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "ACTriggerLength", null);
-    /** Column name ACTriggerLength */
-    public static final String COLUMNNAME_ACTriggerLength = "ACTriggerLength";
+	ModelColumn<I_AD_Table, Object> COLUMN_ACTriggerLength = new ModelColumn<>(I_AD_Table.class, "ACTriggerLength", null);
+	String COLUMNNAME_ACTriggerLength = "ACTriggerLength";
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set DB-Tabelle.
+	 * Set Table.
 	 * Database Table information
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Table_ID (int AD_Table_ID);
+	void setAD_Table_ID (int AD_Table_ID);
 
 	/**
-	 * Get DB-Tabelle.
+	 * Get Table.
 	 * Database Table information
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Table_ID();
+	int getAD_Table_ID();
 
-    /** Column definition for AD_Table_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "AD_Table_ID", null);
-    /** Column name AD_Table_ID */
-    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+	ModelColumn<I_AD_Table, Object> COLUMN_AD_Table_ID = new ModelColumn<>(I_AD_Table.class, "AD_Table_ID", null);
+	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set Dynamische Validierung.
-	 * Dynamic Validation Rule
+	 * Set Validation Rule.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Val_Rule_ID (int AD_Val_Rule_ID);
+	void setAD_Val_Rule_ID (int AD_Val_Rule_ID);
 
 	/**
-	 * Get Dynamische Validierung.
-	 * Dynamic Validation Rule
+	 * Get Validation Rule.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Val_Rule_ID();
+	int getAD_Val_Rule_ID();
 
-	public org.compiere.model.I_AD_Val_Rule getAD_Val_Rule();
+	@Nullable org.compiere.model.I_AD_Val_Rule getAD_Val_Rule();
 
-	public void setAD_Val_Rule(org.compiere.model.I_AD_Val_Rule AD_Val_Rule);
+	void setAD_Val_Rule(@Nullable org.compiere.model.I_AD_Val_Rule AD_Val_Rule);
 
-    /** Column definition for AD_Val_Rule_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, org.compiere.model.I_AD_Val_Rule> COLUMN_AD_Val_Rule_ID = new org.adempiere.model.ModelColumn<I_AD_Table, org.compiere.model.I_AD_Val_Rule>(I_AD_Table.class, "AD_Val_Rule_ID", org.compiere.model.I_AD_Val_Rule.class);
-    /** Column name AD_Val_Rule_ID */
-    public static final String COLUMNNAME_AD_Val_Rule_ID = "AD_Val_Rule_ID";
+	ModelColumn<I_AD_Table, org.compiere.model.I_AD_Val_Rule> COLUMN_AD_Val_Rule_ID = new ModelColumn<>(I_AD_Table.class, "AD_Val_Rule_ID", org.compiere.model.I_AD_Val_Rule.class);
+	String COLUMNNAME_AD_Val_Rule_ID = "AD_Val_Rule_ID";
 
 	/**
-	 * Set Fenster.
+	 * Set Window.
 	 * Data entry or display window
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Window_ID (int AD_Window_ID);
+	void setAD_Window_ID (int AD_Window_ID);
 
 	/**
-	 * Get Fenster.
+	 * Get Window.
 	 * Data entry or display window
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Window_ID();
+	int getAD_Window_ID();
 
-	public org.compiere.model.I_AD_Window getAD_Window();
+	@Nullable org.compiere.model.I_AD_Window getAD_Window();
 
-	public void setAD_Window(org.compiere.model.I_AD_Window AD_Window);
+	void setAD_Window(@Nullable org.compiere.model.I_AD_Window AD_Window);
 
-    /** Column definition for AD_Window_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new org.adempiere.model.ModelColumn<I_AD_Table, org.compiere.model.I_AD_Window>(I_AD_Table.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
-    /** Column name AD_Window_ID */
-    public static final String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
+	ModelColumn<I_AD_Table, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new ModelColumn<>(I_AD_Table.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
+	String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
 
 	/**
-	 * Set Copy Columns From Table.
+	 * Set Cloning Enabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCloningEnabled (java.lang.String CloningEnabled);
+
+	/**
+	 * Get Cloning Enabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCloningEnabled();
+
+	ModelColumn<I_AD_Table, Object> COLUMN_CloningEnabled = new ModelColumn<>(I_AD_Table.class, "CloningEnabled", null);
+	String COLUMNNAME_CloningEnabled = "CloningEnabled";
+
+	/**
+	 * Set Copy Columns from Table.
+	 * Create Dictionary Columns for a Table taking another as base
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCopyColumnsFromTable (java.lang.String CopyColumnsFromTable);
+	void setCopyColumnsFromTable (@Nullable java.lang.String CopyColumnsFromTable);
 
 	/**
-	 * Get Copy Columns From Table.
+	 * Get Copy Columns from Table.
+	 * Create Dictionary Columns for a Table taking another as base
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCopyColumnsFromTable();
+	@Nullable java.lang.String getCopyColumnsFromTable();
 
-    /** Column definition for CopyColumnsFromTable */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_CopyColumnsFromTable = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "CopyColumnsFromTable", null);
-    /** Column name CopyColumnsFromTable */
-    public static final String COLUMNNAME_CopyColumnsFromTable = "CopyColumnsFromTable";
+	ModelColumn<I_AD_Table, Object> COLUMN_CopyColumnsFromTable = new ModelColumn<>(I_AD_Table.class, "CopyColumnsFromTable", null);
+	String COLUMNNAME_CopyColumnsFromTable = "CopyColumnsFromTable";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_AD_Table, Object> COLUMN_Created = new ModelColumn<>(I_AD_Table.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_AD_Table, Object> COLUMN_Description = new ModelColumn<>(I_AD_Table.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Set Downline Cloning Strategy.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDownlineCloningStrategy (java.lang.String DownlineCloningStrategy);
+
+	/**
+	 * Get Downline Cloning Strategy.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDownlineCloningStrategy();
+
+	ModelColumn<I_AD_Table, Object> COLUMN_DownlineCloningStrategy = new ModelColumn<>(I_AD_Table.class, "DownlineCloningStrategy", null);
+	String COLUMNNAME_DownlineCloningStrategy = "DownlineCloningStrategy";
+
+	/**
+	 * Set Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setEntityType (java.lang.String EntityType);
+	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Get Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEntityType();
+	java.lang.String getEntityType();
 
-    /** Column definition for EntityType */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "EntityType", null);
-    /** Column name EntityType */
-    public static final String COLUMNNAME_EntityType = "EntityType";
+	ModelColumn<I_AD_Table, Object> COLUMN_EntityType = new ModelColumn<>(I_AD_Table.class, "EntityType", null);
+	String COLUMNNAME_EntityType = "EntityType";
 
 	/**
-	 * Set Kommentar/Hilfe.
+	 * Set Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHelp (java.lang.String Help);
+	void setHelp (@Nullable java.lang.String Help);
 
 	/**
-	 * Get Kommentar/Hilfe.
+	 * Get Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHelp();
+	@Nullable java.lang.String getHelp();
 
-    /** Column definition for Help */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_Help = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "Help", null);
-    /** Column name Help */
-    public static final String COLUMNNAME_Help = "Help";
+	ModelColumn<I_AD_Table, Object> COLUMN_Help = new ModelColumn<>(I_AD_Table.class, "Help", null);
+	String COLUMNNAME_Help = "Help";
 
 	/**
-	 * Set Import Table.
-	 * Import Table Columns from Database
+	 * Set Create Columns from DB.
+	 * Create Dictionary Columns of Table not existing as a Column but in the Database
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setImportTable (java.lang.String ImportTable);
+	void setImportTable (@Nullable java.lang.String ImportTable);
 
 	/**
-	 * Get Import Table.
-	 * Import Table Columns from Database
+	 * Get Create Columns from DB.
+	 * Create Dictionary Columns of Table not existing as a Column but in the Database
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getImportTable();
+	@Nullable java.lang.String getImportTable();
 
-    /** Column definition for ImportTable */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_ImportTable = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "ImportTable", null);
-    /** Column name ImportTable */
-    public static final String COLUMNNAME_ImportTable = "ImportTable";
+	ModelColumn<I_AD_Table, Object> COLUMN_ImportTable = new ModelColumn<>(I_AD_Table.class, "ImportTable", null);
+	String COLUMNNAME_ImportTable = "ImportTable";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_AD_Table, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_Table.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Autocomplete.
@@ -375,7 +383,7 @@ public interface I_AD_Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAutocomplete (boolean IsAutocomplete);
+	void setIsAutocomplete (boolean IsAutocomplete);
 
 	/**
 	 * Get Autocomplete.
@@ -385,62 +393,56 @@ public interface I_AD_Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAutocomplete();
+	boolean isAutocomplete();
 
-    /** Column definition for IsAutocomplete */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_IsAutocomplete = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "IsAutocomplete", null);
-    /** Column name IsAutocomplete */
-    public static final String COLUMNNAME_IsAutocomplete = "IsAutocomplete";
+	ModelColumn<I_AD_Table, Object> COLUMN_IsAutocomplete = new ModelColumn<>(I_AD_Table.class, "IsAutocomplete", null);
+	String COLUMNNAME_IsAutocomplete = "IsAutocomplete";
 
 	/**
-	 * Set Änderungen protokollieren.
+	 * Set Maintain Change Log.
 	 * Maintain a log of changes
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsChangeLog (boolean IsChangeLog);
+	void setIsChangeLog (boolean IsChangeLog);
 
 	/**
-	 * Get Änderungen protokollieren.
+	 * Get Maintain Change Log.
 	 * Maintain a log of changes
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isChangeLog();
+	boolean isChangeLog();
 
-    /** Column definition for IsChangeLog */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_IsChangeLog = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "IsChangeLog", null);
-    /** Column name IsChangeLog */
-    public static final String COLUMNNAME_IsChangeLog = "IsChangeLog";
+	ModelColumn<I_AD_Table, Object> COLUMN_IsChangeLog = new ModelColumn<>(I_AD_Table.class, "IsChangeLog", null);
+	String COLUMNNAME_IsChangeLog = "IsChangeLog";
 
 	/**
-	 * Set Records deleteable.
+	 * Set Records deletable.
 	 * Indicates if records can be deleted from the database
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDeleteable (boolean IsDeleteable);
+	void setIsDeleteable (boolean IsDeleteable);
 
 	/**
-	 * Get Records deleteable.
+	 * Get Records deletable.
 	 * Indicates if records can be deleted from the database
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDeleteable();
+	boolean isDeleteable();
 
-    /** Column definition for IsDeleteable */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_IsDeleteable = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "IsDeleteable", null);
-    /** Column name IsDeleteable */
-    public static final String COLUMNNAME_IsDeleteable = "IsDeleteable";
+	ModelColumn<I_AD_Table, Object> COLUMN_IsDeleteable = new ModelColumn<>(I_AD_Table.class, "IsDeleteable", null);
+	String COLUMNNAME_IsDeleteable = "IsDeleteable";
 
 	/**
 	 * Set Enable remote cache invalidation.
@@ -449,7 +451,7 @@ public interface I_AD_Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsEnableRemoteCacheInvalidation (boolean IsEnableRemoteCacheInvalidation);
+	void setIsEnableRemoteCacheInvalidation (boolean IsEnableRemoteCacheInvalidation);
 
 	/**
 	 * Get Enable remote cache invalidation.
@@ -458,12 +460,10 @@ public interface I_AD_Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isEnableRemoteCacheInvalidation();
+	boolean isEnableRemoteCacheInvalidation();
 
-    /** Column definition for IsEnableRemoteCacheInvalidation */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_IsEnableRemoteCacheInvalidation = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "IsEnableRemoteCacheInvalidation", null);
-    /** Column name IsEnableRemoteCacheInvalidation */
-    public static final String COLUMNNAME_IsEnableRemoteCacheInvalidation = "IsEnableRemoteCacheInvalidation";
+	ModelColumn<I_AD_Table, Object> COLUMN_IsEnableRemoteCacheInvalidation = new ModelColumn<>(I_AD_Table.class, "IsEnableRemoteCacheInvalidation", null);
+	String COLUMNNAME_IsEnableRemoteCacheInvalidation = "IsEnableRemoteCacheInvalidation";
 
 	/**
 	 * Set High Volume.
@@ -473,7 +473,7 @@ public interface I_AD_Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsHighVolume (boolean IsHighVolume);
+	void setIsHighVolume (boolean IsHighVolume);
 
 	/**
 	 * Get High Volume.
@@ -483,12 +483,10 @@ public interface I_AD_Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isHighVolume();
+	boolean isHighVolume();
 
-    /** Column definition for IsHighVolume */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_IsHighVolume = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "IsHighVolume", null);
-    /** Column name IsHighVolume */
-    public static final String COLUMNNAME_IsHighVolume = "IsHighVolume";
+	ModelColumn<I_AD_Table, Object> COLUMN_IsHighVolume = new ModelColumn<>(I_AD_Table.class, "IsHighVolume", null);
+	String COLUMNNAME_IsHighVolume = "IsHighVolume";
 
 	/**
 	 * Set Security enabled.
@@ -498,7 +496,7 @@ public interface I_AD_Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSecurityEnabled (boolean IsSecurityEnabled);
+	void setIsSecurityEnabled (boolean IsSecurityEnabled);
 
 	/**
 	 * Get Security enabled.
@@ -508,60 +506,54 @@ public interface I_AD_Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isSecurityEnabled();
+	boolean isSecurityEnabled();
 
-    /** Column definition for IsSecurityEnabled */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_IsSecurityEnabled = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "IsSecurityEnabled", null);
-    /** Column name IsSecurityEnabled */
-    public static final String COLUMNNAME_IsSecurityEnabled = "IsSecurityEnabled";
+	ModelColumn<I_AD_Table, Object> COLUMN_IsSecurityEnabled = new ModelColumn<>(I_AD_Table.class, "IsSecurityEnabled", null);
+	String COLUMNNAME_IsSecurityEnabled = "IsSecurityEnabled";
 
 	/**
-	 * Set Ansicht.
+	 * Set View.
 	 * This is a view
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsView (boolean IsView);
+	void setIsView (boolean IsView);
 
 	/**
-	 * Get Ansicht.
+	 * Get View.
 	 * This is a view
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isView();
+	boolean isView();
 
-    /** Column definition for IsView */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_IsView = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "IsView", null);
-    /** Column name IsView */
-    public static final String COLUMNNAME_IsView = "IsView";
+	ModelColumn<I_AD_Table, Object> COLUMN_IsView = new ModelColumn<>(I_AD_Table.class, "IsView", null);
+	String COLUMNNAME_IsView = "IsView";
 
 	/**
-	 * Set Reihenfolge.
+	 * Set Sequence.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLoadSeq (int LoadSeq);
+	void setLoadSeq (int LoadSeq);
 
 	/**
-	 * Get Reihenfolge.
+	 * Get Sequence.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getLoadSeq();
+	int getLoadSeq();
 
-    /** Column definition for LoadSeq */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_LoadSeq = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "LoadSeq", null);
-    /** Column name LoadSeq */
-    public static final String COLUMNNAME_LoadSeq = "LoadSeq";
+	ModelColumn<I_AD_Table, Object> COLUMN_LoadSeq = new ModelColumn<>(I_AD_Table.class, "LoadSeq", null);
+	String COLUMNNAME_LoadSeq = "LoadSeq";
 
 	/**
 	 * Set Name.
@@ -570,7 +562,7 @@ public interface I_AD_Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -579,64 +571,58 @@ public interface I_AD_Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_AD_Table, Object> COLUMN_Name = new ModelColumn<>(I_AD_Table.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Datenschutz-Kategorie.
+	 * Set Data protection category.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPersonalDataCategory (java.lang.String PersonalDataCategory);
+	void setPersonalDataCategory (java.lang.String PersonalDataCategory);
 
 	/**
-	 * Get Datenschutz-Kategorie.
+	 * Get Data protection category.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPersonalDataCategory();
+	java.lang.String getPersonalDataCategory();
 
-    /** Column definition for PersonalDataCategory */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_PersonalDataCategory = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "PersonalDataCategory", null);
-    /** Column name PersonalDataCategory */
-    public static final String COLUMNNAME_PersonalDataCategory = "PersonalDataCategory";
+	ModelColumn<I_AD_Table, Object> COLUMN_PersonalDataCategory = new ModelColumn<>(I_AD_Table.class, "PersonalDataCategory", null);
+	String COLUMNNAME_PersonalDataCategory = "PersonalDataCategory";
 
 	/**
 	 * Set PO Window.
 	 * Purchase Order Window
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPO_Window_ID (int PO_Window_ID);
+	void setPO_Window_ID (int PO_Window_ID);
 
 	/**
 	 * Get PO Window.
 	 * Purchase Order Window
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPO_Window_ID();
+	int getPO_Window_ID();
 
-	public org.compiere.model.I_AD_Window getPO_Window();
+	@Nullable org.compiere.model.I_AD_Window getPO_Window();
 
-	public void setPO_Window(org.compiere.model.I_AD_Window PO_Window);
+	void setPO_Window(@Nullable org.compiere.model.I_AD_Window PO_Window);
 
-    /** Column definition for PO_Window_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, org.compiere.model.I_AD_Window> COLUMN_PO_Window_ID = new org.adempiere.model.ModelColumn<I_AD_Table, org.compiere.model.I_AD_Window>(I_AD_Table.class, "PO_Window_ID", org.compiere.model.I_AD_Window.class);
-    /** Column name PO_Window_ID */
-    public static final String COLUMNNAME_PO_Window_ID = "PO_Window_ID";
+	ModelColumn<I_AD_Table, org.compiere.model.I_AD_Window> COLUMN_PO_Window_ID = new ModelColumn<>(I_AD_Table.class, "PO_Window_ID", org.compiere.model.I_AD_Window.class);
+	String COLUMNNAME_PO_Window_ID = "PO_Window_ID";
 
 	/**
 	 * Set Replication Type.
@@ -646,7 +632,7 @@ public interface I_AD_Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setReplicationType (java.lang.String ReplicationType);
+	void setReplicationType (java.lang.String ReplicationType);
 
 	/**
 	 * Get Replication Type.
@@ -656,60 +642,54 @@ public interface I_AD_Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getReplicationType();
+	java.lang.String getReplicationType();
 
-    /** Column definition for ReplicationType */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_ReplicationType = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "ReplicationType", null);
-    /** Column name ReplicationType */
-    public static final String COLUMNNAME_ReplicationType = "ReplicationType";
+	ModelColumn<I_AD_Table, Object> COLUMN_ReplicationType = new ModelColumn<>(I_AD_Table.class, "ReplicationType", null);
+	String COLUMNNAME_ReplicationType = "ReplicationType";
 
 	/**
-	 * Set Name der DB-Tabelle.
+	 * Set Tablename.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setTableName (java.lang.String TableName);
+	void setTableName (java.lang.String TableName);
 
 	/**
-	 * Get Name der DB-Tabelle.
+	 * Get Tablename.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getTableName();
+	java.lang.String getTableName();
 
-    /** Column definition for TableName */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_TableName = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "TableName", null);
-    /** Column name TableName */
-    public static final String COLUMNNAME_TableName = "TableName";
+	ModelColumn<I_AD_Table, Object> COLUMN_TableName = new ModelColumn<>(I_AD_Table.class, "TableName", null);
+	String COLUMNNAME_TableName = "TableName";
 
 	/**
-	 * Set Technical note.
+	 * Set TechnicalNote.
 	 * A note that is not indended for the user documentation, but for developers, customizers etc
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setTechnicalNote (java.lang.String TechnicalNote);
+	void setTechnicalNote (@Nullable java.lang.String TechnicalNote);
 
 	/**
-	 * Get Technical note.
+	 * Get TechnicalNote.
 	 * A note that is not indended for the user documentation, but for developers, customizers etc
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getTechnicalNote();
+	@Nullable java.lang.String getTechnicalNote();
 
-    /** Column definition for TechnicalNote */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_TechnicalNote = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "TechnicalNote", null);
-    /** Column name TechnicalNote */
-    public static final String COLUMNNAME_TechnicalNote = "TechnicalNote";
+	ModelColumn<I_AD_Table, Object> COLUMN_TechnicalNote = new ModelColumn<>(I_AD_Table.class, "TechnicalNote", null);
+	String COLUMNNAME_TechnicalNote = "TechnicalNote";
 
 	/**
 	 * Set Tooltip Type.
@@ -718,7 +698,7 @@ public interface I_AD_Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setTooltipType (java.lang.String TooltipType);
+	void setTooltipType (java.lang.String TooltipType);
 
 	/**
 	 * Get Tooltip Type.
@@ -727,38 +707,77 @@ public interface I_AD_Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getTooltipType();
+	java.lang.String getTooltipType();
 
-    /** Column definition for TooltipType */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_TooltipType = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "TooltipType", null);
-    /** Column name TooltipType */
-    public static final String COLUMNNAME_TooltipType = "TooltipType";
+	ModelColumn<I_AD_Table, Object> COLUMN_TooltipType = new ModelColumn<>(I_AD_Table.class, "TooltipType", null);
+	String COLUMNNAME_TooltipType = "TooltipType";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_AD_Table, Object> COLUMN_Updated = new ModelColumn<>(I_AD_Table.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set View Page Length (webui).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWEBUI_View_PageLength (int WEBUI_View_PageLength);
+
+	/**
+	 * Get View Page Length (webui).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getWEBUI_View_PageLength();
+
+	ModelColumn<I_AD_Table, Object> COLUMN_WEBUI_View_PageLength = new ModelColumn<>(I_AD_Table.class, "WEBUI_View_PageLength", null);
+	String COLUMNNAME_WEBUI_View_PageLength = "WEBUI_View_PageLength";
+
+	/**
+	 * Set When Child Cloning Strategy.
+	 * The cloning strategy to be used when this table is included (as a child) to a parent (e.g. C_OrderLine)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setWhenChildCloningStrategy (java.lang.String WhenChildCloningStrategy);
+
+	/**
+	 * Get When Child Cloning Strategy.
+	 * The cloning strategy to be used when this table is included (as a child) to a parent (e.g. C_OrderLine)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getWhenChildCloningStrategy();
+
+	ModelColumn<I_AD_Table, Object> COLUMN_WhenChildCloningStrategy = new ModelColumn<>(I_AD_Table.class, "WhenChildCloningStrategy", null);
+	String COLUMNNAME_WhenChildCloningStrategy = "WhenChildCloningStrategy";
 }

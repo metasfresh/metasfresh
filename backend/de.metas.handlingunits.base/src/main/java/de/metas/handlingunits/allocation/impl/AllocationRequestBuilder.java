@@ -1,14 +1,7 @@
 package de.metas.handlingunits.allocation.impl;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_Product;
-
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -19,17 +12,24 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @ToString
-/* package */class AllocationRequestBuilder implements IAllocationRequestBuilder
+		/* package */class AllocationRequestBuilder implements IAllocationRequestBuilder
 {
 	private IAllocationRequest baseAllocationRequest = null;
 	private IHUContext huContext = null;
 	private ProductId productId = null;
 	private Quantity quantity = null;
 	private ZonedDateTime date = null;
+	@Nullable private ClearanceStatusInfo clearanceStatusInfo;
 	private Boolean forceQtyAllocation = null;
 	@Nullable private TableRecordReference fromReferencedTableRecord;
 	private boolean fromReferencedTableRecordSet = false;
@@ -64,7 +64,7 @@ import javax.annotation.Nullable;
 		else if (baseAllocationRequest != null)
 		{
 			Check.assume(emptyHUListeners == null || emptyHUListeners.isEmpty(), "emptyHUListeners shall be empty");
-			return baseAllocationRequest.getHUContext();
+			return baseAllocationRequest.getHuContext();
 		}
 		else
 		{
@@ -170,7 +170,8 @@ import javax.annotation.Nullable;
 			return baseAllocationRequest.getReference();
 		}
 
-		throw new AdempiereException("Referenced Table/Record not set in " + this);
+		// throw AdempiereException.newWithPlainMessage("Referenced Table/Record not set in " + this);
+		return null;
 	}
 
 	@Override
@@ -222,6 +223,28 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
+	public IAllocationRequestBuilder setClearanceStatusInfo(@Nullable final ClearanceStatusInfo clearanceStatusInfo)
+	{
+		this.clearanceStatusInfo = clearanceStatusInfo;
+		return this;
+	}
+
+	@Override
+	@Nullable
+	public ClearanceStatusInfo getClearanceStatusInfo()
+	{
+		if (clearanceStatusInfo != null)
+		{
+			return clearanceStatusInfo;
+		}
+		else if (baseAllocationRequest != null)
+		{
+			return baseAllocationRequest.getClearanceStatusInfo();
+		}
+		return null;
+	}
+
+	@Override
 	public IAllocationRequest create()
 	{
 		final IHUContext huContext = getHUContextToUse();
@@ -230,14 +253,15 @@ import javax.annotation.Nullable;
 		final ZonedDateTime date = getDateToUse();
 		final TableRecordReference fromTableRecord = getFromReferencedTableRecordToUse();
 		final boolean forceQtyAllocation = isForceQtyAllocationToUse();
+		final ClearanceStatusInfo clearanceStatusInfo = getClearanceStatusInfo();
 
-		final AllocationRequest request = new AllocationRequest(
+		return new AllocationRequest(
 				huContext,
 				productId,
 				quantity,
 				date,
 				fromTableRecord,
-				forceQtyAllocation);
-		return request;
+				forceQtyAllocation,
+				clearanceStatusInfo);
 	}
 }

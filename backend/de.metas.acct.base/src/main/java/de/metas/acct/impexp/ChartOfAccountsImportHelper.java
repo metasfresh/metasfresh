@@ -22,26 +22,18 @@
 
 package de.metas.acct.impexp;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.elementvalue.ChartOfAccounts;
 import de.metas.elementvalue.ChartOfAccountsCreateRequest;
 import de.metas.elementvalue.ChartOfAccountsService;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_I_ElementValue;
-
-import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 class ChartOfAccountsImportHelper
 {

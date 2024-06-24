@@ -16,6 +16,25 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.Msg;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.requisition.RequisitionRepository;
+import de.metas.requisition.RequisitionService;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.util.TimeUtil;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -23,26 +42,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
-
-import de.metas.common.util.time.SystemTime;
-import de.metas.pricing.PriceListId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
-import org.compiere.util.TimeUtil;
-
-import de.metas.currency.CurrencyPrecision;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.document.sequence.IDocumentNoBuilder;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.i18n.Msg;
-import de.metas.pricing.service.IPriceListBL;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.requisition.RequisitionRepository;
-import de.metas.requisition.RequisitionService;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Services;
 
 /**
  * Requisition Model
@@ -204,7 +203,7 @@ public class MRequisition extends X_M_Requisition implements IDocument
 		final List<I_M_RequisitionLine> lines = getLines();
 		if (lines.isEmpty())
 		{
-			throw new AdempiereException("@NoLines@");
+			throw AdempiereException.noLines();
 		}
 
 		// Std Period open?

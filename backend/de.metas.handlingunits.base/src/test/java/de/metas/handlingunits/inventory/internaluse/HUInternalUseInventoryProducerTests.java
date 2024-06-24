@@ -38,7 +38,6 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryLine;
-import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -48,7 +47,6 @@ import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.validator.M_HU;
-import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.impl.InventoryBL;
@@ -118,7 +116,7 @@ public class HUInternalUseInventoryProducerTests
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huStatusBL = Services.get(IHUStatusBL.class);
-		inventoryService = new InventoryService(new InventoryRepository(), SourceHUsService.get());
+		inventoryService = InventoryService.newInstanceForUnitTesting();
 
 		final I_C_DocType dt = newInstance(I_C_DocType.class);
 		dt.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory);
@@ -178,15 +176,15 @@ public class HUInternalUseInventoryProducerTests
 		final String description = "Test Description";
 
 		final List<I_M_Inventory> inventories = inventoryService.moveToGarbage(
-				HUInternalUseInventoryCreateRequest.builder()
-						.hus(husToDestroy)
-						.movementDate(movementDate)
-						.activityId(activityId)
-						.description(description)
-						.completeInventory(true)
-						.moveEmptiesToEmptiesWarehouse(false)
-						.sendNotifications(false)
-						.build())
+						HUInternalUseInventoryCreateRequest.builder()
+								.hus(husToDestroy)
+								.movementDate(movementDate)
+								.activityId(activityId)
+								.description(description)
+								.completeInventory(true)
+								.moveEmptiesToEmptiesWarehouse(false)
+								.sendNotifications(false)
+								.build())
 				.getInventories();
 		assertThat(inventories.size()).isEqualTo(1);
 
@@ -257,15 +255,15 @@ public class HUInternalUseInventoryProducerTests
 		final String description = "Test Description";
 
 		final List<I_M_Inventory> inventories = inventoryService.moveToGarbage(
-				HUInternalUseInventoryCreateRequest.builder()
-						.hus(husToDestroy)
-						.movementDate(movementDate)
-						.activityId(activityId)
-						.description(description)
-						.completeInventory(true)
-						.moveEmptiesToEmptiesWarehouse(false)
-						.sendNotifications(false)
-						.build())
+						HUInternalUseInventoryCreateRequest.builder()
+								.hus(husToDestroy)
+								.movementDate(movementDate)
+								.activityId(activityId)
+								.description(description)
+								.completeInventory(true)
+								.moveEmptiesToEmptiesWarehouse(false)
+								.sendNotifications(false)
+								.build())
 				.getInventories();
 		assertThat(inventories.size()).isEqualTo(1);
 
@@ -309,15 +307,15 @@ public class HUInternalUseInventoryProducerTests
 		final String description = "Test Description";
 
 		final List<I_M_Inventory> inventories = inventoryService.moveToGarbage(
-				HUInternalUseInventoryCreateRequest.builder()
-						.hus(husToDestroy)
-						.movementDate(movementDate)
-						.activityId(activityId)
-						.description(description)
-						.completeInventory(true)
-						.moveEmptiesToEmptiesWarehouse(false)
-						.sendNotifications(false)
-						.build())
+						HUInternalUseInventoryCreateRequest.builder()
+								.hus(husToDestroy)
+								.movementDate(movementDate)
+								.activityId(activityId)
+								.description(description)
+								.completeInventory(true)
+								.moveEmptiesToEmptiesWarehouse(false)
+								.sendNotifications(false)
+								.build())
 				.getInventories();
 		assertThat(inventories.size()).isEqualTo(1);
 

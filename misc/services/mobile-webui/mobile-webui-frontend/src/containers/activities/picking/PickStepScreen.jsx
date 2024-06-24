@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
@@ -6,15 +6,16 @@ import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
 import { postStepPicked, postStepUnPicked } from '../../../api/picking';
-import { pickingLineScreenLocation, pickingStepScanScreenLocation } from '../../../routes/picking';
-import { updatePickingStepQty } from '../../../actions/PickingActions';
+import { pickingStepScanScreenLocation } from '../../../routes/picking';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { getStepById } from '../../../reducers/wfProcesses';
-import { getPickFrom, getQtyToPick } from '../../../utils/picking';
+import { getPickFromForStep, getQtyToPickForStep } from '../../../utils/picking';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
-import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/huQRCodes';
+import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/qrCode/hu';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
+import UnpickDialog from './UnpickDialog';
 
 const PickStepScreen = () => {
   const {
@@ -26,8 +27,10 @@ const PickStepScreen = () => {
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId, stepId, altStepId }),
     shallowEqual
   );
-
   const dispatch = useDispatch();
+
+  const [showTargetHUScanner, setShowTargetHUScanner] = useState(false);
+
   useEffect(() => {
     dispatch(
       pushHeaderEntry({
@@ -36,7 +39,7 @@ const PickStepScreen = () => {
         values: [
           {
             caption: trl('general.Locator'),
-            value: pickFrom.locatorName,
+            value: pickFrom?.locatorName,
           },
           {
             caption: trl('general.QtyToPick'),
@@ -52,28 +55,18 @@ const PickStepScreen = () => {
   }, []);
 
   const history = useHistory();
-  const onUnpickButtonClick = () => {
-    const location = pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId });
-
+  const unpick = ({ unpickToTargetQRCode }) => {
     postStepUnPicked({
       wfProcessId,
       activityId,
+      lineId,
       stepId,
       huQRCode: toQRCodeString(pickFrom.huQRCode),
+      unpickToTargetQRCode: toQRCodeString(unpickToTargetQRCode),
     })
-      .then(() => {
-        dispatch(
-          updatePickingStepQty({
-            wfProcessId,
-            activityId,
-            lineId,
-            stepId,
-            qtyPicked: 0,
-            qtyRejected: 0,
-            qtyRejectedReasonCode: null,
-          })
-        );
-        history.push(location);
+      .then((wfProcess) => {
+        dispatch(updateWFProcess({ wfProcess }));
+        history.go(-1);
       })
       .catch((axiosError) => toastError({ axiosError }));
   };
@@ -84,25 +77,13 @@ const PickStepScreen = () => {
     postStepPicked({
       wfProcessId,
       activityId,
+      lineId,
       stepId,
       qtyPicked: 0,
       qtyRejected,
       qtyRejectedReasonCode: 'N',
       huQRCode: toQRCodeString(pickFrom.huQRCode),
-    }).then(() => {
-      dispatch(
-        updatePickingStepQty({
-          wfProcessId,
-          activityId,
-          lineId,
-          stepId,
-          altStepId,
-          qtyPicked: 0,
-          qtyRejected,
-          qtyRejectedReasonCode: 'N', // FIXME: hardcoded NotFound reason code
-        })
-      );
-    });
+    }).then((wfProcess) => dispatch(updateWFProcess({ wfProcess })));
   };
 
   const onScanButtonClick = () =>
@@ -117,17 +98,18 @@ const PickStepScreen = () => {
       })
     );
 
-  const isPickedFromHU = pickFrom.qtyPicked > 0;
+  const isPickedFromHU = pickFrom?.qtyPicked > 0;
 
   const scanButtonCaption = isPickedFromHU
     ? `${toQRCodeDisplayable(pickFrom.huQRCode)}`
     : trl('activities.picking.scanQRCode');
 
   const scanButtonStatus = isPickedFromHU ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
-  const nothingPicked = !isPickedFromHU && !pickFrom.qtyRejectedReasonCode;
+  const nothingPicked = !isPickedFromHU && !pickFrom?.qtyRejectedReasonCode;
 
   return (
     <div className="section pt-2">
+      {showTargetHUScanner && <UnpickDialog onSubmit={unpick} onCloseDialog={() => setShowTargetHUScanner(false)} />}
       <div className="buttons">
         <ButtonWithIndicator
           caption={scanButtonCaption}
@@ -138,14 +120,16 @@ const PickStepScreen = () => {
         <ButtonWithIndicator
           caption={trl('activities.picking.unPickBtn')}
           disabled={nothingPicked}
-          onClick={onUnpickButtonClick}
+          onClick={() => setShowTargetHUScanner(true)}
         />
-        <ConfirmButton
-          caption={trl('activities.confirmButton.notFound')}
-          isDangerousAction={true}
-          isUserEditable={nothingPicked}
-          onUserConfirmed={handleNotFound}
-        />
+        {nothingPicked && (
+          <ConfirmButton
+            caption={trl('activities.confirmButton.notFound')}
+            isDangerousAction={true}
+            isUserEditable={nothingPicked}
+            onUserConfirmed={handleNotFound}
+          />
+        )}
       </div>
     </div>
   );
@@ -154,9 +138,9 @@ const PickStepScreen = () => {
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId, altStepId }) => {
   const stepProps = getStepById(state, wfProcessId, activityId, lineId, stepId);
   return {
-    pickFrom: getPickFrom({ stepProps, altStepId }),
-    qtyToPick: getQtyToPick({ stepProps, altStepId }),
-    uom: stepProps.uom,
+    pickFrom: stepProps != null ? getPickFromForStep({ stepProps, altStepId }) : null,
+    qtyToPick: stepProps != null ? getQtyToPickForStep({ stepProps, altStepId }) : 0,
+    uom: stepProps?.uom ?? '',
   };
 };
 

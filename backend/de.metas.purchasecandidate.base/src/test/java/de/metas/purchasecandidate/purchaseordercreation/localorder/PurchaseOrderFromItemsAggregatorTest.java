@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -160,7 +162,9 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.defaultVendor(false)
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")
-				.pricingConditions(PricingConditions.builder().build())
+				.pricingConditions(PricingConditions.builder()
+										   .validFrom(TimeUtil.asInstant(Timestamp.valueOf("2017-01-01 10:10:10.0")))
+										   .build())
 				.build();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()

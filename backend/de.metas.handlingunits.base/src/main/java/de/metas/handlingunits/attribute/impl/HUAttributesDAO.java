@@ -48,7 +48,7 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
-	public List<I_M_HU_Attribute> retrieveAttributesNoCache(final Collection<HuId> huIds)
+	public List<I_M_HU_Attribute> retrieveAllAttributesNoCache(final Collection<HuId> huIds)
 	{
 		if(huIds.isEmpty())
 		{
@@ -57,7 +57,7 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_HU_Attribute.class)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter() // all, including not active
 				.addInArrayFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, huIds)
 				.create()
 				.stream()

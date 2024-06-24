@@ -154,17 +154,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setC_OrderLine(orderLine);
 
-		final int productRecordId = orderLine.getM_Product_ID();
-		icRecord.setM_Product_ID(productRecordId);
-
-		final boolean isFreightCostProduct = productBL
-				.getProductType(ProductId.ofRepoId(productRecordId))
-				.isFreightCost();
-
-		icRecord.setIsFreightCost(isFreightCostProduct);
-		icRecord.setIsPackagingMaterial(orderLine.isPackagingMaterial());
-		icRecord.setC_Charge_ID(orderLine.getC_Charge_ID());
-
 		setOrderedData(icRecord, orderLine);
 
 		icRecord.setQtyToInvoice(BigDecimal.ZERO); // to be computed
@@ -296,6 +285,15 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
+		// Product related data
+		{
+			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+			ic.setM_Product_ID(productId.getRepoId());
+			ic.setIsFreightCost(productBL.getProductType(productId).isFreightCost());
+			ic.setIsPackagingMaterial(orderLine.isPackagingMaterial());
+			ic.setC_Charge_ID(orderLine.getC_Charge_ID());
+		}
+
 		// prefer priceUOM, if given
 		if (orderLine.getPrice_UOM_ID() > 0)
 		{
@@ -450,7 +448,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		// ts: we *must* use the order line's data
 		final PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()
-				.invoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(orderLine.getInvoicableQtyBasedOn()))
+				.invoicableQtyBasedOn(InvoicableQtyBasedOn.ofNullableCodeOrNominal(orderLine.getInvoicableQtyBasedOn()))
 				.pricingSystemId(PricingSystemId.ofRepoId(order.getM_PricingSystem_ID()))
 				.priceEntered(orderLine.getPriceEntered())
 				.priceActual(orderLine.getPriceActual())

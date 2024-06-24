@@ -16,6 +16,7 @@ import lombok.NonNull;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -60,13 +61,19 @@ class DistributionJobLoader
 				.dateRequired(dateRequired)
 				.pickFromWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_From_ID()))
 				.dropToWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_To_ID()))
-				.responsibleId(UserId.ofRepoIdOrNullIfSystem(ddOrder.getAD_User_Responsible_ID()))
+				.responsibleId(extractResponsibleId(ddOrder))
 				.isClosed(!docStatus.isCompleted()) // NOTE: we consider closed (for us) anything which is not completed
 				.lines(getDDOrderLines(ddOrderId)
 						.stream()
 						.map(this::toDistributionJobLine)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
+	}
+
+	@Nullable
+	static UserId extractResponsibleId(final I_DD_Order ddOrder)
+	{
+		return UserId.ofRepoIdOrNullIfSystem(ddOrder.getAD_User_Responsible_ID());
 	}
 
 	private DistributionJobLine toDistributionJobLine(final I_DD_OrderLine ddOrderLine)
@@ -122,7 +129,7 @@ class DistributionJobLoader
 		ddOrdersCache.put(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()), ddOrder);
 	}
 
-	private I_DD_Order getDDOrder(final DDOrderId ddOrderId)
+	I_DD_Order getDDOrder(final DDOrderId ddOrderId)
 	{
 		return ddOrdersCache.computeIfAbsent(ddOrderId, loadingSupportServices::getDDOrderById);
 	}

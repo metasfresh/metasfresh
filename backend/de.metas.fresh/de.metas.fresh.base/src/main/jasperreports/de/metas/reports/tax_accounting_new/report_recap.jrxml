@@ -4,7 +4,7 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -36,9 +36,9 @@
 		<![CDATA[select sum(balance) as balance, sum(balanceyear) as balanceyear, vatcode, taxname
 from de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 	                                                                                       $P{account_id}, 
-	                                                                                       $P{C_VAT_Code_ID}, 
-	                                                                                        $P{DateFrom},
-	                                                                                         $P{DateTo})
+	                                                                                       $P{C_VAT_Code_ID},
+	                                                                                       $P{DateFrom},
+	                                                                                        $P{DateTo})
 where vatcode is not null
   and taxname is not null
 group by vatcode, taxname;]]>

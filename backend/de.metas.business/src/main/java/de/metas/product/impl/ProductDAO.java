@@ -33,6 +33,8 @@ import de.metas.organization.OrgId;
 import de.metas.product.CreateProductRequest;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductMappingAware;
+import de.metas.product.IssuingToleranceSpec;
+import de.metas.product.IssuingToleranceValueType;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
@@ -40,8 +42,12 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.product.ResourceId;
 import de.metas.product.UpdateProductRequest;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -50,6 +56,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -144,6 +151,17 @@ public class ProductDAO implements IProductDAO
 	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
 	{
 		return loadByRepoIdAwaresOutOfTrx(productIds, I_M_Product.class);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<I_M_Product> getByIdsInTrx(@NonNull final Set<ProductId> productIds)
+	{
+		return queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Product.COLUMNNAME_M_Product_ID, productIds)
+				.create()
+				.listImmutable(I_M_Product.class);
 	}
 
 	@Override
@@ -682,4 +700,40 @@ public class ProductDAO implements IProductDAO
 						.anyMatch();
 	}
 
+
+	@Override
+	public Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		return extractIssuingToleranceSpec(product);
+	}
+
+	public static Optional<IssuingToleranceSpec> extractIssuingToleranceSpec(@NonNull final I_M_Product product)
+	{
+		if (!product.isEnforceIssuingTolerance())
+		{
+			return Optional.empty();
+		}
+
+		final IssuingToleranceValueType valueType = IssuingToleranceValueType.ofNullableCode(product.getIssuingTolerance_ValueType());
+		if (valueType == null)
+		{
+			throw new FillMandatoryException(I_M_Product.COLUMNNAME_IssuingTolerance_ValueType);
+		}
+		else if (valueType == IssuingToleranceValueType.PERCENTAGE)
+		{
+			final Percent percent = Percent.of(product.getIssuingTolerance_Perc());
+			return Optional.of(IssuingToleranceSpec.ofPercent(percent));
+		}
+		else if (valueType == IssuingToleranceValueType.QUANTITY)
+		{
+			final UomId uomId = UomId.ofRepoId(product.getIssuingTolerance_UOM_ID());
+			final Quantity qty = Quantitys.create(product.getIssuingTolerance_Qty(), uomId);
+			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
+		}
+		else
+		{
+			throw new AdempiereException("Unknown valueType: " + valueType);
+		}
+	}
 }

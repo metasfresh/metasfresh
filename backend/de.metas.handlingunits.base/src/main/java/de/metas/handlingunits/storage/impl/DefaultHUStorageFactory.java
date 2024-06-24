@@ -94,9 +94,18 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 	@Override
 	public boolean isSingleProductWithQtyEqualsTo(@NonNull final I_M_HU hu, @NonNull final ProductId productId, @NonNull final Quantity qty)
 	{
-		final List<IHUProductStorage> productStorages = getStorage(hu).getProductStorages();
-		return productStorages.size() == 1
-				&& ProductId.equals(productStorages.get(0).getProductId(), productId)
-				&& productStorages.get(0).getQty(qty.getUOM()).compareTo(qty) == 0;
+		return getStorage(hu).isSingleProductWithQtyEqualsTo(productId, qty);
+	}
+
+	@Override
+	public boolean isSingleProductStorageMatching(@NonNull final I_M_HU hu, @NonNull final ProductId productId)
+	{
+		return getStorage(hu).isSingleProductStorageMatching(productId);
+	}
+
+	@NonNull
+	public IHUProductStorage getSingleHUProductStorage(@NonNull final I_M_HU hu)
+	{
+		return getStorage(hu).getSingleHUProductStorage();
 	}
 }

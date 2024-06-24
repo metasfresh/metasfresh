@@ -3,7 +3,7 @@ import counterpart from 'counterpart';
 import React from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 
-import '../assets/css/styles.scss';
+import '../assets/css/styles.css';
 import {
   initCurrentActiveLocale,
   setCurrentActiveLocale,
@@ -148,7 +148,7 @@ const App = () => {
             const message = data.message ? data.message : '';
 
             // eslint-disable-next-line no-console
-            data.message && console.error(data.message);
+            console.log(`Got error: ${message}`, { error });
 
             // Chart disabled notifications
             if (
@@ -157,15 +157,17 @@ const App = () => {
               return;
             }
 
-            dispatch(
-              addNotification(
-                'Error: ' + message.split(' ', 4).join(' ') + '...',
-                data.message,
-                5000,
-                'error',
-                errorTitle
-              )
-            );
+            if (data.userFriendlyError) {
+              dispatch(
+                addNotification(
+                  'Error: ' + message.split(' ', 4).join(' ') + '...',
+                  data.message,
+                  5000,
+                  'error',
+                  errorTitle
+                )
+              );
+            }
           }
         }
 

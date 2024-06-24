@@ -6,7 +6,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.user.UserId;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L

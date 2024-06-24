@@ -266,7 +266,7 @@ public class PricingBL implements IPricingBL
 	 *
 	 * @return configured pricing context (to be used in pricing calculations)
 	 */
-	private IPricingContext setupPricingContext(final IPricingContext pricingCtx)
+	private IPricingContext setupPricingContext(@NonNull final IPricingContext pricingCtx)
 	{
 		final IEditablePricingContext pricingCtxToUse = pricingCtx.copy();
 		setupPriceListAndDate(pricingCtxToUse);

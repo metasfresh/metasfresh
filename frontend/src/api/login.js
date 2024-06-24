@@ -43,30 +43,12 @@ export function logoutRequest() {
   return axios.get(`${config.API_URL}/login/logout`);
 }
 
-export function getUserLang() {
-  return axios.get(`${config.API_URL}/userSession/language`);
-}
-
-// TODO: Looks like this is not being used
-export function setUserLang(payload) {
-  return axios.put(`${config.API_URL}/userSession/language`, payload);
-}
-
 export function getAvailableLang() {
   return axios.get(`${config.API_URL}/login/availableLanguages`);
 }
 
 export function getAvatar(id) {
   return `${config.API_URL}/image/${id}?maxWidth=200&maxHeight=200`;
-}
-
-export function getUserSession() {
-  return axios.get(`${config.API_URL}/userSession`, {
-    validateStatus: (status) => {
-      // returning true so that we can get the error status
-      return (status >= 200 && status < 300) || status === 502;
-    },
-  });
 }
 
 export function resetPasswordRequest(form) {

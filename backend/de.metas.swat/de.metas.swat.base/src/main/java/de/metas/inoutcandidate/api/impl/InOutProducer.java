@@ -527,6 +527,8 @@ public class InOutProducer implements IInOutProducer
 			receiptHeader.setExternalResourceURL(getExternalResourceURL(rs));
 		}
 
+		receiptHeader.setPOReference(rs.getPOReference());
+
 		//
 		// Save & Return
 		InterfaceWrapperHelper.save(receiptHeader);

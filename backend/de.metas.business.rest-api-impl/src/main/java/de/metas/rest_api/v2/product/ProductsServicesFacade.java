@@ -73,6 +73,12 @@ public class ProductsServicesFacade
 		return productsRepo.getByIds(productIds);
 	}
 
+	@NonNull
+	public I_M_Product getProductById(@NonNull final ProductId productId)
+	{
+		return productsRepo.getById(productId);
+	}
+
 	public String getUOMSymbol(@NonNull final UomId uomId)
 	{
 		final I_C_UOM uom = uomsRepo.getById(uomId);

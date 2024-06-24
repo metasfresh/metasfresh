@@ -22,16 +22,13 @@ package de.metas.materialtracking.qualityBasedInvoicing;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
+import de.metas.materialtracking.IHandlingUnitsInfo;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.BOMComponentType;
 
-import de.metas.materialtracking.IHandlingUnitsInfo;
-
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 public interface IProductionMaterial
 {

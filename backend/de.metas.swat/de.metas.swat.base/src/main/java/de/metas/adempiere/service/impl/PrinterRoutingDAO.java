@@ -22,25 +22,23 @@ package de.metas.adempiere.service.impl;
  * #L%
  */
 
-import java.util.List;
-
+import de.metas.adempiere.model.I_AD_Printer;
+import de.metas.adempiere.model.I_AD_PrinterRouting;
+import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
 import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import de.metas.adempiere.model.I_AD_PrinterRouting;
 import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_Printer;
-import de.metas.adempiere.service.IPrinterRoutingDAO;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class PrinterRoutingDAO implements IPrinterRoutingDAO
 {
@@ -77,34 +75,35 @@ public class PrinterRoutingDAO implements IPrinterRoutingDAO
 				.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Client_ID, query.getClientId(), ClientId.SYSTEM)
 				.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY);
 		if (query.getDocTypeId() != null)
-		{
+		{ // do allow printer-routings without a doctype, but order such that they come last ("NULLS LAST")
 			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID, query.getDocTypeId(), null);
+			routingQueryBuilder.orderBy(I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID);
 		}
 		if (query.getProcessId() != null)
 		{
 			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Process_ID, query.getProcessId(), null);
+			routingQueryBuilder.orderBy(I_AD_PrinterRouting.COLUMNNAME_AD_Process_ID);
 		}
 		if (query.getTableId() != null)
 		{
 			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Table_ID, query.getTableId(), null);
+			routingQueryBuilder.orderBy(I_AD_PrinterRouting.COLUMNNAME_AD_Table_ID);
 		}
 		if (query.getRoleId() != null)
 		{
 			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Role_ID, query.getRoleId(), null);
+			routingQueryBuilder.orderBy(I_AD_PrinterRouting.COLUMNNAME_AD_Role_ID);
 		}
 		if (query.getUserId() != null)
 		{
 			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_User_ID, query.getUserId(), null);
+			routingQueryBuilder.orderBy(I_AD_PrinterRouting.COLUMNNAME_AD_User_ID);
 		}
 
 		routingQueryBuilder
 				.orderBy(I_AD_PrinterRouting.COLUMNNAME_SeqNo)
 				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Client_ID)
 				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Org_ID)
-				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID)
-				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Role_ID)
-				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_User_ID)
-				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Table_ID)
 				.orderBy(I_AD_PrinterRouting.COLUMNNAME_AD_PrinterRouting_ID);
 
 		return routingQueryBuilder

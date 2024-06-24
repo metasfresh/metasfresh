@@ -15,20 +15,21 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.process.CreateProcessInstanceRequest;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstancesRepository;
+import de.metas.ui.web.process.ProcessHandlerType;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.WebuiPreconditionsContext;
+import de.metas.ui.web.process.adprocess.ADProcessInstancesRepository;
 import de.metas.ui.web.process.descriptor.InternalName;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -41,6 +42,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Process;
 import org.springframework.stereotype.Component;
 
@@ -80,7 +82,7 @@ import java.util.stream.Stream;
 @Component
 public class HUReportProcessInstancesRepository implements IProcessInstancesRepository
 {
-	private static final String PROCESS_HANDLER_TYPE = "HUReport";
+	public static final ProcessHandlerType PROCESS_HANDLER_TYPE = ProcessHandlerType.ofCode("HUReport");
 
 	private final CCache<Integer, IndexedWebuiHUProcessDescriptors> processDescriptors = CCache.newCache(I_M_HU_Process.Table_Name, 1, CCache.EXPIREMINUTES_Never);
 
@@ -88,8 +90,10 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 			.expireAfterAccess(10, TimeUnit.MINUTES)
 			.build();
 
+	private final ADProcessInstancesRepository processInstancesRepository = SpringContextHolder.instance.getBean(ADProcessInstancesRepository.class);
+
 	@Override
-	public String getProcessHandlerType()
+	public ProcessHandlerType getProcessHandlerType()
 	{
 		return PROCESS_HANDLER_TYPE;
 	}
@@ -121,8 +125,14 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 				.collect(ImmutableList.toImmutableList()));
 	}
 
+	private void addParametersEntityDescriptor(@NonNull final ProcessId processId, @NonNull final DocumentEntityDescriptor.Builder builder)
+	{
+		processInstancesRepository.addProcessParameters(processId, builder);
+	}
+
 	private WebuiHUProcessDescriptor toWebuiHUProcessDescriptor(@NonNull final HUProcessDescriptor huProcessDescriptor)
 	{
+
 		final AdProcessId reportADProcessId = huProcessDescriptor.getProcessId();
 		final ProcessId processId = ProcessId.of(PROCESS_HANDLER_TYPE, reportADProcessId.getRepoId());
 
@@ -131,15 +141,19 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 		final ITranslatableString caption = adProcessTrl.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName());
 		final ITranslatableString description = adProcessTrl.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription());
 
-		final DocumentEntityDescriptor parametersDescriptor = DocumentEntityDescriptor.builder()
+		final DocumentEntityDescriptor.Builder builder = DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.Process, processId.toDocumentId())
 				.setCaption(caption)
 				.setDescription(description)
 				.disableDefaultTableCallouts()
+				.disableCallouts()
 				.addField(DocumentFieldDescriptor.builder(HUReportProcessInstance.PARAM_Copies)
 						.setCaption(Services.get(IMsgBL.class).translatable(HUReportProcessInstance.PARAM_Copies))
-						.setWidgetType(DocumentFieldWidgetType.Integer))
-				.build();
+						.setWidgetType(DocumentFieldWidgetType.Integer));
+
+		addParametersEntityDescriptor(processId, builder);
+
+		final DocumentEntityDescriptor parametersDescriptor = builder.build();
 
 		return WebuiHUProcessDescriptor.builder()
 				.huProcessDescriptor(huProcessDescriptor)
@@ -172,15 +186,12 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 			return Stream.empty();
 		}
 
-		if (!(viewContext.getView() instanceof HUEditorView))
+		if (!HUReportAwareViews.isHUReportAwareView(viewContext.getView()))
 		{
 			return Stream.empty();
 		}
 
-		// NOTE: atm there is no need for a separate flag for allowing table related processes and allowing HU reports,
-		// so we are reusing the same flag.
-		final IView huEditorView = viewContext.getView();
-		if (!huEditorView.isConsiderTableRelatedProcessDescriptors(viewContext.getSelectedRowIds()))
+		if (!viewContext.isConsiderTableRelatedProcessDescriptors(PROCESS_HANDLER_TYPE))
 		{
 			return Stream.empty();
 		}
@@ -200,17 +211,32 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 			return false;
 		}
 
-		final HUEditorView huView = viewContext.getView(HUEditorView.class);
-		final boolean foundNotMatchingRows = huView.streamByIds(rowIds)
-				.anyMatch(row -> !checkApplies(row, descriptor));
+		final IView view = viewContext.getView();
+		if (HUReportAwareViews.isHUReportAwareView(view))
+		{
+			final boolean foundNotMatchingRows = view.streamByIds(rowIds)
+					.anyMatch(row -> !checkApplies(row, descriptor));
 
-		return !foundNotMatchingRows;
+			return !foundNotMatchingRows;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
-	private static boolean checkApplies(final HUEditorRow row, final WebuiHUProcessDescriptor descriptor)
+	private static boolean checkApplies(final IViewRow row, final WebuiHUProcessDescriptor descriptor)
 	{
-		final String huUnitType = row.getType().toHUUnitTypeOrNull();
-		return huUnitType != null && descriptor.appliesToHUUnitType(huUnitType);
+		if (HUReportAwareViews.isHUReportAwareViewRow(row))
+		{
+			final HUReportAwareViewRow huRow = HUReportAwareViews.cast(row);
+			final String huUnitType = huRow.getHUUnitTypeOrNull();
+			return huUnitType != null && descriptor.appliesToHUUnitType(huUnitType);
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	@Override

@@ -371,19 +371,21 @@ class PPOrderLinesViewDataLoader
 
 		return PPOrderLineRow.builderForIssuedOrReceivedHU()
 				.rowId(rowId)
-				.type(PPOrderLineType.ofHUEditorRowType(huEditorRow.getType()))
+				.type(huEditorRow.getType())
 				.ppOrderQty(ppOrderQty)
 				.parentRowReadonly(readonly)
 				.attributesSupplier(huEditorRow.getAttributesSupplier()
 						.map(supplier -> supplier.changeRowId(rowId.toDocumentId()))
 						.orElse(null))
 				.code(huEditorRow.getValue())
+				.huBPartnerId(huEditorRow.getBpartnerId())
 				.product(huEditorRow.getProduct())
 				.packingInfo(huEditorRow.getPackingInfo())
 				.topLevelHU(huEditorRow.isTopLevel())
 				.huStatus(huEditorRow.getHUStatusDisplay())
 				.quantity(quantity)
 				.includedRows(includedRows)
+				.clearanceStatus(huEditorRow.getClearanceStatus())
 				.build();
 	}
 

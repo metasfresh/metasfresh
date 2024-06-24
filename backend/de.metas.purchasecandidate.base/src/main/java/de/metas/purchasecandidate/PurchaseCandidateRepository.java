@@ -738,4 +738,28 @@ public class PurchaseCandidateRepository
 				.map(this::getById)
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	public void deletePurchaseCandidates(@NonNull final DeletePurchaseCandidateQuery deletePurchaseCandidateQuery)
+	{
+		final IQueryBuilder<I_C_PurchaseCandidate> deleteQuery = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class);
+
+		if (deletePurchaseCandidateQuery.isOnlySimulated())
+		{
+			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsSimulated, deletePurchaseCandidateQuery.isOnlySimulated());
+		}
+
+		if (deletePurchaseCandidateQuery.getSalesOrderLineId() != null)
+		{
+			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID, deletePurchaseCandidateQuery.getSalesOrderLineId());
+		}
+
+		if (deleteQuery.getCompositeFilter().isEmpty())
+		{
+			throw new AdempiereException("Deleting all I_C_PurchaseCandidate records is not allowed!");
+		}
+
+		deleteQuery
+				.create()
+				.deleteDirectly();
+	}
 }

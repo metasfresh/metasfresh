@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -55,12 +56,12 @@ public class InventoryLineHU
 	InventoryLineHUId id;
 
 	/** Null if this instance does not yet have a persisted HU */
-	@Nullable
-	HuId huId;
+	@Nullable HuId huId;
+	@Nullable HUQRCode huQRCode;
 
 	//
 	// Quantities
-	private InventoryType inventoryType;
+	InventoryType inventoryType;
 	//
 	Quantity qtyInternalUse;
 	//
@@ -81,13 +82,15 @@ public class InventoryLineHU
 	@Builder(toBuilder = true)
 	private InventoryLineHU(
 			@Nullable final InventoryLineHUId id,
-			@Nullable final HuId huId,
+			@Nullable final HuId huId, 
+			@Nullable final HUQRCode huQRCode,
 			@Nullable final Quantity qtyInternalUse,
 			@Nullable final Quantity qtyBook,
 			@Nullable final Quantity qtyCount)
 	{
 		this.id = id;
 		this.huId = huId;
+		this.huQRCode = huQRCode;
 
 		if (qtyInternalUse != null)
 		{
@@ -112,7 +115,7 @@ public class InventoryLineHU
 		}
 	}
 
-	final void setId(@NonNull final InventoryLineHUId id)
+	void setId(@NonNull final InventoryLineHUId id)
 	{
 		this.id = id;
 	}
@@ -199,18 +202,5 @@ public class InventoryLineHU
 				.qtyCount(qtyConverter.apply(getQtyCount()))
 				.qtyBook(qtyConverter.apply(getQtyBook()))
 				.build();
-	}
-
-	@NonNull
-	public HuId getHuIdNotNull()
-	{
-		if (this.huId == null)
-		{
-			throw new AdempiereException("de.metas.handlingunits.inventory.InventoryLineHU.getHuIdNotNull called on an uncompleted inventory!")
-					.appendParametersToMessage()
-					.setParameter("InventoryLineHUId", id);
-		}
-
-		return huId;
 	}
 }

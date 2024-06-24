@@ -22,14 +22,6 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.DisplayType;
-
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -39,6 +31,12 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.DisplayType;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 
 /* package */class HUPIItemProductDisplayNameBuilder implements IHUPIItemProductDisplayNameBuilder
 {
@@ -248,7 +246,7 @@ import lombok.NonNull;
 	@Override
 	public IHUPIItemProductDisplayNameBuilder setM_HU_PI_Item_Product(@NonNull final HUPIItemProductId id)
 	{
-		final I_M_HU_PI_Item_Product huPIItemProduct = Services.get(IHUPIItemProductDAO.class).getById(id);
+		final I_M_HU_PI_Item_Product huPIItemProduct = Services.get(IHUPIItemProductDAO.class).getRecordById(id);
 		return setM_HU_PI_Item_Product(huPIItemProduct);
 	}
 

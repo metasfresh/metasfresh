@@ -63,7 +63,6 @@ import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
@@ -84,7 +83,6 @@ public class WarehouseService
 {
 	private static final String ALL = "ALL";
 
-	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IUOMConversionBL conversionBL = Services.get(IUOMConversionBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
@@ -135,8 +133,6 @@ public class WarehouseService
 
 		final IWarehouseDAO.WarehouseQuery.WarehouseQueryBuilder builder = IWarehouseDAO.WarehouseQuery.builder().orgId(orgId);
 
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
 		final WarehouseId result;
 		if (warehouseString.getType().equals(IdentifierString.Type.METASFRESH_ID))
 		{
@@ -167,6 +163,11 @@ public class WarehouseService
 		}
 
 		return result;
+	}
+
+	public String getWarehouseName(@NonNull final WarehouseId warehouseId)
+	{
+		return warehouseDAO.getWarehouseName(warehouseId);
 	}
 
 	public JsonOutOfStockResponse handleOutOfStockRequest(

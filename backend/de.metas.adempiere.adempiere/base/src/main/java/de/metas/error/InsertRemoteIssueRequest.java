@@ -34,24 +34,12 @@ import javax.annotation.Nullable;
 @Builder
 public class InsertRemoteIssueRequest
 {
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	PInstanceId pInstance_ID;
-
-	@NonNull
-	String issueSummary;
-
-	@Nullable
-	String sourceClassName;
-
-	@Nullable
-	String sourceMethodName;
-
-	@Nullable
-	String issueCategory;
-
-	@Nullable
-	String stacktrace;
+	@NonNull OrgId orgId;
+	@Nullable PInstanceId pInstance_ID;
+	@NonNull String issueSummary;
+	@Nullable String sourceClassName;
+	@Nullable String sourceMethodName;
+	@Nullable String issueCategory;
+	@Nullable String stacktrace;
+	@Nullable String frontendUrl;
 }

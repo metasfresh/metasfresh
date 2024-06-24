@@ -529,23 +529,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		m_lines = null;
 	}    // renumberLines
 
-	/**
-	 * Copy Lines From other Invoice.
-	 *
-	 * @param otherInvoice invoice
-	 * @param counter      create counter links
-	 * @param setOrder     set order links
-	 * @return number of lines copied
-	 * @deprecated pls use {@link IInvoiceBL#copyLinesFrom(I_C_Invoice, I_C_Invoice, boolean, boolean, boolean)}
-	 */
-	@Deprecated
-	public int copyLinesFrom(final MInvoice otherInvoice, final boolean counter, final boolean setOrder)
-	{
-		// ts: 04054: moving copyLinesFrom business logic to the implementors of IInvoiceBL
-		return Services.get(IInvoiceBL.class).copyLinesFrom(otherInvoice, this, counter, setOrder,
-															false); // setInvoiceRef == false
-	}    // copyLinesFrom
-
 	private void setReversal(final boolean reversal)
 	{
 		m_reversal = reversal;
@@ -852,7 +835,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final MInvoiceLine[] lines = getLines(true);
 		if (lines.length == 0)
 		{
-			throw new AdempiereException("@NoLines@");
+			throw AdempiereException.noLines();
 		}
 
 		// No Cash Book

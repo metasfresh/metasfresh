@@ -87,7 +87,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 {
 	// services
 	protected final transient Logger log = LogManager.getLogger(getClass());
-	private static final transient Logger slogger = LogManager.getLogger(JavaProcess.class);
+	private static final Logger slogger = LogManager.getLogger(JavaProcess.class);
 	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	protected final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 

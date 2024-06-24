@@ -36,7 +36,7 @@ import java.sql.PreparedStatement;
  *  @author Jorg Janke
  *  @version $Id: PO_LOB.java,v 1.2 2006/07/30 00:58:04 jjanke Exp $
  */
-public class PO_LOB implements Serializable
+class PO_LOB implements Serializable
 {
 	/**
 	 * 

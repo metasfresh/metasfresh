@@ -1,7 +1,6 @@
 package de.metas.ui.web.material.adapter;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.material.commons.attributes.AttributesKeyPattern;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult;
@@ -13,8 +12,9 @@ import de.metas.ui.web.material.adapter.AvailabilityInfoResultForWebui.Availabil
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 

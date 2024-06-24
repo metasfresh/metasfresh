@@ -22,22 +22,21 @@ package de.metas.edi.api;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.i18n.ITranslatableString;
 import de.metas.report.ReportResultData;
 import de.metas.util.ISingletonService;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 public interface IDesadvBL extends ISingletonService
 {
@@ -87,15 +86,22 @@ public interface IDesadvBL extends ISingletonService
 	void removeInOutLineFromDesadv(I_M_InOutLine inOutLine);
 
 	/**
-	 * Print SSCC18 labels for given {@link I_EDI_DesadvLine_Pack} IDs by invoking a jasper-process, and forwarding its binary report data.
+	 * Print SSCC18 labels for given {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack} IDs by invoking a jasper-process, and forwarding its binary report data.
 	 */
-	ReportResultData printSSCC18_Labels(Properties ctx, Collection<EDIDesadvLinePackId> desadvLineSSCC_IDs_ToPrint);
+	ReportResultData printSSCC18_Labels(Properties ctx, Collection<EDIDesadvPackId> desadvPack_IDs_ToPrint);
 
 	/**
 	 * Set the current minimum sum percentage taken from the sys config 'de.metas.esb.edi.DefaultMinimumPercentage'
 	 */
 	void setMinimumPercentage(I_EDI_Desadv desadv);
 
-	/** Iterate the given list and create user-friendly messages for all desadvs whose delivered quantity (fulfillment) is below their respective treshold. */
+	/**
+	 * Iterate the given list and create user-friendly messages for all desadvs whose delivered quantity (fulfillment) is below their respective treshold.
+	 */
 	ImmutableList<ITranslatableString> createMsgsForDesadvsBelowMinimumFulfilment(ImmutableList<I_EDI_Desadv> desadvRecords);
+
+	/**
+	 * @return all <code>M_InOutLine</code>s (incl inactive ones) that reference the given <code>desadvLine</code>.
+	 */
+	List<I_M_InOutLine> retrieveAllInOutLines(I_EDI_DesadvLine desadvLine);
 }

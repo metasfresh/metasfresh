@@ -44,6 +44,8 @@ public final class HUAttributeConstants
 	public static final String ATTR_Expired_Value_Expired = "expired";
 
 	public static final AttributeCode ATTR_Age = AttributeCode.ofString("Age");
+
+	public static final AttributeCode ATTR_AgeOffset = AttributeCode.ofString("AgeOffset");
 	public static final AttributeCode ATTR_ProductionDate = AttributeCode.ofString("ProductionDate");
 
 	public static final AttributeCode ATTR_Quarantine = AttributeCode.ofString("HU_Quarantine");

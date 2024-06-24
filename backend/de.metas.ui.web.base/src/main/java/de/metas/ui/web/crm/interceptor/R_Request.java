@@ -100,20 +100,4 @@ public class R_Request
 		bpartnerDAO.save(bpartner);
 		documentsCollection.invalidateDocumentByRecordId(I_C_BPartner.Table_Name, bpartner.getC_BPartner_ID());
 	}
-
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_R_Request.COLUMNNAME_StartTime, I_R_Request.COLUMNNAME_StartDate })
-	public void updateStartDateAndStartTime(final I_R_Request request)
-	{
-		if (request.getStartDate() == null)
-		{
-			request.setStartDate(request.getStartTime());
-		}
-
-		if (request.getStartTime() == null)
-		{
-			request.setStartTime(request.getStartDate());
-		}
-	}
 }

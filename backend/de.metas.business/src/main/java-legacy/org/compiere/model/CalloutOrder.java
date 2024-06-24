@@ -331,13 +331,14 @@ public class CalloutOrder extends CalloutEngine
 			orderBL.setBPLocation(order, bpartner);
 		}
 
+
 		if (!orderBL.setBillLocation(order))
 		{
-			final String localizedMessage = new BPartnerNoBillToAddressException(bpartner).getLocalizedMessage();
-			calloutField.fireDataStatusEEvent(
-					localizedMessage,
-					localizedMessage, // this appears onHover
-					true);
+				final String localizedMessage = new BPartnerNoBillToAddressException(bpartner).getLocalizedMessage();
+				calloutField.fireDataStatusEEvent(
+						localizedMessage,
+						localizedMessage, // this appears onHover
+						true);
 		}
 
 		return NO_ERROR;
@@ -1089,10 +1090,10 @@ public class CalloutOrder extends CalloutEngine
 		log.debug("Ship BP_Location={}", shipBPLocationId);
 
 		//
-		Timestamp billDate = ol.getDateOrdered();
+		Timestamp billDate = ol.getDatePromised();
 		if (billDate == null)
 		{
-			billDate = order.getDateOrdered();
+			billDate = order.getDatePromised();
 		}
 		log.debug("Bill Date={}", billDate);
 

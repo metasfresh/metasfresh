@@ -23,7 +23,6 @@ package org.adempiere.ad.dao.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.dao.selection.pagination.PaginationService;
@@ -1348,9 +1347,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			sql = inlineSqlParams(sql, sqlParams);
 		}
 
-		return MoreObjects.toStringHelper(this)
-				.addValue(sql)
-				.toString();
+		return sql;
 	}
 
 	@VisibleForTesting

@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.inout.ShipmentScheduleId;
@@ -12,12 +13,15 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -26,9 +30,12 @@ public class PickingJobCreateRepoRequest
 	@NonNull OrgId orgId;
 	@NonNull OrderId salesOrderId;
 	@NonNull InstantAndOrgId preparationDate;
+	@NonNull InstantAndOrgId deliveryDate;
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull String deliveryRenderedAddress;
 	@NonNull UserId pickerId;
+	@NonNull BPartnerLocationId handoverLocationId;
+	boolean isAllowPickingAnyHU;
 
 	@Singular @NonNull ImmutableList<Line> lines;
 
@@ -41,6 +48,11 @@ public class PickingJobCreateRepoRequest
 	public static class Line
 	{
 		@NonNull ProductId productId;
+		@NonNull HUPIItemProductId huPIItemProductId;
+		@NonNull Quantity qtyToPick;
+		@NonNull OrderAndLineId salesOrderAndLineId;
+		@Nullable ShipmentScheduleId shipmentScheduleId;
+		@Nullable UomId catchWeightUomId;
 		@Singular @NonNull ImmutableList<Step> steps;
 
 		@Builder.Default

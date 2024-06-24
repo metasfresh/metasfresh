@@ -25,6 +25,7 @@ package de.metas.manufacturing.rest_api.v2;
 import de.metas.Profiles;
 import de.metas.common.manufacturing.v2.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.v2.JsonRequestSetOrdersExportStatusBulk;
+import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersReport;
 import de.metas.common.util.time.SystemTime;
@@ -33,10 +34,13 @@ import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.util.Env;
+import org.eevolution.api.PPOrderId;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -93,5 +97,23 @@ public class ManufacturingOrderRestController
 		return response.isOK()
 				? ResponseEntity.ok(response)
 				: ResponseEntity.unprocessableEntity().body(response);
+	}
+
+	@GetMapping("/{ppOrderMetasfreshId}")
+	public ResponseEntity<?> getManufacturingOrderByMetasfreshId(@PathVariable("ppOrderMetasfreshId") final int ppOrderMetasfreshId)
+	{
+		try
+		{
+			final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrderMetasfreshId);
+
+			final JsonResponseManufacturingOrder response = manufacturingOrderAPIService.retrievePPOrder(ppOrderId);
+			return ResponseEntity.ok(response);
+		}
+		catch (final Exception ex)
+		{
+			return ResponseEntity
+					.status(HttpStatus.UNPROCESSABLE_ENTITY)
+					.body(ex);
+		}
 	}
 }

@@ -53,6 +53,7 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -290,7 +291,7 @@ public class M_InOut
 	/**
 	 * Note: the reverse-timings are only fired on the M_InOut that is actually reversed (and not on the reversal).
 	 * <p>
-	 * Task http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29
+	 * @implSpec  <a href="http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29">issue</a>
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void updateReversedQtys(final I_M_InOut inout)
@@ -335,22 +336,14 @@ public class M_InOut
 			return; // no HUs to generate if the whole InOut is about HUs
 		}
 
-		final List<I_M_HU> existingHandlingUnits = inOutDAO.retrieveHandlingUnits(customerReturn);
-
-		// the handling units are already created
-		if (!existingHandlingUnits.isEmpty())
+		final List<I_M_HU> assignedHUs = inOutDAO.retrieveHandlingUnits(customerReturn);
+		if (assignedHUs.isEmpty())
 		{
-			final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(customerReturn);
-
-			//make sure they all have status active
-			existingHandlingUnits.forEach(hu -> handlingUnitsBL.setHUStatus(hu, contextProvider, X_M_HU.HUSTATUS_Active));
-		}
-		else
-		{
-			// create HUs based on the lines in the customer return inout
-			returnsServiceFacade.createHUsForCustomerReturn(InterfaceWrapperHelper.create(customerReturn, de.metas.handlingunits.model.I_M_InOut.class));
+			throw new AdempiereException("No HUs to return assigned");
 		}
 
+		// make sure all assigned HUs are active
+		handlingUnitsBL.setHUStatus(assignedHUs, X_M_HU.HUSTATUS_Active);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)

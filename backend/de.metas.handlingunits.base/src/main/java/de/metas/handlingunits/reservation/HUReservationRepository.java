@@ -70,9 +70,10 @@ public class HUReservationRepository
 			.tableName(I_M_HU_Reservation.Table_Name)
 			.build();
 
-	public Optional<HUReservation> getByDocumentRef(@NonNull final HUReservationDocRef documentRef)
+	public Optional<HUReservation> getByDocumentRef(
+			@NonNull final HUReservationDocRef documentRef,
+			@NonNull final ImmutableSet<HuId> onlyVHUIds)
 	{
-		final Set<HuId> onlyVHUIds = ImmutableSet.of();
 		final List<I_M_HU_Reservation> huReservationRecords = retrieveRecordsByDocumentRef(
 				ImmutableSet.of(documentRef),
 				onlyVHUIds);

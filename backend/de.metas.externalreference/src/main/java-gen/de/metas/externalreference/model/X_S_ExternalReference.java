@@ -77,6 +77,8 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String EXTERNALSYSTEM_WooCommerce = "WooCommerce";
 	/** GRSSignum = GRSSignum */
 	public static final String EXTERNALSYSTEM_GRSSignum = "GRSSignum";
+	/** LeichUndMehl = LeichUndMehl */
+	public static final String EXTERNALSYSTEM_LeichUndMehl = "LeichUndMehl";
 	/** ProCareManagement = ProCareManagement */
 	public static final String EXTERNALSYSTEM_ProCareManagement = "ProCareManagement";
 	@Override

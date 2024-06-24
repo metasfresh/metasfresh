@@ -16,21 +16,29 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.doc.DocLine_Invoice;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.MatchInvId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.tax.api.TaxId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceTax;
@@ -40,22 +48,15 @@ import org.compiere.model.MPeriod;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.PostingType;
-import de.metas.acct.api.ProductAcctType;
-import de.metas.acct.doc.AcctDocContext;
-import de.metas.acct.doc.DocLine_Invoice;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
-import de.metas.invoice.MatchInvId;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IMatchInvDAO;
-import de.metas.tax.api.TaxId;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Post Invoice Documents.
@@ -67,27 +68,39 @@ import de.metas.util.Services;
  *
  * @author Jorg Janke
  * @author Armen Rizal, Goodwill Consulting
- *         <li>BF: 2797257 Landed Cost Detail is not using allocation qty
- *
+ * <li>BF: 2797257 Landed Cost Detail is not using allocation qty
  * @version $Id: Doc_Invoice.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
 public class Doc_Invoice extends Doc<DocLine_Invoice>
 {
 	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
+	private final OrderGroupRepository orderGroupRepo;
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_Invoice.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
 
-	/** Contained Optional Tax Lines */
+	/**
+	 * Contained Optional Tax Lines
+	 */
 	private List<DocTax> _taxes = null;
-	/** All lines are Service */
+	/**
+	 * All lines are Service
+	 */
 	private boolean m_allLinesService = true;
-	/** All lines are product item */
+	/**
+	 * All lines are product item
+	 */
 	private boolean m_allLinesItem = true;
 
-	public Doc_Invoice(final AcctDocContext ctx)
+	public Doc_Invoice(@NonNull final AcctDocContext ctx)
+	{
+		this(ctx, SpringContextHolder.instance.getBean(OrderGroupRepository.class));
+	}
+
+	public Doc_Invoice(@NonNull final AcctDocContext ctx, @NonNull final OrderGroupRepository orderGroupRepo)
 	{
 		super(ctx);
+		this.orderGroupRepo = orderGroupRepo;
 	}
 
 	@Override
@@ -157,7 +170,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			rs = null;
 			pstmt = null;
 		}
-	}	// loadTaxes
+	}    // loadTaxes
 
 	private List<DocLine_Invoice> loadLines(final I_C_Invoice invoice)
 	{
@@ -171,7 +184,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				continue;
 			}
 
-			final DocLine_Invoice docLine = new DocLine_Invoice(line, this);
+			final DocLine_Invoice docLine = new DocLine_Invoice(orderGroupRepo, line, this);
 
 			//
 			// Collect included tax (if any)
@@ -219,13 +232,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 						docLine.setLineNetAmtDifference(diff);
 						break;
 					}
-				} 	// for all lines
-			} 	// tax difference
-		} 	// for all taxes
+				}    // for all lines
+			}    // tax difference
+		}    // for all taxes
 
 		//
 		return docLines;
-	}	// loadLines
+	}    // loadLines
 
 	public InvoiceId getInvoiceId()
 	{

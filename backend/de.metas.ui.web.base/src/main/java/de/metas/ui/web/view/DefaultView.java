@@ -28,8 +28,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
-import de.metas.ui.web.window.model.DocumentSaveStatus;
-import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -549,6 +547,15 @@ public final class DefaultView implements IEditableView
 		return viewDataRepository.retrieveModelsByIds(getViewId(), rowIds, modelClass);
 	}
 
+	@NonNull
+	@Override
+	public <T> Stream<T> streamModelsByIds(
+			@NonNull final DocumentIdsSelection rowIds,
+			@NonNull final Class<T> modelClass)
+	{
+		return viewDataRepository.retrieveModelsByIdsAsStream(getViewId(), rowIds, modelClass);
+	}
+
 	@Override
 	public void notifyRecordsChanged(
 			@NonNull final TableRecordReferenceSet recordRefs,
@@ -668,17 +675,8 @@ public final class DefaultView implements IEditableView
 		//
 		// Important: before allowing the document to be stored back in documents collection,
 		// we need to make sure it's valid and saved.
-		final DocumentValidStatus validStatus = document.getValidStatus();
-		if (!validStatus.isValid())
-		{
-			throw new AdempiereException(validStatus.getReason());
-		}
-
-		final DocumentSaveStatus saveStatus = document.getSaveStatus();
-		if (!saveStatus.isSavedOrDeleted())
-		{
-			throw new AdempiereException(saveStatus.getReason());
-		}
+		document.getValidStatus().throwIfInvalid();
+		document.getSaveStatus().throwIfNotSavedNorDelete();
 	}
 
 	@Override

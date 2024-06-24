@@ -525,3 +525,11 @@ export function getTooltipWidget(item, widgetData) {
 
   return { tooltipData, tooltipWidget };
 }
+
+export const computeNumberOfPages = (size, pageLength) => {
+  if (pageLength > 0) {
+    return size ? Math.ceil(size / pageLength) : 0;
+  } else {
+    return size ? 1 : 0;
+  }
+};

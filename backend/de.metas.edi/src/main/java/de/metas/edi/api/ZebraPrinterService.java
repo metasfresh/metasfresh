@@ -25,7 +25,7 @@ package de.metas.edi.api;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.ZebraConfigId;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
+import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.process.PInstanceId;
 import de.metas.report.ReportResultData;
 import de.metas.util.Check;
@@ -53,18 +53,18 @@ public class ZebraPrinterService
 	private final ZebraConfigRepository zebraConfigRepository = SpringContextHolder.instance.getBean(ZebraConfigRepository.class);
 
 	/**
-	 * Creates a CSV file for SSCC18 labels based on given {@link I_EDI_DesadvLine_Pack} IDs.
+	 * Creates a CSV file for SSCC18 labels based on given {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item} IDs.
 	 *
 	 * @return {@link ReportResultData} containing information required for SSCC18 labels in CSV format.
 	 */
-	public ReportResultData createCSV_FileForSSCC18_Labels( final Collection<Integer> desadvLinePack_IDs_ToPrint,
+	public ReportResultData createCSV_FileForSSCC18_Labels( final Collection<EDIDesadvPackId> desadvPackIds,
 															final ZebraConfigId zebraConfigId,
 															final PInstanceId pInstanceId )
 	{
 		final ZebraConfigId zebraConfigToUse = zebraConfigId != null ? zebraConfigId : zebraConfigRepository.getDefaultZebraConfigId();
 		final I_AD_Zebra_Config zebraConfig = zebraConfigRepository.getById(zebraConfigToUse);
 
-		DB.createT_Selection(pInstanceId, desadvLinePack_IDs_ToPrint, ITrx.TRXNAME_ThreadInherited);
+		DB.createT_Selection(pInstanceId, desadvPackIds, ITrx.TRXNAME_ThreadInherited);
 
 		final ImmutableList<List<String>> resultRows = DB.getSQL_ResultRowsAsListsOfStrings(zebraConfig.getSQL_Select(),
 																							Collections.singletonList(pInstanceId), ITrx.TRXNAME_ThreadInherited);

@@ -329,8 +329,7 @@ public class MRMA extends X_M_RMA implements IDocument
 		MRMALine[] lines = getLines(false);
 		if (lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 
 		for (MRMALine line : lines)

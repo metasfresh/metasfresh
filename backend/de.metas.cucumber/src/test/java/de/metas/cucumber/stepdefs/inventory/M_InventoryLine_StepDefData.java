@@ -23,15 +23,25 @@
 package de.metas.cucumber.stepdefs.inventory;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.inventory.InventoryLineId;
 import org.compiere.model.I_M_InventoryLine;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
 public class M_InventoryLine_StepDefData extends StepDefData<I_M_InventoryLine>
+		implements StepDefDataGetIdAware<InventoryLineId, I_M_InventoryLine>
 {
 	public M_InventoryLine_StepDefData()
 	{
 		super(I_M_InventoryLine.class);
 	}
+
+	@Override
+	public InventoryLineId extractIdFromRecord(final I_M_InventoryLine record)
+	{
+		return InventoryLineId.ofRepoId(record.getM_InventoryLine_ID());
+	}
+
 }

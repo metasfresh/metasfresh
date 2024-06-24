@@ -1,10 +1,12 @@
 package de.metas.email.mailboxes;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.List;
-import java.util.Optional;
-
+import de.metas.cache.CCache;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.email.EMailAddress;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -13,13 +15,10 @@ import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
 import org.springframework.stereotype.Repository;
 
-import de.metas.cache.CCache;
-import de.metas.document.DocBaseAndSubType;
-import de.metas.email.EMailAddress;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -129,11 +128,7 @@ public class MailboxRepository
 		final DocBaseAndSubType docBaseAndSubType = query.getDocBaseAndSubType();
 		if (docBaseAndSubType != null)
 		{
-			final String docBaseType = docBaseAndSubType.getDocBaseType();
-			if (!Check.isEmpty(docBaseType, true))
-			{
-				queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMN_DocBaseType, docBaseType);
-			}
+			queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMN_DocBaseType, docBaseAndSubType.getDocBaseType());
 
 			final String docSubType = docBaseAndSubType.getDocSubType();
 			if (!Check.isEmpty(docSubType, true))

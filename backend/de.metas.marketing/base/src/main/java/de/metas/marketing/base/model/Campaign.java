@@ -1,11 +1,11 @@
 package de.metas.marketing.base.model;
 
-import javax.annotation.Nullable;
-
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L

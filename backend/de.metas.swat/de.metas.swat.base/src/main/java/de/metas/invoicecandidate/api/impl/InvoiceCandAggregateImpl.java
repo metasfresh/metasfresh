@@ -46,37 +46,32 @@ import lombok.NonNull;
 public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 {
 
-	private Map<Integer, I_C_Invoice_Candidate> candIDs2Cands = new HashMap<Integer, I_C_Invoice_Candidate>();
+	private final Map<Integer, I_C_Invoice_Candidate> candIDs2Cands = new HashMap<>();
 
 	private static final Comparator<I_C_Invoice_Candidate> invoiceCandComparator =
-			new Comparator<I_C_Invoice_Candidate>()
-	{
-		@Override
-		public int compare(final I_C_Invoice_Candidate ic1, final I_C_Invoice_Candidate ic2)
-		{
-			final int ic1EffectiveLine = ic1.getLine() == 0 ? Integer.MAX_VALUE : ic1.getLine();
-			final int ic2EffectiveLine = ic2.getLine() == 0 ? Integer.MAX_VALUE : ic2.getLine();
+			(ic1, ic2) -> {
+				final int ic1EffectiveLine = ic1.getLine() == 0 ? Integer.MAX_VALUE : ic1.getLine();
+				final int ic2EffectiveLine = ic2.getLine() == 0 ? Integer.MAX_VALUE : ic2.getLine();
 
-			return new CompareToBuilder()
-					.append(ic1EffectiveLine, ic2EffectiveLine)
-					.append(ic1.getC_Invoice_Candidate_ID(), ic2.getC_Invoice_Candidate_ID())
-					.build();
-		}
-	};
+				return new CompareToBuilder()
+						.append(ic1EffectiveLine, ic2EffectiveLine)
+						.append(ic1.getC_Invoice_Candidate_ID(), ic2.getC_Invoice_Candidate_ID())
+						.build();
+			};
 
 	/**
 	 * Sorted set of all candidates that are added to this aggregation. They are ordered by <code>Line</code> and, if the line is identical, by <code>C_Invoice_Candidate_ID</code>.
 	 * If the line is 0, then they shall be ordered to the end.
 	 */
-	private Set<I_C_Invoice_Candidate> allCands = new TreeSet<I_C_Invoice_Candidate>(invoiceCandComparator);
+	private final Set<I_C_Invoice_Candidate> allCands = new TreeSet<>(invoiceCandComparator);
 
-	private Set<IInvoiceLineRW> allLines = new IdentityHashSet<IInvoiceLineRW>();
+	private final Set<IInvoiceLineRW> allLines = new IdentityHashSet<>();
 
-	private Map<IInvoiceLineRW, List<Integer>> line2candidates = new IdentityHashMap<IInvoiceLineRW, List<Integer>>();
+	private final Map<IInvoiceLineRW, List<Integer>> line2candidates = new IdentityHashMap<>();
 
-	private Map<Integer, List<IInvoiceLineRW>> candidateId2lines = new HashMap<Integer, List<IInvoiceLineRW>>();
+	private final Map<Integer, List<IInvoiceLineRW>> candidateId2lines = new HashMap<>();
 
-	private Map<Integer, Map<IInvoiceLineRW, StockQtyAndUOMQty>> candIdAndLine2AllocatedQty = new HashMap<>();
+	private final Map<Integer, Map<IInvoiceLineRW, StockQtyAndUOMQty>> candIdAndLine2AllocatedQty = new HashMap<>();
 
 	/**
 	 * Returns all candidates that were added, ordered by line (1, 2, ... 10, 20, ... , 0), i.e. null/not-set last.
@@ -90,7 +85,7 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 	@Override
 	public List<I_C_Invoice_Candidate> getCandsFor(final IInvoiceLineRW il)
 	{
-		final List<I_C_Invoice_Candidate> result = new ArrayList<I_C_Invoice_Candidate>();
+		final List<I_C_Invoice_Candidate> result = new ArrayList<>();
 		for (final int candId : getCandIdsFor(il))
 		{
 			result.add(candIDs2Cands.get(candId));
@@ -125,14 +120,12 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 
 	/**
 	 * This method does the actual work for {@link #getLinesFor(I_C_Invoice_Candidate)}.
-	 *
+	 * <p>
 	 * Note that this method with the extra 'icId' parameter is here because I was not able to write unit tests with mocks of I_C_Invoice_Candidate that returned the correct C_Invoice_Candidate_ID
 	 * value. In the end I decided to give the C_Invoice_Candidate_ID value as another parameter.
 	 *
-	 * @param ic
 	 * @param icId the value that would be returned by <code>ic.C_Invoice_Candidate_ID()</code> if the method was called with a proper <code>I_C_Invoice_Candidate</code>.
 	 * @param mandatory if true an {@link IllegalArgumentException} is no {@link IInvoiceLineRW} were matched
-	 * @return
 	 */
 	List<IInvoiceLineRW> getLinesFor(final I_C_Invoice_Candidate ic, final int icId, final boolean mandatory)
 	{
@@ -151,7 +144,7 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 				return Collections.emptyList();
 			}
 		}
-		return new ArrayList<IInvoiceLineRW>(invoiceLines);
+		return new ArrayList<>(invoiceLines);
 	}
 
 	@Override
@@ -182,13 +175,13 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 	}
 
 	/**
-	 * This method does the actual work for {@link #addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW)}.
-	 *
+	 * This method does the actual work for {@link #addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW, StockQtyAndUOMQty)}.
+	 * <p>
 	 * Note that this method with the extra 'icId' parameter is here because I was not able to write unit tests with mocks of I_C_Invoice_Candidate that returned the correct C_Invoice_Candidate_ID
 	 * value. In the end I decided to give the C_Invoice_Candidate_ID value as another parameter.
 	 *
 	 * @param icId the value that would be returned by <code>ic.C_Invoice_Candidate_ID()</code> if the method was called with a proper <code>I_C_Invoice_Candidate</code>.
-	 * @see IInvoiceCandAggregate#addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW)
+	 * @see IInvoiceCandAggregate#addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW, StockQtyAndUOMQty)
 	 */
 	private void addAssociation(
 			@NonNull final I_C_Invoice_Candidate ic,
@@ -200,23 +193,13 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 
 		Check.assume(!isAssociated(icId, il), ic + " with ID=" + icId + " is not yet associated with " + il);
 
-		List<Integer> candidateIds = line2candidates.get(il);
-		if (candidateIds == null)
-		{
-			candidateIds = new ArrayList<Integer>();
-			line2candidates.put(il, candidateIds);
-		}
+		final List<Integer> candidateIds = line2candidates.computeIfAbsent(il, k -> new ArrayList<>());
 		candidateIds.add(icId);
 
 		candIDs2Cands.put(icId, ic);
 		allCands.add(ic);
 
-		List<IInvoiceLineRW> invoiceLines = candidateId2lines.get(icId);
-		if (invoiceLines == null)
-		{
-			invoiceLines = new ArrayList<IInvoiceLineRW>();
-			candidateId2lines.put(icId, invoiceLines);
-		}
+		final List<IInvoiceLineRW> invoiceLines = candidateId2lines.computeIfAbsent(icId, k -> new ArrayList<>());
 
 		if (!invoiceLines.contains(il))
 		{
@@ -229,7 +212,7 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 		if (il2Qty == null)
 		{
 			// it's important to have an IdentityHashMap, because we don't guarantee that IInvoiceLineRW is immutable!
-			il2Qty = new IdentityHashMap<IInvoiceLineRW, StockQtyAndUOMQty>();
+			il2Qty = new IdentityHashMap<>();
 			candIdAndLine2AllocatedQty.put(icId, il2Qty);
 		}
 		il2Qty.put(il, allocatedQty);

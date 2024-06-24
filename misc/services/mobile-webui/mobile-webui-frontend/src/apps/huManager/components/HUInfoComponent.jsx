@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { trl } from '../../../utils/translations';
-import { toQRCodeDisplayable } from '../../../utils/huQRCodes';
+import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
 
-export const HUInfoComponent = ({ handlingUnitInfo }) => {
+export const HUInfoComponent = ({ handlingUnitInfo, currentLocatorQRCode }) => {
   const clearanceStatus = handlingUnitInfo.clearanceStatus ? handlingUnitInfo.clearanceStatus.caption : '';
   const { clearanceNote } = handlingUnitInfo;
 
@@ -20,7 +20,7 @@ export const HUInfoComponent = ({ handlingUnitInfo }) => {
         </tr>
         <tr>
           <th>{trl('huManager.locator')}</th>
-          <td>{handlingUnitInfo.locatorValue}</td>
+          <td>{computeLocatorCaption({ handlingUnitInfo, currentLocatorQRCode })}</td>
         </tr>
         <tr>
           <th>{trl('huManager.HUStatus')}</th>
@@ -44,7 +44,12 @@ export const HUInfoComponent = ({ handlingUnitInfo }) => {
         {handlingUnitInfo.attributes2 &&
           handlingUnitInfo.attributes2.list &&
           handlingUnitInfo.attributes2.list.map((attribute) => (
-            <AttributeRow key={attribute.code} caption={attribute.caption} value={attribute.value} />
+            <AttributeRow
+              key={attribute.code}
+              caption={attribute.caption}
+              value={attribute.value}
+              valueDisplay={attribute.valueDisplay}
+            />
           ))}
       </tbody>
     </table>
@@ -53,6 +58,7 @@ export const HUInfoComponent = ({ handlingUnitInfo }) => {
 
 HUInfoComponent.propTypes = {
   handlingUnitInfo: PropTypes.object.isRequired,
+  currentLocatorQRCode: PropTypes.object,
 };
 
 const computeHUStatusCaption = (handlingUnitInfo) => {
@@ -61,6 +67,16 @@ const computeHUStatusCaption = (handlingUnitInfo) => {
     result += ' / ' + trl('huManager.disposePendingStatus');
   }
   return result;
+};
+
+const computeLocatorCaption = ({ handlingUnitInfo, currentLocatorQRCode }) => {
+  if (handlingUnitInfo?.locatorValue) {
+    return handlingUnitInfo.locatorValue;
+  } else if (currentLocatorQRCode?.displayable) {
+    return '(' + currentLocatorQRCode?.displayable + ')';
+  } else {
+    return '-';
+  }
 };
 
 const ProductInfoRows = ({ product }) => {
@@ -91,7 +107,7 @@ ProductInfoRows.propTypes = {
   }).isRequired,
 };
 
-const AttributeRow = ({ caption, value }) => {
+const AttributeRow = ({ caption, value, valueDisplay }) => {
   // hide rows with empty values
   if (value == null) {
     return null;
@@ -100,7 +116,7 @@ const AttributeRow = ({ caption, value }) => {
   return (
     <tr>
       <th>{caption}</th>
-      <td>{value}</td>
+      <td>{`${valueDisplay ?? value}`}</td>
     </tr>
   );
 };
@@ -108,4 +124,5 @@ const AttributeRow = ({ caption, value }) => {
 AttributeRow.propTypes = {
   caption: PropTypes.string.isRequired,
   value: PropTypes.any,
+  valueDisplay: PropTypes.any,
 };

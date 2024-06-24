@@ -11,7 +11,6 @@ import commentsPanel from './commentsPanel';
 import tables from './tables';
 import actionsHandler from './actionsHandler';
 import widgetHandler from './widgetHandler';
-import tableQuickInputHandler from './tableQuickInputHandler';
 
 export const createRootReducer = () =>
   combineReducers({
@@ -26,5 +25,4 @@ export const createRootReducer = () =>
     tables,
     actionsHandler,
     widgetHandler,
-    tableQuickInputHandler,
   });

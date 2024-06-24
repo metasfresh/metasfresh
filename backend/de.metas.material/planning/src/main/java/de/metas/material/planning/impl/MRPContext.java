@@ -25,10 +25,14 @@ package de.metas.material.planning.impl;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.Check;
+import lombok.Getter;
+import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -37,10 +41,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_MRP;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -56,7 +58,6 @@ import java.util.Properties;
  * It's possible to create instances of this class directly (intended for testing), but generally, please use a factory to do it.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @VisibleForTesting
 public final class MRPContext implements IMutableMRPContext
@@ -76,8 +77,8 @@ public final class MRPContext implements IMutableMRPContext
 	private I_AD_Org org;
 	private boolean requireDRP;
 	private I_M_Product product;
-	private I_PP_Product_Planning productPlanning;
-	private I_S_Resource plant;
+	private ProductPlanning productPlanning;
+	@Getter @Setter private ResourceId plantId;
 	private I_M_Warehouse warehouse;
 	private Timestamp planningHorizon;
 	private Timestamp timeFence;
@@ -113,15 +114,7 @@ public final class MRPContext implements IMutableMRPContext
 			sb.append(org.getName()).append(" (AD_Org_ID=").append(org.getAD_Org_ID()).append(")");
 		}
 
-		sb.append("\n plant=");
-		if (plant == null)
-		{
-			sb.append("-");
-		}
-		else
-		{
-			sb.append(plant.getName()).append(" (S_Resource_ID=").append(plant.getS_Resource_ID()).append(")");
-		}
+		sb.append("\n plant=").append(plantId);
 
 		sb.append("\n warehouse=");
 		if (warehouse == null)
@@ -312,13 +305,13 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public I_PP_Product_Planning getProductPlanning()
+	public ProductPlanning getProductPlanning()
 	{
 		return productPlanning;
 	}
 
 	@Override
-	public void setProductPlanning(final I_PP_Product_Planning productPlanning)
+	public void setProductPlanning(final ProductPlanning productPlanning)
 	{
 		this.productPlanning = productPlanning;
 	}
@@ -367,29 +360,6 @@ public final class MRPContext implements IMutableMRPContext
 			return Collections.emptyList();
 		}
 		return mrpDemands;
-	}
-
-	@Override
-	public I_S_Resource getPlant()
-	{
-		return plant;
-	}
-
-	@Override
-	public final int getPlant_ID()
-	{
-		final I_S_Resource plant = getPlant();
-		if (plant == null)
-		{
-			return -1;
-		}
-		return plant.getS_Resource_ID();
-	}
-
-	@Override
-	public void setPlant(final I_S_Resource plant)
-	{
-		this.plant = plant;
 	}
 
 	@Override
@@ -504,7 +474,7 @@ public final class MRPContext implements IMutableMRPContext
 	public void assertContextConsistent()
 	{
 		final ProductId contextProductId = getProductId();
-		final ProductId productPlanningProductId = ProductId.ofRepoIdOrNull(getProductPlanning().getM_Product_ID());
+		final ProductId productPlanningProductId = getProductPlanning().getProductId();
 
 		if (!Objects.equals(contextProductId, productPlanningProductId))
 		{

@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,17 +33,10 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class LoadHURequest
+class LoadHURequest
 {
-	@NonNull
-	HuId huId;
-
-	@NonNull
-	String huIdentifier;
-
-	@Nullable
-	String huStatus;
-
-	@Nullable
-	HuId piItemProductId;
+	@NonNull HuId huId;
+	@NonNull StepDefDataIdentifier huIdentifier;
+	@Nullable String huStatus;
+	@Nullable HUPIItemProductId piItemProductId;
 }

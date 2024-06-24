@@ -1,15 +1,16 @@
 package de.metas.ui.web.order.products_proposal.service;
 
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
+import de.metas.currency.Currency;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -54,20 +55,27 @@ public class OrderLine
 	BigDecimal priceEntered;
 
 	@NonNull
+	Currency currency;
+
+	@NonNull
 	BigDecimal qtyEnteredCU;
+
+	@NonNull
+	AttributeSetInstanceId asiId;
 
 	int qtyEnteredTU;
 
 	String description;
 
-	boolean isMatching(
+	public boolean isMatching(
 			@NonNull final ProductId productId,
 			@Nullable final HUPIItemProductId packingMaterialId)
+
 	{
 		return ProductId.equals(this.productId, productId)
 				&& HUPIItemProductId.equals(
 						HUPIItemProductId.nullToVirtual(this.packingMaterialId),
-						HUPIItemProductId.nullToVirtual(packingMaterialId));
+				HUPIItemProductId.nullToVirtual(packingMaterialId));
 	}
 
 }

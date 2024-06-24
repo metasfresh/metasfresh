@@ -1,6 +1,6 @@
 de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase=[ {
   "products" : [ {
-    "id" : 100003,
+    "id" : 100008,
     "productCategoryId" : 3,
     "productNo" : "value1",
     "name" : "name1",
@@ -39,7 +39,7 @@ de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase
       "excludedFromPurchase" : false
     } ]
   }, {
-    "id" : 100006,
+    "id" : 100011,
     "productCategoryId" : 4,
     "productNo" : "value2",
     "name" : "name2",

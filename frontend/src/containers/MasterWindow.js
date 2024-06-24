@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { forEach, get } from 'lodash';
 
 import { connectWS, disconnectWS } from '../utils/websockets';
-import { getRowsData, getTabRequest } from '../api';
+import { getTabRequest, getRowsData } from '../api';
 import { getTab } from '../utils';
 
 import { getTableId } from '../reducers/tables';
@@ -18,8 +18,8 @@ import {
 } from '../actions/WindowActions';
 import {
   deleteTable,
-  updateTabRowsData,
   updateTabTableData,
+  updateTabRowsData,
 } from '../actions/TableActions';
 
 import MasterWindow from '../components/app/MasterWindow';
@@ -120,13 +120,8 @@ class MasterWindowContainer extends PureComponent {
 
   isActiveTab(tabId) {
     const { master } = this.props;
-    const activeTab = master.layout.activeTab;
-    if (!activeTab) {
-      console.log('No active activeTab found', { master });
-      return false;
-    }
 
-    return tabId === activeTab;
+    return tabId === master.layout.activeTab;
   }
 
   mergeDataIntoIncludedTab({ response, tabId }) {

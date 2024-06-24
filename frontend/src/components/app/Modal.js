@@ -4,15 +4,17 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { startProcess } from '../../api/process';
+import { startProcess } from '../../api';
 import { openFile, processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
   callAPI,
   closeModal,
+  createProcess,
   createWindow,
   fetchChangeLog,
   fireUpdateData,
+  handleProcessResponse,
   patch,
   resetPrintingOptions,
 } from '../../actions/WindowActions';
@@ -33,10 +35,9 @@ import PrintingOptions from './PrintingOptions';
 
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
-import {
-  createProcess,
-  handleProcessResponse,
-} from '../../actions/ProcessActions';
+import ChangeCurrentWorkplace, {
+  STATIC_MODAL_TYPE_ChangeCurrentWorkplace,
+} from './ChangeCurrentWorkplace';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -452,12 +453,12 @@ class Modal extends Component {
         try {
           response = await startProcess(windowId, layout.pinstanceId);
 
-          const action = handleProcessResponse({
+          const action = handleProcessResponse(
             response,
-            processId: windowId,
-            pinstanceId: layout.pinstanceId,
-            parentId,
-          });
+            windowId,
+            layout.pinstanceId,
+            parentId
+          );
 
           await dispatch(action);
 
@@ -531,6 +532,10 @@ class Modal extends Component {
           content = <CommentsPanel windowId={windowId} docId={dataId} />;
         } else if (staticModalType === 'printing') {
           content = <PrintingOptions windowId={windowId} docId={dataId} />;
+        } else if (
+          staticModalType === STATIC_MODAL_TYPE_ChangeCurrentWorkplace
+        ) {
+          content = <ChangeCurrentWorkplace />;
         }
         return (
           <div className="window-wrapper">
@@ -582,13 +587,12 @@ class Modal extends Component {
       //
       indicator,
       isDocumentNotSaved,
+      saveStatus,
     } = this.props;
 
     const { okButtonCaption: printBtnCaption } = printingOptions;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
 
-    const isNotSaved =
-      staticModalType === 'printing' ? true : isDocumentNotSaved;
     let applyHandler =
       modalType === 'process' ? this.handleStart : this.handleClose;
     if (staticModalType === 'printing') applyHandler = this.handlePrinting;
@@ -709,7 +713,17 @@ class Modal extends Component {
             </div>
           </div>
 
-          <Indicator {...{ isNotSaved, indicator }} />
+          <Indicator
+            indicator={indicator}
+            isDocumentNotSaved={
+              staticModalType === 'printing' ||
+              staticModalType === STATIC_MODAL_TYPE_ChangeCurrentWorkplace
+                ? false
+                : isDocumentNotSaved
+            }
+            error={saveStatus?.error ? saveStatus?.reason : ''}
+            exception={saveStatus?.error ? saveStatus?.exception : null}
+          />
 
           <div
             className="panel-modal-content js-panel-modal-content
@@ -866,6 +880,7 @@ Modal.propTypes = {
   isDocumentNotSaved: PropTypes.bool,
   modalTitle: PropTypes.any,
   modalType: PropTypes.any,
+  saveStatus: PropTypes.object,
   modalSaveStatus: PropTypes.bool,
   modalViewDocumentIds: PropTypes.any,
   tabId: PropTypes.any,

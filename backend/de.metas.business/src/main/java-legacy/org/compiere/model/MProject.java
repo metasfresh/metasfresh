@@ -327,7 +327,7 @@ public class MProject extends X_C_Project
 	 * @param fromProject project
 	 * @return number of items copied
 	 */
-	public int copyPhasesFrom(final MProject fromProject)
+	private int copyPhasesFrom(final MProject fromProject)
 	{
 		if (isProcessed() || fromProject == null)
 			return 0;

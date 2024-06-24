@@ -1508,4 +1508,27 @@ public interface I_M_ReceiptSchedule
 
 	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_M_ReceiptSchedule.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOReference (@Nullable java.lang.String POReference);
+
+	/**
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOReference();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_POReference = new ModelColumn<>(I_M_ReceiptSchedule.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
 }

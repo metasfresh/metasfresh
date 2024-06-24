@@ -204,7 +204,7 @@ public final class NumberUtils
 		return integerValue;
 	}
 
-	public static int asIntOrZero(final Object value)
+	public static int asIntOrZero(@Nullable final Object value)
 	{
 		return asInt(value, 0);
 	}

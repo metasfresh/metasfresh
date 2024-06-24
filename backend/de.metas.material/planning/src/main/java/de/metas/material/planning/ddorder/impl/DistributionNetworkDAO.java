@@ -22,6 +22,25 @@ package de.metas.material.planning.ddorder.impl;
  * #L%
  */
 
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.material.planning.ddorder.DistributionNetworkId;
+import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.eevolution.model.I_DD_NetworkDistribution;
+import org.eevolution.model.I_DD_NetworkDistributionLine;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,32 +50,18 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.eevolution.model.I_DD_NetworkDistribution;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
-
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
-import de.metas.material.planning.exception.MrpException;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
 public class DistributionNetworkDAO implements IDistributionNetworkDAO
 {
 	@Override
+	public I_DD_NetworkDistribution getById(@NonNull final DistributionNetworkId id)
+	{
+		return InterfaceWrapperHelper.load(id, I_DD_NetworkDistribution.class);
+	}
+
+	@Override
 	public List<I_DD_NetworkDistributionLine> retrieveAllNetworkLines(@NonNull final I_DD_NetworkDistribution distributionNetwork)
 	{
-		final int distributionNetworkId = distributionNetwork.getDD_NetworkDistribution_ID();
+		final DistributionNetworkId distributionNetworkId = DistributionNetworkId.ofRepoId(distributionNetwork.getDD_NetworkDistribution_ID());
 		final Properties ctx = InterfaceWrapperHelper.getCtx(distributionNetwork);
 		final String trxName = InterfaceWrapperHelper.getTrxName(distributionNetwork);
 
@@ -64,9 +69,9 @@ public class DistributionNetworkDAO implements IDistributionNetworkDAO
 	}
 
 	@Cached(cacheName = I_DD_NetworkDistributionLine.Table_Name + "#by#" + I_DD_NetworkDistributionLine.COLUMNNAME_DD_NetworkDistribution_ID)
-	/* package */List<I_DD_NetworkDistributionLine> retrieveAllNetworkLines(
+		/* package */List<I_DD_NetworkDistributionLine> retrieveAllNetworkLines(
 			@CacheCtx final Properties ctx,
-			final int distributionNetworkId,
+			@NonNull final DistributionNetworkId distributionNetworkId,
 			@CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_DD_NetworkDistributionLine> queryBuilder = Services.get(IQueryBL.class)
@@ -84,7 +89,7 @@ public class DistributionNetworkDAO implements IDistributionNetworkDAO
 	}
 
 	@Override
-	public List<I_DD_NetworkDistributionLine> retrieveNetworkLinesByTargetWarehouse(final I_DD_NetworkDistribution distributionNetwork, final int targetWarehouseId)
+	public List<I_DD_NetworkDistributionLine> retrieveNetworkLinesByTargetWarehouse(final I_DD_NetworkDistribution distributionNetwork, final WarehouseId targetWarehouseId)
 	{
 		final List<I_DD_NetworkDistributionLine> result = new ArrayList<>();
 		for (final I_DD_NetworkDistributionLine line : retrieveAllNetworkLines(distributionNetwork))
@@ -95,7 +100,8 @@ public class DistributionNetworkDAO implements IDistributionNetworkDAO
 				continue;
 			}
 
-			if (line.getM_Warehouse_ID() == targetWarehouseId)
+			final WarehouseId lineTargetWarehouseId = WarehouseId.ofRepoId(line.getM_Warehouse_ID());
+			if (WarehouseId.equals(lineTargetWarehouseId, targetWarehouseId))
 			{
 				result.add(line);
 			}
@@ -136,7 +142,6 @@ public class DistributionNetworkDAO implements IDistributionNetworkDAO
 	}
 
 	/**
-	 *
 	 * @param ctx
 	 * @return target M_Warehouse_ID to source warehouses (from network lines which have IsKeepTargetPlant set)
 	 */

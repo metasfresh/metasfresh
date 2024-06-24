@@ -1,5 +1,7 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
+import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregationKey;
+import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregator;
 import org.compiere.model.I_M_Inventory;
 
 import com.google.common.collect.ImmutableMap;
@@ -46,9 +48,9 @@ import lombok.Value;
 @Value
 public class InventoryLinesCreationCtx
 {
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
-	private final InventoryRepository inventoryRepo;
+	IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+	InventoryRepository inventoryRepo;
 
 	Inventory inventory;
 	HUsForInventoryStrategy strategy;

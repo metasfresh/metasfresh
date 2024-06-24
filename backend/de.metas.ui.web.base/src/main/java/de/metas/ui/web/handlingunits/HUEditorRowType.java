@@ -1,14 +1,12 @@
 package de.metas.ui.web.handlingunits;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.ViewRowTypeIconNames;
+import lombok.Getter;
 
 /*
  * #%L
@@ -41,9 +39,12 @@ public enum HUEditorRowType implements IViewRowType
 	;
 
 	private final String name;
-	private final boolean pureHU;
+	/**
+	 * true if it's a pure HU (i.e. not {@link #HUStorage})
+	 */
+	@Getter private final boolean pureHU;
 
-	private HUEditorRowType(final String name, final boolean pureHU)
+	HUEditorRowType(final String name, final boolean pureHU)
 	{
 		this.name = name;
 		this.pureHU = pureHU;
@@ -56,18 +57,12 @@ public enum HUEditorRowType implements IViewRowType
 		return name;
 	}
 
-	/** @return true if it's a pure HU (i.e. not {@link #HUStorage}) */
-	public boolean isPureHU()
-	{
-		return pureHU;
-	}
-
 	public boolean isCU()
 	{
 		return this == VHU || this == HUStorage;
 	}
 
-	public static final HUEditorRowType ofHU_UnitType(final String huUnitType)
+	public static HUEditorRowType ofHU_UnitType(final String huUnitType)
 	{
 		final HUEditorRowType type = huUnitType2type.get(huUnitType);
 		if (type == null)
@@ -84,20 +79,9 @@ public enum HUEditorRowType implements IViewRowType
 			return X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI;
 		}
 		return huUnitType2type.inverse().get(this);
-
 	}
 
-	public String toHUUnitType()
-	{
-		final String unitType = toHUUnitTypeOrNull();
-		if (unitType == null)
-		{
-			throw new AdempiereException("Cannot convert " + this + " to HU_UnitType");
-		}
-		return unitType;
-	}
-
-	private static final BiMap<String, HUEditorRowType> huUnitType2type = ImmutableBiMap.<String, HUEditorRowType> builder()
+	private static final BiMap<String, HUEditorRowType> huUnitType2type = ImmutableBiMap.<String, HUEditorRowType>builder()
 			.put(X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, LU)
 			.put(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, TU)
 			.put(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, VHU)

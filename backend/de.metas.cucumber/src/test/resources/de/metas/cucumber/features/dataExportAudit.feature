@@ -1,3 +1,4 @@
+@ghActions:run_on_executor5
 Feature: data export audit using bpartner metasfresh api
   `When` a retrieve bpartner API call is made
   export audit data should be created
@@ -106,8 +107,8 @@ Feature: data export audit using bpartner metasfresh api
       | location_data_export            | Exported-AlongWithParent | config_2                            | p_2                        |
     And RabbitMQ MF_TO_ExternalSystem queue is purged
     And the following c_bpartner is changed
-      | C_BPartner_ID.Identifier | Name2 |
-      | bpartner_2               | name2 |
+      | C_BPartner_ID.Identifier | OPT.Name2 |
+      | bpartner_2               | name2     |
     Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:
       | C_BPartner_ID.Identifier | ExternalSystem_Config_ID.Identifier |
       | bpartner_2               | config_2                            |

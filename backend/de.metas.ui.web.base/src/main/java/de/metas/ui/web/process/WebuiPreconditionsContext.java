@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -35,7 +36,7 @@ public interface WebuiPreconditionsContext extends IProcessPreconditionsContext
 	@Nullable
 	DisplayPlace getDisplayPlace();
 
-	default boolean isConsiderTableRelatedProcessDescriptors() { return true; }
+	default boolean isConsiderTableRelatedProcessDescriptors(@NonNull ProcessHandlerType processHandlerType) {return true;}
 
 	default List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
 	{

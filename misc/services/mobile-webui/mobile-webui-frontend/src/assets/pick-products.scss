@@ -27,3 +27,19 @@
   width: 25%;
   font-size: 1.5em;
 }
+
+@media only screen and (max-width: $small-screen-width) {
+  .picking-to-pick {
+    padding-top: 0;
+  }
+  .picking-row-qty {
+    font-size: 1em;
+  }
+  .picking-row-picking {
+    padding-top: 0;
+  }
+  .picking-row-picked {
+    font-size: 1em;
+  }
+}
+

@@ -4,7 +4,7 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="C_VAT_Code_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
@@ -28,12 +28,11 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT *
-FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
-	                                                                                       $P{account_id}, 
-	                                                                                       $P{C_VAT_Code_ID}, 
-	                                                                                        $P{DateFrom},
-	                                                                                         $P{DateTo}) ;]]>
+		<![CDATA[SELECT t.*
+FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},$P{account_id}, $P{C_VAT_Code_ID}, $P{DateFrom},  $P{DateTo}) AS t 
+WHERE t.taxname IS NOT NULL
+order by vatcode, accountno
+;]]>
 	</queryString>
 	<field name="balance" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="balance"/>
@@ -158,6 +157,9 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 		<groupFooter>
 			<band/>
 		</groupFooter>
+	</group>
+	<group name="account_tax_vat" keepTogether="true">
+		<groupExpression><![CDATA[$F{vatcode}+$F{taxname}+$F{accountno}]]></groupExpression>
 	</group>
 	<background>
 		<band splitType="Stretch"/>
@@ -421,9 +423,6 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 	</columnHeader>
 	<detail>
 		<band height="15">
-			<printWhenExpression><![CDATA[$F{vatcode}==null 
-&& $F{balance}.compareTo(BigDecimal.ZERO) !=0 
-&& $F{balanceyear}.compareTo(BigDecimal.ZERO) !=0]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="2" width="70" height="12" uuid="f1148d44-61ec-4614-b025-8b84222eca1d"/>
 				<textElement textAlignment="Left">

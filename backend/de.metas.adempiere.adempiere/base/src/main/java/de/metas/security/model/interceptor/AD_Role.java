@@ -1,33 +1,31 @@
 package de.metas.security.model.interceptor;
 
+import de.metas.adempiere.model.I_AD_Role;
+import de.metas.cache.CCache.CacheMapType;
+import de.metas.cache.model.IModelCacheService;
+import de.metas.cache.model.ITableCacheConfig;
+import de.metas.cache.model.ITableCacheConfig.TrxLevel;
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.security.IRoleDAO;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_Role;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_AD_Role;
-import de.metas.cache.CCache.CacheMapType;
-import de.metas.cache.model.IModelCacheService;
-import de.metas.cache.model.ITableCacheConfig;
-import de.metas.cache.model.ITableCacheConfig.TrxLevel;
-import de.metas.security.IRoleDAO;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.security.RoleId;
-import de.metas.security.impl.AD_Role_POCopyRecordSupport;
-import de.metas.user.UserId;
-import de.metas.util.Services;
-
 @Interceptor(I_AD_Role.class)
 public class AD_Role
 {
-	public static final transient AD_Role instance = new AD_Role();
+	public static final AD_Role instance = new AD_Role();
 
 	private AD_Role()
 	{
@@ -37,9 +35,7 @@ public class AD_Role
 	@Init
 	public void init(final IModelValidationEngine engine)
 	{
-
 		CopyRecordFactory.enableForTableName(I_AD_Role.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_AD_Role.Table_Name, AD_Role_POCopyRecordSupport.class);
 
 		final IModelCacheService cachingService = Services.get(IModelCacheService.class);
 		cachingService.createTableCacheConfigBuilder(I_AD_Role.class)
@@ -74,7 +70,7 @@ public class AD_Role
 
 		//
 		// Automatically assign new role to SuperUser and to the user who created it.
-		if (changeType.isNew())
+		if (changeType.isNew() && !InterfaceWrapperHelper.isCopying(role))
 		{
 			// Add Role to SuperUser
 			roleDAO.createUserRoleAssignmentIfMissing(UserId.METASFRESH, roleId);
@@ -100,13 +96,13 @@ public class AD_Role
 		// Reset the cached role permissions after the transaction is commited.
 		// NOTE: not needed because it's performed automatically
 		// Services.get(IUserRolePermissionsDAO.class).resetCacheAfterTrxCommit();
-	}	// afterSave
+	}    // afterSave
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteAccessRecords(final I_AD_Role role)
 	{
 		final RoleId roleId = RoleId.ofRepoId(role.getAD_Role_ID());
 		Services.get(IUserRolePermissionsDAO.class).deleteAccessRecords(roleId);
-	} 	// afterDelete
+	}    // afterDelete
 
 }

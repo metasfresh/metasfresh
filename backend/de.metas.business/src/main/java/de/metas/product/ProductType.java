@@ -1,18 +1,15 @@
 package de.metas.product;
 
-import java.util.Arrays;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_M_Product;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_M_Product;
+
+import javax.annotation.Nullable;
+import java.util.Arrays;
 
 /*
  * #%L

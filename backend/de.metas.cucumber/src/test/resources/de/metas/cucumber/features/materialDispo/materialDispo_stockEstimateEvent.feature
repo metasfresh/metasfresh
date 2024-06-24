@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:materialdispo
+@ghActions:run_on_executor6
 Feature: material-dispo updates on StockEstimateEvent events
   As a user
   I want material dispo to be updated properly if a StockEstimateEvent is processed or unprocessed
@@ -74,15 +75,13 @@ Feature: material-dispo updates on StockEstimateEvent events
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      | STOCK_CHANGE                  | p_1                     | 2021-06-23T00:00:00.00Z | 90  | 90                     |
     And metasfresh has this MD_Candidate_StockChange_Detail data
-      | MD_Candidate_ID.Identifier | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | IsReverted |
-      | c_1                        | 4                  | 44                      | N          |
+      | MD_Candidate_StockChange_Detail_ID.Identifier | MD_Candidate_ID.Identifier | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | IsReverted |
+      | scd_1                                         | c_1                        | 4                  | 44                      | N          |
     When metasfresh receives a StockEstimateDeletedEvent
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 4                  | 44                      | 2021-06-23T00:00:00.00Z | 90  |
     Then metasfresh has no MD_Candidate for identifier "c_1"
-    And metasfresh has this MD_Candidate_StockChange_Detail data
-      | MD_Candidate_ID.Identifier | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | IsReverted |
-      | c_1                        | 4                  | 44                      | Y          |
+    And metasfresh has no MD_Candidate_StockChange_Detail data for identifier "scd_1"
 
   @from:cucumber
   @topic:materialdispo
@@ -103,8 +102,8 @@ Feature: material-dispo updates on StockEstimateEvent events
       | c_3        | INVENTORY_UP      | STOCK_CHANGE                  | p_1                     | 2021-06-24T00:00:00.00Z | 60  | 160                    |
       | c_2        | INVENTORY_UP      |                               | p_1                     | 2021-06-25T00:00:00.00Z | 40  | 200                    |
     And metasfresh has this MD_Candidate_StockChange_Detail data
-      | MD_Candidate_ID.Identifier | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | IsReverted |
-      | c_3                        | 5                  | 55                      | N          |
+      | MD_Candidate_StockChange_Detail_ID.Identifier | MD_Candidate_ID.Identifier | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | IsReverted |
+      | scd_2                                         | c_3                        | 5                  | 55                      | N          |
     When metasfresh receives a StockEstimateDeletedEvent
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 5                  | 55                      | 2021-06-24T00:00:00.00Z | 160 |
@@ -112,9 +111,7 @@ Feature: material-dispo updates on StockEstimateEvent events
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-06-23T00:00:00.00Z | 100 | 100                    |
       | c_2        | INVENTORY_UP      |                               | p_1                     | 2021-06-25T00:00:00.00Z | 40  | 140                    |
-    And metasfresh has this MD_Candidate_StockChange_Detail data
-      | MD_Candidate_ID.Identifier | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | IsReverted |
-      | c_3                        | 5                  | 55                      | Y          |
+    And metasfresh has no MD_Candidate_StockChange_Detail data for identifier "scd_2"
 
   @from:cucumber
   @topic:materialdispo
@@ -135,15 +132,13 @@ Feature: material-dispo updates on StockEstimateEvent events
       | c_3        | INVENTORY_DOWN    | STOCK_CHANGE                  | p_1                     | 2021-06-24T00:00:00.00Z | -15 | 85                     |
       | c_2        | INVENTORY_DOWN    |                               | p_1                     | 2021-06-25T00:00:00.00Z | -60 | 25                     |
     And metasfresh has this MD_Candidate_StockChange_Detail data
-      | MD_Candidate_ID.Identifier | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | IsReverted |
-      | c_3                        | 6                  | 66                      | N          |
+      | MD_Candidate_StockChange_Detail_ID.Identifier | MD_Candidate_ID.Identifier | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | IsReverted |
+      | scd_3                                         | c_3                        | 6                  | 66                      | N          |
     When metasfresh receives a StockEstimateDeletedEvent
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 6                  | 66                      | 2021-06-24T00:00:00.00Z | 85  |
     Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-06-23T00:00:00.00Z | 100 | 100                    |
-      | c_2        | INVENTORY_DOWN    |                               | p_1                     | 2021-06-25T00:00:00.00Z | -60 | 40                     |
-    And metasfresh has this MD_Candidate_StockChange_Detail data
-      | MD_Candidate_ID.Identifier | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | IsReverted |
-      | c_3                        | 6                  | 66                      | Y          |
+      | c_2        | INVENTORY_DOWN    |                               | p_1                     | 2021-06-25T00:00:00.00Z | -60 | 25                     |
+    And metasfresh has no MD_Candidate_StockChange_Detail data for identifier "scd_3"

@@ -1,28 +1,14 @@
 package de.metas.ui.web.order.products_proposal.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
@@ -31,6 +17,8 @@ import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilte
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowUpdate;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
 import de.metas.ui.web.order.products_proposal.service.Order;
+import de.metas.ui.web.order.products_proposal.service.OrderLine;
+import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.template.IEditableRowsData;
@@ -42,6 +30,18 @@ import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -71,6 +71,8 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	private final DocumentIdIntSequence nextRowIdSequence;
 	private final CampaignPriceProvider campaignPriceProvider;
 
+	private final OrderProductProposalsService orderProductProposalsService;
+
 	private ArrayList<DocumentId> rowIdsOrderedAndFiltered;
 	private final ArrayList<DocumentId> rowIdsOrdered; // used to preserve the order
 	private final HashMap<DocumentId, ProductsProposalRow> rowsById;
@@ -92,12 +94,15 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	@Getter
 	private final ViewHeaderProperties headerProperties;
 
+	private Map<ProductPriceId, OrderLine> bestMatchingProductPriceIdToOrderLine;
+
 	private ProductsProposalViewFilter filter = ProductsProposalViewFilter.ANY;
 
 	@Builder
 	private ProductsProposalRowsData(
 			@NonNull final DocumentIdIntSequence nextRowIdSequence,
 			@Nullable final CampaignPriceProvider campaignPriceProvider,
+			@Nullable final OrderProductProposalsService orderProductProposalsService,
 			//
 			@Nullable final PriceListVersionId singlePriceListVersionId,
 			@Nullable final PriceListVersionId basePriceListVersionId,
@@ -112,6 +117,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	{
 		this.nextRowIdSequence = nextRowIdSequence;
 		this.campaignPriceProvider = campaignPriceProvider != null ? campaignPriceProvider : CampaignPriceProviders.none();
+		this.orderProductProposalsService = orderProductProposalsService;
 
 		this.singlePriceListVersionId = Optional.ofNullable(singlePriceListVersionId);
 		this.basePriceListVersionId = Optional.ofNullable(basePriceListVersionId);
@@ -225,6 +231,18 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 
 	public void addOrUpdateRows(@NonNull final List<ProductsProposalRowAddRequest> requests)
 	{
+		final List<ProductPriceId> productPriceIds = requests.stream()
+				.map(request -> request.getCopiedFromProductPriceId())
+				.collect(ImmutableList.toImmutableList());
+		if(order.isPresent() && orderProductProposalsService != null)
+		{
+			bestMatchingProductPriceIdToOrderLine = orderProductProposalsService.findBestMatchesForOrderLineFromProductPricesId(order.get(), productPriceIds);
+		}
+		else
+		{
+			bestMatchingProductPriceIdToOrderLine = ImmutableMap.of();
+		}
+
 		requests.forEach(this::addOrUpdateRow);
 	}
 
@@ -263,13 +281,15 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(request.getProduct())
 				.asiDescription(request.getAsiDescription())
+				.asiId(request.getAsiId())
 				.price(createPrice(request.getProductId(), request.getPriceListPrice()))
 				.packingMaterialId(request.getPackingMaterialId())
 				.packingDescription(request.getPackingDescription())
 				.lastShipmentDays(request.getLastShipmentDays())
 				.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
 				.build()
-				.withExistingOrderLine(order.orElse(null));
+
+				.withExistingOrderLine(bestMatchingProductPriceIdToOrderLine.get(request.getCopiedFromProductPriceId()));
 	}
 
 	private synchronized void addRow(final ProductsProposalRow row)

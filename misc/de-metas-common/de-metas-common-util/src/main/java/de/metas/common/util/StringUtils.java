@@ -352,8 +352,7 @@ public final class StringUtils
 		{
 			if (param instanceof Supplier)
 			{
-				@SuppressWarnings("rawtypes")
-				final Supplier paramSupplier = (Supplier)param;
+				@SuppressWarnings("rawtypes") final Supplier paramSupplier = (Supplier)param;
 
 				result.add(paramSupplier.get());
 			}
@@ -521,5 +520,43 @@ public final class StringUtils
 		}
 
 		return sb.toString();
+	}
+
+	public static String ident(@Nullable final String text, int tabs)
+	{
+		if (text == null || text.isEmpty() || tabs <= 0)
+		{
+			return text;
+		}
+
+		final String ident = repeat("\t", tabs);
+		return ident
+				+ text.trim().replace("\n", "\n" + ident);
+	}
+
+	public static String repeat(@NonNull final String string, final int times)
+	{
+		if (string.isEmpty())
+		{
+			return string;
+		}
+
+		if (times <= 0)
+		{
+			return "";
+		}
+		else if (times == 1)
+		{
+			return string;
+		}
+		else
+		{
+			final StringBuilder result = new StringBuilder(string.length() * times);
+			for (int i = 0; i < times; i++)
+			{
+				result.append(string);
+			}
+			return result.toString();
+		}
 	}
 }

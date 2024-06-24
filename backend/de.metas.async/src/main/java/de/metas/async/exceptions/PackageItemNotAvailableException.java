@@ -22,10 +22,8 @@ package de.metas.async.exceptions;
  * #L%
  */
 
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.async.model.I_C_Queue_Element;
+import org.adempiere.exceptions.AdempiereException;
 
 /**
  * Exception thrown when system tries to load the underlying object from an {@link I_C_Queue_Element} but the record is currently(temporary) not available for various reasons (e.g. underlying element

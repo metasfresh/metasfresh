@@ -22,12 +22,6 @@ package de.metas.handlingunits.shipmentschedule.process;
  * #L%
  */
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Ini;
-
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
@@ -43,6 +37,11 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Ini;
 
 /**
  * Auswahl Liefern: Enqueue selected {@link I_M_ShipmentSchedule}s and let {@link GenerateInOutFromShipmentSchedules} process them.
@@ -54,6 +53,8 @@ public class M_ShipmentSchedule_EnqueueSelection
 		extends JavaProcess
 		implements IProcessPrecondition
 {
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Param(parameterName = "QuantityType", mandatory = true)
 	private M_ShipmentSchedule_QuantityTypeToUse quantityType;
@@ -72,11 +73,8 @@ public class M_ShipmentSchedule_EnqueueSelection
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final boolean foundAtLeastOneUnprocessedSchedule = context.getSelectedModels(I_M_ShipmentSchedule.class).stream()
-				.filter(sched -> sched.isActive())
-				.filter(sched -> !sched.isProcessed())
-				.findAny()
-				.isPresent();
+		final boolean foundAtLeastOneUnprocessedSchedule = context.streamSelectedModels(I_M_ShipmentSchedule.class)
+				.anyMatch(sched -> sched.isActive() && !sched.isProcessed());
 
 		return ProcessPreconditionsResolution.acceptIf(foundAtLeastOneUnprocessedSchedule);
 	}
@@ -105,8 +103,6 @@ public class M_ShipmentSchedule_EnqueueSelection
 
 	private IQueryFilter<I_M_ShipmentSchedule> createShipmentSchedulesQueryFilters()
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final ICompositeQueryFilter<I_M_ShipmentSchedule> filters = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class);
 
 		filters.addOnlyActiveRecordsFilter();

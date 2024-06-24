@@ -142,9 +142,9 @@ public class PickingCandidateRepository
 				.approvalStatus(PickingCandidateApprovalStatus.ofCode(record.getApprovalStatus()))
 				//
 				.pickFrom(PickFrom.builder()
-						.huId(HuId.ofRepoIdOrNull(record.getPickFrom_HU_ID()))
-						.pickingOrderId(PPOrderId.ofRepoIdOrNull(record.getPickFrom_Order_ID()))
-						.build())
+								  .huId(HuId.ofRepoIdOrNull(record.getPickFrom_HU_ID()))
+								  .pickingOrderId(PPOrderId.ofRepoIdOrNull(record.getPickFrom_Order_ID()))
+								  .build())
 				//
 				.qtyPicked(qtyPicked)
 				.qtyReview(qtyReview)
@@ -375,12 +375,12 @@ public class PickingCandidateRepository
 
 	}
 
-	public boolean hasNotClosedCandidatesForPickingSlot(final PickingSlotId pickingSlotId)
+	public boolean hasDraftCandidatesForPickingSlot(final PickingSlotId pickingSlotId)
 	{
 		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
-				.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, PickingCandidateStatus.Closed.getCode())
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, PickingCandidateStatus.Draft)
 				.create()
 				.anyMatch();
 	}
@@ -447,7 +447,7 @@ public class PickingCandidateRepository
 
 		//
 		// Only Picking Slots
-		if(!pickingCandidatesQuery.getOnlyPickingSlotIds().isEmpty())
+		if (!pickingCandidatesQuery.getOnlyPickingSlotIds().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingCandidatesQuery.getOnlyPickingSlotIds());
 		}
@@ -459,8 +459,8 @@ public class PickingCandidateRepository
 		{
 			final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
 			final Set<PickingSlotId> pickingSlotIds = pickingSlotDAO.retrievePickingSlotIds(PickingSlotQuery.builder()
-					.qrCode(pickingSlotQRCode)
-					.build());
+																									.qrCode(pickingSlotQRCode)
+																									.build());
 			if (pickingSlotIds.isEmpty())
 			{
 				return ImmutableList.of();
@@ -510,6 +510,32 @@ public class PickingCandidateRepository
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
 				.create()
 				.anyMatch();
+	}
+
+	@NonNull
+	public ImmutableList<PickingCandidate> getDraftedByHuIdAndPickingSlotId(
+			@Nullable final HuId huId,
+			@Nullable final PickingSlotId pickingSlotId)
+	{
+		Check.assume(huId != null || pickingSlotId != null, "At least one of HuId and pickingSlotId must be set!");
+
+		final IQueryBuilder<I_M_Picking_Candidate> queryBuilder = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, PickingCandidateStatus.Draft);
+
+		if (huId != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId);
+		}
+		if (pickingSlotId != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId);
+		}
+
+		return queryBuilder.create()
+				.stream()
+				.map(this::toPickingCandidate)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private Collector<I_M_Picking_Candidate, ?, ImmutableList<PickingCandidate>> toPickingCandidatesList()

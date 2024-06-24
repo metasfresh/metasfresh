@@ -22,23 +22,9 @@
 
 package de.metas.ui.web.request.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.sql.Timestamp;
-import java.util.Optional;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_R_Request;
-import org.slf4j.Logger;
-
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -57,6 +43,19 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_R_Request;
+import org.slf4j.Logger;
+
+import java.sql.Timestamp;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondition
 {
@@ -124,7 +123,6 @@ public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondi
 		request.setR_RequestType_ID(requestTypeDAO.retrieveDefaultRequestTypeIdOrFirstActive().getRepoId());
 		final Timestamp date = SystemTime.asDayTimestamp();
 		request.setDateTrx(date);
-		request.setStartDate(date);
 		request.setStartTime(date);
 		return request;
 	}

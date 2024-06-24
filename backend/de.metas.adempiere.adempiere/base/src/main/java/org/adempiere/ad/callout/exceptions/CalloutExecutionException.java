@@ -1,7 +1,5 @@
 package org.adempiere.ad.callout.exceptions;
 
-import org.adempiere.ad.callout.api.ICalloutInstance;
-
 import de.metas.util.Check;
 
 public class CalloutExecutionException extends CalloutException
@@ -11,7 +9,7 @@ public class CalloutExecutionException extends CalloutException
 	 */
 	private static final long serialVersionUID = -1716015503981966091L;
 
-	public static final CalloutExecutionException of(final Throwable throwable)
+	public static CalloutExecutionException wrapIfNeeded(final Throwable throwable)
 	{
 		Check.assumeNotNull(throwable, "throwable not null");
 		
@@ -23,7 +21,7 @@ public class CalloutExecutionException extends CalloutException
 		final Throwable cause = extractCause(throwable);
 		if(cause != throwable)
 		{
-			return of(cause);
+			return wrapIfNeeded(cause);
 		}
 		
 		return new CalloutExecutionException(extractMessage(throwable), cause);
@@ -34,20 +32,8 @@ public class CalloutExecutionException extends CalloutException
 		super(message);
 	}
 
-	public CalloutExecutionException(final String message, final Throwable cause)
+	private CalloutExecutionException(final String message, final Throwable cause)
 	{
 		super(message, cause);
-	}
-
-	public CalloutExecutionException(final ICalloutInstance method, final String message, final Throwable cause)
-	{
-		this(message, cause);
-		setCalloutInstance(method);
-	}
-
-	public CalloutExecutionException(final ICalloutInstance method, final String message)
-	{
-		super(message);
-		setCalloutInstance(method);
 	}
 }

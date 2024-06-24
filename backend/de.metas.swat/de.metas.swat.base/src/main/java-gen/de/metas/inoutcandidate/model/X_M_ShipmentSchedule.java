@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 941054265L;
+	private static final long serialVersionUID = 1751852213L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
@@ -809,6 +809,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public boolean isBPartnerAddress_Override() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBPartnerAddress_Override);
+	}
+
+	@Override
+	public void setIsCatchWeight (final boolean IsCatchWeight)
+	{
+		set_Value (COLUMNNAME_IsCatchWeight, IsCatchWeight);
+	}
+
+	@Override
+	public boolean isCatchWeight() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCatchWeight);
 	}
 
 	@Override

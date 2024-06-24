@@ -1,20 +1,12 @@
 package org.adempiere.ad.callout.api.impl;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.function.IntSupplier;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutFactory;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -31,14 +23,19 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.function.IntSupplier;
 
 public final class CalloutExecutor implements ICalloutExecutor
 {
@@ -290,7 +287,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 		{
 			statisticsCollectorCurrent = statisticsCollectorCurrent == null ? null : statisticsCollectorCurrent.setStatusFailed(e);
 
-			throw CalloutExecutionException.of(e)
+			throw CalloutExecutionException.wrapIfNeeded(e)
 					.setCalloutExecutor(this)
 					.setField(field)
 					.setCalloutInstance(callout);

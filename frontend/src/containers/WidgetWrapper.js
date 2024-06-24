@@ -49,17 +49,14 @@ class WidgetWrapper extends PureComponent {
     this.childRef = React.createRef();
   }
 
-  getWrappedElement = () => {
-    return this.childRef?.current;
-  };
-
   render() {
-    //console.log('WidgetWrapper.render', { props: this.props });
     const { renderMaster, widgetType } = this.props;
 
     if (widgetType === 'InlineTab') {
       return <InlineTabWrapper {...this.props} />;
-    } else if (renderMaster) {
+    }
+
+    if (renderMaster) {
       return <MasterWidget ref={this.childRef} {...this.props} />;
     } else {
       return <RawWidget ref={this.childRef} {...this.props} />;
@@ -80,30 +77,25 @@ const mapStateToProps = (state, props) => {
     fields,
     isModal,
   } = props;
-
   const data = getData(state, isModal);
   let widgetData = null;
   let fieldsCopy = null;
 
   switch (dataSource) {
-    case 'doc-status': {
+    case 'doc-status':
       widgetData = getMasterDocStatus(state);
 
       break;
-    }
-
     case 'filter-item':
     case 'overlay-field':
     case 'attributes-dropdown':
     case 'quick-input':
-    case 'selection-attributes': {
+    case 'selection-attributes':
       widgetData = props.widgetData;
 
       break;
-    }
-
     case 'modal':
-    case 'element': {
+    case 'element':
       /** forming the fieldsCopy and widgetData for the disconnected case - ex: when is `inlineTab`, other future types can be added as well */
       if (props.disconnected) {
         if (!isEmpty(state.windowHandler.inlineTab)) {
@@ -127,15 +119,11 @@ const mapStateToProps = (state, props) => {
         fieldsCopy = getElementWidgetFields(state, isModal, layoutId);
       }
       break;
-    }
-
-    case 'process': {
+    case 'process':
       widgetData = getProcessWidgetData(state, true, layoutId);
       fieldsCopy = getProcessWidgetFields(state, true, layoutId);
 
       break;
-    }
-
     case 'table': {
       const table = getTable(state, tableId);
       const rows = table.rows;
@@ -152,14 +140,14 @@ const mapStateToProps = (state, props) => {
       break;
     }
 
-    default: {
+    default:
       widgetData = EMPTY_WIDGET_DATA;
 
       break;
-    }
   }
 
   let activeTab = null;
+
   if (windowHandler.master.layout) {
     activeTab = windowHandler.master.layout.activeTab;
   }
@@ -174,34 +162,29 @@ const mapStateToProps = (state, props) => {
   };
 };
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} actions
+ * @prop {*} activeTab
+ */
 WidgetWrapper.propTypes = {
   renderMaster: PropTypes.bool,
   dataSource: PropTypes.string.isRequired,
-  widgetType: PropTypes.string,
-  widgetSize: PropTypes.string,
-  disconnected: PropTypes.string,
-  fields: PropTypes.array.isRequired,
-  isModal: PropTypes.bool,
-  propagateEnterKeyEvent: PropTypes.bool,
-
-  //
-  // mapStateToProps:
   relativeDocId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   widgetData: PropTypes.array.isRequired,
-  activeTab: PropTypes.string,
   modalVisible: PropTypes.bool.isRequired,
+  activeTab: PropTypes.string,
   timeZone: PropTypes.string,
-  //fields: PropTypes.array.isRequired,
-
-  //
-  // mapDispatchToProps:
+  fields: PropTypes.array.isRequired,
   allowShortcut: PropTypes.func.isRequired,
   disableShortcut: PropTypes.func.isRequired,
   openModal: PropTypes.func.isRequired,
-  closeModal: PropTypes.func.isRequired,
+  closeModal: PropTypes.func,
   patch: PropTypes.func.isRequired,
   updatePropertyValue: PropTypes.func.isRequired,
-  setTableNavigation: PropTypes.func.isRequired,
+  widgetType: PropTypes.string,
+  disconnected: PropTypes.string,
+  setTableNavigation: PropTypes.func,
 };
 
 export default connect(

@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Locked HUs can not be issued to production order
 
   Background:
@@ -37,8 +38,8 @@ Feature: Locked HUs can not be issued to production order
       | huProductTU                        | huPiItemTU                 | huProduct               | 10  | 2022-01-01 |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo      |
-      | huProduct_inventory       | 2022-03-20T00:00:00Z | inventoryDocNo2 |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
+      | huProduct_inventory       | 2022-03-20   | inventoryDocNo2 |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 10       |
@@ -135,5 +136,5 @@ Feature: Locked HUs can not be issued to production order
       | newCreatedCU       | Locked          | Locked HU         |
 
     And complete planning for PP_Order:
-      | PP_Order_ID.Identifier | OPT.ErrorMessage                         |
+      | PP_Order_ID.Identifier | OPT.ErrorMessage                                    |
       | ppOrder_manufacturing  | Nur freigegebene HUs können final zugeteilt werden! |

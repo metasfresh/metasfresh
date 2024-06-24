@@ -1,7 +1,11 @@
 package org.eevolution.model.validator;
 
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -12,9 +16,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
 import org.eevolution.api.impl.ProductBOMService;
 import org.eevolution.api.impl.ProductBOMVersionsDAO;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -45,43 +48,57 @@ import static org.assertj.core.api.Assertions.*;
 public class PP_Product_PlanningTest
 {
 	private AttributesTestHelper attributesTestHelper;
+	private IAttributeSetInstanceBL attributeSetInstanceBL;
+	private IProductPlanningDAO productPlanningDAO;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		attributesTestHelper = new AttributesTestHelper();
+		this.attributesTestHelper = new AttributesTestHelper();
+		this.attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+		this.productPlanningDAO = Services.get(IProductPlanningDAO.class);
+
+		//
+		// Install the interceptor under test
+		final ProductBOMVersionsDAO versionsDAO = new ProductBOMVersionsDAO();
+		final PP_Product_Planning interceptor = new PP_Product_Planning(versionsDAO, new ProductBOMService(versionsDAO));
+		POJOLookupMap.get().addModelValidator(interceptor);
+	}
+
+	private AttributeListValue createAttributeValue(String attributeName)
+	{
+		final I_M_Attribute attribute = attributesTestHelper.createM_Attribute(attributeName, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		attribute.setIsStorageRelevant(true); // IMPORTANT
+		save(attribute);
+		return attributesTestHelper.createM_AttributeValue(attribute, attributeName + "-value1");
+	}
+
+	@NonNull
+	private AttributeSetInstanceId createASI(final AttributeListValue attributeValue1, final AttributeListValue attributeValue2)
+	{
+		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
+		save(asi);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeValue1);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeValue2);
+
+		return asiId;
 	}
 
 	@Test
 	public void updateStorageAttributesKey()
 	{
-		final I_M_Attribute attr1 = attributesTestHelper.createM_Attribute("test1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
-		attr1.setIsStorageRelevant(true);
-		save(attr1);
-		final AttributeListValue attributeValue1 = attributesTestHelper.createM_AttributeValue(attr1, "testValue1");
+		final AttributeListValue attributeValue1 = createAttributeValue("test1");
+		final AttributeListValue attributeValue2 = createAttributeValue("test2");
+		final AttributeSetInstanceId asiId = createASI(attributeValue1, attributeValue2);
 
-		final I_M_Attribute attr2 = attributesTestHelper.createM_Attribute("test2", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
-		attr2.setIsStorageRelevant(true);
-		save(attr2);
-		final AttributeListValue attributeValue2 = attributesTestHelper.createM_AttributeValue(attr2, "testValue2");
+		final ProductPlanning productPlanning = productPlanningDAO.save(ProductPlanning.builder()
+				.attributeSetInstanceId(asiId)
+				.build());
 
-		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
-		save(asi);
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
-
-		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeValue1);
-		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeValue2);
-
-		final I_PP_Product_Planning productPlanning = newInstance(I_PP_Product_Planning.class);
-		productPlanning.setM_AttributeSetInstance(asi);
-		save(productPlanning);
-
-		final ProductBOMVersionsDAO versionsDAO = new ProductBOMVersionsDAO();
-		new PP_Product_Planning(versionsDAO, new ProductBOMService(versionsDAO)).updateStorageAttributesKey(productPlanning);
-
-		final AttributesKey storageAttributesKeyExpected = AttributesKey.ofAttributeValueIds(attributeValue1.getId(), attributeValue2.getId());
-		assertThat(productPlanning.getStorageAttributesKey()).isEqualTo(storageAttributesKeyExpected.getAsString());
+		assertThat(productPlanning.getStorageAttributesKey())
+				.isEqualTo(AttributesKey.ofAttributeValueIds(attributeValue1.getId(), attributeValue2.getId()).getAsString());
 	}
 }

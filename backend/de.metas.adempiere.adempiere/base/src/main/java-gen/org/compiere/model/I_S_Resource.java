@@ -1,282 +1,320 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for S_Resource
- *  @author Adempiere (generated)
- *  @version Release 3.5.4a
+ *  @author metasfresh (generated) 
  */
-public interface I_S_Resource
+@SuppressWarnings("unused")
+public interface I_S_Resource 
 {
 
-    /** TableName=S_Resource */
-    String Table_Name = "S_Resource";
+	String Table_Name = "S_Resource";
 
-    /** AD_Table_ID=487 */
-    int Table_ID = MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=487 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org
-     */
-    BigDecimal accessLevel = BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
-
-    /** Column name AD_Client_ID */
-    String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
-
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	int getAD_Client_ID();
 
-    /** Column name AD_Org_ID */
-    String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	int getAD_Org_ID();
 
-    /** Column name AD_User_ID */
-    String COLUMNNAME_AD_User_ID = "AD_User_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set User/Contact.
-	  * User within the system - Internal or Business Partner Contact
-	  */
+	/**
+	 * Set Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	void setAD_User_ID (int AD_User_ID);
 
-	/** Get User/Contact.
-	  * User within the system - Internal or Business Partner Contact
-	  */
+	/**
+	 * Get Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	int getAD_User_ID();
 
-	I_AD_User getAD_User() throws RuntimeException;
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
-    /** Column name ChargeableQty */
-    String COLUMNNAME_ChargeableQty = "ChargeableQty";
+	/**
+	 * Set Capacity Per Production Cycle.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCapacityPerProductionCycle (@Nullable BigDecimal CapacityPerProductionCycle);
 
-	/** Set Chargeable Quantity	  */
-	void setChargeableQty (BigDecimal ChargeableQty);
+	/**
+	 * Get Capacity Per Production Cycle.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCapacityPerProductionCycle();
 
-	/** Get Chargeable Quantity	  */
+	ModelColumn<I_S_Resource, Object> COLUMN_CapacityPerProductionCycle = new ModelColumn<>(I_S_Resource.class, "CapacityPerProductionCycle", null);
+	String COLUMNNAME_CapacityPerProductionCycle = "CapacityPerProductionCycle";
+
+	/**
+	 * Set Unit of measurement.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCapacityPerProductionCycle_UOM_ID (int CapacityPerProductionCycle_UOM_ID);
+
+	/**
+	 * Get Unit of measurement.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCapacityPerProductionCycle_UOM_ID();
+
+	String COLUMNNAME_CapacityPerProductionCycle_UOM_ID = "CapacityPerProductionCycle_UOM_ID";
+
+	/**
+	 * Set Chargeable Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChargeableQty (@Nullable BigDecimal ChargeableQty);
+
+	/**
+	 * Get Chargeable Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	BigDecimal getChargeableQty();
 
-    /** Column name Created */
-    String COLUMNNAME_Created = "Created";
+	ModelColumn<I_S_Resource, Object> COLUMN_ChargeableQty = new ModelColumn<>(I_S_Resource.class, "ChargeableQty", null);
+	String COLUMNNAME_ChargeableQty = "ChargeableQty";
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	Timestamp getCreated();
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
 
-    /** Column name CreatedBy */
-    String COLUMNNAME_CreatedBy = "CreatedBy";
+	ModelColumn<I_S_Resource, Object> COLUMN_Created = new ModelColumn<>(I_S_Resource.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
-	/** Get Created By.
-	  * User who created this records
-	  */
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	int getCreatedBy();
 
-    /** Column name DailyCapacity */
-    String COLUMNNAME_DailyCapacity = "DailyCapacity";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Set Daily Capacity	  */
-	void setDailyCapacity (BigDecimal DailyCapacity);
+	/**
+	 * Set Workplace.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Workplace_ID (int C_Workplace_ID);
 
-	/** Get Daily Capacity	  */
+	/**
+	 * Get Workplace.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Workplace_ID();
+
+	@Nullable org.compiere.model.I_C_Workplace getC_Workplace();
+
+	void setC_Workplace(@Nullable org.compiere.model.I_C_Workplace C_Workplace);
+
+	ModelColumn<I_S_Resource, org.compiere.model.I_C_Workplace> COLUMN_C_Workplace_ID = new ModelColumn<>(I_S_Resource.class, "C_Workplace_ID", org.compiere.model.I_C_Workplace.class);
+	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
+
+	/**
+	 * Set Daily Capacity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDailyCapacity (@Nullable BigDecimal DailyCapacity);
+
+	/**
+	 * Get Daily Capacity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	BigDecimal getDailyCapacity();
 
-    /** Column name Description */
-    String COLUMNNAME_Description = "Description";
+	ModelColumn<I_S_Resource, Object> COLUMN_DailyCapacity = new ModelColumn<>(I_S_Resource.class, "DailyCapacity", null);
+	String COLUMNNAME_DailyCapacity = "DailyCapacity";
 
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	void setDescription (String Description);
+	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
 
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	String getDescription();
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
 
-    /** Column name IsActive */
-    String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_S_Resource, Object> COLUMN_Description = new ModelColumn<>(I_S_Resource.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	void setIsActive (boolean IsActive);
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	boolean isActive();
 
-    /** Column name IsAvailable */
-    String COLUMNNAME_IsAvailable = "IsAvailable";
+	ModelColumn<I_S_Resource, Object> COLUMN_IsActive = new ModelColumn<>(I_S_Resource.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Available.
-	  * Resource is available
-	  */
+	/**
+	 * Set Available.
+	 * Resource is available
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	void setIsAvailable (boolean IsAvailable);
 
-	/** Get Available.
-	  * Resource is available
-	  */
+	/**
+	 * Get Available.
+	 * Resource is available
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	boolean isAvailable();
 
-    /** Column name IsManufacturingResource */
-    String COLUMNNAME_IsManufacturingResource = "IsManufacturingResource";
+	ModelColumn<I_S_Resource, Object> COLUMN_IsAvailable = new ModelColumn<>(I_S_Resource.class, "IsAvailable", null);
+	String COLUMNNAME_IsAvailable = "IsAvailable";
 
-	/** Set Manufacturing Resource	  */
+	/**
+	 * Set Manufacturing Resource.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	void setIsManufacturingResource (boolean IsManufacturingResource);
 
-	/** Get Manufacturing Resource	  */
+	/**
+	 * Get Manufacturing Resource.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	boolean isManufacturingResource();
 
-    /** Column name ManufacturingResourceType */
-    String COLUMNNAME_ManufacturingResourceType = "ManufacturingResourceType";
+	ModelColumn<I_S_Resource, Object> COLUMN_IsManufacturingResource = new ModelColumn<>(I_S_Resource.class, "IsManufacturingResource", null);
+	String COLUMNNAME_IsManufacturingResource = "IsManufacturingResource";
 
-	/** Set Manufacturing Resource Type	  */
-	void setManufacturingResourceType (String ManufacturingResourceType);
+	/**
+	 * Set Manufacturing Resource Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManufacturingResourceType (@Nullable java.lang.String ManufacturingResourceType);
 
-	/** Get Manufacturing Resource Type	  */
-	String getManufacturingResourceType();
+	/**
+	 * Get Manufacturing Resource Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getManufacturingResourceType();
 
-    /** Column name Name */
-    String COLUMNNAME_Name = "Name";
-
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	void setName (String Name);
-
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	String getName();
-
-    /** Column name PercentUtilization */
-    String COLUMNNAME_PercentUtilization = "PercentUtilization";
-
-	/** Set % Utilization	  */
-	void setPercentUtilization (BigDecimal PercentUtilization);
-
-	/** Get % Utilization	  */
-	BigDecimal getPercentUtilization();
-
-    /** Column name PlanningHorizon */
-    String COLUMNNAME_PlanningHorizon = "PlanningHorizon";
-
-	/** Set Planning Horizon.
-	  * The planning horizon is the amount of time (Days) an organisation will look into the future when preparing a strategic plan.
-	  */
-	void setPlanningHorizon (int PlanningHorizon);
-
-	/** Get Planning Horizon.
-	  * The planning horizon is the amount of time (Days) an organisation will look into the future when preparing a strategic plan.
-	  */
-	int getPlanningHorizon();
-
-    /** Column name QueuingTime */
-    String COLUMNNAME_QueuingTime = "QueuingTime";
-
-	/** Set Queuing Time	  */
-	void setQueuingTime (BigDecimal QueuingTime);
-
-	/** Get Queuing Time	  */
-	BigDecimal getQueuingTime();
-
-    /** Column name S_Resource_ID */
-    String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
-
-	/** Set Resource.
-	  * Resource
-	  */
-	void setS_Resource_ID (int S_Resource_ID);
-
-	/** Get Resource.
-	  * Resource
-	  */
-	int getS_Resource_ID();
-
-    /** Column name S_ResourceType_ID */
-    String COLUMNNAME_S_ResourceType_ID = "S_ResourceType_ID";
-
-	/** Set Resource Type	  */
-	void setS_ResourceType_ID (int S_ResourceType_ID);
-
-	/** Get Resource Type	  */
-	int getS_ResourceType_ID();
-
-	I_S_ResourceType getS_ResourceType() throws RuntimeException;
-
-    /** Column name Updated */
-    String COLUMNNAME_Updated = "Updated";
-
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	Timestamp getUpdated();
-
-    /** Column name UpdatedBy */
-    String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	int getUpdatedBy();
-
-    /** Column name Value */
-    String COLUMNNAME_Value = "Value";
-
-	/** Set Search Key.
-	  * Search key for the record in the format required - must be unique
-	  */
-	void setValue (String Value);
-
-	/** Get Search Key.
-	  * Search key for the record in the format required - must be unique
-	  */
-	String getValue();
-
-    /** Column name WaitingTime */
-    String COLUMNNAME_WaitingTime = "WaitingTime";
-
-	/** Set Waiting Time.
-	  * Workflow Simulation Waiting time
-	  */
-	void setWaitingTime (BigDecimal WaitingTime);
-
-	/** Get Waiting Time.
-	  * Workflow Simulation Waiting time
-	  */
-	BigDecimal getWaitingTime();
+	ModelColumn<I_S_Resource, Object> COLUMN_ManufacturingResourceType = new ModelColumn<>(I_S_Resource.class, "ManufacturingResourceType", null);
+	String COLUMNNAME_ManufacturingResourceType = "ManufacturingResourceType";
 
 	/**
 	 * Set Exclude from MRP.
@@ -286,7 +324,7 @@ public interface I_S_Resource
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setMRP_Exclude (java.lang.String MRP_Exclude);
+	void setMRP_Exclude (@Nullable java.lang.String MRP_Exclude);
 
 	/**
 	 * Get Exclude from MRP.
@@ -296,10 +334,215 @@ public interface I_S_Resource
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getMRP_Exclude();
+	@Nullable java.lang.String getMRP_Exclude();
 
-    /** Column definition for MRP_Exclude */
-    org.adempiere.model.ModelColumn<I_S_Resource, Object> COLUMN_MRP_Exclude = new org.adempiere.model.ModelColumn<>(I_S_Resource.class, "MRP_Exclude", null);
-    /** Column name MRP_Exclude */
-    String COLUMNNAME_MRP_Exclude = "MRP_Exclude";
+	ModelColumn<I_S_Resource, Object> COLUMN_MRP_Exclude = new ModelColumn<>(I_S_Resource.class, "MRP_Exclude", null);
+	String COLUMNNAME_MRP_Exclude = "MRP_Exclude";
+
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setName (java.lang.String Name);
+
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getName();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_Name = new ModelColumn<>(I_S_Resource.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set % Utilization.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPercentUtilization (BigDecimal PercentUtilization);
+
+	/**
+	 * Get % Utilization.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPercentUtilization();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_PercentUtilization = new ModelColumn<>(I_S_Resource.class, "PercentUtilization", null);
+	String COLUMNNAME_PercentUtilization = "PercentUtilization";
+
+	/**
+	 * Set Planning Horizon.
+	 * The planning horizon is the amount of time (Days) an organisation will look into the future when preparing a strategic plan.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPlanningHorizon (int PlanningHorizon);
+
+	/**
+	 * Get Planning Horizon.
+	 * The planning horizon is the amount of time (Days) an organisation will look into the future when preparing a strategic plan.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPlanningHorizon();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_PlanningHorizon = new ModelColumn<>(I_S_Resource.class, "PlanningHorizon", null);
+	String COLUMNNAME_PlanningHorizon = "PlanningHorizon";
+
+	/**
+	 * Set Queuing Time.
+	 * Queue time is the time a job waits at a work center before begin handled.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQueuingTime (@Nullable BigDecimal QueuingTime);
+
+	/**
+	 * Get Queuing Time.
+	 * Queue time is the time a job waits at a work center before begin handled.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQueuingTime();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_QueuingTime = new ModelColumn<>(I_S_Resource.class, "QueuingTime", null);
+	String COLUMNNAME_QueuingTime = "QueuingTime";
+
+	/**
+	 * Set Resource.
+	 * Resource
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Resource.
+	 * Resource
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getS_Resource_ID();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_S_Resource_ID = new ModelColumn<>(I_S_Resource.class, "S_Resource_ID", null);
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+
+	/**
+	 * Set Resource Type.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setS_ResourceType_ID (int S_ResourceType_ID);
+
+	/**
+	 * Get Resource Type.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getS_ResourceType_ID();
+
+	org.compiere.model.I_S_ResourceType getS_ResourceType();
+
+	void setS_ResourceType(org.compiere.model.I_S_ResourceType S_ResourceType);
+
+	ModelColumn<I_S_Resource, org.compiere.model.I_S_ResourceType> COLUMN_S_ResourceType_ID = new ModelColumn<>(I_S_Resource.class, "S_ResourceType_ID", org.compiere.model.I_S_ResourceType.class);
+	String COLUMNNAME_S_ResourceType_ID = "S_ResourceType_ID";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_Updated = new ModelColumn<>(I_S_Resource.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Search Key.
+	 * Search key for the record in the format required - must be unique
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setValue (java.lang.String Value);
+
+	/**
+	 * Get Search Key.
+	 * Search key for the record in the format required - must be unique
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getValue();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_Value = new ModelColumn<>(I_S_Resource.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Waiting Time.
+	 * Workflow Simulation Waiting time
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWaitingTime (@Nullable BigDecimal WaitingTime);
+
+	/**
+	 * Get Waiting Time.
+	 * Workflow Simulation Waiting time
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getWaitingTime();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_WaitingTime = new ModelColumn<>(I_S_Resource.class, "WaitingTime", null);
+	String COLUMNNAME_WaitingTime = "WaitingTime";
 }

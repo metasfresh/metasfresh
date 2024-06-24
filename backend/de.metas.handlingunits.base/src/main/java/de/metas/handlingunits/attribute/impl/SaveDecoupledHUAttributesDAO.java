@@ -211,9 +211,9 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
-	public List<I_M_HU_Attribute> retrieveAttributesNoCache(final Collection<HuId> huIds)
+	public List<I_M_HU_Attribute> retrieveAllAttributesNoCache(final Collection<HuId> huIds)
 	{
-		return db.retrieveAttributesNoCache(huIds);
+		return db.retrieveAllAttributesNoCache(huIds);
 	}
 
 	@Override

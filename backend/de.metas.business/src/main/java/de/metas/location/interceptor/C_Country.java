@@ -1,6 +1,6 @@
 package de.metas.location.interceptor;
 
-import de.metas.location.CountryService;
+import de.metas.location.AddressDisplaySequence;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -12,7 +12,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.countryattribute.ICountryAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.ModelValidator;
@@ -31,12 +30,12 @@ import java.util.Properties;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,8 +45,6 @@ import java.util.Properties;
 @Component
 public class C_Country
 {
-	final CountryService countryService = SpringContextHolder.instance.getBean(CountryService.class);
-
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void onCreateCountry(final I_C_Country country)
 	{
@@ -86,43 +83,41 @@ public class C_Country
 		setCountryAttributeAsActive(country, false);
 	}
 
-	private AttributeListValue setCountryAttributeAsActive(final I_C_Country country, final boolean isActive)
+	private void setCountryAttributeAsActive(final I_C_Country country, final boolean isActive)
 	{
 		final AttributeListValue existingAttributeValue = getAttributeValue(country);
 		if (existingAttributeValue != null)
 		{
 			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-			return attributesRepo.changeAttributeValue(AttributeListValueChangeRequest.builder()
+			attributesRepo.changeAttributeValue(AttributeListValueChangeRequest.builder()
 					.id(existingAttributeValue.getId())
 					.active(isActive)
 					.build());
 		}
-		else
-		{
-			return null;
-		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {I_C_Country.COLUMNNAME_DisplaySequence, I_C_Country.COLUMNNAME_DisplaySequenceLocal})
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_Country.COLUMNNAME_DisplaySequence, I_C_Country.COLUMNNAME_DisplaySequenceLocal })
 	public void onChangeCountryDisplaySequence(@NonNull final I_C_Country country)
 	{
-		countryService.assertCountryValidDisplaySequence(country);
+		assertValidDisplaySequences(country);
 	}
 
-	private AttributeListValue setCountryAttributeName(@NonNull final I_C_Country country)
+	public void assertValidDisplaySequences(@NonNull final I_C_Country country)
+	{
+		AddressDisplaySequence.ofNullable(country.getDisplaySequence()).assertValid();
+		AddressDisplaySequence.ofNullable(country.getDisplaySequenceLocal()).assertValid();
+	}
+
+	private void setCountryAttributeName(@NonNull final I_C_Country country)
 	{
 		final AttributeListValue existingAttributeValue = getAttributeValue(country);
 		if (existingAttributeValue != null)
 		{
 			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-			return attributesRepo.changeAttributeValue(AttributeListValueChangeRequest.builder()
+			attributesRepo.changeAttributeValue(AttributeListValueChangeRequest.builder()
 					.id(existingAttributeValue.getId())
 					.name(country.getName())
 					.build());
-		}
-		else
-		{
-			return null;
 		}
 	}
 

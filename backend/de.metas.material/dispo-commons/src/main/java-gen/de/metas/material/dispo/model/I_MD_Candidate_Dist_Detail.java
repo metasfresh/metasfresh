@@ -428,11 +428,7 @@ public interface I_MD_Candidate_Dist_Detail
 	 */
 	public int getPP_Product_Planning_ID();
 
-	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning();
-
-	public void setPP_Product_Planning(org.eevolution.model.I_PP_Product_Planning PP_Product_Planning);
-
-    /** Column definition for PP_Product_Planning_ID */
+	/** Column definition for PP_Product_Planning_ID */
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_PP_Product_Planning> COLUMN_PP_Product_Planning_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_PP_Product_Planning>(I_MD_Candidate_Dist_Detail.class, "PP_Product_Planning_ID", org.eevolution.model.I_PP_Product_Planning.class);
     /** Column name PP_Product_Planning_ID */
     public static final String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";

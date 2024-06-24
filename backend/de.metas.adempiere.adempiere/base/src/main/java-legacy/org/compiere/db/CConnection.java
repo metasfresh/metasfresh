@@ -16,29 +16,25 @@
  *****************************************************************************/
 package org.compiere.db;
 
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBNoConnectionException;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.DB;
+import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.sql.DataSource;
+import javax.swing.*;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.annotation.Nullable;
-import javax.sql.DataSource;
-import javax.swing.JOptionPane;
-
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBNoConnectionException;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.DB;
-import org.compiere.util.Ini;
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import org.springframework.core.env.Environment;
 
 /**
  * Adempiere Connection Descriptor
@@ -137,6 +133,7 @@ public final class CConnection implements Serializable, Cloneable
 		return cc;
 	}
 
+	@Nullable
 	private static CConnection createFromIniIfOK()
 	{
 		// First, try to create the connection from properties, if any
@@ -153,7 +150,7 @@ public final class CConnection implements Serializable, Cloneable
 			cc.setAttributes(attributes);
 			cc.testDatabaseIfNeeded();
 
-			return cc.isDatabaseOK() ? cc : null;
+			return cc;
 		}
 		catch (Exception e)
 		{
@@ -185,6 +182,9 @@ public final class CConnection implements Serializable, Cloneable
 		if (ccTemplate == null)
 		{
 			ccTemplateToUse = new CConnection();
+			ccTemplateToUse.setDbHost("localhost");
+			ccTemplateToUse.setDbUid("metasfresh");
+			ccTemplateToUse.setDbPwd("metasfresh");
 		}
 		else
 		{

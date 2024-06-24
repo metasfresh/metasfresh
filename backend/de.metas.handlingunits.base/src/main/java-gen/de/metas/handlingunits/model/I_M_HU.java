@@ -92,6 +92,27 @@ public interface I_M_HU
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set Clearance Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setClearanceDate (@Nullable java.sql.Timestamp ClearanceDate);
+
+	/**
+	 * Get Clearance Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getClearanceDate();
+
+	ModelColumn<I_M_HU, Object> COLUMN_ClearanceDate = new ModelColumn<>(I_M_HU.class, "ClearanceDate", null);
+	String COLUMNNAME_ClearanceDate = "ClearanceDate";
+
+	/**
 	 * Set Clearance Note.
 	 *
 	 * <br>Type: String
@@ -132,6 +153,31 @@ public interface I_M_HU
 
 	ModelColumn<I_M_HU, Object> COLUMN_ClearanceStatus = new ModelColumn<>(I_M_HU.class, "ClearanceStatus", null);
 	String COLUMNNAME_ClearanceStatus = "ClearanceStatus";
+
+	/**
+	 * Set Cloned From.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setClonedFrom_HU_ID (int ClonedFrom_HU_ID);
+
+	/**
+	 * Get Cloned From.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getClonedFrom_HU_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_HU getClonedFrom_HU();
+
+	void setClonedFrom_HU(@Nullable de.metas.handlingunits.model.I_M_HU ClonedFrom_HU);
+
+	ModelColumn<I_M_HU, de.metas.handlingunits.model.I_M_HU> COLUMN_ClonedFrom_HU_ID = new ModelColumn<>(I_M_HU.class, "ClonedFrom_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_ClonedFrom_HU_ID = "ClonedFrom_HU_ID";
 
 	/**
 	 * Get Created.
@@ -182,7 +228,7 @@ public interface I_M_HU
 	String COLUMNNAME_HUPlanningReceiptOwnerPM = "HUPlanningReceiptOwnerPM";
 
 	/**
-	 * Set Gebinde Status.
+	 * Set Packing Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -191,7 +237,7 @@ public interface I_M_HU
 	void setHUStatus (java.lang.String HUStatus);
 
 	/**
-	 * Get Gebinde Status.
+	 * Get Packing Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -226,8 +272,7 @@ public interface I_M_HU
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set in HU enthalten.
-	 * Sagt aus, ob die gegenbene HU in einer anderen HU enthalten ist (z.B. IFCO auf einer Palette)
+	 * Set Included in other HU.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -238,8 +283,7 @@ public interface I_M_HU
 	void setIsChildHU (boolean IsChildHU);
 
 	/**
-	 * Get in HU enthalten.
-	 * Sagt aus, ob die gegenbene HU in einer anderen HU enthalten ist (z.B. IFCO auf einer Palette)
+	 * Get Included in other HU.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -272,7 +316,8 @@ public interface I_M_HU
 	String COLUMNNAME_IsReserved = "IsReserved";
 
 	/**
-	 * Set Gesperrt.
+	 * Set Locked.
+	 * Whether the terminal is locked
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -283,7 +328,8 @@ public interface I_M_HU
 	void setLocked (boolean Locked);
 
 	/**
-	 * Get Gesperrt.
+	 * Get Locked.
+	 * Whether the terminal is locked
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -295,8 +341,7 @@ public interface I_M_HU
 	String COLUMNNAME_Locked = "Locked";
 
 	/**
-	 * Set Los-Nr..
-	 * Los-Nummer (alphanumerisch)
+	 * Set Lot No..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -307,8 +352,7 @@ public interface I_M_HU
 	void setLot (@Nullable java.lang.String Lot);
 
 	/**
-	 * Get Los-Nr..
-	 * Los-Nummer (alphanumerisch)
+	 * Get Lot No..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -343,7 +387,7 @@ public interface I_M_HU
 	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set Handling Units Item Parent ID.
+	 * Set Handling Unit Parent.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -352,7 +396,7 @@ public interface I_M_HU
 	void setM_HU_Item_Parent_ID (int M_HU_Item_Parent_ID);
 
 	/**
-	 * Get Handling Units Item Parent ID.
+	 * Get Handling Unit Parent.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -413,7 +457,7 @@ public interface I_M_HU
 	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
-	 * Set Packvorschrift Version.
+	 * Set Packing Instruction.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -422,7 +466,7 @@ public interface I_M_HU
 	void setM_HU_PI_Version_ID (int M_HU_PI_Version_ID);
 
 	/**
-	 * Get Packvorschrift Version.
+	 * Get Packing Instruction.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true

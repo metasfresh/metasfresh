@@ -1,11 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.List;
-
-import org.springframework.context.annotation.Profile;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
@@ -16,6 +11,10 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.report.HUReportAwareViewRowAsHUToReport;
+import org.springframework.context.annotation.Profile;
+
+import java.util.List;
 
 /*
  * #%L
@@ -66,12 +65,7 @@ public class WEBUI_M_HU_PrintReceiptLabel
 			return ProcessPreconditionsResolution.reject("No (single) row selected");
 		}
 
-		final HUToReport hu = getSingleSelectedRow().getAsHUToReportOrNull();
-		if (hu == null)
-		{
-			return ProcessPreconditionsResolution.reject("No (single) HU selected");
-		}
-
+		final HUToReport hu = HUReportAwareViewRowAsHUToReport.of(getSingleSelectedRow());
 		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId);
 		if (husToProcess.isEmpty())
 		{
@@ -88,7 +82,7 @@ public class WEBUI_M_HU_PrintReceiptLabel
 		final HUReportService huReportService = HUReportService.get();
 
 		final AdProcessId adProcessId = huReportService.retrievePrintReceiptLabelProcessIdOrNull();
-		final HUToReport hu = getSingleSelectedRow().getAsHUToReport();
+		final HUToReport hu = HUReportAwareViewRowAsHUToReport.of(getSingleSelectedRow());
 
 		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId)
 				.stream()

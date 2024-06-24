@@ -509,7 +509,7 @@ public class ExportHelper
 
 			final MColumn column = retrieveColumn(formatLine);
 
-			final int displayType = column.getAD_Reference_ID();
+			final int displayType = getDisplayType(column, formatLine);
 			final MTable embeddedTable;
 			final String embeddedTableName;
 			final String embeddedKeyColumnName;
@@ -830,4 +830,14 @@ public class ExportHelper
 		return new ReplicationAccessContext(limit, isApplyAccessFilter); // TODO hardcoded
 	}
 	// metas: end
+
+	private static int getDisplayType(@NonNull final MColumn column, @NonNull final I_EXP_FormatLine formatLine)
+	{
+		if (formatLine.getAD_Reference_Override_ID() > 0)
+		{
+			return formatLine.getAD_Reference_Override_ID();
+		}
+
+		return column.getAD_Reference_ID();
+	}
 }

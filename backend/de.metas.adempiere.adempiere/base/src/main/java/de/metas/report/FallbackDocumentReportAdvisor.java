@@ -23,6 +23,8 @@
 package de.metas.report;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.bpartner.service.BPartnerPrintFormatMap;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
@@ -102,10 +104,19 @@ final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 			reportProcessId = util.getReportProcessIdByPrintFormatId(printFormatId);
 		}
 
+		final BPartnerLocationId bPartnerLocationId = util.getBPartnerLocationId(bpartnerId, record);
+		final BPPrintFormatQuery bpPrintFormatQuery = bpartnerId == null ? null : BPPrintFormatQuery.builder()
+				.adTableId(recordRef.getAdTableId())
+				.bpartnerId(bpartnerId)
+				.bPartnerLocationId(bPartnerLocationId)
+				.docTypeId(docTypeId)
+				.onlyCopiesGreaterZero(true)
+				.build();
+
 		return DocumentReportInfo.builder()
 				.recordRef(recordRef)
 				.reportProcessId(reportProcessId)
-				.copies(util.getDocumentCopies(bpartner, docType))
+				.copies(util.getDocumentCopies(docType, bpPrintFormatQuery))
 				.documentNo(documentNo)
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)

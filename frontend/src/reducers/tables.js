@@ -1,5 +1,5 @@
-import { original, produce } from 'immer';
-import { difference, forEach, get } from 'lodash';
+import { produce, original } from 'immer';
+import { get, difference, forEach } from 'lodash';
 import { createSelector } from 'reselect';
 import { merge } from 'merge-anything';
 
@@ -158,7 +158,9 @@ const reducer = produce((draftState, action) => {
       const { id } = action.payload;
 
       if (draftState[id]) {
-        draftState.length = draftState.length - 1;
+        const newLength = draftState.length - 1;
+
+        draftState.length = newLength;
         delete draftState[id];
       }
 
@@ -196,12 +198,14 @@ const reducer = produce((draftState, action) => {
       const keyProperty = draftState[id].keyProperty;
       let rows = original(draftState[id].rows);
 
-      draftState[id].rows = rows.map((row) => {
+      const newRows = rows.map((row) => {
         if (row[keyProperty] === rowId) {
           return merge(row, change);
         }
         return row;
       });
+
+      draftState[id].rows = newRows;
 
       return;
     }

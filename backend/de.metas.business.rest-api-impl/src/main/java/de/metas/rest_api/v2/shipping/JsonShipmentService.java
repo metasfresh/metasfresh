@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.shipping;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -528,10 +529,9 @@ public class JsonShipmentService
 	{
 		final Set<ShipmentScheduleId> scheduleIds = shippedCandidateKeys.stream().map(ShippedCandidateKey::getShipmentScheduleId).collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableMap<ShipmentScheduleId, List<I_M_ShipmentSchedule_QtyPicked>> scheduleId2qtyPickedRecords = shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsByScheduleIds(scheduleIds);
+		final ImmutableListMultimap<ShipmentScheduleId, I_M_ShipmentSchedule_QtyPicked> scheduleId2qtyPickedRecords = shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsByScheduleIds(scheduleIds);
 
 		final Set<InOutLineId> inOutLineIds = scheduleId2qtyPickedRecords.values().stream()
-				.flatMap(List::stream)
 				.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
 				.map(InOutLineId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());

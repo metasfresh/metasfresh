@@ -1,32 +1,20 @@
 package de.metas.bpartner.service.impl;
 
-import static de.metas.util.Check.assume;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Optional;
-import java.util.Properties;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.i18n.Language;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -40,21 +28,15 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.user.UserId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Optional;
+import java.util.Properties;
+
+import static de.metas.util.Check.assume;
 
 public class BPartnerOrgBL implements IBPartnerOrgBL
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	@Override
 	public I_C_BPartner retrieveLinkedBPartner(final I_AD_Org org)
 	{
@@ -84,7 +66,7 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 	}
 
 	@Cached(cacheName = I_C_BPartner.Table_Name + "#By#AD_OrgBP_ID")
-	/* package */ I_C_BPartner retrieveLinkedBPartner(@CacheCtx final Properties ctx, final int adOrgId, @CacheTrx final String trxName)
+		/* package */ I_C_BPartner retrieveLinkedBPartner(@CacheCtx final Properties ctx, final int adOrgId, @CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_C_BPartner> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner.class, ctx, trxName);
@@ -148,5 +130,24 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 			defaultContact = null;
 		}
 		return defaultContact;
+	}
+
+	@NonNull
+	@Override
+	public String getOrgLanguageOrLoggedInUserLanguage(@NonNull final OrgId orgId)
+	{
+		final OrgInfo orgInfo = orgDAO.getOrgInfoById(orgId);
+		final BPartnerId orgBpartnerId = orgInfo.getOrgBPartnerLocationId().getBpartnerId();
+		final Language language = Services.get(IBPartnerBL.class)
+				.getLanguage(orgBpartnerId)
+				.orElse(null);
+		if (language != null)
+		{
+			return language.getAD_Language();
+		}
+		else
+		{
+			return Env.getADLanguageOrBaseLanguage();
+		}
 	}
 }

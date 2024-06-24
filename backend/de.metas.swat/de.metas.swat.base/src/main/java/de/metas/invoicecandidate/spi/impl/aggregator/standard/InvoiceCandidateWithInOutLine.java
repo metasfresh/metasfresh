@@ -124,7 +124,7 @@ public final class InvoiceCandidateWithInOutLine
 			return StockQtyAndUOMQtys.createZero(productId, icUomId);
 		}
 
-		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(ic.getInvoicableQtyBasedOn());
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(ic.getInvoicableQtyBasedOn());
 		final BigDecimal uomQty;
 
 		if (!isNull(iciol, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDeliveredInUOM_Override))

@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:invoiceAddress
+@ghActions:run_on_executor7
 Feature: Render invoice address
   Especially tracing the "BPartnerName" part of the address
 
@@ -13,11 +14,11 @@ Feature: Render invoice address
       | Identifier         | Name               |
       | test_product_26_02 | test_product_26_02 |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name           | Value          |
-      | ps_1       | pricing_system | pricing_system |
+      | Identifier | Name              | Value             |
+      | ps_12      | pricing_system_12 | pricing_system_12 |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so | true  | false         | 2              |
+      | pl_so      | ps_12                         | DE                        | EUR                 | price_list_so | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
       | plv_so     | pl_so                     | plv_so | 2022-01-20 |
@@ -28,7 +29,7 @@ Feature: Render invoice address
     # create bpartner with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_BPartners without locations:
       | Identifier        | Name              | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName       | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
-      | customer_bp_26_02 | customer_bp_26_02 | ps_1                          | Y              | customer_bp_26_02_cmp | I               | 1000002                    |
+      | customer_bp_26_02 | customer_bp_26_02 | ps_12                         | Y              | customer_bp_26_02_cmp | I               | 1000002                    |
 
   Scenario: Invoice when business partner location doesn't have BPartnerName
     Given metasfresh contains C_Location:
@@ -112,7 +113,7 @@ Feature: Render invoice address
   Scenario: Invoice when business partner bill location is from Switzerland
     Given metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_CH      | ps_1                          | CH                        | EUR                 | price_list_CH | true  | false         | 2              |
+      | pl_CH      | ps_12                         | CH                        | EUR                 | price_list_CH | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
       | plv_CH     | pl_CH                     | plv_CH | 2022-01-20 |

@@ -62,6 +62,9 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 {
 	private static final Logger logger = LogManager.getLogger(AcctSchemaDAO.class);
 
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+
 	private final CCache<Integer, AcctSchemasMap> acctSchemasCache = CCache.<Integer, AcctSchemasMap>builder()
 			.initialCapacity(1)
 			.tableName(I_C_AcctSchema.Table_Name)
@@ -106,6 +109,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 
 	@Override
+	@NonNull
 	public AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrgOrNull(clientId, orgId);
@@ -156,7 +160,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	private AcctSchemasMap retrieveAcctSchemasMap()
 	{
-		final ImmutableList<AcctSchema> acctSchemas = Services.get(IQueryBL.class)
+		final ImmutableList<AcctSchema> acctSchemas = queryBL
 				.createQueryBuilder(I_C_AcctSchema.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -172,7 +176,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
 
 		final CurrencyId acctCurrencyId = CurrencyId.ofRepoId(acctSchemaRecord.getC_Currency_ID());
-		final Currency acctCurrency = Services.get(ICurrencyDAO.class).getById(acctCurrencyId);
+		final Currency acctCurrency = currencyDAO.getById(acctCurrencyId);
 		final CurrencyPrecision standardPrecision = acctCurrency.getPrecision();
 		final CurrencyPrecision costingPrecision = acctCurrency.getCostingPrecision();
 
@@ -205,6 +209,8 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.postTradeDiscount(acctSchemaRecord.isTradeDiscountPosted())
 				.postServices(acctSchemaRecord.isPostServices())
 				.postIfSameClearingAccounts(acctSchemaRecord.isPostIfClearingEqual())
+				.isAllowMultiDebitAndCredit(acctSchemaRecord.isAllowMultiDebitAndCredit())
+				//
 				.isAutoSetDebtoridAndCreditorid(acctSchemaRecord.isAutoSetDebtoridAndCreditorid())
 				.debtorIdPrefix(acctSchemaRecord.getDebtorIdPrefix())
 				.creditorIdPrefix(acctSchemaRecord.getCreditorIdPrefix())
@@ -301,7 +307,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	@Nullable
 	public I_C_AcctSchema_Default retrieveAcctSchemaDefaultsRecordOrNull(final AcctSchemaId acctSchemaId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_C_AcctSchema_Default.class)
 				.addEqualsFilter(I_C_AcctSchema_Default.COLUMN_C_AcctSchema_ID, acctSchemaId)
 				.create()
@@ -329,8 +335,6 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	private AcctSchemaElementsMap retrieveAcctSchemaElementsMap(@NonNull final AcctSchemaId acctSchemaId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final List<AcctSchemaElement> elements = queryBL.createQueryBuilderOutOfTrx(I_C_AcctSchema_Element.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_AcctSchema_Element.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
@@ -456,7 +460,6 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	@Nullable
 	public I_C_AcctSchema_GL retrieveAcctSchemaGLRecordOrNull(@NonNull final AcctSchemaId acctSchemaId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilderOutOfTrx(I_C_AcctSchema_GL.class)
 				.addEqualsFilter(I_C_AcctSchema_GL.COLUMN_C_AcctSchema_ID, acctSchemaId)
 				.create()
@@ -477,7 +480,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	private ImmutableSet<CostElementId> retrievePostOnlyForCostElementIds(@NonNull final AcctSchemaId acctSchemaId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_C_AcctSchema_CostElement.class)
 				.addEqualsFilter(I_C_AcctSchema_CostElement.COLUMN_C_AcctSchema_ID, acctSchemaId)
 				.addOnlyActiveRecordsFilter()

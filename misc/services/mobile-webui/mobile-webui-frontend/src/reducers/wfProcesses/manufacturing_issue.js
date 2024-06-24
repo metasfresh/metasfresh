@@ -25,7 +25,7 @@ const reduceOnUpdateQtyIssued = (draftState, payload) => {
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
   draftStep.qtyIssued = qtyPicked;
-  draftStep.qtyRejected = draftStep.qtyToIssue - qtyPicked;
+  draftStep.qtyRejected = Math.max(draftStep.qtyToIssue - qtyPicked, 0);
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
   updateStepAndRollup({
@@ -163,12 +163,16 @@ const normalizeLines = (lines) => {
   return lines.map((line) => {
     return {
       productName: line.productName,
+      productValue: line.productValue,
       uom: line.uom,
+      hazardSymbols: line.hazardSymbols ?? [],
+      allergens: line.allergens ?? [],
       weightable: line.weightable,
       qtyToIssue: line.qtyToIssue,
       qtyToIssueMin: line.qtyToIssueMin,
       qtyToIssueMax: line.qtyToIssueMax,
-      qtyToIssueTolerancePerc: line.qtyToIssueTolerancePerc,
+      qtyToIssueTolerance: line.qtyToIssueTolerance,
+      userInstructions: line.userInstructions,
       steps: line.steps.reduce((accum, step) => {
         accum[step.id] = step;
         return accum;
@@ -181,8 +185,10 @@ registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: () => {}, // don't add componentProps to state
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
+    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
     draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
     draftActivityDataStored.scaleDevice = fromActivity.componentProps.scaleDevice;
+    draftActivityDataStored.qtyRejectedReasons = fromActivity.componentProps.qtyRejectedReasons;
     updateActivityBottomUp({ draftActivityDataStored });
   },
 });

@@ -9,6 +9,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.Value;
+import org.compiere.util.Util;
 
 import javax.annotation.Nullable;
 
@@ -69,7 +70,7 @@ public class CandidateId implements RepoIdAware
 
 	public static boolean isNull(@Nullable final CandidateId id)
 	{
-		if(id==null)
+		if (id == null)
 		{
 			return true;
 		}
@@ -113,4 +114,6 @@ public class CandidateId implements RepoIdAware
 				&& !candidateId.isUnspecified()
 				&& !candidateId.isNull();
 	}
+
+	public static boolean equals(@Nullable CandidateId id1, @Nullable CandidateId id2) {return Util.equals(id1, id2);}
 }

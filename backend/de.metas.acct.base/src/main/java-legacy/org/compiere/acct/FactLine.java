@@ -1,27 +1,5 @@
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_RevenueRecognition_Plan;
-import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.I_M_Movement;
-import org.compiere.model.MAccount;
-import org.compiere.model.X_Fact_Acct;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
@@ -43,6 +21,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -53,8 +32,28 @@ import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_RevenueRecognition_Plan;
+import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.I_M_Movement;
+import org.compiere.model.MAccount;
+import org.compiere.model.X_Fact_Acct;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
 
 /**
  * Accounting Fact Entry.
@@ -276,7 +275,7 @@ public final class FactLine extends X_Fact_Acct
 				}
 				if (userElementString != null)
 				{
-					set_Value (userElementStringColumnname, userElementString);
+					set_Value(userElementStringColumnname, userElementString);
 				}
 			}
 		}
@@ -285,6 +284,13 @@ public final class FactLine extends X_Fact_Acct
 	AcctSchema getAcctSchema()
 	{
 		return acctSchema;
+	}
+
+	CurrencyId getAcctCurrencyId() {return getAcctSchema().getCurrencyId();}
+
+	private void assertAcctCurrency(@NonNull final Money amt)
+	{
+		amt.assertCurrencyId(getAcctCurrencyId());
 	}
 
 	/**
@@ -302,14 +308,14 @@ public final class FactLine extends X_Fact_Acct
 		return getAmtSourceDr().signum() == 0 && getAmtSourceCr().signum() == 0;
 	}
 
-	/**
-	 * Set Source Amounts
-	 *
-	 * @param currencyId  currency
-	 * @param AmtSourceDr source amount dr
-	 * @param AmtSourceCr source amount cr
-	 * @return true, if any if the amount is not zero
-	 */
+	public void setAmtSource(@Nullable Money amtSourceDr, @Nullable Money amtSourceCr)
+	{
+		final CurrencyId currencyId = Money.getCommonCurrencyIdOfAll(amtSourceDr, amtSourceCr);
+		setAmtSource(currencyId,
+				amtSourceDr != null ? amtSourceDr.toBigDecimal() : BigDecimal.ZERO,
+				amtSourceCr != null ? amtSourceCr.toBigDecimal() : BigDecimal.ZERO);
+	}
+
 	public void setAmtSource(final CurrencyId currencyId, @Nullable BigDecimal AmtSourceDr, @Nullable BigDecimal AmtSourceCr)
 	{
 		if (!acctSchema.isAllowNegativePosting())
@@ -335,7 +341,7 @@ public final class FactLine extends X_Fact_Acct
 			// end Victor Perez e-evolution 30.08.2005
 		}
 
-		setC_Currency_ID(CurrencyId.toRepoId(currencyId));
+		setCurrencyId(currencyId);
 
 		// Currency Precision
 		final CurrencyPrecision precision = currencyId != null
@@ -345,30 +351,61 @@ public final class FactLine extends X_Fact_Acct
 		setAmtSourceCr(roundAmountToPrecision("AmtSourceCr", AmtSourceCr, precision));
 	}   // setAmtSource
 
+	public void setAmtAcct(@NonNull final Balance balance)
+	{
+		setAmtAcct(balance.getDebit(), balance.getCredit());
+	}
+
 	/**
 	 * Set Accounted Amounts (alternative: call convert)
-	 *
-	 * @param AmtAcctDr acct amount dr
-	 * @param AmtAcctCr acct amount cr
+	 */
+	public void setAmtAcct(@Nullable final Money amtAcctDr, @Nullable final Money amtAcctCr)
+	{
+		if (amtAcctDr != null)
+		{
+			assertAcctCurrency(amtAcctDr);
+		}
+		if (amtAcctCr != null)
+		{
+			assertAcctCurrency(amtAcctCr);
+		}
+
+		setAmtAcct(
+				amtAcctDr != null ? amtAcctDr.toBigDecimal() : null,
+				amtAcctCr != null ? amtAcctCr.toBigDecimal() : null);
+	}
+
+	/**
+	 * Set Accounted Amounts (alternative: call convert)
 	 */
 	public void setAmtAcct(BigDecimal AmtAcctDr, BigDecimal AmtAcctCr)
 	{
+		if (AmtAcctDr == null)
+		{
+			AmtAcctDr = BigDecimal.ZERO;
+		}
+		if (AmtAcctCr == null)
+		{
+			AmtAcctCr = BigDecimal.ZERO;
+		}
+
 		if (!acctSchema.isAllowNegativePosting())
 		{
 			// begin Victor Perez e-evolution 30.08.2005
 			// fix Debit & Credit
-			if (AmtAcctDr.compareTo(BigDecimal.ZERO) < 0)
+			if (AmtAcctDr.signum() < 0)
 			{
 				AmtAcctCr = AmtAcctDr.abs();
 				AmtAcctDr = BigDecimal.ZERO;
 			}
-			if (AmtAcctCr.compareTo(BigDecimal.ZERO) < 0)
+			if (AmtAcctCr.signum() < 0)
 			{
 				AmtAcctDr = AmtAcctCr.abs();
 				AmtAcctCr = BigDecimal.ZERO;
 			}
 			// end Victor Perez e-evolution 30.08.2005
 		}
+
 		setAmtAcctDr(AmtAcctDr);
 		setAmtAcctCr(AmtAcctCr);
 	}   // setAmtAcct
@@ -877,52 +914,23 @@ public final class FactLine extends X_Fact_Acct
 		}
 	}   // setLocationFromOrg
 
-	/**************************************************************************
-	 * Returns Source Balance of line
-	 *
-	 * @return source balance
-	 */
-	public BigDecimal getSourceBalance()
+	public Balance getSourceBalance()
 	{
-		if (getAmtSourceDr() == null)
-		{
-			setAmtSourceDr(BigDecimal.ZERO);
-		}
-		if (getAmtSourceCr() == null)
-		{
-			setAmtSourceCr(BigDecimal.ZERO);
-		}
-		//
-		return getAmtSourceDr().subtract(getAmtSourceCr());
-	}   // getSourceBalance
+		return Balance.of(getCurrencyId(), getAmtSourceDr(), getAmtSourceCr());
+	}
 
 	/**
-	 * Is Debit Source Balance
-	 *
 	 * @return true if DR source balance
 	 */
 	public boolean isDrSourceBalance()
 	{
-		return getSourceBalance().signum() >= 0;
-	}   // isDrSourceBalance
+		return getSourceBalance().isDebit();
+	}
 
-	/**
-	 * Get Accounted Balance
-	 *
-	 * @return accounting balance (DR - CR)
-	 */
-	public BigDecimal getAcctBalance()
+	public Balance getAcctBalance()
 	{
-		if (getAmtAcctDr() == null)
-		{
-			setAmtAcctDr(BigDecimal.ZERO);
-		}
-		if (getAmtAcctCr() == null)
-		{
-			setAmtAcctCr(BigDecimal.ZERO);
-		}
-		return getAmtAcctDr().subtract(getAmtAcctCr());
-	}   // getAcctBalance
+		return Balance.of(getAcctCurrencyId(), getAmtAcctDr(), getAmtAcctCr());
+	}
 
 	/**
 	 * @return true if the given fact line is booked on same DR/CR side as this line
@@ -1000,42 +1008,41 @@ public final class FactLine extends X_Fact_Acct
 	 *
 	 * @param deltaAmount delta amount
 	 */
-	public void currencyCorrect(final BigDecimal deltaAmount)
+	void currencyCorrect(final Money deltaAmount)
 	{
-		final boolean negative = deltaAmount.compareTo(BigDecimal.ZERO) < 0;
-		final boolean adjustDr = getAmtAcctDr().abs().compareTo(getAmtAcctCr().abs()) > 0;
+		assertAcctCurrency(deltaAmount);
 
-		log.debug(deltaAmount.toString()
-						  + "; Old-AcctDr=" + getAmtAcctDr() + ",AcctCr=" + getAmtAcctCr()
-						  + "; Negative=" + negative + "; AdjustDr=" + adjustDr);
+		if (deltaAmount.isZero())
+		{
+			return;
+		}
+
+		final boolean negative = deltaAmount.isNegative();
+		final boolean adjustDr = getAmtAcctDr().abs().compareTo(getAmtAcctCr().abs()) > 0;
 
 		if (adjustDr)
 		{
 			if (negative)
 			{
-				setAmtAcctDr(getAmtAcctDr().subtract(deltaAmount));
+				setAmtAcctDr(getAmtAcctDr().subtract(deltaAmount.toBigDecimal()));
 			}
 			else
 			{
-				setAmtAcctDr(getAmtAcctDr().subtract(deltaAmount));
+				setAmtAcctDr(getAmtAcctDr().subtract(deltaAmount.toBigDecimal()));
 			}
 		}
 		else if (negative)
 		{
-			setAmtAcctCr(getAmtAcctCr().add(deltaAmount));
+			setAmtAcctCr(getAmtAcctCr().add(deltaAmount.toBigDecimal()));
 		}
 		else
 		{
-			setAmtAcctCr(getAmtAcctCr().add(deltaAmount));
+			setAmtAcctCr(getAmtAcctCr().add(deltaAmount.toBigDecimal()));
 		}
-
-		log.debug("New-AcctDr=" + getAmtAcctDr() + ",AcctCr=" + getAmtAcctCr());
 	}    // currencyCorrect
 
 	/**
 	 * Convert to Accounted Currency
-	 *
-	 * @return true if converted
 	 */
 	public void convert()
 	{
@@ -1135,6 +1142,8 @@ public final class FactLine extends X_Fact_Acct
 				+ ", Record/Line=" + getRecord_ID() + (getLine_ID() > 0 ? "/" + getLine_ID() : "")
 				+ "]";
 	}
+
+	public OrgId getOrgId() {return OrgId.ofRepoIdOrAny(getAD_Org_ID());}
 
 	/**
 	 * Get AD_Org_ID (balancing segment).
@@ -1437,7 +1446,7 @@ public final class FactLine extends X_Fact_Acct
 		plan.setP_Revenue_Acct(productRevenueAcctId.getRepoId());
 		plan.setC_Currency_ID(getCurrencyId().getRepoId());
 		plan.setRecognizedAmt(BigDecimal.ZERO);
-		plan.setTotalAmt(getAcctBalance());
+		plan.setTotalAmt(getAcctBalance().toBigDecimal());
 		InterfaceWrapperHelper.save(plan);
 
 		return new_Account_ID;
@@ -1497,13 +1506,13 @@ public final class FactLine extends X_Fact_Acct
 			// end Bayu Sistematika
 			//
 			log.debug(new StringBuilder("(Table=").append(AD_Table_ID)
-							  .append(",Record_ID=").append(Record_ID)
-							  .append(",Line=").append(Record_ID)
-							  .append(", Account=").append(m_acct)
-							  .append(",dr=").append(dr).append(",cr=").append(cr)
-							  .append(") - DR=").append(getAmtSourceDr()).append("|").append(getAmtAcctDr())
-							  .append(", CR=").append(getAmtSourceCr()).append("|").append(getAmtAcctCr())
-							  .toString());
+					.append(",Record_ID=").append(Record_ID)
+					.append(",Line=").append(Record_ID)
+					.append(", Account=").append(m_acct)
+					.append(",dr=").append(dr).append(",cr=").append(cr)
+					.append(") - DR=").append(getAmtSourceDr()).append("|").append(getAmtAcctDr())
+					.append(", CR=").append(getAmtSourceCr()).append("|").append(getAmtAcctCr())
+					.toString());
 			// Dimensions
 			setAD_OrgTrx_ID(fact.getAD_OrgTrx_ID());
 			setC_Project_ID(fact.getC_Project_ID());
@@ -1533,11 +1542,11 @@ public final class FactLine extends X_Fact_Acct
 			if (log.isInfoEnabled())
 			{
 				log.info(new StringBuilder("Not Found (try later) ")
-								 .append(",C_AcctSchema_ID=").append(getC_AcctSchema_ID())
-								 .append(", AD_Table_ID=").append(AD_Table_ID)
-								 .append(",Record_ID=").append(Record_ID)
-								 .append(",Line_ID=").append(Line_ID)
-								 .append(", Account_ID=").append(m_acct.getAccount_ID()).toString());
+						.append(",C_AcctSchema_ID=").append(getC_AcctSchema_ID())
+						.append(", AD_Table_ID=").append(AD_Table_ID)
+						.append(",Record_ID=").append(Record_ID)
+						.append(",Line_ID=").append(Line_ID)
+						.append(", Account_ID=").append(m_acct.getAccount_ID()).toString());
 			}
 
 			return false; // not updated
@@ -1568,11 +1577,11 @@ public final class FactLine extends X_Fact_Acct
 
 		final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
 		final VATCode vatCode = vatCodeDAO.findVATCode(VATCodeMatchingRequest.builder()
-															   .setC_AcctSchema_ID(getC_AcctSchema_ID())
-															   .setC_Tax_ID(taxId)
-															   .setIsSOTrx(isSOTrx)
-															   .setDate(getDateAcct())
-															   .build());
+				.setC_AcctSchema_ID(getC_AcctSchema_ID())
+				.setC_Tax_ID(taxId)
+				.setIsSOTrx(isSOTrx)
+				.setDate(getDateAcct())
+				.build());
 
 		setVATCode(vatCode.getCode());
 	}
@@ -1611,6 +1620,11 @@ public final class FactLine extends X_Fact_Acct
 	public CurrencyId getCurrencyId()
 	{
 		return CurrencyId.ofRepoId(getC_Currency_ID());
+	}
+
+	public void setCurrencyId(final CurrencyId currencyId)
+	{
+		setC_Currency_ID(CurrencyId.toRepoId(currencyId));
 	}
 
 	public void setC_BPartner_ID(final BPartnerId bpartnerId)

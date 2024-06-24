@@ -1,16 +1,5 @@
 package de.metas.costing.interceptors;
 
-import java.math.BigDecimal;
-
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Cost;
-import org.compiere.model.ModelValidator;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
@@ -20,6 +9,16 @@ import de.metas.costing.IProductCostingBL;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Cost;
+import org.compiere.model.ModelValidator;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -81,7 +80,7 @@ class M_Cost
 			}
 			else if (CostingLevel.BatchLot.equals(costingLevel))
 			{
-				if (asiId.isNone() && costElement != null && costElement.isMaterialCostingMethod())
+				if (asiId.isNone() && costElement != null && costElement.isMaterial())
 				{
 					throw new FillMandatoryException(I_M_Cost.COLUMNNAME_M_AttributeSetInstance_ID);
 				}
@@ -97,7 +96,7 @@ class M_Cost
 
 		// Percentage
 		if (costElement != null
-				&& (!costElement.isAllowUserChangingCurrentCosts() || costElement.isMaterialCostingMethod())
+				&& (!costElement.isAllowUserChangingCurrentCosts() || costElement.isMaterial())
 				&& costRecord.getPercent() != 0)
 		{
 			costRecord.setPercent(0);

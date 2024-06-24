@@ -6,11 +6,11 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickingCandidate;
@@ -29,6 +29,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -86,6 +87,7 @@ public class ProcessPickingCandidatesCommand
 	@Builder
 	private ProcessPickingCandidatesCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
+			@NonNull final InventoryService inventoryService,
 			@NonNull final ProcessPickingCandidatesRequest request)
 	{
 		this.pickingCandidateRepository = pickingCandidateRepository;
@@ -97,7 +99,8 @@ public class ProcessPickingCandidatesCommand
 		final PackToHUsProducer packToHUsProducer = PackToHUsProducer.builder()
 				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
 				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
-				.huCapacityBL(Services.get(IHUCapacityBL.class))
+				.uomConversionBL(Services.get(IUOMConversionBL.class))
+				.inventoryService(inventoryService)
 				.alwaysPackEachCandidateInItsOwnHU(request.isAlwaysPackEachCandidateInItsOwnHU())
 				.build();
 
@@ -395,8 +398,10 @@ public class ProcessPickingCandidatesCommand
 					packToInfo,
 					productId,
 					qtyPicked,
+					null,
 					pickingCandidateId.toTableRecordReference(),
-					checkIfAlreadyPacked);
+					checkIfAlreadyPacked,
+					false);
 
 			if (packedToHUs.isEmpty())
 			{

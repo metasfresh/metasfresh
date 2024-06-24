@@ -16,17 +16,19 @@
 
 package org.eevolution.model;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.order.DeliveryRule;
+import de.metas.product.IProductBL;
+import de.metas.product.IStorageBL;
 import de.metas.product.ProductId;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
+import de.metas.report.StandardDocumentReportType;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,20 +44,17 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
-import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.IMsgBL;
-import de.metas.order.DeliveryRule;
-import de.metas.product.IProductBL;
-import de.metas.product.IStorageBL;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Order Distribution Model. Please do not set DocStatus and C_DocType_ID directly. They are set in the process() method. Use DocAction and C_DocTypeTarget_ID instead.
@@ -503,8 +502,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		final MDDOrderLine[] lines = getLines(true, I_DD_OrderLine.COLUMNNAME_M_Product_ID);
 		if (lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 
 		// Bug 1564431

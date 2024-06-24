@@ -126,6 +126,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 		return ProductsProposalRowsLoader.builder()
 				.bpartnerProductStatsService(bpartnerProductStatsService)
 				.campaignPriceProvider(campaignPriceProvider)
+				.orderProductProposalsService(orderProductProposalsService)
 				//
 				.priceListVersionId(order.getPriceListVersionId())
 				.order(order)

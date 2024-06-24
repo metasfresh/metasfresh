@@ -42,6 +42,8 @@ public class JsonHUHelper
 				return JsonClearanceStatus.Locked;
 			case Quarantined:
 				return JsonClearanceStatus.Quarantined;
+			case TestPending:
+				return JsonClearanceStatus.TestPending;
 			default:
 				throw new AdempiereException("Unknown JsonClearanceStatus:")
 						.appendParametersToMessage()
@@ -60,6 +62,8 @@ public class JsonHUHelper
 				return ClearanceStatus.Locked;
 			case Quarantined:
 				return ClearanceStatus.Quarantined;
+			case TestPending:
+				return ClearanceStatus.TestPending;
 			default:
 				throw new AdempiereException("Unknown ClearanceStatus:")
 						.appendParametersToMessage()

@@ -1,7 +1,13 @@
 package de.metas.process.ui;
 
-import java.util.List;
-
+import de.metas.adempiere.model.I_AD_Form;
+import de.metas.process.AdProcessId;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.SelectionSize;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -15,14 +21,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_AD_Form;
-import de.metas.process.AdProcessId;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RelatedProcessDescriptor;
-import de.metas.process.SelectionSize;
-import lombok.NonNull;
+import java.util.List;
+import java.util.stream.Stream;
 
 public class AProcessModelTest
 {
@@ -96,6 +96,13 @@ public class AProcessModelTest
 
 			@Override
 			public <T> List<T> getSelectedModels(final Class<T> modelClass)
+			{
+				throw new UnsupportedOperationException();
+			}
+
+			@NonNull
+			@Override
+			public <T> Stream<T> streamSelectedModels(@NonNull final Class<T> modelClass)
 			{
 				throw new UnsupportedOperationException();
 			}

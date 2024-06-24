@@ -24,53 +24,57 @@ package de.metas.picking.workflow;
 
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobLineId;
+import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
+import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
-import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.config.MobileUIPickingUserProfile;
+import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class PickingJobRestService
 {
 	private final PickingJobService pickingJobService;
-
-	public PickingJobRestService(
-			@NonNull final PickingJobService pickingJobService)
-	{
-		this.pickingJobService = pickingJobService;
-	}
-
-	public List<PickingJob> getDraftJobsByPickerId(@NonNull final UserId pickerId)
-	{
-		return pickingJobService.getDraftJobsByPickerId(pickerId);
-	}
+	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
 		return pickingJobService.getById(pickingJobId);
 	}
 
-	public Stream<PickingJobReference> streamDraftPickingJobReferences(@NonNull final UserId userId)
+	@NonNull
+	public Stream<PickingJobReference> streamDraftPickingJobReferences(@NonNull final PickingJobReferenceQuery query)
 	{
-		return pickingJobService.streamDraftPickingJobReferences(userId);
+		return pickingJobService.streamDraftPickingJobReferences(query);
 	}
 
-	public Stream<PickingJobCandidate> streamPickingJobCandidates(
-			@NonNull final UserId userId,
-			@NonNull final Set<ShipmentScheduleId> excludeShipmentScheduleIds)
+	public Stream<PickingJobCandidate> streamPickingJobCandidates(@NonNull final PickingJobQuery query)
 	{
-		return pickingJobService.streamPickingJobCandidates(userId, excludeShipmentScheduleIds);
+		return pickingJobService.streamPickingJobCandidates(query);
+	}
+
+	@NonNull
+	public PickingJobFacets getFacets(
+			@NonNull final PickingJobQuery query,
+			@NonNull final PickingJobFacets.CollectingParameters collectingParameters)
+	{
+		return pickingJobService.streamPackageable(query)
+				.collect(PickingJobFacets.collectFromPackageables(collectingParameters));
 	}
 
 	public PickingJob createPickingJob(
@@ -82,6 +86,7 @@ public class PickingJobRestService
 				.salesOrderId(params.getSalesOrderId())
 				.deliveryBPLocationId(params.getDeliveryBPLocationId())
 				.warehouseTypeId(params.getWarehouseTypeId())
+				.isAllowPickingAnyHU(mobileUIPickingUserProfileRepository.getProfile().isAllowPickingAnyHU())
 				.build());
 	}
 
@@ -99,10 +104,46 @@ public class PickingJobRestService
 		return pickingJobService.processStepEvents(pickingJob, events);
 	}
 
-	public PickingJob abort(@NonNull final PickingJob pickingJob) {return pickingJobService.abort(pickingJob);}
+	public PickingJob closeLine(@NonNull final PickingJob pickingJob, @NonNull final PickingJobLineId pickingLineId)
+	{
+		return pickingJobService.closeLine(pickingJob, pickingLineId);
+	}
 
-	public PickingJob complete(@NonNull final PickingJob pickingJob) {return pickingJobService.complete(pickingJob);}
+	public PickingJob openLine(final PickingJob pickingJob, final PickingJobLineId pickingLineId)
+	{
+		return pickingJobService.openLine(pickingJob, pickingLineId);
+	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons() {return pickingJobService.getQtyRejectedReasons();}
+	public void abort(@NonNull final PickingJob pickingJob)
+	{
+		pickingJobService.abort(pickingJob);
+	}
 
+	public void abortAllByUserId(final @NonNull UserId userId)
+	{
+		pickingJobService.abortAllByUserId(userId);
+	}
+
+	public void unassignAllByUserId(final @NonNull UserId userId)
+	{
+		pickingJobService.unassignAllByUserId(userId);
+	}
+
+	public PickingJob assignPickingJob(@NonNull final PickingJobId pickingJobId, @NonNull final UserId newResponsibleId)
+	{
+		return pickingJobService.assignPickingJob(pickingJobId, newResponsibleId);
+	}
+
+	public PickingJob complete(@NonNull final PickingJob pickingJob)
+	{
+		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+		return pickingJobService.prepareToComplete(pickingJob)
+				.createShipmentPolicy(profile.getCreateShipmentPolicy())
+				.execute();
+	}
+
+	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	{
+		return pickingJobService.getQtyRejectedReasons();
+	}
 }

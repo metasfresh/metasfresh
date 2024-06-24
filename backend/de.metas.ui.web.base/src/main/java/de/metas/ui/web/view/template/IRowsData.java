@@ -1,16 +1,14 @@
 package de.metas.ui.web.view.template;
 
-import java.util.Collection;
-import java.util.Map;
-
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Map;
 
 /*
  * #%L

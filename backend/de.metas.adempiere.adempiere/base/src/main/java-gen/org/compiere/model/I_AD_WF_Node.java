@@ -326,7 +326,7 @@ public interface I_AD_WF_Node
 
 	/**
 	 * Set Workflow.
-	 * Workflow oder Kombination von Aufgaben
+	 * Workflow or combination of tasks
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -336,7 +336,7 @@ public interface I_AD_WF_Node
 
 	/**
 	 * Get Workflow.
-	 * Workflow oder Kombination von Aufgaben
+	 * Workflow or combination of tasks
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -909,7 +909,49 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_PP_Activity_Type = "PP_Activity_Type";
 
 	/**
-	 * Set Priorität.
+	 * Set User Instructions.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_UserInstructions (@Nullable java.lang.String PP_UserInstructions);
+
+	/**
+	 * Get User Instructions.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPP_UserInstructions();
+
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_PP_UserInstructions = new ModelColumn<>(I_AD_WF_Node.class, "PP_UserInstructions", null);
+	String COLUMNNAME_PP_UserInstructions = "PP_UserInstructions";
+
+	/**
+	 * Set Always available to user.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_AlwaysAvailableToUser (@Nullable java.lang.String PP_AlwaysAvailableToUser);
+
+	/**
+	 * Get Always available to user.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPP_AlwaysAvailableToUser();
+
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_PP_AlwaysAvailableToUser = new ModelColumn<>(I_AD_WF_Node.class, "PP_AlwaysAvailableToUser", null);
+	String COLUMNNAME_PP_AlwaysAvailableToUser = "PP_AlwaysAvailableToUser";
+
+	/**
+	 * Set Priority.
 	 * Indicates if this request is of a high, medium or low priority.
 	 *
 	 * <br>Type: Integer
@@ -980,33 +1022,6 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
 
 	/**
-	 * Set Resource.
-	 * Resource
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setS_Resource_ID (int S_Resource_ID);
-
-	/**
-	 * Get Resource.
-	 * Resource
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getS_Resource_ID();
-
-	@Nullable org.compiere.model.I_S_Resource getS_Resource();
-
-	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
-
-	ModelColumn<I_AD_WF_Node, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_AD_WF_Node.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
-	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
-
-	/**
 	 * Set Setup Time.
 	 * Setup time before starting Production
 	 *
@@ -1051,6 +1066,33 @@ public interface I_AD_WF_Node
 
 	ModelColumn<I_AD_WF_Node, Object> COLUMN_SplitElement = new ModelColumn<>(I_AD_WF_Node.class, "SplitElement", null);
 	String COLUMNNAME_SplitElement = "SplitElement";
+
+	/**
+	 * Set Resource.
+	 * Resource
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Resource.
+	 * Resource
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_Resource_ID();
+
+	@Nullable org.compiere.model.I_S_Resource getS_Resource();
+
+	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
+
+	ModelColumn<I_AD_WF_Node, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_AD_WF_Node.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
 	 * Set Start Mode.

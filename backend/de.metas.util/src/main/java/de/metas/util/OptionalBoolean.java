@@ -85,6 +85,13 @@ public enum OptionalBoolean
 		}
 	}
 
+	@NonNull
+	public OptionalBoolean ifUnknown(@NonNull final OptionalBoolean other)
+	{
+		return isPresent() ? this : other;
+	}
+
+
 	@Nullable
 	public Boolean toBooleanOrNull()
 	{

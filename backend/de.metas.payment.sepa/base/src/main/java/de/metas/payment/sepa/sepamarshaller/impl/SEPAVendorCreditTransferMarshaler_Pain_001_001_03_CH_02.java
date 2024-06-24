@@ -12,6 +12,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.location.ILocationDAO;
 import de.metas.money.CurrencyId;
@@ -32,6 +33,8 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ClearingSystemMember
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ContactDetails2CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditTransferTransactionInformation10CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceInformation2;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType1Choice;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType2;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CustomerCreditTransferInitiationV03CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.FinancialInstitutionIdentification7CH;
@@ -118,6 +121,8 @@ import static java.math.BigDecimal.ZERO;
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements SEPAMarshaler
 {
 	public static final String NOTPROVIDED_VALUE = "NOTPROVIDED";
+
+	private static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
 
 	/**
 	 * Identifier of the <b>Pa</b>yment <b>In</b>itiation format (XSD) used by this marshaller.
@@ -391,38 +396,42 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		//
 		// Payment type information.
 		{
-			final PaymentTypeInformation19CH pmtTpInf = objectFactory.createPaymentTypeInformation19CH();
-			pmtInf.setPmtTpInf(pmtTpInf);
+			if (paymentMode == PAYMENT_TYPE_5 || paymentMode == PAYMENT_TYPE_1
+					|| paymentMode == PAYMENT_TYPE_2_1	|| paymentMode == PAYMENT_TYPE_2_2)
+			{
+				final PaymentTypeInformation19CH pmtTpInf = objectFactory.createPaymentTypeInformation19CH();
+				pmtInf.setPmtTpInf(pmtTpInf);
 
-			// service level
-			if (Objects.equals(paymentMode, PAYMENT_TYPE_5))
-			{
-				// ServiceLEvel.Code "SEPA" does not work if we are doing transactions in swizz.
-				// Service level - Hard-coded value of SEPA.
-				final ServiceLevel8Choice svcLvl = objectFactory.createServiceLevel8Choice();
-				svcLvl.setCd("SEPA");
-				pmtTpInf.setSvcLvl(svcLvl);
-			}
-			else if (Objects.equals(paymentMode, PAYMENT_TYPE_1))
-			{
-				// local instrument
-				final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
-				lclInstrm.setPrtry("CH01"); // Zahlungsart 1
-				pmtTpInf.setLclInstrm(lclInstrm);
-			}
-			else if (Objects.equals(paymentMode, PAYMENT_TYPE_2_1))
-			{
-				// local instrument
-				final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
-				lclInstrm.setPrtry("CH02"); // Zahlungsart 2.1
-				pmtTpInf.setLclInstrm(lclInstrm);
-			}
-			else if (Objects.equals(paymentMode, PAYMENT_TYPE_2_2))
-			{
-				// local instrument
-				final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
-				lclInstrm.setPrtry("CH03"); // Zahlungsart 2.2
-				pmtTpInf.setLclInstrm(lclInstrm);
+				// service level
+				if (paymentMode == PAYMENT_TYPE_5)
+				{
+					// ServiceLEvel.Code "SEPA" does not work if we are doing transactions in swizz.
+					// Service level - Hard-coded value of SEPA.
+					final ServiceLevel8Choice svcLvl = objectFactory.createServiceLevel8Choice();
+					svcLvl.setCd("SEPA");
+					pmtTpInf.setSvcLvl(svcLvl);
+				}
+				else if (paymentMode == PAYMENT_TYPE_1)
+				{
+					// local instrument
+					final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
+					lclInstrm.setPrtry("CH01"); // Zahlungsart 1
+					pmtTpInf.setLclInstrm(lclInstrm);
+				}
+				else if (paymentMode == PAYMENT_TYPE_2_1)
+				{
+					// local instrument
+					final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
+					lclInstrm.setPrtry("CH02"); // Zahlungsart 2.1
+					pmtTpInf.setLclInstrm(lclInstrm);
+				}
+				else if (paymentMode == PAYMENT_TYPE_2_2)
+				{
+					// local instrument
+					final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
+					lclInstrm.setPrtry("CH03"); // Zahlungsart 2.2
+					pmtTpInf.setLclInstrm(lclInstrm);
+				}
 			}
 		}
 
@@ -637,10 +646,12 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			}
 			else
 			{
+				final String otherAccountIdentification = line.getOtherAccountIdentification();
+				final String accountNo = bankAccount.getAccountNo();
+
 				final GenericAccountIdentification1CH othr = objectFactory.createGenericAccountIdentification1CH();
 				id.setOthr(othr);
 
-				final String otherAccountIdentification = line.getOtherAccountIdentification();
 				if (!Check.isEmpty(otherAccountIdentification, true))
 				{
 					// task 07789
@@ -655,29 +666,51 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 		// note: we use the structuredRemittanceInfo in ustrd, if we do SEPA (zahlart 5),
 		// because it's much less complicated
-		final String reference = Check.isBlank(line.getStructuredRemittanceInfo())
-				? line.getDescription()
-				: line.getStructuredRemittanceInfo();
+		final String reference = StringUtils.trimBlankToOptional(line.getStructuredRemittanceInfo()).orElseGet(line::getDescription);
+
 		// Remittance Info
 		{
 			final RemittanceInformation5CH rmtInf = objectFactory.createRemittanceInformation5CH();
 			if (Check.isEmpty(line.getStructuredRemittanceInfo(), true)
-					|| Objects.equals(paymentType, PAYMENT_TYPE_3)
-					|| Objects.equals(paymentType, PAYMENT_TYPE_5))
+					|| paymentType == PAYMENT_TYPE_3
+					|| paymentType == PAYMENT_TYPE_5)
 			{
 				Check.errorIf(Objects.equals(paymentType, PAYMENT_TYPE_1), SepaMarshallerException.class,
-						"SEPA_ExportLine {} has to have StructuredRemittanceInfo", createInfo(line));
+							  "SEPA_ExportLine {} has to have StructuredRemittanceInfo", createInfo(line));
 
-				// provide the line-description (if set) as unstructured remittance info
-				if (Check.isEmpty(reference, true))
+				if (!Check.isBlank(bankAccount.getQR_IBAN()))
 				{
-					// at least add a "." to make sure the node exists.
-					rmtInf.setUstrd(".");
+
+					if(isInvalidQRReference(reference))
+					{
+						throw new AdempiereException(ERR_SEPA_Export_InvalidReference,createInfo(line));
+					}
+
+					final StructuredRemittanceInformation7 strd = objectFactory.createStructuredRemittanceInformation7();
+					rmtInf.setStrd(strd);
+					final CreditorReferenceInformation2 cdtrRefInf = objectFactory.createCreditorReferenceInformation2();
+					strd.setCdtrRefInf(cdtrRefInf);
+					final CreditorReferenceType2 tp = objectFactory.createCreditorReferenceType2();
+					cdtrRefInf.setTp(tp);
+					final CreditorReferenceType1Choice cdOrPrtry = objectFactory.createCreditorReferenceType1Choice();
+					tp.setCdOrPrtry(cdOrPrtry);
+					cdOrPrtry.setPrtry("QRR");
+
+					cdtrRefInf.setRef(reference);
 				}
 				else
 				{
-					final String validReference = StringUtils.trunc(replaceForbiddenChars(reference), 140, TruncateAt.STRING_START);
-					rmtInf.setUstrd(validReference);
+					// provide the line-description (if set) as unstructured remittance info
+					if (Check.isBlank(reference))
+					{
+						// at least add a "." to make sure the node exists.
+						rmtInf.setUstrd(".");
+					}
+					else
+					{
+						final String validReference = StringUtils.trunc(replaceForbiddenChars(reference), 140, TruncateAt.STRING_START);
+						rmtInf.setUstrd(validReference);
+					}
 				}
 			}
 			else
@@ -923,7 +956,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				de.metas.payment.esr.model.I_C_BP_BankAccount.class);
 
 		final String paymentMode;
-		if (bPBankAccount.isEsrAccount() && !Check.isEmpty(line.getStructuredRemittanceInfo(), true))
+		if (bPBankAccount.isEsrAccount() && !Check.isEmpty(line.getStructuredRemittanceInfo(), true) && bPBankAccount.getQR_IBAN() == null)
 		{
 			paymentMode = PAYMENT_TYPE_1;
 		}
@@ -991,5 +1024,25 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	{
 		final IBPartnerBL bpartnerService = Services.get(IBPartnerBL.class);
 		return bpartnerService.getBPartnerName(BPartnerId.ofRepoIdOrNull(bpartnerRepoId));
+	}
+
+	@VisibleForTesting
+	static boolean isInvalidQRReference(@NonNull final String reference)
+	{
+		if(reference.length() != 27)
+		{
+			return true;
+		}
+
+		final int[] checkSequence = {0,9,4,6,8,2,7,1,3,5};
+		int carryOver = 0;
+
+		for (int i = 1; i <= reference.length() - 1; i++)
+		{
+			final int idx = ((carryOver + Integer.parseInt(reference.substring(i - 1, i))) % 10);
+			carryOver = checkSequence[idx];
+		}
+
+		return !(Integer.parseInt(reference.substring(26)) == (10 - carryOver) % 10);
 	}
 }

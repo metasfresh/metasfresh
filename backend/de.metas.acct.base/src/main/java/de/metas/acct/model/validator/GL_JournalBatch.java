@@ -22,21 +22,19 @@ package de.metas.acct.model.validator;
  * #L%
  */
 
-
-import java.sql.Timestamp;
-import java.util.List;
-
+import de.metas.acct.gljournal.IGLJournalDAO;
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
 import org.compiere.model.ModelValidator;
 
-import de.metas.acct.gljournal.IGLJournalDAO;
-import de.metas.util.Services;
+import java.sql.Timestamp;
+import java.util.List;
 
 @Interceptor(I_GL_JournalBatch.class)
 public class GL_JournalBatch

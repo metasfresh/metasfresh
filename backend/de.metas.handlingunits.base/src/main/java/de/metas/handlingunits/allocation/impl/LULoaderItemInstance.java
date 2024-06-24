@@ -1,5 +1,6 @@
 package de.metas.handlingunits.allocation.impl;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
@@ -19,7 +20,7 @@ import de.metas.util.Services;
 	private final I_M_HU_Item luItem;
 	private final int luPIItemId;
 	private final IHUItemStorage luItemStorage;
-	private final int requiredBPartnerId;
+	private final BPartnerId requiredBPartnerId;
 	private final int requiredTU_HU_PI_ID;
 
 	public LULoaderItemInstance(final IHUContext huContext, final I_M_HU_Item luItem)
@@ -32,12 +33,7 @@ import de.metas.util.Services;
 		final I_M_HU_PI_Item luPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(luItem);
 		luPIItemId = luPIItem.getM_HU_PI_Item_ID();
 
-		int requiredBPartnerId = luPIItem.getC_BPartner_ID();
-		if (requiredBPartnerId <= 0)
-		{
-			requiredBPartnerId = -1;
-		}
-		this.requiredBPartnerId = requiredBPartnerId;
+		this.requiredBPartnerId = BPartnerId.ofRepoIdOrNull(luPIItem.getC_BPartner_ID());
 
 		int requiredTU_HU_PI_ID = luPIItem.getIncluded_HU_PI_ID();
 		if (requiredTU_HU_PI_ID <= 0)
@@ -65,10 +61,8 @@ import de.metas.util.Services;
 	 * <li>ordered by M_HU_PI_Item_ID ascending
 	 * <li>nulls will be last
 	 * </ul>
-	 *
+	 * <p>
 	 * NOTE: this method is extremelly important for determining the priority of an {@link LULoaderItemInstance}.
-	 *
-	 * @param other
 	 */
 	@Override
 	public final int compareTo(final LULoaderItemInstance other)
@@ -84,11 +78,11 @@ import de.metas.util.Services;
 			return +1;
 		}
 
-		if (requiredBPartnerId != other.requiredBPartnerId)
+		if (!BPartnerId.equals(requiredBPartnerId, other.requiredBPartnerId))
 		{
 			// Items with Specific BPartners First
 			// Items with no BPartners Last
-			return -1 * (requiredBPartnerId - other.requiredBPartnerId);
+			return -1 * (BPartnerId.toRepoIdOr(requiredBPartnerId, 0) - BPartnerId.toRepoIdOr(other.requiredBPartnerId, 0));
 		}
 
 		if (requiredTU_HU_PI_ID != other.requiredTU_HU_PI_ID)
@@ -125,7 +119,7 @@ import de.metas.util.Services;
 	}
 
 	/**
-	 * @return {@code true} if the given {@code tuHU} fits to this instance's wrapped item. 
+	 * @return {@code true} if the given {@code tuHU} fits to this instance's wrapped item.
 	 */
 	public boolean isMatchTU(final I_M_HU tuHU)
 	{
@@ -142,10 +136,10 @@ import de.metas.util.Services;
 
 		//
 		// Check if TU's BPartner is accepted
-		if (requiredBPartnerId > 0)
+		if (requiredBPartnerId != null)
 		{
-			final int tuBPartnerId = tuHU.getC_BPartner_ID();
-			if (tuBPartnerId != requiredBPartnerId)
+			final BPartnerId tuBPartnerId = BPartnerId.ofRepoIdOrNull(tuHU.getC_BPartner_ID());
+			if (!BPartnerId.equals(tuBPartnerId, requiredBPartnerId))
 			{
 				return false;
 			}

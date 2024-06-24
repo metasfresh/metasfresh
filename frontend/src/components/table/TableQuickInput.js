@@ -1,15 +1,16 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
+import cx from 'classnames';
 import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
+import { completeRequest } from '../../api';
 import {
-  completeQuickInput,
-  deleteQuickInput,
   fetchQuickInputData,
   fetchQuickInputLayout,
+  deleteQuickInput,
+  setQuickinputData,
   patchQuickInput,
-  updateQuickinputData,
-} from '../../actions/TableQuickInputActions';
+} from '../../actions/IndependentWidgetsActions';
 
 import WidgetWrapper from '../../containers/WidgetWrapper';
 
@@ -18,59 +19,59 @@ class TableQuickInput extends PureComponent {
   patchPromise;
   // widgets refs
   rawWidgets = [];
-  rawWidgetsByFieldName = {};
   // local state
-  state = { hasFocus: true, isSubmitPending: false };
+  state = { hasFocus: true };
 
   componentDidMount() {
-    // noinspection JSIgnoredPromiseFromCall
     this.initQuickInput();
   }
 
-  componentWillUnmount() {
-    const { deleteQuickInput } = this.props;
-    deleteQuickInput();
-  }
-
   componentDidUpdate() {
-    // --------------
-    // NOTE: don't focus on next mandatory field on each update because,
-    // that will skip packing instructions field after user enters product in sales order for example.
-    // {{{{{{{{{{{{{
-    // const { inProgress } = this.props;
-    // const { hasFocus } = this.state;
-    //
-    // // focus first field with errors
-    // if (hasFocus && !inProgress) {
-    //   this.focusFirstFieldWithErrors();
-    // }
-    // }}}}}}}}}}}}}
+    const { data, layout, inProgress } = this.props;
+
+    // refocus the first widget after update
+    if (data && layout && !inProgress) {
+      const item = layout[0].fields.map((elem) => data[elem.field] || -1);
+
+      if (!item[0].value) {
+        if (this.rawWidgets) {
+          this.focusWidgetField();
+        }
+      }
+    }
   }
 
-  focusFirstFieldWithErrors = () => {
-    const validationResult = this.validateForm();
-    if (validationResult.fieldName) {
-      this.focusField(validationResult.fieldName);
-    }
-  };
+  /**
+   * @method focusWidgetField
+   * @summary function to manually focus a widget
+   */
+  focusWidgetField = () => {
+    const { hasFocus } = this.state;
+    let curWidget = this.rawWidgets[0];
 
-  focusField = (fieldName) => {
-    const widget = this.rawWidgetsByFieldName[fieldName];
-    widget?.focus?.();
+    if (
+      hasFocus &&
+      curWidget &&
+      curWidget.rawWidget &&
+      curWidget.rawWidget.current &&
+      curWidget.rawWidget.current.focus
+    ) {
+      curWidget.rawWidget.current.focus();
+    }
   };
 
   initQuickInput = async () => {
     const {
-      windowId,
+      addNotification,
+      docType,
       docId,
       tabId,
-      addNotification,
       fetchQuickInputData,
       fetchQuickInputLayout,
     } = this.props;
 
     await fetchQuickInputData({
-      windowId,
+      windowId: docType,
       docId,
       tabId,
     })
@@ -88,7 +89,7 @@ class TableQuickInput extends PureComponent {
       });
 
     await fetchQuickInputLayout({
-      windowId,
+      windowId: docType,
       docId,
       tabId,
     }).catch(({ response }) => {
@@ -99,84 +100,72 @@ class TableQuickInput extends PureComponent {
       console.error(error);
       this.closeBatchEntry();
     });
-
-    this.focusFirstFieldWithErrors();
   };
 
   handleChange = (field, value) => {
-    const { updateQuickinputData } = this.props;
+    const { setQuickinputData } = this.props;
     const fieldData = {};
     fieldData[field] = { value };
 
-    updateQuickinputData(fieldData);
+    setQuickinputData(fieldData);
   };
 
   handlePatch = (prop, value, callback) => {
-    const { windowId, docId, tabId, patchQuickInput } = this.props;
+    const { docType, docId, tabId, patchQuickInput } = this.props;
 
     this.patchPromise = new Promise((resolve) => {
-      patchQuickInput({ windowId, docId, tabId, prop, value }).then(() => {
-        if (callback) {
-          callback();
+      patchQuickInput({ windowId: docType, docId, tabId, prop, value }).then(
+        () => {
+          if (callback) {
+            callback();
+          }
+          resolve();
         }
-        resolve();
-      });
+      );
     });
   };
 
   onSubmit = (e) => {
-    if (this.state.isSubmitPending) {
-      return;
-    }
-
-    const { windowId, docId, tabId, quickInputId, addNotification } =
-      this.props;
+    const { addNotification, docType, docId, tabId, data, id } = this.props;
 
     e.preventDefault();
 
-    // blur to make sure the field value is committed, events are fired, etc
-    const activeElement = document.activeElement;
-    activeElement.blur();
+    document.activeElement.blur();
 
-    const validationResult = this.validateForm();
-    if (validationResult.error) {
-      // Focus the last active element, to allow user continuing typing.
-      activeElement.focus();
-
-      return addNotification('Error', validationResult.error, 5000, 'error');
+    if (!this.validateForm(data)) {
+      return addNotification(
+        'Error',
+        'Mandatory fields are not filled!',
+        5000,
+        'error'
+      );
     }
-
-    this.setState({ isSubmitPending: true });
 
     return this.patchPromise
-      .then(() => completeQuickInput({ windowId, docId, tabId, quickInputId }))
-      .then(this.initQuickInput)
-      .finally(() => this.setState({ isSubmitPending: false }));
+      .then(() => {
+        return completeRequest(
+          'window',
+          docType,
+          docId,
+          tabId,
+          null,
+          'quickInput',
+          id
+        );
+      })
+      .then(this.initQuickInput);
   };
 
-  /** Validates form data returning first error */
-  validateForm = () => {
-    const { data } = this.props;
-
-    if (data) {
-      for (const fieldName of Object.keys(data)) {
-        const fieldData = data[fieldName];
-        if (fieldData.mandatory && !fieldData.value) {
-          return {
-            fieldName,
-            error: 'Mandatory fields are not filled!',
-          };
-        }
-      }
-    }
-
-    return {}; // no error
+  validateForm = (data) => {
+    return !Object.keys(data).filter(
+      (key) => data[key].mandatory && !data[key].value
+    ).length;
   };
 
   closeBatchEntry() {
-    const { closeBatchEntry, deleteQuickInput, quickInputId } = this.props;
+    const { closeBatchEntry, deleteQuickInput, id } = this.props;
 
-    if (quickInputId) {
+    if (id) {
       deleteQuickInput();
       closeBatchEntry();
     }
@@ -187,73 +176,77 @@ class TableQuickInput extends PureComponent {
    * @summary resets cachedValue for widgets after getting new data
    */
   resetWidgetValues = () => {
-    this.rawWidgets.forEach((widget) => widget.resetCachedValue());
+    this.rawWidgets.forEach((widget) => {
+      widget.resetCachedValue();
+    });
   };
 
   setRef = (refNode) => {
     this.form = refNode;
   };
 
-  setWidgetWrapperElement = (widgetWrapperElement, fieldNames) => {
-    const rawWidgetElement = widgetWrapperElement?.getWrappedElement?.();
-    if (!rawWidgetElement) {
-      return;
-    }
-
-    this.rawWidgets.push(rawWidgetElement);
-
-    fieldNames.forEach((fieldName) => {
-      this.rawWidgetsByFieldName[fieldName] = rawWidgetElement;
-    });
+  setWidgetsRef = (refNode) => {
+    refNode &&
+      refNode.childRef &&
+      refNode.childRef.current &&
+      this.rawWidgets.push(refNode.childRef.current);
   };
 
   renderFields = () => {
-    const {
-      windowId,
-      tabId,
-      docId,
-      forceHeight,
-      //
-      data,
-      layout,
-      quickInputId,
-      inProgress,
-    } = this.props;
-    const { isSubmitPending } = this.state;
+    const { tabId, docType, forceHeight, data, layout, id, inProgress, docId } =
+      this.props;
+
+    const layoutFieldsAmt = layout ? layout.length : 2;
+    const stylingLayout = [
+      {
+        formGroup: cx(`col-12`, {
+          'col-lg-5': layoutFieldsAmt === 2,
+          'col-xl-6': layoutFieldsAmt === 2,
+          'col-lg-4': layoutFieldsAmt === 3,
+          'col-xl-5': layoutFieldsAmt === 3,
+        }),
+        label: `col-12 col-lg-3 quickInput-label`,
+        field: `col-12 col-lg-9`,
+      },
+      {
+        formGroup: `col-12 col-lg-3 col-xl-3`,
+        label: `col-12 col-sm-4 col-lg-5 col-xl-4`,
+        field: `col-12 col-sm-8 col-lg-7 col-xl-8`,
+      },
+      {
+        formGroup: `col-12 col-lg-3 col-xl-2`,
+        label: `col-12 col-sm-9 col-lg-7`,
+        field: `col-12 col-sm-3 col-lg-5`,
+      },
+    ];
 
     if (data && layout) {
-      const readonly = isSubmitPending;
-
       return layout.map((item, idx) => {
-        const fieldNames = item.fields.map((elem) => elem.field);
-        const widgetData = item.fields.map((elem) => {
-          let fieldData = data[elem.field] || {};
-          if (readonly && !fieldData.readonly) {
-            fieldData = { ...fieldData, readonly: true };
-          }
-          return fieldData;
-        });
+        const widgetData = item.fields.map((elem) => data[elem.field] || -1);
+        const lastFormField = idx === layout.length - 1;
 
         return (
           <WidgetWrapper
-            key={idx}
-            ref={(node) => this.setWidgetWrapperElement(node, fieldNames)}
+            ref={this.setWidgetsRef}
             dataSource="quick-input"
-            entity={'window'}
-            windowType={windowId}
-            tabId={tabId}
-            subentity="quickInput"
-            subentityId={quickInputId}
+            fieldFormGroupClass={stylingLayout[idx].formGroup}
+            fieldLabelClass={stylingLayout[idx].label}
+            fieldInputClass={stylingLayout[idx].field}
             inProgress={inProgress}
+            entity={'window'}
+            subentity="quickInput"
+            subentityId={id}
+            tabId={tabId}
+            windowType={docType}
             widgetType={item.widgetType}
-            widgetSize={item.size}
             fields={item.fields}
             dataId={docId}
             widgetData={widgetData}
             gridAlign={item.gridAlign}
             forceFullWidth={widgetData.length > 1}
             forceHeight={forceHeight}
-            propagateEnterKeyEvent={true} // make sure Enter key is propagated, so onSubmit is called
+            key={idx}
+            lastFormField={lastFormField}
             caption={item.caption}
             handlePatch={this.handlePatch}
             handleChange={this.handleChange}
@@ -266,22 +259,9 @@ class TableQuickInput extends PureComponent {
     }
   };
 
-  renderSubmitButton = () => {
-    const { isSubmitPending } = this.state;
-
-    return (
-      <>
-        <div className="col-sm-12 col-md-3 col-lg-2 hint">
-          {`(Press 'Enter' to add)`}
-        </div>
-        {!isSubmitPending && <button type="submit" className="hidden-up" />}
-      </>
-    );
-  };
-
   /**
    * @method handleClickOutside
-   * @summary Whenever we click outside the Quick Input form we set the flag `hasFocus`
+   * @summary Whenever we click outside of the Quick Input form we set the flag `hasFocus`
    *          This is needed as by default the logic introduced in https://github.com/metasfresh/metasfresh/pull/11163/files
    *          is setting by default the focus when the component receives new props (after the item was introduced its focusing on the first field)
    */
@@ -302,19 +282,22 @@ class TableQuickInput extends PureComponent {
         onClick={this.handleOnClick}
       >
         {this.renderFields()}
-        {this.renderSubmitButton()}
+        <div className="col-sm-12 col-md-3 col-lg-2 hint">
+          {`(Press 'Enter' to add)`}
+        </div>
+        <button type="submit" className="hidden-up" />
       </form>
     );
   }
 }
 
-const mapStateToProps = ({ tableQuickInputHandler }) => {
-  const { quickInputId, layout, data, inProgress } = tableQuickInputHandler;
+const mapStateToProps = ({ widgetHandler }) => {
+  const { layout, data, id, inProgress } = widgetHandler.quickInput;
 
   return {
     layout,
     data,
-    quickInputId,
+    id,
     inProgress,
   };
 };
@@ -328,32 +311,26 @@ const mapDispatchToProps = (dispatch, ownProps) => {
         ? ownProps.fetchQuickInputLayout(args, dispatch)
         : dispatch(fetchQuickInputLayout({ ...args })),
     deleteQuickInput: () => dispatch(deleteQuickInput()),
-    updateQuickinputData: (args) => dispatch(updateQuickinputData(args)),
+    setQuickinputData: (args) => dispatch(setQuickinputData(args)),
     patchQuickInput: (args) => dispatch(patchQuickInput({ ...args })),
   };
 };
 
 TableQuickInput.propTypes = {
-  windowId: PropTypes.any.isRequired,
-  docId: PropTypes.string.isRequired,
-  tabId: PropTypes.string.isRequired,
-  forceHeight: PropTypes.number,
-  closeBatchEntry: PropTypes.func,
   addNotification: PropTypes.func.isRequired,
-
-  //
-  // mapStateToProps
+  closeBatchEntry: PropTypes.func,
+  forceHeight: PropTypes.number,
+  docType: PropTypes.any,
+  docId: PropTypes.string,
+  tabId: PropTypes.string,
   layout: PropTypes.array,
   data: PropTypes.object,
-  quickInputId: PropTypes.any,
+  id: PropTypes.any,
   inProgress: PropTypes.bool,
-
-  //
-  // mapDispatchToProps:
   fetchQuickInputData: PropTypes.func.isRequired,
   fetchQuickInputLayout: PropTypes.func.isRequired,
   deleteQuickInput: PropTypes.func.isRequired,
-  updateQuickinputData: PropTypes.func.isRequired,
+  setQuickinputData: PropTypes.func.isRequired,
   patchQuickInput: PropTypes.func.isRequired,
 };
 
@@ -362,5 +339,4 @@ export default connect(
   mapDispatchToProps
 )(onClickOutside(TableQuickInput));
 
-// needed for testing
 export { TableQuickInput };

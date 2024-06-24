@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor3
 Feature: ASI support in Product BOM rest-api
   Add ProductBOM and ProductBOMLine with ASI via rest-api
   Using default ad_orgId 1000000
@@ -159,10 +160,14 @@ Feature: ASI support in Product BOM rest-api
 
     And the order identified by order_SO is completed
 
-    And after not more than 60s, AD_EventLog_Entry are found
-      | AD_EventLog_Entry_ID.Identifier | Classname                                              | MsgText                                               | Processed |
-      | eventLog_1                      | de.metas.material.planning.event.SupplyRequiredHandler | No PP_Product_Planning record found => nothing to do; | false     |
-      | eventLog_2                      | de.metas.material.planning.event.SupplyRequiredHandler | this handler is done                                  | true      |
+      And after not more than 60s, AD_EventLog are found
+        | AD_EventLog_ID.Identifier | EventType           | SupplyRequiredEvent.M_Product_ID.Identifier | EventData.Pattern   |
+        | eventLog_1                | SupplyRequiredEvent | product_S1                                  | SupplyRequiredEvent |
+
+      And after not more than 60s, AD_EventLog_Entry are found
+        | AD_EventLog_Entry_ID.Identifier | AD_EventLog_ID.Identifier | Classname                                              | MsgText                                               | Processed |
+        | eventLogEntry_1                 | eventLog_1                | de.metas.material.planning.event.SupplyRequiredHandler | No PP_Product_Planning record found => nothing to do; | false     |
+        | eventLogEntry_2                 | eventLog_1                | de.metas.material.planning.event.SupplyRequiredHandler | this handler is done                                  | true      |
 
   @from:cucumber
   Scenario: Create sales order without ASI, on complete production candidate is found having the productPlanning ASI
@@ -607,8 +612,8 @@ Feature: ASI support in Product BOM rest-api
   }
   """
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | M_PricingSystem_ID.Identifier | OPT.DatePromised     |
-      | order_SO   | Y       | customer_SO              | 2022-01-09  | ps_SO                         | 2022-01-08T21:00:00Z |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_PricingSystem_ID.Identifier | OPT.DatePromised     |
+      | order_SO   | Y       | customer_SO              | 2022-01-09  | ps_SO_1                           | 2022-01-08T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_SO | order_SO              | product_S4              | 20         | orderLineAttributeSetInstance            |

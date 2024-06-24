@@ -22,6 +22,7 @@
 			of base directories -->
 		<migration-sql-basedir/>
 		<metasfresh.version>10.0.0</metasfresh.version>
+		<testcontainers.version>1.16.2</testcontainers.version>
 	</properties>
 
 	<dependencies>
@@ -368,6 +369,27 @@
 			<artifactId>takari-cpsuite </artifactId>
 			<version>1.2.7</version>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.migration</groupId>
+			<artifactId>de.metas.migration.cli</artifactId>
+			<version>${metasfresh.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers</artifactId>
+			<version>${testcontainers.version}</version>
+			<scope>test</scope>
+			<exclusions>
+				<!-- avoid ClassNotFoundException regarding InputCoercionException-->
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-core</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 	</dependencies>

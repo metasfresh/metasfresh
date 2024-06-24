@@ -24,6 +24,8 @@ package de.metas.order.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -74,13 +76,13 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
 import de.metas.tax.api.Tax;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
@@ -98,6 +100,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_DocType;
@@ -112,9 +115,13 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
@@ -132,7 +139,6 @@ public class OrderBL implements IOrderBL
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -140,7 +146,6 @@ public class OrderBL implements IOrderBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -487,7 +492,7 @@ public class OrderBL implements IOrderBL
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(coalesce(
 				orderRecord.getBill_BPartner_ID(),
 				orderRecord.getC_BPartner_ID()));
-		if(shipBPartnerId == null || billBPartnerId == null)
+		if (shipBPartnerId == null || billBPartnerId == null)
 		{
 			return Optional.empty(); // orderRecord is not yet ready
 		}
@@ -727,11 +732,11 @@ public class OrderBL implements IOrderBL
 		OrderDocumentLocationAdapterFactory
 				.billLocationAdapter(order)
 				.setFrom(DocumentLocation.builder()
-								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
-								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
-								 .locationId(newBPartnerLocationId.getLocationCaptureId())
-								 .contactId(newContactId)
-								 .build());
+						.bpartnerId(newBPartnerLocationId.getBpartnerId())
+						.bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+						.locationId(newBPartnerLocationId.getLocationCaptureId())
+						.contactId(newContactId)
+						.build());
 
 		return true; // found it
 	}
@@ -774,7 +779,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Order order, final Tax tax)
+	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Order order, @Nullable final Tax tax)
 	{
 		if (tax != null && tax.isWholeTax())
 		{
@@ -814,9 +819,7 @@ public class OrderBL implements IOrderBL
 	{
 		//
 		// Calculate QtyOrdered as QtyEntered converted to stocking UOM
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final Quantity qtyEntered = orderLineBL.getQtyEntered(orderLine);
-		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(qtyEntered, productId);
+		final Quantity qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(orderLine);
 
 		//
 		// Set QtyOrdered
@@ -1188,39 +1191,98 @@ public class OrderBL implements IOrderBL
 	public String getLocationEmail(@NonNull final OrderId orderId)
 	{
 		final I_C_Order order = orderDAO.getById(orderId);
-
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
-		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()));
 
-		final String locationEmail = bpartnerLocation.getEMail();
-		if (!Check.isEmpty(locationEmail))
+		//
+		// Check main (ship) location
 		{
-			return locationEmail;
+			final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()));
+			final String locationEmail = bpartnerLocation != null ? StringUtils.trimBlankToNull(bpartnerLocation.getEMail()) : null;
+			if (locationEmail != null)
+			{
+				return locationEmail;
+			}
 		}
 
+		//
+		// Check main (ship) contact
 		final BPartnerContactId orderContactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getAD_User_ID());
-
-		final String contactLocationEmail = bpartnerDAO.getContactLocationEmail(orderContactId);
-		if (!Check.isEmpty(contactLocationEmail))
+		if (orderContactId != null)
 		{
-			return contactLocationEmail;
+			final String contactLocationEmail = StringUtils.trimBlankToNull(bpartnerDAO.getContactLocationEmail(orderContactId));
+			if (contactLocationEmail != null)
+			{
+				return contactLocationEmail;
+			}
 		}
 
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
-
-		if(bpartnerLocationId == null)
+		//
+		// Check bill location
+		final BPartnerLocationId billBPLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
+		if (billBPLocationId != null)
 		{
-			return null;
+			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationById(billBPLocationId);
+			final String billLocationEmail = billLocationRecord != null ? StringUtils.trimBlankToNull(billLocationRecord.getEMail()) : null;
+			if (billLocationEmail != null)
+			{
+				return billLocationEmail;
+			}
 		}
 
-		final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(bpartnerLocationId);
-
-		return billLocationRecord.getEMail();
+		//
+		// Fallback: nothing
+		return null;
 	}
 
 	@Override
 	public String getDocumentNoById(@NonNull final OrderId orderId)
 	{
 		return getById(orderId).getDocumentNo();
+	}
+
+	@Override
+	public Map<OrderId, String> getDocumentNosByIds(@NonNull final Collection<OrderId> orderIds)
+	{
+		return getByIds(orderIds).stream()
+				.collect(ImmutableMap.toImmutableMap(order -> OrderId.ofRepoId(order.getC_Order_ID()), I_C_Order::getDocumentNo));
+	}
+
+	@Override
+	public void setWeightFromLines(@NonNull final I_C_Order order)
+	{
+		final List<I_C_OrderLine> lines = orderDAO.retrieveOrderLines(OrderId.ofRepoId(order.getC_Order_ID()));
+
+		final ImmutableSet<ProductId> productIds = lines
+				.stream()
+				.map(line -> ProductId.ofRepoId(line.getM_Product_ID()))
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Map<ProductId, I_M_Product> productId2Product = productBL.getByIdsInTrx(productIds)
+				.stream()
+				.collect(Collectors.toMap(product -> ProductId.ofRepoId(product.getM_Product_ID()), Function.identity()));
+
+		final BigDecimal weight = lines.stream()
+				.map(line -> {
+					final I_M_Product product = productId2Product.get(ProductId.ofRepoId(line.getM_Product_ID()));
+
+					return product.getWeight().multiply(line.getQtyOrdered());
+				})
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		order.setWeight(weight);
+	}
+
+	@NonNull
+	public List<OrderId> getUnprocessedIdsBy(@NonNull final ProductId productId)
+	{
+		return orderDAO.getUnprocessedIdsBy(productId);
+	}
+
+	@Override
+	@NonNull
+	public List<I_C_Order> getByIds(@NonNull final Collection<OrderId> orderIds)
+	{
+		return orderDAO.getByIds(orderIds);
 	}
 }

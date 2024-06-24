@@ -1,5 +1,6 @@
 package de.metas.tourplanning.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
@@ -23,14 +24,16 @@ import org.slf4j.MDC;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 
 public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 {
-	public static final String SYSCONFIG_Fallback_PreparationDate = "de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate";
+	private static final String SYSCONFIG_Fallback_PreparationDate = "de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate";
 
-	public static final String SYSCONFIG_Fallback_PreparationDate_Offset_Hours = "de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate_Offset_Hours";
+	private static final String SYSCONFIG_Fallback_PreparationDate_Offset_Hours = "de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate_Offset_Hours";
 
-	private static final transient Logger logger = LogManager.getLogger(OrderDeliveryDayBL.class);
+	private static final Logger logger = LogManager.getLogger(OrderDeliveryDayBL.class);
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -75,17 +78,13 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		{
 			// task 09254
 			// Also use the fallback to the date promised if the sysconfig is set to true
-
-			isUseFallback = Services.get(ISysConfigBL.class)
-					.getBooleanValue(
-							SYSCONFIG_Fallback_PreparationDate, true // default true
-					);
+			isUseFallback = sysConfigBL.getBooleanValue(SYSCONFIG_Fallback_PreparationDate, true);
 		}
 		final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(order);
 
 		// the date+time when the order was created
-		final ZonedDateTime calculationTime = CoalesceUtil.coalesce(
+		final ZonedDateTime calculationTime = CoalesceUtil.coalesceNotNull(
 				TimeUtil.asZonedDateTime(order.getCreated()),
 				SystemTime.asZonedDateTime());
 		final ImmutablePair<TourId, ZonedDateTime> tourAndDate = deliveryDayBL.calculateTourAndPreparationDate(
@@ -99,7 +98,9 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		final ZonedDateTime systemTime = de.metas.common.util.time.SystemTime.asZonedDateTime(timeZone);
 		if (preparationDate != null && preparationDate.isAfter(systemTime))
 		{
-			order.setPreparationDate(TimeUtil.asTimestamp(preparationDate));
+			final int offset = isUseFallback ? getFallbackPreparationDateOffsetInHours() : 0;
+
+			order.setPreparationDate(TimeUtil.asTimestamp(computePreparationTime(preparationDate, offset)));
 
 			logger.debug("Setting Tour {} for C_Order {}. Old Tour was {} (fallbackToDatePromised={}, systemTime={})",
 					tourAndDate.getLeft().getRepoId(),
@@ -115,10 +116,8 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		}
 		else if (isUseFallback)
 		{
-			int offset = sysConfigBL.getIntValue(
-					SYSCONFIG_Fallback_PreparationDate_Offset_Hours,
-					0);
-			order.setPreparationDate(TimeUtil.addHours(order.getDatePromised(), offset));
+			int offset = getFallbackPreparationDateOffsetInHours();
+			order.setPreparationDate(TimeUtil.asTimestamp(computePreparationTime(datePromised, offset)));
 			order.setM_Tour_ID(-1);
 			logger.debug(
 					"Setting PreparationDate={} for C_Order {} from order's DatePromised value, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}).",
@@ -128,11 +127,41 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		{
 			order.setPreparationDate(null);
 			order.setM_Tour_ID(-1);
-			logger.info(
-					"Setting PreparationDate={} for C_Order {}, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}). Leaving it to the user to set a date manually.",
+			logger.info("Setting PreparationDate={} for C_Order {}, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}). Leaving it to the user to set a date manually.",
 					preparationDate, order, preparationDate, isUseFallback, systemTime);
 		}
 
 		return true; // value set
+	}
+
+	private int getFallbackPreparationDateOffsetInHours() {return sysConfigBL.getIntValue(SYSCONFIG_Fallback_PreparationDate_Offset_Hours, 0);}
+
+	@VisibleForTesting
+	static ZonedDateTime computePreparationTime(final ZonedDateTime preparationTimeBase, final int offsetInHours)
+	{
+		ZonedDateTime preparationTime;
+		if (offsetInHours == 0)
+		{
+			preparationTime = preparationTimeBase;
+		}
+		else
+		{
+			final boolean add = offsetInHours >= 0;
+			int offset = Math.abs(offsetInHours);
+			TemporalUnit unit = ChronoUnit.HOURS;
+
+			// Avoid daylight saving errors in case we have to offset entire days
+			if (offset % 24 == 0)
+			{
+				offset /= 24;
+				unit = ChronoUnit.DAYS;
+			}
+
+			preparationTime = add
+					? preparationTimeBase.plus(offset, unit)
+					: preparationTimeBase.minus(offset, unit);
+		}
+
+		return preparationTime;
 	}
 }

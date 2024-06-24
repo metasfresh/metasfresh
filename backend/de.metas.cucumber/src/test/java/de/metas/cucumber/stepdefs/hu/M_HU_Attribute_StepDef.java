@@ -22,9 +22,13 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
+import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -39,18 +43,26 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_M_Attribute.COLUMNNAME_AttributeValueType;
 
 public class M_HU_Attribute_StepDef
 {
@@ -82,14 +94,11 @@ public class M_HU_Attribute_StepDef
 	@And("M_HU_Attribute is validated")
 	public void validate_m_hu_attribute(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> tableRow : dataTable.asMaps())
-		{
-			validateHUAttribute(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::validateHUAttribute);
 	}
 
-	@And("update M_HU_Attribute:")
-	public void update_M_HU_Attribute(@NonNull final DataTable dataTable)
+	@And("update M_HU_Attribute recursive:")
+	public void update_M_HU_Attribute_recursive(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
@@ -106,28 +115,103 @@ public class M_HU_Attribute_StepDef
 		}
 	}
 
-	private void validateHUAttribute(@NonNull final Map<String, String> tableRow)
+	@And("update M_HU_Attribute:")
+	public void update_M_HU_Attribute(@NonNull final DataTable dataTable)
 	{
-		final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_Attribute.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int huId = huTable.getOptional(huIdentifier)
-				.map(I_M_HU::getM_HU_ID)
-				.orElseGet(() -> Integer.parseInt(huIdentifier));
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			updateHuAttribute(row);
+		}
+	}
 
-		final I_M_HU huRecord = InterfaceWrapperHelper.load(huId, I_M_HU.class);
-		assertThat(huRecord).isNotNull();
+	private void updateHuAttribute(@NonNull final Map<String, String> row)
+	{
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_HU huRecord = huTable.get(huIdentifier);
 
-		final String attributeCodeString = DataTableUtil.extractStringForColumnName(tableRow, I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
-		final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeString);
+		final AttributeId attributeId = AttributeId.ofRepoId(DataTableUtil.extractIntForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID));
 
-		final I_M_Attribute attributeRecord = attributeDAO.retrieveAttributeByValueOrNull(attributeCode);
-		assertThat(attributeRecord).isNotNull();
+		final I_M_HU_Attribute huAttributeRecord = huAttributesDAO.retrieveAttribute(huRecord, attributeId);
+		Assertions.assertThat(huAttributeRecord).isNotNull();
 
-		final AttributeId attributeId = AttributeId.ofRepoId(attributeRecord.getM_Attribute_ID());
-		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, attributeId);
-		assertThat(huAttribute).isNotNull();
+		final AttributeValueType attributeValueType = AttributeValueType.ofCode(DataTableUtil.extractStringForColumnName(row, COLUMNNAME_AttributeValueType));
 
-		final BigDecimal valueNumber = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_HU_Attribute.COLUMNNAME_ValueNumber);
-		assertThat(valueNumber).isEqualByComparingTo(huAttribute.getValueNumber());
+		switch (attributeValueType)
+		{
+			case DATE:
+				final Timestamp attributeValueTimestamp = DataTableUtil.extractDateTimestampForColumnName(row, I_M_HU_Attribute.COLUMNNAME_Value);
+				huAttributeRecord.setValueDate(attributeValueTimestamp);
+				break;
+			case STRING:
+				final String attributeValueString = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_Value);
+				huAttributeRecord.setValue(attributeValueString);
+				break;
+			default:
+				throw new AdempiereException(COLUMNNAME_AttributeValueType + " is not supported: " + attributeValueType);
+		}
+
+		saveRecord(huAttributeRecord);
+	}
+
+	private void validateHUAttribute(@NonNull final DataTableRow row)
+	{
+		final List<StepDefDataIdentifier> huIdentifiers = row.getAsIdentifier(I_M_HU_Attribute.COLUMNNAME_M_HU_ID).toCommaSeparatedList();
+		assertThat(huIdentifiers).as("M_HU_ID").isNotEmpty();
+
+		for (final StepDefDataIdentifier huIdentifier : huIdentifiers)
+		{
+			SharedTestContext.put("huIdentifier", huIdentifier);
+
+			final int huId = huIdentifier.lookupIn(huTable).getM_HU_ID();
+			SharedTestContext.put("huId", huId);
+
+			final I_M_HU huRecord = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+			assertThat(huRecord).isNotNull();
+
+			final String attributeCodeString = row.getAsString(I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
+			final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeString);
+			SharedTestContext.put("attributeCode", attributeCode);
+
+			final I_M_Attribute attributeRecord = attributeDAO.retrieveAttributeByValue(attributeCode);
+
+			final AttributeId attributeId = AttributeId.ofRepoId(attributeRecord.getM_Attribute_ID());
+			final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, attributeId);
+			assertThat(huAttribute).as("M_HU_Attribute exists").isNotNull();
+			SharedTestContext.put("huAttribute", () -> toString(huAttribute));
+
+			row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_Value)
+					.ifPresent(valueString -> {
+						final String valueStringNorm = !valueString.equalsIgnoreCase("-") ? valueString : null;
+						assertThat(huAttribute.getValue()).as("Value(string)").isEqualTo(valueStringNorm);
+					});
+			row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber)
+					.ifPresent(valueNumber -> {
+						assertThat(huAttribute.getValueNumber()).as("ValueNumber").isEqualByComparingTo(valueNumber);
+					});
+			row.getAsOptionalBoolean(I_M_HU_Attribute.COLUMNNAME_ValueNumber + ".IsNull")
+					.ifPresent(expectedIsNull -> {
+						final boolean actualIsNull = InterfaceWrapperHelper.isNull(huAttribute, I_M_HU_Attribute.COLUMNNAME_ValueNumber);
+						assertThat(expectedIsNull).as("ValueNumber.IsNull").isEqualTo(actualIsNull);
+					});
+			row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_ValueDate)
+					.ifPresent(valueString -> {
+						final LocalDate valueDate = !valueString.equalsIgnoreCase("-") ? LocalDate.parse(valueString) : null;
+						assertThat(TimeUtil.asLocalDate(huAttribute.getValueDate())).as("ValueDate").isEqualTo(valueDate);
+					});
+		}
+	}
+
+	private static String toString(final I_M_HU_Attribute huAttribute)
+	{
+		if (huAttribute == null)
+		{
+			return null;
+		}
+		return "M_HU_Attribute_ID=" + huAttribute.getM_Attribute_ID()
+				+ ", Value=" + huAttribute.getValue()
+				+ ", ValueNumber=" + huAttribute.getValueNumber()
+				+ ", ValueDate=" + huAttribute.getValueDate();
 	}
 
 	private void changeHUAttribute(@NonNull final Map<String, String> tableRow)

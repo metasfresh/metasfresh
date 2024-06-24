@@ -9,6 +9,7 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.impexp.ActualImportRecordsResult;
+import de.metas.impexp.DataImportRunId;
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.impexp.format.ImportTableDescriptor;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
@@ -355,6 +356,9 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		// run whatever after import code
 		afterImport();
 
+		//
+		runSQLAfterAllImport();
+
 		final ImportProcessResult result = resultCollector.toResult();
 		loggable.addLog("" + resultCollector);
 		return result;
@@ -689,7 +693,20 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 	protected void afterImport()
 	{
-		// nothing to do here
+	}
+
+	private void runSQLAfterAllImport()
+	{
+
+		final ImportRecordType importRecord;
+		final List<DBFunction> functions = getDbFunctions().getAvailableAfterAllFunctions();
+		if (functions.isEmpty())
+		{
+			return;
+		}
+
+		final DataImportRunId dataImportRunId = extractDataImporRunIdOrNull();
+		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, dataImportRunId));
 	}
 
 	private void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord)
@@ -715,5 +732,13 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 		final Optional<Integer> value = InterfaceWrapperHelper.getValue(importRecord, importTableDescriptor.getDataImportConfigIdColumnName());
 		return value.map(DataImportConfigId::ofRepoIdOrNull).orElse(null);
+	}
+
+	private DataImportRunId extractDataImporRunIdOrNull()
+	{
+		final String whereClause = getImportRecordsSelection().toSqlWhereClause();
+		final StringBuilder sql = new StringBuilder("SELECT C_DataImport_Run_id FROM " + getImportTableName() + " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='Y' ").append(whereClause);
+
+		return DataImportRunId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql.toString()));
 	}
 }

@@ -1,11 +1,6 @@
 package de.metas.ui.web.process.view;
 
-import java.lang.reflect.Method;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
@@ -28,8 +23,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Method;
 
 /*
  * #%L
@@ -89,10 +86,7 @@ public final class ViewActionDescriptor
 				.setDocumentType(DocumentType.Process, processId.toDocumentId())
 				.disableDefaultTableCallouts();
 
-		viewActionParamDescriptors.stream()
-				.filter(ViewActionParamDescriptor::isUserParameter)
-				.map(ViewActionParamDescriptor::createParameterFieldDescriptor)
-				.forEach(parametersDescriptor::addField);
+		addParametersDescriptor(parametersDescriptor);
 
 		if (parametersDescriptor.getFieldsCount() == 0)
 		{
@@ -100,6 +94,14 @@ public final class ViewActionDescriptor
 		}
 
 		return parametersDescriptor.build();
+	}
+
+	private void addParametersDescriptor(final DocumentEntityDescriptor.Builder parametersDescriptor)
+	{
+		viewActionParamDescriptors.stream()
+				.filter(ViewActionParamDescriptor::isUserParameter)
+				.map(ViewActionParamDescriptor::createParameterFieldDescriptor)
+				.forEach(parametersDescriptor::addField);
 	}
 
 	public ProcessDescriptor getProcessDescriptor(@NonNull final ProcessId processId)

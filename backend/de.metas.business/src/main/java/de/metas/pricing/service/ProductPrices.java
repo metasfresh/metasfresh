@@ -20,6 +20,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -220,13 +221,11 @@ public class ProductPrices
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pl.getM_PricingSystem_ID());
 		final String pricingSystemName = priceListsRepo.getPricingSystemName(pricingSystemId);
 
-		final AdempiereException exception = new DuplicateMainProductPriceException(someMainProductPrice)
+		return new DuplicateMainProductPriceException(someMainProductPrice)
 				.setParameter(I_M_PricingSystem.Table_Name, pricingSystemName)
 				.setParameter(I_M_PriceList.Table_Name, pl.getName())
 				.setParameter(I_M_PriceList_Version.Table_Name, plv.getName())
 				.setParameter(I_M_Product.Table_Name, productName);
-
-		return exception;
 	}
 
 	@SuppressWarnings("serial")
@@ -265,6 +264,17 @@ public class ProductPrices
 		{
 			logger.info("Registered main product matcher: {}", matcher);
 		}
+	}
+
+	public static void clearMainProductPriceMatchers()
+	{
+		if (!Adempiere.isUnitTestMode())
+		{
+			throw new AdempiereException("Resetting main product matchers is allowed only when running in JUnit mode");
+		}
+
+		MATCHERS_MainProductPrice.clear();
+		logger.info("Cleared all main product matchers");
 	}
 
 	@Nullable public static <T extends I_M_ProductPrice> T iterateAllPriceListVersionsAndFindProductPrice(

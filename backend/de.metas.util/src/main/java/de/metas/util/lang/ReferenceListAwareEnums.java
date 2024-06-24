@@ -44,6 +44,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 @UtilityClass
 public class ReferenceListAwareEnums
@@ -68,7 +69,8 @@ public class ReferenceListAwareEnums
 	{
 		final ReferenceListAwareDescriptor descriptor = getDescriptor(clazz);
 
-		@SuppressWarnings("unchecked") final T enumObj = (T)descriptor.getOfCodeFunction().apply(code);
+		@SuppressWarnings("unchecked")
+		final T enumObj = (T)descriptor.getOfCodeFunction().apply(code);
 
 		return enumObj;
 	}
@@ -77,9 +79,11 @@ public class ReferenceListAwareEnums
 	{
 		if (ReferenceListAwareEnum.class.isAssignableFrom(enumType))
 		{
-			@SuppressWarnings("unchecked") final Class<? extends ReferenceListAwareEnum> referenceListAwareEnumType = (Class<? extends ReferenceListAwareEnum>)enumType;
+			@SuppressWarnings("unchecked")
+			final Class<? extends ReferenceListAwareEnum> referenceListAwareEnumType = (Class<? extends ReferenceListAwareEnum>)enumType;
 
-			@SuppressWarnings("unchecked") final T result = (T)ofCode(code, referenceListAwareEnumType);
+			@SuppressWarnings("unchecked")
+			final T result = (T)ofCode(code, referenceListAwareEnumType);
 
 			return result;
 		}
@@ -104,7 +108,8 @@ public class ReferenceListAwareEnums
 		final Set<ReferenceListAwareEnum> values = descriptor.getValues()
 				.orElseThrow(() -> Check.newException("Cannot extract values for " + clazz));
 
-		@SuppressWarnings("unchecked") final Set<T> retValue = (Set<T>)(values);
+		@SuppressWarnings("unchecked")
+		final Set<T> retValue = (Set<T>)(values);
 		return retValue;
 	}
 
@@ -213,12 +218,14 @@ public class ReferenceListAwareEnums
 			final Class<?> returnType = valuesMethod.getReturnType();
 			if (returnType.isArray())
 			{
-				@SuppressWarnings("unchecked") final T[] valuesArr = (T[])invokeStaticMethod(valuesMethod);
+				@SuppressWarnings("unchecked")
+				final T[] valuesArr = (T[])invokeStaticMethod(valuesMethod);
 				return ImmutableSet.copyOf(valuesArr);
 			}
 			else if (Collection.class.isAssignableFrom(returnType))
 			{
-				@SuppressWarnings("unchecked") final Collection<T> valuesCollection = (Collection<T>)invokeStaticMethod(valuesMethod);
+				@SuppressWarnings("unchecked")
+				final Collection<T> valuesCollection = (Collection<T>)invokeStaticMethod(valuesMethod);
 				return ImmutableSet.copyOf(valuesCollection);
 			}
 			else
@@ -265,6 +272,7 @@ public class ReferenceListAwareEnums
 	{
 		private final String typeName;
 		private final ImmutableMap<String, T> typesByCode;
+		private final ImmutableMap<String, T> typesByName;
 
 		private ValuesIndex(@NonNull final T[] values)
 		{
@@ -273,7 +281,24 @@ public class ReferenceListAwareEnums
 				throw new IllegalArgumentException("values not allowed to be empty");
 			}
 			this.typeName = values[0].getClass().getSimpleName();
+
 			typesByCode = Maps.uniqueIndex(Arrays.asList(values), ReferenceListAwareEnum::getCode);
+			this.typesByName = indexByName(values);
+		}
+
+		@NonNull
+		private static <T extends ReferenceListAwareEnum> ImmutableMap<String, T> indexByName(@NonNull final T @NonNull [] values)
+		{
+			final ImmutableMap.Builder<String, T> typesByName = ImmutableMap.builder();
+			for (final T value : values)
+			{
+				if (value instanceof Enum)
+				{
+					final String name = ((Enum<?>)value).name();
+					typesByName.put(name, value);
+				}
+			}
+			return typesByName.build();
 		}
 
 		@Nullable
@@ -295,6 +320,32 @@ public class ReferenceListAwareEnums
 				throw Check.mkEx("No " + typeName + " found for code: " + code);
 			}
 			return type;
+		}
+
+		public T ofCodeOrName(@NonNull final String code)
+		{
+			T type = typesByCode.get(code);
+			if (type == null)
+			{
+				type = typesByName.get(code);
+			}
+			if (type == null)
+			{
+				throw Check.mkEx("No " + typeName + " found for code or name: " + code);
+			}
+			return type;
+		}
+
+		@NonNull
+		public Stream<T> stream()
+		{
+			return typesByCode.values().stream();
+		}
+
+		@NonNull
+		public ImmutableList<T> toList()
+		{
+			return stream().collect(ImmutableList.toImmutableList());
 		}
 	}
 }

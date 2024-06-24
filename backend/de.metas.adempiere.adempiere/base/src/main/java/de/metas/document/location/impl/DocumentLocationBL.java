@@ -35,7 +35,10 @@ import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
+import de.metas.location.AddressDisplaySequence;
 import de.metas.location.LocationId;
+import de.metas.location.impl.AddressBuilder;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
@@ -45,6 +48,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Service
@@ -52,15 +56,19 @@ public class DocumentLocationBL implements IDocumentLocationBL
 {
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IBPartnerBL bpartnerBL;
 
 	public DocumentLocationBL(@NonNull final IBPartnerBL bpartnerBL)
 	{
-		this.bpartnerBL = bpartnerBL;
 	}
 
 	@Override
 	public RenderedAddressAndCapturedLocation computeRenderedAddress(@NonNull final DocumentLocation location)
+	{
+		return computeRenderedAddress(location, null);
+	}
+
+	@Override
+	public RenderedAddressAndCapturedLocation computeRenderedAddress(@NonNull final DocumentLocation location, @Nullable AddressDisplaySequence displaySequence)
 	{
 		final BPartnerId bpartnerId = location.getBpartnerId();
 		final I_C_BPartner bpartner = bpartnerId != null ? bpartnerDAO.getById(bpartnerId) : null;
@@ -78,7 +86,12 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		final BPartnerContactId bpContactId = location.getContactId();
 		final I_AD_User bpContact = bpContactId != null ? bpartnerDAO.getContactById(bpContactId) : null;
 
-		final String renderedAddress = bpartnerBL.mkFullAddress(bpartner, bpLocation, locationId, bpContact);
+		final String renderedAddress = AddressBuilder.builder()
+				.orgId(OrgId.ofRepoId(bpartner.getAD_Org_ID()))
+				.adLanguage(bpartner.getAD_Language())
+				.build()
+				.buildBPartnerFullAddressString(bpartner, bpLocation, locationId, bpContact, displaySequence);
+
 		return RenderedAddressAndCapturedLocation.of(renderedAddress, locationId);
 	}
 

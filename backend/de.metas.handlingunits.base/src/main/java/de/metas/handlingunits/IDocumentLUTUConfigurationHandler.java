@@ -22,13 +22,11 @@ package de.metas.handlingunits;
  * #L%
  */
 
-
-import java.util.List;
-
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Implementations of this interface are able to manage the relation between {@link I_M_HU_LUTU_Configuration} and particular document line.
@@ -58,7 +56,7 @@ public interface IDocumentLUTUConfigurationHandler<T>
 	 *
 	 * @param lutuConfiguration
 	 */
-	void updateLUTUConfigurationFromPPOrder(final I_M_HU_LUTU_Configuration lutuConfiguration, final T documentLine);
+	void updateLUTUConfigurationFromDocumentLine(final I_M_HU_LUTU_Configuration lutuConfiguration, final T documentLine);
 
 	/**
 	 * Set documentLine's current LU/TU Configuration.

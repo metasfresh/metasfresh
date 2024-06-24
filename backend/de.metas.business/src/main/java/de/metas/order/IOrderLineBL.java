@@ -34,6 +34,7 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -226,4 +227,6 @@ public interface IOrderLineBL extends ISingletonService
 	CurrencyPrecision extractPricePrecision(org.compiere.model.I_C_OrderLine olRecord);
 
 	void setBPLocation(I_C_OrderLine orderLine);
+
+	boolean isCatchWeight(@NonNull org.compiere.model.I_C_OrderLine orderLine);
 }

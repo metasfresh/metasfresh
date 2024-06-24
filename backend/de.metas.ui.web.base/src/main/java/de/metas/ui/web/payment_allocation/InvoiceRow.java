@@ -62,6 +62,11 @@ public class InvoiceRow implements IViewRow
 	@Getter
 	private final String documentNo;
 
+	public static final String FIELD_IsPreparedForAllocation = "isPreparedForAllocation";
+	@ViewColumn(seqNo = 22, widgetType = DocumentFieldWidgetType.YesNo, widgetSize = WidgetSize.Small, fieldName = FIELD_IsPreparedForAllocation)
+	@Getter
+	private final boolean isPreparedForAllocation;
+
 	@ViewColumn(seqNo = 25, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "POReference")
 	@Getter
 	private final String poReference;
@@ -100,11 +105,6 @@ public class InvoiceRow implements IViewRow
 	private final String currencyCodeString;
 	@Getter
 	private final CurrencyCode currencyCode;
-
-	public static final String FIELD_IsPreparedForAllocation = "isPreparedForAllocation";
-	@ViewColumn(seqNo = 9990, widgetType = DocumentFieldWidgetType.YesNo, widgetSize = WidgetSize.Small, fieldName = FIELD_IsPreparedForAllocation)
-	@Getter
-	private final boolean isPreparedForAllocation;
 
 	//
 	//

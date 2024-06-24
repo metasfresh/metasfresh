@@ -36,7 +36,6 @@ import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderBL;
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -81,7 +80,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -383,6 +381,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final IStorageQuery storageQuery = storageEngine
 				.newStorageQuery()
+				.addBPartnerId(null)
 				.addBPartnerId(bpartnerId)
 				.addWarehouseIds(warehouseIds)
 				.addProductId(ProductId.ofRepoId(sched.getM_Product_ID()));
@@ -636,25 +635,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			addAttributes(record, ImmutableList.of(attributeInstanceBasicInfo));
 		}
-	}
-
-	@Override
-	public boolean isCatchWeight(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
-	{
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
-		final int orderLineId = shipmentScheduleRecord.getC_OrderLine_ID();
-		if (orderLineId <= 0)
-		{
-			// returning true to keep the old behavior for shipment schedules that are not for sales orders.
-			return true;
-		}
-
-		final I_C_OrderLine orderLineRecord = orderDAO.getOrderLineById(orderLineId);
-
-		final String invoicableQtyBasedOn = orderLineRecord.getInvoicableQtyBasedOn();
-
-		return X_C_OrderLine.INVOICABLEQTYBASEDON_CatchWeight.equals(invoicableQtyBasedOn);
 	}
 
 	@Override

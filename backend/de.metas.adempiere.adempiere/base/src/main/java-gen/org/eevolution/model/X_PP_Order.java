@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for PP_Order
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1808118019L;
+	private static final long serialVersionUID = 1478414169L;
 
     /** Standard Constructor */
     public X_PP_Order (final Properties ctx, final int PP_Order_ID, @Nullable final String trxName)
@@ -109,6 +109,18 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
+	public void setCanBeExportedFrom (final @Nullable java.sql.Timestamp CanBeExportedFrom)
+	{
+		set_Value (COLUMNNAME_CanBeExportedFrom, CanBeExportedFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getCanBeExportedFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
+	}
+
+	@Override
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -178,6 +190,18 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getC_DocTypeTarget_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeTarget_ID);
+	}
+
+	@Override
+	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
+	{
+		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+	}
+
+	@Override
+	public java.lang.String getCopyFrom() 
+	{
+		return get_ValueAsString(COLUMNNAME_CopyFrom);
 	}
 
 	@Override
@@ -285,30 +309,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
-	}
-
-	@Override
-	public void setCanBeExportedFrom (final @Nullable java.sql.Timestamp CanBeExportedFrom)
-	{
-		set_Value (COLUMNNAME_CanBeExportedFrom, CanBeExportedFrom);
-	}
-
-	@Override
-	public java.sql.Timestamp getCanBeExportedFrom() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
-	}
-
-	@Override
-	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
-	{
-		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
-	}
-
-	@Override
-	public java.lang.String getCopyFrom() 
-	{
-		return get_ValueAsString(COLUMNNAME_CopyFrom);
 	}
 
 	@Override
@@ -589,6 +589,8 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
 	/** Remittance Advice = RMA */
 	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
+	/** BOM & Formula = BOM */
+	public static final String DOCBASETYPE_BOMFormula = "BOM";
 	@Override
 	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
@@ -833,6 +835,21 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
+	public void setM_HU_PI_Item_Product_ID (final int M_HU_PI_Item_Product_ID)
+	{
+		if (M_HU_PI_Item_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public int getM_HU_PI_Item_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
+	}
+
+	@Override
 	public void setM_Locator_ID (final int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
@@ -860,36 +877,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getM_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
-	}
-
-	@Override
-	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
-	{
-		if (M_ShipmentSchedule_ID < 1) 
-			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
-	}
-
-	@Override
-	public int getM_ShipmentSchedule_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
-	}
-
-	@Override
-	public void setM_Warehouse_ID (final int M_Warehouse_ID)
-	{
-		if (M_Warehouse_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
-	}
-
-	@Override
-	public int getM_Warehouse_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
 	@Override
@@ -926,6 +913,36 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public boolean isMRP_ToDelete() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_MRP_ToDelete);
+	}
+
+	@Override
+	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
+	{
+		if (M_ShipmentSchedule_ID < 1) 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
+	}
+
+	@Override
+	public int getM_ShipmentSchedule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
+	}
+
+	@Override
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
+	}
+
+	@Override
+	public int getM_Warehouse_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
 	@Override
@@ -1045,18 +1062,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getPP_Product_BOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Product_BOM_ID);
-	}
-
-	@Override
-	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning()
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class);
-	}
-
-	@Override
-	public void setPP_Product_Planning(final org.eevolution.model.I_PP_Product_Planning PP_Product_Planning)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class, PP_Product_Planning);
 	}
 
 	@Override
@@ -1309,6 +1314,42 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
+	public void setScheduleType (final @Nullable java.lang.String ScheduleType)
+	{
+		set_Value (COLUMNNAME_ScheduleType, ScheduleType);
+	}
+
+	@Override
+	public java.lang.String getScheduleType() 
+	{
+		return get_ValueAsString(COLUMNNAME_ScheduleType);
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
+	}
+
+	@Override
+	public void setSerNo (final @Nullable java.lang.String SerNo)
+	{
+		set_Value (COLUMNNAME_SerNo, SerNo);
+	}
+
+	@Override
+	public java.lang.String getSerNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_SerNo);
+	}
+
+	@Override
 	public org.compiere.model.I_S_Resource getS_Resource()
 	{
 		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
@@ -1333,30 +1374,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getS_Resource_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
-	}
-
-	@Override
-	public void setScheduleType (final @Nullable java.lang.String ScheduleType)
-	{
-		set_Value (COLUMNNAME_ScheduleType, ScheduleType);
-	}
-
-	@Override
-	public java.lang.String getScheduleType() 
-	{
-		return get_ValueAsString(COLUMNNAME_ScheduleType);
-	}
-
-	@Override
-	public void setSerNo (final @Nullable java.lang.String SerNo)
-	{
-		set_Value (COLUMNNAME_SerNo, SerNo);
-	}
-
-	@Override
-	public java.lang.String getSerNo() 
-	{
-		return get_ValueAsString(COLUMNNAME_SerNo);
 	}
 
 	@Override
@@ -1411,6 +1428,33 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getUser2_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_User2_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_S_Resource getWorkStation()
+	{
+		return get_ValueAsPO(COLUMNNAME_WorkStation_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setWorkStation(final org.compiere.model.I_S_Resource WorkStation)
+	{
+		set_ValueFromPO(COLUMNNAME_WorkStation_ID, org.compiere.model.I_S_Resource.class, WorkStation);
+	}
+
+	@Override
+	public void setWorkStation_ID (final int WorkStation_ID)
+	{
+		if (WorkStation_ID < 1) 
+			set_Value (COLUMNNAME_WorkStation_ID, null);
+		else 
+			set_Value (COLUMNNAME_WorkStation_ID, WorkStation_ID);
+	}
+
+	@Override
+	public int getWorkStation_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_WorkStation_ID);
 	}
 
 	@Override

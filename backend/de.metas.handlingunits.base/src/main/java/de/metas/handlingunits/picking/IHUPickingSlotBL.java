@@ -169,6 +169,11 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 */
 	List<I_M_HU> retrieveAvailableSourceHUs(PickingHUsQuery query);
 
+	/**
+	 * @return true, if all enqueued HUs have been removed from the slot , false otherwise
+	 */
+	boolean clearPickingSlotQueue(PickingSlotId pickingSlotId, boolean removeQueuedHUsFromSlot);
+
 	@lombok.Builder
 	@lombok.Value
 	class PickingHUsQuery

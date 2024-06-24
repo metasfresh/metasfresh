@@ -25,14 +25,17 @@ package org.compiere.model;
  * #L%
  */
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import de.metas.cache.CCache;
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -41,24 +44,19 @@ import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimaps;
-
-import de.metas.cache.CCache;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * AD Index Table
  *
  * @author Teo Sarca, teo.sarca@gmail.com
  */
-@SuppressWarnings("serial")
 public class MIndexTable extends X_AD_Index_Table
 {
 	private static final CCache<Integer, TableIndexesMap> cache = CCache.<Integer, TableIndexesMap> builder()
@@ -99,10 +97,13 @@ public class MIndexTable extends X_AD_Index_Table
 		super(ctx, AD_Index_Table_ID, trxName);
 	}
 
+	@SuppressWarnings("unused")
 	public MIndexTable(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
+
+	public ITranslatableString getErrorMsgTrl() {return get_ModelTranslationMap().getColumnTrl(COLUMNNAME_ErrorMsg, getErrorMsg());}
 
 	private ImmutableList<MIndexColumn> getIndexColumns()
 	{

@@ -1,14 +1,12 @@
 package org.adempiere.ad.table;
 
-import java.sql.Timestamp;
-import java.util.List;
-
-import org.adempiere.ad.table.RecordChangeLog.RecordChangeLogBuilder;
+import de.metas.user.UserId;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 
-import de.metas.user.UserId;
-import lombok.NonNull;
+import java.sql.Timestamp;
+import java.util.List;
 
 /*
  * #%L
@@ -39,7 +37,7 @@ public class RecordChangeLogs
 			@NonNull final Class<T> modelClass,
 			@NonNull final List<RecordChangeLogEntry> entries)
 	{
-		final RecordChangeLogBuilder builder = RecordChangeLog.builder().entries(entries);
+		final RecordChangeLog.RecordChangeLogBuilder builder = RecordChangeLog.builder().entries(entries);
 
 		final Integer createdBy = InterfaceWrapperHelper.getValueOrNull(model, InterfaceWrapperHelper.COLUMNNAME_Created);
 		builder.createdByUserId(UserId.ofRepoId(createdBy));

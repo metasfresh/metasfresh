@@ -1,33 +1,6 @@
 package de.metas.device.scales.impl;
 
-import java.util.Map;
-
-import org.apache.commons.lang3.BooleanUtils;
-
 import com.google.common.base.MoreObjects;
-
-/*
- * #%L
- * de.metas.device.scales
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import de.metas.device.api.DeviceException;
 import de.metas.device.api.IDeviceRequestHandler;
 import de.metas.device.api.IDeviceResponse;
@@ -35,6 +8,11 @@ import de.metas.device.api.request.DeviceRequestConfigureDevice;
 import de.metas.device.api.request.IDeviceConfigParam;
 import de.metas.device.scales.AbstractTcpScales;
 import de.metas.device.scales.endpoint.TcpConnectionEndPoint;
+import de.metas.device.scales.endpoint.TcpConnectionReadLineEndPoint;
+import lombok.NonNull;
+import org.apache.commons.lang3.BooleanUtils;
+
+import java.util.Map;
 
 public class ConfigureDeviceHandler implements IDeviceRequestHandler<DeviceRequestConfigureDevice, IDeviceResponse>
 {
@@ -46,7 +24,7 @@ public class ConfigureDeviceHandler implements IDeviceRequestHandler<DeviceReque
 	}
 
 	@Override
-	public IDeviceResponse handleRequest(final DeviceRequestConfigureDevice request)
+	public IDeviceResponse handleRequest(@NonNull final DeviceRequestConfigureDevice request)
 	{
 		final Map<String, IDeviceConfigParam> parameters = request.getParameters();
 
@@ -66,22 +44,25 @@ public class ConfigureDeviceHandler implements IDeviceRequestHandler<DeviceReque
 			final Class<TcpConnectionEndPoint> c = (Class<TcpConnectionEndPoint>)Class.forName(epClass.getValue());
 			ep = c.newInstance();
 		}
-		catch (ClassNotFoundException e)
+		catch (final ClassNotFoundException e)
 		{
 			throw new DeviceException("Caught a ClassNotFoundException: " + e.getLocalizedMessage(), e);
 		}
-		catch (InstantiationException e)
+		catch (final InstantiationException e)
 		{
 			throw new DeviceException("Caught an InstantiationException: " + e.getLocalizedMessage(), e);
 		}
-		catch (IllegalAccessException e)
+		catch (final IllegalAccessException e)
 		{
 			throw new DeviceException("Caught an IllegalAccessException: " + e.getLocalizedMessage(), e);
 		}
 
 		ep.setHost(epHost.getValue());
 		ep.setPort(Integer.parseInt(epPort.getValue()));
-		ep.setReturnLastLine(BooleanUtils.toBoolean(epReturnLastLine.getValue()));
+		if (ep instanceof TcpConnectionReadLineEndPoint)
+		{
+			((TcpConnectionReadLineEndPoint)ep).setReturnLastLine(BooleanUtils.toBoolean(epReturnLastLine.getValue()));
+		}
 		ep.setReadTimeoutMillis(Integer.parseInt(epReadTimeoutMillis.getValue()));
 
 		device.setEndPoint(ep);

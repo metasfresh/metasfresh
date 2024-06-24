@@ -8,6 +8,9 @@ import de.metas.order.OrderLineId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.report.HUReportAwareView;
+import de.metas.ui.web.handlingunits.report.HUReportProcessInstancesRepository;
+import de.metas.ui.web.process.ProcessHandlerType;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewHeaderProperties;
@@ -70,7 +73,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * #L%
  */
 
-public class PPOrderLinesView implements IView
+public class PPOrderLinesView implements IView, HUReportAwareView
 {
 	@Getter
 	private final ViewId parentViewId;
@@ -84,10 +87,10 @@ public class PPOrderLinesView implements IView
 	@Getter
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
-	private final PPOrderId ppOrderId;
+	@Getter private final PPOrderId ppOrderId;
 	@Getter
 	private final PPOrderDocBaseType docBaseType;
-	private final OrderLineId salesOrderLineId;
+	@Getter private final OrderLineId salesOrderLineId;
 
 	private final PPOrderLinesViewDataSupplier dataSupplier;
 
@@ -148,7 +151,7 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public ViewHeaderProperties getHeaderProperties() { return getData().getHeaderProperties(); }
+	public ViewHeaderProperties getHeaderProperties() {return getData().getHeaderProperties();}
 
 	/**
 	 * @param documentId may be {@code null}; in that case, the method also returns {@code null}
@@ -167,16 +170,6 @@ public class PPOrderLinesView implements IView
 			return null; // just be sure to avoid an NPE in here
 		}
 		return ppOrderLine.getType().getTableName();
-	}
-
-	public PPOrderId getPpOrderId()
-	{
-		return ppOrderId;
-	}
-
-	public OrderLineId getSalesOrderLineId()
-	{
-		return salesOrderLineId;
 	}
 
 	@Override
@@ -356,8 +349,8 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public boolean isConsiderTableRelatedProcessDescriptors(final @NonNull DocumentIdsSelection selectedRowIds)
+	public boolean isConsiderTableRelatedProcessDescriptors(@NonNull final ProcessHandlerType processHandlerType, final @NonNull DocumentIdsSelection selectedRowIds)
 	{
-		return false;
+		return ProcessHandlerType.equals(processHandlerType, HUReportProcessInstancesRepository.PROCESS_HANDLER_TYPE);
 	}
 }

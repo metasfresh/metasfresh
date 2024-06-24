@@ -96,4 +96,11 @@ public class DocumentReportRequest
 				? toBuilder().reportLanguage(reportLanguage).build()
 				: this;
 	}
+
+	public DocumentReportRequest withPrintCopies(final PrintCopies printCopies)
+	{
+		return !Objects.equals(this.printCopies, printCopies)
+				? toBuilder().printCopies(printCopies).build()
+				: this;
+	}
 }

@@ -16,15 +16,14 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.Msg;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.logging.LogManager;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -32,13 +31,13 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.Msg;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.logging.LogManager;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Services;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Properties;
 
 /**
  *	Shipment Confirmation Model
@@ -331,8 +330,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		MInOutLineConfirm[] lines = getLines(true);
 		if (lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 		//	Set dispute if not fully confirmed
 		boolean difference = false;

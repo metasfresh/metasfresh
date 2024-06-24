@@ -197,7 +197,7 @@ const TableFilter = ({
         </div>
         {quickInputSupport && isBatchEntryActive && allowCreateNew && (
           <TableQuickInput
-            windowId={windowId}
+            docType={windowId}
             docId={docId}
             tabId={tabId}
             forceHeight={wrapperHeight ? wrapperHeight : null}

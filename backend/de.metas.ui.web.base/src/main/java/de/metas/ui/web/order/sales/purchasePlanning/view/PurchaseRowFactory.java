@@ -1,7 +1,7 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import de.metas.logging.LogManager;
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.event.commons.AttributesKey;
@@ -18,7 +18,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;

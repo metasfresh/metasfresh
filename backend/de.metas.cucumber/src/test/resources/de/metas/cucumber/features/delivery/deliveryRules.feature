@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Delivery rules with and without quantity in stock
 
   Background:
@@ -490,7 +491,7 @@ Feature: Delivery rules with and without quantity in stock
       | shipmentScheduleQtyPicked_2                | 5         | true      | true                        | hu_fifo_second        |
       | shipmentScheduleQtyPicked_3                | 5         | true      | true                        | hu_fifo_third         |
 
-
+  @flaky
   @from:cucumber
   @Id:S0159_B_20
   Scenario: C_BPartner.DeliveryRule = `Availability` - FIFO

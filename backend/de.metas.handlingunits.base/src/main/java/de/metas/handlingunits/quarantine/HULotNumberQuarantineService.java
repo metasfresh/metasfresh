@@ -1,14 +1,5 @@
 package de.metas.handlingunits.quarantine;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.util.List;
-
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.springframework.stereotype.Service;
-
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
@@ -21,6 +12,14 @@ import de.metas.product.LotNumberQuarantineRepository;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -84,7 +83,7 @@ public class HULotNumberQuarantineService
 	public boolean isQuarantineHU(final I_M_HU huRecord)
 	{
 		// retrieve the attribute
-		final AttributeId quarantineAttributeId = attributeDAO.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_Quarantine);
+		final AttributeId quarantineAttributeId = attributeDAO.getAttributeIdByCode(HUAttributeConstants.ATTR_Quarantine);
 
 		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, quarantineAttributeId);
 
@@ -99,7 +98,7 @@ public class HULotNumberQuarantineService
 	public void markHUAsQuarantine(final I_M_HU huRecord)
 	{
 		// retrieve the attribute
-		final AttributeId quarantineAttributeId = attributeDAO.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_Quarantine);
+		final AttributeId quarantineAttributeId = attributeDAO.getAttributeIdByCode(HUAttributeConstants.ATTR_Quarantine);
 
 		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, quarantineAttributeId);
 

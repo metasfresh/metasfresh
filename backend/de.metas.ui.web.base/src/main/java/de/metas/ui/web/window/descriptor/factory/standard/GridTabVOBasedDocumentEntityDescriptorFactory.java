@@ -36,6 +36,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.lookup.TimeZoneLookupDescriptor;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -245,6 +246,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setAD_Tab_ID(gridTabVO.getAdTabId().getRepoId()) // legacy
 				.setTableName(tableName) // legacy
 				.setIsSOTrx(isSOTrx) // legacy
+				.setViewPageLength(dataBinding.getPOInfo().getWebuiViewPageLength())
 				//
 				.setPrintProcessId(gridTabVO.getPrintProcessId())
 				//
@@ -386,7 +388,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 					gridFieldVO.isMandatory(),
 					gridFieldVO.isUseDocSequence());
 
-			readonlyLogic = extractReadOnlyLogic(gridFieldVO, keyColumn, isParentLinkColumn);
+			final OptionalBoolean tabAllowsCreateNew = entityDescriptorBuilder.getAllowCreateNewLogic().toOptionalBoolean();
+			readonlyLogic = extractReadOnlyLogic(gridFieldVO, keyColumn, isParentLinkColumn, tabAllowsCreateNew);
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
 		}
 
@@ -556,7 +559,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// 		.build();
 	}
 
-	private static ILogicExpression extractReadOnlyLogic(final GridFieldVO gridFieldVO, final boolean keyColumn, final boolean isParentLinkColumn)
+	private static ILogicExpression extractReadOnlyLogic(final GridFieldVO gridFieldVO, final boolean keyColumn, final boolean isParentLinkColumn, final OptionalBoolean tabAllowsCreateNew)
 	{
 		if (keyColumn)
 		{
@@ -573,7 +576,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// e.g. BPartner (pharma) window -> Product tab
 		else if (!gridFieldVO.isUpdateable()
 				&& gridFieldVO.isParentLink() && !isParentLinkColumn
-				&& gridFieldVO.isMandatory())
+				&& gridFieldVO.isMandatory()
+				&& tabAllowsCreateNew.isTrue())
 		{
 			return ConstantLogicExpression.FALSE;
 		}

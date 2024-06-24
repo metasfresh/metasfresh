@@ -85,8 +85,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -137,8 +137,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -189,8 +189,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -256,8 +256,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | 10                     |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | 10                     |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -322,8 +322,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | 101                                | huPackingLU_140              |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | 101                                | huPackingLU_140              |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -397,8 +397,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5     | huPiItemPurchaseProduct_150        | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5           | huPiItemPurchaseProduct_150        | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -453,8 +453,8 @@ Feature: Packing material invoice candidates: receipts
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_HU_PI_Item_Product_ID.TU.Identifier | M_HU_PI_ID.LU.Identifier |
       | huLuTuConfig                          | receiptSchedule_PO              | huPiItemPurchaseProduct               | huPackingLU              |
     Then validate M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCU |
-      | huLuTuConfig                          | 14    | 76    | 10    |
+      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCUsPerTU |
+      | huLuTuConfig                          | 14    | 76    | 10          |
     And receive HUs with M_HU_LUTU_Configuration:
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | OPT.HUList.Identifier | OPT.numberHUsGenerated |
       | huLuTuConfig                          | receiptSchedule_PO              | processedHUs          | 14                     |
@@ -511,8 +511,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -578,8 +578,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -644,8 +644,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -726,8 +726,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | 10                     |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | 10                     |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -805,8 +805,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | 101                                | huPackingLU_140              |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | 101                                | huPackingLU_140              |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -893,8 +893,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5     | huPiItemPurchaseProduct_150        | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5           | huPiItemPurchaseProduct_150        | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -929,6 +929,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @flaky
   @Id:S0160_230
   @from:cucumber
   Scenario: Reactivate receipt similar with case 160
@@ -963,8 +964,8 @@ Feature: Packing material invoice candidates: receipts
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_HU_PI_Item_Product_ID.TU.Identifier | M_HU_PI_ID.LU.Identifier |
       | huLuTuConfig                          | receiptSchedule_PO              | huPiItemPurchaseProduct               | huPackingLU              |
     Then validate M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCU |
-      | huLuTuConfig                          | 14    | 76    | 10    |
+      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCUsPerTU |
+      | huLuTuConfig                          | 14    | 76    | 10          |
     And receive HUs with M_HU_LUTU_Configuration:
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | OPT.HUList.Identifier | OPT.numberHUsGenerated |
       | huLuTuConfig                          | receiptSchedule_PO              | processedHUs          | 14                     |
@@ -1035,8 +1036,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -1111,8 +1112,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -1192,8 +1193,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -1272,8 +1273,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -1357,8 +1358,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -1409,6 +1410,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 5                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @flaky
   @Id:S0160_270
   @from:cucumber
   Scenario: Complete receipt similar with case 200
@@ -1458,8 +1460,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | 10                     |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | 10                     |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -1554,8 +1556,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | 101                                | huPackingLU_140              |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | 101                                | huPackingLU_140              |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -1659,8 +1661,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5     | huPiItemPurchaseProduct_150        | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5           | huPiItemPurchaseProduct_150        | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -1748,8 +1750,8 @@ Feature: Packing material invoice candidates: receipts
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_HU_PI_Item_Product_ID.TU.Identifier | M_HU_PI_ID.LU.Identifier |
       | huLuTuConfig                          | receiptSchedule_PO              | huPiItemPurchaseProduct               | huPackingLU              |
     Then validate M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCU |
-      | huLuTuConfig                          | 14    | 76    | 10    |
+      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCUsPerTU |
+      | huLuTuConfig                          | 14    | 76    | 10          |
     And receive HUs with M_HU_LUTU_Configuration:
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | OPT.HUList.Identifier | OPT.numberHUsGenerated |
       | huLuTuConfig                          | receiptSchedule_PO              | processedHUs          | 14                     |
@@ -1833,8 +1835,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -1899,8 +1901,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -1965,8 +1967,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2047,8 +2049,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | 10                     |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | 10                     |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -2126,8 +2128,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | 101                                | huPackingLU_140              |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | 101                                | huPackingLU_140              |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2214,8 +2216,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5     | huPiItemPurchaseProduct_150        | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5           | huPiItemPurchaseProduct_150        | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2284,8 +2286,8 @@ Feature: Packing material invoice candidates: receipts
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_HU_PI_Item_Product_ID.TU.Identifier | M_HU_PI_ID.LU.Identifier |
       | huLuTuConfig                          | receiptSchedule_PO              | huPiItemPurchaseProduct               | huPackingLU              |
     Then validate M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCU |
-      | huLuTuConfig                          | 14    | 76    | 10    |
+      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCUsPerTU |
+      | huLuTuConfig                          | 14    | 76    | 10          |
     And receive HUs with M_HU_LUTU_Configuration:
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | OPT.HUList.Identifier | OPT.numberHUsGenerated |
       | huLuTuConfig                          | receiptSchedule_PO              | processedHUs          | 14                     |
@@ -2353,8 +2355,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2419,8 +2421,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -2485,8 +2487,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2567,8 +2569,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | 10                     |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | 10                     |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -2646,8 +2648,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | 101                                | huPackingLU_140              |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | 101                                | huPackingLU_140              |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2734,8 +2736,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5     | huPiItemPurchaseProduct_150        | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5           | huPiItemPurchaseProduct_150        | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2804,8 +2806,8 @@ Feature: Packing material invoice candidates: receipts
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_HU_PI_Item_Product_ID.TU.Identifier | M_HU_PI_ID.LU.Identifier |
       | huLuTuConfig                          | receiptSchedule_PO              | huPiItemPurchaseProduct               | huPackingLU              |
     Then validate M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCU |
-      | huLuTuConfig                          | 14    | 76    | 10    |
+      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCUsPerTU |
+      | huLuTuConfig                          | 14    | 76    | 10          |
     And receive HUs with M_HU_LUTU_Configuration:
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | OPT.HUList.Identifier | OPT.numberHUsGenerated |
       | huLuTuConfig                          | receiptSchedule_PO              | processedHUs          | 14                     |
@@ -2874,8 +2876,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2943,8 +2945,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -3012,8 +3014,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -3097,8 +3099,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | 10                     |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | 10                     |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -3179,8 +3181,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | 101                                | huPackingLU_140              |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | 101                                | huPackingLU_140              |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -3270,8 +3272,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5     | huPiItemPurchaseProduct_150        | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5           | huPiItemPurchaseProduct_150        | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -3343,8 +3345,8 @@ Feature: Packing material invoice candidates: receipts
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_HU_PI_Item_Product_ID.TU.Identifier | M_HU_PI_ID.LU.Identifier |
       | huLuTuConfig                          | receiptSchedule_PO              | huPiItemPurchaseProduct               | huPackingLU              |
     Then validate M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCU |
-      | huLuTuConfig                          | 14    | 76    | 10    |
+      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCUsPerTU |
+      | huLuTuConfig                          | 14    | 76    | 10          |
     And receive HUs with M_HU_LUTU_Configuration:
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | OPT.HUList.Identifier | OPT.numberHUsGenerated |
       | huLuTuConfig                          | receiptSchedule_PO              | processedHUs          | 14                     |

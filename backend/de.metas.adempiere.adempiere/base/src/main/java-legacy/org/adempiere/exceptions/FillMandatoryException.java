@@ -5,6 +5,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -70,7 +71,7 @@ public class FillMandatoryException extends AdempiereException
 
 			if (firstField)
 			{
-				builder.append(": ");
+				builder.append(" ");
 			}
 			else
 			{
@@ -100,5 +101,14 @@ public class FillMandatoryException extends AdempiereException
 				? fields.toArray(new String[0])
 				: new String[] {};
 		return buildMessage(fieldsAreAlreadyTranslated, fieldsArr);
+	}
+
+	public static <T> T assumeNotNull(@Nullable final T objectToCheck, @NonNull final String... fields)
+	{
+		if (objectToCheck == null)
+		{
+			throw new FillMandatoryException(fields);
+		}
+		return objectToCheck;
 	}
 }

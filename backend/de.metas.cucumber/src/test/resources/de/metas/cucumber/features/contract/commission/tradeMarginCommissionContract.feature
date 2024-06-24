@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:commissionContracts
+@ghActions:run_on_executor3
 Feature: Trade margin commission contract
   As a user
   I have a trade margin contract, when order is processed commission points and commission deed are computed accordingly
@@ -8,6 +9,7 @@ Feature: Trade margin commission contract
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And metasfresh has date and time 2021-12-02T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
   @topic:commissionContracts
@@ -53,7 +55,7 @@ Feature: Trade margin commission contract
       | marginConditions_1 | margin-test | MarginCommission | marginSettings_1                          |
     And metasfresh contains C_Flatrate_Terms:
       | Identifier       | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
-      | marginContract_1 | marginConditions_1                  | margin_salesRep             | 2021-11-01 | 2022-11-01 | commission_product          |
+      | marginContract_1 | marginConditions_1                  | margin_salesRep             | 2021-11-01 | 2022-10-30 | commission_product          |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
 {

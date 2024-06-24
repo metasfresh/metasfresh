@@ -22,17 +22,6 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Transaction;
-import org.compiere.model.X_M_InOut;
-
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.document.impl.AbstractHUDocumentFactory;
@@ -42,6 +31,15 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Transaction;
+import org.compiere.model.X_M_InOut;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MInOutHUDocumentFactory extends AbstractHUDocumentFactory<I_M_InOut>
 {
@@ -84,7 +82,7 @@ public class MInOutHUDocumentFactory extends AbstractHUDocumentFactory<I_M_InOut
 		final List<I_M_InOutLine> ioLines = Services.get(IInOutDAO.class).retrieveLines(inOut);
 		if (ioLines.isEmpty())
 		{
-			throw new AdempiereException("@NoLines@ (@M_InOut_ID@: " + inOut.getDocumentNo() + ")");
+			throw AdempiereException.newWithTranslatableMessage("@NoLines@ (@M_InOut_ID@: " + inOut.getDocumentNo() + ")");
 		}
 
 		final List<IHUDocumentLine> sourceLines = new ArrayList<>(ioLines.size());

@@ -16,27 +16,25 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.scheduler.AdSchedulerId;
+import de.metas.security.IRoleDAO;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+import it.sauronsoftware.cron4j.SchedulingPattern;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.security.IRoleDAO;
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
-import de.metas.util.Services;
-import it.sauronsoftware.cron4j.SchedulingPattern;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 
 /**

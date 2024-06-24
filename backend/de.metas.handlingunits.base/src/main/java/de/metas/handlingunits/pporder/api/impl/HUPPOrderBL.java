@@ -2,6 +2,7 @@ package de.metas.handlingunits.pporder.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -10,6 +11,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
@@ -20,17 +22,30 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcess
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.PPOrderIssueServiceProductRequest;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
+import de.metas.material.maturing.MaturingConfigLine;
+import de.metas.material.maturing.MaturingConfigRepository;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
@@ -42,6 +57,8 @@ import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
 import java.util.Collection;
 import java.util.List;
@@ -61,6 +78,12 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUAttributesBL attributesBL = Services.get(IHUAttributesBL.class);
+	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+
+	private final SpringContextHolder.Lazy<HUQRCodesService> huqrCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class);
+	private final SpringContextHolder.Lazy<MaturingConfigRepository> maturingConfigRepository = SpringContextHolder.lazyBean(MaturingConfigRepository.class);
+	private final SpringContextHolder.Lazy<PPOrderCandidateDAO> ppOrderCandidateDAO = SpringContextHolder.lazyBean(PPOrderCandidateDAO.class);
 
 	@Override
 	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
@@ -136,20 +159,26 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID());
 		final Set<WarehouseId> issueFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSameGroup(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
 
-		final AttributeSetInstanceId expectedASI = AttributeSetInstanceId.ofRepoIdOrNone(ppOrderBomLine.getM_AttributeSetInstance_ID());
-
-		final ImmutableAttributeSet storageRelevantAttributeSet = attributeSetInstanceBL.getImmutableAttributeSetById(expectedASI)
-				.filterOnlyStorageRelevantAttributes();
-
-		return handlingUnitsDAO
+		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO
 				.createHUQueryBuilder()
-				.addOnlyWithProductId(ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID()))
-				.addOnlyInWarehouseId(WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID()))
+				.addOnlyInWarehouseIds(issueFromWarehouseIds)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
-				.addOnlyWithAttributes(storageRelevantAttributeSet)
 				.setExcludeReserved()
 				.setOnlyTopLevelHUs()
+				.setNotEmptyStorageOnly()
 				.onlyNotLocked();
+
+		if (!ppOrderBomLine.isAllowIssuingAnyProduct())
+		{
+			final AttributeSetInstanceId expectedASI = AttributeSetInstanceId.ofRepoIdOrNone(ppOrderBomLine.getM_AttributeSetInstance_ID());
+			final ImmutableAttributeSet storageRelevantAttributeSet = attributeSetInstanceBL.getImmutableAttributeSetById(expectedASI)
+					.filterOnlyStorageRelevantAttributes();
+			huQueryBuilder.addOnlyWithAttributes(storageRelevantAttributeSet);
+
+			huQueryBuilder.addOnlyWithProductId(ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID()));
+		}
+
+		return huQueryBuilder;
 	}
 
 	private static final ImmutableMultimap<PPOrderPlanningStatus, PPOrderPlanningStatus> fromPlanningStatus2toPlanningStatusAllowed = ImmutableMultimap.<PPOrderPlanningStatus, PPOrderPlanningStatus>builder()
@@ -251,6 +280,28 @@ public class HUPPOrderBL implements IHUPPOrderBL
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Override
+	public void issueAndReceiveMaturingHUs(@NonNull final I_PP_Order ppOrder)
+	{
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		final I_M_HU huToBeIssued = getMaturingHU(ppOrder);
+
+		createIssueProducer(ppOrderId)
+				.considerIssueMethodForQtyToIssueCalculation(false) // issue exactly the HUs selected for maturing
+				.createIssues(ImmutableList.of(huToBeIssued));
+
+		receiveMaturedHU(ppOrder, huToBeIssued);
+
+		ppOrderBL.closeOrder(ppOrderId);
+	}
+
+	public boolean isAtLeastOneCandidateMaturing(@NonNull final List<I_PP_Order_Candidate> candidates)
+	{
+		return candidates
+				.stream()
+				.anyMatch(I_PP_Order_Candidate::isMaturing);
+	}
+
 	private boolean isEligibleHuToIssue(final HuId huId)
 	{
 		if (SourceHUsService.get().isHuOrAnyParentSourceHu(huId) || !handlingUnitsBL.isHUHierarchyCleared(huId))
@@ -259,5 +310,93 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		}
 
 		return !huStatusBL.isStatusIssued(huId);
+	}
+
+	private boolean isHUEligibleForMaturing(
+			@NonNull final I_M_HU hu,
+			@NonNull final ProductId maturedProductId)
+	{
+		if (!hu.isActive() || !hu.isReserved() || !hu.isLocked() || !huStatusBL.isStatusActiveOrIssued(hu))
+		{
+			return false;
+		}
+
+		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoId(hu.getM_Locator_ID());
+		if (locatorId == null)
+		{
+			return false;
+		}
+
+		final IHUProductStorage productStorage = handlingUnitsBL.getStorageFactory()
+				.getSingleHUProductStorage(hu);
+
+		final List<MaturingConfigLine> maturingConfigLines = maturingConfigRepository.get().getByFromProductId(productStorage.getProductId());
+
+		if (maturingConfigLines.isEmpty())
+		{
+			return false;
+		}
+
+		final MaturingConfigLine maturingConfigLine = CollectionUtils.singleElement(maturingConfigLines);
+
+		return productPlanningDAO.find(IProductPlanningDAO.ProductPlanningQuery.builder()
+											   .productId(maturedProductId)
+											   .warehouseId(locatorId.getWarehouseId())
+											   .maturingConfigLineId(maturingConfigLine.getId())
+											   .build())
+				.map(ProductPlanning::isMatured)
+				.orElse(false);
+	}
+
+	@NonNull
+	private I_PP_Order_Candidate getSingleMaturingCandidate(@NonNull final PPOrderId ppOrderId)
+	{
+		final ImmutableList<I_PP_Order_Candidate> maturingCandidates = ppOrderCandidateDAO.get().getByOrderId(ppOrderId);
+		if (!isAtLeastOneCandidateMaturing(maturingCandidates))
+		{
+			throw new AdempiereException("No maturing candidates found for PPOrderId!")
+					.appendParametersToMessage()
+					.setParameter("PPOrderId", ppOrderId);
+		}
+
+		return CollectionUtils.singleElement(maturingCandidates);
+	}
+
+	@NonNull
+	private I_M_HU getMaturingHU(@NonNull final I_PP_Order ppOrder)
+	{
+		final I_PP_Order_Candidate maturingCandidate = getSingleMaturingCandidate(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()));
+		final HuId maturingHUId = HuId.ofRepoId(maturingCandidate.getIssue_HU_ID());
+
+		final I_M_HU maturingHU = handlingUnitsBL.getById(maturingHUId);
+
+		final ProductId maturedProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+
+		if (isHUEligibleForMaturing(maturingHU, maturedProductId))
+		{
+			throw new AdempiereException("Issue HU is not eligible for maturing !");
+		}
+
+		return maturingHU;
+	}
+
+	private void receiveMaturedHU(
+			@NonNull final I_PP_Order ppOrder,
+			@NonNull final I_M_HU huToBeIssued)
+	{
+		final LocatorId locatorId = LocatorId.ofRepoId(ppOrder.getM_Warehouse_ID(), ppOrder.getM_Locator_ID());
+
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		final I_M_HU receivedHu = receivingMainProduct(ppOrderId)
+				.locatorId(locatorId)
+				.receiveVHU(Quantitys.create(ppOrder.getQtyOrdered(), UomId.ofRepoId(ppOrder.getC_UOM_ID())));
+
+		attributesBL.transferAttributesForSingleProductHUs(huToBeIssued, receivedHu);
+		attributesBL.updateHUAttribute(HuId.ofRepoId(receivedHu.getM_HU_ID()), AttributeConstants.ProductionDate, SystemTime.asTimestamp());
+
+		final HUQRCode huqrCode = huqrCodesService.get().getQRCodeByHuId(HuId.ofRepoId(huToBeIssued.getM_HU_ID()));
+		huqrCodesService.get().assign(huqrCode, HuId.ofRepoId(receivedHu.getM_HU_ID()));
+
+		processPlanning(PPOrderPlanningStatus.COMPLETE, ppOrderId);
 	}
 }

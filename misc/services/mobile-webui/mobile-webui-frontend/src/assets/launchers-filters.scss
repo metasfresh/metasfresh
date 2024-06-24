@@ -1,0 +1,35 @@
+.filters-container {
+  margin-top: 1.5rem;
+  padding-bottom: 2rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+
+  .filters {
+    .loading {
+      padding: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      .loading-icon {
+        font-size: 3rem;
+      }
+    }
+
+    .group {
+      padding-bottom: 1.5rem;
+
+      .button {
+        height: auto;
+        .full-size-btn {
+          height: auto;
+          .row {
+            span {
+              white-space: pre;
+            }
+          }
+        }
+      }
+    }
+  }
+}

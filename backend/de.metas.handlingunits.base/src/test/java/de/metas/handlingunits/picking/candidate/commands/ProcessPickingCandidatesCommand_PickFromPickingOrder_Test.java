@@ -33,7 +33,7 @@ import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -127,6 +127,7 @@ public class ProcessPickingCandidatesCommand_PickFromPickingOrder_Test
 
 		ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(helper.pickingCandidateRepository)
+				.inventoryService(helper.inventoryService)
 				.request(ProcessPickingCandidatesRequest.builder()
 						.pickingCandidateId(pickingCandidateId)
 						.build())

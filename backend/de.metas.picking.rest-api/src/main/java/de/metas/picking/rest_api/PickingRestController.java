@@ -24,9 +24,16 @@ package de.metas.picking.rest_api;
 
 import de.metas.Profiles;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
+import de.metas.picking.rest_api.json.JsonPickingLineCloseRequest;
+import de.metas.picking.rest_api.json.JsonPickingLineOpenRequest;
+import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.workflow.rest_api.controller.v2.WorkflowRestController;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
+import de.metas.workflow.rest_api.model.WFProcess;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,20 +44,38 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/picking")
 @RestController
 @Profile(Profiles.PROFILE_App)
+@RequiredArgsConstructor
 public class PickingRestController
 {
-	private final PickingMobileApplication pickingMobileApplication;
-
-	public PickingRestController(
-			@NonNull final PickingMobileApplication pickingMobileApplication)
-	{
-		this.pickingMobileApplication = pickingMobileApplication;
-	}
+	@NonNull private final PickingMobileApplication pickingMobileApplication;
+	@NonNull private final WorkflowRestController workflowRestController;
 
 	@PostMapping("/events")
 	public void postEvents(
 			@RequestBody @NonNull final JsonPickingEventsList eventsList)
 	{
 		pickingMobileApplication.processStepEvents(eventsList, Env.getLoggedUserId());
+	}
+
+	@PostMapping("/event")
+	public JsonWFProcess postEvent(
+			@RequestBody @NonNull final JsonPickingStepEvent event)
+	{
+		final WFProcess wfProcess = pickingMobileApplication.processStepEvent(event, Env.getLoggedUserId());
+		return workflowRestController.toJson(wfProcess);
+	}
+
+	@PostMapping("/closeLine")
+	public JsonWFProcess closeLine(@RequestBody @NonNull JsonPickingLineCloseRequest request)
+	{
+		final WFProcess wfProcess = pickingMobileApplication.closeLine(request, Env.getLoggedUserId());
+		return workflowRestController.toJson(wfProcess);
+	}
+
+	@PostMapping("/openLine")
+	public JsonWFProcess openLine(@RequestBody @NonNull JsonPickingLineOpenRequest request)
+	{
+		final WFProcess wfProcess = pickingMobileApplication.openLine(request, Env.getLoggedUserId());
+		return workflowRestController.toJson(wfProcess);
 	}
 }

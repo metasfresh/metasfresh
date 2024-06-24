@@ -16,9 +16,8 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.lang.reflect.Method;
-import java.math.BigDecimal;
-
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
@@ -26,8 +25,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
 
 /**
  * Callout Engine.
@@ -75,7 +74,7 @@ public class CalloutEngine implements Callout
 		}
 		catch (final Exception e)
 		{
-			throw CalloutExecutionException.of(e)
+			throw CalloutExecutionException.wrapIfNeeded(e)
 					.setField(calloutField)
 					.setCalloutExecutor(currentCalloutExecutor);
 		}
