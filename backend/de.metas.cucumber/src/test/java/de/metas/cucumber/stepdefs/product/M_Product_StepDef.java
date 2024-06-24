@@ -417,7 +417,7 @@ public class M_Product_StepDef
 
 	private void loadProduct(@NonNull final Map<String, String> tableRow)
 	{
-		final int productId = DataTableUtil.extractIntForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID);
+		final int productId = DataTableUtil.extractIntForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_M_Product_ID);
 
 		final I_M_Product product = productDAO.getById(productId);
 		assertThat(product).isNotNull();
