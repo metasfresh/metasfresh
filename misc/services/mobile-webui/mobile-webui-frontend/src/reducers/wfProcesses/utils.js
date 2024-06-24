@@ -1,6 +1,11 @@
 import { current, isDraft } from 'immer';
 import * as CompleteStatus from '../../constants/CompleteStatus';
-import { computeActivityDataStoredInitialValue, computeActivityStatus, mergeActivityDataStored, normalizeComponentProps, } from './activityStateHandlers';
+import {
+  computeActivityDataStoredInitialValue,
+  computeActivityStatus,
+  mergeActivityDataStored,
+  normalizeComponentProps,
+} from './activityStateHandlers';
 
 /**
  * Updates isUserEditable flag for all activities.

@@ -30,7 +30,12 @@ import { parseQRCodeString } from '../../../utils/qrCode/hu';
 import { postStepPicked } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useBooleanSetting } from '../../../reducers/settings';
-import { getNextEligibleLineToPick, getQtyPickedOrRejectedTotalForLine, getQtyToPickForLine, getQtyToPickRemainingForLine, } from '../../../utils/picking';
+import {
+  getNextEligibleLineToPick,
+  getQtyPickedOrRejectedTotalForLine,
+  getQtyToPickForLine,
+  getQtyToPickRemainingForLine,
+} from '../../../utils/picking';
 import { isShowBestBeforeDate, isShowLotNo } from './PickConfig';
 import { useSearchParams } from '../../../hooks/useSearchParams';
 import { useHeaderUpdate } from './PickLineScreen';

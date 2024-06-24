@@ -1,4 +1,9 @@
-import { CLEAR_LAUNCHERS, POPULATE_LAUNCHERS_COMPLETE, POPULATE_LAUNCHERS_START, SET_ACTIVE_FILTERS, } from '../constants/LaunchersActionTypes';
+import {
+  CLEAR_LAUNCHERS,
+  POPULATE_LAUNCHERS_COMPLETE,
+  POPULATE_LAUNCHERS_START,
+  SET_ACTIVE_FILTERS,
+} from '../constants/LaunchersActionTypes';
 import { compareStringEmptyLast } from '../utils/stringUtils';
 
 export const populateLaunchersStart = ({ applicationId, filterByQRCode }) => {

@@ -4,7 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
-import { getActivityById, getQtyRejectedReasonsFromActivity, getStepByIdFromActivity, } from '../../../reducers/wfProcesses';
+import {
+  getActivityById,
+  getQtyRejectedReasonsFromActivity,
+  getStepByIdFromActivity,
+} from '../../../reducers/wfProcesses';
 import { postDistributionPickFrom } from '../../../api/distribution';
 import { updateDistributionPickFrom } from '../../../actions/DistributionActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';

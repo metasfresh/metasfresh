@@ -1,4 +1,8 @@
-import { UPDATE_MANUFACTURING_ISSUE_QTY, UPDATE_MANUFACTURING_RECEIPT_QTY, UPDATE_MANUFACTURING_RECEIPT_TARGET, } from '../constants/ManufacturingActionTypes';
+import {
+  UPDATE_MANUFACTURING_ISSUE_QTY,
+  UPDATE_MANUFACTURING_RECEIPT_QTY,
+  UPDATE_MANUFACTURING_RECEIPT_TARGET,
+} from '../constants/ManufacturingActionTypes';
 
 import { getLineById, getWfProcess } from '../reducers/wfProcesses';
 import { postManufacturingIssueEvent, postManufacturingReceiveEvent } from '../api/manufacturing';

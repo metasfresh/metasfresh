@@ -9,7 +9,12 @@ import { getLineById } from '../../../reducers/wfProcesses';
 import PickStepButton from './PickStepButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
-import { getQtyPickedOrRejectedTotalForLine, getQtyToPickForLine, getQtyToPickRemainingForLine, isAllowPickingAnyHUForLine, } from '../../../utils/picking';
+import {
+  getQtyPickedOrRejectedTotalForLine,
+  getQtyToPickForLine,
+  getQtyToPickRemainingForLine,
+  isAllowPickingAnyHUForLine,
+} from '../../../utils/picking';
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import { closePickingJobLine, openPickingJobLine } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';

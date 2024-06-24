@@ -1,12 +1,12 @@
-import React, { createContext, useContext } from 'react';
-import { useDispatch, useStore } from 'react-redux';
+import React, { useContext, createContext } from 'react';
+import { useStore, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
 import { loginByQrCode, loginRequest, logoutRequest } from '../api/login';
 import { COOKIE_EXPIRATION } from '../constants/Cookie';
-import { clearToken, setToken } from '../actions/TokenActions';
+import { setToken, clearToken } from '../actions/TokenActions';
 import { setLanguage } from '../utils/translations';
 import { getIsLoggedInFromState, getTokenFromState } from '../reducers/appHandler';
 

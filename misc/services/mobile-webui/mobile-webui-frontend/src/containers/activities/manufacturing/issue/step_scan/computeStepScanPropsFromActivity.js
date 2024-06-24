@@ -1,4 +1,9 @@
-import { getLineByIdFromActivity, getQtyRejectedReasonsFromActivity, getScaleDeviceFromActivity, getStepByIdFromLine, } from '../../../../../reducers/wfProcesses';
+import {
+  getLineByIdFromActivity,
+  getQtyRejectedReasonsFromActivity,
+  getScaleDeviceFromActivity,
+  getStepByIdFromLine,
+} from '../../../../../reducers/wfProcesses';
 
 export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId, isProcessedQtyStillOnScale }) => {
   const line = getLineByIdFromActivity(activity, lineId);
