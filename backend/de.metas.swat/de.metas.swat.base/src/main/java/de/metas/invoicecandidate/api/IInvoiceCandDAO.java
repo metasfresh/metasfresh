@@ -413,6 +413,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	InvoiceableInvoiceCandIdResult getFirstInvoiceableInvoiceCandId(OrderId orderId);
 
+	void setIsActive(@NonNull Collection<InvoiceCandidateId> ids, boolean isActive);
+
 	@Value
 	class InvoiceableInvoiceCandIdResult
 	{

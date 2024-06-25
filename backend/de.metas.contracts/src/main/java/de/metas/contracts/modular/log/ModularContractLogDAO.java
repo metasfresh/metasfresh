@@ -39,7 +39,6 @@ import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
@@ -60,7 +59,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -226,35 +224,7 @@ public class ModularContractLogDAO
 
 		final I_ModCntr_Log reversedLog = createReverseLog( oldLog, request.description());
 
-		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoIdOrNull(oldLog.getC_Invoice_Candidate_ID());
-		if (invoiceCandidateId != null)
-		{
-			inactivateICIfNoBillableLogsExist(invoiceCandidateId);
-		}
-
-
 		return ModularContractLogEntryId.ofRepoId(reversedLog.getModCntr_Log_ID());
-	}
-
-	private void inactivateICIfNoBillableLogsExist(@NonNull final InvoiceCandidateId invoiceCandidateId)
-	{
-		final IQuery<I_C_Invoice_Candidate> billableLogsReferencingICQuery = queryBL.createQueryBuilder(I_ModCntr_Log.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_IsBillable, true)
-				.andCollect(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.class)
-				.create();
-
-		final ICompositeQueryUpdater<I_C_Invoice_Candidate> inactivateICUpdater = queryBL.createCompositeQueryUpdater(I_C_Invoice_Candidate.class)
-				.addSetColumnValue(I_C_Invoice_Candidate.COLUMNNAME_IsActive, false)
-				.addSetColumnValue(I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing, false);
-
-		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
-				.addNotInSubQueryFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, billableLogsReferencingICQuery)
-				.create()
-				.update(inactivateICUpdater);
 	}
 
 	private @NonNull I_ModCntr_Log reverseOldLog(final @NonNull LogEntryReverseRequest request)
