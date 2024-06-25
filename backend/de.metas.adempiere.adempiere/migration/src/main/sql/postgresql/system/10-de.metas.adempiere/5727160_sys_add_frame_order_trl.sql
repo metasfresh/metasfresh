@@ -1,0 +1,26 @@
+-- Run mode: WEBUI
+
+-- 2024-06-25T11:08:45.505Z
+UPDATE C_DocType_Trl SET Name='Rahmenbestellung',Updated=TO_TIMESTAMP('2024-06-25 13:08:45.499','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_DocType_ID=541057
+;
+
+-- 2024-06-25T11:08:47.389Z
+UPDATE C_DocType_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-06-25 13:08:47.389','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_DocType_ID=541057
+;
+
+-- 2024-06-25T11:08:58.201Z
+UPDATE C_DocType_Trl SET Name='Rahmenbestellung',Updated=TO_TIMESTAMP('2024-06-25 13:08:58.201','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND C_DocType_ID=541057
+;
+
+-- 2024-06-25T11:08:58.207Z
+UPDATE C_DocType SET Name='Rahmenbestellung' WHERE C_DocType_ID=541057
+;
+
+-- 2024-06-25T11:09:00.041Z
+UPDATE C_DocType_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-06-25 13:09:00.041','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND C_DocType_ID=541057
+;
+
+-- 2024-06-25T11:10:04.871Z
+UPDATE C_DocType_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-06-25 13:10:04.871','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541057
+;
+
