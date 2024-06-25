@@ -15,3 +15,22 @@ UPDATE AD_Element_Trl SET Name='Eff. Prod. Date', PrintName='Eff. Prod. Date',Up
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583152,'en_US') 
 ;
 
+-- Field: Produktionsauftrag_OLD -> Produktionsaufträge -> Eff. Prod. Datum
+-- Column: PP_Order.DateDelivered
+-- Field: Produktionsauftrag_OLD(53009,EE01) -> Produktionsaufträge(53054,EE01) -> Eff. Prod. Datum
+-- Column: PP_Order.DateDelivered
+-- 2024-06-25T13:54:03.027Z
+UPDATE AD_Field SET AD_Name_ID=583152, Description=NULL, Help=NULL, Name='Eff. Prod. Datum',Updated=TO_TIMESTAMP('2024-06-25 16:54:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=54142
+;
+
+-- 2024-06-25T13:54:03.033Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583152)
+;
+
+-- 2024-06-25T13:54:03.045Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=54142
+;
+
+-- 2024-06-25T13:54:03.050Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(54142)
+;
