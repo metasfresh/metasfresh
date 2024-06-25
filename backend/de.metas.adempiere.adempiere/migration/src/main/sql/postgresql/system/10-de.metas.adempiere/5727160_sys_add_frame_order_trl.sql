@@ -24,3 +24,15 @@ UPDATE C_DocType_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-06-25 13:09
 UPDATE C_DocType_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-06-25 13:10:04.871','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541057
 ;
 
+-- 2024-06-25T12:48:21.544Z
+UPDATE C_DocType_Trl SET PrintName='Rahmenbestellung',Updated=TO_TIMESTAMP('2024-06-25 14:48:21.539','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_DocType_ID=541057
+;
+
+-- 2024-06-25T12:48:25.509Z
+UPDATE C_DocType_Trl SET PrintName='Rahmenbestellung',Updated=TO_TIMESTAMP('2024-06-25 14:48:25.509','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND C_DocType_ID=541057
+;
+
+-- 2024-06-25T12:48:25.511Z
+UPDATE C_DocType SET PrintName='Rahmenbestellung' WHERE C_DocType_ID=541057
+;
+
