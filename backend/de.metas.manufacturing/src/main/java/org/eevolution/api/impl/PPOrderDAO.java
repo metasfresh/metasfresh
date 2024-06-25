@@ -206,10 +206,10 @@ public class PPOrderDAO implements IPPOrderDAO
 		}
 
 		//
-		// DatePromised
-		if (query.getDatePromisedDay() != null)
+		// DateStartSchedule
+		if (query.getDateStartScheduleDay() != null)
 		{
-			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, query.getDatePromisedDay(), DateTruncQueryFilterModifier.DAY);
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DateStartSchedule, query.getDateStartScheduleDay(), DateTruncQueryFilterModifier.DAY);
 		}
 
 		if (!query.getOnlyIds().isEmpty())

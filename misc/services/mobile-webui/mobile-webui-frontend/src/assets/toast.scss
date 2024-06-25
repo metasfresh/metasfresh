@@ -8,6 +8,36 @@
   align-items: center;
 }
 
+.toastCloseButton {
+  overflow: hidden;
+  position: relative;
+  border: none;
+  padding: 0;
+  margin-right: 0.125em;
+  width: 1.5em; height: 1.5em;
+  border-radius: 50%;
+  background: #ffffff52;
+  color: white;
+  font: inherit;
+  text-indent: 100%;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(29, 161, 142, .1)
+  }
+
+  &:before, &:after {
+    position: absolute;
+    top: 15%; left: calc(50% - .0625em);
+    width: .125em; height: 70%;
+    transform: rotate(45deg);
+    background: currentcolor;
+    content: ''
+  }
+
+  &:after { transform: rotate(-45deg); }
+}
+
 .toastSuccessContainer {
   background: $indicator-green;
   transition: opacity 50ms ease-in-out;
