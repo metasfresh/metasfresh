@@ -240,7 +240,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
 				.computingMethodType(ComputingMethodType.INTERIM_CONTRACT)
 				.contractType(LogEntryContractType.INTERIM)
-				.processed(true)
+				.billable(true)
 				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID()))
 				.build();
 		final ModularContractLogEntriesList modularContractLogEntries = modularContractLogService.getModularContractLogEntries(query);

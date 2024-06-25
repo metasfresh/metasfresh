@@ -63,7 +63,7 @@ import java.util.List;
 @Data
 public class InvoiceCandidate
 {
-	public static InvoiceCandidate.InvoiceCandidateBuilder createBuilder(@NonNull final InvoiceCandidateUpsertRequest upsertRequest)
+	public static InvoiceCandidateBuilder createBuilder(@NonNull final InvoiceCandidateUpsertRequest upsertRequest)
 	{
 		return InvoiceCandidate
 				.builder()
@@ -93,6 +93,8 @@ public class InvoiceCandidate
 				.isInterimInvoice(upsertRequest.isInterimInvoice())
 				.handlerId(upsertRequest.getHandlerId())
 				.isManual(upsertRequest.isManual())
+				.isActive(true)
+				.processed(false)
 				.flatrateTermId(upsertRequest.getFlatrateTermId());
 	}
 
@@ -135,12 +137,16 @@ public class InvoiceCandidate
 
 	private final PricingSystemId pricingSystemId;
 
-	/** when loaded from DB, come IC records can have an empty priceListVersionId. */
+	/**
+	 * when loaded from DB, come IC records can have an empty priceListVersionId.
+	 */
 	private final PriceListVersionId priceListVersionId;
 
 	private final ProductPrice priceEntered;
 
-	/** If given, then productId and currencyId have to match! */
+	/**
+	 * If given, then productId and currencyId have to match!
+	 */
 	@Nullable
 	private ProductPrice priceEnteredOverride;
 
@@ -174,8 +180,10 @@ public class InvoiceCandidate
 	@NonNull
 	PaymentTermId paymentTermId;
 
-	@Nullable
-	final YearAndCalendarId harvestYearAndCalendarId;
+	@Nullable final YearAndCalendarId harvestYearAndCalendarId;
+
+	boolean processed;
+	boolean isActive;
 
 	/**
 	 * Note that an IC can **also** be referenced internally by an {@code I_Invoice_Candidate} import-record
@@ -231,6 +239,8 @@ public class InvoiceCandidate
 			@NonNull final ILCandHandlerId handlerId,
 			@Nullable final FlatrateTermId flatrateTermId,
 			final boolean isManual,
+			final boolean processed,
+			final boolean isActive,
 			@Nullable final AuctionId auctionId)
 	{
 		this.orgId = orgId;
@@ -271,6 +281,8 @@ public class InvoiceCandidate
 		this.isManual = isManual;
 		this.auctionId = auctionId;
 		this.flatrateTermId = flatrateTermId;
+		this.processed = processed;
+		this.isActive = isActive;
 
 		final CurrencyId currencyId = CollectionUtils
 				.extractSingleElement(
