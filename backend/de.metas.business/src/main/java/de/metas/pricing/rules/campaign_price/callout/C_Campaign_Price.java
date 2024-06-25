@@ -121,16 +121,14 @@ public class C_Campaign_Price
 								Quantitys.create(ONE, productId),
 								SOTrx.SALES)
 						.setCountryId(countryId)
-						.setPriceDate(TimeUtil.asLocalDate(record.getValidFrom(),timeZone))
-						.setFailIfNotCalculated();
-				final IPricingResult pricingResult;
-				try
+						.setPriceDate(TimeUtil.asLocalDate(record.getValidFrom(),timeZone));
+				final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
+				if(pricingResult.isCalculated())
 				{
-					pricingResult = pricingBL.calculatePrice(pricingContext);
 					record.setC_TaxCategory_ID(pricingResult.getTaxCategoryId().getRepoId());
 					record.setInvoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn().getCode());
 				}
-				catch (final Exception e)
+				else
 				{
 					record.setM_PricingSystem_ID(-1);
 				}
