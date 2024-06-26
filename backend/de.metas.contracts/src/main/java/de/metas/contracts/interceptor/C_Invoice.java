@@ -10,18 +10,20 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -80,9 +82,18 @@ public class C_Invoice
 		}
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
-		final Collection<InvoiceCandidateId> invoiceCandidateIds = invoiceCandDAO.retrieveInvoiceCandidateIds(invoiceId);
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidates(invoiceId);
+		final Set<InvoiceCandidateId> invoiceCandidateIds = invoiceCandidates.stream()
+				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+				.map(InvoiceCandidateId::ofRepoId)
+				.collect(Collectors.toSet());
 		modularContractLogService.unprocessLogsForICs(invoiceCandidateIds);
-		invoiceCandDAO.setIsActive(invoiceCandidateIds, false);
+		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+		{
+			invoiceCandidate.setProcessed(false);//maybe should live in de.metas.invoicecandidate.api.impl.InvoiceCandBL.handleReversalForInvoice, but I'm afraid of consequences
+			invoiceCandidate.setIsActive(false);
+		}
+		InterfaceWrapperHelper.saveAll(invoiceCandidates);
 		if (docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId))
 		{
 			final Set<FlatrateTermId> contractIds = invoiceBL.getLines(invoiceId)

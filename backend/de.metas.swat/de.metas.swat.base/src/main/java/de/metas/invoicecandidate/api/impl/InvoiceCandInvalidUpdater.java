@@ -368,7 +368,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// update BPartner data from 'ic'
 		invoiceCandidateHandlerBL.setBPartnerData(icRecord);
 
-		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, icRecord);
+		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(icRecord);
 
 		// 06539 add qty overdelivery to qty delivered
 		final org.compiere.model.I_C_OrderLine ol = icRecord.getC_OrderLine();
