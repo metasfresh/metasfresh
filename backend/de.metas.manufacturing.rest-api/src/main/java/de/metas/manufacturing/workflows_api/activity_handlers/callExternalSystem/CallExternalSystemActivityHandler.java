@@ -30,6 +30,7 @@ import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
+import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.manufacturing.workflows_api.ManufacturingRestService;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
@@ -97,7 +98,7 @@ public class CallExternalSystemActivityHandler implements WFActivityHandler, Set
 	@NonNull
 	private static ManufacturingJob getManufacturingJob(final @NonNull WFProcess wfProcess)
 	{
-		return wfProcess.getDocumentAs(ManufacturingJob.class);
+		return ManufacturingMobileApplication.getManufacturingJob(wfProcess);
 	}
 
 	private static ManufacturingJobActivityId getManufacturingJobActivityId(final @NonNull WFActivity wfActivity)

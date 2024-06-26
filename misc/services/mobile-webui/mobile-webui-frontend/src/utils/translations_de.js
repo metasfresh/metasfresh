@@ -9,9 +9,14 @@ const translations = {
       invalid: 'Ungültiger QR Code',
     },
   },
+  errorScreen: {
+    retryButton: 'Erneut versuchen',
+  },
   general: {
     Yes: 'Ja',
     No: 'Nein',
+    OK: 'OK',
+    DocumentNo: 'Dokument Nr',
     Product: 'Produkt',
     ProductValue: 'Artikelnummer',
     Locator: 'Lagerort',
@@ -22,12 +27,17 @@ const translations = {
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'verworfen',
+    Qty: 'Qty',
+    QtyTU: 'Gebindemenge',
     CatchWeight: 'Gewicht',
+    PackingItemName: 'Packvorschrift',
     BestBeforeDate: 'MHD',
     LotNo: 'Lot-Nr',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
     closeText: 'Schließen',
+    clearText: 'Lösen',
+    reOpenText: 'Wieder öffnen',
     scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',
@@ -35,6 +45,8 @@ const translations = {
       showResults: 'Ergebnisse anzeigen (%(count)s)',
       clearFilters: 'Filter löschen',
     },
+    workplace: 'Arbeitsplatz',
+    workstation: 'Arbeitsstation',
   },
   login: {
     submitButton: 'Login',
@@ -60,6 +72,7 @@ const translations = {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
       scanWorkplacePlaceholder: 'Arbeitsplatz scannen...',
+      scanWorkstationPlaceholder: 'Arbeitsstation scannen...',
     },
   },
   activities: {
@@ -75,11 +88,11 @@ const translations = {
       qtyAboveMax: '%(qtyDiff)s über max', // TODO verify trl
       notPositiveQtyNotAllowed: 'Null oder negative Menge nicht erlaubt', // TODO verify trl
       confirmDone: 'OK',
+      confirmDoneAndCloseTarget: 'OK und LU schließen',
       rejectedPrompt: 'Es gibt %(qtyRejected)s %(uom)s ungepickte Mengen. Warum?',
       unPickBtn: 'Rückgängig',
       target: 'Soll',
       picked: 'Ist',
-      Workplace: 'Arbeitsplatz',
       switchToManualInput: 'Manuell',
       switchToQrCodeInput: 'QR scannen',
       skip: 'Überspringen',
@@ -87,6 +100,13 @@ const translations = {
       qrcode: {
         missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
         differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
+        differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem in der Pickingzeile überein',
+      },
+      pickingTarget: {
+        New: 'Neues Gebinde',
+        Select: 'Gebinde',
+        Current: 'Offenes Gebinde',
+        CloseTarget: 'Schließen',
       },
     },
     distribution: {

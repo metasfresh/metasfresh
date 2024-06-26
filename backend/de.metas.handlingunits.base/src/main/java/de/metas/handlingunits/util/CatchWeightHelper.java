@@ -26,7 +26,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /*
  * #%L
@@ -121,31 +122,46 @@ public class CatchWeightHelper
 		final IProductBL productBL = Services.get(IProductBL.class);
 
 		final UomId stockUOMId = productBL.getStockUOMId(productId);
-
 		final Quantity stockQty = uomConversionBL.convertQuantityTo(pickedQty, UOMConversionContext.of(productId), stockUOMId);
 
 		final StockQtyAndUOMQtyBuilder qtyPicked = StockQtyAndUOMQty.builder()
 				.productId(productId)
 				.stockQty(stockQty);
 
-		final Optional<UomId> optCatchUomId = productBL.getCatchUOMId(productId);
-		if (optCatchUomId.isPresent())
+		final UomId catchUomId = productBL.getCatchUOMId(productId).orElse(null);
+		if (catchUomId != null)
 		{
-			final UomId catchUomId = optCatchUomId.get();
-
 			assertUomWeightable(catchUomId);
 
-			final IAttributeStorage attributeStorage = huContext
-					.getHUAttributeStorageFactory()
-					.getAttributeStorage(huRecord);
-
+			final IAttributeStorage attributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(huRecord);
 			final IWeightable weightable = Weightables.wrap(attributeStorage);
+			final Quantity huWeightNet = Quantity.of(weightable.getWeightNet(), weightable.getWeightNetUOM());
 
-			final Quantity weight = Quantity.of(weightable.getWeightNet(), weightable.getWeightNetUOM());
+			final Quantity weight;
+			if (stockQty.signum() >= 0)
+			{
+				weight = huWeightNet;
+			}
+			else
+			{
+				final Quantity huQty = huContext.getHUStorageFactory().getStorage(huRecord).getQuantity(productId)
+						.map(qty -> uomConversionBL.convertQuantityTo(qty, UOMConversionContext.of(productId), stockUOMId))
+						.orElse(null);
+				if (huQty == null || huQty.signum() == 0)
+				{
+					throw new AdempiereException("Cannot determine catch weight because HU's qty is zero");
+				}
+				else
+				{
+					final BigDecimal factor = stockQty.toBigDecimal().divide(huQty.toBigDecimal(), 12, RoundingMode.HALF_UP);
+					weight = huWeightNet.multiply(factor).roundToUOMPrecision();
+				}
+			}
+
 			final Quantity catchQty = uomConversionBL.convertQuantityTo(weight, UOMConversionContext.of(productId), catchUomId);
-
 			qtyPicked.uomQty(catchQty);
 		}
+
 		return qtyPicked.build();
 	}
 

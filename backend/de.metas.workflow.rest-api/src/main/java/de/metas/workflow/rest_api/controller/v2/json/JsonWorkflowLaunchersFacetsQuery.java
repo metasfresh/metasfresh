@@ -39,5 +39,6 @@ import java.util.List;
 public class JsonWorkflowLaunchersFacetsQuery
 {
 	@NonNull MobileApplicationId applicationId;
+	@Nullable String filterByDocumentNo;
 	@Nullable List<WorkflowLaunchersFacetId> activeFacetIds;
 }

@@ -70,7 +70,7 @@ final class ColumnSqlCacheInvalidateRequestFactories
 
 			if (!targetTableInfo.isPhysicalColumn(sourceLinkColumnName))
 			{
-				throw new AdempiereException("Column " + targetTableName + "." + sourceLinkColumnName + " it's expected to exist and be a physical column");
+				throw AdempiereException.newWithPlainMessage("Column " + targetTableName + "." + sourceLinkColumnName + " it's expected to exist and be a physical column");
 			}
 			//noinspection UnnecessaryLocalVariable
 			final String targetLinkColumnName = sourceLinkColumnName;
@@ -84,7 +84,7 @@ final class ColumnSqlCacheInvalidateRequestFactories
 		}
 		else
 		{
-			throw new AdempiereException("Fetch method not supported for " + descriptor);
+			throw AdempiereException.newWithPlainMessage("Fetch method not supported for " + descriptor);
 		}
 	}
 

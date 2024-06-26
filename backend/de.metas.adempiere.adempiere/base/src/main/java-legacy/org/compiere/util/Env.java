@@ -1292,7 +1292,12 @@ public final class Env
 
 	public static UserId getLoggedUserId(final Properties ctx)
 	{
-		return UserId.ofRepoId(getAD_User_ID(ctx));
+		final UserId loggedUserId = UserId.ofRepoIdOrNull(getAD_User_ID(ctx));
+		if(loggedUserId == null)
+		{
+			throw new AdempiereException("No user logged in");
+		}
+		return loggedUserId;
 	}
 
 	public static Optional<UserId> getLoggedUserIdIfExists()

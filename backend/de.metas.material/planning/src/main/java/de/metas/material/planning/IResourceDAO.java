@@ -30,6 +30,7 @@ import lombok.NonNull;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -39,6 +40,8 @@ public interface IResourceDAO extends ISingletonService
 	ResourceType getResourceTypeById(ResourceTypeId resourceTypeId);
 
 	ResourceType getResourceTypeByResourceId(ResourceId resourceId);
+
+	ResourceTypeId getResourceTypeIdByResourceId(ResourceId resourceId);
 
 	I_S_Resource getById(ResourceId resourceId);
 
@@ -53,4 +56,6 @@ public interface IResourceDAO extends ISingletonService
 	void onResourceTypeChanged(I_S_ResourceType resourceType);
 
 	ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull UserId userId);
+
+	ImmutableSet<ResourceId> getResourceIdsByResourceTypeIds(@NonNull Collection<ResourceTypeId> resourceTypeIds);
 }

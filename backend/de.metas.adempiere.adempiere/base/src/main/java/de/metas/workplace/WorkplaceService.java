@@ -29,6 +29,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -59,9 +60,16 @@ public class WorkplaceService
 				.map(workplaceRepository::getById);
 	}
 
+	public List<Workplace> getAllActive() {return workplaceRepository.getAllActive();}
+
 	public Optional<WarehouseId> getWarehouseIdByUserId(@NonNull final UserId userId)
 	{
 		return getWorkplaceByUserId(userId).map(Workplace::getWarehouseId);
+	}
+
+	public void assignWorkplace(@NonNull UserId userId, @NonNull WorkplaceId workplaceId)
+	{
+		workplaceUserAssignRepository.create(WorkplaceAssignmentCreateRequest.builder().userId(userId).workplaceId(workplaceId).build());
 	}
 
 	public void assignWorkplace(@NonNull final WorkplaceAssignmentCreateRequest request)

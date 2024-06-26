@@ -46,6 +46,7 @@ public class WorkflowLauncherCaption
 {
 	@NonNull private final ImmutableList<String> fieldsInOrder;
 	@NonNull private final ImmutableMap<String, ITranslatableString> fieldValues;
+	@NonNull private final ImmutableMap<String, Comparable<?>> comparingKeys;
 
 	@Nullable private ITranslatableString _asTranslatableString = null; // lazy
 	@NonNull private final HashMap<String, String> trlsCache = new HashMap<>();
@@ -53,10 +54,12 @@ public class WorkflowLauncherCaption
 	@Builder
 	private WorkflowLauncherCaption(
 			@NonNull final ImmutableList<String> fieldsInOrder,
-			@NonNull final ImmutableMap<String, ITranslatableString> fieldValues)
+			@NonNull final ImmutableMap<String, ITranslatableString> fieldValues,
+			@Nullable final ImmutableMap<String, Comparable<?>> comparingKeys)
 	{
 		this.fieldsInOrder = fieldsInOrder;
 		this.fieldValues = fieldValues;
+		this.comparingKeys = comparingKeys != null ? comparingKeys : ImmutableMap.of();
 	}
 
 	public static WorkflowLauncherCaption of(@NonNull final ITranslatableString caption)
@@ -106,6 +109,17 @@ public class WorkflowLauncherCaption
 				: null;
 	}
 
+	private Comparable<?> getFieldComparingKey(@NonNull final String field, @NonNull final String adLanguage)
+	{
+		final Comparable<?> cmp = comparingKeys.get(field);
+		if (cmp != null)
+		{
+			return cmp;
+		}
+
+		return getFieldValue(field, adLanguage);
+	}
+
 	public static Comparator<WorkflowLauncherCaption> orderBy(@NonNull final String adLanguage, @NonNull final List<OrderBy> orderBys)
 	{
 		//
@@ -131,9 +145,10 @@ public class WorkflowLauncherCaption
 	private static Comparator<WorkflowLauncherCaption> toComparator(@NonNull final String adLanguage, @NonNull final OrderBy orderBy)
 	{
 		final String field = orderBy.getField();
-		final Function<WorkflowLauncherCaption, String> keyExtractor = caption -> caption.getFieldValue(field, adLanguage);
+		final Function<WorkflowLauncherCaption, Comparable<?>> keyExtractor = caption -> caption.getFieldComparingKey(field, adLanguage);
 
-		Comparator<String> keyComparator = Comparator.naturalOrder();
+		//noinspection unchecked
+		Comparator<Comparable<?>> keyComparator = (Comparator<Comparable<?>>)Comparator.naturalOrder();
 		if (!orderBy.isAscending())
 		{
 			keyComparator = keyComparator.reversed();
@@ -163,7 +178,12 @@ public class WorkflowLauncherCaption
 
 		public static OrderBy descending(@NonNull final ReferenceListAwareEnum field)
 		{
-			return builder().field(field.getCode()).ascending(false).build();
+			return descending(field.getCode());
+		}
+
+		public static OrderBy descending(@NonNull final String field)
+		{
+			return builder().field(field).ascending(false).build();
 		}
 	}
 

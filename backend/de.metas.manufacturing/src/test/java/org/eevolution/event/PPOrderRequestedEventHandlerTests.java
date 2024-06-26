@@ -125,11 +125,19 @@ public class PPOrderRequestedEventHandlerTests
 	private I_C_OrderLine orderLine;
 
 	private PPOrderRequestedEventHandler ppOrderRequestedEventHandler;
+	private IProductBOMDAO productBOMsRepo;
+	private IPPOrderBOMDAO ppOrderBOMDAO;
+	private IModelInterceptorRegistry modelInterceptorRegistry;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+		this.productBOMsRepo = Services.get(IProductBOMDAO.class);
+		this.ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+		this.modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
+
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, adClientId.getRepoId());
 
 		SpringContextHolder.registerJUnitBean(new ProductBOMVersionsDAO());
@@ -165,7 +173,6 @@ public class PPOrderRequestedEventHandlerTests
 		productBom.setPP_Product_BOMVersions_ID(productBomVersions.getPP_Product_BOMVersions_ID());
 		save(productBom);
 
-		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 		productPlanning = productPlanningDAO.save(ProductPlanning.builder()
 				.workflowId(routingId)
 				.bomVersionsId(ProductBOMVersionsId.ofRepoId(productBomVersions.getPP_Product_BOMVersions_ID()))
@@ -225,6 +232,7 @@ public class PPOrderRequestedEventHandlerTests
 						.datePromised(SystemTime.asInstant())
 						.dateStartSchedule(SystemTime.asInstant())
 						.plantId(ResourceId.ofRepoId(110))
+						.workstationId(ResourceId.ofRepoId(112))
 						.orderLineId(orderLine.getC_OrderLine_ID())
 						.productDescriptor(productDescriptor)
 						.productPlanningId(productPlanning.getIdNotNull().getRepoId())
@@ -285,8 +293,6 @@ public class PPOrderRequestedEventHandlerTests
 		assertThat(ppOrder).isNotNull();
 		assertThat(ppOrder.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
 
-		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
-
 		final ProductBOMVersionsId productBOMVersionsId = productPlanning.getBomVersionsId();
 		final ProductBOMId productBOMId = productBOMsRepo.getLatestBOMByVersion(productBOMVersionsId).orElse(null);
 
@@ -302,7 +308,10 @@ public class PPOrderRequestedEventHandlerTests
 		assertThat(ppOrder.getM_Product_ID()).isEqualTo(bomMainProduct.getM_Product_ID());
 		assertThat(ppOrder.getM_Warehouse_ID()).isEqualTo(warehouse.getM_Warehouse_ID());
 		assertThat(ppOrder.getC_DocType_ID()).isEqualTo(docType.getC_DocType_ID());
-		assertThat(ppOrder.getAD_Workflow_ID()).isEqualTo(productPlanning.getWorkflowId().getRepoId());
+		assertThat(PPRoutingId.ofRepoIdOrNull(ppOrder.getAD_Workflow_ID())).isEqualTo(productPlanning.getWorkflowId());
+
+		assertThat(ResourceId.ofRepoId(ppOrder.getS_Resource_ID())).isEqualTo(ppOrderPojo.getPpOrderData().getPlantId());
+		assertThat(ResourceId.ofRepoIdOrNull(ppOrder.getWorkStation_ID())).isEqualTo(ppOrderPojo.getPpOrderData().getWorkstationId());
 
 		if (productPlanning.isDocComplete())
 		{
@@ -327,7 +336,7 @@ public class PPOrderRequestedEventHandlerTests
 		final I_PP_Order ppOrder = ppOrderRequestedEventHandler.createProductionOrder(ppOrderRequestedEvent);
 		verifyPPOrder(ppOrder);
 
-		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);
+		final List<I_PP_Order_BOMLine> orderBOMLines = ppOrderBOMDAO.retrieveOrderBOMLines(ppOrder);
 		assertThat(orderBOMLines).hasSize(2);
 
 		assertThat(filter(ppOrder, BOMComponentType.Component)).hasSize(1);
@@ -356,7 +365,7 @@ public class PPOrderRequestedEventHandlerTests
 				new MaterialEventObserver());
 		final PostMaterialEventService postMaterialEventService = new PostMaterialEventService(materialEventService);
 
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new PP_Order(
+		modelInterceptorRegistry.addModelInterceptor(new PP_Order(
 				ppOrderConverter,
 				postMaterialEventService,
 				new DocumentNoBuilderFactory(Optional.empty()),
@@ -366,8 +375,6 @@ public class PPOrderRequestedEventHandlerTests
 
 	private List<I_PP_Order_BOMLine> filter(final I_PP_Order ppOrder, final BOMComponentType componentType)
 	{
-		final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
-
 		final List<I_PP_Order_BOMLine> allBomLines = ppOrderBOMDAO.retrieveOrderBOMLines(ppOrder);
 
 		return allBomLines.stream()

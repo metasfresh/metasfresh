@@ -127,7 +127,7 @@ public class PickFromHUsSupplier
 	private ImmutableSet<HuId> getVHUIdsAlreadyReserved(@NonNull final PickFromHUsGetRequest request)
 	{
 		return request.getReservationRef()
-				.flatMap(huReservationService::getByDocumentRef)
+				.flatMap(reservationRef -> huReservationService.getByDocumentRef(reservationRef, request.getOnlyHuIds()))
 				.map(HUReservation::getVhuIds)
 				.orElseGet(ImmutableSet::of);
 	}
@@ -138,7 +138,6 @@ public class PickFromHUsSupplier
 		final IHUQueryBuilder vhuQuery = handlingUnitsDAO
 				.createHUQueryBuilder()
 				.setOnlyTopLevelHUs(false)
-				.addPIVersionToInclude(HuPackingInstructionsVersionId.VIRTUAL)
 				.addOnlyInLocatorIds(Check.assumeNotEmpty(request.getPickFromLocatorIds(), "no pick from locators set: {}", request))
 				.addOnlyWithProductId(request.getProductId())
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
@@ -160,6 +159,15 @@ public class PickFromHUsSupplier
 			// TODO: shall we consider only storage relevant attributes?
 			vhuQuery.addOnlyWithAttributeValuesMatchingPartnerAndProduct(request.getPartnerId(), request.getProductId(), attributeSet);
 			vhuQuery.allowSqlWhenFilteringAttributes(huReservationService.isAllowSqlWhenFilteringHUAttributes());
+		}
+
+		if (request.getOnlyHuIds() != null)
+		{
+			vhuQuery.addOnlyHUIds(request.getOnlyHuIds());
+		}
+		else
+		{
+			vhuQuery.addPIVersionToInclude(HuPackingInstructionsVersionId.VIRTUAL);
 		}
 
 		final ImmutableSet<HuId> result = vhuQuery.listIds();

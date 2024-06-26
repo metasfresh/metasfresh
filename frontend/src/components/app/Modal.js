@@ -35,6 +35,9 @@ import PrintingOptions from './PrintingOptions';
 
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
+import ChangeCurrentWorkplace, {
+  STATIC_MODAL_TYPE_ChangeCurrentWorkplace,
+} from './ChangeCurrentWorkplace';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -525,12 +528,14 @@ class Modal extends Component {
         let content = null;
         if (staticModalType === 'about') {
           content = <ChangeLogModal data={data} />;
-        }
-        if (staticModalType === 'comments') {
+        } else if (staticModalType === 'comments') {
           content = <CommentsPanel windowId={windowId} docId={dataId} />;
-        }
-        if (staticModalType === 'printing') {
+        } else if (staticModalType === 'printing') {
           content = <PrintingOptions windowId={windowId} docId={dataId} />;
+        } else if (
+          staticModalType === STATIC_MODAL_TYPE_ChangeCurrentWorkplace
+        ) {
+          content = <ChangeCurrentWorkplace />;
         }
         return (
           <div className="window-wrapper">
@@ -711,7 +716,10 @@ class Modal extends Component {
           <Indicator
             indicator={indicator}
             isDocumentNotSaved={
-              staticModalType === 'printing' ? false : isDocumentNotSaved
+              staticModalType === 'printing' ||
+              staticModalType === STATIC_MODAL_TYPE_ChangeCurrentWorkplace
+                ? false
+                : isDocumentNotSaved
             }
             error={saveStatus?.error ? saveStatus?.reason : ''}
             exception={saveStatus?.error ? saveStatus?.exception : null}

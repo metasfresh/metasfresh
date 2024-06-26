@@ -3,7 +3,12 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHUPIItemProductBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -24,9 +29,13 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
 import java.time.ZoneId;
@@ -49,12 +58,14 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
+	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final HUQRCodesService huQRCodeService;
 
 	private final HashMap<OrderId, String> salesOrderDocumentNosCache = new HashMap<>();
 	private final HashMap<BPartnerId, String> bpartnerNamesCache = new HashMap<>();
 	private final HashMap<PickingSlotId, PickingSlotIdAndCaption> pickingSlotIdAndCaptionsCache = new HashMap<>();
-	private final HashMap<ProductId, ITranslatableString> productNamesCache = new HashMap<>();
+	private final HashMap<ProductId, ProductInfo> productInfoCache = new HashMap<>();
 	private final HashMap<LocatorId, String> locatorNamesCache = new HashMap<>();
 
 	public DefaultPickingJobLoaderSupportingServices(
@@ -119,9 +130,43 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
+	public String getProductNo(@NonNull final ProductId productId)
+	{
+		return getProductInfo(productId).getProductNo();
+	}
+
+	@Override
 	public ITranslatableString getProductName(@NonNull final ProductId productId)
 	{
-		return productNamesCache.computeIfAbsent(productId, productBL::getProductNameTrl);
+		return getProductInfo(productId).getName();
+	}
+
+	private ProductInfo getProductInfo(@NonNull final ProductId productId)
+	{
+		return productInfoCache.computeIfAbsent(productId, this::retrieveProductInfo);
+	}
+
+	private ProductInfo retrieveProductInfo(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productBL.getById(productId);
+		return ProductInfo.builder()
+				.productId(productId)
+				.productNo(product.getValue())
+				.name(InterfaceWrapperHelper.getModelTranslationMap(product).getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName()))
+				.build();
+
+	}
+
+	@Override
+	public HUPIItemProduct getPackingInfo(@NonNull final HUPIItemProductId huPIItemProductId)
+	{
+		return huPIItemProductBL.getById(huPIItemProductId);
+	}
+
+	@Override
+	public String getPICaption(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsBL.getPI(piId).getName();
 	}
 
 	@Override
@@ -145,4 +190,16 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 		);
 	}
 
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	private static class ProductInfo
+	{
+		@NonNull ProductId productId;
+		@NonNull String productNo;
+		@NonNull ITranslatableString name;
+	}
 }

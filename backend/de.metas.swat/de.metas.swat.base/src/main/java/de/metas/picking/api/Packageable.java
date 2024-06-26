@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.freighcost.FreightCostRule;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;
@@ -139,7 +140,9 @@ public class Packageable
 	@Nullable
 	PPOrderId pickFromOrderId;
 
-	int packToHUPIItemProductId;
+	@NonNull
+	@Default
+	HUPIItemProductId packToHUPIItemProductId = HUPIItemProductId.VIRTUAL_HU;
 
 	@Nullable
 	UserId lockedBy;
@@ -159,7 +162,7 @@ public class Packageable
 	public Quantity getQtyToPick()
 	{
 		return qtyToDeliver
-				.subtract(qtyPickedNotDelivered)
+				// .subtract(qtyPickedNotDelivered) don't subtract the qtyPickedNotDelivered as it was already subtracted from the qtyToDeliver
 				// IMPORTANT: don't subtract the Qty PickedPlanned
 				// because we will also allocate existing DRAFT picking candidates
 				// .subtract(qtyPickedPlanned)

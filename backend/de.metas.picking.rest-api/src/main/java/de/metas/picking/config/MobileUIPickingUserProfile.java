@@ -65,6 +65,7 @@ public class MobileUIPickingUserProfile
 	@NonNull String name;
 	@NonNull ImmutableSet<BPartnerId> onlyBPartnerIds;
 	boolean isAllowPickingAnyHU;
+	boolean isAlwaysSplitHUsEnabled;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
 	@Getter(AccessLevel.PACKAGE) @NonNull ImmutableList<PickingJobField> fields;
@@ -74,18 +75,20 @@ public class MobileUIPickingUserProfile
 
 	@Builder(toBuilder = true)
 	private MobileUIPickingUserProfile(
-			@NonNull String name,
-			@Nullable ImmutableSet<BPartnerId> onlyBPartnerIds,
-			boolean isAllowPickingAnyHU,
-			@Nullable CreateShipmentPolicy createShipmentPolicy,
-			@Nullable PickingFiltersList filters,
-			@NonNull ImmutableList<PickingJobField> fields)
+			final @NonNull String name,
+			final @Nullable ImmutableSet<BPartnerId> onlyBPartnerIds,
+			final boolean isAllowPickingAnyHU,
+			final boolean isAlwaysSplitHUsEnabled,
+			final @Nullable CreateShipmentPolicy createShipmentPolicy,
+			final @Nullable PickingFiltersList filters,
+			final @NonNull ImmutableList<PickingJobField> fields)
 	{
 		Check.assumeNotEmpty(fields, "fields shall not be empty");
 
 		this.name = name;
 		this.onlyBPartnerIds = onlyBPartnerIds != null ? onlyBPartnerIds : ImmutableSet.of();
 		this.isAllowPickingAnyHU = isAllowPickingAnyHU;
+		this.isAlwaysSplitHUsEnabled = isAlwaysSplitHUsEnabled;
 		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.DO_NOT_CREATE;
 		this.filters = filters != null ? filters : PickingFiltersList.EMPTY;
 		this.fields = fields;

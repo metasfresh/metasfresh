@@ -116,6 +116,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 
 		final IStorageEngine storageEngine = storageEngineService.getStorageEngine();
 		final IStorageQuery storageQuery = storageEngine.newStorageQuery();
+		storageQuery.addBPartnerId(null);
 		storageQuery.addWarehouseId(warehouseId);
 		final Map<ArrayKey, RawMaterialsReturnDDOrderLineCandidate> key2candidate = new HashMap<>();
 

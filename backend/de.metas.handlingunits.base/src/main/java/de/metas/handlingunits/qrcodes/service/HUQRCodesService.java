@@ -97,6 +97,12 @@ public class HUQRCodesService
 		);
 	}
 
+	public void print(@NonNull final HuId huId)
+	{
+		final HUQRCode qrCode = getQRCodeByHuId(huId);
+		print(ImmutableList.of(qrCode));
+	}
+
 	public void print(@NonNull final List<HUQRCode> qrCodes)
 	{
 		print(qrCodes, PrintCopies.ONE);

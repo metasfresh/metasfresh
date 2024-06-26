@@ -23,6 +23,7 @@
 package de.metas.workflow.rest_api.model.facets;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocumentNoFilter;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import lombok.Builder;
@@ -30,7 +31,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 @Value
 @Builder
@@ -38,5 +38,6 @@ public class WorkflowLaunchersFacetQuery
 {
 	@NonNull MobileApplicationId applicationId;
 	@NonNull UserId userId;
+	@Nullable DocumentNoFilter filterByDocumentNo;
 	@Nullable ImmutableSet<WorkflowLaunchersFacetId> activeFacetIds;
 }

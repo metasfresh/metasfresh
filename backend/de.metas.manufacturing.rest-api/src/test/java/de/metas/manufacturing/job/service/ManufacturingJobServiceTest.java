@@ -4,6 +4,7 @@ import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.config.DeviceConfigPoolFactory;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
@@ -34,7 +35,7 @@ class ManufacturingJobServiceTest
 
 		final PPOrderIssueScheduleService ppOrderIssueScheduleService = new PPOrderIssueScheduleService(
 				new PPOrderIssueScheduleRepository(),
-				InventoryService.newInstanceForUnitTesting()
+				new HUQtyService(InventoryService.newInstanceForUnitTesting())
 		);
 
 		this.manufacturingJobService = new ManufacturingJobService(
@@ -55,7 +56,7 @@ class ManufacturingJobServiceTest
 		@Test
 		void empty()
 		{
-			Assertions.assertThat(manufacturingJobService.getDefaultFilters()).isEmpty();
+			Assertions.assertThat(manufacturingJobService.getDefaultFilters().toSet()).isEmpty();
 		}
 
 		@Test
@@ -64,7 +65,7 @@ class ManufacturingJobServiceTest
 			// IMPORTANT: set the value as plain string to also enforce the name of the enums are not changed on refactoring
 			sysConfigDAO.setValue(ManufacturingJobService.SYSCONFIG_defaultFilters, "UserPlant", ClientAndOrgId.SYSTEM);
 
-			Assertions.assertThat(manufacturingJobService.getDefaultFilters())
+			Assertions.assertThat(manufacturingJobService.getDefaultFilters().toSet())
 					.contains(ManufacturingJobDefaultFilter.UserPlant);
 		}
 
@@ -72,10 +73,10 @@ class ManufacturingJobServiceTest
 		void allEnumValues()
 		{
 			// IMPORTANT: set the value as plain string to also enforce the name of the enums are not changed on refactoring
-			sysConfigDAO.setValue(ManufacturingJobService.SYSCONFIG_defaultFilters, "UserPlant, TodayDatePromised", ClientAndOrgId.SYSTEM);
+			sysConfigDAO.setValue(ManufacturingJobService.SYSCONFIG_defaultFilters, "UserPlant, TodayDateStartSchedule", ClientAndOrgId.SYSTEM);
 
-			Assertions.assertThat(manufacturingJobService.getDefaultFilters())
-					.contains(ManufacturingJobDefaultFilter.UserPlant, ManufacturingJobDefaultFilter.TodayDatePromised);
+			Assertions.assertThat(manufacturingJobService.getDefaultFilters().toSet())
+					.contains(ManufacturingJobDefaultFilter.UserPlant, ManufacturingJobDefaultFilter.TodayDateStartSchedule);
 		}
 	}
 }

@@ -15,6 +15,7 @@ import de.metas.manufacturing.job.model.FinishedGoodsReceive;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
+import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -59,7 +60,7 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 	@Override
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
-		final ManufacturingJob job = wfProcess.getDocumentAs(ManufacturingJob.class);
+		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(wfProcess);
 		final BPartnerId customerId = job.getCustomerId();
 
 		final ImmutableList<JsonPackingInstructions> tuPackingInstructionsList = job.getActivities()

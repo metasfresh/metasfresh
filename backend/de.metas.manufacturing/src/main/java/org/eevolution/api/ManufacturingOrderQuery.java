@@ -42,10 +42,12 @@ import java.time.Instant;
 public class ManufacturingOrderQuery
 {
 	boolean onlyCompleted;
+	@NonNull @Singular ImmutableSet<ResourceId> onlyPlantOrWorkstationIds;
 	@NonNull @Singular ImmutableSet<ResourceId> onlyPlantIds;
+	@NonNull @Singular ImmutableSet<ResourceId> onlyWorkstationIds;
 	@Nullable WarehouseId warehouseId;
 	@NonNull @Builder.Default ValueRestriction<UserId> responsibleId = ValueRestriction.any();
-	@Nullable Instant datePromisedDay;
+	@Nullable Instant dateStartScheduleDay;
 
 	@Nullable APIExportStatus exportStatus;
 	@Nullable Instant canBeExportedFrom;

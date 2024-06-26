@@ -23,11 +23,18 @@
 package de.metas.workflow.rest_api.controller.v2;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
+import de.metas.RestUtils;
+import de.metas.common.rest_api.v2.JsonError;
+import de.metas.common.rest_api.v2.JsonErrorItem;
+import de.metas.document.DocumentNoFilter;
+import de.metas.error.IErrorManager;
+import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.json.JsonLaunchersQuery;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplication;
@@ -51,6 +58,7 @@ import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.Params;
 import org.compiere.util.Env;
@@ -73,6 +81,7 @@ public class WorkflowRestController
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final WorkflowRestAPIService workflowRestAPIService;
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private static final String SYSCONFIG_SETTINGS_PREFIX = "mobileui.frontend.";
 
@@ -136,7 +145,9 @@ public class WorkflowRestController
 				.applicationId(query.getApplicationId())
 				.userId(Env.getLoggedUserId())
 				.filterByQRCode(query.getFilterByQRCode())
-				.facetIds(query.getFacetIds() != null ? ImmutableSet.copyOf(query.getFacetIds()) : null)
+				.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
+				.facetIds(CollectionUtils.toImmutableSetOrNullIfEmpty(query.getFacetIds()))
+				.limit(query.isCountOnly() ? QueryLimit.NO_LIMIT : null)
 				.build();
 	}
 
@@ -147,7 +158,8 @@ public class WorkflowRestController
 				WorkflowLaunchersFacetQuery.builder()
 						.applicationId(query.getApplicationId())
 						.userId(Env.getLoggedUserId())
-						.activeFacetIds(query.getActiveFacetIds() != null ? ImmutableSet.copyOf(query.getActiveFacetIds()) : ImmutableSet.of())
+						.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
+						.activeFacetIds(CollectionUtils.toImmutableSetOrEmpty(query.getActiveFacetIds()))
 						.build()
 		);
 		return JsonWorkflowLaunchersFacetGroupList.of(result, newJsonOpts());
@@ -256,4 +268,26 @@ public class WorkflowRestController
 		final Map<String, String> map = sysConfigBL.getValuesForPrefix(SYSCONFIG_SETTINGS_PREFIX, true, Env.getClientAndOrgId());
 		return JsonSettings.ofMap(map);
 	}
+
+	@PostMapping("/errors")
+	public void logErrors(@RequestBody @NonNull final JsonError error)
+	{
+		error.getErrors().stream()
+				.map(WorkflowRestController::toInsertRemoteIssueRequest)
+				.forEach(errorManager::insertRemoteIssue);
+	}
+
+	private static InsertRemoteIssueRequest toInsertRemoteIssueRequest(final JsonErrorItem jsonErrorItem)
+	{
+		return InsertRemoteIssueRequest.builder()
+				.issueCategory(jsonErrorItem.getIssueCategory())
+				.issueSummary(StringUtils.trimBlankToOptional(jsonErrorItem.getMessage()).orElse("Error"))
+				.sourceClassName(jsonErrorItem.getSourceClassName())
+				.sourceMethodName(jsonErrorItem.getSourceMethodName())
+				.stacktrace(jsonErrorItem.getStackTrace())
+				.orgId(RestUtils.retrieveOrgIdOrDefault(jsonErrorItem.getOrgCode()))
+				.frontendUrl(jsonErrorItem.getFrontendUrl())
+				.build();
+	}
+
 }

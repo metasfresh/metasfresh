@@ -186,8 +186,8 @@ final class PPOrderBOMCreateCommand
 	private PPOrderDocBaseType getOrderDocBaseType()
 	{
 		final DocTypeId docTypeId = getOrderDocTypeId();
-		final DocBaseAndSubType docBaseAndSubTypeId = docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
-		return PPOrderDocBaseType.ofCode(docBaseAndSubTypeId.getDocBaseType());
+		final DocBaseAndSubType docBaseAndSubType = docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
+		return PPOrderDocBaseType.ofDocBaseType(docBaseAndSubType.getDocBaseType());
 	}
 
 	private DocTypeId getOrderDocTypeId()

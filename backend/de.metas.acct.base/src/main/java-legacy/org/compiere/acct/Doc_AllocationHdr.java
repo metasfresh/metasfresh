@@ -17,6 +17,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
@@ -34,6 +35,7 @@ import de.metas.money.Money;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_AllocationHdr;
@@ -580,6 +582,19 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			isDiscountExpense = !isDiscountExpense;
 		}
 
+		//
+		// Determine which currency conversion we shall use
+		final CurrencyConversionContext invoiceCurrencyConversionCtx;
+		if (fact.isAccountingCurrency(line.getInvoiceCurrencyId()))
+		{
+			// use default context because the invoice is in accounting currency, so we shall have no currency gain/loss
+			invoiceCurrencyConversionCtx = null;
+		}
+		else
+		{
+			invoiceCurrencyConversionCtx = line.getInvoiceCurrencyConversionCtx();
+		}
+
 		final AmountSourceAndAcct.Builder discountAmtSourceAndAcct = AmountSourceAndAcct.builder();
 
 		final MInvoice invoicePO = LegacyAdapters.convertToPO(invoice);
@@ -590,12 +605,22 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			final FactLine fl;
 			if (isDiscountExpense)
 			{
-				fl = fact.createLine(line, getAccount(AccountType.DiscountExp, as), getCurrencyId(), discountAmt_CMAdjusted.toBigDecimal(), null);
+				fl = fact.createLine()
+						.setDocLine(line)
+						.setAccount(getAccount(AccountType.DiscountExp, as))
+						.setAmtSource(discountAmt_CMAdjusted.toBigDecimal(), null)
+						.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
+						.buildAndAdd();
 				discountAmtSourceAndAcct.addAmtSource(fl.getAmtSourceDr()).addAmtAcct(fl.getAmtAcctDr());
 			}
 			else
 			{
-				fl = fact.createLine(line, getAccount(AccountType.DiscountRev, as), getCurrencyId(), null, discountAmt_CMAdjusted.negate().toBigDecimal());
+				fl = fact.createLine()
+						.setDocLine(line)
+						.setAccount(getAccount(AccountType.DiscountRev, as))
+						.setAmtSource(null, discountAmt_CMAdjusted.negate().toBigDecimal())
+						.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
+						.buildAndAdd();
 				discountAmtSourceAndAcct.addAmtSource(fl.getAmtSourceCr()).addAmtAcct(fl.getAmtAcctCr());
 			}
 			if (payment != null)
@@ -649,14 +674,24 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				//
 				// Create discount fact line
 				final Money taxDiscountAmt_CMAdjusted = isCreditMemoInvoice ? taxDiscountAmt.negate() : taxDiscountAmt;
-				FactLine fl = null;
+				final FactLine fl;
 				if (isDiscountExpense)
 				{
-					fl = fact.createLine(line, account, getCurrencyId(), taxDiscountAmt_CMAdjusted.toBigDecimal(), null);
+					fl = fact.createLine()
+							.setDocLine(line)
+							.setAccount(account)
+							.setAmtSource(taxDiscountAmt_CMAdjusted, null)
+							.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
+							.buildAndAdd();
 				}
 				else
 				{
-					fl = fact.createLine(line, account, getCurrencyId(), null, taxDiscountAmt_CMAdjusted.negate().toBigDecimal());
+					fl = fact.createLine()
+							.setDocLine(line)
+							.setAccount(account)
+							.setAmtSource(null, taxDiscountAmt_CMAdjusted.negate())
+							.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
+							.buildAndAdd();
 				}
 				if (fl != null)
 				{
@@ -791,8 +826,13 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			}
 		}
 
+		// IMPORTANT: we shall write off using the same currency rate as the invoice
+		if (!fact.isAccountingCurrency(line.getInvoiceCurrencyId()))
+		{
+			factLineBuilder.setCurrencyConversionCtx(line.getInvoiceCurrencyConversionCtx());
+		}
+
 		final FactLine factLine = factLineBuilder.buildAndAdd();
-		factLine.invertDrAndCrAmountsIfTrue(line.isCreditMemoInvoice());
 
 		return factLine.getAmtSourceAndAcctDrOrCr();
 	}
@@ -820,7 +860,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Determine which currency conversion we shall use
 		final CurrencyConversionContext invoiceCurrencyConversionCtx;
-		if (line.getInvoiceC_Currency_ID() == as.getCurrencyId().getRepoId())
+		if (fact.isAccountingCurrency(line.getInvoiceCurrencyId()))
 		{
 			// use default context because the invoice is in accounting currency, so we shall have no currency gain/loss
 			invoiceCurrencyConversionCtx = null;
@@ -871,8 +911,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		final FactLine factLine = factLineBuilder.buildAndAdd();
 
-		final Money allocationSourceOnPaymentDate = Money.of(invoiceTotalAllocatedAmtSourceAndAcct.getAmtSource(), line.getCurrencyId());
-		createRealizedGainLossFactLine(line, fact, factLine, allocationSourceOnPaymentDate);
+		final Money allocationAcctOnPaymentDate = Money.of(invoiceTotalAllocatedAmtSourceAndAcct.getAmtAcct(), factLine.getAcctSchema().getCurrencyId());
+		createRealizedGainLossFactLine(line, fact, factLine, allocationAcctOnPaymentDate);
 	}
 
 	/**
@@ -965,10 +1005,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 * <p>
 	 * It is also creating a new FactLine where the currency gain/loss is booked.
 	 *
-	 * @param line
-	 * @param fact
-	 * @param invoiceFactLine             invoice related booking (on Invoice date)
-	 * @param allocationAcctOnPaymentDate
+	 * @param invoiceFactLine invoice related booking (on Invoice date)
 	 */
 	private void createRealizedGainLossFactLine(final DocLine_Allocation line, final Fact fact, final FactLine invoiceFactLine, final Money allocationAcctOnPaymentDate)
 	{
@@ -977,8 +1014,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Get how much was booked for invoice, on allocation's date
 		final boolean isDR = invoiceFactLine.getAmtAcctDr().signum() != 0;
-		final Money allocationAcctOnInvoiceDate = isDR ? Money.of(invoiceFactLine.getAmtSourceDr(), invoiceFactLine.getCurrencyId())
-				: Money.of(invoiceFactLine.getAmtSourceCr(), invoiceFactLine.getCurrencyId());
+		final Money allocationAcctOnInvoiceDate = isDR
+				? Money.of(invoiceFactLine.getAmtAcctDr(), as.getCurrencyId())
+				: Money.of(invoiceFactLine.getAmtAcctCr(), as.getCurrencyId());
 
 		//
 		// Calculate our currency gain/loss by subtracting how much was booked at invoice time and how much shall be booked at payment time.
@@ -995,10 +1033,13 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// and the currency gain/loss is booked in accounting currency.
 		setIsMultiCurrency(true);
 
+		// Disable trx lines strategy in order to tolerate cases with multiple DR and CR lines
+		// We have to do this because in case AcctSchema.isAllowMultiDebitAndCredit is false, for some cases we will get multiple DR/CR lines.
+		fact.setFactTrxLinesStrategy(null);
+
 		// Build up the description for the new line
-		final StringBuilder description = new StringBuilder();
-		description.append("Amt(PaymentDate)=").append(allocationAcctOnPaymentDate);
-		description.append(", Amt(InvoiceDate)=").append(allocationAcctOnInvoiceDate);
+		final String description = "Amt(PaymentDate)=" + allocationAcctOnPaymentDate
+				+ ", Amt(InvoiceDate)=" + allocationAcctOnInvoiceDate;
 
 		//
 		// Check the "invoice minus paid" amount and decide if it's a gain or loss and book it.
@@ -1043,7 +1084,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// Update created gain/loss fact line (description, dimensions etc)
 		fl.setAD_Org_ID(invoiceFactLine.getAD_Org_ID());
 		fl.setC_BPartner_ID(invoiceFactLine.getC_BPartner_ID());
-		fl.addDescription(description.toString());
+		fl.addDescription(description);
 
 	}
 
@@ -1109,16 +1150,33 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// * the code is assuming that it will get the Tax bookings and the invoice gross amount booking
 		// * later on org.compiere.acct.Doc_AllocationTax.createEntries(AcctSchema, Fact, DocLine_Allocation), we skip the gross amount Fact_Acct line
 		// Get Source Amounts with account
-		final List<I_Fact_Acct> invoiceFactLines = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_Fact_Acct> invoiceFactLinesQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fact_Acct.class)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, 318) // C_Invoice
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, line.getC_Invoice_ID())
-				.addEqualsFilter(I_Fact_Acct.COLUMN_C_AcctSchema_ID, as.getId())
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, null) // header lines like tax or total
-				.addEqualsFilter(I_Fact_Acct.COLUMN_PostingType, PostingType.Actual.getCode())
-				.orderBy()
-				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID)
-				.endOrderBy()
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, 318) // C_Invoice
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, line.getC_Invoice_ID())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, as.getId())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, null) // header lines like tax or total
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_PostingType, PostingType.Actual.getCode())
+				.orderBy(I_Fact_Acct.COLUMN_Fact_Acct_ID);
+
+		//
+		// Skip any suspense balancing booking because those are not relevant for tax correction calculation
+		final AccountId suspenseBalancingAcctId = as.getGeneralLedger().getSuspenseBalancingAcctId();
+		if (suspenseBalancingAcctId != null)
+		{
+			final MAccount suspenseBalancingAcct = services.getAccountById(suspenseBalancingAcctId);
+			invoiceFactLinesQueryBuilder.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, suspenseBalancingAcct.getAccount_ID());
+		}
+		//
+		// Skip any currency balancing booking because those are not relevant for tax correction calculation
+		final AccountId currencyBalancingAcctId = as.getGeneralLedger().getCurrencyBalancingAcctId();
+		if (currencyBalancingAcctId != null)
+		{
+			final MAccount currencyBalancingAcct = services.getAccountById(currencyBalancingAcctId);
+			invoiceFactLinesQueryBuilder.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, currencyBalancingAcct.getAccount_ID());
+		}
+
+		final List<I_Fact_Acct> invoiceFactLines = invoiceFactLinesQueryBuilder
 				.create()
 				.list(I_Fact_Acct.class);
 		// Invoice Not posted

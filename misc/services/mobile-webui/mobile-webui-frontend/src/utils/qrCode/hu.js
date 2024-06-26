@@ -22,11 +22,13 @@
 
 import { QRCODE_SEPARATOR } from './common';
 import { trl } from '../translations';
+import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo, HU_ATTRIBUTE_WeightNet } from '../../constants/HUAttributes';
 
 export const QRCODE_TYPE_HU = 'HU';
 export const QRCODE_TYPE_LEICH_UND_MEHL = 'LMQ';
 
 const ATTR_productId = 'productId';
+const ATTR_productNo = 'productNo';
 const ATTR_weightNet = 'weightNet';
 const ATTR_weightNetUOM = 'weightNetUOM';
 const ATTR_bestBeforeDate = 'bestBeforeDate';
@@ -192,18 +194,18 @@ const parseQRCodePayload_HU_v1 = (payload) => {
     result[ATTR_productId] = payload?.product?.id.toString();
   }
 
-  const weightNetAttribute = payload?.attributes?.find((attribute) => attribute?.code === 'WeightNet');
+  const weightNetAttribute = payload?.attributes?.find((attribute) => attribute?.code === HU_ATTRIBUTE_WeightNet);
   if (weightNetAttribute?.value != null) {
     // IMPORTANT: convert it to number (i.e. multiply with 1) because we consider weights are numbers
     result[ATTR_weightNet] = 1 * weightNetAttribute?.value;
   }
 
-  const bestBeforeAttribute = payload?.attributes?.find((attribute) => attribute.code === 'HU_BestBeforeDate');
+  const bestBeforeAttribute = payload?.attributes?.find((attribute) => attribute.code === HU_ATTRIBUTE_BestBeforeDate);
   if (bestBeforeAttribute?.value != null) {
     result[ATTR_bestBeforeDate] = bestBeforeAttribute.value;
   }
 
-  const lotNumberAttribute = payload?.attributes?.find((attribute) => attribute.code === 'Lot-Nummer');
+  const lotNumberAttribute = payload?.attributes?.find((attribute) => attribute.code === HU_ATTRIBUTE_LotNo);
   if (lotNumberAttribute?.value != null) {
     result[ATTR_lotNo] = lotNumberAttribute.value;
   }
@@ -231,6 +233,9 @@ const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   }
   if (parts.length >= 3) {
     result[ATTR_lotNo] = parts[2];
+  }
+  if (parts.length >= 4) {
+    result[ATTR_productNo] = parts[3];
   }
 
   return result;

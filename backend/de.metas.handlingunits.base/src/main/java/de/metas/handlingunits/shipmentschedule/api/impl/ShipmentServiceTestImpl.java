@@ -72,7 +72,9 @@ public class ShipmentServiceTestImpl implements IShipmentService
 				.createShipmentSchedulesWithHU(shipmentSchedules,
 											   request.getQuantityTypeToUse(),
 											   request.isOnTheFlyPickToPackingInstructions(),
-											   ImmutableMap.of());
+											   ImmutableMap.of(),
+											   true  /* backwards compatibility: true - fail if no picked HUs found*/
+				);
 
 		final CalculateShippingDateRule calculateShippingDateRule = computeShippingDateRule(request.getIsShipDateToday());
 

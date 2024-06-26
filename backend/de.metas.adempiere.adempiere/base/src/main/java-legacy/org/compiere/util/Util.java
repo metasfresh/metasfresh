@@ -16,6 +16,16 @@
  *****************************************************************************/
 package org.compiere.util;
 
+import com.google.common.io.BaseEncoding;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.reflect.ClassInstanceProvider;
+import org.adempiere.util.reflect.IClassInstanceProvider;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -27,30 +37,20 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.reflect.ClassInstanceProvider;
-import org.adempiere.util.reflect.IClassInstanceProvider;
-import org.slf4j.Logger;
-
-import com.google.common.io.BaseEncoding;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import java.util.Objects;
 
 /**
  * General Utilities
  *
  * @author Jorg Janke
- * @version $Id: Util.java,v 1.3 2006/07/30 00:52:23 jjanke Exp $
- *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL - BF [ 1748346 ]
+ * @version $Id: Util.java,v 1.3 2006/07/30 00:52:23 jjanke Exp $
  */
 public class Util
 {
-	/** Logger */
+	/**
+	 * Logger
+	 */
 	private static Logger log = LogManager.getLogger(Util.class.getName());
 
 	/**
@@ -76,12 +76,12 @@ public class Util
 			in = in.substring(0, pos) + in.substring(pos + 1);
 		}
 		return in;
-	}	// cleanAmp
+	}    // cleanAmp
 
 	/**
 	 * Trim to max byte size
 	 *
-	 * @param str string
+	 * @param str  string
 	 * @param size max size in bytes
 	 * @return string
 	 */
@@ -118,7 +118,7 @@ public class Util
 			log.error(str, e);
 		}
 		return str;
-	}	// trimSize
+	}    // trimSize
 
 	private static IClassInstanceProvider classInstanceProvider = ClassInstanceProvider.instance; // default/production implementation.
 
@@ -139,7 +139,6 @@ public class Util
 	 * @param interfaceClazz
 	 * @param classname
 	 * @return loaded class
-	 *
 	 * @see #setClassInstanceProvider(IClassInstanceProvider)
 	 */
 	public static final <T> Class<? extends T> loadClass(final Class<T> interfaceClazz, final String classname)
@@ -151,8 +150,7 @@ public class Util
 
 			Check.errorUnless(interfaceClazz.isAssignableFrom(instanceClazz), "Class {} doesn't implement {}", instanceClazz, interfaceClazz);
 
-			@SuppressWarnings("unchecked")
-			final Class<? extends T> instanceClassCasted = (Class<? extends T>)instanceClazz;
+			@SuppressWarnings("unchecked") final Class<? extends T> instanceClassCasted = (Class<? extends T>)instanceClazz;
 			return instanceClassCasted;
 		}
 		catch (final Exception e)
@@ -190,8 +188,8 @@ public class Util
 	 * For unit testing, see {@link org.adempiere.util.reflect.TestingClassInstanceProvider#throwExceptionForClassName(String, RuntimeException)}.
 	 *
 	 * @param interfaceClazz interface class or super class that needs to be implemented by class. May be <code>NULL</code>. If set, then the method will check if the given class name extends this
-	 *            param value.
-	 * @param className class name
+	 *                       param value.
+	 * @param className      class name
 	 * @return instance
 	 * @throws AdempiereException if class does not implement given interface or if there is an error on instantiation or if class was not found
 	 */
@@ -209,8 +207,7 @@ public class Util
 			else
 			{
 				final Object instanceObj = clazz.newInstance();
-				@SuppressWarnings("unchecked")
-				final T instance = (T)instanceObj;
+				@SuppressWarnings("unchecked") final T instance = (T)instanceObj;
 				return instance;
 			}
 		}
@@ -226,7 +223,7 @@ public class Util
 	 * For unit testing, see {@link org.adempiere.util.reflect.TestingClassInstanceProvider#throwExceptionForClassName(String, RuntimeException)}.
 	 *
 	 * @param interfaceClazz interface class that needs to be implemented by class
-	 * @param className class name
+	 * @param className      class name
 	 * @return instance or null if class was not found
 	 * @throws AdempiereException if class does not implement given interface or if there is an error on instantiation
 	 */
@@ -271,11 +268,10 @@ public class Util
 	/**
 	 * Immutable wrapper for arrays that uses {@link Arrays#hashCode(Object[])} and {@link Arrays#equals(Object)}. Instances of this class are obtained by {@link Util#mkKey(Object...)} and can be
 	 * used as keys in hashmaps and hash sets.
-	 *
+	 * <p>
 	 * Thanks to http://stackoverflow.com/questions/1595588/java-how-to-be-sure-to-store-unique-arrays-based-on -its-values-on-a-list
 	 *
 	 * @author ts
-	 *
 	 */
 	@Immutable
 	public static class ArrayKey implements Comparable<ArrayKey>
@@ -391,15 +387,20 @@ public class Util
 
 	/**
 	 * Tests whether two objects refer to the same object.
-	 *
+	 * <p>
 	 * It's advisable to use this method instead of directly comparing those 2 objects by o1 == o2, because in this way you are telling to static analyzer tool that comparing by reference was your
 	 * intention.
 	 *
 	 * @return true if objects are the same (i.e. o1 == o2)
 	 */
-	public static boolean same(Object o1, Object o2)
+	public static <T> boolean same(@Nullable final T o1, @Nullable final T o2)
 	{
 		return o1 == o2;
+	}
+
+	public static <T> boolean equals(@Nullable final T o1, @Nullable final T o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 
 	/**

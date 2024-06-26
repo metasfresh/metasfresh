@@ -22,21 +22,21 @@ Feature: create production simulation
   @from:cucumber
   Scenario:  The simulation for qty 100 is created, with duration to produce 1 qty set to 1 day, having a stock of 99 after demand date and before 'finished production' date
     Given metasfresh contains M_Products:
-      | Identifier | Name                                 | OPT.M_Product_Category_ID.Identifier |
-      | p_1        | trackedProduct_ps_17032022           | standard_category                    |
-      | p_2        | trackedProduct_component_ps_17032022 | standard_category                    |
+      | Identifier | M_Product_Category_ID |
+      | p_1        | standard_category     |
+      | p_2        | standard_category     |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                            | Value                           | OPT.Description                 | OPT.IsActive |
-      | ps_1       | ps_pricing_system_name_17032022 | ps_pricing_system_name_17032022 | ps_pricing_system_name_17032022 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                        | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | ps_price_list_name_17032022 | null            | true  | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_1       | ps_1               | DE                    | EUR                 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                          | ValidFrom  |
-      | plv_1      | pl_1                      | ps_trackedProduct-PLV17032022 | 2021-04-01 |
+      | Identifier | M_PriceList_ID | ValidFrom  |
+      | plv_1      | pl_1           | 2021-04-01 |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | plv_1                  | p_1          | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains M_AttributeSetInstance with identifier "bomASI":
   """
@@ -111,20 +111,20 @@ Feature: create production simulation
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | ol_1       | o_1                   | p_1                     | 100        | olASI                                    |
     And metasfresh initially has this MD_Candidate data
-      | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
-      | INVENTORY_UP      |                               | p_1                     | 2021-04-16T00:00:00.00Z | 95  | 95                     | olASI                                    |
-      | INVENTORY_UP      |                               | p_1                     | 2021-04-17T00:00:00.00Z | 4   | 99                     | olASI                                    |
+      | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected           | Qty | Qty_AvailableToPromise | M_AttributeSetInstance_ID |
+      | INVENTORY_UP      |                           | p_1          | 2021-04-16T00:00:00.00Z | 95  | 95                     | olASI                     |
+      | INVENTORY_UP      |                           | p_1          | 2021-04-17T00:00:00.00Z | 4   | 99                     | olASI                     |
     And create and process 'simulated demand' for:
       | C_Order_ID.Identifier | C_OrderLine_ID.Identifier |
       | o_1                   | ol_1                      |
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier | OPT.simulated |
-      | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-14T00:00:00Z | -100 | -100                   | olASI                                    | true          |
-      | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-15T08:00:00Z | 1    | -99                    | productPlanningASI                       | true          |
-      | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-14T08:00:00Z | -1   | -1                     | bomLineASI                               | true          |
-      | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-14T08:00:00Z | 1    | 0                      | bomLineASI                               | true          |
-      | c_3        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T00:00:00Z | 95   | 95                     | olASI                                    | false         |
-      | c_4        | INVENTORY_UP      |                               | p_1                     | 2021-04-17T00:00:00Z | 4    | 99                     | olASI                                    | false         |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | Qty_AvailableToPromise | M_AttributeSetInstance_ID | simulated |
+      | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-14T00:00:00Z | -100 | -100                   | olASI                     | true      |
+      | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-15T08:00:00Z | 1    | -99                    | productPlanningASI        | true      |
+      | c_l_1      | DEMAND            | PRODUCTION                | p_2          | 2021-04-14T08:00:00Z | -1   | -1                     | bomLineASI                | true      |
+      | c_l_2      | SUPPLY            |                           | p_2          | 2021-04-14T08:00:00Z | 1    | 0                      | bomLineASI                | true      |
+      | c_3        | INVENTORY_UP      |                           | p_1          | 2021-04-16T00:00:00Z | 95   | 95                     | olASI                     | false     |
+      | c_4        | INVENTORY_UP      |                           | p_1          | 2021-04-17T00:00:00Z | 4    | 99                     | olASI                     | false     |
 
     And post DeactivateAllSimulatedCandidatesEvent and wait for processing
     And delete all simulated candidates
@@ -137,21 +137,21 @@ Feature: create production simulation
   Scenario: The simulation for qty 14 is created with duration to produce 1 qty set to 1 day,
   having both supplies and other demand in between demand date and initial 'production finished' date
     Given metasfresh contains M_Products:
-      | Identifier | Name                                   | OPT.M_Product_Category_ID.Identifier |
-      | p_1        | trackedProduct_ps_17032022_1           | standard_category                    |
-      | p_2        | trackedProduct_component_ps_17032022_1 | standard_category                    |
+      | Identifier | M_Product_Category_ID |
+      | p_1        | standard_category     |
+      | p_2        | standard_category     |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                              | Value                              | OPT.Description                          | OPT.IsActive |
-      | ps_1       | ps_pricing_system_name_17032022_1 | ps_pricing_system_value_17032022_1 | ps_pricing_system_description_17032022_1 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                          | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | ps_price_list_name_17032022_1 | null            | true  | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | PricePrecision |
+      | pl_1       | ps_1               | DE                    | EUR                 | true  | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                            | ValidFrom  |
-      | plv_1      | pl_1                      | ps_trackedProduct-PLV17032022_1 | 2021-04-01 |
+      | Identifier | M_PriceList_ID | ValidFrom  |
+      | plv_1      | pl_1           | 2021-04-01 |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | plv_1                  | p_1          | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains M_AttributeSetInstance with identifier "bomASI":
   """
@@ -206,8 +206,8 @@ Feature: create production simulation
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
       | ppln_1     | p_1                     | bomVersions_1                            | false        | productPlanningASI                       |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1 | EndcustomerPS_1 | N            | Y              | ps_1                          |
+      | Identifier    | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | endcustomer_1 | N        | Y          | ps_1               |
     And metasfresh contains M_AttributeSetInstance with identifier "olASI":
   """
   {
@@ -220,10 +220,10 @@ Feature: create production simulation
   }
   """
     And metasfresh initially has this MD_Candidate data
-      | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
-      | INVENTORY_UP      |                               | p_1                     | 2021-04-14T00:00:00.00Z | 5   | 5                      | olASI                                    |
-      | INVENTORY_UP      |                               | p_1                     | 2021-04-16T00:00:00.00Z | 5   | 10                     | olASI                                    |
-      | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T00:00:00.00Z | -8  | 2                      | olASI                                    |
+      | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected           | Qty | Qty_AvailableToPromise | M_AttributeSetInstance_ID |
+      | INVENTORY_UP      |                           | p_1          | 2021-04-14T00:00:00.00Z | 5   | 5                      | olASI                     |
+      | INVENTORY_UP      |                           | p_1          | 2021-04-16T00:00:00.00Z | 5   | 10                     | olASI                     |
+      | INVENTORY_DOWN    |                           | p_1          | 2021-04-16T00:00:00.00Z | -8  | 2                      | olASI                     |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_2        | true    | endcustomer_1            | 2021-04-15  | 2021-04-15T00:00:00Z |
@@ -234,14 +234,14 @@ Feature: create production simulation
       | C_Order_ID.Identifier | C_OrderLine_ID.Identifier |
       | o_2                   | ol_2                      |
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier | OPT.simulated |
-      | c_5        | INVENTORY_UP      |                               | p_1                     | 2021-04-14T00:00:00Z | 5   | 5                      | olASI                                    | false         |
-      | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T00:00:00Z | -14 | -9                     | olASI                                    | true          |
-      | c_6        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T00:00:00Z | 5   | 10                     | olASI                                    | false         |
-      | c_3        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T00:00:00Z | -8  | 2                      | olASI                                    | false         |
-      | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-23T08:00:00Z | 9   | 11                     | productPlanningASI                       | true          |
-      | c_l_3      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-14T08:00:00Z | -1  | -1                     | bomLineASI                               | true          |
-      | c_l_4      | SUPPLY            |                               | p_2                     | 2021-04-14T08:00:00Z | 1   | 0                      | bomLineASI                               | true          |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_AttributeSetInstance_ID | simulated |
+      | c_5        | INVENTORY_UP      |                           | p_1          | 2021-04-14T00:00:00Z | 5   | 5                      | olASI                     | false     |
+      | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-15T00:00:00Z | -14 | -9                     | olASI                     | true      |
+      | c_6        | INVENTORY_UP      |                           | p_1          | 2021-04-16T00:00:00Z | 5   | 10                     | olASI                     | false     |
+      | c_3        | INVENTORY_DOWN    |                           | p_1          | 2021-04-16T00:00:00Z | -8  | 2                      | olASI                     | false     |
+      | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-23T08:00:00Z | 9   | 11                     | productPlanningASI        | true      |
+      | c_l_3      | DEMAND            | PRODUCTION                | p_2          | 2021-04-14T08:00:00Z | -1  | -1                     | bomLineASI                | true      |
+      | c_l_4      | SUPPLY            |                           | p_2          | 2021-04-14T08:00:00Z | 1   | 0                      | bomLineASI                | true      |
 
     And after not more than 60s, PP_Order_Candidate found for orderLine ol_2
       | Identifier |
@@ -253,21 +253,21 @@ Feature: create production simulation
   @from:cucumber
   Scenario:  The simulation for qty 5 is created with duration to produce 1 qty set to 1 day, having some stock before demand date, but not enough
     Given metasfresh contains M_Products:
-      | Identifier | Name                                   | OPT.M_Product_Category_ID.Identifier |
-      | p_1        | trackedProduct_ps_17032022_2           | standard_category                    |
-      | p_2        | trackedProduct_component_ps_17032022_2 | standard_category                    |
+      | Identifier | M_Product_Category_ID.Identifier |
+      | p_1        | standard_category                |
+      | p_2        | standard_category                |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                              | Value                              | OPT.Description                          | OPT.IsActive |
-      | ps_1       | ps_pricing_system_name_17032022_2 | ps_pricing_system_value_17032022_2 | ps_pricing_system_description_17032022_2 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                          | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | ps_price_list_name_17032022_2 | null            | true  | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | PricePrecision |
+      | pl_1       | ps_1               | DE                    | EUR                 | true  | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                            | ValidFrom  |
-      | plv_1      | pl_1                      | ps_trackedProduct-PLV17032022_2 | 2021-04-01 |
+      | Identifier | M_PriceList_ID | ValidFrom  |
+      | plv_1      | pl_1           | 2021-04-01 |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | plv_1                  | p_1          | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains M_AttributeSetInstance with identifier "bomASI":
   """
@@ -322,8 +322,8 @@ Feature: create production simulation
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
       | ppln_1     | p_1                     | bomVersions_1                            | false        | productPlanningASI                       |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1 | EndcustomerPS_1 | N            | Y              | ps_1                          |
+      | Identifier    | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | endcustomer_1 | N        | Y          | ps_1               |
     And metasfresh contains M_AttributeSetInstance with identifier "olASI":
   """
   {
@@ -342,38 +342,38 @@ Feature: create production simulation
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | ol_1       | o_1                   | p_1                     | 5          | olASI                                    |
     And metasfresh initially has this MD_Candidate data
-      | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
-      | INVENTORY_UP      |                               | p_1                     | 2021-04-18T00:00:00.00Z | 1   | 1                      | olASI                                    |
+      | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected           | Qty | Qty_AvailableToPromise | M_AttributeSetInstance_ID |
+      | INVENTORY_UP      |                           | p_1          | 2021-04-18T00:00:00.00Z | 1   | 1                      | olASI                     |
     And create and process 'simulated demand' for:
       | C_Order_ID.Identifier | C_OrderLine_ID.Identifier |
       | o_1                   | ol_1                      |
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier | OPT.simulated |
-      | c_3        | INVENTORY_UP      |                               | p_1                     | 2021-04-18T00:00:00Z | 1   | 1                      | olASI                                    | false         |
-      | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-24T00:00:00Z | -5  | -4                     | olASI                                    | true          |
-      | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-24T00:00:00Z | 4   | 0                      | productPlanningASI                       | true          |
-      | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-20T00:00:00Z | -1  | -1                     | bomLineASI                               | true          |
-      | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-20T00:00:00Z | 1   | 0                      | bomLineASI                               | true          |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_AttributeSetInstance_ID | simulated |
+      | c_3        | INVENTORY_UP      |                           | p_1          | 2021-04-18T00:00:00Z | 1   | 1                      | olASI                     | false     |
+      | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-24T00:00:00Z | -5  | -4                     | olASI                     | true      |
+      | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-24T00:00:00Z | 4   | 0                      | productPlanningASI        | true      |
+      | c_l_1      | DEMAND            | PRODUCTION                | p_2          | 2021-04-20T00:00:00Z | -1  | -1                     | bomLineASI                | true      |
+      | c_l_2      | SUPPLY            |                           | p_2          | 2021-04-20T00:00:00Z | 1   | 0                      | bomLineASI                | true      |
 
 
   @from:cucumber
   Scenario: The simulation for qty 5 is created with duration to produce 1 qty set to 1 day, having enough stock before 'production finished' date
     Given metasfresh contains M_Products:
-      | Identifier | Name                                   | OPT.M_Product_Category_ID.Identifier |
-      | p_1        | trackedProduct_ps_17032022_3           | standard_category                    |
-      | p_2        | trackedProduct_component_ps_17032022_3 | standard_category                    |
+      | Identifier | M_Product_Category_ID.Identifier |
+      | p_1        | standard_category                |
+      | p_2        | standard_category                |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                              | Value                              | OPT.Description                          | OPT.IsActive |
-      | ps_1       | ps_pricing_system_name_17032022_3 | ps_pricing_system_value_17032022_3 | ps_pricing_system_description_17032022_3 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                          | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | ps_price_list_name_17032022_3 | null            | true  | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | PricePrecision |
+      | pl_1       | ps_1               | DE                    | EUR                 | true  | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                            | ValidFrom  |
-      | plv_1      | pl_1                      | ps_trackedProduct-PLV17032022_3 | 2021-04-01 |
+      | Identifier | M_PriceList_ID | ValidFrom  |
+      | plv_1      | pl_1           | 2021-04-01 |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | plv_1                  | p_1          | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains M_AttributeSetInstance with identifier "bomASI":
   """
@@ -428,8 +428,8 @@ Feature: create production simulation
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
       | ppln_1     | p_1                     | bomVersions_1                            | false        | productPlanningASI                       |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1 | EndcustomerPS_1 | N            | Y              | ps_1                          |
+      | Identifier    | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | endcustomer_1 | N        | Y          | ps_1               |
     And metasfresh contains M_AttributeSetInstance with identifier "olASI":
   """
   {
@@ -454,7 +454,7 @@ Feature: create production simulation
       | C_Order_ID.Identifier | C_OrderLine_ID.Identifier |
       | o_1                   | ol_1                      |
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier | OPT.simulated |
-      | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T00:00:00Z | -5  | -5                     | olASI                                    | true          |
-      | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-14T08:00:00Z | 0   | 0                      | olASI                                    | true          |
-      | c_3        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T00:00:00Z | 10  | 10                     | olASI                                    | false         |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_AttributeSetInstance_ID | simulated |
+      | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-15T00:00:00Z | -5  | -5                     | olASI                     | true      |
+      | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-14T08:00:00Z | 0   | 0                      | olASI                     | true      |
+      | c_3        | INVENTORY_UP      |                           | p_1          | 2021-04-16T00:00:00Z | 10  | 10                     | olASI                     | false     |
