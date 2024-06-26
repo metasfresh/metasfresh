@@ -37,6 +37,8 @@ public class BonusComputationDetails
 	@NonNull Instant interimDate;
 	@NonNull Instant billingDate;
 
+	// TODO use 360 days
+	// TODO make sure no Periods are used.
 	public int getBonusInterestDays()
 	{
 		return TimeUtil.getDaysBetween(Date.from(interimDate), Date.from(billingDate));

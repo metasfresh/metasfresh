@@ -39,6 +39,7 @@ class ShipmentNotificationLineLog extends AbstractShippingNotificationLogHandler
 	@NonNull
 	private final AVInterimComputingMethod computingMethod;
 
+	// TODO: this log is no longer needed.
 	public ShipmentNotificationLineLog(
 			@NonNull final ShippingNotificationService notificationService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,

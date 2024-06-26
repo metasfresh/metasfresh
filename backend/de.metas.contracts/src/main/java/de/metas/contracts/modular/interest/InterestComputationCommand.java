@@ -151,6 +151,7 @@ public class InterestComputationCommand
 		final Iterator<ModularContractLogEntry> interimInvoiceIterator = streamInterimInvoiceLogEntries(contractId, request).iterator();
 		final ModularContractSettings settings = modularContractService.getModularSettingsForContract(contractId);
 
+		// TODO: interim invoice and shipping notification logs are no longer relevant for the Added Value on Interim
 		BigDecimal totalInterestScore = BigDecimal.ZERO;
 
 		InvoiceAllocations.AllocationItem currentShippingNotification = null;
@@ -191,6 +192,7 @@ public class InterestComputationCommand
 			splitOpenAmount(currentInvoiceAllocations);
 		}
 
+		// TODO: subtracted value on interim will be 0 if interim invoice exists
 		saveSubtractedValueInterestRecords(request,
 				settings.getBonusInterestRate(),
 				shippingNotificationIterator,

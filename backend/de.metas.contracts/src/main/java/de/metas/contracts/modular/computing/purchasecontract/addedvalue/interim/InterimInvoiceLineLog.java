@@ -37,6 +37,7 @@ public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
 {
 	private final AVInterimComputingMethod computingMethod;
 
+	// TODO: Replace with interim contract log
 	public InterimInvoiceLineLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModularContractLogDAO contractLogDAO,
