@@ -2738,4 +2738,25 @@ public interface I_C_OLCand
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Qty Override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyEntered_Override (@Nullable BigDecimal QtyEntered_Override);
+
+	/**
+	 * Get Qty Override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyEntered_Override();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_QtyEntered_Override = new ModelColumn<>(I_C_OLCand.class, "QtyEntered_Override", null);
+	String COLUMNNAME_QtyEntered_Override = "QtyEntered_Override";
 }
