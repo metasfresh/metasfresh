@@ -103,7 +103,7 @@ public class BPartnerOrgLink extends JavaProcess
 
 		p_C_BPartner_ID = BPartnerId.ofRepoId(getRecord_ID());
 		p_C_BPartner_Location_ID = BPartnerLocationId.ofRepoIdOrNull(p_C_BPartner_ID, bpartnerLocationRepoId);
-	}	// prepare
+	}    // prepare
 
 	@Override
 	protected String doIt()
@@ -128,14 +128,14 @@ public class BPartnerOrgLink extends JavaProcess
 
 			p_AD_Org_ID = OrgId.ofRepoId(org.getAD_Org_ID());
 		}
-		else	// check if linked to already
+		else    // check if linked to already
 		{
 			org = LegacyAdapters.convertToPO(orgsRepo.getById(p_AD_Org_ID));
 			final int C_BPartner_ID = org.getLinkedC_BPartner_ID(get_TrxName());
 			if (C_BPartner_ID > 0)
 			{
 				throw new IllegalArgumentException("Organization '" + org.getName()
-						+ "' already linked (to C_BPartner_ID=" + C_BPartner_ID + ")");
+														   + "' already linked (to C_BPartner_ID=" + C_BPartner_ID + ")");
 			}
 		}
 
@@ -146,7 +146,7 @@ public class BPartnerOrgLink extends JavaProcess
 			final List<I_M_Warehouse> whs = Services.get(IWarehouseDAO.class).getByOrgId(p_AD_Org_ID);
 			if (!whs.isEmpty())
 			{
-				wh = whs.get(0);	// pick first
+				wh = whs.get(0);    // pick first
 			}
 		}
 		// New Warehouse
@@ -172,7 +172,7 @@ public class BPartnerOrgLink extends JavaProcess
 
 		// Update BPartner
 		bp.setAD_OrgBP_ID(p_AD_Org_ID.getRepoId());
-		bp.setAD_Org_ID(OrgId.ANY.getRepoId());	// Shared BPartner
+		bp.setAD_Org_ID(OrgId.ANY.getRepoId());    // Shared BPartner
 
 		// Save BP
 		bpartnersRepo.save(bp);
@@ -205,17 +205,15 @@ public class BPartnerOrgLink extends JavaProcess
 		// FIXME: MRole.getDefault(getCtx(), true);
 
 		return "Business Partner - Organization Link created";
-	}	// doIt
+	}    // doIt
 
 	/**
 	 * Configure/Update Warehouse from given linked BPartner
 	 *
-	 * @param warehouse
-	 * @param bpartner
 	 * @task http://dewiki908/mediawiki/index.php/03084:_Move_Org-Infos_to_related_BPartners_%282012080310000055%29
 	 */
 	private void configureWarehouse(final I_M_Warehouse warehouse, final BPartnerLocationId bpartnerLocationId)
 	{
 		warehouse.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
 	}
-}	// BPartnerOrgLink
+}    // BPartnerOrgLink

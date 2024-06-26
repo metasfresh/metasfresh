@@ -419,9 +419,7 @@ public class MStorage extends X_M_Storage
 	 * @param diffQtyOnHand add on hand
 	 * @param diffQtyReserved add reserved
 	 * @param diffQtyOrdered add order
-	 * @param loggable <b>may not be null!</b> used to log the fail-reason in case this method returns <code>false</code>.
 	 * @param trxName transaction
-	 * @return true if updated
 	 */
 	public static void add(final Properties ctx,
 			final int M_Warehouse_ID,
