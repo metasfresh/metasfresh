@@ -8,6 +8,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
@@ -82,6 +83,8 @@ import java.util.Set;
 public final class ProcessInfo implements Serializable
 {
 	private static final transient Logger logger = LogManager.getLogger(ProcessInfo.class);
+
+	private static final AdMessageKey MSG_NO_TABLE_RECORD_REFERENCE_FOUND = AdMessageKey.of("de.metas.process.NoTableRecordReferenceFound");
 
 	public static ProcessInfoBuilder builder()
 	{
@@ -406,6 +409,13 @@ public final class ProcessInfo implements Serializable
 			return null;
 		}
 		return TableRecordReference.of(adTableId, recordId);
+	}
+
+	@NonNull
+	public TableRecordReference getRecordRefNotNull()
+	{
+		return Optional.ofNullable(getRecordRefOrNull())
+				.orElseThrow(() -> new AdempiereException(MSG_NO_TABLE_RECORD_REFERENCE_FOUND, getPinstanceId()));
 	}
 
 	public boolean isRecordSet()
