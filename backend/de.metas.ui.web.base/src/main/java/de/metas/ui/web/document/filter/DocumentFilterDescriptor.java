@@ -193,7 +193,7 @@ public final class DocumentFilterDescriptor
 
 			filter.addParameter(DocumentFilterParam.builder()
 					.setFieldName(paramDescriptor.getFieldName())
-					.setOperator(paramDescriptor.getOperator())
+					.setOperator(paramDescriptor.getOperatorOrEqualsIfNull())
 					.setValue(value)
 					.setValueTo(valueTo)
 					.build());

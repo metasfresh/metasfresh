@@ -25,8 +25,8 @@ package de.metas.invoicecandidate.api.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.ad_reference.ADReferenceService;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -47,6 +47,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
+import de.metas.common.util.TryAndWaitUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
@@ -153,6 +154,7 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
@@ -160,6 +162,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
@@ -226,8 +229,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	private static final String SYS_Config_C_Invoice_Candidate_Close_IsToClear = "C_Invoice_Candidate_Close_IsToClear";
 	private static final String SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced = "C_Invoice_Candidate_Close_PartiallyInvoiced";
-
-	final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 
 	/**
 	 * Blueprint for a cache that is used by {@link #isAllOtherICsInHeaderAggregationGroupDelivered(I_C_Invoice_Candidate)}.
@@ -512,7 +513,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public void set_QtyInvoiced_NetAmtInvoiced_Aggregation(final Properties ctx, final I_C_Invoice_Candidate ic)
 	{
 		Check.assume(ic.isManual(), ic + " has IsManual='Y'");
-		set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, ic);
+		set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ic);
 	}
 
 	/**
@@ -520,7 +521,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * <p>
 	 * <b>Also invokes {@link #updateProcessedFlag(I_C_Invoice_Candidate)}</b>
 	 */
-	void set_QtyInvoiced_NetAmtInvoiced_Aggregation0(final Properties ctx, @NonNull final I_C_Invoice_Candidate ic)
+	void set_QtyInvoiced_NetAmtInvoiced_Aggregation0(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		if (ic.isToClear())
 		{
@@ -1149,7 +1150,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.setFrom(ic);
 
 		splitCand.setC_Invoice_Candidate_Agg_ID(ic.getC_Invoice_Candidate_Agg_ID());
-		aggregationBL.setHeaderAggregationKey(splitCand);
+		// this shall be done later by IInvoiceCandInvalidUpdater. // Otherwise we might have concurrent access to I_C_Invoice_Candidate_HeaderAggregation and DBUniqueConstraintExceptions
+		//aggregationBL.setHeaderAggregationKey(splitCand);
 		splitCand.setLineAggregationKey(null);
 		splitCand.setLineAggregationKey_Suffix(ic.getLineAggregationKey_Suffix());
 		splitCand.setDescription(ic.getDescription());
@@ -1258,7 +1260,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request)
+	public I_C_Invoice_Line_Alloc createUpdateIla(final InvoiceCandidateAllocCreateRequest request)
 	{
 		final I_C_Invoice_Candidate invoiceCand = request.getInvoiceCand();
 		final I_C_InvoiceLine invoiceLine = request.getInvoiceLine();
@@ -1432,7 +1434,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return ic.isTaxIncluded();
 		}
 
-		return taxIncludedOverride.booleanValue();
+		return taxIncludedOverride;
 	}
 
 	@Override
@@ -2501,17 +2503,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return ImmutableSet.of();
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
 		// void invoice
 		Services.get(IDocumentBL.class).processEx(invoice, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
 		// update invalids
-		invoiceCandBL.updateInvalid()
-				.setContext(ctx, trxName)
-				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.extractFixedIdsSet(invoiceCands))
-				.update();
+		final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection = InvoiceCandidateIdsSelection.extractFixedIdsSet(invoiceCands);
+		ensureICsAreUpdated(invoiceCandidateIdsSelection);
 
 		for (final I_C_Invoice_Candidate ic : invoiceCands)
 		{
@@ -2537,6 +2536,51 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Override
+	public void ensureICsAreUpdated(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			// In unit-test-mode we don't have the app-server running to do this for us, so we need to do it here.
+			// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
+			// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
+			updateInvalid()
+					.setContext(PlainContextAware.newWithThreadInheritedTrx())
+					.setTaggedWithAnyTag()
+					.setOnlyInvoiceCandidateIds(invoiceCandidateIdsSelection)
+					.update();
+		}
+		else
+		{
+			// in later code-versions this might also be achieved by using AsyncBatchService.executeBatch(..), but here we just wait...
+			waitForInvoiceCandidatesUpdated(invoiceCandidateIdsSelection);
+		}
+	}
+
+	private void waitForInvoiceCandidatesUpdated(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
+	{
+		Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Start waiting for ICs to be updated async-queue; Selection={}",invoiceCandidateIdsSelection);
+		try
+		{
+			TryAndWaitUtil.tryAndWait(
+					3600 /*let's wait a full hour*/,
+					1000 /*check once a second*/,
+					() -> !invoiceCandDAO.hasInvalidInvoiceCandidatesForSelection(invoiceCandidateIdsSelection),
+					null);
+		}
+		catch (final InterruptedException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("InvoiceCandidateIdsSelection (ICs-selection)", invoiceCandidateIdsSelection);
+		}
+		finally
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Stop waiting for ICs to be updated async-queue; Selection={}",invoiceCandidateIdsSelection);
+		}
+	}
+	
+	
 	// TODO: would be nice to use de.metas.ui.web.view.descriptor.SqlAndParams but that is in module webui-api, and here we don't have access to it
 	@Override
 	public @NonNull InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable final String extraWhereClause)
@@ -2563,10 +2607,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(candidates, Spliterator.ORDERED), false)
 				.filter(c -> !processedRecords.contains(c.getC_Invoice_Candidate_ID()))
-				.map(ic -> {
-					set_DateToInvoice_DefaultImpl(ic);
-					return ic;
-				})
+				.peek(this::set_DateToInvoice_DefaultImpl)
 				.collect(Collectors.toSet());
 	}
 
