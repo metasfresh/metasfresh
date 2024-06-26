@@ -5,8 +5,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -31,7 +29,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_C_Campaign_Price;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
@@ -213,9 +210,7 @@ public class C_Campaign_Price
 	{
 		if (record.getC_BPartner_ID() <= 0 && record.getC_BP_Group_ID() <= 0 && record.getM_PricingSystem_ID() <= 0)
 		{
-			final ITranslatableString errorMessage = Services.get(IMsgBL.class).getTranslatableMsgText(ERR_MandatoryFields);
-
-			throw new AdempiereException(errorMessage);
+			throw new AdempiereException(ERR_MandatoryFields);
 		}
 	}
 }
