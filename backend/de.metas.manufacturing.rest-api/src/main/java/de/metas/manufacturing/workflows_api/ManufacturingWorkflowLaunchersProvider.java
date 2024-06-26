@@ -111,7 +111,7 @@ public class ManufacturingWorkflowLaunchersProvider
 						.append(" | ")
 						.appendQty(manufacturingJobReference.getQtyRequiredToProduce().toBigDecimal(), manufacturingJobReference.getQtyRequiredToProduce().getUOMSymbol())
 						.append(" | ")
-						.appendDateTime(manufacturingJobReference.getDateStartSchedule())
+						.appendDate(manufacturingJobReference.getDateStartScheduleAsLocalDate())
 						.build()
 		);
 	}
