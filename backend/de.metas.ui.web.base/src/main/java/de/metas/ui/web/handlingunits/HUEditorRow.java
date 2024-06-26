@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -84,6 +85,7 @@ import java.util.stream.Stream;
 public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 {
 	public static final String SYSCFG_PREFIX = "de.metas.ui.web.handlingunits.field";
+
 
 	public static Builder builder(final WindowId windowId)
 	{
@@ -197,6 +199,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 60)
 			})
 	private final JSONLookupValue uom;
+
 
 	public static final String FIELDNAME_HUStatus = I_M_HU.COLUMNNAME_HUStatus;
 	@ViewColumn(fieldName = FIELDNAME_HUStatus,//
@@ -408,7 +411,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 	}
 
 	@Override
-	public String getHUUnitTypeOrNull()
+	public HuUnitType getHUUnitTypeOrNull()
 	{
 		return getType().toHUUnitTypeOrNull();
 	}

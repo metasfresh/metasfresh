@@ -158,7 +158,7 @@ public class BPartnerOrgLink extends JavaProcess
 		}
 
 		// Get/Create Locator
-		Services.get(IWarehouseBL.class).getDefaultLocator(wh);
+		Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(wh);
 
 		//
 		// Update Org Info

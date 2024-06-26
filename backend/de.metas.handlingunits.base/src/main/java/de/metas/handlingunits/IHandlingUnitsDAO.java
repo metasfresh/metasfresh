@@ -36,6 +36,7 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -85,6 +86,10 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU getByIdOutOfTrx(HuId huId);
 
 	I_M_HU getById(HuId huId);
+
+	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
+
+	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
 
 	ClientAndOrgId getClientAndOrgId(@NonNull HuId huId);
 

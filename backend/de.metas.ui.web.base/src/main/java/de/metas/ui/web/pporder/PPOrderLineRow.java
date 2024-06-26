@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.PPOrderQtyId;
@@ -34,6 +35,7 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -105,7 +107,7 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 
 	@Getter
 	private final HuId huId;
-	@Nullable private final String huUnitType;
+	@Nullable private final HuUnitType huUnitType;
 	@Nullable private final BPartnerId huBPartnerId;
 	@Getter
 	private final boolean sourceHU;
@@ -120,6 +122,7 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 	private final JSONLookupValue product;
 
 	@ViewColumn(captionKey = "Code", widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20))
+	@Getter
 	private final String code;
 
 	@ViewColumn(captionKey = "Type", widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30))
@@ -469,7 +472,7 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 	}
 
 	@Nullable
-	private UomId getUomId()
+	public UomId getUomId()
 	{
 		return uom == null ? null : UomId.ofRepoIdOrNull(uom.getKeyAsInt());
 	}
@@ -490,6 +493,12 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 		return uomDAO.getById(uomId);
+	}
+
+	@NonNull
+	public I_C_UOM getUomNotNull()
+	{
+		return Check.assumeNotNull(getUom(), "Expecting UOM to always be present when using this method!");
 	}
 
 	public boolean isReceipt()
@@ -530,7 +539,7 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 	}
 
 	@Override
-	public String getHUUnitTypeOrNull() {return huUnitType;}
+	public HuUnitType getHUUnitTypeOrNull() {return huUnitType;}
 
 	@Override
 	public BPartnerId getBpartnerId() {return huBPartnerId;}

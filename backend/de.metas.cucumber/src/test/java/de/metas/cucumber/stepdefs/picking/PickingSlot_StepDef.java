@@ -88,7 +88,7 @@ public class PickingSlot_StepDef
 
 	private LocatorId getMainLocatorId()
 	{
-		return warehouseBL.getDefaultLocatorId(WarehouseId.MAIN);
+		return warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.MAIN);
 	}
 
 	@NonNull

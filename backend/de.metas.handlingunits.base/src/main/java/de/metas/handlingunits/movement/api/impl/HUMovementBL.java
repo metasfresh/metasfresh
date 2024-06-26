@@ -123,13 +123,13 @@ public class HUMovementBL implements IHUMovementBL
 						))
 				.orElseThrow(() -> new AdempiereException("Missing AD_SysConfig record with Name = " + SYSCONFIG_DirectMove_Warehouse_ID + " for AD_Client_ID=" + adClientId + " and AD_Org_ID=" + adOrgId));
 
-		return warehouseBL.getDefaultLocatorId(directMoveWarehouseId);
+		return warehouseBL.getOrCreateDefaultLocatorId(directMoveWarehouseId);
 	}
 
 	@Override
 	public HUMovementGeneratorResult moveHUsToWarehouse(@NonNull final Collection<I_M_HU> hus, @NonNull final WarehouseId warehouseToId)
 	{
-		final LocatorId locatorToId = warehouseBL.getDefaultLocatorId(warehouseToId);
+		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(warehouseToId);
 		return moveHUsToLocator(hus, locatorToId);
 	}
 

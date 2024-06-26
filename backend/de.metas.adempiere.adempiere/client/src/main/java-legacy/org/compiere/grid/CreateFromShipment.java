@@ -505,7 +505,7 @@ public class CreateFromShipment extends CreateFrom
 		// Try to use default locator from Order Warehouse
 		if (locator == null && p_order != null && p_order.getM_Warehouse_ID() == getM_Warehouse_ID())
 		{
-			locator = Services.get(IWarehouseBL.class).getDefaultLocator(WarehouseId.ofRepoId(p_order.getM_Warehouse_ID()));
+			locator = Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(WarehouseId.ofRepoId(p_order.getM_Warehouse_ID()));
 		}
 		// Try to get from locator field
 		if (locator == null)
@@ -518,7 +518,7 @@ public class CreateFromShipment extends CreateFrom
 		// Validate Warehouse
 		if (locator == null || locator.getM_Warehouse_ID() != getM_Warehouse_ID())
 		{
-			locator = Services.get(IWarehouseBL.class).getDefaultLocator(WarehouseId.ofRepoId(getM_Warehouse_ID()));
+			locator = Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(WarehouseId.ofRepoId(getM_Warehouse_ID()));
 		}
 
 		KeyNamePair pp = null;
