@@ -216,7 +216,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		inOutLineRecord.setM_InOut_ID(inOutRecord.getM_InOut_ID());
 		saveRecord(inOutLineRecord);
 
-		desadvBL = new DesadvBL(new EDIDesadvPackService(new HURepository(), new EDIDesadvPackRepository()));
+		desadvBL = new DesadvBL(new EDIDesadvPackService(new HURepository(), new EDIDesadvPackRepository()), new EDIDesadvInOutLineDAO());
 	}
 
 	@Test
