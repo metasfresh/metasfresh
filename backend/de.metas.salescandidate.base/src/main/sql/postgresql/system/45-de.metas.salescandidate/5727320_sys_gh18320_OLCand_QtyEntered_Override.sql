@@ -56,7 +56,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=729007
 
 -- Value: de.metas.ordercandidate.modelvalidator.C_OLCand.InvalidQuantity
 -- 2024-06-25T17:27:43.257Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545427,0,TO_TIMESTAMP('2024-06-25 20:27:42','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Die Menge muss größer als 0 sein.','E',TO_TIMESTAMP('2024-06-25 20:27:42','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ordercandidate.modelvalidator.C_OLCand.InvalidQuantity')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545427,0,TO_TIMESTAMP('2024-06-25 20:27:42','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Die Menge muss größer oder gleich 0 sein.','E',TO_TIMESTAMP('2024-06-25 20:27:42','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ordercandidate.modelvalidator.C_OLCand.InvalidQuantity')
 ;
 
 -- 2024-06-25T17:27:43.264Z
@@ -65,6 +65,6 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 
 -- Value: de.metas.ordercandidate.modelvalidator.C_OLCand.InvalidQuantity
 -- 2024-06-25T17:28:05.913Z
-UPDATE AD_Message_Trl SET MsgText='Quantity has to be greater than 0.',Updated=TO_TIMESTAMP('2024-06-25 20:28:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545427
+UPDATE AD_Message_Trl SET MsgText='The quantity must be greater than or equal to 0.',Updated=TO_TIMESTAMP('2024-06-25 20:28:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545427
 ;
 

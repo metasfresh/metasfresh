@@ -22,6 +22,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
@@ -360,9 +361,12 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	@NonNull
 	public BigDecimal getEffectiveQtyEntered(@NonNull final I_C_OLCand olCand)
 	{
-		return Optional.ofNullable(olCand.getQtyEntered_Override())
-				.filter(qtyEnteredOverride -> qtyEnteredOverride.signum() > 0)
-				.orElseGet(olCand::getQtyEntered);
+		if (InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyEntered_Override))
+		{
+			return olCand.getQtyEntered();
+		}
+
+		return olCand.getQtyEntered_Override();
 	}
 
 	private Optional<BPartnerInfo> extractDifferentShipToBPartnerInfo(

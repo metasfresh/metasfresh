@@ -235,7 +235,7 @@ public class C_OLCand
 			ifColumnsChanged = I_C_OLCand.COLUMNNAME_QtyEntered_Override)
 	public void validateQtyEnteredOverride(@NonNull final I_C_OLCand cand)
 	{
-		if (cand.getQtyEntered_Override().signum() > 0)
+		if (cand.getQtyEntered_Override().signum() >= 0)
 		{
 			return;
 		}
