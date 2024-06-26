@@ -1888,4 +1888,17 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	{
 		return get_ValueAsString(COLUMNNAME_ReplicationTrxErrorMsg);
 	}
+
+	@Override
+	public void setQtyEntered_Override (final @Nullable BigDecimal QtyEntered_Override)
+	{
+		set_Value (COLUMNNAME_QtyEntered_Override, QtyEntered_Override);
+	}
+
+	@Override
+	public BigDecimal getQtyEntered_Override()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered_Override);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
 }

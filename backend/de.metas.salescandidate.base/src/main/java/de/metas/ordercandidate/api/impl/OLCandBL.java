@@ -341,7 +341,7 @@ public class OLCandBL implements IOLCandBL
 				.getDropShipPartnerInfo(olCandRecord)
 				.orElseGet(() -> effectiveValuesBL.getBuyerPartnerInfo(olCandRecord));
 
-		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCandRecord.getQtyEntered();
+		final BigDecimal qty = qtyOverride != null ? qtyOverride : effectiveValuesBL.getEffectiveQtyEntered(olCandRecord);
 
 		final BPartnerOrderParams bPartnerOrderParams = getBPartnerOrderParams(olCandRecord);
 

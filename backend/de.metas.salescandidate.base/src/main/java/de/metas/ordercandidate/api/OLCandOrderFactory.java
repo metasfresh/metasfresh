@@ -155,6 +155,7 @@ class OLCandOrderFactory
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
@@ -745,7 +746,7 @@ class OLCandOrderFactory
 		return null;
 	}
 
-	private static void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
+	private void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
 	{
 		orderLine.setExternalSeqNo(candidate.getLine());
 
@@ -758,7 +759,7 @@ class OLCandOrderFactory
 		if (uomId != null)
 		{
 			orderLine.setC_UOM_BPartner_ID(uomId.getRepoId());
-			orderLine.setQtyEnteredInBPartnerUOM(olCand.getQtyEntered());
+			orderLine.setQtyEnteredInBPartnerUOM(olCandEffectiveValuesBL.getEffectiveQtyEntered(olCand));
 		}
 	}
 }
