@@ -356,6 +356,15 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		return HUPIItemProductId.ofRepoIdOrNull(olCand.getM_HU_PI_Item_Product_ID());
 	}
 
+	@Override
+	@NonNull
+	public BigDecimal getEffectiveQtyEntered(@NonNull final I_C_OLCand olCand)
+	{
+		return Optional.ofNullable(olCand.getQtyEntered_Override())
+				.filter(qtyEnteredOverride -> qtyEnteredOverride.signum() > 0)
+				.orElseGet(olCand::getQtyEntered);
+	}
+
 	private Optional<BPartnerInfo> extractDifferentShipToBPartnerInfo(
 			@NonNull final I_C_OLCand olCandRecord,
 			final BPartnerLocationAndCaptureId differentShipToBPartnerLocationAndCaptureId,
