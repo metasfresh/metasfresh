@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_EDI_DesadvLine_InOutLine extends org.compiere.model.PO implements I_EDI_DesadvLine_InOutLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1582274999L;
+	private static final long serialVersionUID = 1999664733L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine_InOutLine (final Properties ctx, final int EDI_DesadvLine_InOutLine_ID, @Nullable final String trxName)
@@ -78,6 +78,19 @@ public class X_EDI_DesadvLine_InOutLine extends org.compiere.model.PO implements
 	public int getC_UOM_Invoice_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_Invoice_ID);
+	}
+
+	@Override
+	public void setDesadvLineTotalQtyDelivered (final @Nullable BigDecimal DesadvLineTotalQtyDelivered)
+	{
+		set_Value (COLUMNNAME_DesadvLineTotalQtyDelivered, DesadvLineTotalQtyDelivered);
+	}
+
+	@Override
+	public BigDecimal getDesadvLineTotalQtyDelivered() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_DesadvLineTotalQtyDelivered);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

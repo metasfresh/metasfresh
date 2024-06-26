@@ -22,13 +22,14 @@ package de.metas.edi.process;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
-import de.metas.esb.edi.model.X_EDI_Desadv;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -100,7 +101,7 @@ public class EDI_Desadv_InOut_EnqueueForExport extends JavaProcess implements IP
 			final IWorkPackageQueue queue,
 			final I_EDI_Desadv desadv)
 	{
-		final List<I_M_InOut> shipments = desadvDAO.retrieveShipmentsPendingExport(desadv);
+		final List<I_M_InOut> shipments = desadvDAO.retrieveShipmentsWithStatus(desadv, ImmutableSet.of(EDIExportStatus.Pending, EDIExportStatus.Error));
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(desadv);
 
@@ -123,7 +124,6 @@ public class EDI_Desadv_InOut_EnqueueForExport extends JavaProcess implements IP
 	{
 		final IQueryBuilder<I_EDI_Desadv> queryBuilder = queryBL.createQueryBuilder(I_EDI_Desadv.class, getCtx(), get_TrxName())
 				.addOnlyActiveRecordsFilter()
-				.addInArrayOrAllFilter(I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus, X_EDI_Desadv.EDI_EXPORTSTATUS_Error, X_EDI_Desadv.EDI_EXPORTSTATUS_Pending)
 				.filter(getProcessInfo().getQueryFilterOrElseFalse());
 
 		queryBuilder.orderBy()

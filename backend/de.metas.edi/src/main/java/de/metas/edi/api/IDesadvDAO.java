@@ -22,6 +22,7 @@
 
 package de.metas.edi.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
@@ -126,8 +127,8 @@ public interface IDesadvDAO extends ISingletonService
 	I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId);
 
 	@NonNull
-	List<I_M_InOut> retrieveShipmentsPendingExport(@NonNull I_EDI_Desadv desadv);
+	List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull I_EDI_Desadv desadv, @NonNull ImmutableSet<EDIExportStatus> statusSet);
 
 	@NonNull
-    I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull InOutId shipmentId);
+	I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull InOutId shipmentId);
 }
