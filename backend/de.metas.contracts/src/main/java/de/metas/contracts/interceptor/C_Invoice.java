@@ -82,6 +82,7 @@ public class C_Invoice
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 		final Collection<InvoiceCandidateId> invoiceCandidateIds = invoiceCandDAO.retrieveInvoiceCandidateIds(invoiceId);
 		modularContractLogService.unprocessLogsForICs(invoiceCandidateIds);
+		invoiceCandDAO.setIsActive(invoiceCandidateIds, false);
 		if (docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId))
 		{
 			final Set<FlatrateTermId> contractIds = invoiceBL.getLines(invoiceId)

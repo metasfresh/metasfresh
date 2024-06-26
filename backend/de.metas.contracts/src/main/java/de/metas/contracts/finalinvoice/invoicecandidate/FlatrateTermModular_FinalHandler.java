@@ -222,6 +222,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 		invoiceCandidate.setRecord_ID(modularContract.getC_Flatrate_Term_ID());
 		invoiceCandidate.setAD_Org_ID(modularContract.getAD_Org_ID());
 		invoiceCandidate.setC_Flatrate_Term_ID(modularContract.getC_Flatrate_Term_ID());
+		invoiceCandidate.setIsActive(true);
 
 		InvoiceCandidateLocationAdapterFactory
 				.billLocationAdapter(invoiceCandidate)
