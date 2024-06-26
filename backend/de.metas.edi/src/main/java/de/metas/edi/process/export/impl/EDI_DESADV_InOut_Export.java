@@ -22,6 +22,8 @@ package de.metas.edi.process.export.impl;
  * #L%
  */
 
+import de.metas.edi.api.EDIDesadvId;
+import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.edi.model.I_M_InOut;
@@ -45,6 +47,7 @@ import java.util.List;
 public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 {
 	private final IInOutBL shipmentBL = Services.get(IInOutBL.class);
+	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 
 	/**
 	 * EXP_Format.Value for exporting InOut EDI documents
@@ -67,6 +70,10 @@ public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 		shipment.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_SendingStarted);
 		InterfaceWrapperHelper.save(shipment);
 
+		final I_EDI_Desadv desadv = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(shipment.getEDI_Desadv_ID()));
+		desadv.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_SendingStarted);
+		InterfaceWrapperHelper.save(desadv);
+
 		try
 		{
 			exportEDI(I_M_InOut_Desadv_V.class,
@@ -80,6 +87,9 @@ public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 		}
 		catch (final Exception e)
 		{
+			desadv.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
+			InterfaceWrapperHelper.save(desadv);
+
 			shipment.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
 
 			final ITranslatableString errorMsgTrl = TranslatableStrings.parse(e.getLocalizedMessage());
