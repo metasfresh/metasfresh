@@ -178,6 +178,8 @@ public class DocumentFilterParamDescriptor
 		return widgetType.isLookup() && AUTOFILTER_INITIALVALUE_CURRENT_LOGGED_USER.equals(autoFilterInitialValue);
 	}
 
+	public Operator getOperatorOrEqualsIfNull() {return operator != null ? operator : Operator.EQUAL;}
+
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static final class Builder
 	{
