@@ -17,6 +17,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityId;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
@@ -149,5 +150,12 @@ public class ManufacturingJob
 		return !DeviceId.equals(this.currentScaleDeviceId, currentScaleDeviceId)
 				? toBuilder().currentScaleDeviceId(currentScaleDeviceId).build()
 				: this;
+	}
+
+
+	@NonNull
+	public LocalDate getDateStartScheduleAsLocalDate()
+	{
+		return dateStartSchedule.toLocalDate();
 	}
 }

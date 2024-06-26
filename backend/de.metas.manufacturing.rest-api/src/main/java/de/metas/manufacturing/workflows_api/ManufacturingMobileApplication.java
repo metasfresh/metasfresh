@@ -203,7 +203,7 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 						.build())
 				.entry(WFProcessHeaderProperty.builder()
 						.caption(TranslatableStrings.adElementOrMessage("DateStartSchedule"))
-						.value(job.getDateStartSchedule())
+						.value(job.getDateStartScheduleAsLocalDate())
 						.build())
 				.build();
 	}
