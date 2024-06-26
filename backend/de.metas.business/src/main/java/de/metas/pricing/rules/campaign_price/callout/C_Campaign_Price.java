@@ -4,6 +4,9 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -27,6 +30,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_C_Campaign_Price;
 import org.compiere.model.ModelValidator;
@@ -70,6 +74,8 @@ public class C_Campaign_Price
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	public static final AdMessageKey ERR_MandatoryFields = AdMessageKey.of("C_Campaign_Price_MandatoryFields");
 
 	@Init
 	public void init()
@@ -207,15 +213,9 @@ public class C_Campaign_Price
 	{
 		if (record.getC_BPartner_ID() <= 0 && record.getC_BP_Group_ID() <= 0 && record.getM_PricingSystem_ID() <= 0)
 		{
-			if (record.getM_Product_ID() <= 0)
-			{
-				throw new FillMandatoryException(I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID);
-			}
-			if (record.getM_PricingSystem_ID() <= 0)
-			{
-				throw new FillMandatoryException(I_C_Campaign_Price.COLUMNNAME_M_PricingSystem_ID);
-			}
-			throw new FillMandatoryException(I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID);
+			final ITranslatableString errorMessage = Services.get(IMsgBL.class).getTranslatableMsgText(ERR_MandatoryFields);
+
+			throw new AdempiereException(errorMessage);
 		}
 	}
 }
