@@ -142,6 +142,27 @@ public interface I_EDI_DesadvLine_InOutLine
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set DesadvLineTotalQtyDelivered.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDesadvLineTotalQtyDelivered (@Nullable BigDecimal DesadvLineTotalQtyDelivered);
+
+	/**
+	 * Get DesadvLineTotalQtyDelivered.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDesadvLineTotalQtyDelivered();
+
+	ModelColumn<I_EDI_DesadvLine_InOutLine, Object> COLUMN_DesadvLineTotalQtyDelivered = new ModelColumn<>(I_EDI_DesadvLine_InOutLine.class, "DesadvLineTotalQtyDelivered", null);
+	String COLUMNNAME_DesadvLineTotalQtyDelivered = "DesadvLineTotalQtyDelivered";
+
+	/**
 	 * Set DESADV Line.
 	 *
 	 * <br>Type: TableDir
