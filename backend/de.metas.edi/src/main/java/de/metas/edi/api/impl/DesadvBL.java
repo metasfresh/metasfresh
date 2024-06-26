@@ -10,10 +10,8 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.DesadvInOutLine;
 import de.metas.edi.api.EDIDesadvLineId;
-import de.metas.edi.api.EDIDesadvLinePackId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
@@ -25,20 +23,6 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
-import de.metas.handlingunits.attributes.sscc18.SSCC18;
-import de.metas.handlingunits.generichumodel.HU;
-import de.metas.handlingunits.generichumodel.HURepository;
-import de.metas.handlingunits.generichumodel.PackagingCode;
-import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -59,8 +43,10 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.report.ReportResultData;
 import de.metas.report.server.ReportConstants;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
@@ -454,7 +440,7 @@ public class DesadvBL implements IDesadvBL
 		desadvLineRecord.setQtyDeliveredInStockingUOM(newMovementQty);
 
 		final Quantity inoutLineQtyDeliveredInUOM = desadvInOutLine.getQtyDeliveredInUOM().negateIfNot(add);
-		final Quantity desadvLineQtyDelivered = Quantitys.create(
+		final Quantity desadvLineQtyDelivered = Quantitys.of(
 				desadvLineRecord.getQtyDeliveredInUOM(),
 				UomId.ofRepoId(desadvLineRecord.getC_UOM_ID()));
 
@@ -467,7 +453,7 @@ public class DesadvBL implements IDesadvBL
 					.map(qty -> qty.negateIfNot(add))
 					.orElseGet(() -> Quantity.zero(uomDAO.getById(desadvLineRecord.getC_UOM_BPartner_ID())));
 
-			final Quantity desadvLineQtyDeliveredBPartnerUOM = Quantitys.create(
+			final Quantity desadvLineQtyDeliveredBPartnerUOM = Quantitys.of(
 					desadvLineRecord.getQtyEnteredInBPartnerUOM(),
 					UomId.ofRepoId(desadvLineRecord.getC_UOM_BPartner_ID()));
 
@@ -482,7 +468,7 @@ public class DesadvBL implements IDesadvBL
 			final Quantity inoutLineQtyDeliveredInInvoiceUOM = Optional.ofNullable(desadvInOutLine.getQtyDeliveredInInvoiceUOM())
 					.map(qty -> qty.negateIfNot(add))
 					.orElseGet(() -> Quantity.zero(uomDAO.getById(invoiceUomId)));
-			final Quantity desadvLineQtyInInvoiceUOM = Quantitys.create(
+			final Quantity desadvLineQtyInInvoiceUOM = Quantitys.of(
 					desadvLineRecord.getQtyDeliveredInInvoiceUOM(),
 					UomId.ofRepoId(desadvLineRecord.getC_UOM_Invoice_ID()));
 
@@ -786,13 +772,13 @@ public class DesadvBL implements IDesadvBL
 						.shipmentLineId(shipmentLineId)
 						.qtyEnteredInBPartnerUOM(Optional.of(desadvLineRecord.getC_UOM_BPartner_ID())
 														 .map(UomId::ofRepoIdOrNull)
-														 .map(bpartnerUOMId -> Quantitys.create(ZERO, bpartnerUOMId))
+														 .map(bpartnerUOMId -> Quantitys.of(ZERO, bpartnerUOMId))
 														 .orElse(null)));
 
 		final Quantity inOutLineStockQty = inOutLineQty.getStockQty();
 		desadvInOutLineBuilder.qtyDeliveredInStockingUOM(inOutLineStockQty);
 
-		final Quantity desadvLineQtyDelivered = Quantitys.create(desadvLineRecord.getQtyDeliveredInUOM(), UomId.ofRepoId(desadvLineRecord.getC_UOM_ID()));
+		final Quantity desadvLineQtyDelivered = Quantitys.of(desadvLineRecord.getQtyDeliveredInUOM(), UomId.ofRepoId(desadvLineRecord.getC_UOM_ID()));
 		final Quantity inoutQtyDeliveredInUOM = getInOutLineQtyInDesadvLineQtyUOM(inOutLineQty, desadvLineQtyDelivered, desadvLineRecord);
 		desadvInOutLineBuilder.qtyDeliveredInUOM(inoutQtyDeliveredInUOM);
 
@@ -806,7 +792,7 @@ public class DesadvBL implements IDesadvBL
 		final UomId invoiceUomId = UomId.ofRepoIdOrNull(desadvLineRecord.getC_UOM_Invoice_ID());
 		if (invoiceUomId != null)
 		{
-			final Quantity desadvLineQtyInInvoiceUOM = Quantitys.create(desadvLineRecord.getQtyDeliveredInInvoiceUOM(), UomId.ofRepoId(desadvLineRecord.getC_UOM_Invoice_ID()));
+			final Quantity desadvLineQtyInInvoiceUOM = Quantitys.of(desadvLineRecord.getQtyDeliveredInInvoiceUOM(), UomId.ofRepoId(desadvLineRecord.getC_UOM_Invoice_ID()));
 			final Quantity newQtyDeliveredInInvoiceUOM = getInOutLineQtyInDesadvLineQtyUOM(inOutLineQty, desadvLineQtyInInvoiceUOM, desadvLineRecord);
 
 			desadvInOutLineBuilder.qtyDeliveredInInvoiceUOM(newQtyDeliveredInInvoiceUOM);
