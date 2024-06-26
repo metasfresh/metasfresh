@@ -2,7 +2,7 @@ import { delete as del, get, post } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
-import { formatSortingQuery, getQueryString } from '../utils';
+import { getQueryString } from '../utils';
 
 export function topActionsRequest(windowId, documentId, tabId = null) {
   const url =
