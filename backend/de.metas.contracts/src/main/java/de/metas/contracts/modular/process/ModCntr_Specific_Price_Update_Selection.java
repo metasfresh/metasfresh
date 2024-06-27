@@ -84,11 +84,15 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 	@Param(parameterName = "MinValue")
 	private BigDecimal p_minValue;
 
-	@Param(parameterName = "Price_Old")
-	private BigDecimal p_Price_Old;
+	@Param(parameterName = "MinValue_Old")
+	private BigDecimal p_MinValue_Old;
 
 	@Param(parameterName = "C_UOM_ID", mandatory = true)
 	private UomId p_C_UOM_ID;
+
+	@Param(parameterName = "AsNewPrice")
+	private Boolean p_asNewPrice;
+
 
 	private final static String PARAM_C_CURRENCY_ID = "C_Currency_ID";
 	@Param(parameterName = PARAM_C_CURRENCY_ID, mandatory = true)
@@ -143,11 +147,24 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 
 	private void updatePrice(final ModCntrSpecificPriceId contractPriceId)
 	{
-		final ModCntrSpecificPrice newContractPrice = modularContractPriceService.updateById(contractPriceId, contractPrice -> contractPrice.toBuilder()
-				.amount(Money.of(p_price, p_C_Currency_ID))
-				.uomId(p_C_UOM_ID)
-				.minValue(p_minValue)
-				.build());
+		ModCntrSpecificPrice newContractPrice;
+
+		if (p_asNewPrice)
+		{
+			newContractPrice = modularContractPriceService.cloneById(contractPriceId, contractPrice -> contractPrice.toBuilder()
+					.amount(Money.of(p_price, p_C_Currency_ID))
+					.uomId(p_C_UOM_ID)
+					.minValue(p_minValue)
+					.build());
+		}
+		else
+		{
+			newContractPrice = modularContractPriceService.updateById(contractPriceId, contractPrice -> contractPrice.toBuilder()
+					.amount(Money.of(p_price, p_C_Currency_ID))
+					.uomId(p_C_UOM_ID)
+					.minValue(p_minValue)
+					.build());
+		}
 
 		contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()
 						.unitPrice(newContractPrice.getProductPrice())
@@ -182,8 +199,7 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 
 			if (modularContractSettingsService.isMatchingComputingMethodType(p_ModCntr_Type_ID, ComputingMethodType.AverageAddedValueOnShippedQuantity))
 			{
-				queryBuilder.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_MinValue, p_minValue)
-						.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_Price, p_Price_Old)
+				queryBuilder.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_MinValue, p_MinValue_Old)
 						.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_IsScalePrice, true);
 			}
 			else
