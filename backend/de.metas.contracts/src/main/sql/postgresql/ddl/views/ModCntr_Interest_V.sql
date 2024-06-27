@@ -63,6 +63,7 @@ SELECT mi.modcntr_interest_id      AS modcntr_interest_v_id,
        mi.finalinterest,
        mi.ad_client_id
 
+-- TODO: modify this view and its window to show info about the interim contract instead of the interim invoice + other needed changes.
 FROM modcntr_interest mi
          INNER JOIN modCntr_log l ON mi.shippingnotification_modcntr_log_id = l.modcntr_log_id AND l.isbillable = 'Y'
          INNER JOIN m_shipping_notification shn ON l.record_id = shn.m_shipping_notification_id
