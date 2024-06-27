@@ -27,12 +27,15 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Log;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.detail.InvoiceCandidateWithDetails;
 import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.lock.api.LockOwner;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -73,6 +76,7 @@ public class ModularContractLogService
 
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	@NonNull private final ModularContractLogDAO modularContractLogDAO;
 	@NonNull private final InvoiceCandidateWithDetailsRepository invoiceCandidateWithDetailsRepository;
@@ -127,14 +131,17 @@ public class ModularContractLogService
 		modularContractLogDAO.setICProcessed(query, invoiceCandidateId);
 	}
 
-	public void unprocessLogsForICs(@NonNull final Collection<InvoiceCandidateId> candidateIds)
+	public void unprocessLogsForInvoice(@NonNull final InvoiceId invoiceId, @NonNull final Collection<ComputingMethodType> computingMethodTypes)
 	{
+		final Collection<InvoiceCandidateId> candidateIds = invoiceCandDAO.retrieveInvoiceCandidateIds(invoiceId);
 		final ModularContractLogQuery query = ModularContractLogQuery.builder()
 				.isOnlyActiveComputingMethodTypes(false)
 				.processed(true)
 				.billable(true)
+				.computingMethodTypes(computingMethodTypes)
+				.invoiceCandidateIds(candidateIds)
 				.build();
-		modularContractLogDAO.unprocessLogsForICs(query, candidateIds);
+		modularContractLogDAO.unprocessLogsForICs(query);
 	}
 
 	@NonNull

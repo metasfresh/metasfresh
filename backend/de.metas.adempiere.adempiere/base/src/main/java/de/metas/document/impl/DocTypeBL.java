@@ -194,7 +194,7 @@ public class DocTypeBL implements IDocTypeBL
 	}
 
 	@Override
-	public boolean isDownPayment(@NonNull final DocTypeId docTypeId)
+	public boolean isInterimInvoice(@NonNull final DocTypeId docTypeId)
 	{
 		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
 
