@@ -2,28 +2,27 @@ drop view if exists M_InOut_DesadvLine_Pack_V
 ;
 
 create or replace view M_InOut_DesadvLine_Pack_V as
-select edi_desadvline_id || '-' || m_inoutline_id as M_InOut_DesadvLine_V_ID,
-       ad_client_id,
-       ad_org_id,
-       created,
-       createdby,
-       edi_desadvline_id,
-       edi_desadvline_pack_id,
+select line.edi_desadvline_id || '-' || m_inoutline_id as M_InOut_DesadvLine_V_ID,
+       pack.ad_client_id,
+       pack.ad_org_id,
+       pack.created,
+       pack.createdby,
+       line.edi_desadvline_id,
        ipa_sscc18,
-       isactive,
-       updated,
-       updatedby,
+       pack.isactive,
+       pack.updated,
+       pack.updatedby,
        qtytu,
-       qtycu,
+       QtyCUsPerTU,
        qtycusperlu,
        m_hu_id,
-       edi_desadv_id,
+       pack.edi_desadv_id,
        ismanual_ipa_sscc18,
        bestbeforedate,
        m_hu_packagingcode_lu_id,
        m_hu_packagingcode_tu_id,
        c_uom_id,
-       qtyitemcapacity,
+       item.qtyitemcapacity,
        movementqty,
        m_inoutline_id,
        m_inout_id,
@@ -32,5 +31,7 @@ select edi_desadvline_id || '-' || m_inoutline_id as M_InOut_DesadvLine_V_ID,
        gtin_lu_packingmaterial,
        (select PackagingCode from M_HU_PackagingCode c where c.M_HU_PackagingCode_ID=M_HU_PackagingCode_LU_ID) as M_HU_PackagingCode_LU_Text,
        (select PackagingCode from M_HU_PackagingCode c where c.M_HU_PackagingCode_ID=M_HU_PackagingCode_TU_ID) as M_HU_PackagingCode_TU_Text
-from edi_desadvline_pack
+from EDI_Desadv_Pack pack
+         INNER JOIN EDI_Desadv_Pack_Item item on pack.edi_desadv_pack_id = item.edi_desadv_pack_id
+         INNER JOIN EDI_DesadvLine line ON item.edi_desadvline_id = line.edi_desadvline_id
 ;
