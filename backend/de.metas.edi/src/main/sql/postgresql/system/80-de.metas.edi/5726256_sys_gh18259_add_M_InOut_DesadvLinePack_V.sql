@@ -13,7 +13,7 @@ select line.edi_desadvline_id || '-' || m_inoutline_id as M_InOut_DesadvLine_V_I
        pack.updated,
        pack.updatedby,
        qtytu,
-       QtyCUsPerTU,
+       QtyCUsPerTU as qtycu,
        qtycusperlu,
        m_hu_id,
        pack.edi_desadv_id,
