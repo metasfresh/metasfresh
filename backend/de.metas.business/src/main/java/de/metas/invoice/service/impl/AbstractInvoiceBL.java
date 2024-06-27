@@ -1570,7 +1570,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public final boolean isDownPayment(final org.compiere.model.I_C_Invoice invoiceRecord)
 	{
 		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
-		return docTypeId != null && docTypeBL.isDownPayment(docTypeId);
+		return docTypeId != null && docTypeBL.isInterimInvoice(docTypeId);
 	}
 
 	@Override

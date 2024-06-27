@@ -444,7 +444,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		POJOWrapper.setInstanceName(manualIc1, "manualIc1");
 
 		manualIc1.setC_ILCandHandler(manualHandler);
-		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation(ctx, manualIc1);
+		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation(manualIc1);
 		InterfaceWrapperHelper.save(manualIc1);
 
 		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate()
@@ -525,7 +525,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 
 		manualIc1.setIsToClear(true);
 
-		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation(ctx, manualIc1);
+		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation(manualIc1);
 
 		// Tests isCreditMemo. Needs to be manual and have a price actual override (which is why manualIc2 would return false)
 		manualIc1.setPriceActual_Override(new BigDecimal("-50"));

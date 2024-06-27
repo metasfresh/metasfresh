@@ -76,7 +76,7 @@ public interface IDocTypeBL extends ISingletonService
 
 	boolean isProFormaSO(DocTypeId docTypeId);
 
-	boolean isDownPayment(DocTypeId docTypeId);
+	boolean isInterimInvoice(DocTypeId docTypeId);
 
 	boolean isFinalInvoiceOrFinalCreditMemo(@NonNull DocTypeId docTypeId);
 
