@@ -56,7 +56,7 @@ public class B2BServiceWrapper
 	@NonNull
 	public List<DownloadFile> getCustomerRegistrationMessageFiles(@NonNull final OrgId orgId)
 	{
-		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
+		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgIdOrError(orgId);
 		final String billerId = postFinanceOrgConfig.getBillerId();
 		final boolean isArchiveData = postFinanceOrgConfig.isArchiveData();
 
@@ -88,7 +88,7 @@ public class B2BServiceWrapper
 
 	public List<DownloadFile> getProcessProtocol(@NonNull final OrgId orgId)
 	{
-		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
+		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgIdOrError(orgId);
 		final String billerId = postFinanceOrgConfig.getBillerId();
 		// note: if true, use already downloaded data. False = never downloaded data only
 		final boolean isArchiveData = postFinanceOrgConfig.isArchiveData();

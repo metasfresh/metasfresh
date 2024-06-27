@@ -65,6 +65,7 @@ public class C_Doc_Outbound_Log_Export_To_Post_Finance extends JavaProcess
 				.create()
 				.iterateAndStream()
 				.map(this::toPostFinanceExportRequest)
+				.filter(postFinanceYbInvoiceService::isPostFinanceActive)
 				.map(postFinanceYbInvoiceHandlerFactory::prepareYbInvoices)
 				.filter(Objects::nonNull)
 				.collect(Collectors.groupingBy(PostFinanceYbInvoiceResponse::getBillerId))
