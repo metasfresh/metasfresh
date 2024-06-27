@@ -523,7 +523,7 @@ public class ModularContractLogDAO
 		}
 	}
 
-	public void unprocessLogsForICs(@NonNull final ModularContractLogQuery query)
+	public void unprocessLogs(@NonNull final ModularContractLogQuery query)
 	{
 		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query)
 				.create();
@@ -547,8 +547,7 @@ public class ModularContractLogDAO
 
 	/**
 	 * Logs having price 0 will be marked as processed when an invoice is generated for them, however there will be no I_C_Invoice_Line_Alloc.
-	 * As such, when unprocessing logs for some computing method types, we should also unprocess 0 priced logs of the same computing method types, to allow the user a chance to fix such logs.
-	 * This is even more difficult because there are modules that log ModCntr_Log.PriceActual=0 by default (Receipt, Manufacturing) which generate ICs having
+	 * As such, when unprocessing logs for some computing method types, we should also unprocess logs of the same computing method types, that are linked to unprocessed ICs.
 	 */
 	private void unprocessUninvoicedZeroPricedLogsForContractId(final @NonNull ModularContractLogQuery query)
 	{
