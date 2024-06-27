@@ -98,8 +98,8 @@ public class InterestComputationCommand
 		computeAndDistributeInterest(interestComputationRequest);
 
 		computeAndDistributeBonus(interestComputationRequest.toBuilder()
-				.bonusComputationDetails(request.getBonusComputationDetails())
-				.build());
+										  .bonusComputationDetails(request.getBonusComputationDetails())
+										  .build());
 
 		final boolean anyRecordsCreatedForCurrentRun = queryBL.createQueryBuilder(I_ModCntr_Interest.class)
 				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_ModCntr_Interest_Run_ID, runId)
@@ -116,7 +116,7 @@ public class InterestComputationCommand
 	private void computeAndDistributeInterest(@NonNull final InterestComputationRequest request)
 	{
 		Check.assume(request.getComputingMethodType() == ComputingMethodType.AddValueOnInterim,
-				"Interest can only be distributed for" + ComputingMethodType.AddValueOnInterim);
+					 "Interest can only be distributed for" + ComputingMethodType.AddValueOnInterim);
 
 		distributeInterest(request, createInterestRecords(request));
 	}
@@ -148,99 +148,112 @@ public class InterestComputationCommand
 			@NonNull final FlatrateTermId contractId)
 	{
 		final Iterator<ModularContractLogEntry> shippingNotificationIterator = streamShippingNotificationLogEntries(request, contractId).iterator();
-		final Iterator<ModularContractLogEntry> interimInvoiceIterator = streamInterimInvoiceLogEntries(contractId, request).iterator();
+		final Iterator<ModularContractLogEntry> interimContractIterator = streamInterimContractLogEntries(contractId, request).iterator();
 		final ModularContractSettings settings = modularContractService.getModularSettingsForContract(contractId);
 
 		// TODO: interim invoice and shipping notification logs are no longer relevant for the Added Value on Interim
 		BigDecimal totalInterestScore = BigDecimal.ZERO;
+		final boolean interimInvoiceExists = interimInvoiceLogExists(contractId, request);
 
-		InvoiceAllocations.AllocationItem currentShippingNotification = null;
-		while (interimInvoiceIterator.hasNext())
+		if (!interimInvoiceExists)
 		{
-			final InvoiceAllocations currentInvoiceAllocations = initInvoiceAllocations(request,
-					settings.getAdditionalInterestDays(),
-					interimInvoiceIterator.next());
-			while (currentInvoiceAllocations.openAmountSignum() > 0)
+			while (shippingNotificationIterator.hasNext())
 			{
-				while (!currentInvoiceAllocations.canAllocate(currentShippingNotification) && shippingNotificationIterator.hasNext())
-				{
-					final boolean wasCreatedBeforeInvoice = currentShippingNotification != null
-							&& currentInvoiceAllocations.isInvoiceCreatedAfter(currentShippingNotification);
+				final @NonNull AllocationItem currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
+																							   shippingNotificationIterator.next());
+				saveSubtractValueInterestRecord(request, settings.getBonusInterestRate(), currentShippingNotification);
 
-					if (wasCreatedBeforeInvoice)
-					{
-						saveSubtractValueInterestRecord(request, settings.getBonusInterestRate(), currentShippingNotification);
-					}
-
-					currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
-							shippingNotificationIterator.next());
-				}
-
-				if (currentInvoiceAllocations.canAllocate(currentShippingNotification))
-				{
-					currentShippingNotification = currentInvoiceAllocations.allocate(currentShippingNotification);
-				}
-
-				if (!shippingNotificationIterator.hasNext())
-				{
-					break;
-				}
 			}
+		}
+		while (interimContractIterator.hasNext())
+		{
+			final InterimContractAllocations currentInterimContractAllocations = initInterimContractAllocations(request,
+																												settings.getAdditionalInterestDays(),
+																												interimContractIterator.next());
 
-			saveAddedValueInterestRecords(currentInvoiceAllocations);
-			totalInterestScore = totalInterestScore.add(currentInvoiceAllocations.getAllocatedInterestScore());
-			splitOpenAmount(currentInvoiceAllocations);
+			// while (currentInterimContractAllocations.openAmountSignum() > 0)
+			// {
+			// 	// while (!currentInterimContractAllocations.canAllocate(currentShippingNotification) && shippingNotificationIterator.hasNext())
+			// 	// {
+			// 	// 	final boolean wasCreatedBeforeInvoice = currentShippingNotification != null
+			// 	// 			&& currentInterimContractAllocations.isInvoiceCreatedAfter(currentShippingNotification);
+			// 	//
+			// 	// 	// if (wasCreatedBeforeInvoice)
+			// 	// 	// {
+			// 	// 	// 	saveSubtractValueInterestRecord(request, settings.getBonusInterestRate(), currentShippingNotification);
+			// 	// 	// }
+			// 	//
+			// 	// 	// currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
+			// 	// 	// 												 shippingNotificationIterator.next());
+			// 	// }
+			//
+			// 	// if (currentInterimContractAllocations.canAllocate(currentShippingNotification))
+			// 	// {
+			// 	// 	currentShippingNotification = currentInterimContractAllocations.allocate(currentShippingNotification);
+			// 	// }
+			//
+			// 	// if (!shippingNotificationIterator.hasNext())
+			// 	// {
+			// 	// 	break;
+			// 	// }
+			// }
+
+			saveAddedValueInterestRecords(currentInterimContractAllocations);
+			totalInterestScore = totalInterestScore.add(currentInterimContractAllocations.getAllocatedInterestScore());
+			splitOpenAmount(currentInterimContractAllocations);
 		}
 
-		// TODO: subtracted value on interim will be 0 if interim invoice exists
-		saveSubtractedValueInterestRecords(request,
-				settings.getBonusInterestRate(),
-				shippingNotificationIterator,
-				currentShippingNotification);
+		// if (!interimInvoiceExists)
+		// {
+		// 	saveSubtractedValueInterestRecords(request,
+		// 									   settings.getBonusInterestRate(),
+		// 									   shippingNotificationIterator,
+		// 									   currentShippingNotification);
+		// }
 
 		return InitialInterestAllocationResult.of(totalInterestScore);
 	}
 
-	private void saveSubtractedValueInterestRecords(
-			@NonNull final InterestComputationRequest request,
-			@NonNull final Percent bonusInterestRate,
-			@NonNull final Iterator<ModularContractLogEntry> shippingNotificationIterator,
-			@Nullable final InvoiceAllocations.AllocationItem currentShippingNotification)
-	{
-		if (currentShippingNotification != null && currentShippingNotification.openAmountSignum() > 0)
-		{
-			saveSubtractValueInterestRecord(request, bonusInterestRate, currentShippingNotification);
-		}
-
-		while (shippingNotificationIterator.hasNext())
-		{
-			saveSubtractValueInterestRecord(request, bonusInterestRate, initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
-					shippingNotificationIterator.next()));
-		}
-	}
+	// private void saveSubtractedValueInterestRecords(
+	// 		@NonNull final InterestComputationRequest request,
+	// 		@NonNull final Percent bonusInterestRate,
+	// 		@NonNull final Iterator<ModularContractLogEntry> shippingNotificationIterator,
+	// 		@Nullable final InterimContractAllocations.AllocationItem currentShippingNotification)
+	// {
+	// 	if (currentShippingNotification != null && currentShippingNotification.openAmountSignum() > 0)
+	// 	{
+	// 		saveSubtractValueInterestRecord(request, bonusInterestRate, currentShippingNotification);
+	// 	}
+	//
+	// 	while (shippingNotificationIterator.hasNext())
+	// 	{
+	// 		saveSubtractValueInterestRecord(request, bonusInterestRate, initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
+	// 																					   shippingNotificationIterator.next()));
+	// 	}
+	// }
 
 	@NonNull
 	private ImmutableSet<FlatrateTermId> getModularContractIds(
 			@NonNull final InterestComputationRequest request)
 	{
 		return modularContractLogService.getModularContractIds(ModularContractLogQuery.builder()
-				.computingMethodType(request.getComputingMethodType())
-				.invoicingGroupId(request.getInvoicingGroupId())
-				.lockOwner(request.getLockOwner())
-				.processed(false)
-				.billable(true)
-				.build());
+																	   .computingMethodType(request.getComputingMethodType())
+																	   .invoicingGroupId(request.getInvoicingGroupId())
+																	   .lockOwner(request.getLockOwner())
+																	   .processed(false)
+																	   .billable(true)
+																	   .build());
 	}
 
-	private void saveAddedValueInterestRecords(@NonNull final InvoiceAllocations currentInvoiceAllocations)
+	private void saveAddedValueInterestRecords(@NonNull final InterimContractAllocations currentInterimContractAllocations)
 	{
-		currentInvoiceAllocations.getAllocatedShippingNotifications().forEach(interestRepository::create);
+		currentInterimContractAllocations.getAllocatedShippingNotifications().forEach(interestRepository::create);
 	}
 
 	private void saveSubtractValueInterestRecord(
 			@NonNull final InterestComputationRequest request,
 			@NonNull final Percent bonusInterestRate,
-			@NonNull final InvoiceAllocations.AllocationItem shippingNotification)
+			@NonNull final AllocationItem shippingNotification)
 	{
 		if (request.getBonusComputationDetails() == null)
 		{
@@ -259,7 +272,7 @@ public class InterestComputationCommand
 		final int interestDays = request.getBonusComputationDetails().getBonusInterestDays();
 
 		final BigDecimal bonusAmountAsBD = bonusInterestRate.computePercentageOf(shippingNotification.getOpenAmount().toBigDecimal(),
-						request.getInterestCurrencyPrecision().toInt())
+																				 request.getInterestCurrencyPrecision().toInt())
 				.multiply(BigDecimal.valueOf(interestDays))
 				.divide(BigDecimal.valueOf(TOTAL_DAYS_OF_FISCAL_YEAR), RoundingMode.HALF_UP)
 				.negate();
@@ -294,8 +307,7 @@ public class InterestComputationCommand
 		return modularContractLogService.streamModularContractLogEntries(query);
 	}
 
-	@NonNull
-	private Stream<ModularContractLogEntry> streamInterimInvoiceLogEntries(
+	private boolean interimInvoiceLogExists(
 			@NonNull final FlatrateTermId contractId,
 			@NonNull final InterestComputationRequest request)
 	{
@@ -308,6 +320,26 @@ public class InterestComputationCommand
 				.onlyIfAmountIsSet(true)
 				.lockOwner(request.getLockOwner())
 				.logEntryDocumentType(LogEntryDocumentType.INTERIM_INVOICE)
+				.orderBy(ModularContractLogQuery.OrderBy.TRANSACTION_DATE_ASC)
+				.build();
+
+		return modularContractLogService.anyMatch(query);
+	}
+
+	@NonNull
+	private Stream<ModularContractLogEntry> streamInterimContractLogEntries(
+			@NonNull final FlatrateTermId modularContractId,
+			@NonNull final InterestComputationRequest request)
+	{
+		final ModularContractLogQuery query = ModularContractLogQuery.builder()
+				.computingMethodType(request.getComputingMethodType())
+				.flatrateTermId(modularContractId)
+				.invoicingGroupId(request.getInvoicingGroupId())
+				.billable(true)
+				.processed(false)
+				.onlyIfAmountIsSet(true)
+				.lockOwner(request.getLockOwner())
+				.logEntryDocumentType(LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT)
 				.orderBy(ModularContractLogQuery.OrderBy.TRANSACTION_DATE_ASC)
 				.build();
 
@@ -347,43 +379,43 @@ public class InterestComputationCommand
 	}
 
 	@NonNull
-	private InvoiceAllocations initInvoiceAllocations(
+	private InterimContractAllocations initInterimContractAllocations(
 			@NonNull final InterestComputationRequest request,
 			final int additionalInterestDays,
-			@NonNull final ModularContractLogEntry invoice)
+			@NonNull final ModularContractLogEntry interimContract)
 	{
-		Check.assume(LogEntryDocumentType.INTERIM_INVOICE == invoice.getDocumentType(),
-				"Expecting DocumentType = " + LogEntryDocumentType.INTERIM_INVOICE +
-						" but got " + invoice.getDocumentType() + "! LogId=" + invoice.getId());
-		Check.assumeNotNull(invoice.getAmount(), "Invoices with no amount should've been skipped already! LogId="
-				+ invoice.getId());
+		Check.assume(LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT == interimContract.getDocumentType(),
+					 "Expecting DocumentType = " + LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT +
+							 " but got " + interimContract.getDocumentType() + "! LogId=" + interimContract.getId());
+		Check.assumeNotNull(interimContract.getAmount(), "Interim contracts with no amount should've been skipped already! LogId="
+				+ interimContract.getId());
 
-		final Money invoiceAmtToAllocate = invoice.getAmount().abs();
+		final Money contractAmtToAllocate = interimContract.getAmount().abs();
 
-		final CurrencyConversionContext context = getCurrencyConversionContext(invoice);
+		final CurrencyConversionContext context = getCurrencyConversionContext(interimContract);
 
 		final CurrencyId targetCurrencyId = request.getInterestToDistribute().getCurrencyId();
-		final Money openAmountInTargetCurr = moneyService.convertMoneyToCurrency(invoiceAmtToAllocate,
-				targetCurrencyId,
-				context);
+		final Money openAmountInTargetCurr = moneyService.convertMoneyToCurrency(contractAmtToAllocate,
+																				 targetCurrencyId,
+																				 context);
 
-		return InvoiceAllocations.builder()
+		return InterimContractAllocations.builder()
 				.interestRunId(request.getInterestRunId())
 				.additionalInterestDays(additionalInterestDays)
 				.orgDAO(orgDAO)
-				.invoiceEntry(invoice)
+				.interimContractEntry(interimContract)
 				.openAmount(openAmountInTargetCurr)
 				.build();
 	}
 
 	@NonNull
-	private InvoiceAllocations.AllocationItem initAllocationItem(
+	private AllocationItem initAllocationItem(
 			@NonNull final CurrencyId targetCurrencyId,
 			@NonNull final ModularContractLogEntry shippingNotification)
 	{
 		Check.assume(LogEntryDocumentType.SHIPPING_NOTIFICATION == shippingNotification.getDocumentType(),
-				"Expecting DocumentType = " + LogEntryDocumentType.SHIPPING_NOTIFICATION +
-						" but got " + shippingNotification.getDocumentType() + "! LogId=" + shippingNotification.getId());
+					 "Expecting DocumentType = " + LogEntryDocumentType.SHIPPING_NOTIFICATION +
+							 " but got " + shippingNotification.getDocumentType() + "! LogId=" + shippingNotification.getId());
 
 		final Money shippingNotificationAmount = Optional
 				.ofNullable(shippingNotification.getAmount())
@@ -392,10 +424,10 @@ public class InterestComputationCommand
 
 		final CurrencyConversionContext context = getCurrencyConversionContext(shippingNotification);
 		final Money shippingNotificationAmountInTargetCurr = moneyService.convertMoneyToCurrency(shippingNotificationAmount,
-				targetCurrencyId,
-				context);
+																								 targetCurrencyId,
+																								 context);
 
-		return InvoiceAllocations.AllocationItem.builder()
+		return AllocationItem.builder()
 				.shippingNotificationEntry(shippingNotification)
 				.openAmount(shippingNotificationAmountInTargetCurr)
 				.build();
@@ -417,24 +449,24 @@ public class InterestComputationCommand
 	private void computeAndDistributeBonus(@NonNull final InterestComputationRequest request)
 	{
 		Check.assume(request.getComputingMethodType() == ComputingMethodType.SubtractValueOnInterim,
-				"Bonus can only be distributed for" + ComputingMethodType.SubtractValueOnInterim);
+					 "Bonus can only be distributed for" + ComputingMethodType.SubtractValueOnInterim);
 		createInterestRecords(request);
 	}
 
-	private void splitOpenAmount(@NonNull final InvoiceAllocations invoiceAllocations)
+	private void splitOpenAmount(@NonNull final InterimContractAllocations interimContractAllocations)
 	{
-		final ModularContractLogEntry invoice = invoiceAllocations.getInvoiceEntry();
+		final ModularContractLogEntry invoice = interimContractAllocations.getInterimContractEntry();
 		if (invoice.getAmount() == null
-				|| invoiceAllocations.openAmountSignum() <= 0
-				|| invoiceAllocations.getAllocatedShippingNotifications().isEmpty())
+				|| interimContractAllocations.openAmountSignum() <= 0
+				|| interimContractAllocations.getAllocatedShippingNotifications().isEmpty())
 		{
 			return;
 		}
 
 		final CurrencyConversionContext context = getCurrencyConversionContext(invoice);
-		final Money openAmountInInvoiceCurrency = moneyService.convertMoneyToCurrency(invoiceAllocations.getOpenAmount(),
-				invoice.getAmount().getCurrencyId(),
-				context);
+		final Money openAmountInInvoiceCurrency = moneyService.convertMoneyToCurrency(interimContractAllocations.getOpenAmount(),
+																					  invoice.getAmount().getCurrencyId(),
+																					  context);
 
 		final Percent openAmountPercent = openAmountInInvoiceCurrency.percentageOf(invoice.getAmount().abs());
 		final Quantity openAmountQty = Optional.ofNullable(invoice.getQuantity())
@@ -466,8 +498,8 @@ public class InterestComputationCommand
 	{
 		final Instant conversionDate = logEntry.getTransactionDate().toInstant(orgDAO::getTimeZone);
 		return currencyBL.createCurrencyConversionContext(conversionDate,
-				logEntry.getClientAndOrgId().getClientId(),
-				logEntry.getClientAndOrgId().getOrgId());
+														  logEntry.getClientAndOrgId().getClientId(),
+														  logEntry.getClientAndOrgId().getOrgId());
 	}
 
 	@NonNull

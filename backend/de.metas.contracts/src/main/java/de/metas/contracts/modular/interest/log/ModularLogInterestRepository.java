@@ -46,6 +46,27 @@ public class ModularLogInterestRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private static ModularLogInterest ofRecord(@NonNull final I_ModCntr_Interest interest)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(interest.getC_Currency_ID());
+		return ModularLogInterest.builder()
+				.interestLogId(ModularInterestLogId.ofRepoId(interest.getModCntr_Interest_ID()))
+				.interestRunId(InterestRunId.ofRepoId(interest.getModCntr_Interest_Run_ID()))
+				.shippingNotificationLogId(ModularContractLogEntryId.ofRepoId(interest.getShippingNotification_ModCntr_Log_ID()))
+				.interimContractLogId(ModularContractLogEntryId.ofRepoIdOrNull(interest.getInterimContract_ModCntr_Log_ID()))
+
+				.allocatedAmt(Money.of(interest.getMatchedAmt(), currencyId))
+
+				.interestDays(interest.getInterestDays())
+				.finalInterest(Money.ofOrNull(interest.getFinalInterest(), currencyId))
+				.build();
+	}
+
+	private static IQueryBuilder<I_ModCntr_Log> setSelectionOnQueryBuilder(final @NonNull LogInterestQuery query, final IQueryBuilder<I_ModCntr_Log> modCntrLogQueryBuilder)
+	{
+		return modCntrLogQueryBuilder.setOnlySelection(query.modularLogSelection());
+	}
+
 	@NonNull
 	public ModularLogInterest create(@NonNull final CreateModularLogInterestRequest request)
 	{
@@ -53,7 +74,7 @@ public class ModularLogInterestRepository
 
 		record.setModCntr_Interest_Run_ID(request.getInterestRunId().getRepoId());
 		record.setShippingNotification_ModCntr_Log_ID(request.getShippingNotificationLogId().getRepoId());
-		record.setInterimInvoice_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getInterimInvoiceLogId()));
+		record.setInterimContract_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getInterimContractLogId()));
 
 		final Money allocatedAmt = request.getAllocatedAmt();
 		record.setMatchedAmt(allocatedAmt.toBigDecimal());
@@ -75,7 +96,7 @@ public class ModularLogInterestRepository
 
 		record.setModCntr_Interest_Run_ID(request.getInterestRunId().getRepoId());
 		record.setShippingNotification_ModCntr_Log_ID(request.getShippingNotificationLogId().getRepoId());
-		record.setInterimInvoice_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getInterimInvoiceLogId()));
+		record.setInterimContract_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getInterimContractLogId()));
 
 		final Money allocatedAmt = request.getAllocatedAmt();
 		record.setMatchedAmt(allocatedAmt.toBigDecimal());
@@ -95,12 +116,12 @@ public class ModularLogInterestRepository
 		getQueryBuilder(query).create().delete();
 	}
 
-	public int deleteByModularContractLogEntryId(@NonNull final ModularContractLogEntryId logId)
+	public void deleteByModularContractLogEntryId(@NonNull final ModularContractLogEntryId logId)
 	{
-		return queryBL.createQueryBuilder(I_ModCntr_Interest.class)
+		queryBL.createQueryBuilder(I_ModCntr_Interest.class)
 				.setJoinOr()
 				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_ShippingNotification_ModCntr_Log_ID, logId)
-				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_InterimInvoice_ModCntr_Log_ID, logId)
+				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_InterimContract_ModCntr_Log_ID, logId)
 				.create()
 				.delete();
 	}
@@ -120,22 +141,6 @@ public class ModularLogInterestRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ModularLogInterest ofRecord(@NonNull final I_ModCntr_Interest interest)
-	{
-		final CurrencyId currencyId = CurrencyId.ofRepoId(interest.getC_Currency_ID());
-		return ModularLogInterest.builder()
-				.interestLogId(ModularInterestLogId.ofRepoId(interest.getModCntr_Interest_ID()))
-				.interestRunId(InterestRunId.ofRepoId(interest.getModCntr_Interest_Run_ID()))
-				.shippingNotificationLogId(ModularContractLogEntryId.ofRepoId(interest.getShippingNotification_ModCntr_Log_ID()))
-				.interimInvoiceLogId(ModularContractLogEntryId.ofRepoIdOrNull(interest.getInterimInvoice_ModCntr_Log_ID()))
-
-				.allocatedAmt(Money.of(interest.getMatchedAmt(), currencyId))
-
-				.interestDays(interest.getInterestDays())
-				.finalInterest(Money.ofOrNull(interest.getFinalInterest(), currencyId))
-				.build();
-	}
-
 	@NonNull
 	public Stream<ModularLogInterest> streamInterestEntries(final @NonNull LogInterestQuery query)
 	{
@@ -150,11 +155,6 @@ public class ModularLogInterestRepository
 	{
 		return setSelectionOnQueryBuilder(query, queryBL.createQueryBuilder(I_ModCntr_Log.class))
 				.andCollectChildren(I_ModCntr_Interest.COLUMN_ShippingNotification_ModCntr_Log_ID);
-	}
-
-	private static IQueryBuilder<I_ModCntr_Log> setSelectionOnQueryBuilder(final @NonNull LogInterestQuery query, final IQueryBuilder<I_ModCntr_Log> modCntrLogQueryBuilder)
-	{
-		return modCntrLogQueryBuilder.setOnlySelection(query.modularLogSelection());
 	}
 
 	@Builder

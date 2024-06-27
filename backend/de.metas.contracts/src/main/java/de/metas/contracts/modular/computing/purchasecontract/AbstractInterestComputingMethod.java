@@ -147,9 +147,9 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 		final Money amount = streamInterestRecords(request)
 				.peek(interestLog -> {
 					logEntryIdsCollector.add(interestLog.getShippingNotificationLogId());
-					if (interestLog.getInterimInvoiceLogId() != null)
+					if (interestLog.getInterimContractLogId() != null)
 					{
-						logEntryIdsCollector.add(interestLog.getInterimInvoiceLogId());
+						logEntryIdsCollector.add(interestLog.getInterimContractLogId());
 					}
 				})
 				.map(ModularLogInterest::getFinalInterest)

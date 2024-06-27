@@ -161,6 +161,11 @@ public class ModularContractLogService
 		return modularContractLogDAO.streamModularContractLogEntries(query);
 	}
 
+	public boolean anyMatch(@NonNull final ModularContractLogQuery query)
+	{
+		return modularContractLogDAO.anyMatch(query);
+	}
+
 	@NonNull
 	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final ModularContractLogQuery query)
 	{

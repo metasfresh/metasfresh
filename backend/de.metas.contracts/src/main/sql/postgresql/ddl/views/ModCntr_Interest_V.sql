@@ -56,7 +56,7 @@ SELECT mi.modcntr_interest_id      AS modcntr_interest_v_id,
        s.addinterestdays,
        s.interestrate,
        ABS(interim_amt)            AS InterimAmt,
-       mi.matchedamt,
+       mi.matchedamt, -- drop
        matchedAmts.matched_amt     AS TotalAmt,
        mi.interestdays,
        mi.interestscore,

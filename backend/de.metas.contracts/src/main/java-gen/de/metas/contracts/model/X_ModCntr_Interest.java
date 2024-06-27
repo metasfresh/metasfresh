@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ModCntr_Interest
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCntr_Interest, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 925058310L;
+	private static final long serialVersionUID = -155570422L;
 
     /** Standard Constructor */
     public X_ModCntr_Interest (final Properties ctx, final int ModCntr_Interest_ID, @Nullable final String trxName)
@@ -89,31 +89,58 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public I_ModCntr_Log getInterimInvoice_ModCntr_Log()
+	public de.metas.contracts.model.I_ModCntr_Log getInterimContract_ModCntr_Log()
 	{
-		return get_ValueAsPO(COLUMNNAME_InterimInvoice_ModCntr_Log_ID, I_ModCntr_Log.class);
+		return get_ValueAsPO(COLUMNNAME_InterimContract_ModCntr_Log_ID, de.metas.contracts.model.I_ModCntr_Log.class);
 	}
 
 	@Override
-	public void setInterimInvoice_ModCntr_Log(final I_ModCntr_Log InterimInvoice_ModCntr_Log)
+	public void setInterimContract_ModCntr_Log(final de.metas.contracts.model.I_ModCntr_Log InterimContract_ModCntr_Log)
 	{
-		set_ValueFromPO(COLUMNNAME_InterimInvoice_ModCntr_Log_ID, I_ModCntr_Log.class, InterimInvoice_ModCntr_Log);
+		set_ValueFromPO(COLUMNNAME_InterimContract_ModCntr_Log_ID, de.metas.contracts.model.I_ModCntr_Log.class, InterimContract_ModCntr_Log);
 	}
 
 	@Override
-	public void setInterimInvoice_ModCntr_Log_ID (final int InterimInvoice_ModCntr_Log_ID)
+	public void setInterimContract_ModCntr_Log_ID (final int InterimContract_ModCntr_Log_ID)
 	{
-		if (InterimInvoice_ModCntr_Log_ID < 1) 
-			set_Value (COLUMNNAME_InterimInvoice_ModCntr_Log_ID, null);
+		if (InterimContract_ModCntr_Log_ID < 1) 
+			set_Value (COLUMNNAME_InterimContract_ModCntr_Log_ID, null);
 		else 
-			set_Value (COLUMNNAME_InterimInvoice_ModCntr_Log_ID, InterimInvoice_ModCntr_Log_ID);
+			set_Value (COLUMNNAME_InterimContract_ModCntr_Log_ID, InterimContract_ModCntr_Log_ID);
 	}
 
 	@Override
-	public int getInterimInvoice_ModCntr_Log_ID() 
+	public int getInterimContract_ModCntr_Log_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_InterimInvoice_ModCntr_Log_ID);
+		return get_ValueAsInt(COLUMNNAME_InterimContract_ModCntr_Log_ID);
 	}
+
+	// @Override
+	// public de.metas.contracts.model.I_ModCntr_Log getInterimInvoice_ModCntr_Log()
+	// {
+	// 	return get_ValueAsPO(COLUMNNAME_InterimInvoice_ModCntr_Log_ID, de.metas.contracts.model.I_ModCntr_Log.class);
+	// }
+	//
+	// @Override
+	// public void setInterimInvoice_ModCntr_Log(final de.metas.contracts.model.I_ModCntr_Log InterimInvoice_ModCntr_Log)
+	// {
+	// 	set_ValueFromPO(COLUMNNAME_InterimInvoice_ModCntr_Log_ID, de.metas.contracts.model.I_ModCntr_Log.class, InterimInvoice_ModCntr_Log);
+	// }
+	//
+	// @Override
+	// public void setInterimInvoice_ModCntr_Log_ID (final int InterimInvoice_ModCntr_Log_ID)
+	// {
+	// 	if (InterimInvoice_ModCntr_Log_ID < 1)
+	// 		set_Value (COLUMNNAME_InterimInvoice_ModCntr_Log_ID, null);
+	// 	else
+	// 		set_Value (COLUMNNAME_InterimInvoice_ModCntr_Log_ID, InterimInvoice_ModCntr_Log_ID);
+	// }
+	//
+	// @Override
+	// public int getInterimInvoice_ModCntr_Log_ID()
+	// {
+	// 	return get_ValueAsInt(COLUMNNAME_InterimInvoice_ModCntr_Log_ID);
+	// }
 
 	@Override
 	public void setMatchedAmt (final BigDecimal MatchedAmt)
@@ -144,15 +171,15 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public I_ModCntr_Interest_Run getModCntr_Interest_Run()
+	public de.metas.contracts.model.I_ModCntr_Interest_Run getModCntr_Interest_Run()
 	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_Interest_Run_ID, I_ModCntr_Interest_Run.class);
+		return get_ValueAsPO(COLUMNNAME_ModCntr_Interest_Run_ID, de.metas.contracts.model.I_ModCntr_Interest_Run.class);
 	}
 
 	@Override
-	public void setModCntr_Interest_Run(final I_ModCntr_Interest_Run ModCntr_Interest_Run)
+	public void setModCntr_Interest_Run(final de.metas.contracts.model.I_ModCntr_Interest_Run ModCntr_Interest_Run)
 	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_Interest_Run_ID, I_ModCntr_Interest_Run.class, ModCntr_Interest_Run);
+		set_ValueFromPO(COLUMNNAME_ModCntr_Interest_Run_ID, de.metas.contracts.model.I_ModCntr_Interest_Run.class, ModCntr_Interest_Run);
 	}
 
 	@Override
@@ -171,15 +198,15 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public I_ModCntr_Log getShippingNotification_ModCntr_Log()
+	public de.metas.contracts.model.I_ModCntr_Log getShippingNotification_ModCntr_Log()
 	{
-		return get_ValueAsPO(COLUMNNAME_ShippingNotification_ModCntr_Log_ID, I_ModCntr_Log.class);
+		return get_ValueAsPO(COLUMNNAME_ShippingNotification_ModCntr_Log_ID, de.metas.contracts.model.I_ModCntr_Log.class);
 	}
 
 	@Override
-	public void setShippingNotification_ModCntr_Log(final I_ModCntr_Log ShippingNotification_ModCntr_Log)
+	public void setShippingNotification_ModCntr_Log(final de.metas.contracts.model.I_ModCntr_Log ShippingNotification_ModCntr_Log)
 	{
-		set_ValueFromPO(COLUMNNAME_ShippingNotification_ModCntr_Log_ID, I_ModCntr_Log.class, ShippingNotification_ModCntr_Log);
+		set_ValueFromPO(COLUMNNAME_ShippingNotification_ModCntr_Log_ID, de.metas.contracts.model.I_ModCntr_Log.class, ShippingNotification_ModCntr_Log);
 	}
 
 	@Override
