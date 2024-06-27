@@ -280,10 +280,12 @@ export function clearMasterData() {
   };
 }
 
-export function sortTab(scope, tabId, field, asc) {
+export function sortTab({ scope, windowId, docId, tabId, field, asc }) {
   return {
     type: SORT_TAB,
     scope,
+    windowId,
+    docId,
     tabId,
     field,
     asc,
@@ -416,14 +418,16 @@ export function fetchTab({ tabId, windowId, docId, orderBy }) {
     const tableId = getTableId({ windowId, tabId, docId });
     dispatch(updateTabTable({ tableId, pending: true }));
     return getTabRequest(tabId, windowId, docId, orderBy)
-      .then((response) => {
-        const tableData = { result: response };
-
+      .then(({ rows, orderBys }) => {
         dispatch(
-          updateTabTable({ tableId, tableResponse: tableData, pending: false })
+          updateTabTable({
+            tableId,
+            tableResponse: { result: rows, orderBys },
+            pending: false,
+          })
         );
 
-        return Promise.resolve(response);
+        return rows;
       })
       .catch((error) => {
         //show error message ?
