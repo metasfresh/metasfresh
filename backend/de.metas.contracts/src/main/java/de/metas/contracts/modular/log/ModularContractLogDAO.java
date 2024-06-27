@@ -39,6 +39,7 @@ import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
@@ -74,7 +75,6 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZoneId;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Function;
@@ -222,7 +222,7 @@ public class ModularContractLogDAO
 	{
 		final I_ModCntr_Log oldLog = reverseOldLog(request);
 
-		final I_ModCntr_Log reversedLog = createReverseLog( oldLog, request.description());
+		final I_ModCntr_Log reversedLog = createReverseLog(oldLog, request.description());
 
 		return ModularContractLogEntryId.ofRepoId(reversedLog.getModCntr_Log_ID());
 	}
@@ -383,9 +383,9 @@ public class ModularContractLogDAO
 
 			sqlQueryBuilder.addInSubQueryFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID, moduleFilter);
 		}
-		if (query.getInvoiceCandidateId() != null)
+		if (!query.getInvoiceCandidateIds().isEmpty())
 		{
-			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, query.getInvoiceCandidateId());
+			sqlQueryBuilder.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, query.getInvoiceCandidateIds());
 		}
 
 		if (query.getBillable() != null)
@@ -523,10 +523,38 @@ public class ModularContractLogDAO
 		}
 	}
 
-	public void unprocessLogsForICs(@NonNull final ModularContractLogQuery query, @NonNull final Collection<InvoiceCandidateId> candidateIds)
+	public void unprocessLogs(@NonNull final ModularContractLogQuery query)
 	{
 		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query)
-				.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, candidateIds)
+				.create();
+		final ImmutableSet<ModularContractLogEntryId> logEntryIDs = sqlQuery.listIds(ModularContractLogEntryId::ofRepoId);
+		if (!logEntryIDs.isEmpty())
+		{
+			final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(sqlQuery.copy().first(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, Integer.class));
+			unprocessUninvoicedZeroPricedLogsForContractId(query.toBuilder()
+					.flatrateTermId(flatrateTermId)
+					.clearInvoiceCandidateIds()
+					.build());
+			sqlQuery.updateDirectly()
+					.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, false)
+					.setExecuteDirectly(true)
+					.execute();
+			CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
+					I_ModCntr_Log.Table_Name,
+					logEntryIDs));
+		}
+	}
+
+	/**
+	 * Logs having price 0 will be marked as processed when an invoice is generated for them, however there will be no I_C_Invoice_Line_Alloc.
+	 * As such, when unprocessing logs for some computing method types, we should also unprocess logs of the same computing method types, that are linked to unprocessed ICs.
+	 */
+	private void unprocessUninvoicedZeroPricedLogsForContractId(final @NonNull ModularContractLogQuery query)
+	{
+		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query)
+				.addInSubQueryFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+						.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
+						.create())
 				.create();
 		final ImmutableSet<ModularContractLogEntryId> logEntryIDs = sqlQuery.listIds(ModularContractLogEntryId::ofRepoId);
 		if (!logEntryIDs.isEmpty())

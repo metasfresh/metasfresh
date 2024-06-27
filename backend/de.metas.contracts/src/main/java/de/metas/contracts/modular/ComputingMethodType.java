@@ -78,6 +78,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	SvCo("SvCo"),
 	SvProcessed("SvProcessed");
 
+	public static final ImmutableList<ComputingMethodType> INTERIM_INVOICE_SPECIFIC_METHODS = ImmutableList.of(INTERIM_CONTRACT);
+
 	public static final ImmutableList<ComputingMethodType> DEFINITIVE_INVOICE_SPECIFIC_METHODS = ImmutableList.of(DefinitiveInvoiceRawProduct,
 			DefinitiveInvoiceProcessedProduct);
 	public static final ImmutableList<ComputingMethodType> FINAL_INVOICE_SPECIFIC_METHODS = ImmutableList.of(INTERIM_CONTRACT,
