@@ -24,6 +24,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.Callout.RecursionAvoidanceLevel;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -82,7 +83,7 @@ public class C_Campaign_Price
 	}
 
 	@CalloutMethod(columnNames = I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID, skipIfCopying = true)
-	public void onBPartnerChanged(final I_C_Campaign_Price record)
+	public void onBPartnerChanged(final I_C_Campaign_Price record, final ICalloutField field)
 	{
 		if (record == null)
 		{
@@ -95,11 +96,11 @@ public class C_Campaign_Price
 			return;
 		}
 
-		updatePricingInfo(record);
+		updatePricingInfo(record, field);
 		record.setC_BP_Group_ID(-1);
 	}
 
-	private void updatePricingInfo(final I_C_Campaign_Price record)
+	private void updatePricingInfo(final I_C_Campaign_Price record, final ICalloutField field)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
 		if (bpartnerId == null)
@@ -147,7 +148,9 @@ public class C_Campaign_Price
 				}
 				else
 				{
+					record.setC_BPartner_ID(-1);
 					record.setM_PricingSystem_ID(-1);
+					field.fireDataStatusEEvent("ProductNotOnPriceList", "0", true);
 				}
 			}
 		}
@@ -191,7 +194,7 @@ public class C_Campaign_Price
 	}
 
 	@CalloutMethod(columnNames = I_C_Campaign_Price.COLUMNNAME_M_Product_ID, skipIfCopying = true)
-	public void onProductChanged(final I_C_Campaign_Price record)
+	public void onProductChanged(final I_C_Campaign_Price record, final ICalloutField field)
 	{
 		final ProductId productId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
 		if (productId == null)
@@ -202,7 +205,7 @@ public class C_Campaign_Price
 		final UomId stockUomId = productBL.getStockUOMId(productId);
 		record.setC_UOM_ID(stockUomId.getRepoId());
 
-		updatePricingInfo(record);
+		updatePricingInfo(record, field);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID, I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID, I_C_Campaign_Price.COLUMNNAME_M_PricingSystem_ID })
