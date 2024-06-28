@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.compiere.util;
 
 import com.google.common.base.Stopwatch;
@@ -25,9 +47,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.Period;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -2280,4 +2304,44 @@ public class TimeUtil
 		final LocalDate localDate = asLocalDate(instant, zoneId);
 		return asEndOfDayInstant(localDate, zoneId);
 	}
+
+	/**
+	 * Compute the days between two dates as if each year is 360 days long.
+	 * More details and an implementation for Excel can be found in {@link org.apache.poi.ss.formula.functions.Days360}
+	 */
+	public static long getDaysBetween360(@NonNull final ZonedDateTime from, @NonNull final ZonedDateTime to)
+	{
+		if (to.isBefore(from))
+		{
+			throw new IllegalArgumentException();
+		}
+		ZonedDateTime dayFrom = from;
+		ZonedDateTime dayTo = to;
+
+		if (dayFrom.getDayOfMonth() == 31)// || isLastDayOfFebruary(dayFrom))
+		{
+			dayFrom = dayFrom.withDayOfMonth(30);
+		}
+		if (dayTo.getDayOfMonth() == 31)// || isLastDayOfFebruary(dayTo))
+		{
+			dayTo = dayTo.withDayOfMonth(30);
+		}
+
+		long months = ChronoUnit.MONTHS.between(
+				YearMonth.from(dayFrom), YearMonth.from(dayTo));
+
+		int daysLeft = dayTo.getDayOfMonth() - dayFrom.getDayOfMonth();
+
+		return 30 * months + daysLeft;
+	}
+
+	/**
+	 * Compute the days between two dates as if each year is 360 days long.
+	 * More details and an implementation for Excel can be found in {@link org.apache.poi.ss.formula.functions.Days360}
+	 */
+	public static long getDaysBetween360(@NonNull final Instant from, @NonNull final Instant to)
+	{
+		return getDaysBetween360(from, to);
+	}
+
 }    // TimeUtil
