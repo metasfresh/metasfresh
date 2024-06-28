@@ -293,6 +293,17 @@
                             <generateDirectory>src/main/java-xjc</generateDirectory>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>customerregistration</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatePackage>de.metas.postfinance.customerregistration</generatePackage>
+                            <schemaDirectory>${project.basedir}/src/main/resources/de/metas/postfinance/customerregistration/</schemaDirectory>
+                            <generateDirectory>src/main/java-xjc</generateDirectory>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

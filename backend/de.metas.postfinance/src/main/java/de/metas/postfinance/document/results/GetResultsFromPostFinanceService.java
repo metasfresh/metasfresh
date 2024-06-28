@@ -37,6 +37,7 @@ import de.metas.postfinance.docoutboundlog.PostFinanceLogRepository;
 import de.metas.postfinance.document.export.PostFinanceExportException;
 import de.metas.postfinance.jaxb.DownloadFile;
 import de.metas.postfinance.processprotocol.Envelope;
+import de.metas.postfinance.processprotocol.TransactionDetailType;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -78,8 +79,9 @@ public class GetResultsFromPostFinanceService
 				final ByteArrayInputStream inputStream = new ByteArrayInputStream(file.getData().getValue());
 
 				final Envelope envelope = (Envelope)unmarshaller.unmarshal(inputStream);
+				final List<TransactionDetailType> transactionDetailTypes = envelope.getTransactionDetails();
+				transactionDetailTypes.forEach(transactionDetail -> handleTransactionDetails(transactionDetail, attachmentEntryCreateRequest));
 
-				handleTransactionDetails(envelope.getTransactionDetails(), attachmentEntryCreateRequest);
 			}
 			catch (final JAXBException e)
 			{
@@ -89,7 +91,7 @@ public class GetResultsFromPostFinanceService
 		});
 	}
 
-	private void handleTransactionDetails(@NonNull final Envelope.TransactionDetails transactionDetails,
+	private void handleTransactionDetails(@NonNull final TransactionDetailType transactionDetails,
 			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
 		if(EnumUtils.isValidEnum(ProcessingStatusWithError.class, transactionDetails.getStatus()))
@@ -102,7 +104,7 @@ public class GetResultsFromPostFinanceService
 		}
 	}
 
-	private void handleResultsWithErrors(@NonNull final Envelope.TransactionDetails transactionDetails,
+	private void handleResultsWithErrors(@NonNull final TransactionDetailType transactionDetails,
 			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
 		final String transactionID = transactionDetails.getTransactionID();
@@ -138,7 +140,7 @@ public class GetResultsFromPostFinanceService
 
 	}
 
-	private void handleValidResults(@NonNull final Envelope.TransactionDetails transactionDetails,
+	private void handleValidResults(@NonNull final TransactionDetailType transactionDetails,
 			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
 		final String transactionID = transactionDetails.getTransactionID();

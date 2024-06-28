@@ -380,7 +380,7 @@ Optional for COMPANY</xs:documentation>
 						<xs:restriction base="xs:string">
 							<xs:minLength value="1"/>
 							<xs:maxLength value="255"/>
-							<xs:pattern value="[\w-\.]+@([\w-]+\.)+[\w-]{2,4}"/>
+							<xs:pattern value="[\w\-]+@([\w\-]+\.)+[\w\-]{2,4}"/><!-- modified regex added escape \ before '-' to avoid '-' InvalidRegex: Pattern value is an invalid character-->
 						</xs:restriction>
 					</xs:simpleType>
 				</xs:element>
