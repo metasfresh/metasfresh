@@ -6,6 +6,7 @@ FROM AD_Column c
 WHERE f.AD_Column_ID=c.AD_Column_ID
   AND f.AD_Reference_ID IS NOT NULL
   AND f.AD_Reference_ID=c.AD_Reference_ID
+  AND c.AD_Reference_ID IN (18, 19)
 ;
 
 UPDATE AD_Column
