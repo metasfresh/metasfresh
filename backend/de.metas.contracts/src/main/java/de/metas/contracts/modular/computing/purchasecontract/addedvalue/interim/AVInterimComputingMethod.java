@@ -22,19 +22,36 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.addedvalue.interim;
 
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.flatrate.TypeConditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.purchasecontract.AbstractInterestComputingMethod;
 import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.lang.SOTrx;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.shippingnotification.ShippingNotificationRepository;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 {
+
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+
 	public AVInterimComputingMethod(
 			@NonNull final ShippingNotificationRepository shippingNotificationRepository,
 			@NonNull final ModularContractProvider contractProvider,
@@ -49,5 +66,35 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return ComputingMethodType.AddValueOnInterim;
+	}
+
+	@Override
+	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
+	{
+		if (!logEntryContractType.isModularContractType())
+		{
+			return false;
+		}
+		if (recordRef.tableNameEqualsTo(I_C_Flatrate_Term.Table_Name))
+		{
+
+			if (!logEntryContractType.isInterimContractType()) {return false;}
+			final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
+			if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isInterimContractType())
+			{
+				return false;
+			}
+
+			final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(flatrateTermRecord.getC_OrderLine_Term_ID());
+			if (orderLineId == null)
+			{
+				return false;
+			}
+
+			final OrderId orderId = orderLineBL.getOrderIdByOrderLineId(orderLineId);
+			return SOTrx.ofBoolean(orderBL.getById(orderId).isSOTrx()).isPurchase();
+		}
+
+		return false;
 	}
 }

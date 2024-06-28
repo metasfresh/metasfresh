@@ -24,28 +24,28 @@ package de.metas.contracts.modular.computing.purchasecontract.addedvalue.interim
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.contracts.modular.workpackage.impl.AbstractInterimInvoiceLineLog;
+import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.LogEntryDocumentType;
+import de.metas.contracts.modular.workpackage.impl.AbstractPurchaseContractHandler;
 import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 @Getter
-public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
+public class InterimContractLog extends AbstractPurchaseContractHandler
 {
-	private final AVInterimComputingMethod computingMethod;
 
-	// TODO: Replace with interim contract log
-	public InterimInvoiceLineLog(
+	@NonNull private final AVInterimComputingMethod computingMethod;
+	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.CONTRACT_PREFINANCING;
+	@NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.MODULAR_CONTRACT;
+
+	public InterimContractLog(
 			@NonNull final ModularContractService modularContractService,
-			@NonNull final ModularContractLogDAO contractLogDAO,
-			@NonNull final ModularContractLogService modularContractLogService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final AVInterimComputingMethod computingMethod)
 	{
-		super(modularContractService, contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository);
+		super(modularContractService, modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
 	}
 }
