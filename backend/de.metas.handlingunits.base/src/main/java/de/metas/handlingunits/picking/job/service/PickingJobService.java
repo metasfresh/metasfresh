@@ -118,6 +118,7 @@ public class PickingJobService
 	public PickingJobCompleteCommand.PickingJobCompleteCommandBuilder prepareToComplete(@NonNull final PickingJob pickingJob)
 	{
 		return PickingJobCompleteCommand.builder()
+				.pickingJobService(this)
 				.pickingJobRepository(pickingJobRepository)
 				.pickingJobLockService(pickingJobLockService)
 				.pickingSlotService(pickingSlotService)
