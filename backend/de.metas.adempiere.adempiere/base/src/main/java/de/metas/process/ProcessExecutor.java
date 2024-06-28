@@ -144,6 +144,9 @@ public final class ProcessExecutor
 		if (pi.getProcessClassInfo().isRunOutOfTransaction()
 				&& trxManager.hasThreadInheritedTrx())
 		{
+			// IMPORTANT: take a snapshot of current context to make sure important properties like AD_User_ID,AD_Role_ID,etc. are preserved
+			pi.snapshotCtx();
+			
 			final Thread thread = new Thread(this::executeNow);
 			thread.setName(buildThreadName());
 			logger.debug("Starting thread with name={}", thread.getName());

@@ -158,7 +158,7 @@ public final class ProcessInfo implements Serializable
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
 
-	private final Properties ctx;
+	private Properties ctx;
 
 	/**
 	 * Title of the Process/Report
@@ -280,6 +280,11 @@ public final class ProcessInfo implements Serializable
 	public Properties getCtx()
 	{
 		return Env.coalesce(ctx);
+	}
+
+	public void snapshotCtx()
+	{
+		this.ctx = Env.copyCtx(getCtx());
 	}
 
 	/**
@@ -535,7 +540,7 @@ public final class ProcessInfo implements Serializable
 		return AdWindowId.toRepoId(getAdWindowId());
 	}
 
-	public boolean isInvokedByScheduler() { return invokedBySchedulerId != null; }
+	public boolean isInvokedByScheduler() {return invokedBySchedulerId != null;}
 
 	private static ImmutableList<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
 	{
@@ -1551,7 +1556,7 @@ public final class ProcessInfo implements Serializable
 
 		public AdSchedulerId getInvokedBySchedulerId()
 		{
-			if(invokedBySchedulerId != null)
+			if (invokedBySchedulerId != null)
 			{
 				return invokedBySchedulerId;
 			}
