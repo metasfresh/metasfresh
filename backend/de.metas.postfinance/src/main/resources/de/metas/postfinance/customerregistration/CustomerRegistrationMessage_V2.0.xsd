@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ #%L
+  ~ de.metas.postfinance
+  ~ %%
+  ~ Copyright (C) 2024 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<!-- edited with XMLSpy v2019 rel. 3 sp1 (x64) (http://www.altova.com) by Post CH AG (Post CH AG) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified" attributeFormDefault="unqualified" vc:minVersion="1.1">
+	<xs:element name="CustomerRegistrationMessage">
+		<xs:annotation>
+			<xs:documentation>Comment describing your root element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="CustomerRegistration" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="version" type="xs:string" use="required" fixed="2.0"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="CustomerRegistration">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="SubscriptionType">
+					<xs:annotation>
+						<xs:documentation>1=Anmeldung, Registration
+2=Direktanmeldung, DirectRegistration
+3=Abmeldung, Deregistration</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:NMTOKEN">
+							<xs:pattern value="\d{1}"/>
+							<xs:enumeration value="1"/>
+							<xs:enumeration value="2"/>
+							<xs:enumeration value="3"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="BillerID">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:maxLength value="17"/>
+							<xs:minLength value="17"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="RecipientID">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:minLength value="17"/>
+							<xs:maxLength value="17"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="RecipientType">
+					<xs:annotation>
+						<xs:documentation>PRIVATE, COMPANY</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:NMTOKEN">
+							<xs:enumeration value="PRIVATE"/>
+							<xs:enumeration value="COMPANY"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="Language">
+					<xs:simpleType>
+						<xs:restriction base="xs:NMTOKEN">
+							<xs:enumeration value="de"/>
+							<xs:enumeration value="fr"/>
+							<xs:enumeration value="it"/>
+							<xs:enumeration value="en"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="CustomerNameAddress">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:choice>
+								<xs:element ref="NamePrivate"/>
+								<xs:element ref="NameCompany"/>
+							</xs:choice>
+							<xs:element name="Address">
+								<xs:annotation>
+									<xs:documentation>If there ist no address or PO box, a '-' is sent</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:minLength value="1"/>
+										<xs:maxLength value="70"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="Zip">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:minLength value="1"/>
+										<xs:maxLength value="70"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="City">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:minLength value="1"/>
+										<xs:maxLength value="70"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="Country">
+								<xs:simpleType>
+									<xs:restriction base="xs:NMTOKEN">
+										<xs:enumeration value="AF"/>
+										<xs:enumeration value="AL"/>
+										<xs:enumeration value="DZ"/>
+										<xs:enumeration value="AS"/>
+										<xs:enumeration value="AD"/>
+										<xs:enumeration value="AO"/>
+										<xs:enumeration value="AI"/>
+										<xs:enumeration value="AQ"/>
+										<xs:enumeration value="AG"/>
+										<xs:enumeration value="AR"/>
+										<xs:enumeration value="AM"/>
+										<xs:enumeration value="AW"/>
+										<xs:enumeration value="AU"/>
+										<xs:enumeration value="AT"/>
+										<xs:enumeration value="AZ"/>
+										<xs:enumeration value="BS"/>
+										<xs:enumeration value="BH"/>
+										<xs:enumeration value="BD"/>
+										<xs:enumeration value="BB"/>
+										<xs:enumeration value="BY"/>
+										<xs:enumeration value="BE"/>
+										<xs:enumeration value="BZ"/>
+										<xs:enumeration value="BJ"/>
+										<xs:enumeration value="BM"/>
+										<xs:enumeration value="BT"/>
+										<xs:enumeration value="BO"/>
+										<xs:enumeration value="BA"/>
+										<xs:enumeration value="BW"/>
+										<xs:enumeration value="BV"/>
+										<xs:enumeration value="BR"/>
+										<xs:enumeration value="IO"/>
+										<xs:enumeration value="BN"/>
+										<xs:enumeration value="BG"/>
+										<xs:enumeration value="BF"/>
+										<xs:enumeration value="BI"/>
+										<xs:enumeration value="KH"/>
+										<xs:enumeration value="CM"/>
+										<xs:enumeration value="CA"/>
+										<xs:enumeration value="CV"/>
+										<xs:enumeration value="KY"/>
+										<xs:enumeration value="CF"/>
+										<xs:enumeration value="TD"/>
+										<xs:enumeration value="CL"/>
+										<xs:enumeration value="CN"/>
+										<xs:enumeration value="CX"/>
+										<xs:enumeration value="CC"/>
+										<xs:enumeration value="CO"/>
+										<xs:enumeration value="KM"/>
+										<xs:enumeration value="CG"/>
+										<xs:enumeration value="CD"/>
+										<xs:enumeration value="CK"/>
+										<xs:enumeration value="CR"/>
+										<xs:enumeration value="CI"/>
+										<xs:enumeration value="HR"/>
+										<xs:enumeration value="CU"/>
+										<xs:enumeration value="CY"/>
+										<xs:enumeration value="CZ"/>
+										<xs:enumeration value="DK"/>
+										<xs:enumeration value="DJ"/>
+										<xs:enumeration value="DM"/>
+										<xs:enumeration value="DO"/>
+										<xs:enumeration value="TP"/>
+										<xs:enumeration value="EC"/>
+										<xs:enumeration value="EG"/>
+										<xs:enumeration value="SV"/>
+										<xs:enumeration value="GQ"/>
+										<xs:enumeration value="ER"/>
+										<xs:enumeration value="EE"/>
+										<xs:enumeration value="ET"/>
+										<xs:enumeration value="FK"/>
+										<xs:enumeration value="FO"/>
+										<xs:enumeration value="FJ"/>
+										<xs:enumeration value="FI"/>
+										<xs:enumeration value="FR"/>
+										<xs:enumeration value="GF"/>
+										<xs:enumeration value="PF"/>
+										<xs:enumeration value="TF"/>
+										<xs:enumeration value="GA"/>
+										<xs:enumeration value="GM"/>
+										<xs:enumeration value="GE"/>
+										<xs:enumeration value="DE"/>
+										<xs:enumeration value="GH"/>
+										<xs:enumeration value="GI"/>
+										<xs:enumeration value="GR"/>
+										<xs:enumeration value="GL"/>
+										<xs:enumeration value="GD"/>
+										<xs:enumeration value="GP"/>
+										<xs:enumeration value="GU"/>
+										<xs:enumeration value="GT"/>
+										<xs:enumeration value="GN"/>
+										<xs:enumeration value="GW"/>
+										<xs:enumeration value="GY"/>
+										<xs:enumeration value="HT"/>
+										<xs:enumeration value="HM"/>
+										<xs:enumeration value="VA"/>
+										<xs:enumeration value="HN"/>
+										<xs:enumeration value="HK"/>
+										<xs:enumeration value="HU"/>
+										<xs:enumeration value="IS"/>
+										<xs:enumeration value="IN"/>
+										<xs:enumeration value="ID"/>
+										<xs:enumeration value="IR"/>
+										<xs:enumeration value="IQ"/>
+										<xs:enumeration value="IE"/>
+										<xs:enumeration value="IL"/>
+										<xs:enumeration value="IT"/>
+										<xs:enumeration value="JM"/>
+										<xs:enumeration value="JP"/>
+										<xs:enumeration value="JO"/>
+										<xs:enumeration value="KZ"/>
+										<xs:enumeration value="KE"/>
+										<xs:enumeration value="KI"/>
+										<xs:enumeration value="KP"/>
+										<xs:enumeration value="KR"/>
+										<xs:enumeration value="KW"/>
+										<xs:enumeration value="KG"/>
+										<xs:enumeration value="LA"/>
+										<xs:enumeration value="LV"/>
+										<xs:enumeration value="LB"/>
+										<xs:enumeration value="LS"/>
+										<xs:enumeration value="LR"/>
+										<xs:enumeration value="LY"/>
+										<xs:enumeration value="LI"/>
+										<xs:enumeration value="LT"/>
+										<xs:enumeration value="LU"/>
+										<xs:enumeration value="MO"/>
+										<xs:enumeration value="MK"/>
+										<xs:enumeration value="MG"/>
+										<xs:enumeration value="MW"/>
+										<xs:enumeration value="MY"/>
+										<xs:enumeration value="MV"/>
+										<xs:enumeration value="ML"/>
+										<xs:enumeration value="MT"/>
+										<xs:enumeration value="MH"/>
+										<xs:enumeration value="MQ"/>
+										<xs:enumeration value="MR"/>
+										<xs:enumeration value="MU"/>
+										<xs:enumeration value="YT"/>
+										<xs:enumeration value="MX"/>
+										<xs:enumeration value="FM"/>
+										<xs:enumeration value="MD"/>
+										<xs:enumeration value="MC"/>
+										<xs:enumeration value="MN"/>
+										<xs:enumeration value="MS"/>
+										<xs:enumeration value="MA"/>
+										<xs:enumeration value="MZ"/>
+										<xs:enumeration value="MM"/>
+										<xs:enumeration value="NA"/>
+										<xs:enumeration value="NR"/>
+										<xs:enumeration value="NP"/>
+										<xs:enumeration value="NL"/>
+										<xs:enumeration value="AN"/>
+										<xs:enumeration value="NC"/>
+										<xs:enumeration value="NZ"/>
+										<xs:enumeration value="NI"/>
+										<xs:enumeration value="NE"/>
+										<xs:enumeration value="NG"/>
+										<xs:enumeration value="NU"/>
+										<xs:enumeration value="NF"/>
+										<xs:enumeration value="MP"/>
+										<xs:enumeration value="NO"/>
+										<xs:enumeration value="OM"/>
+										<xs:enumeration value="PK"/>
+										<xs:enumeration value="PW"/>
+										<xs:enumeration value="PS"/>
+										<xs:enumeration value="PA"/>
+										<xs:enumeration value="PG"/>
+										<xs:enumeration value="PY"/>
+										<xs:enumeration value="PE"/>
+										<xs:enumeration value="PH"/>
+										<xs:enumeration value="PN"/>
+										<xs:enumeration value="PL"/>
+										<xs:enumeration value="PT"/>
+										<xs:enumeration value="PR"/>
+										<xs:enumeration value="QA"/>
+										<xs:enumeration value="RE"/>
+										<xs:enumeration value="RO"/>
+										<xs:enumeration value="RU"/>
+										<xs:enumeration value="RW"/>
+										<xs:enumeration value="SH"/>
+										<xs:enumeration value="KN"/>
+										<xs:enumeration value="LC"/>
+										<xs:enumeration value="PM"/>
+										<xs:enumeration value="VC"/>
+										<xs:enumeration value="WS"/>
+										<xs:enumeration value="SM"/>
+										<xs:enumeration value="ST"/>
+										<xs:enumeration value="SA"/>
+										<xs:enumeration value="SN"/>
+										<xs:enumeration value="SC"/>
+										<xs:enumeration value="SL"/>
+										<xs:enumeration value="SG"/>
+										<xs:enumeration value="SK"/>
+										<xs:enumeration value="SI"/>
+										<xs:enumeration value="SB"/>
+										<xs:enumeration value="SO"/>
+										<xs:enumeration value="ZA"/>
+										<xs:enumeration value="GS"/>
+										<xs:enumeration value="ES"/>
+										<xs:enumeration value="LK"/>
+										<xs:enumeration value="SD"/>
+										<xs:enumeration value="SR"/>
+										<xs:enumeration value="SJ"/>
+										<xs:enumeration value="SZ"/>
+										<xs:enumeration value="SE"/>
+										<xs:enumeration value="CH"/>
+										<xs:enumeration value="SY"/>
+										<xs:enumeration value="TW"/>
+										<xs:enumeration value="TJ"/>
+										<xs:enumeration value="TZ"/>
+										<xs:enumeration value="TH"/>
+										<xs:enumeration value="TG"/>
+										<xs:enumeration value="TK"/>
+										<xs:enumeration value="TO"/>
+										<xs:enumeration value="TT"/>
+										<xs:enumeration value="TN"/>
+										<xs:enumeration value="TR"/>
+										<xs:enumeration value="TM"/>
+										<xs:enumeration value="TC"/>
+										<xs:enumeration value="TV"/>
+										<xs:enumeration value="UG"/>
+										<xs:enumeration value="UA"/>
+										<xs:enumeration value="AE"/>
+										<xs:enumeration value="GB"/>
+										<xs:enumeration value="US"/>
+										<xs:enumeration value="UM"/>
+										<xs:enumeration value="UY"/>
+										<xs:enumeration value="UZ"/>
+										<xs:enumeration value="VU"/>
+										<xs:enumeration value="VE"/>
+										<xs:enumeration value="VN"/>
+										<xs:enumeration value="VG"/>
+										<xs:enumeration value="VI"/>
+										<xs:enumeration value="WF"/>
+										<xs:enumeration value="EH"/>
+										<xs:enumeration value="YE"/>
+										<xs:enumeration value="YU"/>
+										<xs:enumeration value="ZM"/>
+										<xs:enumeration value="ZW"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Email" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Required for PRIVATE
+Optional for COMPANY</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:minLength value="1"/>
+							<xs:maxLength value="255"/>
+							<xs:pattern value="[\w\-]+@([\w\-]+\.)+[\w\-]{2,4}"/><!-- modified regex added escape \ before '-' to avoid '-' InvalidRegex: Pattern value is an invalid character-->
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="UID" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Optional for COMPANY</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:length value="12"/>
+							<xs:pattern value="CHE[0-9]{9}"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="CreditAccount" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>contains AccountNumber in case of DirectRegistration</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:maxLength value="34"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="CreditorReference" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>contains structuredReference in case of DirectRegistration</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:maxLength value="27"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="CustomerSubscriptionFormField" type="CustomerSubscriptionFormField" minOccurs="0" maxOccurs="6"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="NamePrivate">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="GivenName">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:minLength value="1"/>
+							<xs:maxLength value="35"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="FamilyName">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:minLength value="1"/>
+							<xs:maxLength value="70"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="NameCompany">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="CompanyName">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:minLength value="1"/>
+							<xs:maxLength value="70"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="CustomerSubscriptionFormField">
+		<xs:sequence>
+			<xs:element name="TechnicalID">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="35"/>
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Value">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="256"/>
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

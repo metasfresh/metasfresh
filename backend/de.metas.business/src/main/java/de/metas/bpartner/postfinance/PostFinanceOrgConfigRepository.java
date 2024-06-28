@@ -38,13 +38,20 @@ public class PostFinanceOrgConfigRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
-	public PostFinanceOrgConfig getByOrgId(@NonNull final OrgId orgId)
+	public PostFinanceOrgConfig getByOrgIdOrError(@NonNull final OrgId orgId)
 	{
 		return getRecordByOrgId(orgId)
 				.map(PostFinanceOrgConfigRepository::toPostFinanceOrgConfig)
 				.orElseThrow(() -> new AdempiereException("No PostFinance config found for OrgId!")
 						.appendParametersToMessage()
 						.setParameter("OrgId", orgId));
+	}
+
+	@NonNull
+	public Optional<PostFinanceOrgConfig> getByOrgId(@NonNull final OrgId orgId)
+	{
+		return getRecordByOrgId(orgId)
+				.map(PostFinanceOrgConfigRepository::toPostFinanceOrgConfig);
 	}
 
 	@NonNull

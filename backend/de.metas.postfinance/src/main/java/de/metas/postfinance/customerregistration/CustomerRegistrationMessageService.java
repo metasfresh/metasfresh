@@ -37,14 +37,12 @@ import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.organization.OrgId;
-import de.metas.postfinance.jaxb.DownloadFile;
-import de.metas.postfinance.customerregistration.model.XmlCustomerRegistration;
-import de.metas.postfinance.customerregistration.model.XmlCustomerSubscriptionFormField;
 import de.metas.postfinance.customerregistration.repository.CustomerRegistrationMessage;
 import de.metas.postfinance.customerregistration.repository.CustomerRegistrationMessageCreateRequest;
 import de.metas.postfinance.customerregistration.repository.CustomerRegistrationMessageQuery;
 import de.metas.postfinance.customerregistration.repository.CustomerRegistrationMessageRepository;
 import de.metas.postfinance.customerregistration.util.XMLUtil;
+import de.metas.postfinance.jaxb.DownloadFile;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -53,9 +51,11 @@ import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static de.metas.postfinance.PostFinanceConstants.CUSTOM_FIELD_BPARTNEREXTERNALREFERENCE;
 import static de.metas.postfinance.PostFinanceConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber;
 
 @Service
@@ -121,8 +121,8 @@ public class CustomerRegistrationMessageService
 	{
 		final AttachmentEntryCreateRequest attachmentEntryCreateRequest = createAttachmentRequest(downloadFile);
 
-		XMLUtil.getXmlCustomerRegistrationMessage(downloadFile)
-				.customerRegistrations()
+		XMLUtil.getCustomerRegistrationMessage(downloadFile)
+				.getCustomerRegistration()
 				.stream()
 				.map(customerRegistration -> toCustomerRegistrationMessageRequest(customerRegistration, attachmentEntryCreateRequest, orgId))
 				.map(customerRegistrationMessageRepository::create)
@@ -146,13 +146,13 @@ public class CustomerRegistrationMessageService
 
 	@NonNull
 	private CustomerRegistrationMessageCreateRequest toCustomerRegistrationMessageRequest(
-			@NonNull final XmlCustomerRegistration customerRegistration,
+			@NonNull final CustomerRegistration customerRegistration,
 			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest,
 			@NonNull final OrgId orgId)
 	{
-		final SubscriptionType subscriptionType = SubscriptionType.ofCode(customerRegistration.subscriptionType()); 
+		final SubscriptionType subscriptionType = SubscriptionType.ofCode(customerRegistration.getSubscriptionType());
 		final CustomerRegistrationMessageCreateRequest.CustomerRegistrationMessageCreateRequestBuilder builder = CustomerRegistrationMessageCreateRequest.builder()
-				.customerEBillId(customerRegistration.recipientId())
+				.customerEBillId(customerRegistration.getRecipientID())
 				.subscriptionType(subscriptionType)
 				.attachmentEntryCreateRequest(attachmentEntryCreateRequest);
 
@@ -168,7 +168,7 @@ public class CustomerRegistrationMessageService
 			}
 			case DIRECT_REGISTRATION ->
 			{
-				final String qrCode = customerRegistration.creditorReference();
+				final String qrCode = customerRegistration.getCreditorReference();
 				return builder
 						.qrCode(qrCode)
 						.bPartnerId(getBPartnerIdByQRCode(qrCode)
@@ -179,7 +179,7 @@ public class CustomerRegistrationMessageService
 			{
 				return builder
 						.qrCode(null)
-						.bPartnerId(postFinanceBPartnerConfigRepository.getByReceiverEBillId(customerRegistration.recipientId())
+						.bPartnerId(postFinanceBPartnerConfigRepository.getByReceiverEBillId(customerRegistration.getRecipientID())
 											.map(PostFinanceBPartnerConfig::getBPartnerId)
 											.orElse(null))
 						.build();
@@ -193,19 +193,23 @@ public class CustomerRegistrationMessageService
 
 	@NonNull
 	private Optional<BPartnerId> getBPartnerIdByExternalId(
-			@NonNull final XmlCustomerRegistration customerRegistration,
+			@NonNull final CustomerRegistration customerRegistration,
 			@NonNull final OrgId orgId)
 	{
-		return customerRegistration.getCustomerExternalId()
-				.map(XmlCustomerSubscriptionFormField::value)
-				.map(externalId -> externalReferenceRepository.getReferencedRecordIdOrNullBy(
-						ExternalReferenceQuery.builder()
-								.orgId(orgId)
-								.externalSystem(OtherExternalSystem.OTHER)
-								.externalReference(externalId)
-								.externalReferenceType(BPartnerExternalReferenceType.BPARTNER)
-								.build()))
-				.map(BPartnerId::ofRepoId);
+		return customerRegistration.getCustomerSubscriptionFormField()
+                .stream()
+                .filter(formField -> CUSTOM_FIELD_BPARTNEREXTERNALREFERENCE.equals(formField.getTechnicalID()))
+                .map(CustomerSubscriptionFormField::getValue)
+                .map(externalId -> externalReferenceRepository.getReferencedRecordIdOrNullBy(
+                        ExternalReferenceQuery.builder()
+                                .orgId(orgId)
+                                .externalSystem(OtherExternalSystem.OTHER)
+                                .externalReference(externalId)
+                                .externalReferenceType(BPartnerExternalReferenceType.BPARTNER)
+                                .build()))
+				.filter(Objects::nonNull)
+				.map(BPartnerId::ofRepoId)
+				.findFirst();
 	}
 
 	@NonNull

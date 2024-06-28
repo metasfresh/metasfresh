@@ -47,8 +47,12 @@ import de.metas.document.archive.model.X_C_Doc_Outbound_Log;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.dunning.DunningDocId;
+import de.metas.dunning.invoice.DunningService;
+import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning_gateway.spi.model.DunningToExport;
 import de.metas.i18n.ILanguageDAO;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice_gateway.spi.model.InvoiceLine;
 import de.metas.invoice_gateway.spi.model.InvoiceTax;
@@ -138,6 +142,7 @@ public class PostFinanceYbInvoiceService
 	@NonNull private final LocationRepository locationRepository;
 	@NonNull private final PostFinanceOrgConfigRepository postFinanceOrgConfigRepository;
 	@NonNull private final PaperBillReferencesRepository paperBillReferencesRepository;
+	@NonNull private final DunningService dunningService;
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
@@ -260,6 +265,12 @@ public class PostFinanceYbInvoiceService
 		docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, X_C_Doc_Outbound_Log.POSTFINANCE_EXPORT_STATUS_Error);
 	}
 
+	public void setPostFinanceStatusForSkipped(@NonNull final TableRecordReference docOutboundLogReference)
+	{
+		final DocOutboundLogId docOutboundLogId = docOutboundLogReference.getIdAssumingTableName(I_C_Doc_Outbound_Log.Table_Name, DocOutboundLogId::ofRepoId);
+		docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, X_C_Doc_Outbound_Log.POSTFINANCE_EXPORT_STATUS_Error); //TODO adjust to will not be sent
+	}
+
 	public Envelope prepareExportData(
 			@NonNull final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest,
 			@NonNull final InvoiceToExport invoiceToExport)
@@ -310,7 +321,7 @@ public class PostFinanceYbInvoiceService
 	{
 		final DeliveryType deliveryType = YB_INVOICE_OBJECT_FACTORY.createDeliveryType();
 		final OrgId orgId = OrgId.ofRepoId(bPartnerBL.getById(invoiceToExport.getBiller().getId()).getAD_OrgBP_ID());
-		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
+		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgIdOrError(orgId);
 
 		final String billerId = postFinanceOrgConfig.getBillerId();
 		try
@@ -535,7 +546,7 @@ public class PostFinanceYbInvoiceService
 		final BillHeaderType.ReceiverParty receiverParty = YB_INVOICE_OBJECT_FACTORY.createBillHeaderTypeReceiverParty();
 
 		final OrgId orgId = OrgId.ofRepoId(bPartnerBL.getById(invoiceToExport.getBiller().getId()).getAD_OrgBP_ID());
-		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
+		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgIdOrError(orgId);
 		final Optional<PostFinanceBPartnerConfig> postFinanceBPartnerConfigOptional = postFinanceBPartnerConfigRepository.getByBPartnerId(invoiceToExport.getRecipient().getId());
 		if(postFinanceBPartnerConfigOptional.isEmpty() && postFinanceOrgConfig.isUsePaperBill())
 		{
@@ -747,5 +758,46 @@ public class PostFinanceYbInvoiceService
 		{
 			throw new PostFinanceExportException("Error converting to XMLGregorianCalendar date", e);
 		}
+	}
+
+	public boolean isPostFinanceActive(@NonNull final PostFinanceYbInvoiceRequest request)
+	{
+		boolean isActive = false;
+		final TableRecordReference recordRef = request.getDocumentReference();
+		switch (recordRef.getTableName())
+		{
+			case I_C_Invoice.Table_Name -> {
+				final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(recordRef.getRecord_ID()));
+				isActive = isPostFinanceActiveForOrgAndBPartner(OrgId.ofRepoId(invoice.getAD_Org_ID()), BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
+			}
+			case I_C_DunningDoc.Table_Name -> {
+				final List<I_C_Invoice> dunnedInvoiceRecords = dunningService.retrieveDunnedInvoices(DunningDocId.ofRepoId(recordRef.getRecord_ID()));
+				if(dunnedInvoiceRecords.size() != 1)
+				{
+					throw new PostFinanceExportException("Only a dunning linked to exactly one invoice is supported");
+				}
+				final I_C_Invoice invoice = dunnedInvoiceRecords.get(0);
+				isActive = isPostFinanceActiveForOrgAndBPartner(OrgId.ofRepoId(invoice.getAD_Org_ID()), BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
+			}
+		}
+
+		if(!isActive)
+		{
+			setPostFinanceStatusForSkipped(recordRef);
+		}
+		return isActive;
+	}
+
+	private boolean isPostFinanceActiveForOrgAndBPartner(@NonNull final OrgId orgId, @NonNull final BPartnerId bPartnerId)
+	{
+		final Optional<PostFinanceOrgConfig> orgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
+		final Optional<PostFinanceBPartnerConfig> partnerConfig = postFinanceBPartnerConfigRepository.getByBPartnerId(bPartnerId);
+		if(orgConfig.isEmpty())
+		{
+			return false;
+		}
+		// TODO add other cases
+
+		return true;
 	}
 }

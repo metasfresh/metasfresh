@@ -41,10 +41,10 @@ public class PostFinanceYbInvoiceHandlerFactory
 
 
 	@Nullable
-	public PostFinanceYbInvoiceResponse prepareYbInvoices(@NonNull final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest)
+	public PostFinanceYbInvoiceResponse prepareYbInvoices(@NonNull final PostFinanceYbInvoiceRequest request)
 	{
 		final List<IPostFinanceYbInvoiceHandler> eligibleHandlers = postFinanceYbInvoiceHandlers.stream()
-				.filter(handler -> handler.applies(postFinanceYbInvoiceRequest))
+				.filter(handler -> handler.applies(request))
 				.toList();
 
 		try
@@ -52,6 +52,7 @@ public class PostFinanceYbInvoiceHandlerFactory
 			if(eligibleHandlers.isEmpty())
 			{
 				// ignore docTypes without matching handler
+				postFinanceYbInvoiceService.setPostFinanceStatusForSkipped(request.getDocOutboundLogReference());
 				return null;
 			}
 			else if(eligibleHandlers.size() > 1)
@@ -60,13 +61,13 @@ public class PostFinanceYbInvoiceHandlerFactory
 			}
 			else
 			{
-				return eligibleHandlers.get(0).prepareExportData(postFinanceYbInvoiceRequest);
+				return eligibleHandlers.get(0).prepareExportData(request);
 			}
 		}
 		catch(final PostFinanceExportException e)
 		{
 			logger.log(Level.WARNING, "Exception on post finance export " + e.getMessage(), e);
-			postFinanceYbInvoiceService.handleExceptions(postFinanceYbInvoiceRequest.getDocOutboundLogReference(), e);
+			postFinanceYbInvoiceService.handleExceptions(request.getDocOutboundLogReference(), e);
 			return null;
 		}
 	}
