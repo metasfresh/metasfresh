@@ -57,7 +57,7 @@ public class ModularLogInterestRepository
 
 				.allocatedAmt(Money.of(interest.getMatchedAmt(), currencyId))
 
-				.interestDays(interest.getInterestDays())
+				.interestDays((long)interest.getInterestDays())
 				.finalInterest(Money.ofOrNull(interest.getFinalInterest(), currencyId))
 				.build();
 	}
@@ -80,7 +80,7 @@ public class ModularLogInterestRepository
 		record.setMatchedAmt(allocatedAmt.toBigDecimal());
 		record.setC_Currency_ID(allocatedAmt.getCurrencyId().getRepoId());
 
-		record.setInterestDays(request.getInterestDays());
+		record.setInterestDays(request.getInterestDays().intValue());
 		record.setInterestScore(request.getInterestScore().getScore());
 		record.setFinalInterest(Money.toBigDecimalOrZero(request.getFinalInterest()));
 
@@ -102,7 +102,7 @@ public class ModularLogInterestRepository
 		record.setMatchedAmt(allocatedAmt.toBigDecimal());
 		record.setC_Currency_ID(allocatedAmt.getCurrencyId().getRepoId());
 
-		record.setInterestDays(request.getInterestDays());
+		record.setInterestDays(request.getInterestDays().intValue());
 		record.setInterestScore(request.getInterestScore().getScore());
 		record.setFinalInterest(Money.toBigDecimalOrZero(request.getFinalInterest()));
 

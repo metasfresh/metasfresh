@@ -35,7 +35,6 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -128,14 +127,14 @@ public class InterimContractAllocations
 				.build();
 	}
 
-	private int getInterestDays(@NonNull final AllocationItem shippingNotification)
+	private long getInterestDays(@NonNull final AllocationItem shippingNotification)
 	{
 		final Instant shippingDate = shippingNotification
 				.getShippingNotificationEntry()
 				.getTransactionDate()
 				.toInstant(orgDAO::getTimeZone);
 
-		return TimeUtil.getDaysBetween(Date.from(getInterimDate()), Date.from(shippingDate)) + additionalInterestDays;
+		return TimeUtil.getDaysBetween360(getInterimDate(), shippingDate) + additionalInterestDays;
 	}
 
 	@NonNull

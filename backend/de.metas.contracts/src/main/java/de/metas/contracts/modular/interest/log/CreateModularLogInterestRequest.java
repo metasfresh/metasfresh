@@ -38,7 +38,7 @@ public class CreateModularLogInterestRequest
 	@NonNull InterestRunId interestRunId;
 	@NonNull ModularContractLogEntryId shippingNotificationLogId;
 	@NonNull Money allocatedAmt;
-	@NonNull Integer interestDays;
+	@NonNull Long interestDays;
 	@Nullable ModularContractLogEntryId interimContractLogId;
 	@Nullable Money finalInterest;
 
@@ -47,7 +47,7 @@ public class CreateModularLogInterestRequest
 			@NonNull final InterestRunId interestRunId,
 			@NonNull final ModularContractLogEntryId shippingNotificationLogId,
 			@NonNull final Money allocatedAmt,
-			@NonNull final Integer interestDays,
+			@NonNull final Long interestDays,
 			@Nullable final ModularContractLogEntryId interimContractLogId,
 			@Nullable final Money finalInterest)
 	{

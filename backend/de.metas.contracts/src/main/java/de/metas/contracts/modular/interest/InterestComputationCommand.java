@@ -261,7 +261,7 @@ public class InterestComputationCommand
 					.interestRunId(request.getInterestRunId())
 					.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
 					.allocatedAmt(shippingNotification.getOpenAmount())
-					.interestDays(0)
+					.interestDays((long)1)
 					.finalInterest(Money.zero(request.getInterestToDistribute().getCurrencyId()))
 					.build();
 
@@ -269,7 +269,7 @@ public class InterestComputationCommand
 			return;
 		}
 
-		final int interestDays = request.getBonusComputationDetails().getBonusInterestDays();
+		final long interestDays = request.getBonusComputationDetails().getBonusInterestDays();
 
 		final BigDecimal bonusAmountAsBD = bonusInterestRate.computePercentageOf(shippingNotification.getOpenAmount().toBigDecimal(),
 																				 request.getInterestCurrencyPrecision().toInt())
