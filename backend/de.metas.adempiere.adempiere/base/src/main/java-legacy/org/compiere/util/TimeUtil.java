@@ -2296,11 +2296,11 @@ public class TimeUtil
 		ZonedDateTime dayFrom = from;
 		ZonedDateTime dayTo = to;
 
-		if (dayFrom.getDayOfMonth() == 31)// || isLastDayOfFebruary(dayFrom))
+		if (dayFrom.getDayOfMonth() == 31)
 		{
 			dayFrom = dayFrom.withDayOfMonth(30);
 		}
-		if (dayTo.getDayOfMonth() == 31)// || isLastDayOfFebruary(dayTo))
+		if (dayTo.getDayOfMonth() == 31)
 		{
 			dayTo = dayTo.withDayOfMonth(30);
 		}
