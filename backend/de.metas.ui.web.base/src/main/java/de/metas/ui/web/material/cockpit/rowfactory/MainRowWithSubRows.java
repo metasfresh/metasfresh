@@ -237,6 +237,7 @@ public class MainRowWithSubRows
 	{
 		final MainRowBuilder mainRowBuilder = MaterialCockpitRow.mainRowBuilder()
 				.productId(productIdAndDate.getProductId())
+				.packingInfo(productIdAndDate.getPackingInfo())
 				.date(productIdAndDate.getDate())
 				.qtyMaterialentnahme(mainRow.getQtyMaterialentnahme())
 				.qtyDemandPPOrder(mainRow.getQtyDemandPPOrder())

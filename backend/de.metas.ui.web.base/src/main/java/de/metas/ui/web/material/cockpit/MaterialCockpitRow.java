@@ -6,6 +6,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.dimension.DimensionSpecGroup;
+import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
@@ -41,6 +44,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_S_Resource;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -162,6 +166,15 @@ public class MaterialCockpitRow implements IViewRow
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 			})
 	private final Supplier<LookupValue> uom;
+
+	public static final String FIELDNAME_PackingInfo = I_M_HU.COLUMNNAME_M_HU_PI_Item_Product_ID;
+	@ViewColumn(fieldName = FIELDNAME_PackingInfo, //
+			captionKey = FIELDNAME_PackingInfo, //
+			widgetType = DocumentFieldWidgetType.Text, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 65, //
+					displayed = Displayed.TRUE, displayedSysConfigPrefix = SYSCFG_PREFIX)
+			})
+	private final String packingInfo;
 
 	// Zusage Lieferant
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
@@ -335,6 +348,7 @@ public class MaterialCockpitRow implements IViewRow
 
 	@lombok.Builder(builderClassName = "MainRowBuilder", builderMethodName = "mainRowBuilder")
 	private MaterialCockpitRow(
+			final String packingInfo,
 			final Quantity qtyDemandSalesOrder,
 			final Quantity qtyDemandPPOrder,
 			final Quantity qtyDemandDDOrder,
@@ -361,6 +375,7 @@ public class MaterialCockpitRow implements IViewRow
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
 	{
+		this.packingInfo = packingInfo;
 		this.rowType = DefaultRowType.Row;
 
 		this.date = date;
@@ -394,6 +409,7 @@ public class MaterialCockpitRow implements IViewRow
 		this.uom = () -> lookupFactory
 				.searchInTableLookup(I_C_UOM.Table_Name)
 				.findById(uomRepoId);
+
 		this.manufacturer = () -> lookupFactory
 				.searchInTableLookup(I_C_BPartner.Table_Name)
 				.findById(productRecord.getManufacturer_ID());
@@ -465,6 +481,7 @@ public class MaterialCockpitRow implements IViewRow
 
 	@lombok.Builder(builderClassName = "AttributeSubRowBuilder", builderMethodName = "attributeSubRowBuilder")
 	private MaterialCockpitRow(
+			final String packingInfo,
 			final int productId,
 			final LocalDate date,
 			@NonNull final DimensionSpecGroup dimensionGroup,
@@ -490,6 +507,7 @@ public class MaterialCockpitRow implements IViewRow
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
 	{
+		this.packingInfo = packingInfo;
 		this.rowType = DefaultRowType.Line;
 
 		this.dimensionGroupOrNull = dimensionGroup;
@@ -558,6 +576,7 @@ public class MaterialCockpitRow implements IViewRow
 
 	@lombok.Builder(builderClassName = "CountingSubRowBuilder", builderMethodName = "countingSubRowBuilder")
 	private MaterialCockpitRow(
+			final String packingInfo,
 			final int productId,
 			final LocalDate date,
 			final int plantId,
@@ -571,6 +590,7 @@ public class MaterialCockpitRow implements IViewRow
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
 	{
+		this.packingInfo = packingInfo;
 		this.rowType = DefaultRowType.Line;
 
 		this.dimensionGroupOrNull = null;
