@@ -1,29 +1,10 @@
 package de.metas.handlingunits.process;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.process.AdProcessId;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
-import de.metas.process.PInstanceId;
-import de.metas.process.PInstanceRequest;
 import de.metas.process.Param;
-import de.metas.process.ProcessInfo;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
-import de.metas.report.client.ReportsClient;
-import de.metas.report.server.OutputType;
-import de.metas.report.server.ReportResult;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.SpringContextHolder;
-import org.springframework.core.io.ByteArrayResource;
 
 /*
  * #%L
@@ -52,14 +33,10 @@ import org.springframework.core.io.ByteArrayResource;
  * and then generate the PDF that will contain the QR Code and more detailed product infos.
  */
 
-public class M_HU_Report_Print_Labels extends JavaProcess implements IProcessPrecondition
+public class M_HU_Report_Print_Labels extends M_HU_Report_Print_Template
 {
-	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
-	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	@Param(mandatory = true, parameterName = "AD_Process_ID")
-	private int p_AD_Process_ID;
+	private AdProcessId p_AD_Process_ID;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -73,51 +50,5 @@ public class M_HU_Report_Print_Labels extends JavaProcess implements IProcessPre
 	}
 
 	@Override
-	@RunOutOfTrx
-	protected String doIt()
-	{
-
-		final HuId huId = queryBL.createQueryBuilder(I_M_HU.class)
-				.setOnlySelection(getPinstanceId())
-				.create()
-				.firstId(HuId::ofRepoId);
-
-		generateQrCode(huId);
-
-		// print
-		final ReportResult label = printLabel(huId);
-
-		getResult().setReportData(new ByteArrayResource(label.getReportContent()), label.getReportFilename(), OutputType.PDF.getContentType());
-
-		return MSG_OK;
-	}
-
-	private void generateQrCode(@NonNull final HuId huId)
-	{
-		huQRCodesService.generateForExistingHU(huId);
-	}
-
-	private ReportResult printLabel(@NonNull final HuId huId)
-	{
-		final AdProcessId processId = AdProcessId.ofRepoId(p_AD_Process_ID);
-
-		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(
-				PInstanceRequest.builder()
-						.processId(processId)
-						.processParams(ImmutableList.of(ProcessInfoParameter.of(I_M_HU.COLUMNNAME_M_HU_ID, huId)
-						))
-						.build());
-
-		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
-				.setCtx(getCtx())
-				.setAD_Process_ID(processId)
-				.setAD_PInstance(adPInstanceDAO.getById(pinstanceId))
-				.setReportLanguage(getProcessInfo().getReportLanguage())
-				.setJRDesiredOutputType(OutputType.PDF)
-				.build();
-
-		final ReportsClient reportsClient = ReportsClient.get();
-
-		return reportsClient.report(jasperProcessInfo);
-	}
+	protected AdProcessId getPrintFormatProcessId() {return p_AD_Process_ID;}
 }

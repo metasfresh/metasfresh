@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.ViewRowTypeIconNames;
@@ -72,13 +73,13 @@ public enum HUEditorRowType implements IViewRowType
 		return type;
 	}
 
-	public String toHUUnitTypeOrNull()
+	public HuUnitType toHUUnitTypeOrNull()
 	{
 		if (this == HUStorage)
 		{
-			return X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI;
+			return HuUnitType.VHU;
 		}
-		return huUnitType2type.inverse().get(this);
+		return HuUnitType.ofNullableCode(huUnitType2type.inverse().get(this));
 	}
 
 	private static final BiMap<String, HUEditorRowType> huUnitType2type = ImmutableBiMap.<String, HUEditorRowType>builder()

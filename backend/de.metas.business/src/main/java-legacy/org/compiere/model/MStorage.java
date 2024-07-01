@@ -419,9 +419,7 @@ public class MStorage extends X_M_Storage
 	 * @param diffQtyOnHand add on hand
 	 * @param diffQtyReserved add reserved
 	 * @param diffQtyOrdered add order
-	 * @param loggable <b>may not be null!</b> used to log the fail-reason in case this method returns <code>false</code>.
 	 * @param trxName transaction
-	 * @return true if updated
 	 */
 	public static void add(final Properties ctx,
 			final int M_Warehouse_ID,
@@ -471,7 +469,7 @@ public class MStorage extends X_M_Storage
 			storage0 = get(ctx, M_Locator_ID, M_Product_ID, reservationAttributeSetInstance_ID, trxName);
 			if (storage0 == null)	// create if not existing - should not happen
 			{
-				final LocatorId xM_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId((WarehouseId.ofRepoId(M_Warehouse_ID)));
+				final LocatorId xM_Locator_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId((WarehouseId.ofRepoId(M_Warehouse_ID)));
 				storage0 = getCreate(ctx, xM_Locator_ID.getRepoId(),
 						M_Product_ID, reservationAttributeSetInstance_ID, trxName);
 			}

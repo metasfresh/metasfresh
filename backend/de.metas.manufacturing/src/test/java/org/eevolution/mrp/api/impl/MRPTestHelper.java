@@ -384,7 +384,7 @@ public class MRPTestHelper
 
 	private static LocatorId getDefaultLocatorId(final I_M_Warehouse warehouse)
 	{
-		return Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
 	}
 
 	public I_C_UOM createUOM(final String name)

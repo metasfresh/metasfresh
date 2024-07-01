@@ -103,7 +103,7 @@ public class PP_Order_BOMLine
 			final LocatorId locatorId = Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(orderBOMLine.getM_Locator_ID());
 			if (locatorId == null || !locatorId.getWarehouseId().equals(warehouseId))
 			{
-				final LocatorId locatorIdToUse = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+				final LocatorId locatorIdToUse = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
 				orderBOMLine.setM_Locator_ID(locatorIdToUse.getRepoId());
 			}
 		}

@@ -304,7 +304,7 @@ public class MInOutLine extends X_M_InOutLine
 		// Get default Location
 		if (M_Locator_ID <= 0)
 		{
-			M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(getM_Warehouse_ID())).getRepoId();
+			M_Locator_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(getM_Warehouse_ID())).getRepoId();
 		}
 		setM_Locator_ID(M_Locator_ID);
 	}	// setM_Locator_ID
