@@ -1,6 +1,7 @@
 package de.metas.costing;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -65,10 +66,10 @@ public class CostPrice
 				.build();
 	}
 
-	CurrencyId currencyId;
-	CostAmount ownCostPrice;
-	CostAmount componentsCostPrice;
-	UomId uomId;
+	@NonNull CurrencyId currencyId;
+	@NonNull CostAmount ownCostPrice;
+	@NonNull CostAmount componentsCostPrice;
+	@NonNull UomId uomId;
 
 	@Builder(toBuilder = true)
 	private CostPrice(
@@ -83,6 +84,30 @@ public class CostPrice
 		this.ownCostPrice = ownCostPrice;
 		this.componentsCostPrice = componentsCostPrice;
 		this.uomId = uomId;
+	}
+
+	@Override
+	public String toString()
+	{
+		final MoreObjects.ToStringHelper builder = MoreObjects.toStringHelper(this);
+		boolean isZero = true;
+		if (!ownCostPrice.isZero())
+		{
+			builder.add("ownCostPrice", ownCostPrice);
+			isZero = false;
+		}
+		if (!componentsCostPrice.isZero())
+		{
+			builder.add("componentsCostPrice", componentsCostPrice);
+			isZero = false;
+		}
+
+		if (isZero)
+		{
+			builder.addValue("ZERO");
+		}
+
+		return builder.toString();
 	}
 
 	public CostAmount toCostAmount()
