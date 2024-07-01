@@ -24,7 +24,6 @@ import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.Callout.RecursionAvoidanceLevel;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -73,7 +72,8 @@ public class C_Campaign_Price
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	public static final AdMessageKey ERR_MandatoryFields = AdMessageKey.of("C_Campaign_Price_MandatoryFields");
+	private static final AdMessageKey MSG_ProductNotOnPriceList = AdMessageKey.of("ProductNotOnPriceList");
+	private static final AdMessageKey ERR_MandatoryFields = AdMessageKey.of("C_Campaign_Price_MandatoryFields");
 
 	@Init
 	public void init()
@@ -83,7 +83,7 @@ public class C_Campaign_Price
 	}
 
 	@CalloutMethod(columnNames = I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID, skipIfCopying = true)
-	public void onBPartnerChanged(final I_C_Campaign_Price record, final ICalloutField field)
+	public void onBPartnerChanged(final I_C_Campaign_Price record)
 	{
 		if (record == null)
 		{
@@ -96,11 +96,11 @@ public class C_Campaign_Price
 			return;
 		}
 
-		updatePricingInfo(record, field);
+		updatePricingInfo(record);
 		record.setC_BP_Group_ID(-1);
 	}
 
-	private void updatePricingInfo(final I_C_Campaign_Price record, final ICalloutField field)
+	private void updatePricingInfo(final I_C_Campaign_Price record)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
 		if (bpartnerId == null)
@@ -120,7 +120,7 @@ public class C_Campaign_Price
 			record.setC_Country_ID(countryId.getRepoId());
 			updateCurrency(record, countryId);
 		}
-		
+
 		final PricingSystemId pricingSystemId = bpartnerRepo.retrievePricingSystemIdOrNull(bpartnerId, SOTrx.SALES);
 		if (pricingSystemId != null)
 		{
@@ -141,17 +141,15 @@ public class C_Campaign_Price
 						.setCountryId(countryId)
 						.setPriceDate(TimeUtil.asLocalDate(record.getValidFrom(), timeZone));
 				final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
-				if (pricingResult.isCalculated())
+				if (!pricingResult.isCalculated())
 				{
-					record.setC_TaxCategory_ID(pricingResult.getTaxCategoryId().getRepoId());
-					record.setInvoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn().getCode());
+					throw new AdempiereException(MSG_ProductNotOnPriceList)
+							.setParameter("pricingContext", pricingContext)
+							.setParameter("pricingResult", pricingResult);
 				}
-				else
-				{
-					record.setC_BPartner_ID(-1);
-					record.setM_PricingSystem_ID(-1);
-					field.fireDataStatusEEvent("ProductNotOnPriceList", "0", true);
-				}
+
+				record.setC_TaxCategory_ID(pricingResult.getTaxCategoryId().getRepoId());
+				record.setInvoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn().getCode());
 			}
 		}
 		else
@@ -194,7 +192,7 @@ public class C_Campaign_Price
 	}
 
 	@CalloutMethod(columnNames = I_C_Campaign_Price.COLUMNNAME_M_Product_ID, skipIfCopying = true)
-	public void onProductChanged(final I_C_Campaign_Price record, final ICalloutField field)
+	public void onProductChanged(final I_C_Campaign_Price record)
 	{
 		final ProductId productId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
 		if (productId == null)
@@ -205,7 +203,7 @@ public class C_Campaign_Price
 		final UomId stockUomId = productBL.getStockUOMId(productId);
 		record.setC_UOM_ID(stockUomId.getRepoId());
 
-		updatePricingInfo(record, field);
+		updatePricingInfo(record);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID, I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID, I_C_Campaign_Price.COLUMNNAME_M_PricingSystem_ID })
