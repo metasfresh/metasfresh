@@ -9,6 +9,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.eevolution.api.PPOrderId;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 @Value
@@ -32,5 +33,11 @@ public class ManufacturingJobReference
 				.append(getProductName());
 
 		return message.build();
+	}
+
+	@NonNull
+	public LocalDate getDateStartScheduleAsLocalDate()
+	{
+		return dateStartSchedule.toLocalDate();
 	}
 }

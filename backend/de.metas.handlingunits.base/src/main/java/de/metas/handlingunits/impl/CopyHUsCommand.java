@@ -76,7 +76,7 @@ public class CopyHUsCommand
 		if (targetWarehouseId != null)
 		{
 			final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-			this.targetLocatorId = warehouseBL.getDefaultLocatorId(targetWarehouseId);
+			this.targetLocatorId = warehouseBL.getOrCreateDefaultLocatorId(targetWarehouseId);
 		}
 		else
 		{

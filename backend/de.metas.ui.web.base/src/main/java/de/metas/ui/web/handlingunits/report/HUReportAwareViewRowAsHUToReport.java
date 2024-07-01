@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits.report;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.ui.web.view.IViewRow;
 import lombok.EqualsAndHashCode;
@@ -53,7 +54,7 @@ public final class HUReportAwareViewRowAsHUToReport implements HUToReport
 
 	private final HuId huId;
 	private final BPartnerId partnerId;
-	private final String huUnitType;
+	private final HuUnitType huUnitType;
 	private final boolean topLevel;
 
 	private HUReportAwareViewRowAsHUToReport(@NonNull final HUReportAwareViewRow row)
@@ -79,7 +80,7 @@ public final class HUReportAwareViewRowAsHUToReport implements HUToReport
 	}
 
 	@Override
-	public String getHUUnitType()
+	public HuUnitType getHUUnitType()
 	{
 		return huUnitType;
 	}

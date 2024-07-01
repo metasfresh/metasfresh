@@ -72,7 +72,6 @@ import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditIte
 import de.metas.manufacturing.rest_api.ExportSequenceNumberProvider;
 import de.metas.manufacturing.rest_api.ManufacturingOrderExportAuditRepository;
 import de.metas.manufacturing.rest_api.ManufacturingOrderReportAuditRepository;
-import de.metas.manufacturing.rest_api.v2.ManufacturingOrderAPIService;
 import org.eevolution.api.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
@@ -558,7 +557,7 @@ public class ManufacturingOrderAPIServiceTest
 			createDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
 
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(huTestHelper.defaultWarehouse.getM_Warehouse_ID());
-			locatorId = warehouseBL.getDefaultLocatorId(warehouseId);
+			locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
 		}
 
 		public ResourceId createPlant(final String name)

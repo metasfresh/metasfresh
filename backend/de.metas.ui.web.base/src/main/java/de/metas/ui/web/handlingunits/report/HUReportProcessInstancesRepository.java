@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.model.I_M_HU_Process;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
@@ -42,7 +43,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Process;
 import org.springframework.stereotype.Component;
 
@@ -90,7 +90,12 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 			.expireAfterAccess(10, TimeUnit.MINUTES)
 			.build();
 
-	private final ADProcessInstancesRepository processInstancesRepository = SpringContextHolder.instance.getBean(ADProcessInstancesRepository.class);
+	private final ADProcessInstancesRepository processInstancesRepository;
+
+	public HUReportProcessInstancesRepository(@NonNull final ADProcessInstancesRepository processInstancesRepository)
+	{
+		this.processInstancesRepository = processInstancesRepository;
+	}
 
 	@Override
 	public ProcessHandlerType getProcessHandlerType()
@@ -230,7 +235,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 		if (HUReportAwareViews.isHUReportAwareViewRow(row))
 		{
 			final HUReportAwareViewRow huRow = HUReportAwareViews.cast(row);
-			final String huUnitType = huRow.getHUUnitTypeOrNull();
+			final HuUnitType huUnitType = huRow.getHUUnitTypeOrNull();
 			return huUnitType != null && descriptor.appliesToHUUnitType(huUnitType);
 		}
 		else
