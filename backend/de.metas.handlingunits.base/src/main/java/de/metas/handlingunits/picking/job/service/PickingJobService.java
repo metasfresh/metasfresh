@@ -45,6 +45,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.report.HUToReportWrapper;
+import de.metas.handlingunits.report.labels.HULabelConfigRepository;
+import de.metas.handlingunits.report.labels.HULabelConfigService;
 import de.metas.handlingunits.report.labels.HULabelPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
@@ -142,6 +144,10 @@ public class PickingJobService
 				pickingConfigRepo,
 				ShipmentService.getInstance(),
 				huQRCodeService,
+				new HULabelService(
+						new HULabelConfigService(new HULabelConfigRepository()),
+						huQRCodeService
+				),
 				InventoryService.newInstanceForUnitTesting(),
 				huReservationService
 		);

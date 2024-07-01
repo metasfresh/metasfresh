@@ -102,33 +102,6 @@ public class HUQRCodesService
 		return createPdfForHUIds(huIds);
 	}
 
-	public QRCodePDFResource createPdfForSelectionOfHUIds(@NonNull final PInstanceId selectionId, @NonNull final AdProcessId qrCodeProcessId)
-	{
-		final Set<HuId> huIds = handlingUnitsBL.getHuIdsBySelectionId(selectionId);
-		return createPdfForHUIds(huIds, selectionId, qrCodeProcessId);
-	}
-
-	public QRCodePDFResource createPdfForHUIds(@NonNull final Set<HuId> huIds)
-	{
-		// Make sure all HUs have QR Codes assigned
-		final ImmutableList<HUQRCode> qrCodes = generateForExistingHUs(huIds).toList();
-
-		return createPDF(qrCodes);
-	}
-
-	public QRCodePDFResource createPdfForHUIds(@NonNull final Set<HuId> huIds, @NonNull final PInstanceId selectionId, @NonNull final AdProcessId qrCodeProcessId)
-	{
-		// Make sure all HUs have QR Codes assigned
-		final ImmutableList<HUQRCode> qrCodes = generateForExistingHUs(huIds).toList();
-		return createPDF(qrCodes, selectionId, qrCodeProcessId);
-	}
-
-	public QRCodePDFResource createPdfForSelectionOfHUIds(@NonNull final PInstanceId selectionId)
-	{
-		final Set<HuId> huIds = handlingUnitsBL.getHuIdsBySelectionId(selectionId);
-		return createPdfForHUIds(huIds);
-	}
-
 	public QRCodePDFResource createPdfForSelectionOfHUIds(@NonNull final PInstanceId selectionId, @Nullable final AdProcessId qrCodeProcessId)
 	{
 		final Set<HuId> huIds = handlingUnitsBL.getHuIdsBySelectionId(selectionId);

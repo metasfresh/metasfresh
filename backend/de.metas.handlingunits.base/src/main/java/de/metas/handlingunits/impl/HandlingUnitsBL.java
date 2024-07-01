@@ -190,18 +190,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public List<I_M_HU> getBySelectionId(@NonNull final PInstanceId selectionId)
-	{
-		return handlingUnitsRepo.getBySelectionId(selectionId);
-	}
-
-	@Override
-	public Set<HuId> getHuIdsBySelectionId(@NonNull final PInstanceId selectionId)
-	{
-		return handlingUnitsRepo.getHuIdsBySelectionId(selectionId);
-	}
-
-	@Override
 	public IHUStorageFactory getStorageFactory()
 	{
 		final IHUContext huContext = HUContextHolder.getCurrentOrNull();
