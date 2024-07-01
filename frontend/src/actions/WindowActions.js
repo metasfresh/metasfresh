@@ -913,6 +913,23 @@ export function patch(
 
     await dispatch({ type: PATCH_REQUEST, symbol, options });
 
+    //
+    // Update the state with the new property value
+    // In case the PATCH fails on server side, we will update the state again
+    await dispatch(
+      updatePropertyValue({
+        entity,
+        windowId: windowType,
+        docId: id,
+        tabId,
+        rowId,
+        property,
+        value,
+        isModal,
+        disconnected,
+      })
+    );
+
     try {
       const response = await patchRequest(options);
       const data =
@@ -979,30 +996,63 @@ export function patch(
     } catch (error) {
       await dispatch({ type: PATCH_FAILURE, symbol });
 
-      const response = await getData({
-        entity: entity,
-        docType: windowType,
-        docId: id,
-        tabId: tabId,
-        rowId: rowId,
-        fetchAdvancedFields: isAdvanced,
-        viewId: viewId,
-      });
-
+      // Restore the state by fetching it from server
       await dispatch(
-        mapDataToState({
-          data: response.data,
-          isModal,
-          rowId,
-          id,
+        updateDataFromServer({
+          dispatch,
+          entity,
           windowType,
+          id,
+          tabId,
+          rowId,
           isAdvanced,
+          viewId,
+          isModal,
           disconnected,
         })
       );
+
+      // Propagate the exception, so callers are aware that something went wrong.
+      throw error;
     }
   };
 }
+
+const updateDataFromServer = ({
+  entity,
+  windowType,
+  id,
+  tabId,
+  rowId,
+  isAdvanced,
+  viewId,
+  isModal,
+  disconnected,
+}) => {
+  return async (dispatch) => {
+    const response = await getData({
+      entity: entity,
+      docType: windowType,
+      docId: id,
+      tabId: tabId,
+      rowId: rowId,
+      fetchAdvancedFields: isAdvanced,
+      viewId: viewId,
+    });
+
+    await dispatch(
+      mapDataToState({
+        data: response.data,
+        isModal,
+        rowId,
+        id,
+        windowType,
+        isAdvanced,
+        disconnected,
+      })
+    );
+  };
+};
 
 export function fireUpdateData({
   windowId,
