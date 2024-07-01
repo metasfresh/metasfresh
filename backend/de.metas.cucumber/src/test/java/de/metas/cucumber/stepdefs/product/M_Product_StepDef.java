@@ -53,6 +53,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
@@ -114,19 +115,24 @@ public class M_Product_StepDef
 	public void noProductWithCodeCodeExists(final String value)
 
 	{
-		final Optional<I_M_Product> product = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class)
+		final Optional<I_M_Product> product = queryBL.createQueryBuilder(I_M_Product.class)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
 				.create()
 				.firstOnlyOptional(I_M_Product.class);
 
 		if (product.isPresent())
 		{
-			Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Product.class)
+			queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 					.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, product.get().getM_Product_ID())
 					.create()
 					.delete();
 
-			Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class)
+			queryBL.createQueryBuilder(I_C_UOM_Conversion.class)
+					.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, product.get().getM_Product_ID())
+					.create()
+					.delete();
+
+			queryBL.createQueryBuilder(I_M_Product.class)
 					.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
 					.create()
 					.delete();
