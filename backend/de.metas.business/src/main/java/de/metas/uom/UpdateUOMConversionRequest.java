@@ -46,4 +46,7 @@ public class UpdateUOMConversionRequest
 	BigDecimal fromToMultiplier;
 
 	boolean catchUOMForProduct;
+
+	@Builder.Default
+	boolean active = true;
 }

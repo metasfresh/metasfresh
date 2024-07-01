@@ -37,6 +37,7 @@ import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductTaxCategoryUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
+import de.metas.common.product.v2.request.JsonRequestUOMConversionUpsert;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
@@ -65,8 +66,13 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.rest_api.v2.pricing.ProductPriceRestService;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionRate;
+import de.metas.uom.UOMConversionsMap;
 import de.metas.uom.UomId;
+import de.metas.uom.UpdateUOMConversionRequest;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -76,12 +82,14 @@ import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.lang.BooleanUtils;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.X_M_Product;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -101,6 +109,7 @@ public class ProductRestService
 
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
 
 	private final ProductRepository productRepository;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
@@ -204,6 +213,7 @@ public class ProductRestService
 				productRepository.updateProduct(product);
 				createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, product.getId(), org);
 				createOrUpdateProductTaxCategories(jsonRequestProduct.getProductTaxCategories(), product.getId(), effectiveSyncAdvise);
+				createOrUpdateUOMConversions(jsonRequestProduct.getUomConversions(), product.getId(), effectiveSyncAdvise);
 
 				syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
 			}
@@ -221,6 +231,7 @@ public class ProductRestService
 
 			createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, productId, org);
 			createOrUpdateProductTaxCategories(jsonRequestProduct.getProductTaxCategories(), productId, effectiveSyncAdvise);
+			createOrUpdateUOMConversions(jsonRequestProduct.getUomConversions(), productId, effectiveSyncAdvise);
 
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
 		}
@@ -377,6 +388,72 @@ public class ProductRestService
 												 createOrUpdateProductTaxCategory(productTaxCategory,
 																				  productId,
 																				  effectiveSyncAdvise));
+		}
+	}
+
+	private void createOrUpdateUOMConversions(
+			@Nullable final List<JsonRequestUOMConversionUpsert> uomConversions,
+			@NonNull final ProductId productId,
+			@NonNull final SyncAdvise effectiveSyncAdvise)
+	{
+		final UOMConversionsMap uomConversionsMap = uomConversionDAO.getProductConversionsEvenInactive(productId);
+		if (uomConversions != null)
+		{
+			uomConversions.forEach(uomConversion ->
+										   createOrUpdateUOMConversion(uomConversion,
+																	   productId,
+																	   effectiveSyncAdvise,
+																	   uomConversionsMap));
+		}
+	}
+
+	private void createOrUpdateUOMConversion(
+			@NonNull final JsonRequestUOMConversionUpsert jsonRequestUOMConversionUpsert,
+			@NonNull final ProductId productId,
+			@NonNull final SyncAdvise effectiveSyncAdvise,
+			@NonNull final UOMConversionsMap uomConversionsMap)
+	{
+		validateJsonRequestUOMConversionUpsert(jsonRequestUOMConversionUpsert);
+		final UomId fromUomId = getUomId(X12DE355.ofCode(jsonRequestUOMConversionUpsert.getFromUomCode()));
+		final UomId toUomId = getUomId(X12DE355.ofCode(jsonRequestUOMConversionUpsert.getToUomCode()));
+
+		final Optional<UOMConversionRate> existingUomConversionRate = uomConversionsMap.getRateIfExists(fromUomId, toUomId);
+
+		if (existingUomConversionRate.isPresent())
+		{
+			if (effectiveSyncAdvise.getIfExists().isUpdate())
+			{
+				final UpdateUOMConversionRequest updateUOMConversionRequest = syncUpdateUOMConversionRequestWithJson(productId,
+																													 fromUomId,
+																													 toUomId,
+																													 jsonRequestUOMConversionUpsert,
+																													 existingUomConversionRate.get());
+
+				uomConversionDAO.updateUOMConversion(updateUOMConversionRequest);
+			}
+		}
+		else if (effectiveSyncAdvise.isFailIfNotExists())
+		{
+			throw MissingResourceException.builder()
+					.resourceName("C_UOM_Conversion")
+					.resourceIdentifier("{ M_Product_ID:" + productId.getRepoId() + ", C_UOM_ID: " + fromUomId + ", C_UOM_To_ID: " + toUomId)
+					.build()
+					.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
+		}
+		else
+		{
+			final BigDecimal fromToMultiplier = Optional.ofNullable(jsonRequestUOMConversionUpsert.getFromToMultiplier())
+					.orElseThrow(() -> new MissingPropertyException("fromToMultiplier", jsonRequestUOMConversionUpsert));
+
+			final CreateUOMConversionRequest createUOMConversionRequest = CreateUOMConversionRequest.builder()
+					.productId(productId)
+					.fromUomId(fromUomId)
+					.toUomId(toUomId)
+					.fromToMultiplier(fromToMultiplier)
+					.catchUOMForProduct(BooleanUtils.isTrue(jsonRequestUOMConversionUpsert.getCatchUOMForProduct()))
+					.build();
+
+			uomConversionDAO.createUOMConversion(createUOMConversionRequest);
 		}
 	}
 
@@ -714,6 +791,55 @@ public class ProductRestService
 	}
 
 	@NonNull
+	private UpdateUOMConversionRequest syncUpdateUOMConversionRequestWithJson(
+			@NonNull final ProductId productId,
+			@NonNull final UomId fromUomId,
+			@NonNull final UomId toUomId,
+			@NonNull final JsonRequestUOMConversionUpsert jsonRequestUOMConversionUpsert,
+			@NonNull final UOMConversionRate existingUomConversionRate)
+	{
+		final UpdateUOMConversionRequest.UpdateUOMConversionRequestBuilder updateUOMConversionRequestBuilder = UpdateUOMConversionRequest.builder()
+				.productId(productId)
+				.fromUomId(fromUomId)
+				.toUomId(toUomId);
+
+		if (jsonRequestUOMConversionUpsert.isFromToMultiplierSet())
+		{
+			if (jsonRequestUOMConversionUpsert.getFromToMultiplier() == null)
+			{
+				logger.debug("Ignoring property \"fromToMultiplier\" : null ");
+				updateUOMConversionRequestBuilder.fromToMultiplier(existingUomConversionRate.getFromToMultiplier());
+			}
+			else
+			{
+				updateUOMConversionRequestBuilder.fromToMultiplier(jsonRequestUOMConversionUpsert.getFromToMultiplier());
+			}
+		}
+		else
+		{
+			updateUOMConversionRequestBuilder.fromToMultiplier(existingUomConversionRate.getFromToMultiplier());
+		}
+
+		if (jsonRequestUOMConversionUpsert.isCatchUOMForProductSet())
+		{
+			if (jsonRequestUOMConversionUpsert.getCatchUOMForProduct() == null)
+			{
+				logger.debug("Ignoring property \"catchUOMForProduct\" : null ");
+			}
+			else
+			{
+				updateUOMConversionRequestBuilder.catchUOMForProduct(jsonRequestUOMConversionUpsert.getCatchUOMForProduct());
+			}
+		}
+		else
+		{
+			updateUOMConversionRequestBuilder.catchUOMForProduct(existingUomConversionRate.isCatchUOMForProduct());
+		}
+
+		return updateUOMConversionRequestBuilder.build();
+	}
+
+	@NonNull
 	private ProductTaxCategory syncProductTaxCategoryWithJson(
 			@NonNull final JsonRequestProductTaxCategoryUpsert jsonRequestProductTaxCategoryUpsert,
 			@NonNull final ProductTaxCategory existingProductTaxCategory)
@@ -1002,11 +1128,34 @@ public class ProductRestService
 		return productType;
 	}
 
+	private static void validateJsonRequestUOMConversionUpsert(@NonNull final JsonRequestUOMConversionUpsert jsonRequestUOMConversionUpsert)
+	{
+		if (jsonRequestUOMConversionUpsert.getFromUomCode() == null)
+		{
+			throw new MissingPropertyException("fromUomCode", jsonRequestUOMConversionUpsert);
+		}
+
+		if (jsonRequestUOMConversionUpsert.getToUomCode() == null)
+		{
+			throw new MissingPropertyException("toUomCode", jsonRequestUOMConversionUpsert);
+		}
+	}
+
+	@NonNull
+	private UomId getUomId(@NonNull final X12DE355 x12de355)
+	{
+		return uomDAO.getOptionalUomIdByX12DE355(x12de355)
+				.orElseThrow(() -> MissingResourceException.builder()
+						.resourceName("uomCode")
+						.resourceIdentifier(x12de355.getCode())
+						.build());
+	}
+
 	private static void validateJsonRequestProductTaxCategoryUpsert(@NonNull final JsonRequestProductTaxCategoryUpsert jsonRequestProductTaxCategoryUpsert)
 	{
 		if (jsonRequestProductTaxCategoryUpsert.getCountryCode() == null)
 		{
 			throw new MissingPropertyException("countryCode", jsonRequestProductTaxCategoryUpsert);
-		}		
+		}
 	}
 }

@@ -78,4 +78,7 @@ public interface IUOMDAO extends ISingletonService
 
 	@NonNull
 	UOMType getUOMTypeById(UomId uomId);
+
+	@NonNull
+	Optional<UomId> getOptionalUomIdByX12DE355(@NonNull X12DE355 x12de355);
 }

@@ -14,7 +14,8 @@ import java.util.Locale;
 public class CamelProcessorUtil 
 {
     private final NumberFormat GERMAN_NUMBER_FORMAT = NumberFormat.getInstance(Locale.GERMANY);
-    
+
+    @Nullable
     public BigDecimal parseGermanNumberString(@Nullable final String inputString)
     {
         if (Check.isBlank(inputString))
