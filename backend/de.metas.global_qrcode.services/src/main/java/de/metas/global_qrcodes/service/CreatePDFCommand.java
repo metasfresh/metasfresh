@@ -28,12 +28,12 @@ import java.util.List;
 
 public class CreatePDFCommand
 {
-
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final ImmutableList<PrintableQRCode> qrCodes;
-	private final PInstanceId pInstanceId;
-	private final AdProcessId qrCodeProcessId ;
+	
+	@NonNull private final ImmutableList<PrintableQRCode> qrCodes;
+	@Nullable private final PInstanceId pInstanceId;
+	@NonNull private final AdProcessId qrCodeProcessId ;
 
 	@Builder
 	private CreatePDFCommand(

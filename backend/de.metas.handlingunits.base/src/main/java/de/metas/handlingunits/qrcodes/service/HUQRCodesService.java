@@ -27,6 +27,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -122,12 +123,39 @@ public class HUQRCodesService
 		return createPDF(qrCodes, selectionId, qrCodeProcessId);
 	}
 
+	public QRCodePDFResource createPdfForSelectionOfHUIds(@NonNull final PInstanceId selectionId)
+	{
+		final Set<HuId> huIds = handlingUnitsBL.getHuIdsBySelectionId(selectionId);
+		return createPdfForHUIds(huIds);
+	}
+
+	public QRCodePDFResource createPdfForSelectionOfHUIds(@NonNull final PInstanceId selectionId, @Nullable final AdProcessId qrCodeProcessId)
+	{
+		final Set<HuId> huIds = handlingUnitsBL.getHuIdsBySelectionId(selectionId);
+		return createPdfForHUIds(huIds, selectionId, qrCodeProcessId);
+	}
+
+	public QRCodePDFResource createPdfForHUIds(@NonNull final Set<HuId> huIds)
+	{
+		// Make sure all HUs have QR Codes assigned
+		final ImmutableList<HUQRCode> qrCodes = generateForExistingHUs(huIds).toList();
+
+		return createPDF(qrCodes);
+	}
+
+	public QRCodePDFResource createPdfForHUIds(@NonNull final Set<HuId> huIds, @NonNull final PInstanceId selectionId, @Nullable final AdProcessId qrCodeProcessId)
+	{
+		// Make sure all HUs have QR Codes assigned
+		final ImmutableList<HUQRCode> qrCodes = generateForExistingHUs(huIds).toList();
+		return createPDF(qrCodes, selectionId, qrCodeProcessId);
+	}
+
 	/*
 	Creates PDF QR code using the given jasper process
 	 */
 	public QRCodePDFResource createPDF(@NonNull final List<HUQRCode> qrCodes,
 									   @NonNull final PInstanceId pInstanceId,
-									   @NonNull final AdProcessId qrCodeProcessId)
+									   @Nullable final AdProcessId qrCodeProcessId)
 	{
 		return globalQRCodeService.createPDF(
 				qrCodes.stream()
@@ -150,8 +178,8 @@ public class HUQRCodesService
 	}
 
 	public void printForSelectionOfHUIds(@NonNull final PInstanceId selectionId,
-                                         @NonNull final AdProcessId qrCodeProcessId,
-                                         @NonNull final PrintCopies printCopies)
+										 @Nullable final AdProcessId qrCodeProcessId,
+										 @NonNull final PrintCopies printCopies)
 	{
 		print(createPdfForSelectionOfHUIds(selectionId, qrCodeProcessId), printCopies);
 	}
