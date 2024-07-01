@@ -60,7 +60,7 @@ public class HUTraceRepository
 		if (inserted)
 		{
 			final I_M_HU_Trace dbRecord = newInstance(I_M_HU_Trace.class);
-			logger.info("Found no existing M_HU_Trace record; creating new one; query={}", query);
+			logger.debug("Found no existing M_HU_Trace record; creating new one; query={}", query);
 
 			HuTraceEventToDbRecordUtil.copyToDbRecord(huTraceEvent, dbRecord);
 			save(dbRecord);
@@ -72,7 +72,7 @@ public class HUTraceRepository
 					existingDbRecords.size(), query, existingDbRecords);
 
 			HUTraceEvent existingHuTraceEvent = existingDbRecords.get(0);
-			logger.info("Found exiting HUTraceEvent record with ID={}; nothing to do; query={}", existingHuTraceEvent.getHuTraceEventId().getAsInt(), query);
+			logger.debug("Found exiting HUTraceEvent record with ID={}; nothing to do; query={}", existingHuTraceEvent.getHuTraceEventId().getAsInt(), query);
 		}
 
 		return inserted;

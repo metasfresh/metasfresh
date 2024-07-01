@@ -53,7 +53,7 @@ public final class CompositeCandidateProcessor implements IShipmentSchedulesAfte
 	{
 		for (final IShipmentSchedulesAfterFirstPassUpdater processor : processors)
 		{
-			logger.info("Invoking {}", processor);
+			logger.debug("Invoking {}", processor);
 			processor.doUpdateAfterFirstPass(ctx, candidates);
 		}
 	}

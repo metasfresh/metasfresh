@@ -2,10 +2,12 @@ package de.metas.handlingunits.picking.job.service.commands;
 
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
+import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -25,6 +27,7 @@ import static de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_Qua
 public class PickingJobCompleteCommand
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
@@ -40,6 +43,7 @@ public class PickingJobCompleteCommand
 
 	@Builder
 	private PickingJobCompleteCommand(
+			final @NonNull PickingJobService pickingJobService,
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingJobLockService pickingJobLockService,
 			final @NonNull PickingJobSlotService pickingSlotService,
@@ -50,6 +54,7 @@ public class PickingJobCompleteCommand
 			final boolean approveIfReadyToReview,
 			final @Nullable CreateShipmentPolicy createShipmentPolicy)
 	{
+		this.pickingJobService = pickingJobService;
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
 		this.pickingSlotService = pickingSlotService;
@@ -96,8 +101,11 @@ public class PickingJobCompleteCommand
 		pickingJob = pickingJob.withDocStatus(PickingJobDocStatus.Completed);
 		pickingJobRepository.save(pickingJob);
 
-		initialPickingJob.getPickingSlotId()
-				.ifPresent(pickingSlotId -> pickingSlotService.release(pickingSlotId, initialPickingJob.getId()));
+		pickingJob = pickingJobService.closePickTarget(pickingJob);
+
+		final PickingJobId pickingJobId = pickingJob.getId();
+		pickingJob.getPickingSlotId()
+				.ifPresent(pickingSlotId -> pickingSlotService.release(pickingSlotId, pickingJobId));
 
 		pickingJobHUReservationService.releaseAllReservations(pickingJob);
 

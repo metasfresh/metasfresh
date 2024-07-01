@@ -44,6 +44,12 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
+import de.metas.handlingunits.report.HUToReportWrapper;
+import de.metas.handlingunits.report.labels.HULabelConfigRepository;
+import de.metas.handlingunits.report.labels.HULabelConfigService;
+import de.metas.handlingunits.report.labels.HULabelPrintRequest;
+import de.metas.handlingunits.report.labels.HULabelService;
+import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
@@ -93,6 +99,7 @@ public class PickingJobService
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 	@NonNull private final IShipmentService shipmentService;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final HULabelService huLabelService;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUReservationService huReservationService;
 
@@ -137,6 +144,10 @@ public class PickingJobService
 				pickingConfigRepo,
 				ShipmentService.getInstance(),
 				huQRCodeService,
+				new HULabelService(
+						new HULabelConfigService(new HULabelConfigRepository()),
+						huQRCodeService
+				),
 				InventoryService.newInstanceForUnitTesting(),
 				huReservationService
 		);
@@ -184,6 +195,7 @@ public class PickingJobService
 	public PickingJobCompleteCommand.PickingJobCompleteCommandBuilder prepareToComplete(final PickingJob pickingJob)
 	{
 		return PickingJobCompleteCommand.builder()
+				.pickingJobService(this)
 				.pickingJobRepository(pickingJobRepository)
 				.pickingJobLockService(pickingJobLockService)
 				.pickingSlotService(pickingSlotService)
@@ -626,7 +638,12 @@ public class PickingJobService
 		final HuId luId = pickingTarget.getLuId();
 		if (luId != null)
 		{
-			huQRCodesService.print(luId);
+			huLabelService.print(HULabelPrintRequest.builder()
+					.sourceDocType(HULabelSourceDocType.Picking)
+					.hu(HUToReportWrapper.of(handlingUnitsBL.getById(luId)))
+					.onlyIfAutoPrint(true)
+					.failOnMissingLabelConfig(false)
+					.build());
 		}
 
 		return pickingJobChanged;

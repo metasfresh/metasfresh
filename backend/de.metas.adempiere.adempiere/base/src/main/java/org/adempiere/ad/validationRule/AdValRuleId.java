@@ -35,4 +35,6 @@ public class AdValRuleId implements RepoIdAware
 	{
 		return getRepoId();
 	}
+
+	public static int toRepoId(@Nullable final AdValRuleId id) {return id != null ? id.getRepoId() : -1;}
 }

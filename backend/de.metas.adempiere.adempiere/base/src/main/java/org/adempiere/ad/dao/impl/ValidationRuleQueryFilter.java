@@ -2,7 +2,6 @@ package org.adempiere.ad.dao.impl;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
@@ -34,8 +33,8 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 
 	private final Evaluatee evaluatee;
 
-	private final String tableName;
-	private final AdValRuleId adValRuleId;
+	@NonNull private final String tableName;
+	@NonNull private final AdValRuleId adValRuleId;
 
 	public ValidationRuleQueryFilter(@NonNull final Object model, @NonNull final AdValRuleId adValRuleId)
 	{

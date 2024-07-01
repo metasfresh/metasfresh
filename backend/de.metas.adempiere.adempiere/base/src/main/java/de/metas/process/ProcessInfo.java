@@ -194,7 +194,7 @@ public final class ProcessInfo implements Serializable
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
 
-	private final Properties ctx;
+	private Properties ctx;
 
 	/**
 	 * Title of the Process/Report
@@ -322,6 +322,11 @@ public final class ProcessInfo implements Serializable
 	public Properties getCtx()
 	{
 		return Env.coalesce(ctx);
+	}
+
+	public void snapshotCtx()
+	{
+		this.ctx = Env.copyCtx(getCtx());
 	}
 
 	/**
