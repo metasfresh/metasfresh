@@ -164,7 +164,7 @@ Feature:product get/create/update using metasfresh api
     And verify that S_ExternalReference was created
       | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         |
       | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com |
-    And metasfresh contains C_UOM_Conversions
+    And validate C_UOM_Conversion:
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | KGM                  | 0.25         |
       | p_1                     | PCE                    | GRM                  | 0.00025      |
