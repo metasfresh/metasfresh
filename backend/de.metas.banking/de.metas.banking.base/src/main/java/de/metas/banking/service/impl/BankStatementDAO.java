@@ -3,9 +3,6 @@ package de.metas.banking.service.impl;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementAndLineAndRefId;
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
-import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.banking.importfile.BankStatementImportFileId;
@@ -39,6 +36,7 @@ import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -213,7 +211,7 @@ public class BankStatementDAO implements IBankStatementDAO
 
 		// Check if there are fact accounts created for each document
 		final IQueryBuilder<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_BankStatement.class));
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_BankStatement.class));
 
 		// query Builder for the bank statement
 
@@ -325,6 +323,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setDebitorOrCreditorId(request.getDebtorOrCreditorId());
 		record.setC_Invoice_ID(InvoiceId.toRepoId(request.getInvoiceId()));
 		record.setCurrencyRate(request.getCurrencyRate());
+		record.setIsMultiplePayment(request.isMultiPayment());
 
 		final BankStatementLineCreateRequest.ElectronicFundsTransfer eft = request.getEft();
 		if (eft != null)

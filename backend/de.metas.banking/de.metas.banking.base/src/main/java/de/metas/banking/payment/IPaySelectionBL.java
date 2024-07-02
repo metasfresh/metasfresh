@@ -8,7 +8,6 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
 import de.metas.banking.BankStatementAndLineAndRefId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.banking.PaySelectionId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;

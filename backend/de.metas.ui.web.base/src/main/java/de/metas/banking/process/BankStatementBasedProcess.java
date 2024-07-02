@@ -9,8 +9,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.document.engine.DocStatus;

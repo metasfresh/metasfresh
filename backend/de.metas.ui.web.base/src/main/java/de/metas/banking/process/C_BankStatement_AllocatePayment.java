@@ -28,7 +28,6 @@ import org.compiere.model.I_C_BankStatement;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.banking.BankStatementId;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.payment.PaymentId;

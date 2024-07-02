@@ -13,8 +13,6 @@ import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
 import de.metas.banking.BankAccountId;
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;

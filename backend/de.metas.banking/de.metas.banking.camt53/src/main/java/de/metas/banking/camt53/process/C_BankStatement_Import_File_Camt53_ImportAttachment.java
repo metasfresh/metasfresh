@@ -26,7 +26,6 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.banking.BankStatementId;
 import de.metas.banking.camt53.BankStatementCamt53Service;
 import de.metas.banking.camt53.ImportBankStatementRequest;
 import de.metas.banking.importfile.BankStatementImportFile;

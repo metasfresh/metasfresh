@@ -8,7 +8,6 @@ import org.compiere.model.I_C_BankStatementLine;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.banking.BankStatementLineId;
 import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.view.template.SynchronizedRowsIndexHolder;
 import de.metas.ui.web.window.datatypes.DocumentId;

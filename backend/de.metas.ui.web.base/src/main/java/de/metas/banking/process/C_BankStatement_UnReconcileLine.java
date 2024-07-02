@@ -9,7 +9,6 @@ import org.compiere.model.I_C_BankStatementLine;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.banking.BankStatementLineId;
 import de.metas.document.engine.DocStatus;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;

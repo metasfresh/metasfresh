@@ -10,7 +10,6 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
 import de.metas.banking.BankStatementAndLineAndRefId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.banking.PaySelectionId;
 import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentId;

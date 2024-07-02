@@ -23,8 +23,6 @@
 package de.metas.banking.service;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentCurrencyContext;

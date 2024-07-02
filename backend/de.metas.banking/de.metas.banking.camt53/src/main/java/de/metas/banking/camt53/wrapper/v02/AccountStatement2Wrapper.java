@@ -1,8 +1,8 @@
 /*
  * #%L
- * camt53
+ * de.metas.banking.camt53
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,8 +23,6 @@
 package de.metas.banking.camt53.wrapper.v02;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.banking.BankAccountId;
-import de.metas.banking.BankId;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.camt53.jaxb.camt053_001_02.AccountStatement2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.BalanceType12Code;
@@ -116,7 +114,7 @@ public class AccountStatement2Wrapper extends AccountStatementWrapper
 	{
 		return accountStatement2.getNtry()
 				.stream()
-				.map(this::buildNoBatchReportEntryWrapper)
+				.map(this::buildBatchReportEntryWrapper)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -151,9 +149,9 @@ public class AccountStatement2Wrapper extends AccountStatementWrapper
 	}
 
 	@NonNull
-	private IStatementLineWrapper buildNoBatchReportEntryWrapper(@NonNull final ReportEntry2 reportEntry)
+	private IStatementLineWrapper buildBatchReportEntryWrapper(@NonNull final ReportEntry2 reportEntry)
 	{
-		return NoBatchReportEntry2Wrapper.builder()
+		return BatchReportEntry2Wrapper.builder()
 				.currencyRepository(getCurrencyRepository())
 				.entry(reportEntry)
 				.build();
@@ -194,33 +192,5 @@ public class AccountStatement2Wrapper extends AccountStatementWrapper
 	private static boolean isCRDTCashBalance(@NonNull final CashBalance3 cashBalance)
 	{
 		return CRDT.equals(cashBalance.getCdtDbtInd());
-	}
-
-	@NonNull
-	private Optional<String> getAccountIBAN()
-	{
-		return Optional.ofNullable(accountStatement2.getAcct().getId().getIBAN());
-	}
-
-	@NonNull
-	private Optional<String> getSwiftCode()
-	{
-		return Optional.ofNullable(accountStatement2.getAcct().getSvcr())
-				.map(branchAndFinancialInstitutionIdentification4 -> branchAndFinancialInstitutionIdentification4.getFinInstnId().getBIC())
-				.filter(Check::isNotBlank);
-	}
-
-	@NonNull
-	private Optional<String> getAccountNo()
-	{
-		return Optional.ofNullable(accountStatement2.getAcct().getId().getOthr())
-				.map(GenericAccountIdentification1::getId);
-
-	}
-
-	@NonNull
-	private String getMsg(@NonNull final AdMessageKey adMessageKey, final Object ...params)
-	{
-		return msgBL.getMsg(adMessageKey, ImmutableList.copyOf(params));
 	}
 }

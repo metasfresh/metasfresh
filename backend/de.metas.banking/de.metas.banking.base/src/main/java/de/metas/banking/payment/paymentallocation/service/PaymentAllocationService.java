@@ -104,7 +104,9 @@ public class PaymentAllocationService
 	{
 		final ImmutableList<I_C_Invoice> unpaidInvoices = invoiceDAO.retrieveUnpaid(unpaidInvoiceMatchingAmtQuery.getUnpaidInvoiceQuery());
 
-		if (unpaidInvoiceMatchingAmtQuery.getOpenAmountAtDate() == null || unpaidInvoiceMatchingAmtQuery.getOpenAmountEvaluationDate() == null)
+		if (unpaidInvoices.isEmpty()
+				|| unpaidInvoiceMatchingAmtQuery.getOpenAmountAtDate() == null
+				|| unpaidInvoiceMatchingAmtQuery.getOpenAmountEvaluationDate() == null)
 		{
 			return unpaidInvoices;
 		}
@@ -163,8 +165,7 @@ public class PaymentAllocationService
 		return Optional.of(builder);
 	}
 
-	@VisibleForTesting
-	PaymentDocument toPaymentDocument(@NonNull final I_C_Payment payment)
+	public PaymentDocument toPaymentDocument(@NonNull final I_C_Payment payment)
 	{
 		final PaymentDirection paymentDirection = extractPaymentDirection(payment);
 

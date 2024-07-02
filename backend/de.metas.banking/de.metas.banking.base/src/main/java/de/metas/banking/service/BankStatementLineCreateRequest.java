@@ -1,6 +1,5 @@
 package de.metas.banking.service;
 
-import de.metas.banking.BankStatementId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.ChargeId;
@@ -57,6 +56,7 @@ public class BankStatementLineCreateRequest
 	String memo;
 
 	boolean updateAmountsFromInvoice;
+	boolean multiPayment;
 
 	@NonNull
 	LocalDate statementLineDate;
@@ -114,6 +114,7 @@ public class BankStatementLineCreateRequest
 			@Nullable final BigDecimal currencyRate,
 			@Nullable final InvoiceId invoiceId,
 			@Nullable final Boolean updateAmountsFromInvoice,
+			@Nullable final Boolean multiPayment,
 
 			@Nullable final ElectronicFundsTransfer eft)
 	{
@@ -145,6 +146,7 @@ public class BankStatementLineCreateRequest
 		this.invoiceId = invoiceId;
 
 		this.updateAmountsFromInvoice = CoalesceUtil.coalesceNotNull(updateAmountsFromInvoice, true); // true for backwards compatibility
+		this.multiPayment = CoalesceUtil.coalesceNotNull(multiPayment, false); // false for backwards compatibility
 
 		this.eft = eft;
 	}

@@ -26,10 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
-import de.metas.banking.api.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.model.BankStatementLineAmounts;
@@ -147,9 +144,8 @@ class BankStatementPaymentBLTest
 		bankRepo = new BankRepository();
 		SpringContextHolder.registerJUnitBean(bankRepo);
 
-		final BankAccountAcctRepository bankAccountAcctRepo = new BankAccountAcctRepository();
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
-		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, bankAccountAcctRepo, currencyRepo));
+		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, currencyRepo));
 
 		createMasterData();
 	}
@@ -518,7 +514,8 @@ class BankStatementPaymentBLTest
 				//
 				InterfaceWrapperHelper.refresh(bsl);
 				assertThat(BankStatementLineAmounts.of(bsl))
-						.isEqualToComparingFieldByField(BankStatementLineAmounts.builder()
+						.usingRecursiveComparison()
+						.isEqualTo(BankStatementLineAmounts.builder()
 								.stmtAmt(new BigDecimal("100"))
 								.trxAmt(new BigDecimal("123"))
 								.bankFeeAmt(new BigDecimal("23"))
@@ -628,7 +625,8 @@ class BankStatementPaymentBLTest
 				assertFalse(bsl.isMultiplePaymentOrInvoice());
 				InterfaceWrapperHelper.refresh(bsl);
 				assertThat(BankStatementLineAmounts.of(bsl))
-						.isEqualToComparingFieldByField(BankStatementLineAmounts.builder()
+						.usingRecursiveComparison()
+						.isEqualTo(BankStatementLineAmounts.builder()
 								.stmtAmt(new BigDecimal("100"))
 								.trxAmt(new BigDecimal("123"))
 								.bankFeeAmt(new BigDecimal("23"))
@@ -642,7 +640,7 @@ class BankStatementPaymentBLTest
 				assertThat(payment.getDateAcct()).isEqualTo(TimeUtil.asTimestamp(LocalDate.parse("2021-02-14")));
 				assertThat(payment.getPayAmt()).isEqualTo("123");
 				assertThat(payment.isReconciled()).isTrue();
-				assertThat(payment.isReceipt()).isEqualTo(true);
+				assertThat(payment.isReceipt()).isTrue();
 				assertThat(DocStatus.ofCode(payment.getDocStatus())).isEqualTo(DocStatus.Completed);
 				assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(euroOrgBankAccountId.getRepoId());
 			}
@@ -688,7 +686,7 @@ class BankStatementPaymentBLTest
 				assertThat(payment.getDateAcct()).isEqualTo(TimeUtil.asTimestamp(LocalDate.parse("2021-02-14")));
 				assertThat(payment.getPayAmt()).isEqualTo("123");
 				assertThat(payment.isReconciled()).isTrue();
-				assertThat(payment.isReceipt()).isEqualTo(false);
+				assertThat(payment.isReceipt()).isFalse();
 				assertThat(DocStatus.ofCode(payment.getDocStatus())).isEqualTo(DocStatus.Completed);
 				assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(euroOrgBankAccountId.getRepoId());
 			}

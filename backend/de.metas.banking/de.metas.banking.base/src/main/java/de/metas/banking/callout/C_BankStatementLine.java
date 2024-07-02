@@ -30,7 +30,6 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.util.TimeUtil;
 
-import de.metas.banking.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.currency.ConversionTypeMethod;

@@ -1,9 +1,11 @@
 @from:cucumber
 @topic:commissionContracts
+@ghActions:run_on_executor3
 Feature: Hierarchy commission and license fee commission combined
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And metasfresh has date and time 2021-12-10T08:00:00+01:00[Europe/Berlin]
     And taxCategory 'Normal' is updated to work with all productTypes
@@ -103,7 +105,7 @@ Feature: Hierarchy commission and license fee commission combined
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
       | invoice_1               | customer_1               | customer_location_1               | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine1_1              | invoice_1               | transaction_product     | 1           | true      |
     And locate invoice candidates for invoice: invoice_1
       | C_Invoice_Candidate_ID.Identifier | M_Product_ID.Identifier |
@@ -177,7 +179,7 @@ Feature: Hierarchy commission and license fee commission combined
       | invoiceSettled_2        | super_salesRep           | super_salesRep_location           | 10 Tage 1 % | true      | CO        | CA             |
       | invoiceSettled_3        | salesRep_1               | salesRep_location_1               | 10 Tage 1 % | true      | CO        | LS             |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLineSettled_1_1      | invoiceSettled_1        | commission_product      | 1.00        | true      |
       | invoiceLineSettled_2_1      | invoiceSettled_2        | commission_product      | 0.90        | true      |
       | invoiceLineSettled_3_1      | invoiceSettled_3        | commission_product      | 0.50        | true      |
@@ -324,7 +326,7 @@ Feature: Hierarchy commission and license fee commission combined
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
       | invoiceSettled_so       | customer_salesRep_1      | customer_salesRep_location_1      | 10 Tage 1 % | true      | CO        | LS             |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLineSettled_so       | invoiceSettled_so       | commission_product      | 0.50        | true      |
 
     And validate commission deed for commission instance commissionInstance_1

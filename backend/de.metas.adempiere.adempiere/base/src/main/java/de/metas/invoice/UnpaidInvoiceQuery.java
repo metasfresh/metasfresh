@@ -25,9 +25,6 @@ package de.metas.invoice;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.engine.DocStatus;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -48,36 +45,4 @@ public class UnpaidInvoiceQuery
 
 	@NonNull
 	QueryLimit queryLimit;
-
-	@Nullable
-	Money openAmountAtDate;
-
-	@Nullable
-	Instant openAmountEvaluationDate;
-
-	@Builder
-	private UnpaidInvoiceQuery(
-			@NonNull final ImmutableSet<String> onlyDocumentNos,
-			@NonNull final ImmutableSet<DocStatus> onlyDocStatuses,
-			@NonNull final QueryLimit queryLimit,
-			@Nullable final Money openAmountAtDate,
-			@Nullable final Instant openAmountEvaluationDate)
-	{
-		if (openAmountAtDate != null)
-		{
-			Check.assumeNotNull(openAmountEvaluationDate, "OpenAmountEvaluationDate must be specified when OpenAmountAtDate is specified");
-		}
-
-		this.onlyDocumentNos = onlyDocumentNos;
-		this.onlyDocStatuses = onlyDocStatuses;
-		this.queryLimit = queryLimit;
-		this.openAmountAtDate = openAmountAtDate;
-		this.openAmountEvaluationDate = openAmountEvaluationDate;
-	}
-
-	@NonNull
-	public Optional<CurrencyId> getCurrencyId()
-	{
-		return Optional.ofNullable(openAmountAtDate).map(Money::getCurrencyId);
-	}
 }

@@ -32,6 +32,8 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 @Value
@@ -52,6 +54,8 @@ public class BankStatementId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
+	public static Optional<BankStatementId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
+
 	public static Set<Integer> toIntSet(final Collection<BankStatementId> bankStatementIds)
 	{
 		if (bankStatementIds == null || bankStatementIds.isEmpty())
@@ -66,7 +70,7 @@ public class BankStatementId implements RepoIdAware
 					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
-	
+
 	private BankStatementId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BankStatement_ID");
@@ -78,4 +82,11 @@ public class BankStatementId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static boolean equals(@Nullable BankStatementId id1, @Nullable BankStatementId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
+
+	public static int toRepoId(@Nullable BankStatementId id) {return id != null ? id.getRepoId() : -1;}
 }

@@ -2,8 +2,6 @@ package de.metas.banking.service;
 
 import javax.annotation.Nullable;
 
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
