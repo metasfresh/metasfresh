@@ -151,7 +151,19 @@ Feature:product get/create/update using metasfresh api
               "ifNotExists": "CREATE",
               "ifExists": "REPLACE"
             }
-         }
+         },
+         "uomConversions": [
+          {
+            "fromUomCode": "PCE",
+            "toUomCode": "KGM",
+            "fromToMultiplier": 0.25
+          },
+          {
+            "fromUomCode": "PCE",
+            "toUomCode": "GRM",
+            "fromToMultiplier": 0.00025
+          }
+        ]
       }
     }
   ],
@@ -187,6 +199,11 @@ Feature:product get/create/update using metasfresh api
       | BearbeitetBio         |
       | EU/Non-EU-Agriculture |
 
+    And validate C_UOM_Conversion:
+      | M_Product_ID.Identifier | C_UOM_ID.X12DE355 | C_UOM_To_ID.X12DE355 | MultiplyRate |
+      | p_1                     | PCE               | KGM                  | 0.25         |
+      | p_1                     | PCE               | GRM                  | 0.00025      |
+    
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API '/api/v2/products/001' and fulfills with '200' status code
 """
 {

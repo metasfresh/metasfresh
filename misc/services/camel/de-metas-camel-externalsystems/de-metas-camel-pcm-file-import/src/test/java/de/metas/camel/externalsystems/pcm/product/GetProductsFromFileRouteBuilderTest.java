@@ -37,6 +37,7 @@ public class GetProductsFromFileRouteBuilderTest extends CamelTestSupport
 	private static final String PRODUCT_IMPORT_FILE_CSV = "10_Product_ImportFile.csv";
 	private static final String JSON_UPSERT_PRODUCT_REQUEST_20 = "20_CamelUpsertProductRequest.json";
 	private static final String JSON_UPSERT_PRODUCT_REQUEST_30 = "30_CamelUpsertProductRequest.json";
+	private static final String JSON_UPSERT_PRODUCT_REQUEST_40 = "40_CamelUpsertProductRequest.json";
 
 	private static final String MATERIAL_SAMPLE_RESOURCE_PATH = "/de/metas/camel/externalsystems/pcm/product/" + PRODUCT_IMPORT_FILE_CSV;
 
@@ -96,8 +97,11 @@ public class GetProductsFromFileRouteBuilderTest extends CamelTestSupport
 		final InputStream expectedUpsertProductRequest_30 = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_REQUEST_30);
 		final ProductUpsertCamelRequest productUpsertCamelRequest_30 = objectMapper.readValue(expectedUpsertProductRequest_30, ProductUpsertCamelRequest.class);
 
+		final InputStream expectedUpsertProductRequest_40 = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_REQUEST_40);
+		final ProductUpsertCamelRequest productUpsertCamelRequest_40 = objectMapper.readValue(expectedUpsertProductRequest_40, ProductUpsertCamelRequest.class);
+		
 		final MockEndpoint productSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_PRODUCT);
-		productSyncMockEndpoint.expectedBodiesReceived(productUpsertCamelRequest_20, productUpsertCamelRequest_30);
+		productSyncMockEndpoint.expectedBodiesReceived(productUpsertCamelRequest_20, productUpsertCamelRequest_30, productUpsertCamelRequest_40);
 
 		final InputStream productImportFile = this.getClass().getResourceAsStream(MATERIAL_SAMPLE_RESOURCE_PATH);
 
@@ -106,7 +110,7 @@ public class GetProductsFromFileRouteBuilderTest extends CamelTestSupport
 
 		//then
 		assertMockEndpointsSatisfied();
-		assertThat(mockUpsertProductProcessor.called).isEqualTo(2);
+		assertThat(mockUpsertProductProcessor.called).isEqualTo(3);
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
 	}
 

@@ -6,6 +6,7 @@ import lombok.ToString;
 import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @CsvRecord(separator = ";", skipField = true)
@@ -34,8 +35,21 @@ public class ProductRow
 	@DataField(pos = 7)
 	private String taxRate;
 
+	@DataField(pos = 9)
+	private String qty;
+
+	@DataField(pos = 10)
+	private String uomCode;
+
+	@Nullable
 	public BigDecimal getTaxRate()
 	{
 		return CamelProcessorUtil.parseGermanNumberString(taxRate);
+	}
+
+	@Nullable
+	public BigDecimal getQty()
+	{
+		return CamelProcessorUtil.parseGermanNumberString(qty);
 	}
 }
