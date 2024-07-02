@@ -5,7 +5,6 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.banking.BankStatementLineId;
 import de.metas.currency.Amount;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;

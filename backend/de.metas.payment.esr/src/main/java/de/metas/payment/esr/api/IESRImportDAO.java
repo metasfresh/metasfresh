@@ -3,7 +3,6 @@ package de.metas.payment.esr.api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankStatementAndLineAndRefId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;

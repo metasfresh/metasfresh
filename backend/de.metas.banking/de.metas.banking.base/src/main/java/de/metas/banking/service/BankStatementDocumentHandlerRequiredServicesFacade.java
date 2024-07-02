@@ -13,8 +13,6 @@ import org.springframework.stereotype.Service;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.payment.IBankStatementPaymentBL;

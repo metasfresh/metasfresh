@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.banking.BankStatementLineId;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import lombok.Builder;

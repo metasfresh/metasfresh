@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_BankStatementLine
  *  @author metasfresh (generated) 
@@ -158,8 +159,7 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_C_BP_BankAccountTo_ID = "C_BP_BankAccountTo_ID";
 
 	/**
-	 * Set Kosten.
-	 * Additional document charges
+	 * Set Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -168,8 +168,7 @@ public interface I_C_BankStatementLine
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Kosten.
-	 * Additional document charges
+	 * Get Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -202,7 +201,8 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Gebühr.
+	 * Set Charge amount.
+	 * Charge Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -211,7 +211,8 @@ public interface I_C_BankStatementLine
 	void setChargeAmt (BigDecimal ChargeAmt);
 
 	/**
-	 * Get Gebühr.
+	 * Get Charge amount.
+	 * Charge Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -410,7 +411,7 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set ELV-Betrag.
+	 * Set EFT Amount.
 	 * Electronic Funds Transfer Amount
 	 *
 	 * <br>Type: Amount
@@ -420,7 +421,7 @@ public interface I_C_BankStatementLine
 	void setEftAmt (@Nullable BigDecimal EftAmt);
 
 	/**
-	 * Get ELV-Betrag.
+	 * Get EFT Amount.
 	 * Electronic Funds Transfer Amount
 	 *
 	 * <br>Type: Amount
@@ -433,7 +434,7 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftAmt = "EftAmt";
 
 	/**
-	 * Set ELV Scheck-Nr..
+	 * Set EFT Check No.
 	 * Electronic Funds Transfer Check No
 	 *
 	 * <br>Type: String
@@ -443,7 +444,7 @@ public interface I_C_BankStatementLine
 	void setEftCheckNo (@Nullable java.lang.String EftCheckNo);
 
 	/**
-	 * Get ELV Scheck-Nr..
+	 * Get EFT Check No.
 	 * Electronic Funds Transfer Check No
 	 *
 	 * <br>Type: String
@@ -456,7 +457,7 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftCheckNo = "EftCheckNo";
 
 	/**
-	 * Set ELV-Währung.
+	 * Set EFT Currency.
 	 * Electronic Funds Transfer Currency
 	 *
 	 * <br>Type: String
@@ -466,7 +467,7 @@ public interface I_C_BankStatementLine
 	void setEftCurrency (@Nullable java.lang.String EftCurrency);
 
 	/**
-	 * Get ELV-Währung.
+	 * Get EFT Currency.
 	 * Electronic Funds Transfer Currency
 	 *
 	 * <br>Type: String
@@ -479,7 +480,7 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftCurrency = "EftCurrency";
 
 	/**
-	 * Set ELV Memo.
+	 * Set EFT Memo.
 	 * Electronic Funds Transfer Memo
 	 *
 	 * <br>Type: String
@@ -489,7 +490,7 @@ public interface I_C_BankStatementLine
 	void setEftMemo (@Nullable java.lang.String EftMemo);
 
 	/**
-	 * Get ELV Memo.
+	 * Get EFT Memo.
 	 * Electronic Funds Transfer Memo
 	 *
 	 * <br>Type: String
@@ -502,7 +503,7 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftMemo = "EftMemo";
 
 	/**
-	 * Set ELV-Zahlungsempfänger.
+	 * Set EFT Payee.
 	 * Electronic Funds Transfer Payee information
 	 *
 	 * <br>Type: String
@@ -512,7 +513,7 @@ public interface I_C_BankStatementLine
 	void setEftPayee (@Nullable java.lang.String EftPayee);
 
 	/**
-	 * Get ELV-Zahlungsempfänger.
+	 * Get EFT Payee.
 	 * Electronic Funds Transfer Payee information
 	 *
 	 * <br>Type: String
@@ -525,8 +526,8 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftPayee = "EftPayee";
 
 	/**
-	 * Set Konto ELV-Zahlungsempfänger.
-	 * Electronic Funds Transfer Payyee Account Information
+	 * Set EFT Payee Account.
+	 * Electronic Funds Transfer Payee Account Information
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -535,8 +536,8 @@ public interface I_C_BankStatementLine
 	void setEftPayeeAccount (@Nullable java.lang.String EftPayeeAccount);
 
 	/**
-	 * Get Konto ELV-Zahlungsempfänger.
-	 * Electronic Funds Transfer Payyee Account Information
+	 * Get EFT Payee Account.
+	 * Electronic Funds Transfer Payee Account Information
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -571,7 +572,7 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftReference = "EftReference";
 
 	/**
-	 * Set Datum ELV-Position.
+	 * Set EFT Statement Line Date.
 	 * Electronic Funds Transfer Statement Line Date
 	 *
 	 * <br>Type: Date
@@ -581,7 +582,7 @@ public interface I_C_BankStatementLine
 	void setEftStatementLineDate (@Nullable java.sql.Timestamp EftStatementLineDate);
 
 	/**
-	 * Get Datum ELV-Position.
+	 * Get EFT Statement Line Date.
 	 * Electronic Funds Transfer Statement Line Date
 	 *
 	 * <br>Type: Date
@@ -594,7 +595,7 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftStatementLineDate = "EftStatementLineDate";
 
 	/**
-	 * Set ELV-TransaktionsID.
+	 * Set EFT Trx ID.
 	 * Electronic Funds Transfer Transaction ID
 	 *
 	 * <br>Type: String
@@ -604,7 +605,7 @@ public interface I_C_BankStatementLine
 	void setEftTrxID (@Nullable java.lang.String EftTrxID);
 
 	/**
-	 * Get ELV-TransaktionsID.
+	 * Get EFT Trx ID.
 	 * Electronic Funds Transfer Transaction ID
 	 *
 	 * <br>Type: String
@@ -617,7 +618,7 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftTrxID = "EftTrxID";
 
 	/**
-	 * Set ELV-Transaktionsart.
+	 * Set EFT Trx Type.
 	 * Electronic Funds Transfer Transaction Type
 	 *
 	 * <br>Type: String
@@ -627,7 +628,7 @@ public interface I_C_BankStatementLine
 	void setEftTrxType (@Nullable java.lang.String EftTrxType);
 
 	/**
-	 * Get ELV-Transaktionsart.
+	 * Get EFT Trx Type.
 	 * Electronic Funds Transfer Transaction Type
 	 *
 	 * <br>Type: String
@@ -640,7 +641,7 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_EftTrxType = "EftTrxType";
 
 	/**
-	 * Set ELV Wertstellungs-Datum.
+	 * Set EFT Effective Date.
 	 * Electronic Funds Transfer Valuta (effective) Date
 	 *
 	 * <br>Type: Date
@@ -650,7 +651,7 @@ public interface I_C_BankStatementLine
 	void setEftValutaDate (@Nullable java.sql.Timestamp EftValutaDate);
 
 	/**
-	 * Get ELV Wertstellungs-Datum.
+	 * Get EFT Effective Date.
 	 * Electronic Funds Transfer Valuta (effective) Date
 	 *
 	 * <br>Type: Date
@@ -753,8 +754,8 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Manuell.
-	 * This is a manual process
+	 * Set Invoice manually allocated.
+	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -763,8 +764,8 @@ public interface I_C_BankStatementLine
 	void setIsManual (boolean IsManual);
 
 	/**
-	 * Get Manuell.
-	 * This is a manual process
+	 * Get Invoice manually allocated.
+	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -845,7 +846,7 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_IsReconciled = "IsReconciled";
 
 	/**
-	 * Set Umkehrung.
+	 * Set Reversal.
 	 * This is a reversing transaction
 	 *
 	 * <br>Type: YesNo
@@ -855,7 +856,7 @@ public interface I_C_BankStatementLine
 	void setIsReversal (boolean IsReversal);
 
 	/**
-	 * Get Umkehrung.
+	 * Get Reversal.
 	 * This is a reversing transaction
 	 *
 	 * <br>Type: YesNo
@@ -866,6 +867,29 @@ public interface I_C_BankStatementLine
 
 	ModelColumn<I_C_BankStatementLine, Object> COLUMN_IsReversal = new ModelColumn<>(I_C_BankStatementLine.class, "IsReversal", null);
 	String COLUMNNAME_IsReversal = "IsReversal";
+
+	/**
+	 * Set Update Amounts from invoice.
+	 * If set and an invoice is assigned, then the bank statement and transaction amount as well as the currency will be taken from the open amount of the invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateAmountsFromInvoice (boolean IsUpdateAmountsFromInvoice);
+
+	/**
+	 * Get Update Amounts from invoice.
+	 * If set and an invoice is assigned, then the bank statement and transaction amount as well as the currency will be taken from the open amount of the invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateAmountsFromInvoice();
+
+	ModelColumn<I_C_BankStatementLine, Object> COLUMN_IsUpdateAmountsFromInvoice = new ModelColumn<>(I_C_BankStatementLine.class, "IsUpdateAmountsFromInvoice", null);
+	String COLUMNNAME_IsUpdateAmountsFromInvoice = "IsUpdateAmountsFromInvoice";
 
 	/**
 	 * Set SeqNo..
@@ -953,7 +977,7 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Referenznummer.
+	 * Set Reference No.
 	 * Your customer or vendor number at the Business Partner's site
 	 *
 	 * <br>Type: String
@@ -963,7 +987,7 @@ public interface I_C_BankStatementLine
 	void setReferenceNo (@Nullable java.lang.String ReferenceNo);
 
 	/**
-	 * Get Referenznummer.
+	 * Get Reference No.
 	 * Your customer or vendor number at the Business Partner's site
 	 *
 	 * <br>Type: String
@@ -998,7 +1022,7 @@ public interface I_C_BankStatementLine
 
 	/**
 	 * Set Statement amount.
-	 * Kontoauszug Betrag
+	 * Statement Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -1008,7 +1032,7 @@ public interface I_C_BankStatementLine
 
 	/**
 	 * Get Statement amount.
-	 * Kontoauszug Betrag
+	 * Statement Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -1020,8 +1044,7 @@ public interface I_C_BankStatementLine
 	String COLUMNNAME_StmtAmt = "StmtAmt";
 
 	/**
-	 * Set Bewegungs-Betrag.
-	 * Amount of a transaction
+	 * Set Amount.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -1030,8 +1053,7 @@ public interface I_C_BankStatementLine
 	void setTrxAmt (BigDecimal TrxAmt);
 
 	/**
-	 * Get Bewegungs-Betrag.
-	 * Amount of a transaction
+	 * Get Amount.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true

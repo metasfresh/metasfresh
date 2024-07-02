@@ -2,9 +2,6 @@ package de.metas.payment.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
-import de.metas.banking.BankStatementLineRefId;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;

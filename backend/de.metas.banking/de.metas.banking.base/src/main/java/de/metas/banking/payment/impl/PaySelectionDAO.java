@@ -23,7 +23,6 @@ import org.compiere.util.DB;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.banking.BankStatementAndLineAndRefId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.invoice.InvoiceId;

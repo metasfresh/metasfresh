@@ -35,8 +35,6 @@ import org.compiere.util.DB;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.cache.CacheMgt;

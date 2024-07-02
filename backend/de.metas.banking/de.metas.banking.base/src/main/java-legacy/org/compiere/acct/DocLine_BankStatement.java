@@ -1,14 +1,12 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;

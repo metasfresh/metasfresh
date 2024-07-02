@@ -23,13 +23,14 @@
 package de.metas.banking.payment.impl;
 
 import de.metas.banking.BankAccountId;
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
 import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.banking.payment.PaymentLinkResult;
+import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
+import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
+import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
@@ -62,6 +63,8 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -73,13 +76,16 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBankStatementBL bankStatementBL;
 	private final MoneyService moneyService;
+	private final PaymentAllocationService paymentAllocationService;
 
 	public BankStatementPaymentBL(
 			@NonNull final IBankStatementBL bankStatementBL,
-			@NonNull final MoneyService moneyService)
+			@NonNull final MoneyService moneyService,
+			@NonNull final PaymentAllocationService paymentAllocationService)
 	{
 		this.bankStatementBL = bankStatementBL;
 		this.moneyService = moneyService;
+		this.paymentAllocationService = paymentAllocationService;
 	}
 
 	@Override
@@ -136,14 +142,14 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final Money expectedPaymentAmount = expectedPaymentDirection.convertStatementAmtToPayAmt(trxAmt);
 
 		return paymentBL.getPaymentIds(PaymentQuery.builder()
-				.limit(QueryLimit.ofInt(limit))
-				.docStatus(DocStatus.Completed)
-				.reconciled(false)
-				.direction(expectedPaymentDirection)
-				.bpartnerId(bpartnerId)
-				.payAmt(expectedPaymentAmount)
-				.excludePaymentIds(excludePaymentIds)
-				.build());
+											   .limit(QueryLimit.ofInt(limit))
+											   .docStatus(DocStatus.Completed)
+											   .reconciled(false)
+											   .direction(expectedPaymentDirection)
+											   .bpartnerId(bpartnerId)
+											   .payAmt(expectedPaymentAmount)
+											   .excludePaymentIds(excludePaymentIds)
+											   .build());
 	}
 
 	private static Money extractTrxAmt(final I_C_BankStatementLine line)
@@ -201,6 +207,18 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 
 		if (invoiceId != null)
 		{
+			final ZonedDateTime evaluationDate = bankStatementLine
+					.getValutaDate()
+					.toLocalDateTime()
+					.atZone(orgDAO.getTimeZone(orgId));
+
+			final InvoiceToAllocate invoiceToAllocate = getInvoiceToAllocate(payAmount.getCurrencyId(), invoiceId, evaluationDate).orElse(null);
+			
+			if (invoiceToAllocate != null && invoiceToAllocate.grantDiscount(payAmount.toAmount(moneyService::getCurrencyCodeByCurrencyId)))
+			{
+				paymentBuilder.discountAmt(invoiceToAllocate.getDiscountAmountConverted().toBigDecimal());
+			}
+
 			paymentBuilder.invoiceId(invoiceId);
 		}
 
@@ -264,13 +282,13 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		}
 
 		bankStatementListenersService.firePaymentLinked(PaymentLinkResult.builder()
-				.bankStatementId(BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()))
-				.bankStatementLineId(BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID()))
-				.bankStatementLineRefId(null)
-				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
-				.statementTrxAmt(trxAmt)
-				.paymentMarkedAsReconciled(payment.isReconciled())
-				.build());
+																.bankStatementId(BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()))
+																.bankStatementLineId(BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID()))
+																.bankStatementLineRefId(null)
+																.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
+																.statementTrxAmt(trxAmt)
+																.paymentMarkedAsReconciled(payment.isReconciled())
+																.build());
 	}
 
 	private static PaymentDirection extractPaymentDirection(final I_C_Payment payment)
@@ -298,5 +316,32 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 				//
 				.build()
 				.execute();
+	}
+
+	@NonNull
+	private Optional<InvoiceToAllocate> getInvoiceToAllocate(
+			@NonNull final CurrencyId paymentCurrencyId,
+			@NonNull final InvoiceId invoiceId,
+			@NonNull final ZonedDateTime evaluationDate)
+	{
+		final InvoiceToAllocateQuery query = InvoiceToAllocateQuery.builder()
+				.currencyId(paymentCurrencyId)
+				.evaluationDate(evaluationDate)
+				.onlyInvoiceId(invoiceId)
+				.build();
+
+		return paymentAllocationService.retrieveInvoicesToAllocate(query)
+				.stream()
+				.filter(invoiceToAllocate -> {
+					// just to be sure
+					final InvoiceId invId = invoiceToAllocate.getInvoiceId();
+					if (invId == null)
+					{
+						return false;
+					}
+
+					return invId.equals(invoiceId);
+				})
+				.findFirst();
 	}
 }

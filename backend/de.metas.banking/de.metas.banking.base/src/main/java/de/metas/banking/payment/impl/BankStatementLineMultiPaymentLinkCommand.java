@@ -10,8 +10,6 @@ import org.compiere.model.I_C_Payment;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest.PaymentToLink;

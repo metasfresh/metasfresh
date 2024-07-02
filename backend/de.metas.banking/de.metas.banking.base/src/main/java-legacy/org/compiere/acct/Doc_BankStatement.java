@@ -6,7 +6,6 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
-import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;

@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.banking.BankStatementId;
 import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.util.Services;

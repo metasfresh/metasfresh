@@ -25,8 +25,6 @@ package de.metas.banking.impexp;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import de.metas.banking.BankAccountId;
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest.ElectronicFundsTransfer;
@@ -207,7 +205,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 						.chargeAmt(Money.of(importRecord.getChargeAmt(), currencyId))
 						.interestAmt(Money.of(importRecord.getInterestAmt(), currencyId))
 						.chargeId(ChargeId.ofRepoIdOrNull(importRecord.getC_Charge_ID()))
-						.debitorOrCreditorId(importRecord.getDebitorOrCreditorId())
+						.debtorOrCreditorId(importRecord.getDebitorOrCreditorId())
 						//
 						.eft(ElectronicFundsTransfer.builder()
 									 .trxId(importRecord.getEftTrxID())

@@ -27,7 +27,6 @@ import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.BankAccountId;
-import de.metas.banking.BankStatementId;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.document.engine.DocStatus;

@@ -8,7 +8,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.banking.BankStatementAndLineAndRefId;
-import de.metas.banking.BankStatementLineId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.esr.ESRImportId;
 import de.metas.payment.esr.actionhandler.IESRActionHandler;
