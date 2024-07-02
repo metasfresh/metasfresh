@@ -124,7 +124,7 @@ public interface I_ModCntr_Interest
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: falset
 	 */
 	void setInterestDays (int InterestDays);
 

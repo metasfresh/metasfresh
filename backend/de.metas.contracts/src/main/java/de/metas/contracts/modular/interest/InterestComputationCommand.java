@@ -159,7 +159,7 @@ public class InterestComputationCommand
 			{
 				final @NonNull AllocationItem currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
 																							   shippingNotificationLog);
-				saveSubtractValueInterestRecord(request, settings.getBonusInterestRate(), currentShippingNotification);
+				saveSubtractValueInterestRecord(request, settings.getInterestPercent(), currentShippingNotification);
 
 			}
 		}
@@ -263,7 +263,7 @@ public class InterestComputationCommand
 
 	private void saveSubtractValueInterestRecord(
 			@NonNull final InterestComputationRequest request,
-			@NonNull final Percent bonusInterestRate,
+			@NonNull final Percent interestPercent,
 			@NonNull final AllocationItem shippingNotification)
 	{
 		if (request.getBonusComputationDetails() == null)
@@ -282,7 +282,7 @@ public class InterestComputationCommand
 
 		final long interestDays = request.getBonusComputationDetails().getBonusInterestDays();
 
-		final BigDecimal bonusAmountAsBD = bonusInterestRate.computePercentageOf(shippingNotification.getOpenAmount().toBigDecimal(),
+		final BigDecimal bonusAmountAsBD = interestPercent.computePercentageOf(shippingNotification.getOpenAmount().toBigDecimal(),
 																				 request.getInterestCurrencyPrecision().toInt())
 				.multiply(BigDecimal.valueOf(interestDays))
 				.divide(BigDecimal.valueOf(TOTAL_DAYS_OF_FISCAL_YEAR), RoundingMode.HALF_UP)

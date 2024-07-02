@@ -44,3 +44,47 @@ INSERT INTO t_alter_column values('modcntr_interest','ShippingNotification_ModCn
 INSERT INTO t_alter_column values('modcntr_interest','ShippingNotification_ModCntr_Log_ID',null,'NULL',null)
 ;
 
+
+
+
+
+-- UI Element: Zinsberechnungslauf(541801,de.metas.contracts) -> Zins(547546,de.metas.contracts) -> 1000028 -> 10 -> main.Akontorechnung
+-- Column: ModCntr_Interest_V.C_InterimInvoice_ID
+-- 2024-07-02T12:51:13.540Z
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=624769
+;
+
+-- 2024-07-02T12:51:13.553Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=728758
+;
+
+-- Field: Zinsberechnungslauf(541801,de.metas.contracts) -> Zins(547546,de.metas.contracts) -> Akontorechnung
+-- Column: ModCntr_Interest_V.C_InterimInvoice_ID
+-- 2024-07-02T12:51:13.559Z
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=728758
+;
+
+-- 2024-07-02T12:51:13.563Z
+DELETE FROM AD_Field WHERE AD_Field_ID=728758
+;
+
+-- UI Element: Zinsberechnungslauf(541801,de.metas.contracts) -> Zins(547546,de.metas.contracts) -> 1000028 -> 10 -> main.Vorfinanzierungsbetrag
+-- Column: ModCntr_Interest_V.InterimAmt
+-- 2024-07-02T12:51:34.882Z
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=624762
+;
+
+-- 2024-07-02T12:51:34.884Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=728742
+;
+
+-- Field: Zinsberechnungslauf(541801,de.metas.contracts) -> Zins(547546,de.metas.contracts) -> Vorfinanzierungsbetrag
+-- Column: ModCntr_Interest_V.InterimAmt
+-- 2024-07-02T12:51:34.887Z
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=728742
+;
+
+-- 2024-07-02T12:51:34.891Z
+DELETE FROM AD_Field WHERE AD_Field_ID=728742
+;
+
