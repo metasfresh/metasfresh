@@ -29,9 +29,6 @@ public class UOMConversionDAO implements IUOMConversionDAO
 {
 	private static final Logger logger = LogManager.getLogger(UOMConversionDAO.class);
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-
 	private final CCache<ProductId, UOMConversionsMap> productConversionsCache = CCache.<ProductId, UOMConversionsMap>builder()
 			.tableName(I_C_UOM_Conversion.Table_Name)
 			.build();
@@ -39,7 +36,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 	private final CCache<ProductId, UOMConversionsMap> productConversionsIncludingInactiveCache = CCache.<ProductId, UOMConversionsMap>builder()
 			.tableName(I_C_UOM_Conversion.Table_Name)
 			.build();
-	
+
 	@Override
 	@NonNull
 	public UOMConversionsMap getProductConversions(@NonNull final ProductId productId)
@@ -57,7 +54,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 	@Override
 	public UOMConversionsMap getGenericConversions()
 	{
-		final ImmutableList<UOMConversionRate> rates = queryBL
+		final ImmutableList<UOMConversionRate> rates = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_UOM_Conversion.class)
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, null)
 				.addOnlyActiveRecordsFilter()
@@ -116,7 +113,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 	@Override
 	public void updateUOMConversion(@NonNull final UpdateUOMConversionRequest request)
 	{
-		final I_C_UOM_Conversion record = queryBL.createQueryBuilder(I_C_UOM_Conversion.class)
+		final I_C_UOM_Conversion record = Services.get(IQueryBL.class).createQueryBuilder(I_C_UOM_Conversion.class)
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, request.getProductId())
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_ID, request.getFromUomId())
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_To_ID, request.getToUomId())
@@ -137,9 +134,9 @@ public class UOMConversionDAO implements IUOMConversionDAO
 	@NonNull
 	private UOMConversionsMap retrieveProductConversionsEvenInactive(@NonNull final ProductId productId)
 	{
-		final UomId productStockingUomId = productBL.getStockUOMId(productId);
+		final UomId productStockingUomId = Services.get(IProductBL.class).getStockUOMId(productId);
 
-		final ImmutableList<UOMConversionRate> rates = queryBL
+		final ImmutableList<UOMConversionRate> rates = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_UOM_Conversion.class)
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, productId)
 				.create()
@@ -156,9 +153,9 @@ public class UOMConversionDAO implements IUOMConversionDAO
 	@NonNull
 	private UOMConversionsMap retrieveProductConversions(@NonNull final ProductId productId)
 	{
-		final UomId productStockingUomId = productBL.getStockUOMId(productId);
+		final UomId productStockingUomId = Services.get(IProductBL.class).getStockUOMId(productId);
 
-		final ImmutableList<UOMConversionRate> rates = queryBL
+		final ImmutableList<UOMConversionRate> rates = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_UOM_Conversion.class)
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, productId)
 				.addOnlyActiveRecordsFilter()
