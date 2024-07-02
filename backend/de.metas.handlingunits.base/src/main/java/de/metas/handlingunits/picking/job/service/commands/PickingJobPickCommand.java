@@ -813,7 +813,7 @@ public class PickingJobPickCommand
 			final HuId tuId = pickedToHU.getActuallyPickedToHU().getId();
 			final I_M_HU tu = handlingUnitsBL.getById(tuId);
 
-			final List<I_M_HU> lus = huTransformService.tuToNewLUs(tu, QtyTU.ONE.toBigDecimal(), luPIItem, false);
+			final List<I_M_HU> lus = huTransformService.tuToNewLUs(tu, QtyTU.ONE, luPIItem, false);
 			final I_M_HU lu = CollectionUtils.singleElement(lus);
 			final HuId luId = HuId.ofRepoId(lu.getM_HU_ID());
 

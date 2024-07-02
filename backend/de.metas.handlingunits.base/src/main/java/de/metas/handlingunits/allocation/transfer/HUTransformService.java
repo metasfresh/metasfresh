@@ -196,7 +196,7 @@ public class HUTransformService
 				return current;
 			}
 		}
-		
+
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 		final Properties effectiveCtx = ctx != null ? ctx : Env.getCtx();
@@ -546,7 +546,7 @@ public class HUTransformService
 	 */
 	public List<I_M_HU> tuToExistingLU(
 			@NonNull final I_M_HU sourceTuHU,
-			@NonNull final BigDecimal qtyTU,
+			@NonNull final QtyTU qtyTU,
 			@NonNull final I_M_HU luHU)
 	{
 		final List<I_M_HU> tuHUsToAttachToLU;
@@ -666,7 +666,7 @@ public class HUTransformService
 	 */
 	public List<I_M_HU> tuToNewTUs(
 			@NonNull final I_M_HU sourceTuHU,
-			@NonNull final BigDecimal qtyTU)
+			@NonNull final QtyTU qtyTU)
 	{
 		if (qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0) // the caller wants to process the entire sourceTuHU
 		{
@@ -749,7 +749,7 @@ public class HUTransformService
 		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
 		for (final I_M_HU sourceHU : newTUsRequest.getSourceHUs())
 		{
-			final List<I_M_HU> currentResult = huToNewTUs(sourceHU, qtyTuLeft, newTUsRequest.getExpectedProductId());
+			final List<I_M_HU> currentResult = huToNewTUs(sourceHU, QtyTU.ofInt(qtyTuLeft), newTUsRequest.getExpectedProductId());
 			result.addAll(currentResult);
 
 			qtyTuLeft -= currentResult.size();
@@ -763,7 +763,7 @@ public class HUTransformService
 
 	private List<I_M_HU> huToNewTUs(
 			@NonNull final I_M_HU sourceHU,
-			final int qtyTU,
+			final QtyTU qtyTU,
 			@Nullable final ProductId expectedProductId)
 	{
 		if (handlingUnitsBL.isLoadingUnit(sourceHU))
@@ -779,7 +779,7 @@ public class HUTransformService
 				return ImmutableList.of();
 			}
 
-			return tuToNewTUs(sourceHU, BigDecimal.valueOf(qtyTU));
+			return tuToNewTUs(sourceHU, qtyTU);
 		}
 		else
 		{
@@ -798,13 +798,13 @@ public class HUTransformService
 	 */
 	private List<I_M_HU> luExtractTUs(
 			@NonNull final I_M_HU sourceLU,
-			final int qtyTU,
+			@NonNull final QtyTU qtyTU,
 			final boolean keepSourceLuAsParent,
 			@NonNull final Set<HuId> alreadyExtractedTUIds,
 			@Nullable final ProductId expectedProductId)
 	{
 		// how many TUs we still have to extract
-		int qtyTUsRemaining = Check.assumeGreaterThanZero(qtyTU, "qtyTU");
+		int qtyTUsRemaining = Check.assumeGreaterThanZero(qtyTU.toInt(), "qtyTU");
 
 		final ImmutableList.Builder<I_M_HU> extractedTUs = new ImmutableList.Builder<>();
 
@@ -838,11 +838,11 @@ public class HUTransformService
 				final List<I_M_HU> newTUs;
 				if (keepSourceLuAsParent)
 				{
-					newTUs = tuToExistingLU(tu, BigDecimal.valueOf(qtyTUsToExtract), sourceLU);
+					newTUs = tuToExistingLU(tu, QtyTU.ofInt(qtyTUsToExtract), sourceLU);
 				}
 				else
 				{
-					newTUs = tuToNewTUs(tu, BigDecimal.valueOf(qtyTUsToExtract));
+					newTUs = tuToNewTUs(tu, QtyTU.ofInt(qtyTUsToExtract));
 				}
 
 				extractedTUs.addAll(newTUs);
@@ -942,7 +942,7 @@ public class HUTransformService
 	 */
 	public List<I_M_HU> tuToNewLUs(
 			@NonNull final I_M_HU sourceTuHU,
-			@NonNull final BigDecimal qtyTU,
+			@NonNull final QtyTU qtyTU,
 			@NonNull final I_M_HU_PI_Item luPIItem,
 			final boolean isOwnPackingMaterials)
 	{
@@ -1034,7 +1034,7 @@ public class HUTransformService
 	 */
 	private List<I_M_HU> tuToTopLevelHUs(
 			@NonNull final I_M_HU sourceTuHU,
-			@NonNull final BigDecimal qtyTU,
+			@NonNull final QtyTU qtyTU,
 			@Nullable final I_M_HU_PI_Item luPIItem,
 			final boolean newPackingMaterialsAreOurOwn)
 	{
@@ -1060,7 +1060,7 @@ public class HUTransformService
 				sourceQtyCUperTU = qtyOfStorage.divide(representedTUsCount, uomPrecision, RoundingMode.FLOOR);
 				// since we do full TU split: store how many TUs we split off, so that we update the storage qty by subtracting this number.
 				final I_M_HU_Item item = sourceTuHU.getM_HU_Item_Parent();
-				huContext.setProperty(AggregateHUTrxListener.mkQtyTUsToSplitPropertyKey(item), qtyTU);
+				huContext.setProperty(AggregateHUTrxListener.mkQtyTUsToSplitPropertyKey(item), qtyTU.toBigDecimal());
 			}
 			else
 			{
@@ -1101,7 +1101,7 @@ public class HUTransformService
 			HUSplitBuilderCoreEngine.builder()
 					.huContextInitital(huContext)
 					.huToSplit(sourceTuHU)
-					.requestProvider(huContext -> createCUAllocationRequest(huContext, cuProductId, Quantity.of(qtyTU.multiply(sourceQtyCUperTU), cuUOM), false))
+					.requestProvider(huContext -> createCUAllocationRequest(huContext, cuProductId, Quantity.of(qtyTU.toBigDecimal().multiply(sourceQtyCUperTU), cuUOM), false))
 					.destination(destination)
 					.build()
 					.withPropagateHUValues()
@@ -1294,7 +1294,7 @@ public class HUTransformService
 				break;
 			}
 
-			final int numberOfTUsToExtract = 1; // we extract only one TU at a time because we don't know how many CUs we will get out of each TU.
+			final QtyTU numberOfTUsToExtract = QtyTU.ONE; // we extract only one TU at a time because we don't know how many CUs we will get out of each TU.
 			final boolean keepLuAsParent = true; // we need a "dedicated" TU, but it shall remain with sourceLU.
 
 			final List<I_M_HU> extractedTUs = luExtractTUs(sourceLU, numberOfTUsToExtract, keepLuAsParent, alreadyExtractedTUIds, null);
@@ -1502,7 +1502,7 @@ public class HUTransformService
 	@NonNull
 	public I_M_HU splitOutTURecord(@NonNull final I_M_HU hu)
 	{
-		final List<I_M_HU> extractedTUs = tuToNewTUs(hu, QtyTU.ONE.toBigDecimal());
+		final List<I_M_HU> extractedTUs = tuToNewTUs(hu, QtyTU.ONE);
 		return CollectionUtils.singleElement(extractedTUs);
 	}
 
@@ -1538,14 +1538,14 @@ public class HUTransformService
 
 				final List<I_M_HU> createdLUs = tuToNewLUs(
 						tu,
-						QtyTU.ONE.toBigDecimal(),
+						QtyTU.ONE,
 						newLUPIItem,
 						false);
 				lu = CollectionUtils.singleElement(createdLUs);
 			}
 			else
 			{
-				tuToExistingLU(tu, QtyTU.ONE.toBigDecimal(), lu);
+				tuToExistingLU(tu, QtyTU.ONE, lu);
 			}
 		}
 

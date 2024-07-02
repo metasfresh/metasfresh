@@ -340,7 +340,7 @@ public class M_HU_StepDef
 		for (final Map<String, String> row : rows)
 		{
 			final String sourceTUIdentifier = DataTableUtil.extractStringForColumnName(row, "sourceTU." + TABLECOLUMN_IDENTIFIER);
-			final BigDecimal tuQty = DataTableUtil.extractBigDecimalForColumnName(row, "tuQty");
+			final QtyTU tuQty = QtyTU.ofBigDecimal(DataTableUtil.extractBigDecimalForColumnName(row, "tuQty"));
 			final String huPIItemIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PI_Item_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 			final I_M_HU tuHU = huTable.get(sourceTUIdentifier);

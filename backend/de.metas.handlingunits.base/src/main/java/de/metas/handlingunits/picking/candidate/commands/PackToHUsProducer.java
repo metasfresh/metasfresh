@@ -309,7 +309,8 @@ public class PackToHUsProducer
 		@NonNull private final IHUContext huContext;
 		@NonNull private final I_M_HU hu;
 		@Getter private final boolean isGeneratedFromInventory;
-		private IHUStorage _huStorage = null; // lazy
+		private transient IHUStorage _huStorage = null; // lazy
+		private transient HuPackingInstructionsId _packingInstructionsId = null; // lazy
 
 		@Builder
 		private PickFromHU(
@@ -354,7 +355,15 @@ public class PackToHUsProducer
 		}
 
 		@NonNull
-		public HuPackingInstructionsId getPackingInstructionsId() {return handlingUnitsBL.getPackingInstructionsId(hu);}
+		public HuPackingInstructionsId getPackingInstructionsId()
+		{
+			HuPackingInstructionsId packingInstructionsId = this._packingInstructionsId;
+			if (packingInstructionsId == null)
+			{
+				packingInstructionsId = this._packingInstructionsId = handlingUnitsBL.getPackingInstructionsId(hu);
+			}
+			return packingInstructionsId;
+		}
 	}
 
 	private static class PickFromHUsList
