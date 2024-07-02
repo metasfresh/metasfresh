@@ -77,8 +77,6 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 		}
 		if (recordRef.tableNameEqualsTo(I_C_Flatrate_Term.Table_Name))
 		{
-
-			if (!logEntryContractType.isInterimContractType()) {return false;}
 			final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
 			if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isInterimContractType())
 			{

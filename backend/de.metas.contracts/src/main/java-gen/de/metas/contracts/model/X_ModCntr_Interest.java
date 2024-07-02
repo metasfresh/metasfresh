@@ -115,32 +115,32 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 		return get_ValueAsInt(COLUMNNAME_InterimContract_ModCntr_Log_ID);
 	}
 
-	// @Override
-	// public de.metas.contracts.model.I_ModCntr_Log getInterimInvoice_ModCntr_Log()
-	// {
-	// 	return get_ValueAsPO(COLUMNNAME_InterimInvoice_ModCntr_Log_ID, de.metas.contracts.model.I_ModCntr_Log.class);
-	// }
-	//
-	// @Override
-	// public void setInterimInvoice_ModCntr_Log(final de.metas.contracts.model.I_ModCntr_Log InterimInvoice_ModCntr_Log)
-	// {
-	// 	set_ValueFromPO(COLUMNNAME_InterimInvoice_ModCntr_Log_ID, de.metas.contracts.model.I_ModCntr_Log.class, InterimInvoice_ModCntr_Log);
-	// }
-	//
-	// @Override
-	// public void setInterimInvoice_ModCntr_Log_ID (final int InterimInvoice_ModCntr_Log_ID)
-	// {
-	// 	if (InterimInvoice_ModCntr_Log_ID < 1)
-	// 		set_Value (COLUMNNAME_InterimInvoice_ModCntr_Log_ID, null);
-	// 	else
-	// 		set_Value (COLUMNNAME_InterimInvoice_ModCntr_Log_ID, InterimInvoice_ModCntr_Log_ID);
-	// }
-	//
-	// @Override
-	// public int getInterimInvoice_ModCntr_Log_ID()
-	// {
-	// 	return get_ValueAsInt(COLUMNNAME_InterimInvoice_ModCntr_Log_ID);
-	// }
+	@Override
+	public de.metas.contracts.model.I_ModCntr_Log getInterimInvoice_ModCntr_Log()
+	{
+		return get_ValueAsPO(COLUMNNAME_InterimInvoice_ModCntr_Log_ID, de.metas.contracts.model.I_ModCntr_Log.class);
+	}
+
+	@Override
+	public void setInterimInvoice_ModCntr_Log(final de.metas.contracts.model.I_ModCntr_Log InterimInvoice_ModCntr_Log)
+	{
+		set_ValueFromPO(COLUMNNAME_InterimInvoice_ModCntr_Log_ID, de.metas.contracts.model.I_ModCntr_Log.class, InterimInvoice_ModCntr_Log);
+	}
+
+	@Override
+	public void setInterimInvoice_ModCntr_Log_ID (final int InterimInvoice_ModCntr_Log_ID)
+	{
+		if (InterimInvoice_ModCntr_Log_ID < 1) 
+			set_Value (COLUMNNAME_InterimInvoice_ModCntr_Log_ID, null);
+		else 
+			set_Value (COLUMNNAME_InterimInvoice_ModCntr_Log_ID, InterimInvoice_ModCntr_Log_ID);
+	}
+
+	@Override
+	public int getInterimInvoice_ModCntr_Log_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_InterimInvoice_ModCntr_Log_ID);
+	}
 
 	@Override
 	public void setMatchedAmt (final BigDecimal MatchedAmt)

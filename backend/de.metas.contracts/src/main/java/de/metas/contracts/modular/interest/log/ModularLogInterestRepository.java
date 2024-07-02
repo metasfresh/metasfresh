@@ -52,7 +52,7 @@ public class ModularLogInterestRepository
 		return ModularLogInterest.builder()
 				.interestLogId(ModularInterestLogId.ofRepoId(interest.getModCntr_Interest_ID()))
 				.interestRunId(InterestRunId.ofRepoId(interest.getModCntr_Interest_Run_ID()))
-				.shippingNotificationLogId(ModularContractLogEntryId.ofRepoId(interest.getShippingNotification_ModCntr_Log_ID()))
+				.shippingNotificationLogId(ModularContractLogEntryId.ofRepoIdOrNull(interest.getShippingNotification_ModCntr_Log_ID()))
 				.interimContractLogId(ModularContractLogEntryId.ofRepoIdOrNull(interest.getInterimContract_ModCntr_Log_ID()))
 
 				.allocatedAmt(Money.of(interest.getMatchedAmt(), currencyId))
@@ -73,7 +73,7 @@ public class ModularLogInterestRepository
 		final I_ModCntr_Interest record = InterfaceWrapperHelper.newInstance(I_ModCntr_Interest.class);
 
 		record.setModCntr_Interest_Run_ID(request.getInterestRunId().getRepoId());
-		record.setShippingNotification_ModCntr_Log_ID(request.getShippingNotificationLogId().getRepoId());
+		record.setShippingNotification_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getShippingNotificationLogId()));
 		record.setInterimContract_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getInterimContractLogId()));
 
 		final Money allocatedAmt = request.getAllocatedAmt();
@@ -95,7 +95,7 @@ public class ModularLogInterestRepository
 		final I_ModCntr_Interest record = InterfaceWrapperHelper.load(request.getInterestLogId(), I_ModCntr_Interest.class);
 
 		record.setModCntr_Interest_Run_ID(request.getInterestRunId().getRepoId());
-		record.setShippingNotification_ModCntr_Log_ID(request.getShippingNotificationLogId().getRepoId());
+		record.setShippingNotification_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getShippingNotificationLogId()));
 		record.setInterimContract_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getInterimContractLogId()));
 
 		final Money allocatedAmt = request.getAllocatedAmt();

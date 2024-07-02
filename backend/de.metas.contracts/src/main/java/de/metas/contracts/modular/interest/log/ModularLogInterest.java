@@ -38,7 +38,7 @@ import java.math.BigDecimal;
 public class ModularLogInterest
 {
 	@NonNull ModularInterestLogId interestLogId;
-	@NonNull ModularContractLogEntryId shippingNotificationLogId;
+	@Nullable ModularContractLogEntryId shippingNotificationLogId;
 	@NonNull InterestRunId interestRunId;
 	@NonNull Money allocatedAmt;
 	@NonNull Long interestDays;
@@ -49,7 +49,7 @@ public class ModularLogInterest
 	@Builder(toBuilder = true)
 	public ModularLogInterest(
 			@NonNull final ModularInterestLogId interestLogId,
-			@NonNull final ModularContractLogEntryId shippingNotificationLogId,
+			@Nullable final ModularContractLogEntryId shippingNotificationLogId,
 			@NonNull final InterestRunId interestRunId,
 			@NonNull final Money allocatedAmt,
 			@NonNull final Long interestDays,

@@ -186,31 +186,30 @@ public interface I_ModCntr_Interest
 	ModelColumn<I_ModCntr_Interest, de.metas.contracts.model.I_ModCntr_Log> COLUMN_InterimContract_ModCntr_Log_ID = new ModelColumn<>(I_ModCntr_Interest.class, "InterimContract_ModCntr_Log_ID", de.metas.contracts.model.I_ModCntr_Log.class);
 	String COLUMNNAME_InterimContract_ModCntr_Log_ID = "InterimContract_ModCntr_Log_ID";
 
-	// TODO: drop column and regenerate
-	// /**
-	//  * Set Interim Invoice Log.
-	//  *
-	//  * <br>Type: Search
-	//  * <br>Mandatory: false
-	//  * <br>Virtual Column: false
-	//  */
-	// void setInterimInvoice_ModCntr_Log_ID (int InterimInvoice_ModCntr_Log_ID);
-	//
-	// /**
-	//  * Get Interim Invoice Log.
-	//  *
-	//  * <br>Type: Search
-	//  * <br>Mandatory: false
-	//  * <br>Virtual Column: false
-	//  */
-	// int getInterimInvoice_ModCntr_Log_ID();
-	//
-	// @Nullable de.metas.contracts.model.I_ModCntr_Log getInterimInvoice_ModCntr_Log();
-	//
-	// void setInterimInvoice_ModCntr_Log(@Nullable de.metas.contracts.model.I_ModCntr_Log InterimInvoice_ModCntr_Log);
-	//
-	// ModelColumn<I_ModCntr_Interest, de.metas.contracts.model.I_ModCntr_Log> COLUMN_InterimInvoice_ModCntr_Log_ID = new ModelColumn<>(I_ModCntr_Interest.class, "InterimInvoice_ModCntr_Log_ID", de.metas.contracts.model.I_ModCntr_Log.class);
-	// String COLUMNNAME_InterimInvoice_ModCntr_Log_ID = "InterimInvoice_ModCntr_Log_ID";
+	/**
+	 * Set Interim Invoice Log.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInterimInvoice_ModCntr_Log_ID (int InterimInvoice_ModCntr_Log_ID);
+
+	/**
+	 * Get Interim Invoice Log.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getInterimInvoice_ModCntr_Log_ID();
+
+	@Nullable de.metas.contracts.model.I_ModCntr_Log getInterimInvoice_ModCntr_Log();
+
+	void setInterimInvoice_ModCntr_Log(@Nullable de.metas.contracts.model.I_ModCntr_Log InterimInvoice_ModCntr_Log);
+
+	ModelColumn<I_ModCntr_Interest, de.metas.contracts.model.I_ModCntr_Log> COLUMN_InterimInvoice_ModCntr_Log_ID = new ModelColumn<>(I_ModCntr_Interest.class, "InterimInvoice_ModCntr_Log_ID", de.metas.contracts.model.I_ModCntr_Log.class);
+	String COLUMNNAME_InterimInvoice_ModCntr_Log_ID = "InterimInvoice_ModCntr_Log_ID";
 
 	/**
 	 * Set Active.

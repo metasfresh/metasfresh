@@ -51,6 +51,8 @@ public class InterimContractAllocations
 	@NonNull @Getter private Money openAmount;
 	@Nullable private Instant cachedInvoiceInterimDate;
 	@Getter @NonNull private final List<CreateModularLogInterestRequest> allocatedShippingNotifications = new ArrayList<>();
+	@Getter @NonNull private final List<CreateModularLogInterestRequest> allocatedInterimContract = new ArrayList<>();
+
 
 	// public synchronized boolean canAllocate(@Nullable final AllocationItem shippingNotification)
 	// {
@@ -121,7 +123,7 @@ public class InterimContractAllocations
 		return CreateModularLogInterestRequest.builder()
 				.interestRunId(interestRunId)
 				.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
-				.interimContractLogId(interimContractEntry.getId())
+				.interimContractLogId(interimContractEntry==null? null : interimContractEntry.getId())
 				.allocatedAmt(getAmountToAllocate(shippingNotification))
 				.interestDays(getInterestDays(shippingNotification))
 				.build();
@@ -140,6 +142,7 @@ public class InterimContractAllocations
 	@NonNull
 	private Instant getInterimDate()
 	{
+		// TODO: this is not needed
 		if (cachedInvoiceInterimDate != null)
 		{
 			return cachedInvoiceInterimDate;

@@ -2305,10 +2305,10 @@ public class TimeUtil
 			dayTo = dayTo.withDayOfMonth(30);
 		}
 
-		long months = ChronoUnit.MONTHS.between(
+		final long months = ChronoUnit.MONTHS.between(
 				YearMonth.from(dayFrom), YearMonth.from(dayTo));
 
-		int daysLeft = dayTo.getDayOfMonth() - dayFrom.getDayOfMonth();
+		final int daysLeft = dayTo.getDayOfMonth() - dayFrom.getDayOfMonth();
 
 		return 30 * months + daysLeft;
 	}
@@ -2319,7 +2319,7 @@ public class TimeUtil
 	 */
 	public static long getDaysBetween360(@NonNull final Instant from, @NonNull final Instant to)
 	{
-		return getDaysBetween360(from, to);
+		return getDaysBetween360(asZonedDateTime(from), asZonedDateTime(to));
 	}
 
 }    // TimeUtil

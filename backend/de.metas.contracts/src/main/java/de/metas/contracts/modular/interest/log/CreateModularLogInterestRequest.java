@@ -36,7 +36,7 @@ import javax.annotation.Nullable;
 public class CreateModularLogInterestRequest
 {
 	@NonNull InterestRunId interestRunId;
-	@NonNull ModularContractLogEntryId shippingNotificationLogId;
+	@Nullable ModularContractLogEntryId shippingNotificationLogId;
 	@NonNull Money allocatedAmt;
 	@NonNull Long interestDays;
 	@Nullable ModularContractLogEntryId interimContractLogId;
@@ -45,7 +45,7 @@ public class CreateModularLogInterestRequest
 	@Builder
 	public CreateModularLogInterestRequest(
 			@NonNull final InterestRunId interestRunId,
-			@NonNull final ModularContractLogEntryId shippingNotificationLogId,
+			@Nullable final ModularContractLogEntryId shippingNotificationLogId,
 			@NonNull final Money allocatedAmt,
 			@NonNull final Long interestDays,
 			@Nullable final ModularContractLogEntryId interimContractLogId,
