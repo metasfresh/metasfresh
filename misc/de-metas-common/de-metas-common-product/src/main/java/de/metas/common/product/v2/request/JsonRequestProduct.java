@@ -168,7 +168,7 @@ public class JsonRequestProduct
 	@Schema
 	private List<JsonRequestProductTaxCategoryUpsert> productTaxCategories;
 
-	@ApiModelProperty(position = 170)
+	@Schema
 	private List<JsonRequestUOMConversionUpsert> uomConversions;
 
 	public void setCode(final @NonNull String code)

@@ -22,8 +22,7 @@
 
 package de.metas.common.product.v2.request;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -33,25 +32,24 @@ import java.math.BigDecimal;
 @Getter
 @ToString
 @EqualsAndHashCode
-@ApiModel(description = "Contains the actual product uom conversion to insert or update.")
 public class JsonRequestUOMConversionUpsert
 {
-	@ApiModelProperty(position = 10, required = true, value = "Corresponding to C_UOM_Conversion.C_UOM_ID")
+	@Schema(description = "Corresponding to C_UOM_Conversion.C_UOM_ID")
 	private String fromUomCode;
 
-	@ApiModelProperty(position = 20, required = true, value = "Corresponding to C_UOM_Conversion.C_UOM_To_ID")
+	@Schema(description = "Corresponding to C_UOM_Conversion.C_UOM_To_ID")
 	private String toUomCode;
 
-	@ApiModelProperty(position = 30, value = "Corresponding to C_UOM_Conversion.MultiplyRate")
+	@Schema(description = "Corresponding to C_UOM_Conversion.MultiplyRate")
 	private BigDecimal fromToMultiplier;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean fromToMultiplierSet;
 
-	@ApiModelProperty(position = 40, value = "Corresponding to C_UOM_Conversion.IsCatchUOMForProduct")
+	@Schema(description = "Corresponding to C_UOM_Conversion.IsCatchUOMForProduct")
 	private Boolean catchUOMForProduct;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean catchUOMForProductSet;
 
 	public void setFromUomCode(final String fromUomCode)
