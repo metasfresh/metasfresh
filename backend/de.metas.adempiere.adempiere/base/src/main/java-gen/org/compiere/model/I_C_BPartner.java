@@ -1,14 +1,15 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
 /** Generated Interface for C_BPartner
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_BPartner
+public interface I_C_BPartner 
 {
 
 	String Table_Name = "C_BPartner";
@@ -388,7 +389,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
 	/**
-	 * Set Mahnung.
+	 * Set Dunning.
 	 * Dunning Rules for overdue invoices
 	 *
 	 * <br>Type: TableDir
@@ -398,7 +399,7 @@ public interface I_C_BPartner
 	void setC_Dunning_ID (int C_Dunning_ID);
 
 	/**
-	 * Get Mahnung.
+	 * Get Dunning.
 	 * Dunning Rules for overdue invoices
 	 *
 	 * <br>Type: TableDir
@@ -529,7 +530,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_C_Incoterms_Vendor_ID = "C_Incoterms_Vendor_ID";
 
 	/**
-	 * Set Terminplan Rechnung.
+	 * Set Invoice Schedule.
 	 * Schedule for generating Invoices
 	 *
 	 * <br>Type: TableDir
@@ -539,7 +540,7 @@ public interface I_C_BPartner
 	void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID);
 
 	/**
-	 * Get Terminplan Rechnung.
+	 * Get Invoice Schedule.
 	 * Schedule for generating Invoices
 	 *
 	 * <br>Type: TableDir
@@ -712,7 +713,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Auftrag anlegen.
+	 * Set Create SO.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -721,7 +722,7 @@ public interface I_C_BPartner
 	void setCreateSO (@Nullable java.lang.String CreateSO);
 
 	/**
-	 * Get Auftrag anlegen.
+	 * Get Create SO.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -733,7 +734,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_CreateSO = "CreateSO";
 
 	/**
-	 * Set Credit limit indicator.
+	 * Set Credit limit indicator %.
 	 * Percent of Credit used from the limit
 	 *
 	 * <br>Type: String
@@ -745,7 +746,7 @@ public interface I_C_BPartner
 	void setCreditLimitIndicator (@Nullable java.lang.String CreditLimitIndicator);
 
 	/**
-	 * Get Credit limit indicator.
+	 * Get Credit limit indicator %.
 	 * Percent of Credit used from the limit
 	 *
 	 * <br>Type: String
@@ -919,7 +920,34 @@ public interface I_C_BPartner
 	String COLUMNNAME_DefaultShipTo_Postal = "DefaultShipTo_Postal";
 
 	/**
-	 * Set Lieferart.
+	 * Set Delivery credit limit indicator %.
+	 * Percent of Credit used from the limit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDeliveryCreditLimitIndicator (@Nullable java.lang.String DeliveryCreditLimitIndicator);
+
+	/**
+	 * Get Delivery credit limit indicator %.
+	 * Percent of Credit used from the limit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getDeliveryCreditLimitIndicator();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_DeliveryCreditLimitIndicator = new ModelColumn<>(I_C_BPartner.class, "DeliveryCreditLimitIndicator", null);
+	String COLUMNNAME_DeliveryCreditLimitIndicator = "DeliveryCreditLimitIndicator";
+
+	/**
+	 * Set Delivery Rule.
 	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
@@ -929,7 +957,7 @@ public interface I_C_BPartner
 	void setDeliveryRule (@Nullable java.lang.String DeliveryRule);
 
 	/**
-	 * Get Lieferart.
+	 * Get Delivery Rule.
 	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
@@ -986,7 +1014,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Kopien.
+	 * Set Document Copies.
 	 * Number of copies to be printed
 	 *
 	 * <br>Type: Integer
@@ -996,7 +1024,7 @@ public interface I_C_BPartner
 	void setDocumentCopies (int DocumentCopies);
 
 	/**
-	 * Get Kopien.
+	 * Get Document Copies.
 	 * Number of copies to be printed
 	 *
 	 * <br>Type: Integer
@@ -1183,7 +1211,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_Firstname = "Firstname";
 
 	/**
-	 * Set Erster Verkauf.
+	 * Set First Sale.
 	 * Date of First Sale
 	 *
 	 * <br>Type: Date
@@ -1193,7 +1221,7 @@ public interface I_C_BPartner
 	void setFirstSale (@Nullable java.sql.Timestamp FirstSale);
 
 	/**
-	 * Get Erster Verkauf.
+	 * Get First Sale.
 	 * Date of First Sale
 	 *
 	 * <br>Type: Date
@@ -1206,7 +1234,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_FirstSale = "FirstSale";
 
 	/**
-	 * Set Fester Rabatt %.
+	 * Set Flat Discount %.
 	 * Flat discount percentage
 	 *
 	 * <br>Type: Number
@@ -1216,7 +1244,7 @@ public interface I_C_BPartner
 	void setFlatDiscount (@Nullable BigDecimal FlatDiscount);
 
 	/**
-	 * Get Fester Rabatt %.
+	 * Get Flat Discount %.
 	 * Flat discount percentage
 	 *
 	 * <br>Type: Number
@@ -1229,7 +1257,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_FlatDiscount = "FlatDiscount";
 
 	/**
-	 * Set Frachtkostenberechnung.
+	 * Set Freight Cost Rule.
 	 * Method for charging Freight
 	 *
 	 * <br>Type: List
@@ -1239,7 +1267,7 @@ public interface I_C_BPartner
 	void setFreightCostRule (@Nullable java.lang.String FreightCostRule);
 
 	/**
-	 * Get Frachtkostenberechnung.
+	 * Get Freight Cost Rule.
 	 * Method for charging Freight
 	 *
 	 * <br>Type: List
@@ -1250,6 +1278,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_FreightCostRule = new ModelColumn<>(I_C_BPartner.class, "FreightCostRule", null);
 	String COLUMNNAME_FreightCostRule = "FreightCostRule";
+
+	/**
+	 * Set Farming Producer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFresh_Urproduzent (boolean Fresh_Urproduzent);
+
+	/**
+	 * Get Farming Producer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isFresh_Urproduzent();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Fresh_Urproduzent = new ModelColumn<>(I_C_BPartner.class, "Fresh_Urproduzent", null);
+	String COLUMNNAME_Fresh_Urproduzent = "Fresh_Urproduzent";
 
 	/**
 	 * Set GDP Certificate.
@@ -1380,7 +1429,28 @@ public interface I_C_BPartner
 	String COLUMNNAME_InternalName = "InternalName";
 
 	/**
-	 * Set Druckformat Rechnung.
+	 * Set Invoice Delivery.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceDelivery (@Nullable java.lang.String InvoiceDelivery);
+
+	/**
+	 * Get Invoice Delivery.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoiceDelivery();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_InvoiceDelivery = new ModelColumn<>(I_C_BPartner.class, "InvoiceDelivery", null);
+	String COLUMNNAME_InvoiceDelivery = "InvoiceDelivery";
+
+	/**
+	 * Set Invoice Print Format.
 	 * Print Format for printing Invoices
 	 *
 	 * <br>Type: Table
@@ -1390,7 +1460,7 @@ public interface I_C_BPartner
 	void setInvoice_PrintFormat_ID (int Invoice_PrintFormat_ID);
 
 	/**
-	 * Get Druckformat Rechnung.
+	 * Get Invoice Print Format.
 	 * Print Format for printing Invoices
 	 *
 	 * <br>Type: Table
@@ -1407,8 +1477,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_Invoice_PrintFormat_ID = "Invoice_PrintFormat_ID";
 
 	/**
-	 * Set Rechnungsstellung.
-	 * "Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
+	 * Set Invoice Rule.
+	 * Frequency and method of invoicing
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1417,8 +1487,8 @@ public interface I_C_BPartner
 	void setInvoiceRule (@Nullable java.lang.String InvoiceRule);
 
 	/**
-	 * Get Rechnungsstellung.
-	 * "Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
+	 * Get Invoice Rule.
+	 * Frequency and method of invoicing
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1566,6 +1636,31 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsArchived = "IsArchived";
 
 	/**
+	 * Set Blocked.
+	 * The record is blocked in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsBlocked (boolean IsBlocked);
+
+	/**
+	 * Get Blocked.
+	 * The record is blocked in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isBlocked();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsBlocked = new ModelColumn<>(I_C_BPartner.class, "IsBlocked", null);
+	String COLUMNNAME_IsBlocked = "IsBlocked";
+
+	/**
 	 * Set Company.
 	 *
 	 * <br>Type: YesNo
@@ -1588,7 +1683,6 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Autom. Reference in Order.
-	 * Erlaubt es, bei einem neuen Auftrag automatisch das Referenz-Feld des Auftrags vorzubelegen.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1598,7 +1692,6 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Autom. Reference in Order.
-	 * Erlaubt es, bei einem neuen Auftrag automatisch das Referenz-Feld des Auftrags vorzubelegen.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1610,7 +1703,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsCreateDefaultPOReference = "IsCreateDefaultPOReference";
 
 	/**
-	 * Set Kunde.
+	 * Set Customer.
 	 * Indicates if this Business Partner is a Customer
 	 *
 	 * <br>Type: YesNo
@@ -1620,7 +1713,7 @@ public interface I_C_BPartner
 	void setIsCustomer (boolean IsCustomer);
 
 	/**
-	 * Get Kunde.
+	 * Get Customer.
 	 * Indicates if this Business Partner is a Customer
 	 *
 	 * <br>Type: YesNo
@@ -1654,7 +1747,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsDefaultForwarder = "IsDefaultForwarder";
 
 	/**
-	 * Set Rabatte drucken.
+	 * Set Discount Printed.
 	 * Print Discount on Invoice and Order
 	 *
 	 * <br>Type: YesNo
@@ -1664,7 +1757,7 @@ public interface I_C_BPartner
 	void setIsDiscountPrinted (boolean IsDiscountPrinted);
 
 	/**
-	 * Get Rabatte drucken.
+	 * Get Discount Printed.
 	 * Print Discount on Invoice and Order
 	 *
 	 * <br>Type: YesNo
@@ -1698,7 +1791,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
 
 	/**
-	 * Set Mitarbeiter.
+	 * Set Employee.
 	 * Indicates if  this Business Partner is an employee
 	 *
 	 * <br>Type: YesNo
@@ -1708,7 +1801,7 @@ public interface I_C_BPartner
 	void setIsEmployee (boolean IsEmployee);
 
 	/**
-	 * Get Mitarbeiter.
+	 * Get Employee.
 	 * Indicates if  this Business Partner is an employee
 	 *
 	 * <br>Type: YesNo
@@ -1742,7 +1835,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsForwarder = "IsForwarder";
 
 	/**
-	 * Set Haddex Prüfung erforderlich.
+	 * Set Haddex Check.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1751,7 +1844,7 @@ public interface I_C_BPartner
 	void setIsHaddexCheck (boolean IsHaddexCheck);
 
 	/**
-	 * Get Haddex Prüfung erforderlich.
+	 * Get Haddex Check.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1850,7 +1943,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Print local currency VAT.
-	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
+	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type. If the field is left none or set to Yes, the tax report is printed.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1860,7 +1953,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Print local currency VAT.
-	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
+	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type. If the field is left none or set to Yes, the tax report is printed.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1873,7 +1966,6 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Prospect.
-	 * Set Aktiver Interessent/Kunde.
 	 * Indicates this is a Prospect
 	 *
 	 * <br>Type: YesNo
@@ -1883,7 +1975,7 @@ public interface I_C_BPartner
 	void setIsProspect (boolean IsProspect);
 
 	/**
-	 * Get Aktiver Interessent/Kunde.
+	 * Get Prospect.
 	 * Indicates this is a Prospect
 	 *
 	 * <br>Type: YesNo
@@ -2112,8 +2204,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsSummary = "IsSummary";
 
 	/**
-	 * Set steuerbefreit.
-	 * Steuersatz steuerbefreit
+	 * Set SO Tax exempt.
+	 * Business partner is exempt from tax on sales
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -2122,8 +2214,8 @@ public interface I_C_BPartner
 	void setIsTaxExempt (boolean IsTaxExempt);
 
 	/**
-	 * Get steuerbefreit.
-	 * Steuersatz steuerbefreit
+	 * Get SO Tax exempt.
+	 * Business partner is exempt from tax on sales
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -2135,7 +2227,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsTaxExempt = "IsTaxExempt";
 
 	/**
-	 * Set Lieferant.
+	 * Set Vendor.
 	 * Indicates if this Business Partner is a Vendor
 	 *
 	 * <br>Type: YesNo
@@ -2145,7 +2237,7 @@ public interface I_C_BPartner
 	void setIsVendor (boolean IsVendor);
 
 	/**
-	 * Get Lieferant.
+	 * Get Vendor.
 	 * Indicates if this Business Partner is a Vendor
 	 *
 	 * <br>Type: YesNo
@@ -2361,8 +2453,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_Memo = "Memo";
 
 	/**
-	 * Set Memo_Delivery.
-	 * Memo Lieferung
+	 * Set Memo Shipment.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -2371,8 +2462,7 @@ public interface I_C_BPartner
 	void setMemo_Delivery (@Nullable java.lang.String Memo_Delivery);
 
 	/**
-	 * Get Memo_Delivery.
-	 * Memo Lieferung
+	 * Get Memo Shipment.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -2384,8 +2474,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_Memo_Delivery = "Memo_Delivery";
 
 	/**
-	 * Set Memo_Invoicing.
-	 * Memo Abrechnung
+	 * Set Memo Invoicing.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -2394,8 +2483,7 @@ public interface I_C_BPartner
 	void setMemo_Invoicing (@Nullable java.lang.String Memo_Invoicing);
 
 	/**
-	 * Get Memo_Invoicing.
-	 * Memo Abrechnung
+	 * Get Memo Invoicing.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -2447,6 +2535,26 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_MKTG_Campaign_ID = new ModelColumn<>(I_C_BPartner.class, "MKTG_Campaign_ID", null);
 	String COLUMNNAME_MKTG_Campaign_ID = "MKTG_Campaign_ID";
+
+	/**
+	 * Set Group/Mother Company.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMother_Company_ID (int Mother_Company_ID);
+
+	/**
+	 * Get Group/Mother Company.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMother_Company_ID();
+
+	String COLUMNNAME_Mother_Company_ID = "Mother_Company_ID";
 
 	/**
 	 * Set Price List.
@@ -2512,27 +2620,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_MRN_ABN = "MRN_ABN";
 
 	/**
-	 * Set Group/Mother Company.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMother_Company_ID (int Mother_Company_ID);
-
-	/**
-	 * Get Group/Mother Company.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getMother_Company_ID();
-
-	String COLUMNNAME_Mother_Company_ID = "Mother_Company_ID";
-
-	/**
 	 * Set Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2542,6 +2631,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2672,7 +2762,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Name 2.
-	 * Zusätzliche Bezeichnung
+	 * Additional Name
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2682,7 +2772,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Name 2.
-	 * Zusätzliche Bezeichnung
+	 * Additional Name
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2738,8 +2828,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_Number_employees = "Number_employees";
 
 	/**
-	 * Set Mitarbeiter.
-	 * Anzahl der Mitarbeiter
+	 * Set Employees.
+	 * Number of employees
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -2748,8 +2838,8 @@ public interface I_C_BPartner
 	void setNumberEmployees (int NumberEmployees);
 
 	/**
-	 * Get Mitarbeiter.
-	 * Anzahl der Mitarbeiter
+	 * Get Employees.
+	 * Number of employees
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -2849,7 +2939,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_PaymentRule = "PaymentRule";
 
 	/**
-	 * Set Zahlungsweise.
+	 * Set Payment Rule.
 	 * Purchase payment option
 	 *
 	 * <br>Type: List
@@ -2859,7 +2949,7 @@ public interface I_C_BPartner
 	void setPaymentRulePO (java.lang.String PaymentRulePO);
 
 	/**
-	 * Get Zahlungsweise.
+	 * Get Payment Rule.
 	 * Purchase payment option
 	 *
 	 * <br>Type: List
@@ -2894,7 +2984,6 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Delivery Via Rule.
-	 * Wie der Auftrag geliefert wird
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2904,7 +2993,6 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Delivery Via Rule.
-	 * Wie der Auftrag geliefert wird
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2987,7 +3075,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_PO_InvoiceRule = "PO_InvoiceRule";
 
 	/**
-	 * Set Zahlungskondition.
+	 * Set PO Payment Term.
 	 * Payment rules for a purchase order
 	 *
 	 * <br>Type: Table
@@ -2997,7 +3085,7 @@ public interface I_C_BPartner
 	void setPO_PaymentTerm_ID (int PO_PaymentTerm_ID);
 
 	/**
-	 * Get Zahlungskondition.
+	 * Get PO Payment Term.
 	 * Payment rules for a purchase order
 	 *
 	 * <br>Type: Table
@@ -3009,7 +3097,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_PO_PaymentTerm_ID = "PO_PaymentTerm_ID";
 
 	/**
-	 * Set Einkaufspreisliste.
+	 * Set Purchase Pricelist.
 	 * Price List used by this Business Partner
 	 *
 	 * <br>Type: Table
@@ -3019,7 +3107,7 @@ public interface I_C_BPartner
 	void setPO_PriceList_ID (int PO_PriceList_ID);
 
 	/**
-	 * Get Einkaufspreisliste.
+	 * Get Purchase Pricelist.
 	 * Price List used by this Business Partner
 	 *
 	 * <br>Type: Table
@@ -3120,7 +3208,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_Postal = "Postal";
 
 	/**
-	 * Set Möglicher Gesamtertrag.
+	 * Set Potential Life Time Value.
 	 * Total Revenue expected
 	 *
 	 * <br>Type: Amount
@@ -3130,7 +3218,7 @@ public interface I_C_BPartner
 	void setPotentialLifeTimeValue (@Nullable BigDecimal PotentialLifeTimeValue);
 
 	/**
-	 * Get Möglicher Gesamtertrag.
+	 * Get Potential Life Time Value.
 	 * Total Revenue expected
 	 *
 	 * <br>Type: Amount
@@ -3250,7 +3338,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_Rating = "Rating";
 
 	/**
-	 * Set Referenznummer.
+	 * Set Reference No.
 	 * Your customer or vendor number at the Business Partner's site
 	 *
 	 * <br>Type: String
@@ -3260,7 +3348,7 @@ public interface I_C_BPartner
 	void setReferenceNo (@Nullable java.lang.String ReferenceNo);
 
 	/**
-	 * Get Referenznummer.
+	 * Get Reference No.
 	 * Your customer or vendor number at the Business Partner's site
 	 *
 	 * <br>Type: String
@@ -3296,7 +3384,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_Referrer = "Referrer";
 
 	/**
-	 * Set Wiedervorlage Datum Aussen.
+	 * Set Reminder Date external.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -3305,7 +3393,7 @@ public interface I_C_BPartner
 	void setReminderDateExtern (@Nullable java.sql.Timestamp ReminderDateExtern);
 
 	/**
-	 * Get Wiedervorlage Datum Aussen.
+	 * Get Reminder Date external.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -3317,7 +3405,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_ReminderDateExtern = "ReminderDateExtern";
 
 	/**
-	 * Set Wiedervorlage Datum Innen.
+	 * Set Reminder Date internal.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -3326,7 +3414,7 @@ public interface I_C_BPartner
 	void setReminderDateIntern (@Nullable java.sql.Timestamp ReminderDateIntern);
 
 	/**
-	 * Get Wiedervorlage Datum Innen.
+	 * Get Reminder Date internal.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -3368,7 +3456,7 @@ public interface I_C_BPartner
 	void setSalesgroup (@Nullable java.lang.String Salesgroup);
 
 	/**
-	 * Get Statistik Gruppe.
+	 * Get Statistic Group.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -3445,7 +3533,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_SalesRepIntern_ID = "SalesRepIntern_ID";
 
 	/**
-	 * Set Verkaufsvolumen in 1.000.
+	 * Set Sales Volume in 1.000.
 	 * Total Volume of Sales in Thousands of Currency
 	 *
 	 * <br>Type: Integer
@@ -3455,7 +3543,7 @@ public interface I_C_BPartner
 	void setSalesVolume (int SalesVolume);
 
 	/**
-	 * Get Verkaufsvolumen in 1.000.
+	 * Get Sales Volume in 1.000.
 	 * Total Volume of Sales in Thousands of Currency
 	 *
 	 * <br>Type: Integer
@@ -3551,7 +3639,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_SelfDisclosureVendor = "SelfDisclosureVendor";
 
 	/**
-	 * Set E-Mail senden.
+	 * Set Send EMail.
 	 * Enable sending Document EMail
 	 *
 	 * <br>Type: YesNo
@@ -3561,7 +3649,7 @@ public interface I_C_BPartner
 	void setSendEMail (boolean SendEMail);
 
 	/**
-	 * Get E-Mail senden.
+	 * Get Send EMail.
 	 * Enable sending Document EMail
 	 *
 	 * <br>Type: YesNo
@@ -3574,7 +3662,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_SendEMail = "SendEMail";
 
 	/**
-	 * Set Anteil.
+	 * Set Share.
 	 * Share of Customer's business as a percentage
 	 *
 	 * <br>Type: Integer
@@ -3584,7 +3672,7 @@ public interface I_C_BPartner
 	void setShareOfCustomer (int ShareOfCustomer);
 
 	/**
-	 * Get Anteil.
+	 * Get Share.
 	 * Share of Customer's business as a percentage
 	 *
 	 * <br>Type: Integer
@@ -3597,7 +3685,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_ShareOfCustomer = "ShareOfCustomer";
 
 	/**
-	 * Set Mindesthaltbarkeit %.
+	 * Set Min Shelf Life %.
 	 * Minimum Shelf Life in percent based on Product Instance Guarantee Date
 	 *
 	 * <br>Type: Integer
@@ -3607,7 +3695,7 @@ public interface I_C_BPartner
 	void setShelfLifeMinPct (int ShelfLifeMinPct);
 
 	/**
-	 * Get Mindesthaltbarkeit %.
+	 * Get Min Shelf Life %.
 	 * Minimum Shelf Life in percent based on Product Instance Guarantee Date
 	 *
 	 * <br>Type: Integer
@@ -3683,7 +3771,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_Social_media_5 = "Social_media_5";
 
 	/**
-	 * Set Beschreibung Auftrag.
+	 * Set Order Description.
 	 * Description to be used on orders
 	 *
 	 * <br>Type: String
@@ -3693,7 +3781,7 @@ public interface I_C_BPartner
 	void setSO_Description (@Nullable java.lang.String SO_Description);
 
 	/**
-	 * Get Beschreibung Auftrag.
+	 * Get Order Description.
 	 * Description to be used on orders
 	 *
 	 * <br>Type: String
@@ -3728,7 +3816,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_SO_DocTypeTarget_ID = "SO_DocTypeTarget_ID";
 
 	/**
-	 * Set Notiz Auftragsart.
+	 * Set SO_TargetDocTypeReason.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3737,7 +3825,7 @@ public interface I_C_BPartner
 	void setSO_TargetDocTypeReason (@Nullable java.lang.String SO_TargetDocTypeReason);
 
 	/**
-	 * Get Notiz Auftragsart.
+	 * Get SO_TargetDocTypeReason.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3951,7 +4039,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Vendor Category.
-	 * Lieferanten Kategorie
+	 * Vendor Category
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3961,7 +4049,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Vendor Category.
-	 * Lieferanten Kategorie
+	 * Vendor Category
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3992,25 +4080,4 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_Xing = new ModelColumn<>(I_C_BPartner.class, "Xing", null);
 	String COLUMNNAME_Xing = "Xing";
-
-	/**
-	 * Set Farming Producer.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setFresh_Urproduzent (boolean Fresh_Urproduzent);
-
-	/**
-	 * Get Farming Producer.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isFresh_Urproduzent();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_Fresh_Urproduzent = new ModelColumn<>(I_C_BPartner.class, "Fresh_Urproduzent", null);
-	String COLUMNNAME_Fresh_Urproduzent = "Fresh_Urproduzent";
 }
