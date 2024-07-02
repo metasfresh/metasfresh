@@ -56,6 +56,9 @@ public interface IUOMDAO extends ISingletonService
 
 	Optional<I_C_UOM> getByX12DE355IfExists(X12DE355 x12de355);
 
+	@NonNull
+	Optional<UomId> getIdByX12DE355IfExists(@NonNull X12DE355 x12de355);
+	
 	/**
 	 * Gets UOM for Each/Stuck.
 	 */
@@ -78,7 +81,4 @@ public interface IUOMDAO extends ISingletonService
 
 	@NonNull
 	UOMType getUOMTypeById(UomId uomId);
-
-	@NonNull
-	Optional<UomId> getOptionalUomIdByX12DE355(@NonNull X12DE355 x12de355);
 }

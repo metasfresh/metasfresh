@@ -10,11 +10,8 @@ public interface IUOMConversionDAO extends ISingletonService
 	UOMConversionsMap getProductConversions(@NonNull ProductId productId);
 
 	UOMConversionsMap getGenericConversions();
-	
+
 	void createUOMConversion(@NonNull CreateUOMConversionRequest request);
 
 	void updateUOMConversion(@NonNull UpdateUOMConversionRequest request);
-
-	@NonNull
-	UOMConversionsMap getProductConversionsEvenInactive(@NonNull ProductId productId);
 }

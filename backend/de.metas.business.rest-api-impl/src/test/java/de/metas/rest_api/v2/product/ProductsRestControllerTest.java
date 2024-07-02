@@ -50,6 +50,7 @@ import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
 import de.metas.rest_api.v2.pricing.PriceListRestService;
 import de.metas.rest_api.v2.pricing.ProductPriceRestService;
+import de.metas.rest_api.v2.uomconversion.UomConversionRestService;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -135,7 +136,13 @@ public class ProductsRestControllerTest
 
 		final ProductPriceRestService productPriceRestService= new ProductPriceRestService(externalReferenceRestControllerService, productPriceRepository, priceListService);
 
-		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService, productPriceRestService, productTaxCategoryService);
+		final UomConversionRestService uomConversionRestService = new UomConversionRestService();
+		
+		final ProductRestService productRestService = new ProductRestService(productRepository,
+																			 externalReferenceRestControllerService,
+																			 productPriceRestService,
+																			 productTaxCategoryService,
+																			 uomConversionRestService);
 
 		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
 	}

@@ -33,22 +33,11 @@ public class UOMConversionDAO implements IUOMConversionDAO
 			.tableName(I_C_UOM_Conversion.Table_Name)
 			.build();
 
-	private final CCache<ProductId, UOMConversionsMap> productConversionsIncludingInactiveCache = CCache.<ProductId, UOMConversionsMap>builder()
-			.tableName(I_C_UOM_Conversion.Table_Name)
-			.build();
-
 	@Override
 	@NonNull
 	public UOMConversionsMap getProductConversions(@NonNull final ProductId productId)
 	{
 		return productConversionsCache.getOrLoad(productId, this::retrieveProductConversions);
-	}
-
-	@Override
-	@NonNull
-	public UOMConversionsMap getProductConversionsEvenInactive(@NonNull final ProductId productId)
-	{
-		return productConversionsIncludingInactiveCache.getOrLoad(productId, this::retrieveProductConversionsEvenInactive);
 	}
 
 	@Override
@@ -114,6 +103,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 	public void updateUOMConversion(@NonNull final UpdateUOMConversionRequest request)
 	{
 		final I_C_UOM_Conversion record = Services.get(IQueryBL.class).createQueryBuilder(I_C_UOM_Conversion.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, request.getProductId())
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_ID, request.getFromUomId())
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_To_ID, request.getToUomId())
@@ -126,28 +116,8 @@ public class UOMConversionDAO implements IUOMConversionDAO
 		record.setMultiplyRate(fromToMultiplier);
 		record.setDivideRate(toFromMultiplier);
 		record.setIsCatchUOMForProduct(request.isCatchUOMForProduct());
-		record.setIsActive(request.isActive());
 
 		saveRecord(record);
-	}
-
-	@NonNull
-	private UOMConversionsMap retrieveProductConversionsEvenInactive(@NonNull final ProductId productId)
-	{
-		final UomId productStockingUomId = Services.get(IProductBL.class).getStockUOMId(productId);
-
-		final ImmutableList<UOMConversionRate> rates = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_UOM_Conversion.class)
-				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, productId)
-				.create()
-				.stream()
-				.map(UOMConversionDAO::toUOMConversionOrNull)
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
-
-		return buildUOMConversionsMap(productId,
-									  productStockingUomId,
-									  rates);
 	}
 
 	@NonNull

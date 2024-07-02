@@ -165,9 +165,9 @@ Feature:product get/create/update using metasfresh api
       | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         |
       | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com |
     And validate C_UOM_Conversion:
-      | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
-      | p_1                     | PCE                    | KGM                  | 0.25         |
-      | p_1                     | PCE                    | GRM                  | 0.00025      |
+      | M_Product_ID.Identifier | C_UOM_ID.X12DE355 | C_UOM_To_ID.X12DE355 | MultiplyRate |
+      | p_1                     | PCE               | KGM                  | 0.25         |
+      | p_1                     | PCE               | GRM                  | 0.00025      |
 
   @from:cucumber
   Scenario: get Product, as a REST-API invoker

@@ -99,15 +99,15 @@ public class C_UOM_Conversion_StepDef
 
 	private void validate_C_UOM_Conversions(@NonNull final Map<String, String> tableRow)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM_Conversion.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product product = productTable.get(productIdentifier);
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
-		final String fromX12de355Code = DataTableUtil.extractStringForColumnName(tableRow, "FROM_" + I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final String fromX12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM_Conversion.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 		final X12DE355 fromX12DE355 = X12DE355.ofCode(fromX12de355Code);
 		final UomId fromUomId = uomDAO.getUomIdByX12DE355(fromX12DE355);
 
-		final String toX12de355Code = DataTableUtil.extractStringForColumnName(tableRow, "TO_" + I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final String toX12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM_Conversion.COLUMNNAME_C_UOM_To_ID + "." + X12DE355.class.getSimpleName());
 		final X12DE355 toX12DE355 = X12DE355.ofCode(toX12de355Code);
 		final UomId toUomId = uomDAO.getUomIdByX12DE355(toX12DE355);
 
@@ -126,7 +126,7 @@ public class C_UOM_Conversion_StepDef
 
 		softly.assertAll();
 	}
-	
+
 	private void update_C_UOM_Conversions(@NonNull final Map<String, String> tableRow)
 	{
 		final String conversionIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM_Conversion.COLUMNNAME_C_UOM_Conversion_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);

@@ -22,10 +22,10 @@
 
 package de.metas.camel.externalsystems.pcm.product;
 
+import de.metas.common.util.Check;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -35,18 +35,21 @@ import java.util.Optional;
 @Getter
 public enum UOMCodeEnum
 {
+	/**
+	 * All other Units of measure are assumed to have the given {@link de.metas.camel.externalsystems.pcm.product.UOMCodeEnum#pcmCode} matching the X12DE355 value.
+	 */
 	LTR("L", "LTR"),
 	KGM("kg", "KGM"),
 	GRM("g", "GRM"),
 	PCE("ST", "PCE");
-	
+
 	private final String pcmCode;
 	private final String x12de355Code;
 
 	@NonNull
 	public static Optional<String> getX12DE355CodeByPCMCode(@Nullable final String code)
 	{
-		if (StringUtils.isEmpty(code))
+		if (Check.isBlank(code))
 		{
 			return Optional.empty();
 		}

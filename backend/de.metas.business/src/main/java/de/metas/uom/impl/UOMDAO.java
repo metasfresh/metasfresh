@@ -99,7 +99,7 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@NonNull
-	public Optional<UomId> getOptionalUomIdByX12DE355(@NonNull final X12DE355 x12de355)
+	public Optional<UomId> getIdByX12DE355IfExists(@NonNull final X12DE355 x12de355)
 	{
 		return getUomIdByX12DE355IfExists(x12de355);
 	}
