@@ -559,7 +559,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		final List<I_M_HU_Item> huItems = handlingUnitsRepo.retrieveItems(hu);
-		if (huItems.size() == 0)
+		if (huItems.isEmpty())
 		{
 			return false; // we don't care
 		}
@@ -968,6 +968,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		else
 		{
 			// note: if hu is an aggregate HU, then there won't be an NPE here.
+			//noinspection DataFlowIssue
 			final I_M_HU_PI_Item parentPIItem = getPIItem(hu.getM_HU_Item_Parent());
 			if (parentPIItem == null)
 			{
@@ -990,6 +991,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		// note: if hu is an aggregate HU, then there won't be an NPE here.
+		//noinspection DataFlowIssue
 		final I_M_HU_PI_Item parentPIItem = getPIItem(hu.getM_HU_Item_Parent());
 		if (parentPIItem == null)
 		{
