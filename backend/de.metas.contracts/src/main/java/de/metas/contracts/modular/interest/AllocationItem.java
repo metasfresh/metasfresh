@@ -22,23 +22,40 @@
 
 package de.metas.contracts.modular.interest;
 
+import de.metas.contracts.modular.log.ModularContractLogEntry;
+import de.metas.money.Money;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.util.TimeUtil;
-
-import java.sql.Date;
-import java.time.Instant;
+import lombok.With;
 
 @Value
-@Builder
-public class BonusComputationDetails
+public class AllocationItem
 {
-	@NonNull Instant interimDate;
-	@NonNull Instant billingDate;
+	@NonNull ModularContractLogEntry shippingNotificationEntry;
+	@NonNull @With Money openAmount;
 
-	public int getBonusInterestDays()
+	@Builder(toBuilder = true)
+	private AllocationItem(
+			@NonNull final ModularContractLogEntry shippingNotificationEntry,
+			@NonNull final Money openAmount)
 	{
-		return TimeUtil.getDaysBetween(Date.from(interimDate), Date.from(billingDate));
+		Check.assume(openAmount.signum() >= 0, "OpenAmount cannot be negative!");
+
+		this.shippingNotificationEntry = shippingNotificationEntry;
+		this.openAmount = openAmount;
+	}
+
+	public AllocationItem subtractAllocatedAmount(@NonNull final Money allocatedAmt)
+	{
+		return toBuilder()
+				.openAmount(openAmount.subtract(allocatedAmt))
+				.build();
+	}
+
+	public int openAmountSignum()
+	{
+		return openAmount.signum();
 	}
 }

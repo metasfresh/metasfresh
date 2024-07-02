@@ -180,11 +180,16 @@
 		 return modularContractLogDAO.streamModularContractLogEntries(query);
 	 }
 
-	 @NonNull
-	 public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final ModularContractLogQuery query)
-	 {
-		 return modularContractLogDAO.getModularContractIds(query);
-	 }
+	public boolean anyMatch(@NonNull final ModularContractLogQuery query)
+	{
+		return modularContractLogDAO.anyMatch(query);
+	}
+
+	@NonNull
+	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final ModularContractLogQuery query)
+	{
+		return modularContractLogDAO.getModularContractIds(query);
+	}
 
 	 @Nullable
 	 public PInstanceId getSelection(@NonNull final LockOwner lockOwner)

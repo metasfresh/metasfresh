@@ -31,50 +31,49 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
-import lombok.With;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 @Builder
-public class InvoiceAllocations
+public class InterimContractAllocations
 {
 	@NonNull private final InterestRunId interestRunId;
 	@NonNull private final Integer additionalInterestDays;
-	@NonNull @Getter private final ModularContractLogEntry invoiceEntry;
+	@Nullable @Getter private final ModularContractLogEntry interimContractEntry;
 
 	@NonNull private final IOrgDAO orgDAO;
 
 	@NonNull @Getter private Money openAmount;
 	@Nullable private Instant cachedInvoiceInterimDate;
 	@Getter @NonNull private final List<CreateModularLogInterestRequest> allocatedShippingNotifications = new ArrayList<>();
+	@Getter @NonNull private final List<CreateModularLogInterestRequest> allocatedInterimContract = new ArrayList<>();
 
-	public synchronized boolean canAllocate(@Nullable final AllocationItem shippingNotification)
-	{
-		if (shippingNotification == null)
-		{
-			return false;
-		}
 
-		if (shippingNotification.openAmountSignum() == 0)
-		{
-			return false;
-		}
+	// public synchronized boolean canAllocate(@Nullable final AllocationItem shippingNotification)
+	// {
+	// 	if (shippingNotification == null)
+	// 	{
+	// 		return false;
+	// 	}
+	//
+	// 	if (shippingNotification.openAmountSignum() == 0)
+	// 	{
+	// 		return false;
+	// 	}
+	//
+	// 	return !isInvoiceCreatedAfter(shippingNotification);
+	// }
 
-		return !isInvoiceCreatedAfter(shippingNotification);
-	}
-
-	public synchronized boolean isInvoiceCreatedAfter(@NonNull final AllocationItem shippingNotification)
-	{
-		return invoiceEntry.getTransactionDate().toInstant(orgDAO::getTimeZone)
-				.isAfter(shippingNotification.getShippingNotificationEntry().getTransactionDate().toInstant(orgDAO::getTimeZone));
-	}
+	// public synchronized boolean isInvoiceCreatedAfter(@NonNull final AllocationItem shippingNotification)
+	// {
+	// 	return invoiceEntry.getTransactionDate().toInstant(orgDAO::getTimeZone)
+	// 			.isAfter(shippingNotification.getShippingNotificationEntry().getTransactionDate().toInstant(orgDAO::getTimeZone));
+	// }
 
 	@NonNull
 	public synchronized BigDecimal getAllocatedInterestScore()
@@ -124,61 +123,34 @@ public class InvoiceAllocations
 		return CreateModularLogInterestRequest.builder()
 				.interestRunId(interestRunId)
 				.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
-				.interimInvoiceLogId(invoiceEntry.getId())
+				.interimContractLogId(interimContractEntry==null? null : interimContractEntry.getId())
 				.allocatedAmt(getAmountToAllocate(shippingNotification))
 				.interestDays(getInterestDays(shippingNotification))
 				.build();
 	}
 
-	private int getInterestDays(@NonNull final AllocationItem shippingNotification)
+	private long getInterestDays(@NonNull final AllocationItem shippingNotification)
 	{
 		final Instant shippingDate = shippingNotification
 				.getShippingNotificationEntry()
 				.getTransactionDate()
 				.toInstant(orgDAO::getTimeZone);
 
-		return TimeUtil.getDaysBetween(Date.from(getInterimDate()), Date.from(shippingDate)) + additionalInterestDays;
+		return TimeUtil.getDaysBetween360(getInterimDate(), shippingDate) + additionalInterestDays;
 	}
 
 	@NonNull
 	private Instant getInterimDate()
 	{
+		// TODO: this is not needed
 		if (cachedInvoiceInterimDate != null)
 		{
 			return cachedInvoiceInterimDate;
 		}
 
-		cachedInvoiceInterimDate = invoiceEntry.getTransactionDate().toInstant(orgDAO::getTimeZone);
+		cachedInvoiceInterimDate = interimContractEntry.getTransactionDate().toInstant(orgDAO::getTimeZone);
 		return cachedInvoiceInterimDate;
 	}
 
-	@Value
-	public static class AllocationItem
-	{
-		@NonNull ModularContractLogEntry shippingNotificationEntry;
-		@NonNull @With Money openAmount;
 
-		@Builder(toBuilder = true)
-		private AllocationItem(
-				@NonNull final ModularContractLogEntry shippingNotificationEntry,
-				@NonNull final Money openAmount)
-		{
-			Check.assume(openAmount.signum() >= 0, "OpenAmount cannot be negative!");
-
-			this.shippingNotificationEntry = shippingNotificationEntry;
-			this.openAmount = openAmount;
-		}
-
-		public AllocationItem subtractAllocatedAmount(@NonNull final Money allocatedAmt)
-		{
-			return toBuilder()
-					.openAmount(openAmount.subtract(allocatedAmt))
-					.build();
-		}
-
-		public int openAmountSignum()
-		{
-			return openAmount.signum();
-		}
-	}
 }

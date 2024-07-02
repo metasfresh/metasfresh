@@ -156,7 +156,7 @@ public class ModularContractSettings
 	}
 
 	@NonNull
-	public Percent getBonusInterestRate()
+	public Percent getInterestPercent()
 	{
 		return interestPercent;
 	}

@@ -39,7 +39,7 @@ public class InterestScore
 	public static final BigDecimal DIVISION_FACTOR = BigDecimal.valueOf(100);
 	public static final int DEFAULT_SCALE = 2;
 	@NonNull Money amount;
-	@NonNull Integer numberOfDays;
+	@NonNull Long numberOfDays;
 
 	@NonNull
 	public BigDecimal getScore()
@@ -53,7 +53,7 @@ public class InterestScore
 	}
 
 	@NonNull
-	public static BigDecimal computeScore(@NonNull final Money amount, final int interestDays)
+	public static BigDecimal computeScore(@NonNull final Money amount, final long interestDays)
 	{
 		final BigDecimal amountAsBD = amount.toBigDecimal();
 		final int scaleToUse = Integer.max(amountAsBD.scale(), DEFAULT_SCALE);

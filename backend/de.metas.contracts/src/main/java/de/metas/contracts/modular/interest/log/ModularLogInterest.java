@@ -38,22 +38,22 @@ import java.math.BigDecimal;
 public class ModularLogInterest
 {
 	@NonNull ModularInterestLogId interestLogId;
-	@NonNull ModularContractLogEntryId shippingNotificationLogId;
+	@Nullable ModularContractLogEntryId shippingNotificationLogId;
 	@NonNull InterestRunId interestRunId;
 	@NonNull Money allocatedAmt;
-	@NonNull Integer interestDays;
+	@NonNull Long interestDays;
 
-	@Nullable ModularContractLogEntryId interimInvoiceLogId;
+	@Nullable ModularContractLogEntryId interimContractLogId;
 	@Nullable Money finalInterest;
 
 	@Builder(toBuilder = true)
 	public ModularLogInterest(
 			@NonNull final ModularInterestLogId interestLogId,
-			@NonNull final ModularContractLogEntryId shippingNotificationLogId,
+			@Nullable final ModularContractLogEntryId shippingNotificationLogId,
 			@NonNull final InterestRunId interestRunId,
 			@NonNull final Money allocatedAmt,
-			@NonNull final Integer interestDays,
-			@Nullable final ModularContractLogEntryId interimInvoiceLogId,
+			@NonNull final Long interestDays,
+			@Nullable final ModularContractLogEntryId interimContractLogId,
 			@Nullable final Money finalInterest)
 	{
 		if (finalInterest != null)
@@ -66,7 +66,7 @@ public class ModularLogInterest
 		this.interestRunId = interestRunId;
 		this.allocatedAmt = allocatedAmt;
 		this.interestDays = interestDays;
-		this.interimInvoiceLogId = interimInvoiceLogId;
+		this.interimContractLogId = interimContractLogId;
 		this.finalInterest = finalInterest;
 	}
 

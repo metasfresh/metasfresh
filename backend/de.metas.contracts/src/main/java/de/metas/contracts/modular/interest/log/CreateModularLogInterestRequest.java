@@ -36,19 +36,19 @@ import javax.annotation.Nullable;
 public class CreateModularLogInterestRequest
 {
 	@NonNull InterestRunId interestRunId;
-	@NonNull ModularContractLogEntryId shippingNotificationLogId;
+	@Nullable ModularContractLogEntryId shippingNotificationLogId;
 	@NonNull Money allocatedAmt;
-	@NonNull Integer interestDays;
-	@Nullable ModularContractLogEntryId interimInvoiceLogId;
+	@NonNull Long interestDays;
+	@Nullable ModularContractLogEntryId interimContractLogId;
 	@Nullable Money finalInterest;
 
 	@Builder
 	public CreateModularLogInterestRequest(
 			@NonNull final InterestRunId interestRunId,
-			@NonNull final ModularContractLogEntryId shippingNotificationLogId,
+			@Nullable final ModularContractLogEntryId shippingNotificationLogId,
 			@NonNull final Money allocatedAmt,
-			@NonNull final Integer interestDays,
-			@Nullable final ModularContractLogEntryId interimInvoiceLogId,
+			@NonNull final Long interestDays,
+			@Nullable final ModularContractLogEntryId interimContractLogId,
 			@Nullable final Money finalInterest)
 	{
 		if (finalInterest != null)
@@ -60,7 +60,7 @@ public class CreateModularLogInterestRequest
 		this.shippingNotificationLogId = shippingNotificationLogId;
 		this.allocatedAmt = allocatedAmt;
 		this.interestDays = interestDays;
-		this.interimInvoiceLogId = interimInvoiceLogId;
+		this.interimContractLogId = interimContractLogId;
 		this.finalInterest = finalInterest;
 	}
 

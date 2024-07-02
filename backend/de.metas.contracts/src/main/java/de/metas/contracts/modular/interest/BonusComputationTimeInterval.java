@@ -22,40 +22,22 @@
 
 package de.metas.contracts.modular.interest;
 
-import de.metas.contracts.modular.invgroup.InvoicingGroupId;
-import de.metas.lock.api.ILock;
-import de.metas.lock.api.LockOwner;
-import de.metas.money.Money;
-import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.util.TimeUtil;
 
 import java.time.Instant;
 
 @Value
 @Builder
-public class InterestBonusComputationRequest
+public class BonusComputationTimeInterval
 {
-	@NonNull InvoicingGroupId invoicingGroupId;
-	@NonNull ILock involvedModularLogsLock;
-	@NonNull Money interestToDistribute;
 	@NonNull Instant interimDate;
 	@NonNull Instant billingDate;
-	@NonNull UserId userId;
 
-	@NonNull
-	public BonusComputationTimeInterval getBonusComputationTimeInterval()
+	public long getBonusInterestDays()
 	{
-		return BonusComputationTimeInterval.builder()
-				.billingDate(billingDate)
-				.interimDate(interimDate)
-				.build();
-	}
-
-	@NonNull
-	public LockOwner getLockOwner()
-	{
-		return involvedModularLogsLock.getOwner();
+		return TimeUtil.getDaysBetween360(interimDate, billingDate);
 	}
 }
