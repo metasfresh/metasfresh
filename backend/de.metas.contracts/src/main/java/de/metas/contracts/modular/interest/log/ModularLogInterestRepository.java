@@ -142,6 +142,21 @@ public class ModularLogInterestRepository
 	}
 
 	@NonNull
+	public List<ModularLogInterest> getForInterimContractLogId(
+			@NonNull final InterestRunId interestRunId,
+			@NonNull final ModularContractLogEntryId interimContractLogId)
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_Interest.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_ModCntr_Interest_Run_ID, interestRunId)
+				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_InterimContract_ModCntr_Log_ID, interimContractLogId)
+				.create()
+				.stream()
+				.map(ModularLogInterestRepository::ofRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
 	public Stream<ModularLogInterest> streamInterestEntries(final @NonNull LogInterestQuery query)
 	{
 		return getQueryBuilder(query)

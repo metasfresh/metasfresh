@@ -32,7 +32,6 @@ import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.interest.run.CreateInterestRunRequest;
 import de.metas.contracts.modular.interest.run.InterestRunId;
 import de.metas.contracts.modular.interest.run.InterestRunRepository;
-import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
@@ -46,7 +45,6 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
-import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.lang.Percent;
@@ -94,10 +92,10 @@ public class InterestComputationCommand
 
 		final InterestComputationRequest interestComputationRequest = getInterestDistributionRequest(request, runId);
 
-		computeAndDistributeInterest(interestComputationRequest);
+		computeAndDistributeInterest(interestComputationRequest); // Added Value: interim contracts
 
-		computeAndDistributeBonus(interestComputationRequest.toBuilder()
-										  .bonusComputationDetails(request.getBonusComputationDetails())
+		computeAndDistributeBonus(interestComputationRequest.toBuilder() // Subtracted value: shipping notification
+										  .bonusComputationTimeInterval(request.getBonusComputationTimeInterval())
 										  .build());
 
 		final boolean anyRecordsCreatedForCurrentRun = queryBL.createQueryBuilder(I_ModCntr_Interest.class)
@@ -117,7 +115,9 @@ public class InterestComputationCommand
 		Check.assume(request.getComputingMethodType() == ComputingMethodType.AddValueOnInterim,
 					 "Interest can only be distributed for" + ComputingMethodType.AddValueOnInterim);
 
-		distributeInterest(request, createInterestRecords(request));
+		final InitialInterestAllocationResult interestRecords = createInterestRecords(request);
+
+		distributeInterest(request, interestRecords);
 	}
 
 	private void deletePreviousProgress(@NonNull final PInstanceId logSelectionId)
@@ -155,7 +155,7 @@ public class InterestComputationCommand
 
 		if (!interimInvoiceExists)
 		{
-			for(final ModularContractLogEntry shippingNotificationLog: shippingNotificationLogs)
+			for (final ModularContractLogEntry shippingNotificationLog : shippingNotificationLogs)
 			{
 				final @NonNull AllocationItem currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
 																							   shippingNotificationLog);
@@ -166,7 +166,7 @@ public class InterestComputationCommand
 
 		final ModularContractLogEntriesList interimContractLogs = streamInterimContractLogEntries(contractId, request);
 
-		for(final ModularContractLogEntry interimContractLog : interimContractLogs)
+		for (final ModularContractLogEntry interimContractLog : interimContractLogs)
 		{
 			final InterimContractAllocations currentInterimContractAllocations = initInterimContractAllocations(request,
 																												settings.getAdditionalInterestDays(),
@@ -201,7 +201,7 @@ public class InterestComputationCommand
 
 			saveAddedValueInterestRecords(currentInterimContractAllocations, request);
 			totalInterestScore = totalInterestScore.add(currentInterimContractAllocations.getAllocatedInterestScore());
-			splitOpenAmount(currentInterimContractAllocations);
+			//splitOpenAmount(currentInterimContractAllocations);
 		}
 
 		// if (!interimInvoiceExists)
@@ -266,13 +266,13 @@ public class InterestComputationCommand
 			@NonNull final Percent interestPercent,
 			@NonNull final AllocationItem shippingNotification)
 	{
-		if (request.getBonusComputationDetails() == null)
+		if (request.getBonusComputationTimeInterval() == null)
 		{
 			final CreateModularLogInterestRequest createInterestRequest = CreateModularLogInterestRequest.builder()
 					.interestRunId(request.getInterestRunId())
 					.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
 					.allocatedAmt(shippingNotification.getOpenAmount())
-					.interestDays((long)1)
+					.interestDays((long)0)
 					.finalInterest(Money.zero(request.getInterestToDistribute().getCurrencyId()))
 					.build();
 
@@ -280,10 +280,10 @@ public class InterestComputationCommand
 			return;
 		}
 
-		final long interestDays = request.getBonusComputationDetails().getBonusInterestDays();
+		final long interestDays = request.getBonusComputationTimeInterval().getBonusInterestDays();
 
 		final BigDecimal bonusAmountAsBD = interestPercent.computePercentageOf(shippingNotification.getOpenAmount().toBigDecimal(),
-																				 request.getInterestCurrencyPrecision().toInt())
+																			   request.getInterestCurrencyPrecision().toInt())
 				.multiply(BigDecimal.valueOf(interestDays))
 				.divide(BigDecimal.valueOf(TOTAL_DAYS_OF_FISCAL_YEAR), RoundingMode.HALF_UP)
 				.negate();
@@ -292,7 +292,7 @@ public class InterestComputationCommand
 				.interestRunId(request.getInterestRunId())
 				.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
 				.allocatedAmt(shippingNotification.getOpenAmount())
-				.interestDays(request.getBonusComputationDetails().getBonusInterestDays())
+				.interestDays(request.getBonusComputationTimeInterval().getBonusInterestDays())
 				.finalInterest(Money.of(bonusAmountAsBD, shippingNotification.getOpenAmount().getCurrencyId()))
 				.build();
 
@@ -315,20 +315,20 @@ public class InterestComputationCommand
 				.orderBy(ModularContractLogQuery.OrderBy.TRANSACTION_DATE_ASC)
 				.build();
 
-		 return modularContractLogService.getModularContractLogEntries(query);
+		return modularContractLogService.getModularContractLogEntries(query);
 	}
 
 	@NonNull
 	private ModularContractLogEntriesList streamInterimContractLogEntries(
-			@NonNull final FlatrateTermId modularContractId,
+			@Nullable final FlatrateTermId contractId,
 			@NonNull final InterestComputationRequest request)
 	{
 		final ModularContractLogQuery query = ModularContractLogQuery.builder()
 				.computingMethodType(request.getComputingMethodType())
-				.flatrateTermId(modularContractId)
 				.invoicingGroupId(request.getInvoicingGroupId())
 				.billable(true)
 				.processed(false)
+				.flatrateTermId(contractId)
 				.onlyIfAmountIsSet(true)
 				.lockOwner(request.getLockOwner())
 				.logEntryDocumentType(LogEntryDocumentType.CONTRACT_PREFINANCING)
@@ -365,9 +365,8 @@ public class InterestComputationCommand
 		{ // nothing to distribute
 			return;
 		}
-
-		final FlatrateTermId onlyForContractId = null; // we want all contracts involved
-		streamShippingNotificationLogEntries(request, onlyForContractId)
+		final FlatrateTermId onlyForContractId = null;
+		streamInterimContractLogEntries(onlyForContractId, request)
 				.forEach(logEntry -> distributeInterest(request, result, logEntry));
 	}
 
@@ -376,7 +375,7 @@ public class InterestComputationCommand
 			@NonNull final InitialInterestAllocationResult result,
 			@NonNull final ModularContractLogEntry shippingNotification)
 	{
-		interestRepository.getForShippingNotificationLogId(request.getInterestRunId(), shippingNotification.getId())
+		interestRepository.getForInterimContractLogId(request.getInterestRunId(), shippingNotification.getId())
 				.stream()
 				.map(interestLog -> {
 					final BigDecimal interestScore = interestLog.getInterestScoreEnsuringCurrency(request.getInterestToDistribute().getCurrencyId());
@@ -464,46 +463,46 @@ public class InterestComputationCommand
 		createInterestRecords(request);
 	}
 
-	private void splitOpenAmount(@NonNull final InterimContractAllocations interimContractAllocations)
-	{
-		// todo: do this for contract ?
-		final ModularContractLogEntry invoice = interimContractAllocations.getInterimContractEntry();
-		if (invoice.getAmount() == null
-				|| interimContractAllocations.openAmountSignum() <= 0
-				|| interimContractAllocations.getAllocatedShippingNotifications().isEmpty())
-		{
-			return;
-		}
-
-		final CurrencyConversionContext context = getCurrencyConversionContext(invoice);
-		final Money openAmountInInvoiceCurrency = moneyService.convertMoneyToCurrency(interimContractAllocations.getOpenAmount(),
-																					  invoice.getAmount().getCurrencyId(),
-																					  context);
-
-		final Percent openAmountPercent = openAmountInInvoiceCurrency.percentageOf(invoice.getAmount().abs());
-		final Quantity openAmountQty = Optional.ofNullable(invoice.getQuantity())
-				.map(qty -> {
-					final BigDecimal openQty = openAmountPercent.computePercentageOf(qty.toBigDecimal(), qty.getUOM().getStdPrecision());
-					return Quantity.of(openQty, qty.getUOM());
-				}).orElse(null);
-
-		final Money openAmountInInvoiceCurrencyWithSignApplied = openAmountInInvoiceCurrency.negateIf(invoice.getAmount().isNegative());
-
-		final LogEntryCreateRequest createLogForOpenAmt = LogEntryCreateRequest.ofEntry(invoice)
-				.toBuilder()
-				.amount(openAmountInInvoiceCurrencyWithSignApplied)
-				.quantity(openAmountQty)
-				.build();
-
-		modularContractLogService.create(createLogForOpenAmt);
-
-		final ModularContractLogEntry logEntry = invoice.toBuilder()
-				.amount(invoice.getAmount().subtract(openAmountInInvoiceCurrencyWithSignApplied))
-				.quantity(Optional.ofNullable(invoice.getQuantity()).map(qty -> qty.subtract(openAmountQty)).orElse(null))
-				.build();
-
-		modularContractLogService.updateModularLog(logEntry);
-	}
+	// private void splitOpenAmount(@NonNull final InterimContractAllocations interimContractAllocations)
+	// {
+	// 	// todo: do this for contract ?
+	// 	final ModularContractLogEntry invoice = interimContractAllocations.getInterimContractEntry();
+	// 	if (invoice.getAmount() == null
+	// 			|| interimContractAllocations.openAmountSignum() <= 0
+	// 			|| interimContractAllocations.getAllocatedShippingNotifications().isEmpty())
+	// 	{
+	// 		return;
+	// 	}
+	//
+	// 	final CurrencyConversionContext context = getCurrencyConversionContext(invoice);
+	// 	final Money openAmountInInvoiceCurrency = moneyService.convertMoneyToCurrency(interimContractAllocations.getOpenAmount(),
+	// 																				  invoice.getAmount().getCurrencyId(),
+	// 																				  context);
+	//
+	// 	final Percent openAmountPercent = openAmountInInvoiceCurrency.percentageOf(invoice.getAmount().abs());
+	// 	final Quantity openAmountQty = Optional.ofNullable(invoice.getQuantity())
+	// 			.map(qty -> {
+	// 				final BigDecimal openQty = openAmountPercent.computePercentageOf(qty.toBigDecimal(), qty.getUOM().getStdPrecision());
+	// 				return Quantity.of(openQty, qty.getUOM());
+	// 			}).orElse(null);
+	//
+	// 	final Money openAmountInInvoiceCurrencyWithSignApplied = openAmountInInvoiceCurrency.negateIf(invoice.getAmount().isNegative());
+	//
+	// 	final LogEntryCreateRequest createLogForOpenAmt = LogEntryCreateRequest.ofEntry(invoice)
+	// 			.toBuilder()
+	// 			.amount(openAmountInInvoiceCurrencyWithSignApplied)
+	// 			.quantity(openAmountQty)
+	// 			.build();
+	//
+	// 	modularContractLogService.create(createLogForOpenAmt);
+	//
+	// 	final ModularContractLogEntry logEntry = invoice.toBuilder()
+	// 			.amount(invoice.getAmount().subtract(openAmountInInvoiceCurrencyWithSignApplied))
+	// 			.quantity(Optional.ofNullable(invoice.getQuantity()).map(qty -> qty.subtract(openAmountQty)).orElse(null))
+	// 			.build();
+	//
+	// 	modularContractLogService.updateModularLog(logEntry);
+	// }
 
 	@NonNull
 	private CurrencyConversionContext getCurrencyConversionContext(@NonNull final ModularContractLogEntry logEntry)

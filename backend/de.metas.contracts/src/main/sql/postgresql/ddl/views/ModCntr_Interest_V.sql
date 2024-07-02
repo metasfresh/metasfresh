@@ -12,19 +12,7 @@ WITH interimAmts AS (SELECT SUM(amount
                               INNER JOIN modcntr_type t ON l.modcntr_type_id = t.modcntr_type_id
                      WHERE isbillable = 'Y'
                        AND ad_table_id = get_table_id('C_Flatrate_Term')
-                     GROUP BY c_flatrate_term_id, l.modcntr_module_id, t.modularcontracthandlertype),
-     matchedAmts AS (SELECT SUM(mi.matchedamt
-                               ) OVER (PARTITION BY c_flatrate_term_id, modcntr_module_id
-                                ORDER BY datetrx,modcntr_interest_id ROWS UNBOUNDED PRECEDING
-                                ) AS matched_amt,
-                            mi.modcntr_interest_id,
-                            c_flatrate_term_id,
-                            modcntr_module_id,
-                            datetrx
-                     FROM modcntr_interest mi
-                              INNER JOIN modcntr_log l ON mi.shippingnotification_modcntr_log_id = l.modcntr_log_id AND l.isbillable = 'Y'
-                     -- WHERE finalinterest != 0 TODO FIX
-                     ORDER BY datetrx, modcntr_interest_id)
+                     GROUP BY c_flatrate_term_id, l.modcntr_module_id, t.modularcontracthandlertype)
 SELECT mi.modcntr_interest_id      AS modcntr_interest_v_id,
        CASE
            WHEN (l.c_invoice_candidate_id IS NULL) THEN NULL
@@ -62,7 +50,6 @@ SELECT mi.modcntr_interest_id      AS modcntr_interest_v_id,
        s.interestrate,
        ABS(interim_amt)            AS InterimAmt,
        mi.matchedamt, -- drop
-       matchedAmts.matched_amt     AS TotalAmt,
        mi.interestdays,
        mi.interestscore,
        mi.finalinterest,
@@ -80,11 +67,12 @@ FROM modcntr_interest mi
          INNER JOIN modcntr_type t ON l.modcntr_type_id = t.modcntr_type_id
          INNER JOIN modcntr_settings s ON m.modcntr_settings_id = s.modcntr_settings_id
          LEFT JOIN interimAmts ON l.c_flatrate_term_id = interimAmts.c_flatrate_term_id AND l.modcntr_module_id = interimAmts.modcntr_module_id
-         LEFT JOIN matchedAmts ON matchedamts.modcntr_interest_id = mi.modcntr_interest_id
          INNER JOIN m_product p ON l.initial_product_id = p.m_product_id
          INNER JOIN C_UOM uom ON l.c_uom_id = uom.c_uom_id
 --WHERE mi.finalinterest != 0 TODO fix
 ORDER BY bp.value,
          l.c_flatrate_term_id,
          l.datetrx
+;
+
 ;
