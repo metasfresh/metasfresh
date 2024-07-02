@@ -98,6 +98,12 @@ public class UOMDAO implements IUOMDAO
 				.orElseThrow(() -> new AdempiereException("No UOM found for X12DE355=" + x12de355));
 	}
 
+	@NonNull
+	public Optional<UomId> getIdByX12DE355IfExists(@NonNull final X12DE355 x12de355)
+	{
+		return getUomIdByX12DE355IfExists(x12de355);
+	}
+	
 	private Optional<UomId> getUomIdByX12DE355IfExists(@NonNull final X12DE355 x12de355)
 	{
 		return uomIdsByX12DE355.getOrLoad(x12de355, this::retrieveUomIdByX12DE355);
