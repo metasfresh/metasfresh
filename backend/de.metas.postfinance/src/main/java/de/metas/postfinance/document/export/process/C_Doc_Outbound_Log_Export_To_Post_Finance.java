@@ -23,7 +23,7 @@
 package de.metas.postfinance.document.export.process;
 
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
-import de.metas.document.archive.model.X_C_Doc_Outbound_Log;
+import de.metas.document.archive.postfinance.PostFinanceStatus;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceHandlerFactory;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceRequest;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceResponse;
@@ -57,8 +57,8 @@ public class C_Doc_Outbound_Log_Export_To_Post_Finance extends JavaProcess
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(
 						I_C_Doc_Outbound_Log.COLUMNNAME_PostFinance_Export_Status,
-						X_C_Doc_Outbound_Log.POSTFINANCE_EXPORT_STATUS_Error,
-						X_C_Doc_Outbound_Log.POSTFINANCE_EXPORT_STATUS_NotSent
+						PostFinanceStatus.NOT_SEND,
+						PostFinanceStatus.TRANSMISSION_ERROR
 				)
 				.filter(queryFilter)
 				.orderBy(I_C_Doc_Outbound_Log.COLUMNNAME_C_Doc_Outbound_Log_ID)

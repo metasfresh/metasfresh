@@ -28,7 +28,7 @@ import de.metas.attachments.AttachmentTags;
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
-import de.metas.document.archive.model.X_C_Doc_Outbound_Log;
+import de.metas.document.archive.postfinance.PostFinanceStatus;
 import de.metas.organization.OrgId;
 import de.metas.postfinance.B2BServiceWrapper;
 import de.metas.postfinance.docoutboundlog.PostFinanceLog;
@@ -176,7 +176,7 @@ public class GetResultsFromPostFinanceService
 
 		if (postFinanceLog.isError())
 		{
-			docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, X_C_Doc_Outbound_Log.POSTFINANCE_EXPORT_STATUS_Error);
+			docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, PostFinanceStatus.DATA_ERROR);
 		}
 	}
 

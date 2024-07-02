@@ -43,7 +43,7 @@ import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
-import de.metas.document.archive.model.X_C_Doc_Outbound_Log;
+import de.metas.document.archive.postfinance.PostFinanceStatus;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
@@ -173,9 +173,23 @@ public class PostFinanceYbInvoiceService
 
 	public void exportToPostFinance(@NonNull final String billerId, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
 	{
-		final ArrayOfProcessedInvoice arrayOfProcessedInvoice = b2BServiceWrapper.uploadFilesReport(billerId, invoices);
-		arrayOfProcessedInvoice.getProcessedInvoice()
-				.forEach(processedInvoice -> handleProcessedInvoice(processedInvoice, invoices));
+		try
+		{
+			final ArrayOfProcessedInvoice arrayOfProcessedInvoice = b2BServiceWrapper.uploadFilesReport(billerId, invoices);
+			arrayOfProcessedInvoice.getProcessedInvoice()
+					.forEach(processedInvoice -> handleProcessedInvoice(processedInvoice, invoices));
+		}
+		catch(final Exception e)
+		{
+			for(final PostFinanceYbInvoiceResponse invoice : invoices)
+			{
+				handleConnectionExceptions(
+						invoice.getDocOutboundLogReference(),
+						new PostFinanceExportException("Error on uploadFilesReport to PostFinance", e)
+				);
+			}
+		}
+
 	}
 
 	private void handleProcessedInvoice(@NonNull final ProcessedInvoice processedInvoice, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
@@ -211,7 +225,7 @@ public class PostFinanceYbInvoiceService
 		}
 		catch (final JAXBException e)
 		{
-			handleExceptions(
+			handleDataExceptions(
 					docOutboundLogReference,
 					new PostFinanceExportException("Error on attaching PostFinance document export result", e)
 			);
@@ -236,7 +250,7 @@ public class PostFinanceYbInvoiceService
 		final DocOutboundLogId docOutboundLogId = docOutboundLogReference.getIdAssumingTableName(I_C_Doc_Outbound_Log.Table_Name, DocOutboundLogId::ofRepoId);
 		if(processedInvoice.getProcessingState().getValue().equals("OK"))
 		{
-			docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, X_C_Doc_Outbound_Log.POSTFINANCE_EXPORT_STATUS_OK);
+			docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, PostFinanceStatus.OK);
 			postFinanceLogRepository.create(PostFinanceLogCreateRequest.builder()
 													.docOutboundLogId(docOutboundLogId)
 													.message("PostFinance upload successful")
@@ -245,16 +259,31 @@ public class PostFinanceYbInvoiceService
 		}
 		else
 		{
-			handleExceptions(
+			handleDataExceptions(
 					docOutboundLogReference,
 					new PostFinanceExportException("PostFinance upload failed see attached " + transactionId + "_postFinance_upload_processing_result.xml")
 			);
 		}
 	}
 
-	public void handleExceptions(
+	public void handleDataExceptions(
 			@NonNull final TableRecordReference docOutboundLogReference,
 			@NonNull final PostFinanceExportException postFinanceExportException)
+	{
+		handleExceptions(docOutboundLogReference, postFinanceExportException, PostFinanceStatus.DATA_ERROR);
+	}
+
+	public void handleConnectionExceptions(
+			@NonNull final TableRecordReference docOutboundLogReference,
+			@NonNull final PostFinanceExportException postFinanceExportException)
+	{
+		handleExceptions(docOutboundLogReference, postFinanceExportException, PostFinanceStatus.TRANSMISSION_ERROR);
+	}
+
+	private void handleExceptions(
+			@NonNull final TableRecordReference docOutboundLogReference,
+			@NonNull final PostFinanceExportException postFinanceExportException,
+			@NonNull final PostFinanceStatus postFinanceStatus)
 	{
 		final DocOutboundLogId docOutboundLogId = docOutboundLogReference.getIdAssumingTableName(I_C_Doc_Outbound_Log.Table_Name, DocOutboundLogId::ofRepoId);
 		postFinanceLogRepository.create(PostFinanceLogCreateRequest.builder()
@@ -262,13 +291,13 @@ public class PostFinanceYbInvoiceService
 												.message(postFinanceExportException.getMessage())
 												.postFinanceExportException(postFinanceExportException)
 												.build());
-		docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, X_C_Doc_Outbound_Log.POSTFINANCE_EXPORT_STATUS_Error);
+		docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, postFinanceStatus);
 	}
 
 	public void setPostFinanceStatusForSkipped(@NonNull final TableRecordReference docOutboundLogReference)
 	{
 		final DocOutboundLogId docOutboundLogId = docOutboundLogReference.getIdAssumingTableName(I_C_Doc_Outbound_Log.Table_Name, DocOutboundLogId::ofRepoId);
-		docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, X_C_Doc_Outbound_Log.POSTFINANCE_EXPORT_STATUS_Error); //TODO adjust to will not be sent
+		docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, PostFinanceStatus.DO_NOT_SEND);
 	}
 
 	public Envelope prepareExportData(

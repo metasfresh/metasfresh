@@ -67,7 +67,7 @@ public class PostFinanceYbInvoiceHandlerFactory
 		catch(final PostFinanceExportException e)
 		{
 			logger.log(Level.WARNING, "Exception on post finance export " + e.getMessage(), e);
-			postFinanceYbInvoiceService.handleExceptions(request.getDocOutboundLogReference(), e);
+			postFinanceYbInvoiceService.handleDataExceptions(request.getDocOutboundLogReference(), e);
 			return null;
 		}
 	}
