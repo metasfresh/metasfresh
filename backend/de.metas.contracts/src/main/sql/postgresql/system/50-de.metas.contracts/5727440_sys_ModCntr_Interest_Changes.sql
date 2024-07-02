@@ -34,3 +34,13 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE ModCntr_Interest ADD CONSTRAINT InterimContractModCntrLog_ModCntrInterest FOREIGN KEY (InterimContract_ModCntr_Log_ID) REFERENCES public.ModCntr_Log DEFERRABLE INITIALLY DEFERRED
 ;
 
+-- Run mode: SWING_CLIENT
+
+-- 2024-07-02T08:07:57.240Z
+INSERT INTO t_alter_column values('modcntr_interest','ShippingNotification_ModCntr_Log_ID','NUMERIC(10)',null,null)
+;
+
+-- 2024-07-02T08:07:57.246Z
+INSERT INTO t_alter_column values('modcntr_interest','ShippingNotification_ModCntr_Log_ID',null,'NULL',null)
+;
+
