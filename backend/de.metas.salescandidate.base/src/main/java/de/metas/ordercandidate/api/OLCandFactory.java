@@ -64,7 +64,7 @@ final class OLCandFactory
     
     public OLCand toOLCand(
             @NonNull final I_C_OLCand olCandRecord,
-            @Nullable OLCandOrderDefaults orderDefaults) 
+            @Nullable final OLCandOrderDefaults orderDefaults) 
     {
         final BPartnerOrderParams params = olCandBL.getBPartnerOrderParams(olCandRecord);
 
