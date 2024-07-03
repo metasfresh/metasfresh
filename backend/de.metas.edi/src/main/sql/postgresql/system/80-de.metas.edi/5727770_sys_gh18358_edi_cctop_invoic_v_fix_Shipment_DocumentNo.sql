@@ -1,3 +1,4 @@
+
 -- View: EDI_Cctop_INVOIC_v
 
 DROP VIEW IF EXISTS EDI_Cctop_INVOIC_v;
@@ -11,29 +12,29 @@ SELECT
      , (CASE
             WHEN REGEXP_REPLACE(i.POReference::TEXT, '\s+$', '') <> ''::TEXT AND i.POReference IS NOT NULL /* task 09182: if there is a POReference, then export it */
                 THEN REGEXP_REPLACE(i.POReference, '\s+$', '')
-                ELSE NULL::CHARACTER VARYING
-        END) AS POReference
+            ELSE NULL::CHARACTER VARYING
+    END) AS POReference
      , (CASE
             WHEN COALESCE(i.DateOrdered, o.DateOrdered) IS NOT NULL /* task 09182: if there is an orderDate, then export it */
                 THEN COALESCE(i.DateOrdered, o.DateOrdered)
-                ELSE NULL::TIMESTAMP WITHOUT TIME ZONE
-        END) AS DateOrdered
+            ELSE NULL::TIMESTAMP WITHOUT TIME ZONE
+    END) AS DateOrdered
      , (CASE dt.DocBaseType
             WHEN 'ARI'::BPChar THEN (CASE
                                          WHEN dt.DocSubType IS NULL OR TRIM(BOTH ' ' FROM dt.DocSubType)='' THEN '380'::TEXT
                                          WHEN dt.DocSubType IS NULL OR TRIM(BOTH ' ' FROM dt.DocSubType)='AQ' THEN '383'::TEXT
                                          WHEN dt.DocSubType IS NULL OR TRIM(BOTH ' ' FROM dt.DocSubType)='AP' THEN '84'::TEXT
                                          ELSE 'ERROR EAN_DocType'::TEXT
-                                     END)
+                END)
             WHEN 'ARC'::BPChar THEN (CASE
 
                 /* CQ => "GS - Lieferdifferenz"; CS => "GS - Retoure" */
                                          WHEN dt.DocSubType IS NULL OR TRIM(BOTH ' ' FROM dt.DocSubType) IN ('CQ','CS') THEN '381'
                                          WHEN dt.DocSubType IS NULL OR TRIM(BOTH ' ' FROM dt.DocSubType)='CR' THEN '83'::TEXT
-                                                                                                                        ELSE 'ERROR EAN_DocType'::TEXT
-                                     END)
-                               ELSE 'ERROR EAN_DocType'::TEXT
-        END) AS EANCOM_DocType
+                                         ELSE 'ERROR EAN_DocType'::TEXT
+                END)
+            ELSE 'ERROR EAN_DocType'::TEXT
+    END) AS EANCOM_DocType
      , i.GrandTotal
      , i.TotalLines
     /* IF docSubType is CS, the we don't reference the original shipment*/
@@ -66,8 +67,8 @@ SELECT
      , (select CASE
                    WHEN array_length(array_agg(DISTINCT ol.invoicableqtybasedon), 1) = 1
                        THEN (array_agg(DISTINCT ol.invoicableqtybasedon))[1]
-                       ELSE NULL
-               END
+                   ELSE NULL
+                   END
         from c_orderline ol
         where ol.c_order_id=o.c_order_id) as invoicableqtybasedon
      , cc.CountryCode
