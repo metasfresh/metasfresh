@@ -30,7 +30,6 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
-import org.jetbrains.annotations.Nullable;
 
 import static de.metas.banking.camt53.jaxb.camt053_001_04.CreditDebitCode.CRDT;
 
@@ -47,7 +46,6 @@ public class TransactionDtls4Wrapper extends TransactionDtlsWrapper
 		this.entryDtls = entryDtls;
 	}
 
-	@Nullable
 	@Override
 	public String getAcctSvcrRef()
 	{
@@ -93,7 +91,6 @@ public class TransactionDtls4Wrapper extends TransactionDtlsWrapper
 		return entryDtls.getAddtlTxInf();
 	}
 
-	@Nullable
 	@Override
 	public String getCcy()
 	{

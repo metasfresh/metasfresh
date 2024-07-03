@@ -30,7 +30,6 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
-import org.jetbrains.annotations.Nullable;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
@@ -45,7 +44,6 @@ public class TransactionDtls2Wrapper extends TransactionDtlsWrapper
 		this.entryDtls = entryDtls;
 	}
 
-	@Nullable
 	@Override
 	public String getAcctSvcrRef()
 	{
@@ -91,7 +89,6 @@ public class TransactionDtls2Wrapper extends TransactionDtlsWrapper
 		return entryDtls.getAddtlTxInf();
 	}
 
-	@Nullable
 	@Override
 	public String getCcy()
 	{
