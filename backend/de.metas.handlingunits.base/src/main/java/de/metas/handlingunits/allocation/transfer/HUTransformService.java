@@ -113,8 +113,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static java.math.BigDecimal.ZERO;
-
 /**
  * This class contains business logic run by clients when they transform HUs.
  * Use {@link #newInstance(IHUContext)} to obtain an instance.
@@ -246,9 +244,9 @@ public class HUTransformService
 		return allocationRequest;
 	}
 
-	public BigDecimal getMaximumQtyTU(@NonNull final I_M_HU tu)
+	public QtyTU getMaximumQtyTU(@NonNull final I_M_HU tu)
 	{
-		return handlingUnitsBL.getTUsCount(tu).toBigDecimal();
+		return handlingUnitsBL.getTUsCount(tu);
 	}
 
 	public Quantity getMaximumQtyCU(@NonNull final I_M_HU cu, @NonNull final I_C_UOM uom)
@@ -692,8 +690,7 @@ public class HUTransformService
 			}
 		}
 
-		// note: as of now an aggregated TU needs a parent, so also if the user just wants fully to remove an aggregate TU from it's parent, we still need to split it.
-
+		// note: as of now an aggregated TU needs a parent, so also if the user just wants fully to remove an aggregate TU from its parent, we still need to split it.
 		return tuToTopLevelHUs(sourceTuHU, qtyTU,
 				null, // luPIItem is null => top level HU is a TU
 				false // newPackingMaterialsAreOurOwn doesn't matter because no new packaging material is required
@@ -828,7 +825,7 @@ public class HUTransformService
 
 			if (handlingUnitsBL.isAggregateHU(tu))
 			{
-				final int qtyTUsAvailable = getMaximumQtyTU(tu).intValueExact();
+				final int qtyTUsAvailable = getMaximumQtyTU(tu).toInt();
 				if (qtyTUsAvailable <= 0)
 				{
 					continue;
@@ -946,7 +943,7 @@ public class HUTransformService
 			@NonNull final I_M_HU_PI_Item luPIItem,
 			final boolean isOwnPackingMaterials)
 	{
-		final BigDecimal qtyTU_of_sourceTuHU = getMaximumQtyTU(sourceTuHU);
+		final QtyTU qtyTU_of_sourceTuHU = getMaximumQtyTU(sourceTuHU);
 		if (qtyTU.compareTo(qtyTU_of_sourceTuHU) >= 0 // the complete sourceTuHU shall be processed
 				&& qtyTU_of_sourceTuHU.compareTo(luPIItem.getQty()) <= 0 // the complete sourceTuHU fits onto one pallet
 		)
@@ -1282,8 +1279,8 @@ public class HUTransformService
 				.retrieveIncludedHUs(sourceLU)
 				.stream()
 				.map(this::getMaximumQtyTU)
-				.reduce(ZERO, BigDecimal::add)
-				.intValueExact();
+				.reduce(QtyTU.ZERO, QtyTU::add)
+				.toInt();
 
 		final Set<HuId> alreadyExtractedTUIds = new HashSet<>();
 

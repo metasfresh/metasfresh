@@ -379,7 +379,7 @@ public class WEBUI_M_HU_Transform
 	private void onParameterChanged_ActionTUToNewLUs(final String parameterName)
 	{
 		@SuppressWarnings("ConstantConditions") // at this point i don't think the HU can be null.
-		final BigDecimal realTUQty = huTransformService.getMaximumQtyTU(getSingleSelectedRow().getM_HU());
+		final BigDecimal realTUQty = huTransformService.getMaximumQtyTU(getSingleSelectedRow().getM_HU()).toBigDecimal();
 
 		if (PARAM_Action.equals(parameterName))
 		{
