@@ -44,13 +44,15 @@ import java.util.Properties;
  */
 public interface ICurrencyBL extends ISingletonService
 {
-	@NonNull CurrencyConversionContext createCurrencyConversionContext(
+	@NonNull
+	CurrencyConversionContext createCurrencyConversionContext(
 			@Nullable LocalDate convDate,
 			@Nullable CurrencyConversionTypeId conversionTypeId,
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
 
-	@NonNull CurrencyConversionContext createCurrencyConversionContext(
+	@NonNull
+	CurrencyConversionContext createCurrencyConversionContext(
 			@NonNull LocalDate convDate,
 			@Nullable ConversionTypeMethod conversionType,
 			@NonNull ClientId clientId,
@@ -164,3 +166,4 @@ public interface ICurrencyBL extends ISingletonService
 
 	@NonNull
 	Money convertToBase(@NonNull CurrencyConversionContext conversionCtx, @NonNull Money amt);
+}
