@@ -28,7 +28,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- Field: Bank(158,D) -> Bank(227,D) -> Import As Summary Line
 -- Column: C_Bank.IsImportAsSingleSummaryLine
 -- 2024-02-07T14:14:47.051Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsForbidNewRecordCreation,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,587904,725162,0,227,0,TO_TIMESTAMP('2024-02-07 16:14:46.909','YYYY-MM-DD HH24:MI:SS.US'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','N','Import As Summary Line',0,110,0,1,1,TO_TIMESTAMP('2024-02-07 16:14:46.909','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,587904,725162,0,227,0,TO_TIMESTAMP('2024-02-07 16:14:46.909','YYYY-MM-DD HH24:MI:SS.US'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Import As Summary Line',0,110,0,1,1,TO_TIMESTAMP('2024-02-07 16:14:46.909','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2024-02-07T14:14:47.053Z
