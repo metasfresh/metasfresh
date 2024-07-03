@@ -23,23 +23,27 @@
 package de.metas.postfinance.document.export;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryType;
 import de.metas.attachments.AttachmentTags;
 import de.metas.banking.BankAccount;
 import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.postfinance.PostFinanceBPartnerConfig;
 import de.metas.bpartner.postfinance.PostFinanceBPartnerConfigRepository;
 import de.metas.bpartner.postfinance.PostFinanceOrgConfig;
 import de.metas.bpartner.postfinance.PostFinanceOrgConfigRepository;
+import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.document.DocBaseType;
 import de.metas.document.archive.DocOutboundLogId;
+import de.metas.document.archive.InvoiceDeliveryType;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
@@ -146,6 +150,7 @@ public class PostFinanceYbInvoiceService
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
@@ -184,7 +189,7 @@ public class PostFinanceYbInvoiceService
 			for(final PostFinanceYbInvoiceResponse invoice : invoices)
 			{
 				handleConnectionExceptions(
-						invoice.getDocOutboundLogReference(),
+						invoice.getDocOutboundLogId(),
 						new PostFinanceExportException("Error on uploadFilesReport to PostFinance", e)
 				);
 			}
@@ -206,7 +211,6 @@ public class PostFinanceYbInvoiceService
 		final PostFinanceYbInvoiceResponse postFinanceYbInvoiceResponse = matchingInvoice.get(0);
 
 		final byte[] data;
-		final TableRecordReference docOutboundLogReference = postFinanceYbInvoiceResponse.getDocOutboundLogReference();
 		try
 		{
 			final JAXBContext contextObj = JAXBContext.newInstance(ProcessedInvoice.class);
@@ -226,7 +230,7 @@ public class PostFinanceYbInvoiceService
 		catch (final JAXBException e)
 		{
 			handleDataExceptions(
-					docOutboundLogReference,
+					postFinanceYbInvoiceResponse.getDocOutboundLogId(),
 					new PostFinanceExportException("Error on attaching PostFinance document export result", e)
 			);
 			return;
@@ -236,7 +240,7 @@ public class PostFinanceYbInvoiceService
 				.tag(AttachmentTags.TAGNAME_IS_DOCUMENT, StringUtils.ofBoolean(true))
 				.build();
 
-		attachmentEntryService.createNewAttachment(ImmutableList.of(docOutboundLogReference,
+		attachmentEntryService.createNewAttachment(ImmutableList.of(postFinanceYbInvoiceResponse.getDocumentReference(),
 																	postFinanceYbInvoiceResponse.getPInstanceReference()),
 												   AttachmentEntryCreateRequest.builder()
 														   .type(AttachmentEntryType.Data)
@@ -247,7 +251,7 @@ public class PostFinanceYbInvoiceService
 														   .build());
 
 
-		final DocOutboundLogId docOutboundLogId = docOutboundLogReference.getIdAssumingTableName(I_C_Doc_Outbound_Log.Table_Name, DocOutboundLogId::ofRepoId);
+		final DocOutboundLogId docOutboundLogId = postFinanceYbInvoiceResponse.getDocOutboundLogId();
 		if(processedInvoice.getProcessingState().getValue().equals("OK"))
 		{
 			docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, PostFinanceStatus.OK);
@@ -260,32 +264,31 @@ public class PostFinanceYbInvoiceService
 		else
 		{
 			handleDataExceptions(
-					docOutboundLogReference,
+					postFinanceYbInvoiceResponse.getDocOutboundLogId(),
 					new PostFinanceExportException("PostFinance upload failed see attached " + transactionId + "_postFinance_upload_processing_result.xml")
 			);
 		}
 	}
 
 	public void handleDataExceptions(
-			@NonNull final TableRecordReference docOutboundLogReference,
+			@NonNull final DocOutboundLogId docOutboundLogId,
 			@NonNull final PostFinanceExportException postFinanceExportException)
 	{
-		handleExceptions(docOutboundLogReference, postFinanceExportException, PostFinanceStatus.DATA_ERROR);
+		handleExceptions(docOutboundLogId, postFinanceExportException, PostFinanceStatus.DATA_ERROR);
 	}
 
 	public void handleConnectionExceptions(
-			@NonNull final TableRecordReference docOutboundLogReference,
+			@NonNull final DocOutboundLogId docOutboundLogId,
 			@NonNull final PostFinanceExportException postFinanceExportException)
 	{
-		handleExceptions(docOutboundLogReference, postFinanceExportException, PostFinanceStatus.TRANSMISSION_ERROR);
+		handleExceptions(docOutboundLogId, postFinanceExportException, PostFinanceStatus.TRANSMISSION_ERROR);
 	}
 
 	private void handleExceptions(
-			@NonNull final TableRecordReference docOutboundLogReference,
+			@NonNull final DocOutboundLogId docOutboundLogId,
 			@NonNull final PostFinanceExportException postFinanceExportException,
 			@NonNull final PostFinanceStatus postFinanceStatus)
 	{
-		final DocOutboundLogId docOutboundLogId = docOutboundLogReference.getIdAssumingTableName(I_C_Doc_Outbound_Log.Table_Name, DocOutboundLogId::ofRepoId);
 		postFinanceLogRepository.create(PostFinanceLogCreateRequest.builder()
 												.docOutboundLogId(docOutboundLogId)
 												.message(postFinanceExportException.getMessage())
@@ -812,21 +815,30 @@ public class PostFinanceYbInvoiceService
 
 		if(!isActive)
 		{
-			setPostFinanceStatusForSkipped(recordRef);
+			setPostFinanceStatusForSkipped(request.getDocOutboundLogReference());
+			final ImmutableSet<String> handledTableNames = ImmutableSet.of(I_C_Invoice.Table_Name, I_C_DunningDoc.Table_Name);
+			final String msg = handledTableNames.contains(recordRef.getTableName()) ? "Skipped because not active for Org or BPGroup/BPartner" : "Skipped because not handled Table";
+			postFinanceLogRepository.create(PostFinanceLogCreateRequest.builder()
+													.docOutboundLogId(request.getDocOutboundLogId())
+													.message(msg)
+													.build());
 		}
 		return isActive;
 	}
 
 	private boolean isPostFinanceActiveForOrgAndBPartner(@NonNull final OrgId orgId, @NonNull final BPartnerId bPartnerId)
 	{
-		final Optional<PostFinanceOrgConfig> orgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
-		final Optional<PostFinanceBPartnerConfig> partnerConfig = postFinanceBPartnerConfigRepository.getByBPartnerId(bPartnerId);
-		if(orgConfig.isEmpty())
-		{
-			return false;
-		}
-		// TODO add other cases
+		final PostFinanceOrgConfig orgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId).orElse(null);
+		final PostFinanceBPartnerConfig partnerConfig = postFinanceBPartnerConfigRepository.getByBPartnerId(bPartnerId).orElse(null);
+		final I_C_BPartner bPartnerRecord = bPartnerBL.getById(bPartnerId);
+		final InvoiceDeliveryType partnerInvoiceDelivery = InvoiceDeliveryType.ofNullableCode(bPartnerRecord.getInvoiceDelivery());
+		final InvoiceDeliveryType bpGroupInvoiceDelivery = InvoiceDeliveryType.ofCode(bpGroupDAO.getById(BPGroupId.ofRepoId(bPartnerRecord.getC_BP_Group_ID())).getInvoiceDelivery());
 
-		return true;
-	}
+		final boolean isActiveForPartner = partnerInvoiceDelivery != null && partnerInvoiceDelivery.isPostFinance()
+				|| partnerInvoiceDelivery == null && bpGroupInvoiceDelivery.isPostFinance();
+
+        return orgConfig != null
+                && isActiveForPartner
+                && (orgConfig.isUsePaperBill() || partnerConfig != null);
+    }
 }

@@ -22,6 +22,8 @@
 
 package de.metas.document.archive.postfinance;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
@@ -30,6 +32,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -42,6 +45,7 @@ public enum PostFinanceStatus implements ReferenceListAwareEnum
     DO_NOT_SEND(X_C_Doc_Outbound_Log.POSTFINANCE_EXPORT_STATUS_DontSend);
 
     private static final ReferenceListAwareEnums.ValuesIndex<PostFinanceStatus> index = ReferenceListAwareEnums.index(values());
+    public static final ReferenceId AD_Reference_ID = ReferenceId.ofRepoId(X_C_Doc_Outbound_Log.POSTFINANCE_EXPORT_STATUS_AD_Reference_ID);
 
     @NonNull
     private final String code;
@@ -57,4 +61,17 @@ public enum PostFinanceStatus implements ReferenceListAwareEnum
     {
         return code != null ? ofCode(code) : null;
     }
+
+    @NonNull
+    public List<PostFinanceStatus> getAvailableTargetPostFinanceStatuses()
+    {
+        return switch (this)
+        {
+            case DATA_ERROR, TRANSMISSION_ERROR -> ImmutableList.of(DO_NOT_SEND, NOT_SEND);
+            case DO_NOT_SEND -> ImmutableList.of(NOT_SEND);
+            default -> ImmutableList.of();
+        };
+    }
+
+
 }

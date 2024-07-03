@@ -110,6 +110,41 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Invoice Delivery', PrintName='
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583161,'en_US')
 ;
 
+-- Element: InvoiceDelivery
+-- 2024-07-03T12:49:20.093Z
+UPDATE AD_Element_Trl SET Description='Partner Group value is used, if Partner value isn''t set',Updated=TO_TIMESTAMP('2024-07-03 14:49:20.093','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583161 AND AD_Language='en_US'
+;
+
+-- 2024-07-03T12:49:20.097Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583161,'en_US')
+;
+
+-- Element: InvoiceDelivery
+-- 2024-07-03T12:50:16.338Z
+UPDATE AD_Element_Trl SET Description='Der Wert der Geschäftspartnergruppe wird verwendet, wenn der Geschäftspartner Wert nicht gesetzt ist',Updated=TO_TIMESTAMP('2024-07-03 14:50:16.338','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583161 AND AD_Language='de_CH'
+;
+
+-- 2024-07-03T12:50:16.341Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583161,'de_CH')
+;
+
+-- Element: InvoiceDelivery
+-- 2024-07-03T12:50:27.830Z
+UPDATE AD_Element_Trl SET Description='Der Wert der Geschäftspartnergruppe wird verwendet, wenn der Geschäftspartner Wert nicht gesetzt ist',Updated=TO_TIMESTAMP('2024-07-03 14:50:27.83','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583161 AND AD_Language='de_DE'
+;
+
+-- 2024-07-03T12:50:27.833Z
+UPDATE AD_Element SET Description='Der Wert der Geschäftspartnergruppe wird verwendet, wenn der Geschäftspartner Wert nicht gesetzt ist' WHERE AD_Element_ID=583161
+;
+
+-- 2024-07-03T12:50:28.064Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(583161,'de_DE')
+;
+
+-- 2024-07-03T12:50:28.067Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583161,'de_DE')
+;
+
 -- Column: C_BPartner.InvoiceDelivery
 -- 2024-07-02T07:32:09.751Z
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,588660,583161,0,17,541874,291,'InvoiceDelivery',TO_TIMESTAMP('2024-07-02 09:32:09.622','YYYY-MM-DD HH24:MI:SS.US'),100,'N','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Rechnungszustellung',0,0,TO_TIMESTAMP('2024-07-02 09:32:09.622','YYYY-MM-DD HH24:MI:SS.US'),100,0)

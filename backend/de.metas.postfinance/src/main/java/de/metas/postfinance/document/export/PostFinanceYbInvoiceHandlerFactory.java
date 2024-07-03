@@ -22,6 +22,8 @@
 
 package de.metas.postfinance.document.export;
 
+import de.metas.postfinance.docoutboundlog.PostFinanceLogCreateRequest;
+import de.metas.postfinance.docoutboundlog.PostFinanceLogRepository;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -35,9 +37,10 @@ import java.util.logging.Logger;
 @AllArgsConstructor
 public class PostFinanceYbInvoiceHandlerFactory
 {
-	private final List<IPostFinanceYbInvoiceHandler> postFinanceYbInvoiceHandlers;
-	private static final Logger logger = Logger.getLogger(PostFinanceYbInvoiceHandlerFactory.class.getName());
-	private final PostFinanceYbInvoiceService postFinanceYbInvoiceService;
+	@NonNull private final List<IPostFinanceYbInvoiceHandler> postFinanceYbInvoiceHandlers;
+	@NonNull private static final Logger logger = Logger.getLogger(PostFinanceYbInvoiceHandlerFactory.class.getName());
+	@NonNull private final PostFinanceYbInvoiceService postFinanceYbInvoiceService;
+	@NonNull private final PostFinanceLogRepository postFinanceLogRepository;
 
 
 	@Nullable
@@ -53,6 +56,11 @@ public class PostFinanceYbInvoiceHandlerFactory
 			{
 				// ignore docTypes without matching handler
 				postFinanceYbInvoiceService.setPostFinanceStatusForSkipped(request.getDocOutboundLogReference());
+
+				postFinanceLogRepository.create(PostFinanceLogCreateRequest.builder()
+														.docOutboundLogId(request.getDocOutboundLogId())
+														.message("Skipped because of no matching PostFinanceHandler")
+														.build());
 				return null;
 			}
 			else if(eligibleHandlers.size() > 1)
@@ -67,7 +75,7 @@ public class PostFinanceYbInvoiceHandlerFactory
 		catch(final PostFinanceExportException e)
 		{
 			logger.log(Level.WARNING, "Exception on post finance export " + e.getMessage(), e);
-			postFinanceYbInvoiceService.handleDataExceptions(request.getDocOutboundLogReference(), e);
+			postFinanceYbInvoiceService.handleDataExceptions(request.getDocOutboundLogId(), e);
 			return null;
 		}
 	}
