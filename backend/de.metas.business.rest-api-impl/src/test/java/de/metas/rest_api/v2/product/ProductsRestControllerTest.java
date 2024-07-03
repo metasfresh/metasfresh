@@ -68,6 +68,7 @@ import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
 import de.metas.rest_api.v2.pricing.PriceListRestService;
 import de.metas.rest_api.v2.pricing.ProductPriceRestService;
+import de.metas.rest_api.v2.uomconversion.UomConversionRestService;
 import de.metas.rest_api.v2.warehouseassignment.ProductWarehouseAssignmentRestService;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeRepository;
@@ -189,7 +190,9 @@ public class ProductsRestControllerTest
 																						   externalIdentifierResolver,
 																						   new BpartnerPriceListServicesFacade(productPriceRepository),
 																						   jsonServiceFactory);
-				
+
+		final UomConversionRestService uomConversionRestService = new UomConversionRestService();
+		
 		final ProductRestService productRestService = new ProductRestService(productRepository,
 																			 productWarehouseAssignmentRestService,
 																			 externalReferenceRestControllerService,
@@ -199,7 +202,8 @@ public class ProductsRestControllerTest
 																			 jsonServiceFactory,
 																			 externalIdentifierResolver,
 																			 productPriceRestService,
-																			 new ProductTaxCategoryService(new ProductTaxCategoryRepository())
+																			 new ProductTaxCategoryService(new ProductTaxCategoryRepository()),
+																			 uomConversionRestService
 		);
 		//
 		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService, externalIdentifierResolver);
