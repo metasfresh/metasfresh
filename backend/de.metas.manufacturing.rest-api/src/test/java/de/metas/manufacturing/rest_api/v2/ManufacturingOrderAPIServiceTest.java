@@ -72,6 +72,7 @@ import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditIte
 import de.metas.manufacturing.rest_api.ExportSequenceNumberProvider;
 import de.metas.manufacturing.rest_api.ManufacturingOrderExportAuditRepository;
 import de.metas.manufacturing.rest_api.ManufacturingOrderReportAuditRepository;
+import org.eevolution.api.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
