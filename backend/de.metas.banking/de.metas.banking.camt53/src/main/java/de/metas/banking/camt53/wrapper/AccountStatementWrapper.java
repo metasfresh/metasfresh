@@ -101,7 +101,7 @@ public abstract class AccountStatementWrapper implements IAccountStatementWrappe
 	@NonNull
 	private ExplainedOptional<BankId> getBankId()
 	{
-		if (getSwiftCode().isEmpty())
+		if (!getSwiftCode().isPresent())
 		{
 			final String msg = getMsg(MSG_MISSING_BANK_STMT_SWIFT_CODE, getId());
 			return ExplainedOptional.emptyBecause(msg);
