@@ -143,7 +143,7 @@ public class OLCandBL implements IOLCandBL
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults)
 	{
-		if (!Check.isEmpty(olCandRecord.getDeliveryRule(), true))
+		if (Check.isNotBlank(olCandRecord.getDeliveryRule()))
 		{
 			return DeliveryRule.ofCode(olCandRecord.getDeliveryRule());
 		}
@@ -167,7 +167,7 @@ public class OLCandBL implements IOLCandBL
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults)
 	{
-		if (!Check.isEmpty(olCandRecord.getDeliveryViaRule(), true))
+		if (Check.isNotBlank(olCandRecord.getDeliveryViaRule()))
 		{
 			return DeliveryViaRule.ofCode(olCandRecord.getDeliveryViaRule());
 		}

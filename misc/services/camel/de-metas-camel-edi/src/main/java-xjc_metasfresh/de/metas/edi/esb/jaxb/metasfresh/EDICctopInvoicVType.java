@@ -46,6 +46,7 @@ import java.util.List;
  *         &lt;element name="receivergln" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
  *         &lt;element name="sendergln" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
  *         &lt;element name="shipment_documentno" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="EDIDesadvDocumentNo" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
  *         &lt;element name="TotalLines" type="{http://www.w3.org/2001/XMLSchema}decimal" minOccurs="0"/&gt;
  *         &lt;element name="totaltaxbaseamt" type="{http://www.w3.org/2001/XMLSchema}decimal" minOccurs="0"/&gt;
  *         &lt;element name="totalvat" type="{http://www.w3.org/2001/XMLSchema}decimal" minOccurs="0"/&gt;
@@ -94,6 +95,7 @@ import java.util.List;
     "receivergln",
     "sendergln",
     "shipmentDocumentno",
+    "ediDesadvDocumentNo",
     "totalLines",
     "totaltaxbaseamt",
     "totalvat",
@@ -144,6 +146,8 @@ public class EDICctopInvoicVType {
     protected String sendergln;
     @XmlElement(name = "shipment_documentno")
     protected String shipmentDocumentno;
+    @XmlElement(name = "EDIDesadvDocumentNo")
+    protected String ediDesadvDocumentNo;
     @XmlElement(name = "TotalLines")
     protected BigDecimal totalLines;
     protected BigDecimal totaltaxbaseamt;
@@ -548,6 +552,30 @@ public class EDICctopInvoicVType {
      */
     public void setShipmentDocumentno(String value) {
         this.shipmentDocumentno = value;
+    }
+
+    /**
+     * Gets the value of the ediDesadvDocumentNo property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getEDIDesadvDocumentNo() {
+        return ediDesadvDocumentNo;
+    }
+
+    /**
+     * Sets the value of the ediDesadvDocumentNo property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setEDIDesadvDocumentNo(String value) {
+        this.ediDesadvDocumentNo = value;
     }
 
     /**
