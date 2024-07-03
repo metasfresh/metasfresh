@@ -577,6 +577,10 @@ public class BankStatementCamt53Service
 			{
 				return getAccountStatementsV04(xmlStreamReader);
 			}
+			else
+			{
+				throw new AdempiereException("Unsupported Camt53 version !");
+			}
 		}
 		catch (final Exception e)
 		{
