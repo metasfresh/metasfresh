@@ -24,6 +24,7 @@ package de.metas.contracts.modular.interest;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_ModCntr_Interest;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractService;
@@ -77,6 +78,7 @@ public class InterestComputationCommand
 	@NonNull private final ICurrencyBL currencyBL;
 	@NonNull private final IOrgDAO orgDAO;
 	@NonNull private final IQueryBL queryBL;
+	@NonNull private final IFlatrateBL flatrateBL;
 
 	public void distributeInterestAndBonus(@NonNull final InterestBonusComputationRequest request)
 	{
@@ -115,9 +117,15 @@ public class InterestComputationCommand
 		Check.assume(request.getComputingMethodType() == ComputingMethodType.AddValueOnInterim,
 					 "Interest can only be distributed for" + ComputingMethodType.AddValueOnInterim);
 
+		final Money interimContractAmtSum = getModularContractIds(request)
+				.stream().map(contractId -> flatrateBL.getById(contractId))
+				.map(contract -> Money.of(contract.getPriceActual(), CurrencyId.ofRepoId(contract.getC_Currency_ID())))
+				.reduce(Money.zero(request.getInterestToDistribute().getCurrencyId()), Money::add);
+
+
 		final InitialInterestAllocationResult interestRecords = createInterestRecords(request);
 
-		distributeInterest(request, interestRecords);
+		//distributeInterest(request, interestRecords);
 	}
 
 	private void deletePreviousProgress(@NonNull final PInstanceId logSelectionId)
@@ -166,42 +174,19 @@ public class InterestComputationCommand
 
 		final ModularContractLogEntriesList interimContractLogs = streamInterimContractLogEntries(contractId, request);
 
+		Money interimContract
+		for (final ModularContractLogEntry interimContractLog : interimContractLogs)
+		{
+
+		}
 		for (final ModularContractLogEntry interimContractLog : interimContractLogs)
 		{
 			final InterimContractAllocations currentInterimContractAllocations = initInterimContractAllocations(request,
 																												settings.getAdditionalInterestDays(),
 																												interimContractLog);
 
-			// while (currentInterimContractAllocations.openAmountSignum() > 0)
-			// {
-			// 	// while (!currentInterimContractAllocations.canAllocate(currentShippingNotification) && shippingNotificationIterator.hasNext())
-			// 	// {
-			// 	// 	final boolean wasCreatedBeforeInvoice = currentShippingNotification != null
-			// 	// 			&& currentInterimContractAllocations.isInvoiceCreatedAfter(currentShippingNotification);
-			// 	//
-			// 	// 	// if (wasCreatedBeforeInvoice)
-			// 	// 	// {
-			// 	// 	// 	saveSubtractValueInterestRecord(request, settings.getBonusInterestRate(), currentShippingNotification);
-			// 	// 	// }
-			// 	//
-			// 	// 	// currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
-			// 	// 	// 												 shippingNotificationIterator.next());
-			// 	// }
-			//
-			// 	// if (currentInterimContractAllocations.canAllocate(currentShippingNotification))
-			// 	// {
-			// 	// 	currentShippingNotification = currentInterimContractAllocations.allocate(currentShippingNotification);
-			// 	// }
-			//
-			// 	// if (!shippingNotificationIterator.hasNext())
-			// 	// {
-			// 	// 	break;
-			// 	// }
-			// }
-
 			saveAddedValueInterestRecords(currentInterimContractAllocations, request);
 			totalInterestScore = totalInterestScore.add(currentInterimContractAllocations.getAllocatedInterestScore());
-			//splitOpenAmount(currentInterimContractAllocations);
 		}
 
 		// if (!interimInvoiceExists)
@@ -373,9 +358,9 @@ public class InterestComputationCommand
 	private void distributeInterest(
 			@NonNull final InterestComputationRequest request,
 			@NonNull final InitialInterestAllocationResult result,
-			@NonNull final ModularContractLogEntry shippingNotification)
+			@NonNull final ModularContractLogEntry interimContractLog)
 	{
-		interestRepository.getForInterimContractLogId(request.getInterestRunId(), shippingNotification.getId())
+		interestRepository.getForInterimContractLogId(request.getInterestRunId(), interimContractLog.getId())
 				.stream()
 				.map(interestLog -> {
 					final BigDecimal interestScore = interestLog.getInterestScoreEnsuringCurrency(request.getInterestToDistribute().getCurrencyId());
