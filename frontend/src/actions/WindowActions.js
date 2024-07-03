@@ -1095,7 +1095,9 @@ export function updatePropertyValue({
         return false;
       }
 
-      dispatch(updateTableRowProperty({ tableId, rowId, change }));
+      if (tableId) {
+        dispatch(updateTableRowProperty({ tableId, rowId, change }));
+      }
     } else if (!tabId || !rowId) {
       // modal's data is in `tables`
       if (!isModal) {
