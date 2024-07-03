@@ -178,7 +178,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
 
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipmentSchedule.getM_Warehouse_ID());
-		final LocatorId defaultLocatorId = warehouseBL.getDefaultLocatorId(warehouseId);
+		final LocatorId defaultLocatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
 
 		final I_M_HU hu = createTU(huPIItemProduct, defaultLocatorId);
 		return HuId.ofRepoId(hu.getM_HU_ID());
@@ -242,7 +242,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 		{
 			throw new AdempiereException("Picking slot with M_PickingSlot_ID=" + pickingSlotRow.getPickingSlotId() + " has no warehouse configured");
 		}
-		return Services.get(IWarehouseBL.class).getDefaultLocatorId(pickingSlotWarehouseId);
+		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(pickingSlotWarehouseId);
 	}
 
 	/**

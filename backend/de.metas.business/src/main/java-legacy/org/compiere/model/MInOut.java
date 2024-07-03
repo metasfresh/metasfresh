@@ -46,8 +46,8 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IMatchPOBL;
 import de.metas.order.IMatchPODAO;
 import de.metas.order.IOrderDAO;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -1475,7 +1475,7 @@ public class MInOut extends X_M_InOut implements IDocument
 						storageBL.addAsync(
 								getCtx(),
 								warehouseId.getRepoId(),
-								Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId(),
+								Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId).getRepoId(),
 								sLine.getM_Product_ID(),
 								sLine.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 								BigDecimal.ZERO, QtySO.negate(), QtyPO.negate(), get_TrxName());
