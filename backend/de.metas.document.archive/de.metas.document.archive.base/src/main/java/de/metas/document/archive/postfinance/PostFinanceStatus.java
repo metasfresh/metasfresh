@@ -69,6 +69,7 @@ public enum PostFinanceStatus implements ReferenceListAwareEnum
         {
             case DATA_ERROR, TRANSMISSION_ERROR -> ImmutableList.of(DO_NOT_SEND, NOT_SEND);
             case DO_NOT_SEND -> ImmutableList.of(NOT_SEND);
+            case NOT_SEND -> ImmutableList.of(DO_NOT_SEND);
             default -> ImmutableList.of();
         };
     }
