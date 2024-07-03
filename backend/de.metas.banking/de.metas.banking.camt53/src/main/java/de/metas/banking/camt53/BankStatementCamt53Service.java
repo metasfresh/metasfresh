@@ -105,6 +105,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static de.metas.banking.camt53.Camt53Version.V02;
+import static de.metas.banking.camt53.Camt53Version.V04;
+
 @Service
 public class BankStatementCamt53Service
 {
@@ -567,11 +570,14 @@ public class BankStatementCamt53Service
 
 			final XMLStreamReader xmlStreamReader = getXMLStreamReader(camt53File.getInputStream());
 
-			return switch (camt53Version)
+			if (V02.getCode() == camt53Version.getCode() )
 			{
-				case V02 -> getAccountStatementsV02(xmlStreamReader);
-				case V04 -> getAccountStatementsV04(xmlStreamReader);
-			};
+				return getAccountStatementsV02(xmlStreamReader);
+			}
+			else if (V04.getCode() == camt53Version.getCode() )
+			{
+				return getAccountStatementsV04(xmlStreamReader);
+			}
 		}
 		catch (final Exception e)
 		{
