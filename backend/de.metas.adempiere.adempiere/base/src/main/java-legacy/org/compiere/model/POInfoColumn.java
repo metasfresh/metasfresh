@@ -155,11 +155,6 @@ public final class POInfoColumn implements Serializable
 		return false;
 	}
 
-	public boolean isString()
-	{
-		return isString(tableName, ColumnName, displayType, AD_Reference_Value_ID, AD_Reference_Value_KeyColumn_DisplayType);
-	}
-
 	private static boolean isSearchDisplayType(final int displayType)
 	{
 		return org.compiere.util.DisplayType.Search == displayType;
@@ -212,7 +207,7 @@ public final class POInfoColumn implements Serializable
 	/**
 	 * Updateable
 	 */
-	final boolean IsUpdateable;
+	boolean IsUpdateable;
 	/**
 	 * PK
 	 */
