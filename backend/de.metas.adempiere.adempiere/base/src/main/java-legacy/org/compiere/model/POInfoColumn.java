@@ -52,7 +52,8 @@ public final class POInfoColumn implements Serializable
 			final boolean isTranslated,
 			final boolean isEncrypted,
 			final boolean isAllowLogging,
-			final boolean isRestAPICustomColumn)
+			final boolean isRestAPICustomColumn,
+			final boolean isIdentifier)
 	{
 		AD_Column_ID = ad_Column_ID;
 		ColumnName = columnName;
@@ -111,6 +112,7 @@ public final class POInfoColumn implements Serializable
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
 		IsRestAPICustomColumn = isRestAPICustomColumn;
+		IsIdentifier = isIdentifier;
 	}   // Column
 
 	private static boolean isString(
@@ -151,6 +153,11 @@ public final class POInfoColumn implements Serializable
 		}
 
 		return false;
+	}
+
+	public boolean isString()
+	{
+		return isString(tableName, ColumnName, displayType, AD_Reference_Value_ID, AD_Reference_Value_KeyColumn_DisplayType);
 	}
 
 	private static boolean isSearchDisplayType(final int displayType)
@@ -205,7 +212,7 @@ public final class POInfoColumn implements Serializable
 	/**
 	 * Updateable
 	 */
-	boolean IsUpdateable;
+	final boolean IsUpdateable;
 	/**
 	 * PK
 	 */
@@ -257,6 +264,8 @@ public final class POInfoColumn implements Serializable
 	 * Max Value
 	 */
 	final BigDecimal ValueMax_BD;
+
+	final boolean IsIdentifier;
 
 	final boolean IsRestAPICustomColumn;
 
@@ -393,6 +402,11 @@ public final class POInfoColumn implements Serializable
 	public boolean isRestAPICustomColumn()
 	{
 		return IsRestAPICustomColumn;
+	}
+
+	public boolean isIdentifier()
+	{
+		return IsIdentifier;
 	}
 
 	@Nullable
