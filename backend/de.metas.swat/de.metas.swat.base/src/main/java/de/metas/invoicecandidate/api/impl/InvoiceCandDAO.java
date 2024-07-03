@@ -820,7 +820,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.execute()
 				.getRowsInserted();
 
-		logger.info("Invalidated {} invoice candidates with chunkUUID={}, trxName={} and query={}", count, chunkUUID, icQuery.getTrxName(), icQuery);
+		logger.debug("Invalidated {} invoice candidates with chunkUUID={}, trxName={} and query={}", count, chunkUUID, icQuery.getTrxName(), icQuery);
 
 		//
 		// Schedule an update for invalidated invoice candidates
