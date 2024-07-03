@@ -7,7 +7,7 @@
         "externalVersion": null,
         "externalReferenceUrl": null,
         "requestProduct": {
-          "code": "productValue_bpartnerIdentifier_2",
+          "code": "productValue_bpartnerIdentifier_3",
           "codeSet": true,
           "name": "productName",
           "nameSet": true,
@@ -34,7 +34,7 @@
           "syncAdvise": null,
           "bpartnerProductItems": [
             {
-              "bpartnerIdentifier": "ext-ProCareManagement-bpartnerIdentifier_2",
+              "bpartnerIdentifier": "ext-ProCareManagement-bpartnerIdentifier_3",
               "bpartnerSet": true,
               "active": null,
               "activeSet": false,
@@ -68,17 +68,7 @@
               "exclusionFromPurchaseReasonSet": false
             }
           ],
-          "productTaxCategories": null,
-          "uomConversions": [
-            {
-              "fromUomCode": "PCE",
-              "toUomCode": "LTR",
-              "fromToMultiplier": 0.2,
-              "fromToMultiplierSet": true,
-              "catchUOMForProduct": null,
-              "catchUOMForProductSet": false
-            }
-          ]
+          "productTaxCategories": null
         },
         "externalSystemConfigId": 1
       }

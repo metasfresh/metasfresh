@@ -128,6 +128,9 @@ public class JsonRequestProduct
 	@ApiModelProperty(position = 160)
 	private List<JsonRequestProductTaxCategoryUpsert> productTaxCategories;
 
+	@ApiModelProperty(position = 170)
+	private List<JsonRequestUOMConversionUpsert> uomConversions;
+
 	public void setCode(final @NonNull String code)
 	{
 		this.code = code;
@@ -213,5 +216,10 @@ public class JsonRequestProduct
 	public void setProductTaxCategories(final List<JsonRequestProductTaxCategoryUpsert> productTaxCategories)
 	{
 		this.productTaxCategories = productTaxCategories;
+	}
+
+	public void setUomConversions(final List<JsonRequestUOMConversionUpsert> uomConversions)
+	{
+		this.uomConversions = uomConversions;
 	}
 }

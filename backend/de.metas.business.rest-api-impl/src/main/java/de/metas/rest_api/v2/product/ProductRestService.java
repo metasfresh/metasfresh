@@ -64,6 +64,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.rest_api.v2.pricing.ProductPriceRestService;
+import de.metas.rest_api.v2.uomconversion.UomConversionRestService;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -109,15 +110,20 @@ public class ProductRestService
 
 	private final ProductTaxCategoryService productTaxCategoryService;
 
-	public ProductRestService(final ProductRepository productRepository,
+	private final UomConversionRestService uomConversionRestService;
+
+	public ProductRestService(
+			final ProductRepository productRepository,
 			final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			final ProductPriceRestService productPriceRestService,
-			final ProductTaxCategoryService productTaxCategoryService)
+			final ProductTaxCategoryService productTaxCategoryService,
+			final UomConversionRestService uomConversionRestService)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.productPriceRestService = productPriceRestService;
 		this.productTaxCategoryService = productTaxCategoryService;
+		this.uomConversionRestService = uomConversionRestService;
 	}
 
 	@NonNull
@@ -204,6 +210,7 @@ public class ProductRestService
 				productRepository.updateProduct(product);
 				createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, product.getId(), org);
 				createOrUpdateProductTaxCategories(jsonRequestProduct.getProductTaxCategories(), product.getId(), effectiveSyncAdvise);
+				uomConversionRestService.createOrUpdateUOMConversions(jsonRequestProduct.getUomConversions(), product.getId(), effectiveSyncAdvise);
 
 				syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
 			}
@@ -221,6 +228,7 @@ public class ProductRestService
 
 			createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, productId, org);
 			createOrUpdateProductTaxCategories(jsonRequestProduct.getProductTaxCategories(), productId, effectiveSyncAdvise);
+			uomConversionRestService.createOrUpdateUOMConversions(jsonRequestProduct.getUomConversions(), productId, effectiveSyncAdvise);
 
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
 		}
@@ -1007,6 +1015,6 @@ public class ProductRestService
 		if (jsonRequestProductTaxCategoryUpsert.getCountryCode() == null)
 		{
 			throw new MissingPropertyException("countryCode", jsonRequestProductTaxCategoryUpsert);
-		}		
+		}
 	}
 }
