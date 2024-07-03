@@ -73,7 +73,6 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 				.accountName(StringUtils.trimBlankToNull(record.getA_Name()))
 				.esrRenderedAccountNo(record.getESR_RenderedAccountNo())
 				.IBAN(StringUtils.trimBlankToNull(record.getIBAN()))
-				.SwiftCode(StringUtils.trimBlankToNull(record.getSwiftCode()))
 				.QR_IBAN(StringUtils.trimBlankToNull(record.getQR_IBAN()))
 				.SEPA_CreditorIdentifier(StringUtils.trimBlankToNull(record.getSEPA_CreditorIdentifier()))
 				.accountNo(record.getAccountNo())
@@ -108,6 +107,25 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 	public Optional<BankAccount> getDefaultBankAccount(@NonNull final BPartnerId bPartnerId)
 	{
 		return retrieveDefaultBankAccountInTrx(bPartnerId)
+				.map(BPBankAccountDAO::toBankAccount);
+	}
+
+	@Override
+	public Optional<BankAccount> getDefaultESRBankAccount(@NonNull final BPartnerId bpartnerId)
+	{
+		return bankAccountByBPartnerId.getOrLoad(bpartnerId, this::retrieveDefaultESRBankAccount);
+	}
+
+	private Optional<BankAccount> retrieveDefaultESRBankAccount(@NonNull final BPartnerId bpartnerId)
+	{
+		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, true)
+				.orderByDescending(I_C_BP_BankAccount.COLUMNNAME_IsDefaultESR)
+				.orderByDescending(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID)
+				.create()
+				.firstOptional(I_C_BP_BankAccount.class)
 				.map(BPBankAccountDAO::toBankAccount);
 	}
 
