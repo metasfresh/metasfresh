@@ -37,7 +37,6 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +46,7 @@ public class InvoiceAllocations
 {
 	@NonNull private final InterestRunId interestRunId;
 	@NonNull private final Integer additionalInterestDays;
-	@NonNull @Getter private final ModularContractLogEntry invoiceEntry;
+	@Nullable @Getter private final ModularContractLogEntry interimContractEntry;
 
 	@NonNull private final IOrgDAO orgDAO;
 
@@ -72,7 +71,7 @@ public class InvoiceAllocations
 
 	public synchronized boolean isInvoiceCreatedAfter(@NonNull final AllocationItem shippingNotification)
 	{
-		return invoiceEntry.getTransactionDate().toInstant(orgDAO::getTimeZone)
+		return interimContractEntry.getTransactionDate().toInstant(orgDAO::getTimeZone)
 				.isAfter(shippingNotification.getShippingNotificationEntry().getTransactionDate().toInstant(orgDAO::getTimeZone));
 	}
 
@@ -124,20 +123,20 @@ public class InvoiceAllocations
 		return CreateModularLogInterestRequest.builder()
 				.interestRunId(interestRunId)
 				.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
-				.interimInvoiceLogId(invoiceEntry.getId())
+				.interimContractLogId(interimContractEntry==null? null : interimContractEntry.getId())
 				.allocatedAmt(getAmountToAllocate(shippingNotification))
 				.interestDays(getInterestDays(shippingNotification))
 				.build();
 	}
 
-	private int getInterestDays(@NonNull final AllocationItem shippingNotification)
+	private long getInterestDays(@NonNull final AllocationItem shippingNotification)
 	{
 		final Instant shippingDate = shippingNotification
 				.getShippingNotificationEntry()
 				.getTransactionDate()
 				.toInstant(orgDAO::getTimeZone);
 
-		return TimeUtil.getDaysBetween(Date.from(getInterimDate()), Date.from(shippingDate)) + additionalInterestDays;
+		return TimeUtil.getDaysBetween360(getInterimDate(), shippingDate) + additionalInterestDays;
 	}
 
 	@NonNull
@@ -148,7 +147,7 @@ public class InvoiceAllocations
 			return cachedInvoiceInterimDate;
 		}
 
-		cachedInvoiceInterimDate = invoiceEntry.getTransactionDate().toInstant(orgDAO::getTimeZone);
+		cachedInvoiceInterimDate = interimContractEntry.getTransactionDate().toInstant(orgDAO::getTimeZone);
 		return cachedInvoiceInterimDate;
 	}
 

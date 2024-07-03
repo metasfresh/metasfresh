@@ -25,6 +25,7 @@ package de.metas.contracts.modular.computing.purchasecontract;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
@@ -129,6 +130,11 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 			return contractProvider.streamModularPurchaseContractsForInvoiceLine(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
 		}
 
+		if (recordRef.tableNameEqualsTo(I_C_Flatrate_Term.Table_Name))
+		{
+			return Stream.of(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
+		}
+
 		return Stream.empty();
 	}
 
@@ -147,9 +153,9 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 		final Money amount = streamInterestRecords(request)
 				.peek(interestLog -> {
 					logEntryIdsCollector.add(interestLog.getShippingNotificationLogId());
-					if (interestLog.getInterimInvoiceLogId() != null)
+					if (interestLog.getInterimContractLogId() != null)
 					{
-						logEntryIdsCollector.add(interestLog.getInterimInvoiceLogId());
+						logEntryIdsCollector.add(interestLog.getInterimContractLogId());
 					}
 				})
 				.map(ModularLogInterest::getFinalInterest)
@@ -163,16 +169,16 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 				: Quantity.of(BigDecimal.ONE, stockUOM);
 		final ImmutableSet<ModularContractLogEntryId> logEntryIds = logEntryIdsCollector.build();
 
-		final ModularContractLogEntriesList logs = logEntryIds.isEmpty() ?  ModularContractLogEntriesList.EMPTY : getModularContractLogEntries(request, logEntryIds);
+		final ModularContractLogEntriesList logs = logEntryIds.isEmpty() ? ModularContractLogEntriesList.EMPTY : getModularContractLogEntries(request, logEntryIds);
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
 				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.price(ProductPrice.builder()
-						.productId(request.getProductId())
-						.money(amount.negate())
-						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-						.build())
+							   .productId(request.getProductId())
+							   .money(amount.negate())
+							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+							   .build())
 				.qty(qty)
 				.build();
 	}
@@ -180,12 +186,12 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 	private @NonNull ModularContractLogEntriesList getModularContractLogEntries(final @NonNull ComputingRequest request, final ImmutableSet<ModularContractLogEntryId> logEntryIds)
 	{
 		return modularContractLogService.getModularContractLogEntries(ModularContractLogQuery.builder()
-				.entryIds(logEntryIds)
-				.flatrateTermId(request.getFlatrateTermId())
-				.computingMethodType(getComputingMethodType())
-				.billable(true)
-				.processed(false)
-				.build());
+																			  .entryIds(logEntryIds)
+																			  .flatrateTermId(request.getFlatrateTermId())
+																			  .computingMethodType(getComputingMethodType())
+																			  .billable(true)
+																			  .processed(false)
+																			  .build());
 	}
 
 	@NonNull
