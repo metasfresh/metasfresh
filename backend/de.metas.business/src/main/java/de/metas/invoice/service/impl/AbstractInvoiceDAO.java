@@ -592,7 +592,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null docId; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
 		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
-		final DocBaseType docBaseType = docType.getDocBaseType();
+		final String docBaseType = assumeNotNull(docType.getDocBaseType(), "Param query needs to have a non-null docBaseType; query={}", query);
 		final String docSubType = docType.getDocSubType();
 
 		final IQueryBuilder<I_C_DocType> docTypeQueryBuilder = createQueryBuilder(I_C_DocType.class)
@@ -625,14 +625,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_ExternalId, externalId.getValue());
 
-		final Collection<DocStatus> docStatuses = query.getDocStatuses();
-		if (docStatuses != null && !docStatuses.isEmpty())
-		{
-			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, docStatuses);
-		}
-
-		final int invoiceRepoId = queryBuilder.create()
-				.firstIdOnly(); // this firstIdOnly() corresponds to the UC "c_invoice_uc_externalId_org"
+		final int invoiceRepoId = queryBuilder.create().firstIdOnly();
 		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRepoId));
 	}
 

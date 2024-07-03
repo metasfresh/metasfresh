@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.banking;
+package de.metas.banking.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class CreateBPBankAccountRequest
+public class UpsertBPBankAccountRequest
 {
 	@NonNull BPartnerId bPartnerId;
 	@NonNull CurrencyId currencyId;

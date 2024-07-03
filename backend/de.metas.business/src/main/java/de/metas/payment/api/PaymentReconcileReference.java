@@ -1,6 +1,5 @@
 package de.metas.payment.api;
 
-import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -41,26 +40,30 @@ public class PaymentReconcileReference
 {
 	public enum Type
 	{
-		BANK_STATEMENT_LINE, BANK_STATEMENT_LINE_REF, REVERSAL, GL_Journal
+		BANK_STATEMENT_LINE, BANK_STATEMENT_LINE_REF, REVERSAL
 	}
 
-	@NonNull Type type;
-	@Nullable BankStatementId bankStatementId;
-	@Nullable BankStatementLineId bankStatementLineId;
-	@Nullable BankStatementLineRefId bankStatementLineRefId;
-	@Nullable PaymentId reversalId;
-	@Nullable SAPGLJournalLineId glJournalLineId;
+	@NonNull
+	Type type;
+
+	BankStatementId bankStatementId;
+	BankStatementLineId bankStatementLineId;
+
+	BankStatementLineRefId bankStatementLineRefId;
+
+	PaymentId reversalId;
 
 	public static PaymentReconcileReference bankStatementLine(
 			@NonNull final BankStatementId bankStatementId,
 			@NonNull final BankStatementLineId bankStatementLineId)
 	{
+		final BankStatementLineRefId bankStatementLineRefId = null;
+		final PaymentId reversalId = null;
 
 		return new PaymentReconcileReference(
 				Type.BANK_STATEMENT_LINE,
 				bankStatementId,
 				bankStatementLineId,
-				null,
 				null,
 				null);
 	}
@@ -78,36 +81,27 @@ public class PaymentReconcileReference
 			@NonNull final BankStatementLineId bankStatementLineId,
 			@NonNull final BankStatementLineRefId bankStatementLineRefId)
 	{
+		final PaymentId reversalId = null;
 
 		return new PaymentReconcileReference(
 				Type.BANK_STATEMENT_LINE_REF,
 				bankStatementId,
 				bankStatementLineId,
 				bankStatementLineRefId,
-				null,
-				null);
+				reversalId);
 	}
 
 	public static PaymentReconcileReference reversal(@NonNull final PaymentId reversalId)
 	{
+		final BankStatementId bankStatementId = null;
+		final BankStatementLineId bankStatementLineId = null;
+		final BankStatementLineRefId bankStatementLineRefId = null;
 
 		return new PaymentReconcileReference(
 				Type.REVERSAL,
-				null,
-				null,
-				null,
-				reversalId,
-				null);
-	}
-
-	public static PaymentReconcileReference glJournalLine(@NonNull final SAPGLJournalLineId glJournalLineId)
-	{
-		return new PaymentReconcileReference(
-				Type.GL_Journal,
-				null,
-				null,
-				null,
-				null,
-				glJournalLineId);
+				bankStatementId,
+				bankStatementLineId,
+				bankStatementLineRefId,
+				reversalId);
 	}
 }
