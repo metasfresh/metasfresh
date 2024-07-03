@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,18 +20,17 @@
  * #L%
  */
 
-package de.metas.contracts.modular.interim.invoice.service;
+package org.adempiere.process.rpl.exp;
 
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.util.ISingletonService;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
-import java.sql.Timestamp;
-
-public interface IInterimFlatrateTermService extends ISingletonService
+@Value
+@Builder
+public class CreateAttachmentRequest
 {
-	void create(
-			@NonNull I_C_Flatrate_Term modularFlatrateTermRecord,
-			@NonNull Timestamp startDate,
-			@NonNull Timestamp endDate);
+	@NonNull TableRecordReference target;
+	@NonNull String attachmentName;
 }

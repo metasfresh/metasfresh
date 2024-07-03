@@ -40,6 +40,7 @@ import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty.ColumnOption;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -75,9 +76,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-public class ModularContractSettingsDAO
+public class ModularContractSettingsRepository
 {
-	private final static Logger logger = LogManager.getLogger(ModularContractSettingsDAO.class);
+	private final static Logger logger = LogManager.getLogger(ModularContractSettingsRepository.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -148,7 +149,7 @@ public class ModularContractSettingsDAO
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_Type.class)
 				.stream()
-				.map(ModularContractSettingsDAO::fromRecord)
+				.map(ModularContractSettingsRepository::fromRecord)
 				.collect(ModularContractTypeMap.collect());
 	}
 
@@ -159,7 +160,7 @@ public class ModularContractSettingsDAO
 				.value(record.getValue())
 				.name(record.getName())
 				.computingMethodType(ComputingMethodType.ofCode(record.getModularContractHandlerType()))
-				.columnName(record.getColumnName())
+				.columnOption(record.getColumnName() != null ? ColumnOption.valueOf(record.getColumnName()) : null)
 				.build();
 	}
 
@@ -229,6 +230,7 @@ public class ModularContractSettingsDAO
 				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()))
 				.additionalInterestDays(settingsRecord.getAddInterestDays())
 				.interestPercent(Percent.of(settingsRecord.getInterestRate()))
+				.interimPricePercent(Percent.of(settingsRecord.getInterimPricePercent()))
 				.storageCostStartDate(LocalDateAndOrgId.ofTimestamp(settingsRecord.getStorageCostStartDate(),
 						OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
 						orgDAO::getTimeZone))

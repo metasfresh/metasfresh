@@ -25,6 +25,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -63,11 +64,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@UtilityClass
 public class HandlerTools
 {
 
-	public static void invalidateCandidatesForTerm(final Object model)
+	public void invalidateCandidatesForTerm(final Object model)
 	{
 		final I_C_Flatrate_Term term = InterfaceWrapperHelper.create(model, I_C_Flatrate_Term.class);
 
@@ -83,7 +84,7 @@ public class HandlerTools
 		invoiceCandDB.invalidateCandsFor(query);
 	}
 
-	public static I_C_Invoice_Candidate createIcAndSetCommonFields(@NonNull final I_C_Flatrate_Term term)
+	public I_C_Invoice_Candidate createIcAndSetCommonFields(@NonNull final I_C_Flatrate_Term term)
 	{
 		// Services
 		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
@@ -96,7 +97,7 @@ public class HandlerTools
 
 		ic.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_Flatrate_Term.class));
 		ic.setRecord_ID(term.getC_Flatrate_Term_ID());
-		
+
 		ic.setM_Product_ID(term.getM_Product_ID());
 
 		ic.setC_Currency_ID(term.getC_Currency_ID());
@@ -133,7 +134,7 @@ public class HandlerTools
 					() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
 					() -> DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID()));
 
-			if(orderDocTypeId != null)
+			if (orderDocTypeId != null)
 			{
 				final I_C_DocType orderDocType = docTypeBL.getById(orderDocTypeId);
 				final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoIdOrNull(orderDocType.getC_DocTypeInvoice_ID());
@@ -158,25 +159,25 @@ public class HandlerTools
 		return ic;
 	}
 
-	public static boolean isCancelledContract(@NonNull final I_C_Flatrate_Term term)
+	public boolean isCancelledContract(@NonNull final I_C_Flatrate_Term term)
 	{
 		return X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus())
 				|| X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus());
 	}
 
-	private static final CCache<Integer, I_C_Flatrate_Term> IC_2_TERM = CCache
+	private final CCache<Integer, I_C_Flatrate_Term> IC_2_TERM = CCache
 			.<Integer, I_C_Flatrate_Term>builder()
 			.cacheName(I_C_Invoice_Candidate.Table_Name + "#by#" + I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID + "#" + I_C_Invoice_Candidate.COLUMNNAME_Record_ID)
 			.tableName(I_C_Invoice_Candidate.Table_Name)
 			.additionalTableNameToResetFor(I_C_Flatrate_Term.Table_Name)
 			.build();
 
-	public static I_C_Flatrate_Term retrieveTerm(@NonNull final I_C_Invoice_Candidate ic)
+	public I_C_Flatrate_Term retrieveTerm(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		return IC_2_TERM.getOrLoad(ic.getC_Invoice_Candidate_ID(), () -> retrieveTermForCache(ic));
 	}
 
-	private static I_C_Flatrate_Term retrieveTermForCache(@NonNull final I_C_Invoice_Candidate ic)
+	private I_C_Flatrate_Term retrieveTermForCache(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final int flatrateTermTableId = getTableId(I_C_Flatrate_Term.class);
 		Check.assume(ic.getAD_Table_ID() == flatrateTermTableId, "{} has AD_Table_ID={}", ic, flatrateTermTableId);
@@ -185,8 +186,8 @@ public class HandlerTools
 				.ofReferenced(ic)
 				.getModel(getContextAware(ic), I_C_Flatrate_Term.class);
 		return Check.assumeNotNull(term,
-								   "The given invoice candidate references a {}; ic={}",
-								   I_C_Flatrate_Term.class.getSimpleName(), ic);
+				"The given invoice candidate references a {}; ic={}",
+				I_C_Flatrate_Term.class.getSimpleName(), ic);
 	}
 
 	/**
@@ -198,7 +199,7 @@ public class HandlerTools
 	 *
 	 * @see IInvoiceCandidateHandler#setDeliveredData(I_C_Invoice_Candidate)
 	 */
-	public static void setDeliveredData(@NonNull final I_C_Invoice_Candidate ic)
+	public void setDeliveredData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		// note: we can assume that #setQtyOrdered() was already called
 		ic.setQtyDelivered(ic.getQtyOrdered()); // when changing this, make sure to threat ProductType.Service specially
@@ -207,7 +208,7 @@ public class HandlerTools
 		ic.setDeliveryDate(ic.getDateOrdered());
 	}
 
-	public static void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic)
+	public void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_Flatrate_Term term = retrieveTerm(ic);
 
@@ -216,7 +217,7 @@ public class HandlerTools
 				.setFrom(ContractLocationHelper.extractBillLocation(term));
 	}
 
-	public static UomId retrieveUomId(@NonNull final I_C_Invoice_Candidate icRecord)
+	public UomId retrieveUomId(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final I_C_Flatrate_Term term = retrieveTerm(icRecord);
 		if (term.getC_UOM_ID() > 0)

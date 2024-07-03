@@ -6,7 +6,9 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -57,6 +59,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final HUQRCodesService huQRCodeService;
 
 	private final HashMap<OrderId, String> salesOrderDocumentNosCache = new HashMap<>();
@@ -158,6 +161,12 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	public HUPIItemProduct getPackingInfo(@NonNull final HUPIItemProductId huPIItemProductId)
 	{
 		return huPIItemProductBL.getById(huPIItemProductId);
+	}
+
+	@Override
+	public String getPICaption(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsBL.getPI(piId).getName();
 	}
 
 	@Override

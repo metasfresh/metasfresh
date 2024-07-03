@@ -121,7 +121,31 @@ public interface I_C_DocType_Invoicing_Pool
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Credit Amount invoiceable again.
+	 * Wenn dieser Wert "Ja" ist und diese Gutschrift zu einer Rechnung gehört, dann sind die betreffenden Rechnungskandidaten erneut abrechenbar, sofern "komplett abgerechnet abw." nicht auf "Ja" gesetzt wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCreditedInvoiceReinvoicable (boolean IsCreditedInvoiceReinvoicable);
+
+	/**
+	 * Get Credit Amount invoiceable again.
+	 * Wenn dieser Wert "Ja" ist und diese Gutschrift zu einer Rechnung gehört, dann sind die betreffenden Rechnungskandidaten erneut abrechenbar, sofern "komplett abgerechnet abw." nicht auf "Ja" gesetzt wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCreditedInvoiceReinvoicable();
+
+	ModelColumn<I_C_DocType_Invoicing_Pool, Object> COLUMN_IsCreditedInvoiceReinvoicable = new ModelColumn<>(I_C_DocType_Invoicing_Pool.class, "IsCreditedInvoiceReinvoicable", null);
+	String COLUMNNAME_IsCreditedInvoiceReinvoicable = "IsCreditedInvoiceReinvoicable";
+
+	/**
 	 * Set (Apply to) different invoice document types only.
+	 * If ticked, the invoicing pool will be applied only if the selected invoice candidates have different invoice document types. Otherwise, the document type of the respective invoice candidates applies. If unchecked, the pool will be applied regardless of the document types. If both different document types and pools exist, the respective invoice candidate's document type will be applied individually.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -131,6 +155,7 @@ public interface I_C_DocType_Invoicing_Pool
 
 	/**
 	 * Get (Apply to) different invoice document types only.
+	 * If ticked, the invoicing pool will be applied only if the selected invoice candidates have different invoice document types. Otherwise, the document type of the respective invoice candidates applies. If unchecked, the pool will be applied regardless of the document types. If both different document types and pools exist, the respective invoice candidate's document type will be applied individually.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

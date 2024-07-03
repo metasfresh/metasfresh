@@ -64,7 +64,7 @@ public class PickingJobStep
 	@NonNull PickingJobStepPickFromMap pickFroms;
 
 	//
-	// Pick To Specification
+	// Pack To Specification
 	@NonNull PackToSpec packToSpec;
 
 	@NonNull PickingJobProgress progress;

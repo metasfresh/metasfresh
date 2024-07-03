@@ -150,10 +150,10 @@ public class InvoiceCandidateRepository
 			icRecord = load(invoiceCandidateId, I_C_Invoice_Candidate.class);
 		}
 
-
 		final BigDecimal discountOverride = ic.getDiscountOverride() != null ? ic.getDiscountOverride().toBigDecimal() : null;
 		icRecord.setDiscount_Override(discountOverride);
-
+		icRecord.setProcessed(ic.isProcessed());
+		icRecord.setIsActive(ic.isActive());
 		final ProductPrice priceEnteredOverride = ic.getPriceEnteredOverride();
 		if (priceEnteredOverride != null)
 		{
@@ -346,6 +346,8 @@ public class InvoiceCandidateRepository
 		candidate.handlerId(ILCandHandlerId.ofRepoId(icRecord.getC_ILCandHandler_ID()));
 		candidate.harvestYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(icRecord.getHarvesting_Year_ID(), icRecord.getC_Harvesting_Calendar_ID()));
 		candidate.auctionId(AuctionId.ofRepoIdOrNull(icRecord.getC_Auction_ID()));
+		candidate.isActive(icRecord.isActive());
+		candidate.processed(icRecord.isProcessed());
 		return candidate.build();
 	}
 

@@ -16,6 +16,7 @@ import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
+import de.metas.product.ProductType;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
@@ -56,7 +57,7 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -117,6 +118,7 @@ public class MaterialCockpitRowFactoryTest
 		product = newInstance(I_M_Product.class);
 		product.setValue("productValue");
 		product.setName("productName");
+		product.setProductType(ProductType.Item.getCode());
 		product.setIsStocked(true);
 		product.setC_UOM_ID(uom.getC_UOM_ID());
 		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
@@ -296,6 +298,7 @@ public class MaterialCockpitRowFactoryTest
 		save(plant);
 
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setName("warehouseWithPlant");
 		warehouse.setPP_Plant(plant);
 		save(warehouse);
 		return warehouse;
@@ -454,6 +457,7 @@ public class MaterialCockpitRowFactoryTest
 		save(cockpitRecordWithAttributes);
 
 		final I_M_Warehouse warehouseWithoutPlant = newInstance(I_M_Warehouse.class);
+		warehouseWithoutPlant.setName("warehouseWithoutPlant");
 		save(warehouseWithoutPlant);
 
 		final I_MD_Stock stockRecordWithAttributes = newInstance(I_MD_Stock.class);

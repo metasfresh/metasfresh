@@ -29,6 +29,7 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -74,9 +75,9 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.copy_with_details.CopyRecordSupport;
 import de.metas.document.DocBaseType;
@@ -183,6 +184,8 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
+import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO;
+import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.disableReadOnlyColumnCheck;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
@@ -219,8 +222,6 @@ public class FlatrateBL implements IFlatrateBL
 
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
 
-	public final static AdMessageKey MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED = AdMessageKey.of("MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED");
-
 	public final static String MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS = "@MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS@";
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -240,8 +241,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
 
 	public static final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 
@@ -482,7 +482,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 		else if (fc.getType_Flatrate().equals(X_C_Flatrate_Conditions.TYPE_FLATRATE_ReportedQuantity))
 		{
-			// these ICs are not created here, but by FlatrateDataEntryHandler 
+			// these ICs are not created here, but by FlatrateDataEntryHandler
 		}
 		else
 		{
@@ -1180,7 +1180,10 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		if (!isExtendableContract(request.getContract()))
 		{
-			throw new AdempiereException(MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED, request.getContract());
+			// avoid ad_issue if extension is simply not allowed in scheduled process
+			// throw new AdempiereException(MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED, request.getContract());
+			logger.debug("Skipping contract No {}, because of extension not allowed transition", request.getContract().getDocumentNo());
+			return;
 		}
 
 		final Map<Integer, String> seenFlatrateCondition = new LinkedHashMap<>();
@@ -1723,17 +1726,6 @@ public class FlatrateBL implements IFlatrateBL
 			notCreatedReason.append(" is neither customer nor vendor;");
 			dontCreateTerm = true;
 		}
-
-		final I_C_BPartner_Location billPartnerLocation = bPartnerDAO.retrieveBillToLocation(ctx, bPartner.getC_BPartner_ID(),
-				true,            // alsoTryBPartnerRelation
-				trxName);
-
-		if (billPartnerLocation == null)
-		{
-			notCreatedReason.append(" has no billTo location;");
-			dontCreateTerm = true;
-		}
-
 		if (productAndCategoryId == null)
 		{
 			if (!flatrateDAO.retrieveTerms(bPartner, conditions).isEmpty())
@@ -1758,9 +1750,37 @@ public class FlatrateBL implements IFlatrateBL
 			}
 		}
 
+		final BPartnerId shipToPartnerId = BPartnerId.ofRepoId(bPartner.getC_BPartner_ID());
+		final IBPartnerDAO.BPartnerLocationQuery shipToLocationQuery = IBPartnerDAO.BPartnerLocationQuery.builder()
+				.bpartnerId(shipToPartnerId)
+				.type(SHIP_TO)
+				.applyTypeStrictly(false)
+				.build();
+		final I_C_BPartner_Location shipToLocationRecord = bPartnerDAO.retrieveBPartnerLocation(shipToLocationQuery);
+		if (shipToLocationRecord == null)
+		{
+			notCreatedReason.append(" has no location;");
+			throwNoTermCreatedException(bPartner, notCreatedReason);
+		}
+
+		final BPartnerLocationId shipToLocationId = BPartnerLocationId.ofRepoIdOrNull(shipToPartnerId, shipToLocationRecord.getC_BPartner_Location_ID());
+
+		final IBPartnerDAO.BPartnerLocationQuery billToLocationQuery = IBPartnerDAO.BPartnerLocationQuery.builder()
+				.bpartnerId(shipToPartnerId)
+				.relationBPartnerLocationId(shipToLocationId)
+				.type(BILL_TO)
+				.applyTypeStrictly(false)
+				.build();
+		final I_C_BPartner_Location billPartnerLocation = bPartnerDAO.retrieveBPartnerLocation(billToLocationQuery);
+		if (billPartnerLocation == null)
+		{
+			notCreatedReason.append(" has no billTo location;");
+			dontCreateTerm = true;
+		}
+
 		if (dontCreateTerm)
 		{
-			throw new AdempiereException("@NotCreated@ @C_Flatrate_Term_ID@ (@C_BPartner_ID@: " + bPartner.getValue() + "): " + notCreatedReason).markAsUserValidationError();
+			throwNoTermCreatedException(bPartner, notCreatedReason);
 		}
 
 		final I_C_Flatrate_Term newTerm = newInstance(I_C_Flatrate_Term.class, bPartner);
@@ -1772,33 +1792,19 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setStartDate(startDate);
 		newTerm.setEndDate(endDate != null ? endDate : startDate);
 
-		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
+		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoId(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
 				billPartnerLocation.getC_BPartner_Location_ID(),
 				billPartnerLocation.getC_Location_ID());
 		ContractDocumentLocationAdapterFactory.billLocationAdapter(newTerm)
 				.setFrom(billToLocationId);
 
-		final IBPartnerDAO.BPartnerLocationQuery bPartnerLocationQuery = IBPartnerDAO.BPartnerLocationQuery.builder()
-				.bpartnerId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
-				.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
-				.applyTypeStrictly(true)
-				.build();
-
-		final I_C_BPartner_Location shipToLocationRecord = bPartnerDAO.retrieveBPartnerLocation(bPartnerLocationQuery);
-
-		if (shipToLocationRecord != null)
-		{
-			final BPartnerLocationAndCaptureId shipToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(shipToLocationRecord.getC_BPartner_ID(),
+		final BPartnerLocationAndCaptureId shipToLocationAndCaptureId = BPartnerLocationAndCaptureId.ofRepoId(shipToLocationRecord.getC_BPartner_ID(),
 					shipToLocationRecord.getC_BPartner_Location_ID(),
 					shipToLocationRecord.getC_Location_ID());
 
-			ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(newTerm)
-					.setFrom(shipToLocationId);
-		}
-		else
-		{
-			newTerm.setDropShip_BPartner_ID(bPartner.getC_BPartner_ID()); // keep the previous behavior
-		}
+		ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(newTerm)
+				.setFrom(shipToLocationAndCaptureId);
+
 		if (userInCharge == null)
 		{
 			newTerm.setAD_User_InCharge_ID(bPartner.getSalesRep_ID());
@@ -1832,6 +1838,11 @@ public class FlatrateBL implements IFlatrateBL
 		CacheMgt.get().reset(cacheInvalidateMultiRequest);
 
 		return newTerm;
+	}
+
+	private static void throwNoTermCreatedException(final I_C_BPartner bPartner, final StringBuilder notCreatedReason)
+	{
+		throw new AdempiereException("@NotCreated@ @C_Flatrate_Term_ID@ (@C_BPartner_ID@: " + bPartner.getValue() + "): " + notCreatedReason).markAsUserValidationError();
 	}
 
 	@Override
@@ -2447,7 +2458,7 @@ public class FlatrateBL implements IFlatrateBL
 				.builder()
 				.flatrateTermId(flatrateTermId)
 				.computingMethodTypes(ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS)
-				.isComputingMethodTypeActive(false)
+				.isOnlyActiveComputingMethodTypes(false)
 				.billable(true)
 				.processed(false)
 				.build());
@@ -2517,11 +2528,11 @@ public class FlatrateBL implements IFlatrateBL
 	private I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
 	{
 		// don't make it a field; the SpringApplicationContext might not be configured yet
-		final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
+		final  ModularContractSettingsRepository modularContractSettingsRepository = SpringContextHolder.instance.getBean(ModularContractSettingsRepository.class);
 
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(year.getC_Year_ID(), year.getC_Calendar_ID());
 		final ProductId productId = ProductId.ofRepoId(settings.getM_Raw_Product_ID());
-		if (modularContractSettingsDAO.isSettingsExist(ModularContractSettingsQuery.builder()
+		if (modularContractSettingsRepository.isSettingsExist(ModularContractSettingsQuery.builder()
 				.yearAndCalendarId(yearAndCalendarId)
 				.rawProductId(productId)
 				.soTrx(SOTrx.ofBooleanNotNull(settings.isSOTrx()))
@@ -2667,5 +2678,11 @@ public class FlatrateBL implements IFlatrateBL
 	public void prepareForDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
 	{
 		flatrateDAO.prepareForDefinitiveInvoice(contractIds);
+	}
+
+	@Override
+	public void reverseDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
+	{
+		flatrateDAO.reverseDefinitiveInvoice(contractIds);
 	}
 }

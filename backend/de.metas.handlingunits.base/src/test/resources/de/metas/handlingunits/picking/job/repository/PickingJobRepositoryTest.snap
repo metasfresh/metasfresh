@@ -151,6 +151,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
         "qtyAvailable": "999 Ea"
       }
     ],
+    "pickTarget": null,
     "pickingSlot": null,
     "progress": "NOT_STARTED"
   }

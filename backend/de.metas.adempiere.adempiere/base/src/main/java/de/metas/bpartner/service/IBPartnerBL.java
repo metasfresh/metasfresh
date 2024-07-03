@@ -23,6 +23,7 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -90,7 +91,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	void updateAllAddresses(I_C_BPartner bpartner);
 
-	void updateMemo(@NonNull final BPartnerId bpartnerId, @NonNull String memo);
+	void updateMemo(@NonNull final BPartnerId bpartnerId, String memo);
 
 	I_AD_User retrieveShipContact(I_C_BPartner bpartner);
 
@@ -178,7 +179,9 @@ public interface IBPartnerBL extends ISingletonService
 
 	void setPreviousIdIfPossible(@NonNull I_C_BPartner_Location location);
 
-	@Value
+    @NonNull List<String> getOtherLocationNamesOfBPartner(@NonNull BPartnerId bPartnerId, @Nullable BPartnerLocationId bPartnerLocationId);
+
+    @Value
 	@Builder
 	class RetrieveContactRequest
 	{

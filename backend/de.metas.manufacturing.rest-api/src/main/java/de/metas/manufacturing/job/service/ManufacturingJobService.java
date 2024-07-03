@@ -206,8 +206,9 @@ public class ManufacturingJobService
 			return ManufacturingJobReference.builder()
 					.ppOrderId(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
 					.documentNo(ppOrder.getDocumentNo())
-					.datePromised(loadingAndSavingSupportServices.getDatePromised(ppOrder))
+					.dateStartSchedule(loadingAndSavingSupportServices.getDateStartSchedule(ppOrder))
 					.productName(loadingAndSavingSupportServices.getProductName(ProductId.ofRepoId(ppOrder.getM_Product_ID())))
+					.productValue(loadingAndSavingSupportServices.getProductValue(ProductId.ofRepoId(ppOrder.getM_Product_ID())))
 					.qtyRequiredToProduce(loadingAndSavingSupportServices.getQuantities(ppOrder).getQtyRequiredToProduce())
 					.isJobStarted(isJobStarted)
 					.build();
@@ -337,9 +338,9 @@ public class ManufacturingJobService
 			queryBuilder.onlyWorkstationId(query.getWorkstationId());
 		}
 
-		if (defaultFilters.contains(ManufacturingJobDefaultFilter.TodayDatePromised))
+		if (defaultFilters.contains(ManufacturingJobDefaultFilter.TodayDateStartSchedule))
 		{
-			queryBuilder.datePromisedDay(query.getNow());
+			queryBuilder.dateStartScheduleDay(query.getNow());
 		}
 
 		//

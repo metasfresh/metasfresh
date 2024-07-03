@@ -236,12 +236,11 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 
 	private ModularContractLogEntriesList getInterimLogs(final @NonNull I_C_Flatrate_Term flatrateTermRecord, @NonNull final I_C_Invoice_Candidate ic)
 	{
-
 		final ModularContractLogQuery query = ModularContractLogQuery.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
 				.computingMethodType(ComputingMethodType.INTERIM_CONTRACT)
 				.contractType(LogEntryContractType.INTERIM)
-				.processed(true)
+				.billable(true)
 				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID()))
 				.build();
 		final ModularContractLogEntriesList modularContractLogEntries = modularContractLogService.getModularContractLogEntries(query);

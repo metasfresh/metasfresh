@@ -4,9 +4,10 @@ import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRowCache;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
@@ -54,11 +55,11 @@ import static de.metas.util.Check.assumeNotNull;
 @RequiredArgsConstructor
 public class DimensionGroupSubRowBucket
 {
-	@Getter(AccessLevel.NONE) private final IProductBL productBL = Services.get(IProductBL.class);
 	@Getter(AccessLevel.NONE) private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
 	@NonNull private final DimensionSpecGroup dimensionSpecGroup;
+	@NonNull private final MaterialCockpitRowCache cache;
 
 	// Zusage Lieferant
 	private Quantity pmmQtyPromisedAtDate;
@@ -100,7 +101,7 @@ public class DimensionGroupSubRowBucket
 
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
-		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
+		final I_C_UOM uom = cache.getUomByProductId(ProductId.ofRepoId(cockpitRecord.getM_Product_ID()));
 
 		pmmQtyPromisedAtDate = addToNullable(pmmQtyPromisedAtDate, cockpitRecord.getPMM_QtyPromised_OnDate_AtDate(), uom);
 		qtyMaterialentnahmeAtDate = addToNullable(qtyMaterialentnahmeAtDate, cockpitRecord.getQtyMaterialentnahme_AtDate(), uom);
@@ -132,7 +133,7 @@ public class DimensionGroupSubRowBucket
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
 	{
-		final I_C_UOM uom = productBL.getStockUOM(stockRecord.getM_Product_ID());
+		final I_C_UOM uom = cache.getUomByProductId(ProductId.ofRepoId(stockRecord.getM_Product_ID()));
 
 		qtyOnHandStock = addToNullable(qtyOnHandStock, stockRecord.getQtyOnHand(), uom);
 
@@ -146,6 +147,7 @@ public class DimensionGroupSubRowBucket
 				"productIdAndDate may not be null; mainRowBucket={}", mainRowBucket);
 
 		return MaterialCockpitRow.attributeSubRowBuilder()
+				.cache(cache)
 				.lookups(rowLookups)
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId().getRepoId())

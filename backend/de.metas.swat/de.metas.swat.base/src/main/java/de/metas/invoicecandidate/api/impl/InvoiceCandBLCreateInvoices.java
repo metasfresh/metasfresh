@@ -470,6 +470,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			setHarvestingDetails(invoice, invoiceHeader);
 
+			invoice.setIsCreditedInvoiceReinvoicable(invoiceHeader.isCreditedInvoiceReinvoicable());
+
 			invoice.setC_Tax_Departure_Country_ID(CountryId.toRepoId(invoiceHeader.getC_Tax_Departure_Country_ID()));
 			invoice.setC_BP_BankAccount_ID(BankAccountId.toRepoId(invoiceHeader.getBankAccountId()));
 

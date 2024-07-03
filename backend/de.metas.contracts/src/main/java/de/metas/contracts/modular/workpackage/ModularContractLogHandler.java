@@ -176,7 +176,7 @@ class ModularContractLogHandler
 			@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
 		handler.createLogEntryReverseRequest(request)
-				.ifPresent(contractLogDAO::reverse)
+				.ifPresent(modularLogService::reverse)
 				.ifAbsent(explanation -> Loggables.withLogger(logger, Level.DEBUG)
 						.addLog("Method: {} | No logs created for contractId: {} & request: {}! reason: {}!"
 								, "reverseLogs",

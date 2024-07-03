@@ -31,10 +31,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
+import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUBuilder;
@@ -190,7 +192,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public IHUStorageFactory getStorageFactory()
 	{
-		return storageFactory;
+		final IHUContext huContext = HUContextHolder.getCurrentOrNull();
+		return huContext != null ? huContext.getHUStorageFactory() : storageFactory;
 	}
 
 	@Override
@@ -849,6 +852,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return getPackingInstructionsId(huPackingInstructionsVersionId);
 	}
 
+	@Override
+	public HuPackingInstructionsIdAndCaption getEffectivePackingInstructionsIdAndCaption(@NonNull final I_M_HU hu)
+	{
+		final HuPackingInstructionsId piId = getEffectivePackingInstructionsId(hu);
+		final I_M_HU_PI pi = getPI(piId);
+		return HuPackingInstructionsIdAndCaption.of(piId, pi.getName());
+	}
+
 	private HuPackingInstructionsId getPackingInstructionsId(@NonNull final HuPackingInstructionsVersionId piVersionId)
 	{
 		final HuPackingInstructionsId knownPackingInstructionsId = piVersionId.getKnownPackingInstructionsIdOrNull();
@@ -1133,7 +1144,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return;
 		}
 
-		setHUStatus(hus, createMutableHUContext(), huStatus);
+		IHUContext huContext = HUContextHolder.getCurrentOrNull();
+		if (huContext == null)
+		{
+			huContext = createMutableHUContext();
+		}
+
+		setHUStatus(hus, huContext, huStatus);
 	}
 
 	@Override
@@ -1391,4 +1408,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		handlingUnitsRepo.saveHU(hu);
 	}
 
+	@Override
+	public Set<HuPackingInstructionsIdAndCaption> getLUPIs(
+			@NonNull final ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveParentLUPIs(tuPIItemIds, bpartnerId);
+	}
 }

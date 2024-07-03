@@ -30,8 +30,8 @@ import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepo
 import de.metas.contracts.modular.settings.InvoicingGroupType;
 import de.metas.contracts.modular.settings.ModularContractModuleUpdateRequest;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModuleConfig;
@@ -83,14 +83,14 @@ public class ModCntr_Module
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
-	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
-	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
+	@NonNull private final ModularContractSettingsService modularContractSettingsService;
+	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void validateModule(@NonNull final I_ModCntr_Module moduleRecord)
 	{
-		modularContractSettingsBL.validateModularContractSettingsNotUsed(ModularContractSettingsId.ofRepoId(moduleRecord.getModCntr_Settings_ID()));
+		modularContractSettingsService.validateModularContractSettingsNotUsed(ModularContractSettingsId.ofRepoId(moduleRecord.getModCntr_Settings_ID()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE, ModelValidator.TYPE_BEFORE_NEW })
@@ -98,7 +98,7 @@ public class ModCntr_Module
 	{
 		final ModularContractSettingsId modCntrSettingsId = ModularContractSettingsId.ofRepoId(type.getModCntr_Settings_ID());
 
-		if (modularContractSettingsBL.isSettingsUsedInCompletedFlatrateConditions(modCntrSettingsId))
+		if (modularContractSettingsService.isSettingsUsedInCompletedFlatrateConditions(modCntrSettingsId))
 		{
 			throw new AdempiereException(MOD_CNTR_SETTINGS_CANNOT_BE_CHANGED);
 		}
@@ -107,7 +107,7 @@ public class ModCntr_Module
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validateSettings(@NonNull final I_ModCntr_Module record)
 	{
-		final ModularContractSettings settings = modularContractSettingsBL.getById(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()));
+		final ModularContractSettings settings = modularContractSettingsService.getById(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()));
 
 		validateProductInPS(ProductId.ofRepoIdOrNull(record.getM_Product_ID()), settings.getPricingSystemId(), settings.getSoTrx());
 	}
@@ -125,11 +125,11 @@ public class ModCntr_Module
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void validateModuleComputingMethods(@NonNull final I_ModCntr_Module record)
 	{
-		final ModuleConfig module = modularContractSettingsDAO.fromRecord(record);
+		final ModuleConfig module = modularContractSettingsRepository.fromRecord(record);
 		final ModularContractSettingsId modularContractSettingsId = module.getModularContractSettingsId();
 		final ModularContractType type = module.getModularContractType();
 		final ComputingMethodType computingMethodType = type.getComputingMethodType();
-		final ModularContractSettings settings = modularContractSettingsBL.getById(modularContractSettingsId);
+		final ModularContractSettings settings = modularContractSettingsService.getById(modularContractSettingsId);
 		final ProductId productId = module.getProductId();
 		final Optional<InvoicingGroupId> invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(settings.getRawProductId(), settings.getYearAndCalendarId());
 
@@ -217,7 +217,7 @@ public class ModCntr_Module
 
 	private void updateDefinitiveModuleName(@NonNull final ModuleConfig moduleConfig, @NonNull final String productName)
 	{
-		modularContractSettingsDAO.updateModule(moduleConfig.getId().getModularContractModuleId(), ModularContractModuleUpdateRequest.builder()
+		modularContractSettingsRepository.updateModule(moduleConfig.getId().getModularContractModuleId(), ModularContractModuleUpdateRequest.builder()
 				.moduleName(productName)
 				.build());
 	}
@@ -225,9 +225,9 @@ public class ModCntr_Module
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void validateProductsUOM(@NonNull final I_ModCntr_Module record)
 	{
-		final ModuleConfig module = modularContractSettingsDAO.fromRecord(record);
+		final ModuleConfig module = modularContractSettingsRepository.fromRecord(record);
 		final UomId moduleUOMId = productBL.getStockUOMId(module.getProductId());
-		final ModularContractSettings settings = modularContractSettingsBL.getById(module.getModularContractSettingsId());
+		final ModularContractSettings settings = modularContractSettingsService.getById(module.getModularContractSettingsId());
 
 		final ImmutableList<ComputingMethodType> rawComputingMethods = ImmutableList.of(AddValueOnRawProduct, SubtractValueOnRawProduct);
 		final UomId rawUOMId = productBL.getStockUOMId(settings.getRawProductId());

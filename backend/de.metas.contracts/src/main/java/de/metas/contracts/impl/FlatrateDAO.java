@@ -1162,9 +1162,9 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, tableId)
 				//collect flatrate terms
 				.andCollect(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, I_C_Flatrate_Term.class)
+				.orderByDescending(I_C_Flatrate_Term.COLUMNNAME_Created)
 				.create()
 				.first(I_C_Flatrate_Term.class); // could be more than one, but all belong to the same contract and have same billing infos
-
 	}
 
 	@NonNull
@@ -1327,6 +1327,17 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
+	public void reverseDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
+	{
+		queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, contractIds)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice, true)
+				.create()
+				.update(queryBL.createCompositeQueryUpdater(I_C_Flatrate_Term.class)
+						.addSetColumnValue(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice, false));
+	}
+
+	@Override
 	public boolean isInvoiceableModularContractExists(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
 	{
 		return createModularContractQuery(getFlatrateTermQueryBuilder(filter)
@@ -1345,7 +1356,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	private IQuery<I_C_Flatrate_Term> getContractsReadyForDefinitiveInvoice(final @NonNull IQueryFilter<I_C_Flatrate_Term> filter)
 	{
 		final IQuery<I_C_Flatrate_Term> unprocessedFinalInvoiceSpecificLogsExist = queryBL.createQueryBuilder(I_ModCntr_Type.class)
-				.addInArrayFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, ComputingMethodType.FINAL_INVOICE_SPECIFIC_METHODS)
+				.addInArrayFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, ComputingMethodType.FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS)
 				.andCollectChildren(I_ModCntr_Module.COLUMN_ModCntr_Type_ID)
 				.andCollectChildren(I_ModCntr_Log.COLUMN_ModCntr_Module_ID)
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_IsBillable, true)
@@ -1365,6 +1376,7 @@ public class FlatrateDAO implements IFlatrateDAO
 				.andCollect(I_ModCntr_Log.COLUMN_C_Flatrate_Term_ID)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice, false)
 				.filter(filter)
 				.addNotInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, unprocessedFinalInvoiceSpecificLogsExist)
 				.create();

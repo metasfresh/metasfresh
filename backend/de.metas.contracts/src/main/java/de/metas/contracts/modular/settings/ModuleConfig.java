@@ -23,12 +23,14 @@
 package de.metas.contracts.modular.settings;
 
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty.ColumnOption;
 import de.metas.product.ProductId;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 
 @Value
@@ -77,8 +79,9 @@ public class ModuleConfig
 		return getInvoicingGroup().isCostsType();
 	}
 
-	public boolean isServicesType()
+	@Nullable
+	public ColumnOption getColumnOption()
 	{
-		return getInvoicingGroup().isServicesType();
+		return modularContractType.getColumnOption();
 	}
 }

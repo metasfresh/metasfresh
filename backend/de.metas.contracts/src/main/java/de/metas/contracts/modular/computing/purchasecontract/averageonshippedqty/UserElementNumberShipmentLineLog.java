@@ -35,7 +35,7 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
-import de.metas.contracts.modular.settings.ModularContractType;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
@@ -66,11 +66,13 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
-public abstract class AbstractUENShipmentLineLog extends AbstractModularContractLogHandler
+@Component
+public class UserElementNumberShipmentLineLog extends AbstractModularContractLogHandler
 {
 	protected static final AdMessageKey MSG_INFO_SHIPMENT_COMPLETED = AdMessageKey.of("de.metas.contracts.ShipmentCompleted");
 	private static final AdMessageKey MSG_INFO_SHIPMENT_REVERSED = AdMessageKey.of("de.metas.contracts.ShipmentReversed");
@@ -83,25 +85,25 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final ModularContractService modularContractService;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
 
 	@NonNull @Getter private final String supportedTableName = I_M_InOutLine.Table_Name;
 	@NonNull @Getter private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPMENT;
 	@NonNull @Getter private final AverageAVOnShippedQtyComputingMethod computingMethod;
-	@NonNull private final ColumnOption column;
 
-	public AbstractUENShipmentLineLog(
+	public UserElementNumberShipmentLineLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final AverageAVOnShippedQtyComputingMethod computingMethod,
-			@NonNull final ColumnOption column)
+			@NonNull final ModularContractSettingsRepository modularContractSettingsRepository)
 	{
 		super(modularContractService);
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
 		this.modularContractService = modularContractService;
 
 		this.computingMethod = computingMethod;
-		this.column = column;
-	}
+        this.modularContractSettingsRepository = modularContractSettingsRepository;
+    }
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -154,7 +156,7 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 				.invoicingGroupId(invoicingGroupId);
 
-		return switch (column)
+		return switch (Check.assumeNotNull(createLogRequest.getColumnOption(), "ColumnOption shouldn't be null"))
 		{
 			case UserElementNumber1 -> ExplainedOptional.of(builder
 					.userElementNumber1(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(inOutLineRecord, I_M_InOutLine.COLUMNNAME_UserElementNumber1))
@@ -168,7 +170,7 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 
 	}
 
-	private BigDecimal getUserElementNumberValue(final I_M_InOutLine inOutLineRecord)
+	private BigDecimal getUserElementNumberValue(@NonNull final I_M_InOutLine inOutLineRecord, @NonNull final ColumnOption column)
 	{
 		return switch (column)
 		{
@@ -239,8 +241,7 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 	@Override
 	public boolean applies(@NonNull final CreateLogRequest request)
 	{
-		final ModularContractType type = request.getModuleConfig().getModularContractType();
-		return column.getColumnName().equals(type.getColumnName());
+		return request.getColumnOption() != null;
 	}
 
 	@NonNull
@@ -249,8 +250,8 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 		final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest = ContractSpecificScalePriceRequest.builder()
 				.modularContractModuleId(request.getModularContractModuleId())
 				.flatrateTermId(request.getContractId())
-				.column(column)
-				.value(getUserElementNumberValue(getInOutLineRecord(request.getRecordRef())))
+				.column(Check.assumeNotNull(request.getColumnOption(), "ColumnOption shouldn't be null"))
+				.value(getUserElementNumberValue(getInOutLineRecord(request.getRecordRef()), request.getColumnOption()))
 				.build();
 
 		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificScalePrice(contractSpecificScalePriceRequest);
@@ -276,11 +277,15 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 			return Optional.empty();
 		}
 
+		final ColumnOption columnOption = Check.assumeNotNull(
+				modularContractSettingsRepository.getByModuleId(logEntry.getModularContractModuleId()).getColumnOption(),
+				"ColumnOption shouldn't be null");
+
 		final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest = ContractSpecificScalePriceRequest.builder()
 				.modularContractModuleId(logEntry.getModularContractModuleId())
 				.flatrateTermId(logEntry.getContractId())
-				.column(column)
-				.value(getUserElementNumberValue(getInOutLineRecord(logEntry.getReferencedRecord())))
+				.column( columnOption )
+				.value(getUserElementNumberValue(getInOutLineRecord(logEntry.getReferencedRecord()), columnOption))
 				.build();
 
 		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificScalePrice(contractSpecificScalePriceRequest);

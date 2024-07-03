@@ -67,6 +67,17 @@
               "exclusionFromPurchaseReason": null,
               "exclusionFromPurchaseReasonSet": false
             }
+          ],
+          "productTaxCategories": null,
+          "uomConversions": [
+            {
+              "fromUomCode": "PCE",
+              "toUomCode": "ml",
+              "fromToMultiplier": 4250,
+              "fromToMultiplierSet": true,
+              "catchUOMForProduct": null,
+              "catchUOMForProductSet": false
+            }
           ]
         },
         "externalSystemConfigId": 1

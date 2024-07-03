@@ -45,7 +45,7 @@ import javax.annotation.Nullable;
 import java.util.Set;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class ModularContractLogQuery
 {
 	@Nullable TableRecordReferenceSet referenceSet;
@@ -55,7 +55,7 @@ public class ModularContractLogQuery
 	@Nullable ModularContractModuleId contractModuleId;
 	@Nullable Boolean processed;
 	@Nullable Boolean billable;
-	@Nullable InvoiceCandidateId invoiceCandidateId;
+	@NonNull @Singular ImmutableSet<InvoiceCandidateId> invoiceCandidateIds;
 	@Nullable LockOwner lockOwner;
 	@Nullable InvoicingGroupId invoicingGroupId;
 	@Nullable LogEntryDocumentType logEntryDocumentType;
@@ -64,7 +64,7 @@ public class ModularContractLogQuery
 	@NonNull @Singular ImmutableList<OrderBy> orderBys;
 	@NonNull @Singular ImmutableSet<ComputingMethodType> computingMethodTypes;
 	@Builder.Default
-	boolean isComputingMethodTypeActive = true;
+	boolean isOnlyActiveComputingMethodTypes = true;
 	@NonNull @Singular ImmutableSet<AdTableId> excludedReferencedTableIds;
 	
 	@NonNull

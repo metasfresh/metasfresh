@@ -429,7 +429,7 @@ public class WarehouseDAO implements IWarehouseDAO
 						locatorId -> locatorId))
 				.asMap();
 
-		return CollectionUtils.mapValues(locatorIdsByWarehouseId, collection -> ImmutableList.copyOf(collection));
+		return CollectionUtils.mapValues(locatorIdsByWarehouseId, ImmutableList::copyOf);
 	}
 
 	@Override
