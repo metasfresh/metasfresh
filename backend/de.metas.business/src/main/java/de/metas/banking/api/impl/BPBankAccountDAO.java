@@ -111,25 +111,6 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 	}
 
 	@Override
-	public Optional<BankAccount> getDefaultESRBankAccount(@NonNull final BPartnerId bpartnerId)
-	{
-		return bankAccountByBPartnerId.getOrLoad(bpartnerId, this::retrieveDefaultESRBankAccount);
-	}
-
-	private Optional<BankAccount> retrieveDefaultESRBankAccount(@NonNull final BPartnerId bpartnerId)
-	{
-		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, true)
-				.orderByDescending(I_C_BP_BankAccount.COLUMNNAME_IsDefaultESR)
-				.orderByDescending(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID)
-				.create()
-				.firstOptional(I_C_BP_BankAccount.class)
-				.map(BPBankAccountDAO::toBankAccount);
-	}
-
-	@Override
 	@NonNull
 	public Optional<BankAccountId> getBankAccountId(
 			@NonNull final BankId bankId,
