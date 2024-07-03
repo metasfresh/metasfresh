@@ -68,7 +68,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-07-03 14:4
 
 -- Value: de.metas.postfinance.webui.process.C_Doc_Outbound_Log_Update_PostFinance_Status.OnlyOnePostFinanceStatusSelection
 -- 2024-07-03T12:45:29.533Z
-UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Selekcion needs to have the same PostFinance Status',Updated=TO_TIMESTAMP('2024-07-03 14:45:29.533','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545429
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Selection needs to have the same PostFinance Status',Updated=TO_TIMESTAMP('2024-07-03 14:45:29.533','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545429
 ;
 
 -- Value: de.metas.postfinance.webui.process.C_Doc_Outbound_Log_Update_PostFinance_Status.NoTargetPostFinanceStatusForSelection
