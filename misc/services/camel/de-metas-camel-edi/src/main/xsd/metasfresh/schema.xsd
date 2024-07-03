@@ -657,6 +657,7 @@
             <xsd:element minOccurs="0" name="DropShip_Location_ID" type="EDI_Imp_C_BPartner_Location_Lookup_GLNType"/>
             <xsd:element minOccurs="0" name="QtyItemCapacity" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="DatePromised" type="xsd:dateTime"/>
+            <xsd:element minOccurs="0" name="DateOrdered" type="xsd:date"/>
         </xsd:sequence>
         <xsd:attribute ref="AD_Client_Value"/>
         <xsd:attribute ref="ReplicationEvent"/>
