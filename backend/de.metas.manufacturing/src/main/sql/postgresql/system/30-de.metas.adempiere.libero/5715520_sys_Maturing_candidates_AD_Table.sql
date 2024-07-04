@@ -213,15 +213,6 @@ UPDATE AD_Process_Trl SET Name='Update Reifende Kandidaten',Updated=TO_TIMESTAMP
 UPDATE AD_Process_Trl SET Name='Update Reifende Kandidaten',Updated=TO_TIMESTAMP('2024-01-22 13:14:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=585349
 ;
 
--- Process: PP_Order_Candidate_CreateMaturingCandidates(org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates)
--- Table: PP_Order_Candidate
--- Tab: Reifedisposition(541756,EE01) -> Produktionsdisposition(547345,EE01)
--- Window: Reifedisposition(541756,EE01)
--- EntityType: D
--- 2024-01-22T11:15:34.030Z
-INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Tab_ID,AD_Table_ID,AD_Table_Process_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585349,null,541913,541456,541756,TO_TIMESTAMP('2024-01-22 13:15:33','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2024-01-22 13:15:33','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
-;
-
 -- Column: PP_Maturing_Candidates_v.DateStartSchedule
 -- Column: PP_Maturing_Candidates_v.DateStartSchedule
 -- 2024-01-22T11:55:13.070Z
@@ -272,15 +263,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2024-01-22T15:38:20.066Z
 /* DDL */  select update_Column_Translation_From_AD_Element(2019) 
-;
-
--- Process: PP_Order_Candidate_CreateMaturingCandidates(org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates)
--- Table: PP_Order_Candidate
--- Tab: Reifedisposition(541756,EE01) -> Produktionsdisposition(547345,EE01)
--- Window: Reifedisposition(541756,EE01)
--- EntityType: EE01
--- 2024-01-22T20:38:13.778Z
-UPDATE AD_Table_Process SET EntityType='EE01', WEBUI_ViewQuickAction='Y',Updated=TO_TIMESTAMP('2024-01-22 22:38:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=541456
 ;
 
 -- 2024-01-22T20:41:29.078Z

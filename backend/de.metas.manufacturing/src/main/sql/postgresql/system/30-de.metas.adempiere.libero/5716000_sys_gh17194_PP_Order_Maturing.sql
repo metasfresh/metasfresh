@@ -33,14 +33,6 @@ INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,
 INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=542768 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
 ;
 
--- Process: PP_Order_Candidate_EnqueueSelectionForOrdering_Maturing(org.eevolution.productioncandidate.process.PP_Order_Candidate_EnqueueSelectionForOrdering)
--- Table: PP_Order_Candidate
--- Window: Reifedisposition(541756,EE01)
--- EntityType: EE01
--- 2024-01-14T13:51:06.569Z
-INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585346,541913,541453,541756,TO_TIMESTAMP('2024-01-14 15:51:06','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y',TO_TIMESTAMP('2024-01-14 15:51:06','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N')
-;
-
 -- Value: PP_Order_Candidate_AlreadyMaturedForOrdering
 -- Classname: org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering
 -- 2024-01-15T20:15:14.630Z
