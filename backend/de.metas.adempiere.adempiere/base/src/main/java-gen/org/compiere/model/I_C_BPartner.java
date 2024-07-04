@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_BPartner
  *  @author metasfresh (generated)
@@ -733,7 +734,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_CreateSO = "CreateSO";
 
 	/**
-	 * Set Credit limit Usage.
+	 * Set Credit limit indicator %.
 	 * Percent of Credit used from the limit
 	 *
 	 * <br>Type: String
@@ -745,7 +746,7 @@ public interface I_C_BPartner
 	void setCreditLimitIndicator (@Nullable java.lang.String CreditLimitIndicator);
 
 	/**
-	 * Get Credit limit Usage.
+	 * Get Credit limit indicator %.
 	 * Percent of Credit used from the limit
 	 *
 	 * <br>Type: String
@@ -919,6 +920,33 @@ public interface I_C_BPartner
 	String COLUMNNAME_DefaultShipTo_Postal = "DefaultShipTo_Postal";
 
 	/**
+	 * Set Delivery credit limit indicator %.
+	 * Percent of Credit used from the limit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDeliveryCreditLimitIndicator (@Nullable java.lang.String DeliveryCreditLimitIndicator);
+
+	/**
+	 * Get Delivery credit limit indicator %.
+	 * Percent of Credit used from the limit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getDeliveryCreditLimitIndicator();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_DeliveryCreditLimitIndicator = new ModelColumn<>(I_C_BPartner.class, "DeliveryCreditLimitIndicator", null);
+	String COLUMNNAME_DeliveryCreditLimitIndicator = "DeliveryCreditLimitIndicator";
+
+	/**
 	 * Set Delivery Rule.
 	 * Defines the timing of Delivery
 	 *
@@ -984,6 +1012,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_Description = new ModelColumn<>(I_C_BPartner.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Document Copies.
+	 * Number of copies to be printed
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDocumentCopies (int DocumentCopies);
+
+	/**
+	 * Get Document Copies.
+	 * Number of copies to be printed
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDocumentCopies();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_DocumentCopies = new ModelColumn<>(I_C_BPartner.class, "DocumentCopies", null);
+	String COLUMNNAME_DocumentCopies = "DocumentCopies";
 
 	/**
 	 * Set Dunning Grace Date.
@@ -1229,6 +1280,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_FreightCostRule = "FreightCostRule";
 
 	/**
+	 * Set Farming Producer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFresh_Urproduzent (boolean Fresh_Urproduzent);
+
+	/**
+	 * Get Farming Producer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isFresh_Urproduzent();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Fresh_Urproduzent = new ModelColumn<>(I_C_BPartner.class, "Fresh_Urproduzent", null);
+	String COLUMNNAME_Fresh_Urproduzent = "Fresh_Urproduzent";
+
+	/**
 	 * Set GDP Certificate.
 	 *
 	 * <br>Type: YesNo
@@ -1355,6 +1427,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_InternalName = new ModelColumn<>(I_C_BPartner.class, "InternalName", null);
 	String COLUMNNAME_InternalName = "InternalName";
+
+	/**
+	 * Set Invoice Delivery.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceDelivery (@Nullable java.lang.String InvoiceDelivery);
+
+	/**
+	 * Get Invoice Delivery.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoiceDelivery();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_InvoiceDelivery = new ModelColumn<>(I_C_BPartner.class, "InvoiceDelivery", null);
+	String COLUMNNAME_InvoiceDelivery = "InvoiceDelivery";
 
 	/**
 	 * Set Invoice Print Format.
@@ -1543,6 +1636,31 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsArchived = "IsArchived";
 
 	/**
+	 * Set Blocked.
+	 * The record is blocked in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsBlocked (boolean IsBlocked);
+
+	/**
+	 * Get Blocked.
+	 * The record is blocked in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isBlocked();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsBlocked = new ModelColumn<>(I_C_BPartner.class, "IsBlocked", null);
+	String COLUMNNAME_IsBlocked = "IsBlocked";
+
+	/**
 	 * Set Company.
 	 *
 	 * <br>Type: YesNo
@@ -1717,7 +1835,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsForwarder = "IsForwarder";
 
 	/**
-	 * Set Haddex Prüfung erforderlich.
+	 * Set Haddex Check.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1726,7 +1844,7 @@ public interface I_C_BPartner
 	void setIsHaddexCheck (boolean IsHaddexCheck);
 
 	/**
-	 * Get Haddex Prüfung erforderlich.
+	 * Get Haddex Check.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1825,7 +1943,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Print local currency VAT.
-	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
+	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type. If the field is left none or set to Yes, the tax report is printed.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1835,7 +1953,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Print local currency VAT.
-	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
+	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type. If the field is left none or set to Yes, the tax report is printed.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1848,7 +1966,6 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Prospect.
-	 * Set Aktiver Interessent/Kunde.
 	 * Indicates this is a Prospect
 	 *
 	 * <br>Type: YesNo
@@ -2420,6 +2537,26 @@ public interface I_C_BPartner
 	String COLUMNNAME_MKTG_Campaign_ID = "MKTG_Campaign_ID";
 
 	/**
+	 * Set Group/Mother Company.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMother_Company_ID (int Mother_Company_ID);
+
+	/**
+	 * Get Group/Mother Company.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMother_Company_ID();
+
+	String COLUMNNAME_Mother_Company_ID = "Mother_Company_ID";
+
+	/**
 	 * Set Price List.
 	 * Unique identifier of a Price List
 	 *
@@ -2481,26 +2618,6 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_MRN_ABN = new ModelColumn<>(I_C_BPartner.class, "MRN_ABN", null);
 	String COLUMNNAME_MRN_ABN = "MRN_ABN";
-
-	/**
-	 * Set Group/Mother Company.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMother_Company_ID (int Mother_Company_ID);
-
-	/**
-	 * Get Group/Mother Company.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getMother_Company_ID();
-
-	String COLUMNNAME_Mother_Company_ID = "Mother_Company_ID";
 
 	/**
 	 * Set Exclude from MRP.
@@ -3963,25 +4080,4 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_Xing = new ModelColumn<>(I_C_BPartner.class, "Xing", null);
 	String COLUMNNAME_Xing = "Xing";
-
-	/**
-	 * Set Farming Producer.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setFresh_Urproduzent (boolean Fresh_Urproduzent);
-
-	/**
-	 * Get Farming Producer.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isFresh_Urproduzent();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_Fresh_Urproduzent = new ModelColumn<>(I_C_BPartner.class, "Fresh_Urproduzent", null);
-	String COLUMNNAME_Fresh_Urproduzent = "Fresh_Urproduzent";
 }

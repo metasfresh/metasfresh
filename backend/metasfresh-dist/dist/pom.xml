@@ -503,7 +503,7 @@
 
         <dependency>
             <groupId>de.metas.postfinance</groupId>
-            <artifactId>de.metas.postfinance</artifactId>
+            <artifactId>de.metas.postfinance.base</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>

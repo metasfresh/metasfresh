@@ -53,7 +53,7 @@ public interface I_C_BP_Group
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Druck - Farbe.
+	 * Set Print Color.
 	 * Color used for printing and display
 	 *
 	 * <br>Type: TableDir
@@ -63,7 +63,7 @@ public interface I_C_BP_Group
 	void setAD_PrintColor_ID (int AD_PrintColor_ID);
 
 	/**
-	 * Get Druck - Farbe.
+	 * Get Print Color.
 	 * Color used for printing and display
 	 *
 	 * <br>Type: TableDir
@@ -84,20 +84,20 @@ public interface I_C_BP_Group
 	 * Describes how the new business partner's name is initiated, based on the added contacts' names and forms of address.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setBPNameAndGreetingStrategy (@Nullable java.lang.String BPNameAndGreetingStrategy);
+	void setBPNameAndGreetingStrategy (java.lang.String BPNameAndGreetingStrategy);
 
 	/**
 	 * Get Individual business partner's name format.
 	 * Describes how the new business partner's name is initiated, based on the added contacts' names and forms of address.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getBPNameAndGreetingStrategy();
+	java.lang.String getBPNameAndGreetingStrategy();
 
 	ModelColumn<I_C_BP_Group, Object> COLUMN_BPNameAndGreetingStrategy = new ModelColumn<>(I_C_BP_Group.class, "BPNameAndGreetingStrategy", null);
 	String COLUMNNAME_BPNameAndGreetingStrategy = "BPNameAndGreetingStrategy";
@@ -126,7 +126,7 @@ public interface I_C_BP_Group
 	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
 	/**
-	 * Set Mahnung.
+	 * Set Dunning.
 	 * Dunning Rules for overdue invoices
 	 *
 	 * <br>Type: TableDir
@@ -136,7 +136,7 @@ public interface I_C_BP_Group
 	void setC_Dunning_ID (int C_Dunning_ID);
 
 	/**
-	 * Get Mahnung.
+	 * Get Dunning.
 	 * Dunning Rules for overdue invoices
 	 *
 	 * <br>Type: TableDir
@@ -222,6 +222,27 @@ public interface I_C_BP_Group
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Invoice Delivery.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceDelivery (java.lang.String InvoiceDelivery);
+
+	/**
+	 * Get Invoice Delivery.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getInvoiceDelivery();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_InvoiceDelivery = new ModelColumn<>(I_C_BP_Group.class, "InvoiceDelivery", null);
+	String COLUMNNAME_InvoiceDelivery = "InvoiceDelivery";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -268,8 +289,8 @@ public interface I_C_BP_Group
 	String COLUMNNAME_IsConfidentialInfo = "IsConfidentialInfo";
 
 	/**
-	 * Set Kunde.
-	 * Zeigt an, ob dieser Geschäftspartner ein Kunde ist
+	 * Set Customer.
+	 * Indicates if this Business Partner is a Customer
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -278,8 +299,8 @@ public interface I_C_BP_Group
 	void setIsCustomer (boolean IsCustomer);
 
 	/**
-	 * Get Kunde.
-	 * Zeigt an, ob dieser Geschäftspartner ein Kunde ist
+	 * Get Customer.
+	 * Indicates if this Business Partner is a Customer
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -405,6 +426,7 @@ public interface I_C_BP_Group
 
 	/**
 	 * Set Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -414,6 +436,7 @@ public interface I_C_BP_Group
 
 	/**
 	 * Get Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -496,7 +519,7 @@ public interface I_C_BP_Group
 	String COLUMNNAME_PO_DiscountSchema_ID = "PO_DiscountSchema_ID";
 
 	/**
-	 * Set Einkaufspreisliste.
+	 * Set Purchase Pricelist.
 	 * Price List used by this Business Partner
 	 *
 	 * <br>Type: Table
@@ -506,7 +529,7 @@ public interface I_C_BP_Group
 	void setPO_PriceList_ID (int PO_PriceList_ID);
 
 	/**
-	 * Get Einkaufspreisliste.
+	 * Get Purchase Pricelist.
 	 * Price List used by this Business Partner
 	 *
 	 * <br>Type: Table
@@ -539,7 +562,7 @@ public interface I_C_BP_Group
 
 	/**
 	 * Set Price Match Tolerance.
-	 * Preis Abweichung Toleranz
+	 * PO-Invoice Match Price Tolerance in percent of the purchase price
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -549,7 +572,7 @@ public interface I_C_BP_Group
 
 	/**
 	 * Get Price Match Tolerance.
-	 * Preis Abweichung Toleranz
+	 * PO-Invoice Match Price Tolerance in percent of the purchase price
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -584,8 +607,8 @@ public interface I_C_BP_Group
 	String COLUMNNAME_PriorityBase = "PriorityBase";
 
 	/**
-	 * Set Kreditstatus.
-	 * Kreditstatus des Geschäftspartners
+	 * Set Credit Status.
+	 * Business Partner Credit Status
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -594,8 +617,8 @@ public interface I_C_BP_Group
 	void setSOCreditStatus (java.lang.String SOCreditStatus);
 
 	/**
-	 * Get Kreditstatus.
-	 * Kreditstatus des Geschäftspartners
+	 * Get Credit Status.
+	 * Business Partner Credit Status
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
