@@ -327,7 +327,7 @@
                 <plugin>
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
-                    <version>0.15.2</version>
+                    <version>0.15.3</version>
                     <dependencies>
                         <!-- java 17 support https://github.com/highsource/maven-jaxb2-plugin/issues/201 -->
                         <dependency>

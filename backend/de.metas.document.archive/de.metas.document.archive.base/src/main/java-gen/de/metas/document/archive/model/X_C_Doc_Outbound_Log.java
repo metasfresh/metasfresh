@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_Doc_Outbound_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1679925780L;
+	private static final long serialVersionUID = 1073925950L;
 
     /** Standard Constructor */
     public X_C_Doc_Outbound_Log (final Properties ctx, final int C_Doc_Outbound_Log_ID, @Nullable final String trxName)
@@ -370,6 +370,10 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	public static final String POSTFINANCE_EXPORT_STATUS_Error = "E";
 	/** OK = O */
 	public static final String POSTFINANCE_EXPORT_STATUS_OK = "O";
+	/** DontSend = D */
+	public static final String POSTFINANCE_EXPORT_STATUS_DontSend = "D";
+	/** TransmissionError = T */
+	public static final String POSTFINANCE_EXPORT_STATUS_TransmissionError = "T";
 	@Override
 	public void setPostFinance_Export_Status (final java.lang.String PostFinance_Export_Status)
 	{
