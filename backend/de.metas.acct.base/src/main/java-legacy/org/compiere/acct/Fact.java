@@ -27,8 +27,10 @@ import de.metas.acct.api.AcctSchemaElementsMap;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.elementvalue.ElementValueCreateOrUpdateRequest;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -664,10 +666,13 @@ public final class Fact
 	@NonNull
 	public FactLine getSingleLineByAccountId(final AccountId accountId)
 	{
+		final MAccount account = services.getAccountById(accountId);
+		final ElementValueId elementValueId = ElementValueId.ofRepoId(account.getAccount_ID());
+
 		FactLine lineFound = null;
 		for (FactLine line : m_lines)
 		{
-			if (line.getAccount_ID() == accountId.getRepoId())
+			if (line.getAccount_ID() == elementValueId.getRepoId())
 			{
 				if (lineFound == null)
 				{
