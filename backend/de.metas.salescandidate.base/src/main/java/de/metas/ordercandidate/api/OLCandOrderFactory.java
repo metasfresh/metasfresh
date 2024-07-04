@@ -212,9 +212,9 @@ class OLCandOrderFactory
 					.setFrom(billBPartner);
 		}
 
-		final Timestamp dateDoc = TimeUtil.asTimestamp(candidateOfGroup.getDateDoc());
-		order.setDateOrdered(dateDoc);
-		order.setDateAcct(dateDoc);
+		final Timestamp dateOrdered = TimeUtil.asTimestamp(candidateOfGroup.getDateOrdered());
+		order.setDateOrdered(dateOrdered);
+		order.setDateAcct(dateOrdered);
 
 		// task 06269 (see KurzBeschreibung)
 		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder()
