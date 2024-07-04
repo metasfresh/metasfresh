@@ -28,6 +28,7 @@ DELETE FROM AD_Column WHERE AD_Column_ID=588662
 
 
 -- there was a "distinct" missing in the string_agg for the EDIDesadvDocumentNo
+-- View: EDI_Cctop_INVOIC_v
 CREATE OR REPLACE VIEW EDI_Cctop_INVOIC_v AS
 SELECT
     i.C_Invoice_ID AS EDI_Cctop_INVOIC_v_ID
@@ -41,8 +42,8 @@ SELECT
                 ELSE NULL::CHARACTER VARYING
         END) AS POReference
      , (CASE
-            WHEN COALESCE(i.DateOrdered, o.DateOrdered) IS NOT NULL /* task 09182: if there is an orderDate, then export it */
-                THEN COALESCE(i.DateOrdered, o.DateOrdered)
+            WHEN COALESCE(i.DateOrdered, o.DateOrdered, ol.dateordered) IS NOT NULL /* task 09182: if there is an orderDate, then export it */
+                THEN COALESCE(i.DateOrdered, o.DateOrdered, ol.dateordered)
                 ELSE NULL::TIMESTAMP WITHOUT TIME ZONE
         END) AS DateOrdered
      , (CASE dt.DocBaseType
@@ -53,10 +54,9 @@ SELECT
                                          ELSE 'ERROR EAN_DocType'::TEXT
                                      END)
             WHEN 'ARC'::BPChar THEN (CASE
-
-                /* CQ => "GS - Lieferdifferenz"; CS => "GS - Retoure" */
+                /* CQ => "GS - Delivery-Difference"; CS => "GS - Retoure"; CR => Price-Difference */
                                          WHEN dt.DocSubType IS NULL OR TRIM(BOTH ' ' FROM dt.DocSubType) IN ('CQ','CS') THEN '381'
-                                         WHEN dt.DocSubType IS NULL OR TRIM(BOTH ' ' FROM dt.DocSubType)='CR' THEN '83'::TEXT
+                                         WHEN dt.DocSubType IS NULL OR TRIM(BOTH ' ' FROM dt.DocSubType)='CR' THEN '83'
                                                                                                                         ELSE 'ERROR EAN_DocType'::TEXT
                                      END)
                                ELSE 'ERROR EAN_DocType'::TEXT
@@ -64,8 +64,8 @@ SELECT
      , i.GrandTotal
      , i.TotalLines
     /* IF docSubType is CS, the we don't reference the original shipment*/
-     , CASE WHEN dt.DocSubType='CS' THEN NULL ELSE shipment.MovementDate END AS MovementDate
-     , CASE WHEN dt.DocSubType='CS' THEN NULL ELSE shipment.DocumentNo END AS Shipment_DocumentNo
+     , CASE WHEN dt.DocSubType='CS' THEN NULL ELSE COALESCE(shipment.MovementDate, iomd.movementdate) END AS MovementDate
+     , CASE WHEN dt.DocSubType='CS' THEN NULL ELSE COALESCE(shipment.DocumentNo, iodn.documentno) END AS Shipment_DocumentNo
      , t.TotalVAT
      , t.TotalTaxBaseAmt
      , COALESCE(rbp.EdiInvoicRecipientGLN, rl.GLN) AS ReceiverGLN
@@ -112,7 +112,6 @@ SELECT
 FROM C_Invoice i
          LEFT JOIN C_DocType dt ON dt.C_DocType_ID = i.C_DocTypetarget_ID
          LEFT JOIN C_Order o ON o.C_Order_ID=i.C_Order_ID
-         LEFT JOIN EDI_Desadv desadv ON desadv.EDI_Desadv_ID = o.EDI_Desadv_ID -- note that we prefer the EDI_Desadv over M_InOut. there might be multiple InOuts, all with the same POReference and the same EDI_Desadv_ID
          LEFT JOIN LATERAL (
     SELECT
         io.DocumentNo, io.MovementDate
@@ -135,4 +134,30 @@ FROM C_Invoice i
     GROUP BY C_InvoiceTax.C_Invoice_ID
 ) t ON t.C_Invoice_ID = i.C_Invoice_ID
          LEFT JOIN C_BPartner sp ON sp.AD_OrgBP_ID = i.AD_Org_ID
+         LEFT JOIN LATERAL ( --only add values if there is only one unique value
+    SELECT i.c_invoice_id, min(o.dateordered) AS dateordered
+    FROM c_invoice i
+             INNER JOIN c_invoiceline il ON i.c_invoice_id = il.c_invoice_id
+             INNER JOIN c_orderline ol ON il.c_orderline_id = ol.c_orderline_id
+             INNER JOIN c_order o ON ol.c_order_id = o.c_order_id
+    GROUP BY i.c_invoice_id HAVING count(DISTINCT ol.dateordered)=1
+    ) ol ON ol.c_invoice_id = i.c_invoice_id
+         LEFT JOIN LATERAL (
+    SELECT i.c_invoice_id, min(io.movementdate) AS movementdate
+    FROM c_invoice i
+             INNER JOIN c_invoiceline il ON i.c_invoice_id = il.c_invoice_id
+             INNER JOIN c_orderline ol ON il.c_orderline_id = ol.c_orderline_id
+             INNER JOIN c_order o ON ol.c_order_id = o.c_order_id
+             INNER JOIN M_InOut io ON o.c_order_id = io.c_order_id AND io.DocStatus IN ('CO', 'CL')
+    GROUP BY i.c_invoice_id HAVING count(DISTINCT io.movementdate)=1
+    ) iomd ON iomd.c_invoice_id = i.c_invoice_id
+         LEFT JOIN LATERAL (
+    SELECT i.c_invoice_id, min(io.documentno) AS documentno
+    FROM c_invoice i
+             INNER JOIN c_invoiceline il ON i.c_invoice_id = il.c_invoice_id
+             INNER JOIN c_orderline ol ON il.c_orderline_id = ol.c_orderline_id
+             INNER JOIN c_order o ON ol.c_order_id = o.c_order_id
+             INNER JOIN M_InOut io ON o.c_order_id = io.c_order_id AND io.DocStatus IN ('CO', 'CL')
+    GROUP BY i.c_invoice_id HAVING count(DISTINCT io.documentno)=1
+    ) iodn ON iodn.c_invoice_id = i.c_invoice_id
 ;
