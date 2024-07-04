@@ -72,7 +72,7 @@
           "uomConversions": [
             {
               "fromUomCode": "PCE",
-              "toUomCode": "ml",
+              "toUomCode": "mm",
               "fromToMultiplier": 4250,
               "fromToMultiplierSet": true,
               "catchUOMForProduct": null,
