@@ -129,7 +129,7 @@ public class InterimContractAllocations
 				.toInstant(orgDAO::getTimeZone);
 
 		final Instant interimDate = getInterimDate();
-		if(interimDate.isBefore(shippingDate))
+		if(interimDate.isAfter(shippingDate))
 		{
 			return additionalInterestDays;
 		}
