@@ -82,17 +82,17 @@ public interface IOLCandBL extends ISingletonService
 
 	AttachmentEntry addAttachment(OLCandQuery olCandQuery, AttachmentEntryCreateRequest attachmentEntryCreateRequest);
 
-	DeliveryRule getDeliveryRule(I_C_OLCand record, BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults);
+	DeliveryRule getDeliveryRule(@NonNull I_C_OLCand record, @Nullable BPartnerOrderParams bPartnerOrderParams, @Nullable OLCandOrderDefaults orderDefaults);
 
-	DeliveryViaRule getDeliveryViaRule(I_C_OLCand record, BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults);
+	DeliveryViaRule getDeliveryViaRule(@NonNull I_C_OLCand record, @Nullable BPartnerOrderParams bPartnerOrderParams, @Nullable OLCandOrderDefaults orderDefaults);
 
-	FreightCostRule getFreightCostRule(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
+	FreightCostRule getFreightCostRule(@Nullable BPartnerOrderParams params, @Nullable OLCandOrderDefaults orderDefaults);
 
-	InvoiceRule getInvoiceRule(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
+	InvoiceRule getInvoiceRule(@Nullable BPartnerOrderParams params, @Nullable OLCandOrderDefaults orderDefaults);
 
-	PaymentRule getPaymentRule(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults, I_C_OLCand olCandRecord);
+	PaymentRule getPaymentRule(@Nullable BPartnerOrderParams params, @Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand olCandRecord);
 
-	PaymentTermId getPaymentTermId(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults, I_C_OLCand olCandRecord);
+	PaymentTermId getPaymentTermId(@Nullable BPartnerOrderParams params, @Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand olCandRecord);
 
 	/**
 	 * Return the pricing system to use for the given {@code olCand}.
@@ -102,19 +102,17 @@ public interface IOLCandBL extends ISingletonService
 	 * <li>else, if the processor has a pricing system set, then return that</li>
 	 * </ul>
 	 */
-	PricingSystemId getPricingSystemId(I_C_OLCand olCand, BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults);
+	PricingSystemId getPricingSystemId(@NonNull I_C_OLCand olCand, @Nullable BPartnerOrderParams bPartnerOrderParams, @Nullable OLCandOrderDefaults orderDefaults);
 
-	ShipperId getShipperId(BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults, I_C_OLCand olCandRecord);
+	ShipperId getShipperId(@Nullable BPartnerOrderParams bPartnerOrderParams, @Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand olCandRecord);
 
 	BPartnerOrderParams getBPartnerOrderParams(I_C_OLCand olCandRecord);
 
-	DocTypeId getOrderDocTypeId(OLCandOrderDefaults orderDefaults, I_C_OLCand orderCandidateRecord);
+	DocTypeId getOrderDocTypeId(@Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand orderCandidateRecord);
 
 	void markAsProcessed(final OLCand olCand);
 
 	void markAsError(final UserId userInChargeId, final OLCand olCand, final Exception ex);
-
-	OLCand toOLCand(@NonNull I_C_OLCand olCandRecord, @NonNull OLCandOrderDefaults orderDefaults);
 
 	void saveCandidate(@NonNull final OLCand cand);
 }
