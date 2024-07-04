@@ -41,7 +41,8 @@ public enum UOMCodeEnum
 	LTR("L", "LTR"),
 	KGM("kg", "KGM"),
 	GRM("g", "GRM"),
-	PCE("ST", "PCE");
+	PCE("ST", "PCE"),
+	ML("ml", "ML");
 
 	private final String pcmCode;
 	private final String x12de355Code;
