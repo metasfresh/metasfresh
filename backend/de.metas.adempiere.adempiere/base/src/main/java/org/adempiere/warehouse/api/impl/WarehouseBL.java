@@ -68,21 +68,21 @@ public class WarehouseBL implements IWarehouseBL
 	}
 
 	@Override
-	public I_M_Locator getDefaultLocator(@NonNull final I_M_Warehouse warehouse)
+	public I_M_Locator getOrCreateDefaultLocator(@NonNull final I_M_Warehouse warehouse)
 	{
-		return getDefaultLocator(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+		return getOrCreateDefaultLocator(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
 	}
 
 	@Override
-	public I_M_Locator getDefaultLocator(@NonNull final WarehouseId warehouseId)
+	public I_M_Locator getOrCreateDefaultLocator(@NonNull final WarehouseId warehouseId)
 	{
-		final LocatorId defaultLocatorId = getDefaultLocatorId(warehouseId);
+		final LocatorId defaultLocatorId = getOrCreateDefaultLocatorId(warehouseId);
 		return warehouseDAO.getLocatorById(defaultLocatorId);
 	}
 
 	@Override
 	@NonNull
-	public LocatorId getDefaultLocatorId(@NonNull final WarehouseId warehouseId)
+	public LocatorId getOrCreateDefaultLocatorId(@NonNull final WarehouseId warehouseId)
 	{
 		final List<I_M_Locator> locators = warehouseDAO.getLocators(warehouseId);
 		int activeLocatorsCount = 0;

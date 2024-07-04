@@ -148,7 +148,7 @@ public class DDOrderPojoSupplier
 
 			// get supply target warehouse and locator
 			final WarehouseId warehouseToId = WarehouseId.ofRepoId(networkLine.getM_Warehouse_ID());
-			final LocatorId locatorToId = warehouseBL.getDefaultLocatorId(warehouseToId);
+			final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(warehouseToId);
 
 			// Get the warehouse in transit
 			final OrgId warehouseFromOrgId = warehouseBL.getWarehouseOrgId(warehouseFromId);

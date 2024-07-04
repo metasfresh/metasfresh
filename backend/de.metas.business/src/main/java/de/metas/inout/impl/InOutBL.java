@@ -335,7 +335,7 @@ public class InOutBL implements IInOutBL
 		line.setM_InOut(inout);
 
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.load(inout.getM_Warehouse_ID(), I_M_Warehouse.class);
-		final I_M_Locator locator = warehouseBL.getDefaultLocator(warehouse);
+		final I_M_Locator locator = warehouseBL.getOrCreateDefaultLocator(warehouse);
 		if (locator != null)
 		{
 			line.setM_Locator_ID(locator.getM_Locator_ID());
