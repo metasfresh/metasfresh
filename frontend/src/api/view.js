@@ -256,6 +256,7 @@ export const allActionsRequest = ({
     selectedIds,
     childViewId,
     childViewSelectedIds,
+    all: true,
   });
 };
 
