@@ -1,6 +1,33 @@
--- View: EDI_Cctop_INVOIC_v
+-- Column: EDI_Desadv.shipment_documentno
+-- Column SQL (old): select string_agg(io.DocumentNo, ',') from m_inout io where io.EDI_Desadv_ID=EDI_Desadv.EDI_Desadv_ID
+-- 2024-07-04T06:27:35.433Z
+UPDATE AD_Column SET ColumnSQL='(select string_agg(io.DocumentNo, '','') from m_inout io where io.EDI_Desadv_ID=EDI_Desadv.EDI_Desadv_ID)',Updated=TO_TIMESTAMP('2024-07-04 08:27:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=588663
+;
 
-DROP VIEW IF EXISTS EDI_Cctop_INVOIC_v;
+-- Column: EDI_Desadv.DatePromised
+-- Column SQL (old): select o.DatePromised from c_order o where o.EDI_Desadv_ID=EDI_Desadv.EDI_Desadv_ID
+-- 2024-07-04T06:27:43.566Z
+UPDATE AD_Column SET ColumnSQL='(select o.DatePromised from c_order o where o.EDI_Desadv_ID=EDI_Desadv.EDI_Desadv_ID)',Updated=TO_TIMESTAMP('2024-07-04 08:27:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=588664
+;
+
+-- clean up 
+
+-- 2024-07-04T06:39:53.528Z
+DELETE FROM EXP_FormatLine WHERE EXP_FormatLine_ID=550699
+;
+
+-- Column: EDI_cctop_invoic_v.desadv_documentno
+-- 2024-07-04T06:41:55.799Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=588662
+;
+
+-- 2024-07-04T06:41:55.815Z
+DELETE FROM AD_Column WHERE AD_Column_ID=588662
+;
+
+
+
+-- there was a "distinct" missing in the string_agg for the EDIDesadvDocumentNo
 CREATE OR REPLACE VIEW EDI_Cctop_INVOIC_v AS
 SELECT
     i.C_Invoice_ID AS EDI_Cctop_INVOIC_v_ID
@@ -75,12 +102,12 @@ SELECT
      , cc.CountryCode as AD_Language
      , i.AD_Client_ID , i.AD_Org_ID, i.Created, i.CreatedBy, i.Updated, i.UpdatedBy, i.IsActive
      , (select string_agg(distinct edi.DocumentNo, ',') from c_invoiceline icl
-                                                        inner join c_invoice_line_alloc inalloc on icl.c_invoiceline_id = inalloc.c_invoiceline_id
-                                                        inner join C_InvoiceCandidate_InOutLine candinout
-                                                                   on inalloc.c_invoice_candidate_id = candinout.c_invoice_candidate_id
-                                                        inner join M_InOutLine inoutline on candinout.m_inoutline_id = inoutline.m_inoutline_id
-                                                        inner join m_inout inout on inoutline.m_inout_id = inout.m_inout_id
-                                                        inner join EDI_Desadv edi on inout.EDI_Desadv_ID = edi.EDI_Desadv_ID
+                                                                 inner join c_invoice_line_alloc inalloc on icl.c_invoiceline_id = inalloc.c_invoiceline_id
+                                                                 inner join C_InvoiceCandidate_InOutLine candinout
+                                                                            on inalloc.c_invoice_candidate_id = candinout.c_invoice_candidate_id
+                                                                 inner join M_InOutLine inoutline on candinout.m_inoutline_id = inoutline.m_inoutline_id
+                                                                 inner join m_inout inout on inoutline.m_inout_id = inout.m_inout_id
+                                                                 inner join EDI_Desadv edi on inout.EDI_Desadv_ID = edi.EDI_Desadv_ID
         where icl.c_invoice_id = i.c_invoice_id) as EDIDesadvDocumentNo
 FROM C_Invoice i
          LEFT JOIN C_DocType dt ON dt.C_DocType_ID = i.C_DocTypetarget_ID
