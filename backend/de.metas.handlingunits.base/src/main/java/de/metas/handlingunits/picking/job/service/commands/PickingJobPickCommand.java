@@ -13,9 +13,10 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.HUTransformService.LUExtractTUsRequest;
 import de.metas.handlingunits.allocation.transfer.LUTUResult;
+import de.metas.handlingunits.allocation.transfer.LUTUResult.TUsList;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -69,6 +70,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -278,7 +280,7 @@ public class PickingJobPickCommand
 	private PickingJob executeInTrx()
 	{
 		_pickingJob.assertNotProcessed();
-		
+
 		validatePickFromHU();
 
 		final List<PickingJobStepPickedToHU> pickedHUs;
@@ -481,37 +483,13 @@ public class PickingJobPickCommand
 			Check.assume(qtyToPickTUs.isPositive(), "qtyToPickTUs is positive");
 
 			final I_M_HU pickFromHURecord = handlingUnitsBL.getById(pickFromHU.getId());
-			if (handlingUnitsBL.isLoadingUnit(pickFromHURecord))
-			{
-				final PickingTarget pickingLUTarget = getPickingLUTarget().orElse(null);
-				if (pickingLUTarget == null)
-				{
-					throw new UnsupportedOperationException(); // TODO impl
-				}
-				else if (pickingLUTarget.isExistingLU())
-				{
-					throw new UnsupportedOperationException(); // TODO impl
-				}
-				else if (pickingLUTarget.isNewLU())
-				{
-					throw new UnsupportedOperationException(); // TODO impl
-				}
-				else
-				{
-					throw new AdempiereException("Unknown picking LU target: " + pickingLUTarget);
-				}
-			}
-			else if (handlingUnitsBL.isTransportUnitOrAggregate(pickFromHURecord))
-			{
-				packedHUs = pickWholeTUs(productId, pickFromHURecord, qtyToPickTUs);
-			}
-			else if (handlingUnitsBL.isVirtual(pickFromHURecord))
+			if (handlingUnitsBL.isVirtual(pickFromHURecord))
 			{
 				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo);
 			}
 			else
 			{
-				throw new AdempiereException("Pick from HU type not supported: " + pickFromHURecord);
+				packedHUs = pickWholeTUs(productId, pickFromHURecord, qtyToPickTUs);
 			}
 		}
 		else
@@ -691,7 +669,24 @@ public class PickingJobPickCommand
 		final PickingTarget targetLU = getPickingLUTarget().orElse(null);
 		final LUTUResult result;
 
-		if (qtyToPickTUs.isOne() && HUType.TransportUnit == handlingUnitsBL.getHUUnitType(pickFromHU) && targetLU == null)
+		if (handlingUnitsBL.isLoadingUnit(pickFromHU))
+		{
+			if (targetLU == null)
+			{
+				final TUsList topLevelTUs = huTransformService.luExtractTUs(LUExtractTUsRequest.builder()
+						.sourceLU(pickFromHU)
+						.qtyTU(qtyToPickTUs)
+						.keepSourceLuAsParent(false)
+						.build());
+				InterfaceWrapperHelper.setThreadInheritedTrxName(topLevelTUs.toHURecords()); // workaround because the returned HUs have trxName=null
+				result = LUTUResult.ofTopLevelTUs(topLevelTUs);
+			}
+			else
+			{
+				throw new UnsupportedOperationException(); // TODO impl
+			}
+		}
+		else if (qtyToPickTUs.isOne() && targetLU == null && handlingUnitsBL.isTransportUnit(pickFromHU))
 		{
 			final I_M_HU packedTU = huTransformService.splitOutTURecord(pickFromHU);
 			result = LUTUResult.ofSingleTopLevelTU(packedTU);
@@ -700,7 +695,7 @@ public class PickingJobPickCommand
 		{
 			if (targetLU == null)
 			{
-				final List<I_M_HU> topLevelTUs = huTransformService.husToNewTUs(
+				final TUsList topLevelTUs = huTransformService.husToNewTUs(
 						HUTransformService.HUsToNewTUsRequest.builder()
 								.sourceHU(pickFromHU)
 								.qtyTU(qtyToPickTUs)

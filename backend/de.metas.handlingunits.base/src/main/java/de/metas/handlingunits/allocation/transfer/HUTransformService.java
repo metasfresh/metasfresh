@@ -52,6 +52,7 @@ import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener;
 import de.metas.handlingunits.allocation.strategy.AllocationStrategyType;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
+import de.metas.handlingunits.allocation.transfer.LUTUResult.TUsList;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -605,7 +606,7 @@ public class HUTransformService
 					});
 		});
 
-		return LUTUResult.ofLU(luHU, TU.ofSingleTUsList(tuHUsToAttachToLU));
+		return LUTUResult.ofLU(luHU, TUsList.ofSingleTUsList(tuHUsToAttachToLU));
 	}
 
 	/**
@@ -729,6 +730,7 @@ public class HUTransformService
 			this.qtyTU = qtyTU;
 		}
 
+		@SuppressWarnings("unused")
 		public static class HUsToNewTUsRequestBuilder
 		{
 			public HUsToNewTUsRequestBuilder qtyTU(final int qtyTU) {return qtyTU(QtyTU.ofInt(qtyTU));}
@@ -744,44 +746,51 @@ public class HUTransformService
 	/**
 	 * Extract a given amount of TUs from an LU or TU/AggregatedTU.
 	 */
-	public List<I_M_HU> husToNewTUs(@NonNull final HUsToNewTUsRequest newTUsRequest)
+	public TUsList husToNewTUs(@NonNull final HUsToNewTUsRequest newTUsRequest)
 	{
-		int qtyTuLeft = newTUsRequest.getQtyTU().toInt();
+		QtyTU qtyTuLeft = newTUsRequest.getQtyTU();
 
-		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
+		final ArrayList<TU> result = new ArrayList<>();
 		for (final I_M_HU sourceHU : newTUsRequest.getSourceHUs())
 		{
-			final List<I_M_HU> currentResult = huToNewTUs(sourceHU, QtyTU.ofInt(qtyTuLeft), newTUsRequest.getExpectedProductId());
-			result.addAll(currentResult);
-
-			qtyTuLeft -= currentResult.size();
-			if (qtyTuLeft <= 0)
+			if (qtyTuLeft.isZero())
 			{
 				break;
 			}
+
+			final TUsList currentResult = huToNewTUs(sourceHU, qtyTuLeft, newTUsRequest.getExpectedProductId());
+			result.addAll(currentResult.toList());
+
+			qtyTuLeft = qtyTuLeft.subtractOrZero(currentResult.getQtyTU());
 		}
-		return result.build();
+
+		return TUsList.of(result);
 	}
 
-	private List<I_M_HU> huToNewTUs(
+	private TUsList huToNewTUs(
 			@NonNull final I_M_HU sourceHU,
 			final QtyTU qtyTU,
 			@Nullable final ProductId expectedProductId)
 	{
 		if (handlingUnitsBL.isLoadingUnit(sourceHU))
 		{
-			final boolean keepLuAsParent = false; // not only extract the new TUs, but also make them "free" standalone TUs.
-			final HashSet<HuId> alreadyExtractedTUIds = new HashSet<>(); // not really needed because keepLuAsParent=false
-			return luExtractTUs(sourceHU, qtyTU, keepLuAsParent, alreadyExtractedTUIds, expectedProductId);
+			return luExtractTUs(
+					LUExtractTUsRequest.builder()
+							.sourceLU(sourceHU)
+							.qtyTU(qtyTU)
+							.keepSourceLuAsParent(false) // not only extract the new TUs, but also make them "free" standalone TUs.
+							.expectedProductId(expectedProductId)
+							.build()
+			);
 		}
 		else if (handlingUnitsBL.isTransportUnitOrAggregate(sourceHU))
 		{
 			if (expectedProductId != null && !huContext.getHUStorageFactory().isSingleProductStorageMatching(sourceHU, expectedProductId))
 			{
-				return ImmutableList.of();
+				return TUsList.EMPTY;
 			}
 
-			return tuToNewTUs(sourceHU, qtyTU).getTopLevelTURecords();
+			return tuToNewTUs(sourceHU, qtyTU).getTopLevelTUs();
 		}
 		else
 		{
@@ -789,32 +798,55 @@ public class HUTransformService
 		}
 	}
 
+	@Value
+	@Builder
+	public static class LUExtractTUsRequest
+	{
+		/**
+		 * LU from where the TUs shall be extracted
+		 */
+		@NonNull I_M_HU sourceLU;
+		/**
+		 * how many TUs to extract
+		 */
+		@NonNull QtyTU qtyTU;
+		/**
+		 * if true, the TUs will be created as necessary, but they will remain children of the given {@code sourceLU}
+		 */
+		boolean keepSourceLuAsParent;
+		/**
+		 * needed if {@code keepSourceLuAsParent == true}
+		 */
+		@Nullable HashSet<HuId> alreadyExtractedTUIds;
+		@Nullable ProductId expectedProductId;
+	}
+
 	/**
 	 * Extract a given number of TUs from an LU.
-	 *
-	 * @param sourceLU              LU from where the TUs shall be extracted
-	 * @param qtyTU                 how many TUs to extract
-	 * @param keepSourceLuAsParent  if true, the TUs will be created as necessary, but they will remain children of the given {@code sourceLU}.
-	 * @param alreadyExtractedTUIds needed if {@code keepSourceLuAsParent == true}
-	 * @return extracted TUs
 	 */
-	private List<I_M_HU> luExtractTUs(
-			@NonNull final I_M_HU sourceLU,
-			@NonNull final QtyTU qtyTU,
-			final boolean keepSourceLuAsParent,
-			@NonNull final Set<HuId> alreadyExtractedTUIds,
-			@Nullable final ProductId expectedProductId)
+	public TUsList luExtractTUs(@NonNull final LUExtractTUsRequest request)
 	{
-		// how many TUs we still have to extract
-		int qtyTUsRemaining = Check.assumeGreaterThanZero(qtyTU.toInt(), "qtyTU");
+		@NonNull final I_M_HU sourceLU = request.getSourceLU();
+		@NonNull final QtyTU qtyTU = request.getQtyTU();
+		final boolean keepSourceLuAsParent = request.isKeepSourceLuAsParent();
+		@NonNull final HashSet<HuId> alreadyExtractedTUIds = request.getAlreadyExtractedTUIds() != null
+				? request.getAlreadyExtractedTUIds()
+				: new HashSet<>();
+		@Nullable final ProductId expectedProductId = request.getExpectedProductId();
 
-		final ImmutableList.Builder<I_M_HU> extractedTUs = new ImmutableList.Builder<>();
+		//
+		// Validate request
+		Check.assume(handlingUnitsBL.isLoadingUnit(sourceLU), "Source shall be a LU: {}", sourceLU);
+		Check.assumeGreaterThanZero(qtyTU.toInt(), "qtyTU");
+
+		// how many TUs we still have to extract
+		QtyTU qtyTUsRemaining = qtyTU;
+		final ArrayList<TU> allExtractedTUs = new ArrayList<>();
 
 		// if keepSourceLuAsParent==true, then includedHUs probably contains TUs we already extracted; that's why we need alreadyExtractedTUIds.
-		final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(sourceLU);
-		for (final I_M_HU tu : includedHUs)
+		for (final I_M_HU tu : handlingUnitsDAO.retrieveIncludedHUs(sourceLU))
 		{
-			if (qtyTUsRemaining <= 0)
+			if (qtyTUsRemaining.isZero())
 			{
 				break;
 			}
@@ -822,39 +854,42 @@ public class HUTransformService
 			{
 				continue;
 			}
-
 			if (expectedProductId != null && !huContext.getHUStorageFactory().isSingleProductStorageMatching(tu, expectedProductId))
 			{
 				continue;
 			}
 
+			final TUsList extractedTUs;
+
+			//
+			// Aggregated TUs
 			if (handlingUnitsBL.isAggregateHU(tu))
 			{
-				final int qtyTUsAvailable = getMaximumQtyTU(tu).toInt();
-				if (qtyTUsAvailable <= 0)
+				final QtyTU qtyTUsAvailable = getMaximumQtyTU(tu);
+				if (qtyTUsAvailable.isZero())
 				{
 					continue;
 				}
 
-				final int qtyTUsToExtract = Math.min(qtyTUsRemaining, qtyTUsAvailable);
-				final List<I_M_HU> newTUs;
+				final QtyTU qtyTUsToExtract = qtyTUsRemaining.min(qtyTUsAvailable);
 				if (keepSourceLuAsParent)
 				{
-					newTUs = tuToExistingLU(tu, QtyTU.ofInt(qtyTUsToExtract), sourceLU).getAllTURecords();
+					extractedTUs = tuToExistingLU(tu, qtyTUsToExtract, sourceLU).getAllTUs();
 				}
 				else
 				{
-					newTUs = tuToNewTUs(tu, QtyTU.ofInt(qtyTUsToExtract)).getAllTURecords();
+					extractedTUs = tuToNewTUs(tu, qtyTUsToExtract).getAllTUs();
 				}
-
-				extractedTUs.addAll(newTUs);
-				qtyTUsRemaining -= newTUs.size();
 			}
+			//
+			// VHU on LU
 			else if (handlingUnitsBL.isVirtual(tu))
 			{
 				// Skip VHUs which are directly set on LU
-				continue;
+				extractedTUs = TUsList.EMPTY;
 			}
+			//
+			// Single (non-aggregated) TU
 			else
 			{
 				if (!keepSourceLuAsParent)
@@ -864,29 +899,21 @@ public class HUTransformService
 							tu,
 							null,
 							true,
-							// beforeParentChange
-							localHuContext -> {
-								final I_M_HU cu = null;
-								updateAllocation(sourceLU, tu, cu, null, true, localHuContext);
-							},
-							// afterParentChange
-							localHuContext -> {
-								final I_M_HU newParentLU = null;
-								final I_M_HU cu = null;
-								updateAllocation(newParentLU, tu, cu, null, false, localHuContext);
-							});
+							localHuContext -> updateAllocation(sourceLU, tu, null, null, true, localHuContext),
+							localHuContext -> updateAllocation(null, tu, null, null, false, localHuContext));
 				}
-				extractedTUs.add(tu);
-				qtyTUsRemaining--;
+
+				extractedTUs = TUsList.ofSingleTU(tu);
 			}
+
+			allExtractedTUs.addAll(extractedTUs.toList());
+			qtyTUsRemaining = qtyTUsRemaining.subtractOrZero(extractedTUs.getQtyTU());
+
 		} // each TU
 
-		final ImmutableList<I_M_HU> result = extractedTUs.build();
+		final TUsList result = TUsList.of(allExtractedTUs);
 
-		result.stream() // add the extracted TUs' IDs to our set
-				.map(I_M_HU::getM_HU_ID)
-				.map(HuId::ofRepoId)
-				.forEach(alreadyExtractedTUIds::add);
+		alreadyExtractedTUIds.addAll(result.getHuIds());
 
 		return result;
 	}
@@ -1303,7 +1330,7 @@ public class HUTransformService
 				.reduce(QtyTU.ZERO, QtyTU::add)
 				.toInt();
 
-		final Set<HuId> alreadyExtractedTUIds = new HashSet<>();
+		final HashSet<HuId> alreadyExtractedTUIds = new HashSet<>();
 
 		for (int i = 0; i < logicalNumberOfIncludedHUs; i++)
 		{
@@ -1312,10 +1339,16 @@ public class HUTransformService
 				break;
 			}
 
-			final QtyTU numberOfTUsToExtract = QtyTU.ONE; // we extract only one TU at a time because we don't know how many CUs we will get out of each TU.
-			final boolean keepLuAsParent = true; // we need a "dedicated" TU, but it shall remain with sourceLU.
-
-			final List<I_M_HU> extractedTUs = luExtractTUs(sourceLU, numberOfTUsToExtract, keepLuAsParent, alreadyExtractedTUIds, null);
+			final List<I_M_HU> extractedTUs = luExtractTUs(
+					LUExtractTUsRequest.builder()
+							.sourceLU(sourceLU)
+							.qtyTU(QtyTU.ONE) // we extract only one TU at a time because we don't know how many CUs we will get out of each TU.
+							.keepSourceLuAsParent(true) // we need a "dedicated" TU, but it shall remain with sourceLU.
+							.alreadyExtractedTUIds(alreadyExtractedTUIds)
+							.expectedProductId(null)
+							.build()
+			)
+					.toHURecords();
 
 			// There are no real TUs in the LU. Extract the virtual HUs (CUs) directly, if found
 			if (extractedTUs.isEmpty())

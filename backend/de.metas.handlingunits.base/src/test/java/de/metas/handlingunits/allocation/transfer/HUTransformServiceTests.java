@@ -1039,7 +1039,7 @@ public class HUTransformServiceTests
 				.sourceHU(aggregateHU2)
 				.qtyTU(3).build();
 
-		final List<I_M_HU> extractedTUs = huTransformService.husToNewTUs(request);
+		final List<I_M_HU> extractedTUs = huTransformService.husToNewTUs(request).toHURecords();
 
 		assertThat(extractedTUs).hasSize(3);
 		assertThat(extractQty(extractedTUs.get(0))).isEqualByComparingTo("8");
@@ -1070,7 +1070,7 @@ public class HUTransformServiceTests
 				.sourceHU(aggregateHU3)
 				.qtyTU(4).build();
 
-		final List<I_M_HU> extractedTUs = huTransformService.husToNewTUs(request);
+		final List<I_M_HU> extractedTUs = huTransformService.husToNewTUs(request).toHURecords();
 		assertThat(extractedTUs).hasSize(4);
 		assertThat(extractedTUs).allSatisfy(tu -> {
 			assertThat(handlingUnitsBL.isAggregateHU(tu)).isFalse();
@@ -1097,7 +1097,7 @@ public class HUTransformServiceTests
 		final I_M_HU aggregateHU = testsBase.getData().mkAggregateHUWithTotalQtyCUandCustomQtyCUsPerTU("24", 8);
 
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.builder().sourceHU(aggregateHU).qtyTU(2).build();
-		final List<I_M_HU> extractedTUs = huTransformService.husToNewTUs(request);
+		final List<I_M_HU> extractedTUs = huTransformService.husToNewTUs(request).toHURecords();
 
 		assertThat(extractedTUs).hasSize(2);
 		assertThat(extractedTUs).allSatisfy(tu -> {
@@ -1139,7 +1139,7 @@ public class HUTransformServiceTests
 
 		// invoke method under test
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.builder().sourceHU(luHU).qtyTU(2).build();
-		final List<I_M_HU> extractedTUs = huTransformService.husToNewTUs(request);
+		final List<I_M_HU> extractedTUs = huTransformService.husToNewTUs(request).toHURecords();
 
 		assertThat(extractedTUs).hasSize(2);
 		assertThat(extractedTUs).allSatisfy(tu -> {

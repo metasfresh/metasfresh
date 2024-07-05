@@ -638,6 +638,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	void setClearanceStatusRecursively(final HuId huId, final ClearanceStatusInfo statusInfo);
 
+	boolean isHUHierarchyCleared(@NonNull I_M_HU hu);
+
 	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
 
 	boolean isHUHierarchyCleared(@NonNull final HuId huId);

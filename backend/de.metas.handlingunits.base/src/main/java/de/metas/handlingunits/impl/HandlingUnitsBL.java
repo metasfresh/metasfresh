@@ -1265,6 +1265,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean isHUHierarchyCleared(@NonNull final I_M_HU hu)
+	{
+		return isWholeHierarchyCleared(getTopLevelParent(hu));
+	}
+
+	@Override
 	@NonNull
 	public ITranslatableString getClearanceStatusCaption(@NonNull final ClearanceStatus clearanceStatus)
 	{

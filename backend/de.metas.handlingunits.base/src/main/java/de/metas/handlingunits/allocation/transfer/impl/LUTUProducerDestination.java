@@ -896,7 +896,9 @@ public class LUTUProducerDestination
 	@Override
 	public LUTUResult getResult()
 	{
-		final LUTUResult.LUTUResultBuilder result = LUTUResult.builder();
+		final LUTUResult.LUTUResultBuilder result = LUTUResult.builder()
+				.topLevelTUs(LUTUResult.TUsList.ofSingleTUsList(_createdTUsForRemainingQty));
+
 		for (final I_M_HU lu : _createdLUs)
 		{
 			final TUProducerDestination tuProducer = getTUProducerOrNull(lu);
@@ -911,11 +913,6 @@ public class LUTUProducerDestination
 			final List<LUTUResult.TU> tus = tuProducer != null ? tuProducer.getResult() : ImmutableList.of();
 
 			result.lu(LUTUResult.LU.of(_existingLU, tus).markedAsPreExistingLU());
-		}
-
-		for (final I_M_HU tu : _createdTUsForRemainingQty)
-		{
-			result.topLevelTU(LUTUResult.TU.ofSingleTU(tu));
 		}
 
 		return result.build();
