@@ -211,10 +211,6 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 *
 	 * NOTE: this is the main method for collecting packing materials. All other helper methods are converging to this one.
 	 *
-	 * @param remove
-	 * @param hu
-	 * @param huUnitTypeOverride
-	 * @param source
 	 * @return true if the packing materials were collected
 	 */
 	private boolean addOrRemoveHU(final boolean remove,

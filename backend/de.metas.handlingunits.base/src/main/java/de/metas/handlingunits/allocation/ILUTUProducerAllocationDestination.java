@@ -206,21 +206,19 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 
 	/**
 	 * @param createTUsForRemainingQty true if we shall create TU handling units for remaining qty.
-	 * @see #loadRe
 	 */
 	void setCreateTUsForRemainingQty(final boolean createTUsForRemainingQty);
 
 	/**
 	 * @return true if we shall create TU handling units for remaining qty
-	 * @see #loadRemaining(IAllocationRequest)
 	 */
 	boolean isCreateTUsForRemainingQty();
 
 	/**
 	 * If this instance was created via {@link ILUTUConfigurationFactory#createLUTUProducerAllocationDestination(I_M_HU_LUTU_Configuration)} then this getter shall return the config that was passed to the factory.
 	 * <p>
-	 * When the lutu config is returned by this getter, then this producer won't consider any further changes on this configuration. It is used only for {@link I_M_HU#setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration)}.
-	 * Also, please don't rely on values from this configuration when calculating how much it will allocate but better ask methods like {@link #getQtyCUPerTU()} etc.
+	 * When the LU/TU config is returned by this getter, then this producer won't consider any further changes on this configuration. It is used only for {@link I_M_HU#setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration)}.
+	 * Also, please don't rely on values from this configuration when calculating how much it will allocate but better ask methods like {@link #getCUPerTU(ProductId)} etc.
 	 *
 	 * @return LU/TU configuration reference or null
 	 */
@@ -256,7 +254,6 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 * <li>positive quantity if maxium quantity could be calculated
 	 * </ul>
 	 * <p>
-	 * The UOM of returned quantity is {@link #getCUUOM()}.
 	 */
 	Quantity calculateTotalQtyCU(ProductId cuProductId);
 
