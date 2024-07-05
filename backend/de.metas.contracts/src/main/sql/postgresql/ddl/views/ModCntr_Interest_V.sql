@@ -2,18 +2,7 @@ DROP VIEW IF EXISTS ModCntr_Interest_V
 ;
 
 CREATE OR REPLACE VIEW ModCntr_Interest_V AS
-WITH interimAmts AS (SELECT SUM(amount
-                            ) AS interim_amt,
-                            c_flatrate_term_id,
-                            l.modcntr_module_id,
-                            t.modularcontracthandlertype
-                     FROM modcntr_log l
-                              INNER JOIN modcntr_module m ON l.modcntr_module_id = m.modcntr_module_id
-                              INNER JOIN modcntr_type t ON l.modcntr_type_id = t.modcntr_type_id
-                     WHERE isbillable = 'Y'
-                       AND ad_table_id = get_table_id('C_Flatrate_Term')
-                     GROUP BY c_flatrate_term_id, l.modcntr_module_id, t.modularcontracthandlertype),
-     matchedAmts AS (SELECT SUM(mi.matchedamt
+WITH matchedAmts AS (SELECT SUM(mi.matchedamt
                                ) OVER (PARTITION BY c_flatrate_term_id, modcntr_module_id
                                 ORDER BY datetrx,modcntr_interest_id ROWS UNBOUNDED PRECEDING
                                 ) AS matched_amt,

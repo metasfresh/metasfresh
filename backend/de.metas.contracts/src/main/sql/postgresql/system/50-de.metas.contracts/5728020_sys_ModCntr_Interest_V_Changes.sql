@@ -2,18 +2,7 @@ DROP VIEW IF EXISTS ModCntr_Interest_V
 ;
 
 CREATE OR REPLACE VIEW ModCntr_Interest_V AS
-WITH interimAmts AS (SELECT SUM(amount
-                            ) AS interim_amt,
-                            c_flatrate_term_id,
-                            l.modcntr_module_id,
-                            t.modularcontracthandlertype
-                     FROM modcntr_log l
-                              INNER JOIN modcntr_module m ON l.modcntr_module_id = m.modcntr_module_id
-                              INNER JOIN modcntr_type t ON l.modcntr_type_id = t.modcntr_type_id
-                     WHERE isbillable = 'Y'
-                       AND ad_table_id = get_table_id('C_Flatrate_Term')
-                     GROUP BY c_flatrate_term_id, l.modcntr_module_id, t.modularcontracthandlertype),
-     matchedAmts AS (SELECT SUM(mi.matchedamt
+WITH matchedAmts AS (SELECT SUM(mi.matchedamt
                                ) OVER (PARTITION BY c_flatrate_term_id, modcntr_module_id
                                 ORDER BY datetrx,modcntr_interest_id ROWS UNBOUNDED PRECEDING
                                 ) AS matched_amt,
@@ -42,9 +31,9 @@ SELECT mi.modcntr_interest_id                                                   
        l.bill_bpartner_id,
        ig.modcntr_invoicinggroup_id,
        l.initial_product_id,
-       NULL                                                                                          AS C_InterimInvoice_ID, -- Don't delete yet to make sure reports which might use it still work
-       interimContract.c_flatrate_term_id as C_Interim_Flatrate_Term_ID,
-       shn.m_shipping_notification_id as M_Shipping_Notification_ID,
+       NULL::numeric                                                                                 AS C_InterimInvoice_ID, -- Don't delete yet to make sure reports which might use it still work
+       interimContract.c_flatrate_term_id                                                            AS C_Interim_Flatrate_Term_ID,
+       shn.m_shipping_notification_id                                                                AS M_Shipping_Notification_ID,
        uom.c_uom_id,
        l.productname,
        p.name                                                                                        AS name,
