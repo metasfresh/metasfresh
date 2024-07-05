@@ -49,7 +49,7 @@ public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 
 	private final HUAndItemsDAO dbHUAndItemsDAO = HUAndItemsDAO.instance;
 
-	private final IHUAndItemsDAO getDelegate(final Object contextProvider)
+	private IHUAndItemsDAO getDelegate(final Object contextProvider)
 	{
 		final ITrx trx = extractAndValidateTrx(contextProvider);
 		if (trx == null)
@@ -74,7 +74,7 @@ public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 		return huAndItemsDAO;
 	}
 
-	private final ITrx extractAndValidateTrx(final Object contextProvider)
+	private ITrx extractAndValidateTrx(final Object contextProvider)
 	{
 		final String trxName = trxManager.getThreadInheritedTrxName();
 

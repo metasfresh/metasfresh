@@ -1,7 +1,6 @@
 package de.metas.handlingunits.picking.job.model;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
