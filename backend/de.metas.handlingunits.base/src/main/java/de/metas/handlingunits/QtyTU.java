@@ -165,7 +165,7 @@ public final class QtyTU implements Comparable<QtyTU>
 		}
 	}
 
-	public QtyTU subtractOrZero(@NonNull final int toSubtract)
+	public QtyTU subtractOrZero(final int toSubtract)
 	{
 		if (toSubtract <= 0)
 		{
@@ -187,5 +187,10 @@ public final class QtyTU implements Comparable<QtyTU>
 		{
 			return ofInt(Math.max(this.intValue - toSubtract.intValue, 0));
 		}
+	}
+
+	public QtyTU min(@NonNull final QtyTU other)
+	{
+		return this.intValue <= other.intValue ? this : other;
 	}
 }
