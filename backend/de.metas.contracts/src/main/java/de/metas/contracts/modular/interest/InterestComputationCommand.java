@@ -187,7 +187,7 @@ public class InterestComputationCommand
 
 			saveAddedValueInterestRecords(currentInterimContractAllocations);
 			totalInterestScore = totalInterestScore.add(currentInterimContractAllocations.getAllocatedInterestScore());
-			splitOpenAmount(currentInterimContractAllocations);
+			//splitOpenAmount(currentInterimContractAllocations);
 		}
 
 		if (!interimInvoiceExists)
@@ -439,6 +439,7 @@ public class InterestComputationCommand
 		createInterestRecords(request);
 	}
 
+	// TODO: Do we still need this?
 	private void splitOpenAmount(@NonNull final InterimContractAllocations interimContractAllocations)
 	{
 		final ModularContractLogEntry interimContractEntry = interimContractAllocations.getInterimContractEntry();

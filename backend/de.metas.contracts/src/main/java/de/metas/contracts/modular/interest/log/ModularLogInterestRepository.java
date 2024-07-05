@@ -127,7 +127,7 @@ public class ModularLogInterestRepository
 				.interestLogId(ModularInterestLogId.ofRepoId(interest.getModCntr_Interest_ID()))
 				.interestRunId(InterestRunId.ofRepoId(interest.getModCntr_Interest_Run_ID()))
 				.shippingNotificationLogId(ModularContractLogEntryId.ofRepoId(interest.getShippingNotification_ModCntr_Log_ID()))
-				.interimContractLogId(ModularContractLogEntryId.ofRepoIdOrNull(interest.getInterimInvoice_ModCntr_Log_ID()))
+				.interimContractLogId(ModularContractLogEntryId.ofRepoIdOrNull(interest.getInterimContract_ModCntr_Log_ID()))
 
 				.allocatedAmt(Money.of(interest.getMatchedAmt(), currencyId))
 
