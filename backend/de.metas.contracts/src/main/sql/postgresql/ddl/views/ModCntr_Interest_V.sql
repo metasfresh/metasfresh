@@ -42,7 +42,9 @@ SELECT mi.modcntr_interest_id                                                   
        l.bill_bpartner_id,
        ig.modcntr_invoicinggroup_id,
        l.initial_product_id,
-       NULL                                                                                          AS C_InterimInvoice_ID, -- Don't delete yet to make sure reports which might use it still work
+       NULL::numeric                                                                                 AS C_InterimInvoice_ID, -- Don't delete yet to make sure reports which might use it still work
+       interimContract.c_flatrate_term_id                                                            AS C_Interim_Flatrate_Term_ID,
+       shn.m_shipping_notification_id                                                                AS M_Shipping_Notification_ID,
        uom.c_uom_id,
        l.productname,
        p.name                                                                                        AS name,
@@ -93,3 +95,4 @@ ORDER BY bp.value,
          l.c_flatrate_term_id,
          l.datetrx
 ;
+
