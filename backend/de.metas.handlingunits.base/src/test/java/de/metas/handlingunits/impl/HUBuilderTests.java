@@ -151,7 +151,7 @@ public class HUBuilderTests
 		assertThat(luHU.getM_HU_Item_Parent(), nullValue());
 
 		// to create the TU and link it to the LU, we need to give it a parent-item
-		final I_M_HU_Item parentItemAggregate = handlingUnitsDAO.retrieveItemIfExists(luHU, piLU_Item_TU);
+		final I_M_HU_Item parentItemAggregate = handlingUnitsDAO.retrieveItemIfExists(luHU, piLU_Item_TU).orElse(null);
 
 		// these asserts are just guards. the real verification happens further down.
 		// it's ok that the DAI returned the aggregate item, but..
@@ -160,7 +160,7 @@ public class HUBuilderTests
 
 		// .. now we explicitly create the HU item..
 		handlingUnitsDAO.createHUItem(luHU, piLU_Item_TU);
-		final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveItemIfExists(luHU, piLU_Item_TU);
+		final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveItemIfExists(luHU, piLU_Item_TU).orElse(null);
 
 		// ..and now we don't want the aggregate item to be returned anymore
 		assertThat(parentItem, notNullValue());
@@ -223,7 +223,7 @@ public class HUBuilderTests
 		final HUBuilder testeeLU = new HUBuilder(huContext);
 		final I_M_HU luHU = testeeLU.create(piLU_Version);
 
-		final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveItemIfExists(luHU, piLU_Item_TU);
+		final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveItemIfExists(luHU, piLU_Item_TU).orElse(null);
 		assertThat(parentItem, notNullValue());
 		assertThat(parentItem.getItemType(), is(X_M_HU_Item.ITEMTYPE_HUAggregate));
 
