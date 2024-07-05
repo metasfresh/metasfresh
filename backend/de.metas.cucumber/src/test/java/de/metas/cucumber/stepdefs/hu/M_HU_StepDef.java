@@ -349,7 +349,7 @@ public class M_HU_StepDef
 			final I_M_HU_PI_Item huPiItem = huPiItemTable.get(huPIItemIdentifier);
 			assertThat(huPiItem).isNotNull();
 
-			final List<I_M_HU> resultedNewLUs = HUTransformService.newInstance().tuToNewLUs(tuHU, tuQty, huPiItem, false);
+			final List<I_M_HU> resultedNewLUs = HUTransformService.newInstance().tuToNewLUs(tuHU, tuQty, huPiItem, false).getLURecords();
 
 			final String resultedNewLUsIdentifiers = DataTableUtil.extractStringForColumnName(row, "resultedNewLUs." + TABLECOLUMN_IDENTIFIER);
 			final List<String> identifiers = StepDefUtil.splitIdentifiers(resultedNewLUsIdentifiers);

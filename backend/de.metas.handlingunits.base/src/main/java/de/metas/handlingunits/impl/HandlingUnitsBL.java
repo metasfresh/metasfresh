@@ -343,6 +343,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean isDestroyed(final HuId huId)
+	{
+		return isDestroyed(handlingUnitsRepo.getById(huId));
+	}
+
+	@Override
 	public boolean isDestroyed(final I_M_HU hu)
 	{
 		return hu.getHUStatus().equals(X_M_HU.HUSTATUS_Destroyed);
@@ -1146,6 +1152,16 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public void setHUStatus(@NonNull final I_M_HU hu, @NonNull final IContextAware contextProvider, @NonNull final String huStatus)
 	{
 		final IHUContext huContext = createMutableHUContext(contextProvider);
+
+		huStatusBL.setHUStatus(huContext, hu, huStatus);
+
+		handlingUnitsRepo.saveHU(hu);
+	}
+
+	@Override
+	public void setHUStatus(@NonNull final I_M_HU hu, @NonNull final String huStatus)
+	{
+		final IHUContext huContext = createMutableHUContext();
 
 		huStatusBL.setHUStatus(huContext, hu, huStatus);
 

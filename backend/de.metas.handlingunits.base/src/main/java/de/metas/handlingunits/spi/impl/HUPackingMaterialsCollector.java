@@ -361,8 +361,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 						{
 
 							// check for the qty in the aggregated HU (if exists)
-							final I_M_HU_Item huItem = handlingUnitsDAO.retrieveAggregatedItemOrNull(hu, currentHUPipToOrigin.getHupip().getM_HU_PI_Item());
-
+							final I_M_HU_Item huItem = handlingUnitsDAO.retrieveAggregatedItemOrNull(hu);
 							if (huItem != null)
 							{
 								final BigDecimal includedQty = huItem.getQty();

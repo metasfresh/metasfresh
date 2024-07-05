@@ -190,7 +190,7 @@ public class WebuiHUTransformCommand
 				{
 					throw new FillMandatoryException(WEBUI_M_HU_Transform.PARAM_M_HU_PI_Item_Product_ID);
 				}
-					return action_SplitCU_To_NewTUs(row, parameters.getHuPIItemProduct(), Quantity.of(parameters.getQtyCU(), row.getC_UOM()), parameters.isHuPlanningReceiptOwnerPM_TU());
+				return action_SplitCU_To_NewTUs(row, parameters.getHuPIItemProduct(), Quantity.of(parameters.getQtyCU(), row.getC_UOM()), parameters.isHuPlanningReceiptOwnerPM_TU());
 			}
 			case TU_Set_Ownership:
 			{
@@ -293,8 +293,8 @@ public class WebuiHUTransformCommand
 	/**
 	 * Split selected CU to new top level TUs
 	 *
-	 * @param cuRow                 cu row to split
-	 * @param qtyCU                 quantity CU to split
+	 * @param cuRow cu row to split
+	 * @param qtyCU quantity CU to split
 	 */
 	private WebuiHUTransformCommandResult action_SplitCU_To_NewTUs(
 			final HUEditorRow cuRow, final I_M_HU_PI_Item_Product tuPIItemProduct, final Quantity qtyCU, final boolean isOwnPackingMaterials)
@@ -329,13 +329,13 @@ public class WebuiHUTransformCommand
 	/**
 	 * Split TU to new LU (only one LU!).
 	 *
-	 * @param tuRow                 represents the TU (or TUs in the aggregate-HU-case) that is our split source
-	 * @param qtyTU                 the number of TUs we want to split from the given {@code tuRow}
+	 * @param tuRow represents the TU (or TUs in the aggregate-HU-case) that is our split source
+	 * @param qtyTU the number of TUs we want to split from the given {@code tuRow}
 	 */
 	private WebuiHUTransformCommandResult action_SplitTU_To_NewLU(
 			final HUEditorRow tuRow, final I_M_HU_PI_Item huPIItem, final QtyTU qtyTU, final boolean isOwnPackingMaterials)
 	{
-		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewLUs(tuRow.getM_HU(), qtyTU, huPIItem, isOwnPackingMaterials);
+		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewLUs(tuRow.getM_HU(), qtyTU, huPIItem, isOwnPackingMaterials).getLURecords();
 
 		final ImmutableSet<HuId> huIdsToAddToView = createdHUs.stream()
 				.map(I_M_HU::getM_HU_ID)
@@ -361,7 +361,7 @@ public class WebuiHUTransformCommand
 		final I_M_HU fromTU = tuRow.getM_HU();
 		final I_M_HU fromTopLevelHU = handlingUnitsBL.getTopLevelParent(fromTU);
 
-		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewTUs(fromTU, qtyTU);
+		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewTUs(fromTU, qtyTU).getAllTURecords();
 
 		final ImmutableSet<HuId> huIdsToAddToView = createdHUs.stream()
 				.map(I_M_HU::getM_HU_ID)

@@ -309,10 +309,9 @@ public class PickingJobService
 		{
 			case PICK:
 			{
-				PickingJobPickCommand.builder()
+				return PickingJobPickCommand.builder()
 						.pickingJobService(this)
 						.pickingJobRepository(pickingJobRepository)
-						.pickingCandidateService(pickingCandidateService)
 						.huQRCodesService(huQRCodesService)
 						.inventoryService(inventoryService)
 						.huReservationService(huReservationService)
@@ -336,9 +335,8 @@ public class PickingJobService
 						.lotNo(event.getLotNo())
 						.isCloseTarget(event.isCloseTarget())
 						//
-						.build().execute();
-
-				return getById(pickingJob.getId());
+						.build()
+						.execute();
 			}
 			case UNPICK:
 			{

@@ -342,9 +342,10 @@ public class UniformAllocationStrategyTest
 			final Quantity two = Quantity.of("2", helper.uomEach);
 			final I_M_HU firstTU = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(two));
 			final List<I_M_HU> lus = huTransformService.tuToNewLUs(firstTU,
-					QtyTU.ONE,
-					lutuProducerDestinationTestSupport.piLU_Item_IFCO,
-					true);
+							QtyTU.ONE,
+							lutuProducerDestinationTestSupport.piLU_Item_IFCO,
+							true)
+					.getLURecords();
 			lu = lus.get(0);
 			for (int i = 0; i < 51; i++)
 			{
@@ -363,7 +364,7 @@ public class UniformAllocationStrategyTest
 		public void subtract104()
 		{
 			subtractQty(lu, "104", AllocationStrategyType.UNIFORM, helper.pTomatoProductId, helper.uomEach);
-			
+
 			final Node luXml = HUXmlConverter.toXml(lu);
 			Assert.assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("D")));
 			Assert.assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("0")));
@@ -405,7 +406,7 @@ public class UniformAllocationStrategyTest
 
 		final IMutableHUContext huContext = helper.createMutableHUContextForProcessingOutOfTrx();
 		InterfaceWrapperHelper.setTrxName(hu, huContext.getTrxName());
-		
+
 		final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(
 				hu,
 				allocationStrategyType);
@@ -448,8 +449,8 @@ public class UniformAllocationStrategyTest
 		InterfaceWrapperHelper.setTrxName(hu, huContext.getTrxName());
 
 		final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(
-				hu,
-				allocationStrategyType)
+						hu,
+						allocationStrategyType)
 				.setDestroyEmptyHUs(true); // make it easeier to evalute the endresult - without empty TUs dangling around
 
 		HULoader.of(source, destination)
@@ -461,6 +462,6 @@ public class UniformAllocationStrategyTest
 						.setFromReferencedModel(destination.getReferenceModel())
 						.setForceQtyAllocation(true)
 						.create());
-		
+
 	}
 }

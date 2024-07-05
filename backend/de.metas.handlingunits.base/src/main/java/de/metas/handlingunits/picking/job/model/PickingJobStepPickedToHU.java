@@ -19,5 +19,5 @@ public class PickingJobStepPickedToHU
 	@NonNull HUInfo actualPickedHU;
 	@NonNull Quantity qtyPicked;
 	@Nullable Quantity catchWeight;
-	@NonNull PickingCandidateId pickingCandidateId;
+	// @NonNull PickingCandidateId pickingCandidateId;
 }
