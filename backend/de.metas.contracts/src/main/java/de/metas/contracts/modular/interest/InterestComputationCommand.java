@@ -71,6 +71,8 @@ public class InterestComputationCommand
 	 * we consider a fiscal year as having 12 months of 30 days
 	 */
 	public static final int TOTAL_DAYS_OF_FISCAL_YEAR = 360;
+	public static final long NO_INTEREST_DAYS = 0;
+
 	@NonNull private final ModularLogInterestRepository interestRepository;
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final MoneyService moneyService;
@@ -148,14 +150,14 @@ public class InterestComputationCommand
 			@NonNull final FlatrateTermId contractId)
 	{
 		final Iterator<ModularContractLogEntry> shippingNotificationIterator = streamShippingNotificationLogEntries(request, contractId).iterator();
-		final Iterator<ModularContractLogEntry>  interimContractIterator = streamInterimContractLogEntries(contractId, request).iterator();
+		final Iterator<ModularContractLogEntry> interimContractIterator = streamInterimContractLogEntries(contractId, request).iterator();
 		final ModularContractSettings settings = modularContractService.getModularSettingsForContract(contractId);
 
 		BigDecimal totalInterestScore = BigDecimal.ZERO;
 		final boolean interimInvoiceExists = interimInvoiceLogExists(contractId, request);
 
 		InterimContractAllocations.AllocationItem currentShippingNotification = null;
-		while(interimContractIterator.hasNext())
+		while (interimContractIterator.hasNext())
 		{
 			final InterimContractAllocations currentInterimContractAllocations = initInterimContractAllocations(request,
 																												settings.getAdditionalInterestDays(),
@@ -167,7 +169,12 @@ public class InterestComputationCommand
 				{
 					if (!interimInvoiceExists && currentShippingNotification != null)
 					{
-						saveSubtractValueInterestRecord(request, settings.getBonusInterestRate(), currentShippingNotification);
+						final SaveSubtractedValueRequest saveSubtractedValueRequest = SaveSubtractedValueRequest.builder()
+								.request(request)
+								.bonusInterestRate(settings.getBonusInterestRate())
+								.shippingNotification(currentShippingNotification)
+								.build();
+						saveSubtractValueInterestRecord(saveSubtractedValueRequest);
 					}
 
 					currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
@@ -190,31 +197,36 @@ public class InterestComputationCommand
 			//splitOpenAmount(currentInterimContractAllocations);
 		}
 
-		if (!interimInvoiceExists)
+		if (!interimInvoiceExists && currentShippingNotification != null)
 		{
-			saveSubtractedValueInterestRecords(request,
-											   settings.getBonusInterestRate(),
-											   shippingNotificationIterator,
-											   currentShippingNotification);
+			final SaveSubtractedValueRequest saveSubtractedValueRequest = SaveSubtractedValueRequest.builder()
+					.request(request)
+					.bonusInterestRate(settings.getBonusInterestRate())
+					.shippingNotification(currentShippingNotification)
+					.build();
+			saveSubtractedValueInterestRecords(saveSubtractedValueRequest, shippingNotificationIterator
+			);
 		}
 		return InitialInterestAllocationResult.of(totalInterestScore);
 	}
 
 	private void saveSubtractedValueInterestRecords(
-			@NonNull final InterestComputationRequest request,
-			@NonNull final Percent bonusInterestRate,
-			@NonNull final Iterator<ModularContractLogEntry> shippingNotificationIterator,
-			@Nullable final InterimContractAllocations.AllocationItem currentShippingNotification)
+			@NonNull final SaveSubtractedValueRequest saveSubtractedValueRequest,
+			@NonNull final Iterator<ModularContractLogEntry> shippingNotificationIterator)
 	{
+		final InterestComputationRequest interestComputationRequest = saveSubtractedValueRequest.getRequest();
+		final InterimContractAllocations.AllocationItem currentShippingNotification = saveSubtractedValueRequest.getShippingNotification();
+
 		if (currentShippingNotification != null && currentShippingNotification.openAmountSignum() > 0)
 		{
-			saveSubtractValueInterestRecord(request, bonusInterestRate, currentShippingNotification);
+			saveSubtractValueInterestRecord(saveSubtractedValueRequest);
 		}
 
 		while (shippingNotificationIterator.hasNext())
 		{
-			saveSubtractValueInterestRecord(request, bonusInterestRate, initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
-																						   shippingNotificationIterator.next()));
+			final InterimContractAllocations.AllocationItem nextShippingNotification = initAllocationItem(interestComputationRequest.getInterestToDistribute().getCurrencyId(),
+																										  shippingNotificationIterator.next());
+			saveSubtractValueInterestRecord(saveSubtractedValueRequest.withShippingNotification(nextShippingNotification));
 		}
 	}
 
@@ -236,35 +248,36 @@ public class InterestComputationCommand
 		currentInterimContractAllocations.getAllocatedShippingNotifications().forEach(interestRepository::create);
 	}
 
-	private void saveSubtractValueInterestRecord(
-			@NonNull final InterestComputationRequest request,
-			@NonNull final Percent bonusInterestRate,
-			@NonNull final InterimContractAllocations.AllocationItem shippingNotification)
+	private void saveSubtractValueInterestRecord(@NonNull final SaveSubtractedValueRequest saveSubtractedValueRequest)
 	{
-		if (request.getBonusComputationTimeInterval() == null)
+		final InterestComputationRequest interestComputationRequest = saveSubtractedValueRequest.getRequest();
+		final InterimContractAllocations.AllocationItem shippingNotification = saveSubtractedValueRequest.getShippingNotification();
+		final Percent bonusInterestRate = saveSubtractedValueRequest.getBonusInterestRate();
+
+		if (interestComputationRequest.getBonusComputationTimeInterval() == null)
 		{
 			final CreateModularLogInterestRequest createInterestRequest = CreateModularLogInterestRequest.builder()
-					.interestRunId(request.getInterestRunId())
+					.interestRunId(interestComputationRequest.getInterestRunId())
 					.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
 					.allocatedAmt(shippingNotification.getOpenAmount())
-					.interestDays((long)0)
-					.finalInterest(Money.zero(request.getInterestToDistribute().getCurrencyId()))
+					.interestDays(NO_INTEREST_DAYS)
+					.finalInterest(Money.zero(interestComputationRequest.getInterestToDistribute().getCurrencyId()))
 					.build();
 
 			interestRepository.create(createInterestRequest);
 			return;
 		}
 
-		final long interestDays = request.getBonusComputationTimeInterval().getBonusInterestDays();
+		final long interestDays = interestComputationRequest.getBonusComputationTimeInterval().getBonusInterestDays();
 
 		final BigDecimal bonusAmountAsBD = bonusInterestRate.computePercentageOf(shippingNotification.getOpenAmount().toBigDecimal(),
-																				 request.getInterestCurrencyPrecision().toInt())
+																				 interestComputationRequest.getInterestCurrencyPrecision().toInt())
 				.multiply(BigDecimal.valueOf(interestDays))
 				.divide(BigDecimal.valueOf(TOTAL_DAYS_OF_FISCAL_YEAR), RoundingMode.HALF_UP)
 				.negate();
 
 		final CreateModularLogInterestRequest createInterestRequest = CreateModularLogInterestRequest.builder()
-				.interestRunId(request.getInterestRunId())
+				.interestRunId(interestComputationRequest.getInterestRunId())
 				.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
 				.allocatedAmt(shippingNotification.getOpenAmount())
 				.interestDays(interestDays)
@@ -452,8 +465,8 @@ public class InterestComputationCommand
 
 		final CurrencyConversionContext context = getCurrencyConversionContext(interimContractEntry);
 		final Money openAmountInInterimContractCurrency = moneyService.convertMoneyToCurrency(interimContractAllocations.getOpenAmount(),
-																					  interimContractEntry.getAmount().getCurrencyId(),
-																					  context);
+																							  interimContractEntry.getAmount().getCurrencyId(),
+																							  context);
 
 		final Percent openAmountPercent = openAmountInInterimContractCurrency.percentageOf(interimContractEntry.getAmount().abs());
 		final Quantity openAmountQty = Optional.ofNullable(interimContractEntry.getQuantity())

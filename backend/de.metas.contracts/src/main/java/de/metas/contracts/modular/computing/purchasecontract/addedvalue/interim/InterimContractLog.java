@@ -95,10 +95,9 @@ public class InterimContractLog extends AbstractPurchaseContractHandler
 		final TableRecordReference tableRecordReference = request.getRecordRef();
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(tableRecordReference.getRecordIdAssumingTableName(getSupportedTableName()));
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(flatrateTermId);
-		final I_C_Flatrate_Term modularContractRecord;
 
 		final FlatrateTermId modularContractId = FlatrateTermId.ofRepoId(flatrateTermRecord.getModular_Flatrate_Term_ID());
-		modularContractRecord = flatrateBL.getById(modularContractId);
+		final I_C_Flatrate_Term modularContractRecord = flatrateBL.getById(modularContractId);
 
 		final ProductId contractProductId = ProductId.ofRepoId(modularContractRecord.getM_Product_ID());
 

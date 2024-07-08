@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.computing.purchasecontract;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractProvider;
@@ -33,19 +32,16 @@ import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.interest.log.ModularLogInterest;
 import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
@@ -57,16 +53,12 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
@@ -78,43 +70,7 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final ModularLogInterestRepository modularLogInterestRepository;
 
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-
-
-	@Override
-	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
-	{
-		if (!logEntryContractType.isModularContractType())
-		{
-			return false;
-		}
-		if (recordRef.tableNameEqualsTo(I_M_Shipping_NotificationLine.Table_Name))
-		{
-			final I_M_Shipping_NotificationLine line = shippingNotificationRepository.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
-
-			final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(line.getC_Order_ID()));
-			final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(salesOrder.getHarvesting_Year_ID(), salesOrder.getC_Harvesting_Calendar_ID());
-
-			return yearAndCalendarId != null;
-		}
-
-		if (recordRef.tableNameEqualsTo(I_C_InvoiceLine.Table_Name))
-		{
-			final I_C_Invoice invoice = Optional.of(recordRef)
-					.map(lineRef -> lineRef.getIdAssumingTableName(I_C_InvoiceLine.Table_Name, InvoiceLineId::ofRepoId))
-					.map(invoiceBL::getLineById)
-					.map(I_C_InvoiceLine::getC_Invoice_ID)
-					.map(InvoiceId::ofRepoId)
-					.map(invoiceBL::getById)
-					.orElseThrow(() -> new AdempiereException("No C_Invoice found for line=" + recordRef));
-
-			return !invoice.isSOTrx() && invoiceBL.isDownPayment(invoice);
-		}
-
-		return false;
-	}
 
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
