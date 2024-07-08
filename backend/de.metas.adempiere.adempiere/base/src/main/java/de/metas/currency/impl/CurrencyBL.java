@@ -357,6 +357,13 @@ public class CurrencyBL implements ICurrencyBL
 		return currencyDAO.getCurrencyCodeById(currencyId);
 	}
 
+	@Override
+	@NonNull
+	public Currency getByCurrencyCode(@NonNull final CurrencyCode currencyCode)
+	{
+		return currencyDAO.getByCurrencyCode(currencyCode);
+	}
+
 	private static CurrencyConversionResultBuilder prepareCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)
 	{
 		return CurrencyConversionResult.builder()

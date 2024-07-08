@@ -37,6 +37,7 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table_AttachmentListener;
 import org.compiere.util.Env;
@@ -50,6 +51,8 @@ import org.springframework.stereotype.Service;
 public class TableAttachmentListenerService
 {
 	private static final Logger logger = LogManager.getLogger(TableAttachmentListenerService.class);
+
+	private static final AdMessageKey Msg_AttachmentNotImportedFAILURE = AdMessageKey.of("AttachmentNotImportedFAILURE");
 
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
@@ -78,6 +81,26 @@ public class TableAttachmentListenerService
 		}
 	}
 
+	/**
+	 * Invokes {@link AttachmentListener#beforeRecordLinked(AttachmentEntry, AttachmentReference)} of every listener registered for the referenced record's table.
+	 *
+	 * @throws AdempiereException (user validation error) if a listener returns {@link ListenerWorkStatus#FAILURE}
+	 */
+	public void fireBeforeRecordLinked(
+			@NonNull final AttachmentEntry attachmentEntry,
+			@NonNull final AttachmentReference attachmentReference)
+	{
+		final TableRecordReference tableRecordReference = attachmentReference.getRecordRef();
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(tableRecordReference))
+		{
+			final ImmutableList<AttachmentListenerSettings> settings = tableAttachmentListenerRepository.getById(tableRecordReference.getAdTableId());
+			logger.debug("There are {} AttachmentListenerSettings for AD_Table_ID={}", settings.size(), tableRecordReference.getAD_Table_ID());
+
+			settings.forEach(setting -> invokeBeforeRecordLinked(setting, attachmentEntry, attachmentReference));
+		}
+	}
+
+	@NonNull
 	private AttachmentListenerActionResult invokeListener(
 			@NonNull final AttachmentListenerSettings listenerSettings,
 			@NonNull final AttachmentEntry entry,
@@ -121,5 +144,31 @@ public class TableAttachmentListenerService
 					.build();
 			notificationBL.send(userNotificationRequest);
 		}
+	}
+
+	private void invokeBeforeRecordLinked(
+			@NonNull final AttachmentListenerSettings listenerSettings,
+			@NonNull final AttachmentEntry attachmentEntry,
+			@NonNull final AttachmentReference attachmentReference)
+	{
+		final AttachmentListener attachmentListener = javaClassBL.newInstance(listenerSettings.getListenerJavaClassId());
+
+		try (final MDCCloseable ignored = MDC.putCloseable("attachmentListener", attachmentListener.getClass().getSimpleName()))
+		{
+			final ListenerWorkStatus status = attachmentListener.beforeRecordLinked(attachmentEntry, attachmentReference);
+			logger.debug("attachmentListener returned status={}", status);
+
+			if (status.equals(ListenerWorkStatus.FAILURE))
+			{
+				throw new AdempiereException(retrieveFailureMessage(listenerSettings))
+						.markAsUserValidationError();
+			}
+		}
+	}
+
+	@NonNull
+	private AdMessageKey retrieveFailureMessage(@NonNull final AttachmentListenerSettings listenerSettings)
+	{
+		return adMessageDAO.retrieveValueById(listenerSettings.getAdMessageId()).orElse(Msg_AttachmentNotImportedFAILURE);
 	}
 }

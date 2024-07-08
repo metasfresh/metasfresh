@@ -261,6 +261,11 @@ public class AttachmentService
 
 		referencesToSave.addAll(additionalRefs);
 
+		for (final AttachmentReference attachmentReference : referencesToSave)
+		{
+			tableAttachmentListenerService.fireBeforeRecordLinked(newEntry, attachmentReference);
+		}
+
 		attachmentReferenceRepository.saveAll(referencesToSave);
 
 		for (final AttachmentReference attachmentReference : referencesToSave)
@@ -302,6 +307,7 @@ public class AttachmentService
 						.attachmentEntryId(attachmentLinksRequest.getAttachmentEntryId())
 						.recordRef(linkToAdd)
 						.build();
+				tableAttachmentListenerService.fireBeforeRecordLinked(entry, attachmentReference);
 				attachmentReferenceRepository.save(attachmentReference);
 				tableAttachmentListenerService.fireAfterRecordLinked(entry, attachmentReference);
 			}
