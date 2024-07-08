@@ -8,6 +8,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -15,6 +16,8 @@ import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.LUExtractTUsRequest;
 import de.metas.handlingunits.allocation.transfer.LUTUResult;
+import de.metas.handlingunits.allocation.transfer.LUTUResult.LU;
+import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUsList;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.inventory.InventoryService;
@@ -340,7 +343,7 @@ public class PickingJobPickCommand
 		_pickingJob = _pickingJob.withPickTarget(pickingLUTarget);
 	}
 
-	private void setPickingLUTarget(@NonNull final LUTUResult.LU lu)
+	private void setPickingLUTarget(@NonNull final LU lu)
 	{
 		final HuId luId = lu.getId();
 		final HUQRCode qrCode = getQRCode(lu);
@@ -515,12 +518,11 @@ public class PickingJobPickCommand
 		}
 		else if (packedHUs.getQtyTUs().isOne())
 		{
-			final LUTUResult.TU tu = packedHUs.getSingleTU();
+			final TU tu = packedHUs.getSingleTU();
 			updateHUWeightFromCatchWeight(tu, productId);
 			updateOtherHUAttributes(tu);
 
 			final Quantity qtyPicked = isPickWholeTU ? getStorageQty(tu, productId) : qtyToPickCUs;
-
 			addShipmentScheduleQtyPicked(tu, qtyPicked);
 
 			return ImmutableList.of(toSinglePickingJobStepPickedToHU(tu, qtyPicked, catchWeight, pickFrom));
@@ -532,15 +534,15 @@ public class PickingJobPickCommand
 				throw new AdempiereException("Cannot apply catch weight when receiving more than one HU");
 			}
 
+			updateOtherHUAttributes(packedHUs);
+
 			final IHUStorageFactory huStorageFactory = HUContextHolder.getCurrent().getHUStorageFactory();
 			final I_C_UOM uom = qtyToPickCUs.getUOM();
 			final ImmutableList.Builder<PickingJobStepPickedToHU> result = ImmutableList.builder();
-			for (final LUTUResult.TU tu : packedHUs.getAllTUs())
+			for (final TU tu : packedHUs.getAllTUs())
 			{
-				updateOtherHUAttributes(tu);
 
 				final Quantity qtyPicked = huStorageFactory.getStorage(tu.toHU()).getQuantity(productId, uom);
-
 				addShipmentScheduleQtyPicked(tu, qtyPicked);
 
 				result.addAll(toPickingJobStepPickedToHU(tu, qtyPicked, pickFrom));
@@ -550,7 +552,7 @@ public class PickingJobPickCommand
 		}
 	}
 
-	private void updateHUWeightFromCatchWeight(final LUTUResult.TU tu, final ProductId productId)
+	private void updateHUWeightFromCatchWeight(final TU tu, final ProductId productId)
 	{
 		if (catchWeight == null)
 		{
@@ -561,14 +563,44 @@ public class PickingJobPickCommand
 		weightUpdater.updatePackToHU(tu.toHU());
 	}
 
-	private void updateOtherHUAttributes(final LUTUResult.TU tu)
+	private void updateOtherHUAttributes(final LUTUResult result)
 	{
-		if (!isSetBestBeforeDate && !isSetLotNo)
+		if (!isUpdateAttributes())
 		{
 			return;
 		}
 
-		final IAttributeStorage huAttributes = HUContextHolder.getCurrent().getHUAttributeStorageFactory().getAttributeStorage(tu.toHU());
+		for (final LU lu : result.getLus())
+		{
+			if (!lu.isPreExistingLU())
+			{
+				updateOtherHUAttributes(lu.toHU());
+			}
+
+			lu.getTus().forEach(this::updateOtherHUAttributes);
+		}
+
+		result.getTopLevelTUs().forEach(this::updateOtherHUAttributes);
+	}
+
+	private void updateOtherHUAttributes(final TU tu)
+	{
+		if (!isUpdateAttributes())
+		{
+			return;
+		}
+
+		updateOtherHUAttributes(tu.toHU());
+	}
+
+	private void updateOtherHUAttributes(final I_M_HU hu)
+	{
+		if (!isUpdateAttributes())
+		{
+			return;
+		}
+
+		final IAttributeStorage huAttributes = HUContextHolder.getCurrent().getHUAttributeStorageFactory().getAttributeStorage(hu);
 		huAttributes.setSaveOnChange(true);
 
 		if (isSetBestBeforeDate)
@@ -581,7 +613,12 @@ public class PickingJobPickCommand
 		}
 	}
 
-	private void addShipmentScheduleQtyPicked(@NonNull LUTUResult.TU tu, @NonNull final Quantity qtyPicked)
+	private boolean isUpdateAttributes()
+	{
+		return isSetBestBeforeDate || isSetLotNo;
+	}
+
+	private void addShipmentScheduleQtyPicked(@NonNull TU tu, @NonNull final Quantity qtyPicked)
 	{
 		final IMutableHUContext huContext = HUContextHolder.getCurrent();
 		final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
@@ -615,7 +652,7 @@ public class PickingJobPickCommand
 	}
 
 	private PickingJobStepPickedToHU toSinglePickingJobStepPickedToHU(
-			@NonNull final LUTUResult.TU tu,
+			@NonNull final TU tu,
 			@NonNull final Quantity qtyPicked,
 			@Nullable final Quantity catchWeight,
 			@NonNull final PickingJobStepPickFrom pickFrom)
@@ -629,7 +666,7 @@ public class PickingJobPickCommand
 	}
 
 	private List<PickingJobStepPickedToHU> toPickingJobStepPickedToHU(
-			@NonNull final LUTUResult.TU tu,
+			@NonNull final TU tu,
 			@NonNull final Quantity qtyPicked,
 			@NonNull final PickingJobStepPickFrom pickFrom)
 	{
@@ -666,34 +703,38 @@ public class PickingJobPickCommand
 	{
 		final HUTransformService huTransformService = HUTransformService.newInstance();
 
-		final PickingTarget targetLU = getPickingLUTarget().orElse(null);
+		final PickingTarget pickingTarget = getPickingLUTarget().orElse(null);
 		final LUTUResult result;
 
 		if (handlingUnitsBL.isLoadingUnit(pickFromHU))
 		{
-			if (targetLU == null)
+			final HUTransformService.TargetLU targetLU = PickingTarget.apply(pickingTarget, new PickingTarget.CaseMapper<HUTransformService.TargetLU>()
 			{
-				final TUsList topLevelTUs = huTransformService.luExtractTUs(LUExtractTUsRequest.builder()
-						.sourceLU(pickFromHU)
-						.qtyTU(qtyToPickTUs)
-						.keepSourceLuAsParent(false)
-						.build());
-				InterfaceWrapperHelper.setThreadInheritedTrxName(topLevelTUs.toHURecords()); // workaround because the returned HUs have trxName=null
-				result = LUTUResult.ofTopLevelTUs(topLevelTUs);
-			}
-			else
-			{
-				throw new UnsupportedOperationException(); // TODO impl
-			}
+				@Override
+				public HUTransformService.TargetLU noLU() {return HUTransformService.TargetLU.NONE;}
+
+				@Override
+				public HUTransformService.TargetLU newLU(final HuPackingInstructionsId luPackingInstructionsId) {return HUTransformService.TargetLU.ofNewLU(handlingUnitsBL.getPI(luPackingInstructionsId));}
+
+				@Override
+				public HUTransformService.TargetLU existingLU(final HuId luId) {return HUTransformService.TargetLU.ofExistingLU(handlingUnitsBL.getById(luId));}
+			});
+
+			result = huTransformService.luExtractTUs(LUExtractTUsRequest.builder()
+					.sourceLU(pickFromHU)
+					.qtyTU(qtyToPickTUs)
+					.targetLU(targetLU)
+					.build());
+			InterfaceWrapperHelper.setThreadInheritedTrxName(result.getAllTURecords()); // workaround because the returned HUs have trxName=null
 		}
-		else if (qtyToPickTUs.isOne() && targetLU == null && handlingUnitsBL.isTransportUnit(pickFromHU))
+		else if (qtyToPickTUs.isOne() && pickingTarget == null && handlingUnitsBL.isTransportUnit(pickFromHU))
 		{
 			final I_M_HU packedTU = huTransformService.splitOutTURecord(pickFromHU);
 			result = LUTUResult.ofSingleTopLevelTU(packedTU);
 		}
 		else
 		{
-			if (targetLU == null)
+			if (pickingTarget == null)
 			{
 				final TUsList topLevelTUs = huTransformService.husToNewTUs(
 						HUTransformService.HUsToNewTUsRequest.builder()
@@ -703,18 +744,18 @@ public class PickingJobPickCommand
 								.build());
 				result = LUTUResult.ofTopLevelTUs(topLevelTUs);
 			}
-			else if (targetLU.isExistingLU())
+			else if (pickingTarget.isExistingLU())
 			{
-				final I_M_HU lu = handlingUnitsBL.getById(targetLU.getLuId());
+				final I_M_HU lu = handlingUnitsBL.getById(pickingTarget.getLuId());
 				result = huTransformService.tuToExistingLU(pickFromHU, qtyToPickTUs, lu);
 			}
-			else if (targetLU.isNewLU())
+			else if (pickingTarget.isNewLU())
 			{
-				result = huTransformService.tuToNewLU(pickFromHU, qtyToPickTUs, targetLU.getLuPIIdNotNull());
+				result = huTransformService.tuToNewLU(pickFromHU, qtyToPickTUs, pickingTarget.getLuPIIdNotNull());
 			}
 			else
 			{
-				throw new AdempiereException("Unknown target LU: " + targetLU);
+				throw new AdempiereException("Unknown target LU: " + pickingTarget);
 			}
 		}
 
@@ -854,7 +895,7 @@ public class PickingJobPickCommand
 				.build();
 	}
 
-	private HUInfo getSingleTUInfo(@NonNull final LUTUResult.TU tu)
+	private HUInfo getSingleTUInfo(@NonNull final TU tu)
 	{
 		tu.assertSingleTU();
 		return getHUInfo(tu.getId());
@@ -868,13 +909,13 @@ public class PickingJobPickCommand
 				.build();
 	}
 
-	public Quantity getStorageQty(@NonNull final LUTUResult.TU tu, @NonNull final ProductId productId)
+	public Quantity getStorageQty(@NonNull final TU tu, @NonNull final ProductId productId)
 	{
 		final IHUStorageFactory huStorageFactory = HUContextHolder.getCurrent().getHUStorageFactory();
 		return huStorageFactory.getStorage(tu.toHU()).getQuantity(productId).orElseThrow(() -> new AdempiereException("No qty found for " + tu + ", " + productId));
 	}
 
-	private HUQRCode getQRCode(@NonNull final LUTUResult.LU lu)
+	private HUQRCode getQRCode(@NonNull final LU lu)
 	{
 		return huQRCodesService.getQRCodeByHuId(lu.getId());
 	}

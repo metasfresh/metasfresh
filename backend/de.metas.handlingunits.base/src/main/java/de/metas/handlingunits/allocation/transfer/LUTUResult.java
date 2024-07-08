@@ -17,6 +17,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -27,6 +28,8 @@ import java.util.stream.Stream;
 @Builder
 public class LUTUResult
 {
+	public static LUTUResult EMPTY = builder().build();
+
 	@NonNull @Singular("lu") ImmutableList<LU> lus;
 	@NonNull @Builder.Default TUsList topLevelTUs = TUsList.EMPTY;
 
@@ -42,16 +45,20 @@ public class LUTUResult
 
 	public static LUTUResult ofSingleTopLevelTU(final I_M_HU tu)
 	{
-		return builder().topLevelTUs(TUsList.ofSingleTU(tu)).build();
+		return ofTopLevelTUs(TUsList.ofSingleTU(tu));
 	}
 
 	public static LUTUResult ofTopLevelTUs(final Collection<I_M_HU> tus)
 	{
-		return builder().topLevelTUs(TUsList.ofSingleTUsList(tus)).build();
+		return ofTopLevelTUs(TUsList.ofSingleTUsList(tus));
 	}
 
-	public static LUTUResult ofTopLevelTUs(final TUsList tus)
+	public static LUTUResult ofTopLevelTUs(@NonNull final TUsList tus)
 	{
+		if (tus.isEmpty())
+		{
+			return EMPTY;
+		}
 		return builder().topLevelTUs(tus).build();
 	}
 
@@ -64,6 +71,24 @@ public class LUTUResult
 	public I_M_HU getSingleLURecord() {return getSingleLU().toHU();}
 
 	public List<I_M_HU> getLURecords() {return lus.stream().map(LU::toHU).collect(ImmutableList.toImmutableList());}
+
+	public LUTUResult assertNoLUs()
+	{
+		if (!lus.isEmpty())
+		{
+			throw new AdempiereException("Expected no LUs: " + this);
+		}
+		return this;
+	}
+
+	public LUTUResult assertNoTopLevelTUs()
+	{
+		if (!topLevelTUs.isEmpty())
+		{
+			throw new AdempiereException("Expected no top level TUs: " + this);
+		}
+		return this;
+	}
 
 	public List<I_M_HU> getTopLevelTURecords() {return topLevelTUs.toHURecords();}
 
@@ -84,6 +109,11 @@ public class LUTUResult
 	public List<I_M_HU> getAllTURecords()
 	{
 		return streamAllTUs().map(TU::toHU).collect(ImmutableList.toImmutableList());
+	}
+
+	public ImmutableSet<HuId> getAllTUIds()
+	{
+		return streamAllTUs().map(TU::getId).collect(ImmutableSet.toImmutableSet());
 	}
 
 	public QtyTU getQtyTUs()
@@ -110,6 +140,25 @@ public class LUTUResult
 				lus.stream().flatMap(LU::streamAllLUAndTURecords),
 				topLevelTUs.streamHURecords()
 		);
+	}
+
+	public LUTUResult mergeWith(final LUTUResult other)
+	{
+		if (isEmpty())
+		{
+			return other;
+		}
+		else if (other.isEmpty())
+		{
+			return this;
+		}
+		else
+		{
+			return builder()
+					.lus(LU.mergeLists(this.lus, other.lus))
+					.topLevelTUs(this.topLevelTUs.mergeWith(other.topLevelTUs))
+					.build();
+		}
 	}
 
 	//
@@ -182,7 +231,7 @@ public class LUTUResult
 			this.qtyTU = stream().map(TU::getQtyTU).reduce(QtyTU.ZERO, QtyTU::add);
 		}
 
-		public static TUsList of(@NonNull final List<TU> list)
+		public static TUsList of(@NonNull final Collection<TU> list)
 		{
 			return list.isEmpty() ? EMPTY : new TUsList(ImmutableList.copyOf(list));
 		}
@@ -201,7 +250,13 @@ public class LUTUResult
 			return of(list);
 		}
 
-		public static Collector<? super TU, ?, TUsList> collect() {return GuavaCollectors.collectUsingListAccumulator(TUsList::of);}
+		public static Collector<? super TU, ?, TUsList> collect()
+		{
+			return GuavaCollectors.collectUsingMapAccumulator(
+					TU::getId,
+					map -> TUsList.of(map.values())
+			);
+		}
 
 		public boolean isEmpty() {return list.isEmpty();}
 
@@ -220,6 +275,23 @@ public class LUTUResult
 		public List<I_M_HU> toHURecords() {return streamHURecords().collect(ImmutableList.toImmutableList());}
 
 		public Set<HuId> getHuIds() {return stream().map(TU::getId).collect(ImmutableSet.toImmutableSet());}
+
+		public TUsList mergeWith(@NonNull final TUsList other)
+		{
+			if (other.isEmpty())
+			{
+				return this;
+			}
+			else if (this.isEmpty())
+			{
+				return other;
+			}
+			else
+			{
+				return Stream.concat(this.list.stream(), other.list.stream())
+						.collect(collect());
+			}
+		}
 	}
 
 	//
@@ -266,5 +338,34 @@ public class LUTUResult
 		}
 
 		public Stream<TU> streamTUs() {return tus.stream();}
+
+		public LU mergeWith(@NonNull final LU other)
+		{
+			return builder()
+					.isPreExistingLU(this.isPreExistingLU && other.isPreExistingLU)
+					.tus(this.tus.mergeWith(other.tus))
+					.build();
+		}
+
+		private static List<LU> mergeLists(final List<LU> list1, final List<LU> list2)
+		{
+			if (list2.isEmpty())
+			{
+				return list1;
+			}
+			if (list1.isEmpty())
+			{
+				return list2;
+			}
+			else
+			{
+				final HashMap<HuId, LU> lusNew = new HashMap<>();
+				list1.forEach(lu -> lusNew.put(lu.getId(), lu));
+				list2.forEach(lu -> lusNew.compute(lu.getId(), (luId, existingLU) -> existingLU == null ? lu : existingLU.mergeWith(lu)));
+
+				return ImmutableList.copyOf(lusNew.values());
+			}
+		}
+
 	}
 }
