@@ -19,7 +19,7 @@ SELECT
 	c.ISO_Code
 FROM
 	C_DunningDoc dd
-	JOIN C_DunningDoc_line dl ON dd.C_DunningDoc_ID = dl.C_DunningDoc_Line_ID AND dl.isActive = 'Y'
+	JOIN C_DunningDoc_line dl ON dd.C_DunningDoc_ID = dl.C_DunningDoc_ID AND dl.isActive = 'Y'
 	LEFT JOIN C_DunningDoc_Line_Source dls ON dl.C_DunningDoc_Line_ID = dls.C_DunningDoc_Line_ID AND dls.isActive = 'Y'
 	LEFT JOIN C_Dunning_Candidate dc ON dls.C_Dunning_Candidate_ID = dc.C_Dunning_Candidate_ID AND dc.isActive = 'Y'
 	LEFT JOIN C_Currency c ON dc.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
