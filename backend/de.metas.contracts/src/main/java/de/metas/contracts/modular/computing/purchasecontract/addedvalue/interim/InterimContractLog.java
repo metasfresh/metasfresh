@@ -27,12 +27,15 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
+import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.impl.AbstractPurchaseContractHandler;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -78,25 +81,27 @@ public class InterimContractLog extends AbstractPurchaseContractHandler
 	@NonNull private final AVInterimComputingMethod computingMethod;
 	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.CONTRACT_PREFINANCING;
 	@NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.MODULAR_CONTRACT;
+	private final ModularContractLogService modularContractLogService;
 
 	public InterimContractLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final AVInterimComputingMethod computingMethod)
+			@NonNull final AVInterimComputingMethod computingMethod, final ModularContractLogService modularContractLogService)
 	{
 		super(modularContractService, modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+		this.modularContractLogService = modularContractLogService;
 	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest request)
 	{
 		final TableRecordReference tableRecordReference = request.getRecordRef();
-		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(tableRecordReference.getRecordIdAssumingTableName(getSupportedTableName()));
-		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(flatrateTermId);
+		final FlatrateTermId interimContractId = FlatrateTermId.ofRepoId(tableRecordReference.getRecordIdAssumingTableName(getSupportedTableName()));
+		final I_C_Flatrate_Term interimContractRecord = flatrateBL.getById(interimContractId);
 
-		final FlatrateTermId modularContractId = FlatrateTermId.ofRepoId(flatrateTermRecord.getModular_Flatrate_Term_ID());
+		final FlatrateTermId modularContractId = FlatrateTermId.ofRepoId(interimContractRecord.getModular_Flatrate_Term_ID());
 		final I_C_Flatrate_Term modularContractRecord = flatrateBL.getById(modularContractId);
 
 		final ProductId contractProductId = ProductId.ofRepoId(modularContractRecord.getM_Product_ID());
@@ -117,15 +122,15 @@ public class InterimContractLog extends AbstractPurchaseContractHandler
 
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(modularContractRecord.getBill_BPartner_ID());
 
-		final ProductPrice priceActual = flatrateBL.extractPriceActual(flatrateTermRecord);
+		final ProductPrice priceActual = flatrateBL.extractPriceActual(interimContractRecord);
 		Check.assumeNotNull(priceActual, "The interim contract must have a price.");
 
 		final Money amount = quantity != null
 				? priceActual.computeAmount(quantity)
 				: null;
 
-		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(flatrateTermRecord.getStartDate(),
-																				OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID()),
+		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(interimContractRecord.getStartDate(),
+																				OrgId.ofRepoId(interimContractRecord.getAD_Org_ID()),
 																				orgDAO::getTimeZone);
 
 		final YearAndCalendarId yearAndCalendarId = request.getModularContractSettings().getYearAndCalendarId();
@@ -140,12 +145,18 @@ public class InterimContractLog extends AbstractPurchaseContractHandler
 				.uomId(priceActual.getUomId())
 				.build();
 
+		final boolean interimContractLogExists = modularContractLogService.anyMatch(ModularContractLogQuery.builder()
+																							.flatrateTermId(modularContractId)
+																							.billable(true)
+																							.computingMethodType(ComputingMethodType.AddValueOnInterim)
+																							.logEntryDocumentType(getLogEntryDocumentType())
+																							.build());
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(modularContractId)
 											.productId(addValueOnInterimProductId)
 											.initialProductId(contractProductId)
 											.productName(request.getProductName())
-											.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, request.getContractId()))
+											.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, interimContractId))
 											.producerBPartnerId(billBPartnerId)
 											.invoicingBPartnerId(billBPartnerId)
 											.collectionPointBPartnerId(BPartnerId.ofRepoId(warehouseRecord.getC_BPartner_ID()))
@@ -163,7 +174,7 @@ public class InterimContractLog extends AbstractPurchaseContractHandler
 											.priceActual(productPrice)
 											.amount(amount)
 											.invoicingGroupId(invoicingGroupId)
-											.isBillable(true)
+											.isBillable(!interimContractLogExists)
 											.build());
 	}
 

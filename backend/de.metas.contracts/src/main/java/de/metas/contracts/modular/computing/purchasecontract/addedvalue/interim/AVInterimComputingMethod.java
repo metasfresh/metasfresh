@@ -33,20 +33,32 @@ import de.metas.contracts.modular.computing.purchasecontract.AbstractInterestCom
 import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.LogEntryCreateRequest;
+import de.metas.contracts.modular.log.ModularContractLogEntry;
+import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.lang.SOTrx;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.quantity.Quantity;
 import de.metas.shippingnotification.ShippingNotificationLineId;
 import de.metas.shippingnotification.ShippingNotificationRepository;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class AVInterimComputingMethod extends AbstractInterestComputingMethod
@@ -56,16 +68,21 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final ShippingNotificationRepository shippingNotificationRepository;
+	@NonNull private final ModularContractLogService modularContractLogService;
+	@NonNull private final MoneyService moneyService;
 
 	public AVInterimComputingMethod(
 			@NonNull final ShippingNotificationRepository shippingNotificationRepository,
 			@NonNull final ModularContractProvider contractProvider,
 			@NonNull final ModCntrInvoicingGroupRepository invoicingGroupRepository,
 			@NonNull final ModularContractLogService modularContractLogService,
-			@NonNull final ModularLogInterestRepository modularLogInterestRepository)
+			@NonNull final ModularLogInterestRepository modularLogInterestRepository,
+			@NonNull final MoneyService moneyService)
 	{
 		super(shippingNotificationRepository, contractProvider, invoicingGroupRepository, modularContractLogService, modularLogInterestRepository);
 		this.shippingNotificationRepository = shippingNotificationRepository;
+		this.modularContractLogService = modularContractLogService;
+		this.moneyService = moneyService;
 
 	}
 
@@ -110,5 +127,52 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 		}
 
 		return false;
+	}
+
+	@Override
+	protected void splitLogsIfNeeded(final Money reconciledAmount, final AtomicReference<ModularContractLogEntryId> initialInterimContractId)
+	{
+		final ModularContractLogEntry interimContractEntry = modularContractLogService.getById(initialInterimContractId.get());
+
+		final Money interimLogAmount = interimContractEntry.getAmount();
+		if(interimLogAmount == null  || interimLogAmount.isZero())
+		{
+			// no log split is needed
+			return;
+		}
+
+		final CurrencyConversionContext context = modularContractLogService.getCurrencyConversionContext(interimContractEntry);
+		final Money reconciledInInterimContractCurrency = moneyService.convertMoneyToCurrency(reconciledAmount,
+																							  interimLogAmount.getCurrencyId(),
+																							  context);
+
+		if (interimLogAmount.isLessThanOrEqualTo(reconciledInInterimContractCurrency))
+		{
+			// no log split is needed
+			return;
+		}
+
+		final Percent reconciledAmountPercent = reconciledInInterimContractCurrency.percentageOf(interimLogAmount.abs());
+		final Quantity reconciledAmountQty = Optional.ofNullable(interimContractEntry.getQuantity())
+				.map(qty -> {
+					final BigDecimal openQty = reconciledAmountPercent.computePercentageOf(qty.toBigDecimal(), qty.getUOM().getStdPrecision());
+					return Quantity.of(openQty, qty.getUOM());
+				}).orElse(null);
+
+		final Money reconciledAmountInInterimContractCurrencyWithSignApplied = reconciledInInterimContractCurrency.negateIf(interimLogAmount.isNegative());
+
+		final LogEntryCreateRequest createInterimLogForOpenAmt = LogEntryCreateRequest.ofEntry(interimContractEntry)
+				.toBuilder()
+				.amount(interimLogAmount.subtract(reconciledAmountInInterimContractCurrencyWithSignApplied))
+				.quantity(Optional.ofNullable(interimContractEntry.getQuantity()).map(qty -> qty.subtract(reconciledAmountQty)).orElse(null))
+				.build();
+		modularContractLogService.create(createInterimLogForOpenAmt);
+
+		final ModularContractLogEntry interimLogEntryToUpdate = interimContractEntry.toBuilder()
+				.amount(reconciledAmountInInterimContractCurrencyWithSignApplied)
+				.quantity(reconciledAmountQty)
+				.build();
+
+		modularContractLogService.updateModularLog(interimLogEntryToUpdate);
 	}
 }

@@ -38,9 +38,7 @@ import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.invoice.InvoiceLineId;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
-import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
@@ -59,6 +57,7 @@ import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
@@ -106,13 +105,19 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 	public ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		final ImmutableSet.Builder<ModularContractLogEntryId> logEntryIdsCollector = ImmutableSet.builder();
+		final Money reconciledAmount = Money.zero(request.getCurrencyId());
+		final AtomicReference<ModularContractLogEntryId> initialInterimContractId = new AtomicReference<>();
 		final Money amount = streamInterestRecords(request)
 				.peek(interestLog -> {
 					logEntryIdsCollector.add(interestLog.getShippingNotificationLogId());
-					if (interestLog.getInterimContractLogId() != null)
+					final ModularContractLogEntryId interimContractLogId = interestLog.getInterimContractLogId();
+					if (interimContractLogId != null)
 					{
-						logEntryIdsCollector.add(interestLog.getInterimContractLogId());
+						logEntryIdsCollector.add(interimContractLogId);
+						initialInterimContractId.set(interimContractLogId);
+						reconciledAmount.add(interestLog.getAllocatedAmt());
 					}
+
 				})
 				.map(ModularLogInterest::getFinalInterest)
 				.filter(Objects::nonNull)
@@ -127,6 +132,7 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 
 		final ModularContractLogEntriesList logs = logEntryIds.isEmpty() ? ModularContractLogEntriesList.EMPTY : getModularContractLogEntries(request, logEntryIds);
 
+		splitLogsIfNeeded(reconciledAmount, initialInterimContractId);
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
 				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
@@ -137,6 +143,11 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 							   .build())
 				.qty(qty)
 				.build();
+	}
+
+	protected void splitLogsIfNeeded(final Money reconciledAmount, final AtomicReference<ModularContractLogEntryId> initialInterimContractId)
+	{
+
 	}
 
 	private @NonNull ModularContractLogEntriesList getModularContractLogEntries(final @NonNull ComputingRequest request, final ImmutableSet<ModularContractLogEntryId> logEntryIds)
@@ -171,4 +182,6 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 
 		return modularLogInterestRepository.streamInterestEntries(logInterestQuery);
 	}
+
+
 }
