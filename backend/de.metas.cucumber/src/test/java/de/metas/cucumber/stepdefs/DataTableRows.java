@@ -13,6 +13,7 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 @EqualsAndHashCode
 @ToString
@@ -40,6 +41,8 @@ public class DataTableRows
 	}
 
 	public int size() {return list.size();}
+
+	public Stream<DataTableRow> stream() {return list.stream();}
 
 	public void forEach(final ThrowingConsumer<? super DataTableRow> consumer)
 	{
