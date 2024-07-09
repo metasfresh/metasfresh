@@ -23,7 +23,9 @@
 package de.metas.handlingunits.mobileui.config;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.organization.OrgId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeId;
 
@@ -35,5 +37,6 @@ public class HUManagerProfile
 {
 	public static final HUManagerProfile DEFAULT = builder().build();
 
+	@NonNull @Builder.Default OrgId orgId = OrgId.ANY;
 	@Nullable ImmutableList<AttributeId> displayedAttributeIdsInOrder;
 }
