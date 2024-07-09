@@ -73,7 +73,7 @@ jobs:
         run: |
           touch github_run.txt
           echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
-          echo pipeline $PIPELINE_VERSION >> github_run
+          echo pipeline $PIPELINE_VERSION >> github_run.txt
           echo ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }} >> github_run.txt
           testspace github_run
 
