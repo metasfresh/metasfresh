@@ -21,7 +21,10 @@ jobs:
           args: ?start#${{ github.run_number }}-${{ github.sha }}
       - name: testspace setup
         run: |
-          testspace config --
+          touch github_run.txt
+          echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
+          testspace github_run.txt
+          testspace config
       - name: sanitize-ref-name
         id: sanitize
         env:
