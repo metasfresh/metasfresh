@@ -487,7 +487,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(piId);
-		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType, bpartnerId);
+		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType, bpartnerId, null);
+		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull HuPackingInstructionsId piId,
+			@NonNull final HuPackingInstructionsId includedPIId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		final I_M_HU_PI_Version version = retrievePICurrentVersion(piId);
+		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId, includedPIId);
 		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
 	}
 
@@ -505,13 +516,14 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@NonNull final I_M_HU_PI_Version version,
 			@Nullable final BPartnerId bpartnerId)
 	{
-		return retrievePIItems(version, null, bpartnerId);
+		return retrievePIItems(version, null, bpartnerId, null);
 	}
 
 	private List<I_M_HU_PI_Item> retrievePIItems(
 			@NonNull final I_M_HU_PI_Version version,
 			@Nullable String expectedItemType,
-			@Nullable final BPartnerId bpartnerId)
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final HuPackingInstructionsId includedPIId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(version);
 		final String trxName = InterfaceWrapperHelper.getTrxName(version);
@@ -568,6 +580,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				{
 					// accept it
 					// does not matter if we were asked for a specific partner because this is a generic item
+				}
+
+				if (includedPIId != null)
+				{
+					final HuPackingInstructionsId itemIncludedPIId = HuPackingInstructionsId.ofRepoIdOrNull(piItem.getIncluded_HU_PI_ID());
+					if (!HuPackingInstructionsId.equals(includedPIId, itemIncludedPIId))
+					{
+						// don't accept it
+						continue;
+					}
 				}
 			}
 
