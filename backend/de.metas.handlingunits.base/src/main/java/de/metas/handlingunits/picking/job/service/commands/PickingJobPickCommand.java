@@ -53,6 +53,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUFactory;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUSupportingServices;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.i18n.AdMessageKey;
@@ -431,9 +433,8 @@ public class PickingJobPickCommand
 		{
 			return (HUQRCode)pickFromHUQRCode;
 		}
-		else if (pickFromHUQRCode instanceof LMQRCode)
+		else if (pickFromHUQRCode instanceof final LMQRCode lmQRCode)
 		{
-			final LMQRCode lmQRCode = (LMQRCode)pickFromHUQRCode;
 			final String lotNumber = lmQRCode.getLotNumber();
 			if (lotNumber == null)
 			{
@@ -613,6 +614,7 @@ public class PickingJobPickCommand
 		}
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	private boolean isUpdateAttributes()
 	{
 		return isSetBestBeforeDate || isSetLotNo;
@@ -626,6 +628,11 @@ public class PickingJobPickCommand
 		final ProductId productId = shipmentScheduleInfo.getProductId();
 		final boolean anonymousHuPickedOnTheFly = false;
 
+		final ShipmentScheduleWithHUFactory shipmentScheduleWithHUFactory = ShipmentScheduleWithHUFactory.builder()
+				.supportingServices(ShipmentScheduleWithHUSupportingServices.getInstance())
+				.huContext(huContext)
+				.build();
+
 		shipmentScheduleBL.addQtyPickedAndUpdateHU(
 				shipmentSchedule,
 				CatchWeightHelper.extractQtys(
@@ -634,7 +641,7 @@ public class PickingJobPickCommand
 						qtyPicked,
 						tu.toHU()),
 				tu.toHU(),
-				huContext,
+				shipmentScheduleWithHUFactory,
 				anonymousHuPickedOnTheFly);
 	}
 
@@ -708,7 +715,7 @@ public class PickingJobPickCommand
 
 		if (handlingUnitsBL.isLoadingUnit(pickFromHU))
 		{
-			final HUTransformService.TargetLU targetLU = PickingTarget.apply(pickingTarget, new PickingTarget.CaseMapper<HUTransformService.TargetLU>()
+			final HUTransformService.TargetLU targetLU = PickingTarget.apply(pickingTarget, new PickingTarget.CaseMapper<>()
 			{
 				@Override
 				public HUTransformService.TargetLU noLU() {return HUTransformService.TargetLU.NONE;}

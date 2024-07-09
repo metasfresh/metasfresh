@@ -83,9 +83,9 @@ public class WEBUI_M_HU_Transform
 		IProcessDefaultParametersProvider
 {
 	// Services
-	 private final DocumentCollection documentsCollection = SpringContextHolder.instance.getBean(DocumentCollection.class);
-	@Autowired private ADReferenceService adReferenceService;
-	@Autowired private LookupDataSourceFactory lookupDataSourceFactory;
+	private final DocumentCollection documentsCollection = SpringContextHolder.instance.getBean(DocumentCollection.class);
+	private final ADReferenceService adReferenceService = SpringContextHolder.instance.getBean(ADReferenceService.class);
+	private final LookupDataSourceFactory lookupDataSourceFactory = SpringContextHolder.instance.getBean(LookupDataSourceFactory.class);
 
 	private final HUTransformService huTransformService = HUTransformService.newInstance();
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);

@@ -190,7 +190,7 @@ public class PickingJobUnPickCommand
 
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodesService)
-					.requestItems(requestItems)
+				.requestItems(huIdAndQRCodeList.stream().map(MoveHURequestItem::ofHUIdAndQRCode).collect(ImmutableSet.toImmutableSet()))
 				.targetQRCode(unpickToHU.toGlobalQRCode())
 				.build()
 				.execute();

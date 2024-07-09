@@ -1076,7 +1076,7 @@ public class HUTransformService
 				huItemOfLU.setM_HU_PI_Item(handlingUnitsBL.getPIItem(sourceLUItem));
 				InterfaceWrapperHelper.save(huItemOfLU);
 
-				huAttributesBL.updateHUAttribute(newLuHU, sourceTuHU, AttributeConstants.ATTR_LotNumber);
+				huAttributesBL.updateHUAttribute(lu, sourceTuHU, AttributeConstants.ATTR_LotNumber);
 
 			return LUTUResult.ofLU(lu, TU.ofAggregatedTU(sourceTuHU, qtyTUEffective));
 			}
@@ -1609,7 +1609,7 @@ public class HUTransformService
 		if (newLUPackingItem != null)
 		{
 			final I_M_HU_PI_Item newLUPIItem = handlingUnitsBL.getPackingInstructionItemById(newLUPackingItem);
-			final List<I_M_HU> newLUs = tuToNewLUs(hu, qtyTU.toBigDecimal(), newLUPIItem, false);
+			final List<I_M_HU> newLUs = tuToNewLUs(hu, qtyTU, newLUPIItem, false).getLURecords();
 			final ImmutableSet<HuId> newAggreagtedHUIds = newLUs.stream()
 					.map(handlingUnitsDAO::retrieveIncludedHUs)
 					.flatMap(Collection::stream)
@@ -1662,7 +1662,7 @@ public class HUTransformService
                     .setParameter("availableQtyTU", availableNrOfTUs.toInt());
         }
 
-        final List<I_M_HU> extractedTUs = HUTransformService.newInstance().tuToNewTUs(hu, qtyTU.toBigDecimal());
+        final List<I_M_HU> extractedTUs = HUTransformService.newInstance().tuToNewTUs(hu, qtyTU).getAllTURecords();
         return extractedTUs.stream()
                 .map(I_M_HU::getM_HU_ID)
                 .map(HuId::ofRepoId)
