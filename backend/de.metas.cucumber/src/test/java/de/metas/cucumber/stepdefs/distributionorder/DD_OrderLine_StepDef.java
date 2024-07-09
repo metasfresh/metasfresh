@@ -70,7 +70,7 @@ public class DD_OrderLine_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
-	
+
 	private final M_Product_StepDefData productTable;
 	private final DD_Order_StepDefData ddOrderTable;
 	private final DD_OrderLine_StepDefData ddOrderLineTable;
@@ -223,45 +223,51 @@ public class DD_OrderLine_StepDef
 		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_QtyOrdered);
 		if (qtyOrdered != null)
 		{
-			softly.assertThat(ddOrderLineRecord.getQtyOrdered()).isEqualByComparingTo(qtyOrdered);
+			softly.assertThat(ddOrderLineRecord.getQtyOrdered()).as(I_DD_OrderLine.COLUMNNAME_QtyOrdered).isEqualByComparingTo(qtyOrdered);
 		}
 
 		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_QtyEntered);
 		if (qtyEntered != null)
 		{
-			softly.assertThat(ddOrderLineRecord.getQtyEntered()).isEqualByComparingTo(qtyEntered);
+			softly.assertThat(ddOrderLineRecord.getQtyEntered()).as(I_DD_OrderLine.COLUMNNAME_QtyEntered).isEqualByComparingTo(qtyEntered);
 		}
 
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_QtyDelivered);
 		if (qtyDelivered != null)
 		{
-			softly.assertThat(ddOrderLineRecord.getQtyDelivered()).isEqualByComparingTo(qtyDelivered);
+			softly.assertThat(ddOrderLineRecord.getQtyDelivered()).as(I_DD_OrderLine.COLUMNNAME_QtyDelivered).isEqualByComparingTo(qtyDelivered);
 		}
 
 		final Integer line = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_Line);
 		if (line != null)
 		{
-			softly.assertThat(ddOrderLineRecord.getLine()).isEqualByComparingTo(line);
+			softly.assertThat(ddOrderLineRecord.getLine()).as(I_DD_OrderLine.COLUMNNAME_Line).isEqualByComparingTo(line);
 		}
 
 		final String ddNetworkDistributionLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_DD_NetworkDistributionLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(ddNetworkDistributionLineIdentifier))
 		{
 			final I_DD_NetworkDistributionLine ddNetworkDistributionLineRecord = ddNetworkLineTable.get(ddNetworkDistributionLineIdentifier);
-			softly.assertThat(ddOrderLineRecord.getDD_NetworkDistributionLine_ID()).isEqualTo(ddNetworkDistributionLineRecord.getDD_NetworkDistributionLine_ID());
+			softly.assertThat(ddOrderLineRecord.getDD_NetworkDistributionLine_ID()).as(I_DD_OrderLine.COLUMNNAME_DD_NetworkDistributionLine_ID).isEqualTo(ddNetworkDistributionLineRecord.getDD_NetworkDistributionLine_ID());
 		}
 
 		final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(productIdentifier))
 		{
 			final I_M_Product productRecord = productTable.get(productIdentifier);
-			softly.assertThat(ddOrderLineRecord.getM_Product_ID()).isEqualTo(productRecord.getM_Product_ID());
+			softly.assertThat(ddOrderLineRecord.getM_Product_ID()).as(I_DD_OrderLine.COLUMNNAME_M_Product_ID).isEqualTo(productRecord.getM_Product_ID());
 		}
 
 		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_QtyReserved);
 		if (qtyReserved != null)
 		{
-			softly.assertThat(ddOrderLineRecord.getQtyReserved()).isEqualByComparingTo(qtyReserved);
+			softly.assertThat(ddOrderLineRecord.getQtyReserved()).as(I_DD_OrderLine.COLUMNNAME_QtyReserved).isEqualByComparingTo(qtyReserved);
+		}
+
+		final Boolean isDelivered = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + I_DD_OrderLine.COLUMNNAME_IsDelivered);
+		if (isDelivered != null)
+		{
+			softly.assertThat(ddOrderLineRecord.isDelivered()).as(I_DD_OrderLine.COLUMNNAME_IsDelivered).isEqualTo(isDelivered);
 		}
 
 		softly.assertAll();
