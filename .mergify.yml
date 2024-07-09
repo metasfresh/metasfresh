@@ -62,13 +62,13 @@ pull_request_rules:
 
   - name: After master-PR is integrated, add two labels branch:master and in:5.177_master; also, delete the PR-branch
     conditions:
-      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
+      - merged-at > '2024-07-09 00:00Z' # don't jump on every merged PR throughout history
       - base=master
     actions:
       label:
         add:
           - "branch:{{base}}"
-          - "in:5.177_master"
+          - "in:5.178_master"
       delete_head_branch:
 
   - name: Automatic squash-merge successful PRs into the respective base-branch
