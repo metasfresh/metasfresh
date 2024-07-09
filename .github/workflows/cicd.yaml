@@ -1,7 +1,7 @@
 name: cicd
 on: [push, workflow_dispatch]
 env:
-  PIPELINE_VERSION: '0.3.7'
+  PIPELINE_VERSION: '0.3.8'
 jobs:
 
   init:
@@ -14,6 +14,13 @@ jobs:
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+      - uses: testspace-com/setup-testspace@v1
+        with:
+          domain: metasfresh
+          token: ${{ secrets.TESTSPACE_TOKEN }}
+      - name: testspace setup
+        run: |
+          testspace config
       - name: sanitize-ref-name
         id: sanitize
         env:
