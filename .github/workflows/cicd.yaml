@@ -18,13 +18,12 @@ jobs:
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
-          args: ?start#${{ github.run_number }}-${{ github.sha }}
+          config-args: --build url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       - name: testspace setup
         run: |
           touch github_run.txt
           echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
           testspace github_run.txt
-          testspace config
       - name: sanitize-ref-name
         id: sanitize
         env:
