@@ -18,7 +18,7 @@ jobs:
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
-          config-args: --build url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          config-args: --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       - name: testspace setup
         run: |
           touch github_run.txt
