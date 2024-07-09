@@ -184,6 +184,11 @@ public interface IHandlingUnitsDAO extends ISingletonService
 			@Nullable String itemType,
 			@Nullable BPartnerId bpartnerId);
 
+	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull HuPackingInstructionsId piId,
+			@NonNull HuPackingInstructionsId includedPIId,
+			@Nullable BPartnerId bpartnerId);
+
 	List<I_M_HU_PI_Item> retrievePIItems(@NonNull I_M_HU_PI handlingUnitPI, @Nullable BPartnerId bpartnerId);
 
 	/**
