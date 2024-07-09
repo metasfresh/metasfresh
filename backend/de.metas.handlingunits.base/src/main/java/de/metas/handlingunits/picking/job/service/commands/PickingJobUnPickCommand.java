@@ -8,6 +8,7 @@ import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
 import de.metas.handlingunits.movement.MoveHUCommand;
 import de.metas.handlingunits.movement.MoveHURequestItem;
@@ -25,22 +26,27 @@ import de.metas.handlingunits.picking.job.model.PickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.PlainContextAware;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class PickingJobUnPickCommand
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -161,14 +167,13 @@ public class PickingJobUnPickCommand
 			return step;
 		}
 
-		for (final PickingJobStepPickedToHU pickedToHU : pickedToHUs)
-		{
-			final PickingCandidate unprocessedPickingCandidate = pickingCandidateService.unprocess(pickedToHU.getPickingCandidateId())
-					.getSinglePickingCandidate();
-			unprocessedPickingCandidates.add(unprocessedPickingCandidate);
-		}
+		final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = extractHuIdAndQRCodes(pickedToHUs);
 
-		moveToTargetHU(pickedToHUs);
+		final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
+		huShipmentScheduleBL.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, step.getShipmentScheduleId());
+		changeHUStatusFromPickedToActive(topLevelHUs);
+
+		moveToTargetHUIfNeeded(huIdAndQRCodeList);
 
 		return step.reduceWithUnpickEvent(
 				pickFromKey,
@@ -176,31 +181,45 @@ public class PickingJobUnPickCommand
 		);
 	}
 
-	private void moveToTargetHU(@NonNull final List<PickingJobStepPickedToHU> pickedToHUs)
+	private void moveToTargetHUIfNeeded(final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList)
 	{
 		if (unpickToHU == null)
 		{
-			final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = pickedToHUs.stream()
-					.map(PickingJobStepPickedToHU::getActualPickedHU)
-					.map(HUInfo::toHUIdAndQRCode)
-					.collect(ImmutableSet.toImmutableSet());
-
-			newHUTransformService().extractToTopLevel(huIdAndQRCodeList);
+			return;
 		}
-		else
-		{
-			final ImmutableSet<MoveHURequestItem> requestItems = pickedToHUs.stream()
-					.map(PickingJobStepPickedToHU::getActualPickedHU)
-					.map(HUInfo::toHUIdAndQRCode)
-					.map(MoveHURequestItem::ofHUIdAndQRCode)
-					.collect(ImmutableSet.toImmutableSet());
 
-			MoveHUCommand.builder()
-					.huQRCodesService(huQRCodesService)
+		MoveHUCommand.builder()
+				.huQRCodesService(huQRCodesService)
 					.requestItems(requestItems)
-					.targetQRCode(unpickToHU.toGlobalQRCode())
-					.build()
-					.execute();
+				.targetQRCode(unpickToHU.toGlobalQRCode())
+				.build()
+				.execute();
+	}
+
+	private List<I_M_HU> extractToTopLevelHUs(@NonNull final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList)
+	{
+		final Set<HuId> topLevelHUIds = newHUTransformService().extractToTopLevel(huIdAndQRCodeList);
+		return handlingUnitsBL.getByIds(topLevelHUIds);
+	}
+
+	private static ImmutableSet<HUIdAndQRCode> extractHuIdAndQRCodes(final @NonNull List<PickingJobStepPickedToHU> pickedToHUs)
+	{
+		return pickedToHUs.stream()
+				.map(PickingJobStepPickedToHU::getActualPickedHU)
+				.map(HUInfo::toHUIdAndQRCode)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private void changeHUStatusFromPickedToActive(final Collection<I_M_HU> topLevelHUs)
+	{
+		topLevelHUs.forEach(this::changeHUStatusFromPickedToActive);
+	}
+
+	private void changeHUStatusFromPickedToActive(final I_M_HU topLevelHU)
+	{
+		if (X_M_HU.HUSTATUS_Picked.equals(topLevelHU.getHUStatus()))
+		{
+			handlingUnitsBL.setHUStatus(topLevelHU, PlainContextAware.newWithThreadInheritedTrx(), X_M_HU.HUSTATUS_Active);
 		}
 	}
 

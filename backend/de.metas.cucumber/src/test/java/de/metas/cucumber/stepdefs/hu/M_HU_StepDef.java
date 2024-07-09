@@ -355,7 +355,7 @@ public class M_HU_StepDef
 		for (final Map<String, String> row : rows)
 		{
 			final String sourceTUIdentifier = DataTableUtil.extractStringForColumnName(row, "sourceTU." + TABLECOLUMN_IDENTIFIER);
-			final BigDecimal tuQty = DataTableUtil.extractBigDecimalForColumnName(row, "tuQty");
+			final QtyTU tuQty = QtyTU.ofBigDecimal(DataTableUtil.extractBigDecimalForColumnName(row, "tuQty"));
 			final String huPIItemIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PI_Item_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 			final I_M_HU tuHU = huTable.get(sourceTUIdentifier);
@@ -364,7 +364,7 @@ public class M_HU_StepDef
 			final I_M_HU_PI_Item huPiItem = huPiItemTable.get(huPIItemIdentifier);
 			assertThat(huPiItem).isNotNull();
 
-			final List<I_M_HU> resultedNewLUs = HUTransformService.newInstance().tuToNewLUs(tuHU, tuQty, huPiItem, false);
+			final List<I_M_HU> resultedNewLUs = HUTransformService.newInstance().tuToNewLUs(tuHU, tuQty, huPiItem, false).getLURecords();
 
 			final String resultedNewLUsIdentifiers = DataTableUtil.extractStringForColumnName(row, "resultedNewLUs." + TABLECOLUMN_IDENTIFIER);
 			final List<String> identifiers = StepDefUtil.splitIdentifiers(resultedNewLUsIdentifiers);

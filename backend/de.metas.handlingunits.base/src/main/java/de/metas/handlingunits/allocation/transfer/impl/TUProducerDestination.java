@@ -5,12 +5,14 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.allocation.impl.AbstractProducerDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.strategy.AllocationStrategyFactory;
+import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -27,6 +29,7 @@ import lombok.ToString;
 import org.compiere.SpringContextHolder;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -39,10 +42,9 @@ import java.util.stream.Collectors;
  * we will use a constrained capacity which is provided via {@link #addCapacityConstraint(Capacity)}.
  *
  * @author tsa
- *
  */
 @ToString
-/* package */final class TUProducerDestination extends AbstractProducerDestination
+/* package */ final class TUProducerDestination extends AbstractProducerDestination
 {
 	private final AllocationStrategyFactory allocationStrategyFactory = SpringContextHolder.instance.getBean(AllocationStrategyFactory.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -52,10 +54,14 @@ import java.util.stream.Collectors;
 
 	private final I_M_HU_PI tuPI;
 
-	/** Constrained capacity to use */
+	/**
+	 * Constrained capacity to use
+	 */
 	private final HashMap<ProductId, Capacity> productId2capacity = new HashMap<>();
 
-	/** How many TUs to produce (maximum) */
+	/**
+	 * How many TUs to produce (maximum)
+	 */
 	private int maxTUs = Integer.MAX_VALUE;
 
 	private I_M_HU_Item parentItem = null;
@@ -174,7 +180,7 @@ import java.util.stream.Collectors;
 			final Capacity exceedingCapacityOfTU = capacityPerTU.subtractQuantity(request.getQuantity(), uomConversionBL);
 
 			if (HuPackingInstructionsId.isVirtualRepoId(parentPIItem.getIncluded_HU_PI_ID())
-					|| exceedingCapacityOfTU.toBigDecimal().signum() > 0)
+					|| exceedingCapacityOfTU.isPositive())
 			{
 				// Either this loading is about putting CUs directly on an LU which can be done, but then an aggregate HU is not supported and doesn't make sense (issue gh #1194).
 				// or the request's capacity is less than a full TU.
@@ -244,5 +250,24 @@ import java.util.stream.Collectors;
 			capacityToUse = capacityOverride; // we can go with capacityOverride==null, if the given hu is a "real" one (not aggregate), because the code will use the hu's PI-item.
 		}
 		return capacityToUse;
+	}
+
+	public ArrayList<LUTUResult.TU> getResult()
+	{
+		final ArrayList<LUTUResult.TU> result = new ArrayList<>();
+		for (final I_M_HU tu : getCreatedHUs())
+		{
+			if (handlingUnitsBL.isAggregateHU(tu))
+			{
+				final QtyTU qtyTU = handlingUnitsBL.getTUsCount(tu);
+				result.add(LUTUResult.TU.ofAggregatedTU(tu, qtyTU));
+			}
+			else
+			{
+				result.add(LUTUResult.TU.ofSingleTU(tu));
+			}
+		}
+
+		return result;
 	}
 }

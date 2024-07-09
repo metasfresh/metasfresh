@@ -207,7 +207,7 @@ public class HUQRCodesService
 		{
 			return existingQRCode;
 		}
-		else if (sysConfigBL.getBooleanValue(SYSCONFIG_GenerateQRCodeIfMissing, true))
+		else if (isGenerateQRCodesIfMissing())
 		{
 			return generateForExistingHU(huId).getSingleQRCode(huId);
 		}
@@ -244,6 +244,33 @@ public class HUQRCodesService
 	public Optional<HUQRCode> getFirstQRCodeByHuIdIfExists(@NonNull final HuId huId)
 	{
 		return huQRCodesRepository.getFirstQRCodeByHuId(huId);
+	}
+
+	public List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId)
+	{
+		return getOrCreateQRCodesByHuId(huId, true);
+	}
+
+	public List<HUQRCode> getQRCodesByHuId(@NonNull final HuId huId)
+	{
+		return getOrCreateQRCodesByHuId(huId, isGenerateQRCodesIfMissing());
+	}
+
+	private List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId, boolean isGenerateQRCodesIfMissing)
+	{
+		if (isGenerateQRCodesIfMissing)
+		{
+			return generateForExistingHU(huId).toList();
+		}
+		else
+		{
+			return huQRCodesRepository.getQRCodesByHuId(huId);
+		}
+	}
+
+	private boolean isGenerateQRCodesIfMissing()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_GenerateQRCodeIfMissing, true);
 	}
 
 	public void assign(@NonNull final HUQRCode qrCode, @NonNull final HuId huId, final boolean ensureSingleAssignment)

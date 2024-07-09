@@ -7,6 +7,10 @@ import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
@@ -34,6 +38,15 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.X_C_UOM;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -345,14 +358,15 @@ public class UniformAllocationStrategyTest
 			final Quantity two = Quantity.of("2", helper.uomEach);
 			final I_M_HU firstTU = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(two));
 			final List<I_M_HU> lus = huTransformService.tuToNewLUs(firstTU,
-					BigDecimal.ONE,
-					lutuProducerDestinationTestSupport.piLU_Item_IFCO,
-					true);
+							QtyTU.ONE,
+							lutuProducerDestinationTestSupport.piLU_Item_IFCO,
+							true)
+					.getLURecords();
 			lu = lus.get(0);
 			for (int i = 0; i < 51; i++)
 			{
 				final I_M_HU tu = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(two));
-				huTransformService.tuToExistingLU(tu, BigDecimal.ONE, lu);
+				huTransformService.tuToExistingLU(tu, QtyTU.ONE, lu);
 			}
 			//helper.commitAndDumpHU(lu);
 

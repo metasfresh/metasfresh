@@ -178,7 +178,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	// services
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IShipmentScheduleEffectiveBL scheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -233,7 +232,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void updateQtyOrdered(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final BigDecimal newQtyOrdered = scheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
+		final BigDecimal newQtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
 		shipmentSchedule.setQtyOrdered(newQtyOrdered);
 	}
 
@@ -257,7 +256,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		// task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
-		final boolean bpAllowsConsolidate = bPartnerBL.isAllowConsolidateInOutEffective(scheduleEffectiveBL.getBPartner(sched), SOTrx.SALES);
+		final boolean bpAllowsConsolidate = bPartnerBL.isAllowConsolidateInOutEffective(shipmentScheduleEffectiveBL.getBPartner(sched), SOTrx.SALES);
 		if (!bpAllowsConsolidate)
 		{
 			logger.debug("According to the effective C_BPartner of shipment candidate '" + sched + "', consolidation into one shipment is not allowed");
@@ -370,9 +369,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		// Create storage query
-		final BPartnerId bpartnerId = scheduleEffectiveBL.getBPartnerId(sched);
+		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
 
-		final WarehouseId warehouseId = scheduleEffectiveBL.getWarehouseId(sched);
+		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
 		final Set<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
 
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
@@ -411,7 +410,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@NonNull
 	public Quantity getQtyToDeliver(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final BigDecimal qtyToDeliverBD = scheduleEffectiveBL.getQtyToDeliverBD(shipmentScheduleRecord);
+		final BigDecimal qtyToDeliverBD = shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentScheduleRecord);
 		final I_C_UOM uom = getUomOfProduct(shipmentScheduleRecord);
 		return Quantity.of(qtyToDeliverBD, uom);
 	}
@@ -568,13 +567,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public WarehouseId getWarehouseId(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		return scheduleEffectiveBL.getWarehouseId(schedule);
+		return shipmentScheduleEffectiveBL.getWarehouseId(schedule);
 	}
 
 	@Override
 	public ZonedDateTime getPreparationDate(final I_M_ShipmentSchedule schedule)
 	{
-		return scheduleEffectiveBL.getPreparationDate(schedule);
+		return shipmentScheduleEffectiveBL.getPreparationDate(schedule);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -18,9 +19,11 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -125,4 +128,10 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	void deleteByTopLevelHUAndShipmentScheduleId(
 			@NonNull HuId topLevelHUId,
 			@NonNull ShipmentScheduleId shipmentScheduleId);
+
+	void deleteByTopLevelHUsAndShipmentScheduleId(@NonNull Collection<I_M_HU> topLevelHUs, @NonNull ShipmentScheduleId shipmentScheduleId);
+
+	WarehouseId getWarehouseId(@NonNull I_M_ShipmentSchedule schedule);
+
+	BPartnerId getBPartnerId(@NonNull I_M_ShipmentSchedule schedule);
 }

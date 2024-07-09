@@ -170,6 +170,15 @@ public class HUQRCodesRepository
 		return toHUQRCodeAssignment(qrCodes);
 	}
 
+	public List<HUQRCode> getQRCodesByHuId(@NonNull final HuId huId)
+	{
+		return queryByHuId(huId)
+				.create()
+				.stream()
+				.map(HUQRCodesRepository::toHUQRCode)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	private IQueryBuilder<I_M_HU_QRCode> queryByHuId(final @NonNull HuId sourceHuId)
 	{
 		return queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)

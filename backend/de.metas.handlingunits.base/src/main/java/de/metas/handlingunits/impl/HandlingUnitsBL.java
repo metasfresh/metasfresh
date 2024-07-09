@@ -353,6 +353,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean isDestroyed(final HuId huId)
+	{
+		return isDestroyed(handlingUnitsRepo.getById(huId));
+	}
+
+	@Override
 	public boolean isDestroyed(final I_M_HU hu)
 	{
 		return hu.getHUStatus().equals(X_M_HU.HUSTATUS_Destroyed);
@@ -569,7 +575,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		final List<I_M_HU_Item> huItems = handlingUnitsRepo.retrieveItems(hu);
-		if (huItems.size() == 0)
+		if (huItems.isEmpty())
 		{
 			return false; // we don't care
 		}
@@ -984,6 +990,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		else
 		{
 			// note: if hu is an aggregate HU, then there won't be an NPE here.
+			//noinspection DataFlowIssue
 			final I_M_HU_PI_Item parentPIItem = getPIItem(hu.getM_HU_Item_Parent());
 			if (parentPIItem == null)
 			{
@@ -1006,6 +1013,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		// note: if hu is an aggregate HU, then there won't be an NPE here.
+		//noinspection DataFlowIssue
 		final I_M_HU_PI_Item parentPIItem = getPIItem(hu.getM_HU_Item_Parent());
 		if (parentPIItem == null)
 		{
@@ -1178,6 +1186,16 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public void setHUStatus(@NonNull final I_M_HU hu, @NonNull final String huStatus)
+	{
+		final IHUContext huContext = createMutableHUContext();
+
+		huStatusBL.setHUStatus(huContext, hu, huStatus);
+
+		handlingUnitsRepo.saveHU(hu);
+	}
+
+	@Override
 	public boolean isEmptyStorage(@NonNull final I_M_HU hu)
 	{
 		return getStorageFactory()
@@ -1308,6 +1326,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public boolean isHUHierarchyCleared(@NonNull final HuId huId)
 	{
 		return isWholeHierarchyCleared(getTopLevelParent(huId));
+	}
+
+	@Override
+	public boolean isHUHierarchyCleared(@NonNull final I_M_HU hu)
+	{
+		return isWholeHierarchyCleared(getTopLevelParent(hu));
 	}
 
 	@Override

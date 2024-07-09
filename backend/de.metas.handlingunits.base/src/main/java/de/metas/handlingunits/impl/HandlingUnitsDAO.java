@@ -319,7 +319,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final I_M_HU_Item existingItem = getHUAndItemsDAO()
 				.retrieveItem(
 						Preconditions.checkNotNull(hu, "Param 'hu' may not be null"),
-						Preconditions.checkNotNull(piItem, "Param 'piItem' may not be nulll"));
+						Preconditions.checkNotNull(piItem, "Param 'piItem' may not be nulll"))
+				.orElse(null);
 
 		if (existingItem != null && X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(handlingUnitsBL.getItemType(existingItem)))
 		{
@@ -358,13 +359,31 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public I_M_HU_Item retrieveItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	public @NonNull I_M_HU_Item retrieveItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	{
+		return retrieveItemIfExists(hu, piItem)
+				.orElseThrow(() -> new AdempiereException("No HU Item found for " + hu + " and " + piItem));
+	}
+
+	@Override
+	public Optional<I_M_HU_Item> retrieveItemIfExists(final I_M_HU hu, final I_M_HU_PI_Item piItem)
 	{
 		return getHUAndItemsDAO().retrieveItem(hu, piItem);
 	}
 
 	@Override
-	public I_M_HU_Item retrieveAggregatedItemOrNull(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	public I_M_HU_Item retrieveAggregatedItem(final I_M_HU hu)
+	{
+		final I_M_HU_Item huItem = retrieveAggregatedItemOrNull(hu);
+		if (huItem == null)
+		{
+			throw new AdempiereException("No aggregated HU item found for " + hu);
+		}
+		return huItem;
+	}
+
+	@Override
+	public I_M_HU_Item retrieveAggregatedItemOrNull(final I_M_HU hu)
 	{
 		return getHUAndItemsDAO().retrieveAggregatedItemOrNull(hu);
 	}

@@ -25,7 +25,6 @@ import de.metas.util.Services;
 
 	public LULoaderItemInstance(final IHUContext huContext, final I_M_HU_Item luItem)
 	{
-		super();
 		this.huContext = huContext;
 		this.luItem = luItem;
 		luItemStorage = huContext.getHUStorageFactory().getStorage(luItem);
