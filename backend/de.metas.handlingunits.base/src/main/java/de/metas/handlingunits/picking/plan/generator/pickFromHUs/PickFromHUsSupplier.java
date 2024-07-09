@@ -65,6 +65,11 @@ public class PickFromHUsSupplier
 		this.fallbackLotNumberToHUValue = fallbackLotNumberToHUValue;
 	}
 
+	public boolean hasEligiblePickFromHUs(@NonNull final PickFromHUsGetRequest request)
+	{
+		return !getEligiblePickFromHUs(request).isEmpty();
+	}
+
 	public ImmutableList<PickFromHU> getEligiblePickFromHUs(@NonNull final PickFromHUsGetRequest request)
 	{
 		final LinkedHashMap<HuId, PickFromHU> pickFromHUs = new LinkedHashMap<>();
@@ -143,7 +148,7 @@ public class PickFromHUsSupplier
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 				.setExcludeReserved();
 
-		if(request.isEnforceMandatoryAttributesOnPicking())
+		if (request.isEnforceMandatoryAttributesOnPicking())
 		{
 			final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(request.getProductId());
 			for (final I_M_Attribute attribute : attributesMandatoryOnPicking)
@@ -180,7 +185,7 @@ public class PickFromHUsSupplier
 		husCache.warmUpCacheForHuIds(huIds);
 		huReservationService.warmup(huIds);
 	}
-	
+
 	private PickFromHU withAlternatives(
 			@NonNull final PickFromHU pickFromHU,
 			@NonNull final ProductId productId,
