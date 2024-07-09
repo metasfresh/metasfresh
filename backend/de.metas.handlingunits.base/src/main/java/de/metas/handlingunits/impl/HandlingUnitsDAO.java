@@ -312,7 +312,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final I_M_HU_Item existingItem = getHUAndItemsDAO()
 				.retrieveItem(
 						Preconditions.checkNotNull(hu, "Param 'hu' may not be null"),
-						Preconditions.checkNotNull(piItem, "Param 'piItem' may not be nulll"));
+						Preconditions.checkNotNull(piItem, "Param 'piItem' may not be nulll"))
+				.orElse(null);
 
 		if (existingItem != null && X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(handlingUnitsBL.getItemType(existingItem)))
 		{
@@ -351,13 +352,31 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public I_M_HU_Item retrieveItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	public @NonNull I_M_HU_Item retrieveItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	{
+		return retrieveItemIfExists(hu, piItem)
+				.orElseThrow(() -> new AdempiereException("No HU Item found for " + hu + " and " + piItem));
+	}
+
+	@Override
+	public Optional<I_M_HU_Item> retrieveItemIfExists(final I_M_HU hu, final I_M_HU_PI_Item piItem)
 	{
 		return getHUAndItemsDAO().retrieveItem(hu, piItem);
 	}
 
 	@Override
-	public I_M_HU_Item retrieveAggregatedItemOrNull(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	public I_M_HU_Item retrieveAggregatedItem(final I_M_HU hu)
+	{
+		final I_M_HU_Item huItem = retrieveAggregatedItemOrNull(hu);
+		if (huItem == null)
+		{
+			throw new AdempiereException("No aggregated HU item found for " + hu);
+		}
+		return huItem;
+	}
+
+	@Override
+	public I_M_HU_Item retrieveAggregatedItemOrNull(final I_M_HU hu)
 	{
 		return getHUAndItemsDAO().retrieveAggregatedItemOrNull(hu);
 	}
@@ -468,7 +487,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(piId);
-		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType, bpartnerId);
+		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType, bpartnerId, null);
+		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull HuPackingInstructionsId piId,
+			@NonNull final HuPackingInstructionsId includedPIId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		final I_M_HU_PI_Version version = retrievePICurrentVersion(piId);
+		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId, includedPIId);
 		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
 	}
 
@@ -486,13 +516,14 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@NonNull final I_M_HU_PI_Version version,
 			@Nullable final BPartnerId bpartnerId)
 	{
-		return retrievePIItems(version, null, bpartnerId);
+		return retrievePIItems(version, null, bpartnerId, null);
 	}
 
 	private List<I_M_HU_PI_Item> retrievePIItems(
 			@NonNull final I_M_HU_PI_Version version,
 			@Nullable String expectedItemType,
-			@Nullable final BPartnerId bpartnerId)
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final HuPackingInstructionsId includedPIId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(version);
 		final String trxName = InterfaceWrapperHelper.getTrxName(version);
@@ -549,6 +580,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				{
 					// accept it
 					// does not matter if we were asked for a specific partner because this is a generic item
+				}
+
+				if (includedPIId != null)
+				{
+					final HuPackingInstructionsId itemIncludedPIId = HuPackingInstructionsId.ofRepoIdOrNull(piItem.getIncluded_HU_PI_ID());
+					if (!HuPackingInstructionsId.equals(includedPIId, itemIncludedPIId))
+					{
+						// don't accept it
+						continue;
+					}
 				}
 			}
 

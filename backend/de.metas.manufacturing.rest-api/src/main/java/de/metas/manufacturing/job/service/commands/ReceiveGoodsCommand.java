@@ -5,6 +5,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
@@ -22,7 +23,6 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -287,17 +287,17 @@ public class ReceiveGoodsCommand
 		{
 			if (lu == null)
 			{
-				final List<I_M_HU> createdLUs = HUTransformService.newInstance()
+				final LUTUResult createdLUs = HUTransformService.newInstance()
 						.tuToNewLUs(
 								tu,
-								QtyTU.ONE.toBigDecimal(),
+								QtyTU.ONE,
 								Objects.requireNonNull(newLUPIItem),
 								false);
-				lu = CollectionUtils.singleElement(createdLUs);
+				lu = createdLUs.getSingleLURecord();
 			}
 			else
 			{
-				HUTransformService.newInstance().tuToExistingLU(tu, QtyTU.ONE.toBigDecimal(), lu);
+				HUTransformService.newInstance().tuToExistingLU(tu, QtyTU.ONE, lu);
 			}
 		}
 

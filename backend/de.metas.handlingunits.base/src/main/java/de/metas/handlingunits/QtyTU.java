@@ -128,6 +128,11 @@ public final class QtyTU implements Comparable<QtyTU>
 		return this.intValue - other.intValue;
 	}
 
+	public int compareTo(@NonNull final BigDecimal other)
+	{
+		return this.intValue - other.intValueExact();
+	}
+
 	public boolean isGreaterThan(@NonNull final QtyTU other) {return compareTo(other) > 0;}
 
 	public boolean isZero() {return intValue == 0;}
@@ -135,6 +140,14 @@ public final class QtyTU implements Comparable<QtyTU>
 	public boolean isPositive() {return intValue > 0;}
 
 	public boolean isOne() {return intValue == 1;}
+
+	public QtyTU assertPositive() {return assertPositive("qtyTU");}
+
+	public QtyTU assertPositive(@NonNull String variableName)
+	{
+		Check.assumeGreaterThanZero(intValue, variableName);
+		return this;
+	}
 
 	public QtyTU add(@NonNull final QtyTU toAdd)
 	{
@@ -152,7 +165,7 @@ public final class QtyTU implements Comparable<QtyTU>
 		}
 	}
 
-	public QtyTU subtractOrZero(@NonNull final int toSubtract)
+	public QtyTU subtractOrZero(final int toSubtract)
 	{
 		if (toSubtract <= 0)
 		{
@@ -174,5 +187,10 @@ public final class QtyTU implements Comparable<QtyTU>
 		{
 			return ofInt(Math.max(this.intValue - toSubtract.intValue, 0));
 		}
+	}
+
+	public QtyTU min(@NonNull final QtyTU other)
+	{
+		return this.intValue <= other.intValue ? this : other;
 	}
 }

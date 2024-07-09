@@ -1,5 +1,6 @@
 package de.metas.handlingunits.qrcodes.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -104,6 +106,15 @@ public class HUQRCodesRepository
 				.create()
 				.firstOptional(I_M_HU_QRCode.class)
 				.map(HUQRCodesRepository::toHUQRCode);
+	}
+
+	public List<HUQRCode> getQRCodesByHuId(@NonNull final HuId huId)
+	{
+		return queryByHuId(huId)
+				.create()
+				.stream()
+				.map(HUQRCodesRepository::toHUQRCode)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private IQueryBuilder<I_M_HU_QRCode> queryByHuId(final @NonNull HuId sourceHuId)
