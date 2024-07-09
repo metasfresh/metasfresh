@@ -32,8 +32,8 @@ import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
 import de.metas.bpartner.name.strategy.FirstContactBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.name.strategy.MembershipContactBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
@@ -94,8 +94,8 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 				new BPartnerAttributesRepository(),
 				new BpartnerRelatedRecordsRepository(),
 				new BPartnerContactAttributesRepository(),
-				new UserGroupRepository(),
 				NullCustomizedWindowInfoMapRepository.instance,
+				new UserGroupRepository(),
 				new UserDefaultAttributesRepository());
 
 		greeting_MR = createGreeting(GreetingStandardType.MR);

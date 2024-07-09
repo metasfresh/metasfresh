@@ -339,7 +339,7 @@ public class DeliveryPlanningService
 	private static Quantity extractPlannedLoadedQuantity(final I_M_Delivery_Planning deliveryPlanning)
 	{
 		final UomId uomId = UomId.ofRepoId(deliveryPlanning.getC_UOM_ID());
-		return Quantitys.create(deliveryPlanning.getPlannedLoadedQuantity(), uomId);
+		return Quantitys.of(deliveryPlanning.getPlannedLoadedQuantity(), uomId);
 	}
 
 	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)

@@ -59,6 +59,9 @@
 		<property name="com.jaspersoft.studio.field.name" value="stdprecision"/>
 		<property name="com.jaspersoft.studio.field.label" value="stdprecision"/>
 	</field>
+	<field name="qtypattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
+	</field>
 	<field name="linenetamt" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="linenetamt"/>
 		<property name="com.jaspersoft.studio.field.label" value="linenetamt"/>
@@ -433,7 +436,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{rate}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="true">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-33" mode="Transparent" x="371" y="0" width="38" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -448,6 +451,7 @@
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtyenteredinpriceuom}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
 			</textField>
 			<staticText>
 				<reportElement x="575" y="0" width="5" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">

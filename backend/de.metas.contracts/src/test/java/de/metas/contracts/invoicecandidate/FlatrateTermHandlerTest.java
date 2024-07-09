@@ -1,5 +1,6 @@
 package de.metas.contracts.invoicecandidate;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
@@ -13,16 +14,27 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
+import de.metas.contracts.modular.ModularContractPriceRepository;
+import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.ComputingMethodService;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.log.status.ModularLogCreateStatusRepository;
+import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
+import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
+import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
+import de.metas.lock.api.LockOwner;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductActivityProvider;
@@ -54,10 +66,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.sql.Timestamp;
+import java.util.Collections;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FlatrateTermHandlerTest extends ContractsTestBase
 {
@@ -73,8 +86,20 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	@Override
 	protected void init()
 	{
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsService(new ModularContractSettingsRepository()));
+		final ModularContractLogService modularContractLogService = new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository());
+		SpringContextHolder.registerJUnitBean(modularContractLogService);
+		SpringContextHolder.registerJUnitBean(new ModularContractComputingMethodHandlerRegistry(ImmutableList.of()));
+		SpringContextHolder.registerJUnitBean(new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())));
+		SpringContextHolder.registerJUnitBean(new ComputingMethodService(modularContractLogService));
+		SpringContextHolder.registerJUnitBean(new ModularContractPriceRepository());
+		SpringContextHolder.registerJUnitBean(new ModularContractService(new ModularContractComputingMethodHandlerRegistry(Collections.emptyList()),
+																		 new ModularContractSettingsRepository(),
+																		 new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
+																		 new ComputingMethodService(modularContractLogService),
+																		 new ModularContractPriceRepository()));
 	}
 
 	@BeforeAll
@@ -158,7 +183,9 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				.thenReturn(TaxId.ofRepoId(3));
 
 		final FlatrateTerm_Handler flatrateTermHandler = new FlatrateTerm_Handler();
-		final InvoiceCandidateGenerateResult candidates = flatrateTermHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(flatrateTermHandler, term1));
+		final LockOwner lockOwner = LockOwner.newOwner(getClass().getSimpleName() + "#generateInvoiceCandidates");
+
+		final InvoiceCandidateGenerateResult candidates = flatrateTermHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(flatrateTermHandler, term1, lockOwner));
 		assertInvoiceCandidates(candidates, term1);
 	}
 

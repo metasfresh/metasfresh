@@ -1,10 +1,12 @@
 package de.metas.invoicecandidate.async.spi.impl;
 
-import de.metas.async.AsyncBatchId;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
+import org.slf4j.Logger;
 
-import java.util.Optional;
+import javax.annotation.Nullable;
 import java.util.Properties;
 
 /*
@@ -31,6 +33,8 @@ import java.util.Properties;
 
 class UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler extends WorkpackagesOnCommitSchedulerTemplate<IInvoiceCandUpdateSchedulerRequest>
 {
+	private final static Logger logger = LogManager.getLogger(UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler.class);
+
 	public UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler(final boolean createOneWorkpackagePerAsyncBatch)
 	{
 		super(UpdateInvalidInvoiceCandidatesWorkpackageProcessor.class);
@@ -38,19 +42,19 @@ class UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler extends Workpa
 	}
 
 	@Override
-	protected Properties extractCtxFromItem(final IInvoiceCandUpdateSchedulerRequest item)
+	protected Properties extractCtxFromItem(@NonNull final IInvoiceCandUpdateSchedulerRequest item)
 	{
 		return item.getCtx();
 	}
 
 	@Override
-	protected String extractTrxNameFromItem(final IInvoiceCandUpdateSchedulerRequest item)
+	protected String extractTrxNameFromItem(@NonNull final IInvoiceCandUpdateSchedulerRequest item)
 	{
 		return item.getTrxName();
 	}
 
 	@Override
-	protected Object extractModelToEnqueueFromItem(final Collector collector, final IInvoiceCandUpdateSchedulerRequest item)
+	protected Object extractModelToEnqueueFromItem(@Nullable final Collector collector, @Nullable final IInvoiceCandUpdateSchedulerRequest item)
 	{
 		return null; // there is no actual model to be collected
 	}
@@ -59,11 +63,5 @@ class UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler extends Workpa
 	protected boolean isEnqueueWorkpackageWhenNoModelsEnqueued()
 	{
 		return true;
-	}
-
-	@Override
-	public Optional<AsyncBatchId> extractAsyncBatchFromItem(final Collector collector, final IInvoiceCandUpdateSchedulerRequest request)
-	{
-		return Optional.ofNullable(request.getAsyncBatchId());
 	}
 }

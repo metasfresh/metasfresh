@@ -22,11 +22,10 @@ package org.adempiere.mm.attributes.api;
  * #L%
  */
 
-import java.math.MathContext;
-import java.util.Date;
-import java.util.Properties;
-
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -34,9 +33,9 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
-import de.metas.util.ISingletonService;
+import java.math.MathContext;
+import java.util.Date;
+import java.util.Properties;
 
 public interface IAttributesBL extends ISingletonService
 {
@@ -96,4 +95,6 @@ public interface IAttributesBL extends ISingletonService
 	boolean isStorageRelevant(final AttributeId attributeId);
 
 	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, String value);
+
+	AttributeListValue retrieveAttributeValueOrNull(@NonNull I_M_Attribute attribute, @NonNull String value);
 }

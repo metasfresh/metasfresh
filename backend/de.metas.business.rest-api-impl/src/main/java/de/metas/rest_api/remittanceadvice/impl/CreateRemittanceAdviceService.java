@@ -35,6 +35,7 @@ import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceRe
 import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceResponseItem;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdvice;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseType;
@@ -194,7 +195,7 @@ public class CreateRemittanceAdviceService
 		final Instant sendDate = jsonRemittanceAdvice.getSendDate() != null ? Instant.parse(jsonRemittanceAdvice.getSendDate()) : null;
 		final Instant documentDate = jsonRemittanceAdvice.getDocumentDate() != null ?
 				Instant.parse(jsonRemittanceAdvice.getDocumentDate()) :
-				Instant.now();
+				SystemTime.asInstant();
 
 		return CreateRemittanceAdviceRequest.builder()
 				.isImported(Boolean.TRUE)

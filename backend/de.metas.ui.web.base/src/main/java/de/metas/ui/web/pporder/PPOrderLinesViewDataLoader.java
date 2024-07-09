@@ -22,6 +22,7 @@ import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
@@ -54,6 +55,7 @@ import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -91,6 +93,7 @@ class PPOrderLinesViewDataLoader
 
 	//
 	// Services
+	private static final Logger logger = LogManager.getLogger(PPOrderLinesViewDataLoader.class);
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
@@ -223,8 +226,17 @@ class PPOrderLinesViewDataLoader
 		for (final HuId sourceHUId : SourceHUsService.get().retrieveMatchingSourceHUIds(sourceHusQuery))
 		{
 			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(sourceHUId);
-			if(X_M_HU.HUSTATUS_Active.equals(huEditorRow.getHUStatus()))
+			if (X_M_HU.HUSTATUS_Active.equals(huEditorRow.getHUStatus()))
 			{
+				// If the HU does not have single product then skip it
+				// NOTE: this is a hotfix because before we would get a NPE
+				// A proper issue will be needed to solve the problem correctly.
+				if (huEditorRow.getProduct() == null)
+				{
+					logger.warn("Only single product HUs are supported as source HUs: {}", huEditorRow);
+					continue;
+				}
+
 				result.add(createRowForSourceHU(huEditorRow));
 			}
 		}
@@ -382,13 +394,14 @@ class PPOrderLinesViewDataLoader
 
 		return PPOrderLineRow.builderForIssuedOrReceivedHU()
 				.rowId(rowId)
-				.type(PPOrderLineType.ofHUEditorRowType(huEditorRow.getType()))
+				.type(huEditorRow.getType())
 				.ppOrderQty(ppOrderQty)
 				.parentRowReadonly(readonly)
 				.attributesSupplier(huEditorRow.getAttributesSupplier()
 						.map(supplier -> supplier.changeRowId(rowId.toDocumentId()))
 						.orElse(null))
 				.code(huEditorRow.getValue())
+				.huBPartnerId(huEditorRow.getBpartnerId())
 				.product(huEditorRow.getProduct())
 				.packingInfo(huEditorRow.getPackingInfo())
 				.topLevelHU(huEditorRow.isTopLevel())

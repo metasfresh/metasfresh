@@ -71,6 +71,8 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 	private static final String DEVICE_PARAM_AttributeInternalName = "AttributeInternalName";
 	private static final String DEVICE_PARAM_M_Warehouse_ID = "M_Warehouse_ID";
 	private static final String DEVICE_PARAM_BeforeAcquireValueHook = "BeforeAcquireValueHook";
+	public static final String DEVICE_PARAM_RoundingToQty = "RoundingToQty";
+	public static final String DEVICE_PARAM_RoundingToQty_UOM_ID = "RoundingToQty_UOM_ID";
 
 	/* package */static final String IPADDRESS_ANY = "0.0.0.0";
 

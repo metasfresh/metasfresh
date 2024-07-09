@@ -22,13 +22,18 @@ package org.eevolution.api;
  * #L%
  */
 
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.eevolution.api.impl.ProductBOM;
+import org.eevolution.api.impl.ProductBOMRequest;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.impl.ProductBOM;
+import org.eevolution.api.impl.ProductBOMRequest;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -36,6 +41,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -48,14 +54,9 @@ public interface IProductBOMBL extends ISingletonService
 	void updateIsBOMFlag(ProductId productId);
 
 	/**
-	 * Calculates low level code (LLC) for given product.
-	 * It also checks for BOM cycles.
-	 *
-	 * @return low level code (LLC)
+	 * checking BOM cycles.
 	 */
-	int calculateProductLowestLevel(ProductId productId);
-
-	IProductLowLevelUpdater updateProductLowLevels();
+	void checkCycles(final ProductId productId);
 
 	/**
 	 * Checks if a BOMLine which is a <code>X_PP_Product_BOMLine.COMPONENTTYPE_Variant</code> has a valid VariantGroup<br>
@@ -101,4 +102,8 @@ public interface IProductBOMBL extends ISingletonService
 	void verifyDefaultBOMProduct(@NonNull ProductId productId);
 
 	void verifyDefaultBOMProduct(@NonNull I_M_Product product);
+
+	Optional<ProductBOM> retrieveValidProductBOM(@NonNull ProductBOMRequest request);
+
+	Map<ProductDescriptor, Quantity> calculateRequiredQtyInStockUOMForComponents(@NonNull Quantity qty, @NonNull ProductBOM productBOM);
 }

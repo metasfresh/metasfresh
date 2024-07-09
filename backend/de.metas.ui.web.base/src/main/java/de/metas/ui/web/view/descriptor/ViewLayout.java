@@ -165,7 +165,8 @@ public class ViewLayout implements ETagAware
 	/**
 	 * copy and override constructor
 	 */
-	private ViewLayout(final ViewLayout from,
+	private ViewLayout(
+			@NonNull final ViewLayout from,
 					   final WindowId windowId,
 					   final ViewProfileId profileId,
 					   final ImmutableList<DocumentFilterDescriptor> filters,
@@ -723,6 +724,20 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
+		public <T extends IViewRow> Builder addElementsFromViewRowClass(final Class<T> viewRowClass, final JSONViewDataType viewType, @Nullable final String commaSeparatedFields)
+		{
+			final List<ViewColumnHelper.ClassViewColumnOverrides> columnOverrides = ViewColumnHelper.ClassViewColumnOverrides.parseCommaSeparatedString(commaSeparatedFields);
+			if (!columnOverrides.isEmpty())
+			{
+				final ViewColumnHelper.ClassViewColumnOverrides[] columnOverridesArray = columnOverrides.toArray(new ViewColumnHelper.ClassViewColumnOverrides[0]);
+				return addElementsFromViewRowClassAndFieldNames(viewRowClass, viewType, columnOverridesArray);
+			}
+			else
+			{
+				return addElementsFromViewRowClass(viewRowClass, viewType);
+			}
+		}
+
 		public <T extends IViewRow> Builder addElementsFromViewRowClass(final Class<T> viewRowClass, final JSONViewDataType viewType)
 		{
 			final List<DocumentLayoutElementDescriptor.Builder> elements = ViewColumnHelper.createLayoutElementsForClass(viewRowClass, viewType);
@@ -737,7 +752,7 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		public <T extends IViewRow> Builder addElementsFromViewRowClassAndFieldNames(final Class<T> viewRowClass, final JSONViewDataType viewDataType, final ViewColumnHelper.ClassViewColumnOverrides... columns)
+		public <T extends IViewRow> Builder addElementsFromViewRowClassAndFieldNames(@NonNull final Class<T> viewRowClass, final JSONViewDataType viewDataType, final ViewColumnHelper.ClassViewColumnOverrides... columns)
 		{
 			final List<DocumentLayoutElementDescriptor.Builder> elements = ViewColumnHelper.createLayoutElementsForClassAndFieldNames(viewRowClass, viewDataType, columns);
 			Check.assumeNotEmpty(elements, "elements is not empty"); // shall never happen

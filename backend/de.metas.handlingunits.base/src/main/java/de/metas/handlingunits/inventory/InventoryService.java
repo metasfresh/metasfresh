@@ -6,19 +6,28 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.impl.SyncInventoryQtyToHUsCommand;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryProducer;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inventory.AggregationType;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.InventoryId;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.OrgId;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.ProductId;
 import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
 import de.metas.quantity.Quantity;
@@ -27,10 +36,13 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -39,6 +51,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -64,21 +77,32 @@ import java.util.stream.Stream;
  */
 
 @Service
+@RequiredArgsConstructor
 public class InventoryService
 {
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	@Getter
-	private final InventoryRepository inventoryRepository;
-	private final SourceHUsService sourceHUsService;
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	@NonNull @Getter private final InventoryRepository inventoryRepository;
+	@NonNull private final SourceHUsService sourceHUsService;
+    @NonNull private final HUQRCodesService huQRCodesService;
 
-	private static final AdMessageKey MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = AdMessageKey.of("de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType");
+	@NonNull private static final AdMessageKey MSG_CREATED_VIRTUAL_INVENTORY_FOR_SHIPMENT_SCHEDULE = AdMessageKey.of("de.metas.handlingunits.inventory.InventoryService.MsgCreatedVirtualInventoryForShipmentSchedule");
+	@NonNull private static final AdMessageKey MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = AdMessageKey.of("de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType");
 
-	public InventoryService(@NonNull final InventoryRepository inventoryRepository, @NonNull final SourceHUsService sourceHUsService)
+	public static InventoryService newInstanceForUnitTesting()
 	{
-		this.inventoryRepository = inventoryRepository;
-		this.sourceHUsService = sourceHUsService;
+		Adempiere.assertUnitTestMode();
+		return new InventoryService(
+				new InventoryRepository(),
+				SourceHUsService.get(),
+				new HUQRCodesService(
+						new HUQRCodesRepository(),
+						new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+						new QRCodeConfigurationService(new QRCodeConfigurationRepository())
+				)
+		);
 	}
 
 	public Inventory getById(@NonNull final InventoryId inventoryId)
@@ -96,7 +120,7 @@ public class InventoryService
 	public boolean isMaterialDisposal(final I_M_Inventory inventory)
 	{
 		final DocTypeId inventoryDocTypeId = DocTypeId.ofRepoIdOrNull(inventory.getC_DocType_ID());
-		if(inventoryDocTypeId == null)
+		if (inventoryDocTypeId == null)
 		{
 			return false;
 		}
@@ -130,11 +154,11 @@ public class InventoryService
 		final DocBaseAndSubType docBaseAndSubType = getDocBaseAndSubType(huAggregationType);
 
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-											   .docBaseType(docBaseAndSubType.getDocBaseType())
-											   .docSubType(docBaseAndSubType.getDocSubType())
-											   .adClientId(Env.getAD_Client_ID())
-											   .adOrgId(orgId.getRepoId())
-											   .build());
+				.docBaseType(docBaseAndSubType.getDocBaseType())
+				.docSubType(docBaseAndSubType.getDocSubType())
+				.adClientId(Env.getAD_Client_ID())
+				.adOrgId(orgId.getRepoId())
+				.build());
 	}
 
 	private static HUAggregationType computeHUAggregationType(
@@ -213,6 +237,7 @@ public class InventoryService
 		SyncInventoryQtyToHUsCommand.builder()
 				.inventoryRepository(inventoryRepository)
 				.sourceHUsService(sourceHUsService)
+				.huQRCodesService(huQRCodesService)
 				.inventory(inventory)
 				.build()
 				//
@@ -255,6 +280,7 @@ public class InventoryService
 				.docTypeId(getVirtualInventoryDocTypeId(req.getClientId(), req.getOrgId()))
 				.movementDate(req.getMovementDate())
 				.warehouseId(req.getWarehouseId())
+				.pickingJobId(req.getPickingJobId())
 				.build();
 
 		final InventoryId inventoryId = createInventoryHeader(createHeaderRequest).getId();
@@ -267,6 +293,7 @@ public class InventoryService
 				.qtyCount(req.getQty())
 				.attributeSetId(req.getAttributeSetInstanceId())
 				.locatorId(locatorId)
+				.modularContractId(req.getModularContractId())
 				.build();
 
 		createInventoryLine(createLineRequest);
@@ -275,7 +302,22 @@ public class InventoryService
 
 		final Inventory inventory = getById(inventoryId);
 
+		sendNotificationForCreatedVirtualInventory(inventoryId, req.getForRecordRef());
+
 		return CollectionUtils.singleElement(inventory.getHuIds());
+	}
+
+	private void sendNotificationForCreatedVirtualInventory(@NonNull final InventoryId inventoryId, @Nullable final TableRecordReference forRecordRef)
+	{
+		if(forRecordRef != null && forRecordRef.tableNameEqualsTo(I_M_ShipmentSchedule.Table_Name))
+		{
+			notificationBL.sendAfterCommit(UserNotificationRequest.builder()
+												   .recipientUserId(Env.getLoggedUserId())
+												   .contentADMessage(MSG_CREATED_VIRTUAL_INVENTORY_FOR_SHIPMENT_SCHEDULE)
+												   .contentADMessageParam(forRecordRef.getRecord_ID())
+												   .targetAction(UserNotificationRequest.TargetRecordAction.of(TableRecordReference.of(I_M_Inventory.Table_Name, inventoryId)))
+												   .build());
+		}
 	}
 
 	private DocTypeId getVirtualInventoryDocTypeId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
@@ -299,5 +341,11 @@ public class InventoryService
 		{
 			return AggregationType.getByHUAggregationType(huAggregationType).getDocBaseAndSubType();
 		}
+	}
+
+	@NonNull
+	public Set<InventoryId> getVirtualInventoryIdsByHUIds(@NonNull final Set<HuId> huIds, @NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		return inventoryRepository.getIdsByHUIdsAndDocTypeId(huIds, getVirtualInventoryDocTypeId(clientId, orgId));
 	}
 }

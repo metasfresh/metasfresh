@@ -5,7 +5,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
+import de.metas.product.ProductId;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -23,7 +25,7 @@ import java.util.Optional;
 @Value
 @Builder
 @Jacksonized // NOTE: we are making it json friendly mainly for snapshot testing
-public class HUQRCode
+public class HUQRCode implements IHUQRCode
 {
 	@NonNull HUQRCodeUniqueId id;
 
@@ -36,11 +38,24 @@ public class HUQRCode
 		return Objects.equals(o1, o2);
 	}
 
+	@Override
+	@Deprecated
+	public String toString() {return toGlobalQRCodeString();}
+
 	@NonNull
 	public static HUQRCode fromGlobalQRCodeJsonString(@NonNull final String qrCodeString)
 	{
 		return HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
 	}
+
+	@Nullable
+	public static HUQRCode fromNullableGlobalQRCodeJsonString(@Nullable final String qrCodeString)
+	{
+		final String qrCodeStringNorm = StringUtils.trimBlankToNull(qrCodeString);
+		return qrCodeStringNorm != null ? fromGlobalQRCodeJsonString(qrCodeStringNorm) : null;
+	}
+
+	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode) {return HUQRCodeJsonConverter.isHandled(globalQRCode);}
 
 	public static HUQRCode fromGlobalQRCode(@NonNull final GlobalQRCode globalQRCode)
 	{
@@ -58,6 +73,11 @@ public class HUQRCode
 		return HUQRCodeJsonConverter.toGlobalQRCode(this);
 	}
 
+	public String toGlobalQRCodeString()
+	{
+		return HUQRCodeJsonConverter.toGlobalQRCodeJsonString(this);
+	}
+
 	public String toDisplayableQRCode()
 	{
 		return id.getDisplayableSuffix();
@@ -70,6 +90,11 @@ public class HUQRCode
 				.bottomText(extractPrintableBottomText(this))
 				.qrCode(HUQRCodeJsonConverter.toGlobalQRCode(this).getAsString())
 				.build();
+	}
+
+	public static boolean isTypeMatching(@NonNull final GlobalQRCode globalQRCode)
+	{
+		return HUQRCodeJsonConverter.isTypeMatching(globalQRCode);
 	}
 
 	private static String extractPrintableTopText(final HUQRCode qrCode)
@@ -91,12 +116,7 @@ public class HUQRCode
 		return result.toString();
 	}
 
-	private static String extractPrintableBottomText(final HUQRCode qrCode)
-	{
-		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.toDisplayableQRCode();
-	}
-
-	public Optional<String> getAttributeValueAsString(final AttributeCode attributeCode)
+	public Optional<String> getAttributeValueAsString(@NonNull final AttributeCode attributeCode)
 	{
 		return getAttribute(attributeCode).map(HUQRCodeAttribute::getValue);
 	}
@@ -105,4 +125,13 @@ public class HUQRCode
 	{
 		return attributes.stream().filter(attribute -> AttributeCode.equals(attribute.getCode(), attributeCode)).findFirst();
 	}
+
+	private static String extractPrintableBottomText(final HUQRCode qrCode)
+	{
+		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.toDisplayableQRCode();
+	}
+
+	public ProductId getProductId() {return getProduct().getId();}
+
+	public HuPackingInstructionsId getPackingInstructionsId() {return getPackingInfo().getPackingInstructionsId();}
 }

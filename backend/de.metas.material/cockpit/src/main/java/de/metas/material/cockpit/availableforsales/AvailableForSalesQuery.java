@@ -1,12 +1,12 @@
 package de.metas.material.cockpit.availableforsales;
 
-import de.metas.material.commons.attributes.AttributesKeyPattern;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;

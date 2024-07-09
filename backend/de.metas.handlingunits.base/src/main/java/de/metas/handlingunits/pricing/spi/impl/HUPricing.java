@@ -7,6 +7,7 @@ import de.metas.interfaces.I_M_HU_PI_Item_Product_Aware;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.service.ProductPriceQuery;
@@ -88,8 +89,8 @@ public class HUPricing extends AttributePricing
 		// task 09051: don't leave yet, because there might be a product price with just a M_HU_PI_Item_Product and no other attribute values and stuff to match
 
 		// Get the price list version, if any.
-		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
-		if (ctxPriceListVersion == null)
+		final PriceListVersionId ctxPriceListVersionId = pricingCtx.getPriceListVersionId();
+		if (ctxPriceListVersionId == null)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("findMatchingProductPriceAttribute - return empty because no price list version found: {}", pricingCtx);
 			return Optional.empty();
@@ -105,7 +106,7 @@ public class HUPricing extends AttributePricing
 		}
 
 		final ProductId productId = pricingCtx.getProductId();
-		final I_M_ProductPrice productPrice = findMatchingProductPriceOrNull(ctxPriceListVersion, productId, attributeSetInstance, packingMaterialId);
+		final I_M_ProductPrice productPrice = findMatchingProductPriceOrNull(ctxPriceListVersionId, productId, attributeSetInstance, packingMaterialId);
 
 		if (productPrice == null)
 		{
@@ -117,14 +118,14 @@ public class HUPricing extends AttributePricing
 	}
 
 	private static I_M_ProductPrice findMatchingProductPriceOrNull(
-			@NonNull final I_M_PriceList_Version plv,
+			@NonNull final PriceListVersionId plvId,
 			@NonNull final ProductId productId,
 			@Nullable final I_M_AttributeSetInstance attributeSetInstance,
 			@NonNull final HUPIItemProductId packingMaterialId)
 	{
 		boolean noAttributeRelatedConditionSet = true;
 
-		final ProductPriceQuery productPriceQuery = ProductPrices.newQuery(plv)
+		final ProductPriceQuery productPriceQuery = ProductPrices.newQuery(plvId)
 				.setProductId(productId);
 
 		//match packing material if we have a real packing material
@@ -174,8 +175,8 @@ public class HUPricing extends AttributePricing
 	 */
 	@Override
 	protected void setResultForProductPriceAttribute(
-			final IPricingContext pricingCtx,
-			final IPricingResult result,
+			final @NonNull IPricingContext pricingCtx,
+			final @NonNull IPricingResult result,
 			@NonNull final org.compiere.model.I_M_ProductPrice productPrice)
 	{
 		super.setResultForProductPriceAttribute(pricingCtx, result, productPrice);
@@ -189,15 +190,15 @@ public class HUPricing extends AttributePricing
 	{
 		//
 		// Get the price list version, if any
-		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
-		if (ctxPriceListVersion == null)
+		final PriceListVersionId ctxPriceListVersionId = pricingCtx.getPriceListVersionId();
+		if (ctxPriceListVersionId == null)
 		{
 			return null;
 		}
 
 		//
 		// Get the default product price attribute, if any
-		final I_M_ProductPrice defaultPrice = ProductPrices.newQuery(ctxPriceListVersion)
+		final I_M_ProductPrice defaultPrice = ProductPrices.newQuery(ctxPriceListVersionId)
 						.setProductId(pricingCtx.getProductId())
 						.onlyAttributePricing()
 						.onlyValidPrices(true)

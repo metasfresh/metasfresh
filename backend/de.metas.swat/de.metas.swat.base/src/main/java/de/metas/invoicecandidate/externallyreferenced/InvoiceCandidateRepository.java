@@ -137,7 +137,6 @@ public class InvoiceCandidateRepository
 				icRecord.setC_Harvesting_Calendar_ID(harvestYearAndCalendarId.calendarId().getRepoId());
 				icRecord.setHarvesting_Year_ID(harvestYearAndCalendarId.yearId().getRepoId());
 			}
-			icRecord.setIsInterimInvoice(ic.isInterimInvoice());
 			icRecord.setC_ILCandHandler_ID(ic.getHandlerId().getRepoId());
 			icRecord.setIsManual(ic.isManual());
 			icRecord.setC_Auction_ID(AuctionId.toRepoId(ic.getAuctionId()));
@@ -151,14 +150,14 @@ public class InvoiceCandidateRepository
 			icRecord = load(invoiceCandidateId, I_C_Invoice_Candidate.class);
 		}
 
-
 		final BigDecimal discountOverride = ic.getDiscountOverride() != null ? ic.getDiscountOverride().toBigDecimal() : null;
 		icRecord.setDiscount_Override(discountOverride);
-
+		icRecord.setProcessed(ic.isProcessed());
+		icRecord.setIsActive(ic.isActive());
 		final ProductPrice priceEnteredOverride = ic.getPriceEnteredOverride();
 		if (priceEnteredOverride != null)
 		{
-			final Quantity oneUnitInPriceUom = Quantitys.create(ONE, priceEnteredOverride.getUomId());
+			final Quantity oneUnitInPriceUom = Quantitys.of(ONE, priceEnteredOverride.getUomId());
 
 			final UOMConversionContext conversionCtx = UOMConversionContext.of(icRecord.getM_Product_ID());
 			final UomId icRecordUomId = UomId.ofRepoId(icRecord.getC_UOM_ID());
@@ -344,10 +343,11 @@ public class InvoiceCandidateRepository
 
 		candidate.paymentTermId(PaymentTermId.ofRepoId(icRecord.getC_PaymentTerm_ID()));
 		candidate.isManual(icRecord.isManual());
-		candidate.isInterimInvoice(icRecord.isInterimInvoice());
 		candidate.handlerId(ILCandHandlerId.ofRepoId(icRecord.getC_ILCandHandler_ID()));
 		candidate.harvestYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(icRecord.getHarvesting_Year_ID(), icRecord.getC_Harvesting_Calendar_ID()));
 		candidate.auctionId(AuctionId.ofRepoIdOrNull(icRecord.getC_Auction_ID()));
+		candidate.isActive(icRecord.isActive());
+		candidate.processed(icRecord.isProcessed());
 		return candidate.build();
 	}
 
@@ -381,6 +381,9 @@ public class InvoiceCandidateRepository
 		invoiceDetailEntity.setLabel(invoiceDetailItem.getLabel());
 		invoiceDetailEntity.setNote(invoiceDetailItem.getNote());
 		invoiceDetailEntity.setPriceActual(invoiceDetailItem.getPrice());
+		invoiceDetailEntity.setQty(Quantity.toBigDecimal(invoiceDetailItem.getQty()));
+		invoiceDetailEntity.setC_UOM_ID(Quantity.toUomRepoId(invoiceDetailItem.getQty()));
+
 		invoiceDetailEntity.setDate(getDateOrNull(invoiceDetailItem));
 
 		return invoiceDetailEntity;

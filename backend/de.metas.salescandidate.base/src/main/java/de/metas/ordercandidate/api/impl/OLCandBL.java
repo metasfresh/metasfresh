@@ -5,7 +5,6 @@ import de.metas.async.AsyncBatchId;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.auction.AuctionId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -24,9 +23,6 @@ import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
-import de.metas.order.OrderLineGroup;
-import de.metas.order.compensationGroup.GroupCompensationOrderBy;
-import de.metas.ordercandidate.api.AssignSalesRepRule;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCand;
@@ -48,9 +44,6 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.process.PInstanceId;
-import de.metas.project.ProjectId;
-import de.metas.quantity.Quantity;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -78,7 +71,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -151,13 +143,14 @@ public class OLCandBL implements IOLCandBL
 		return null;
 	}
 
+	@Nullable
 	@Override
 	public DeliveryRule getDeliveryRule(
 			@NonNull final I_C_OLCand olCandRecord,
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults)
 	{
-		if (!Check.isEmpty(olCandRecord.getDeliveryRule(), true))
+		if (Check.isNotBlank(olCandRecord.getDeliveryRule()))
 		{
 			return DeliveryRule.ofCode(olCandRecord.getDeliveryRule());
 		}
@@ -175,13 +168,14 @@ public class OLCandBL implements IOLCandBL
 		return null;
 	}
 
+	@Nullable
 	@Override
 	public DeliveryViaRule getDeliveryViaRule(
 			@NonNull final I_C_OLCand olCandRecord,
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults)
 	{
-		if (!Check.isEmpty(olCandRecord.getDeliveryViaRule(), true))
+		if (Check.isNotBlank(olCandRecord.getDeliveryViaRule()))
 		{
 			return DeliveryViaRule.ofCode(olCandRecord.getDeliveryViaRule());
 		}
@@ -198,6 +192,7 @@ public class OLCandBL implements IOLCandBL
 		return null;
 	}
 
+	@Nullable
 	@Override
 	public FreightCostRule getFreightCostRule(@Nullable final BPartnerOrderParams bPartnerOrderParams, @Nullable final OLCandOrderDefaults orderDefaults)
 	{
@@ -212,6 +207,7 @@ public class OLCandBL implements IOLCandBL
 		return null;
 	}
 
+	@Nullable
 	@Override
 	public InvoiceRule getInvoiceRule(@Nullable final BPartnerOrderParams bPartnerOrderParams, @Nullable final OLCandOrderDefaults orderDefaults)
 	{
@@ -226,6 +222,7 @@ public class OLCandBL implements IOLCandBL
 		return null;
 	}
 
+	@Nullable
 	@Override
 	public PaymentRule getPaymentRule(@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults,
@@ -243,6 +240,7 @@ public class OLCandBL implements IOLCandBL
 						orderDefaultsPaymentRule);
 	}
 
+	@Nullable
 	@Override
 	public PaymentTermId getPaymentTermId(@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults,
@@ -262,6 +260,7 @@ public class OLCandBL implements IOLCandBL
 						orderDefaultsPaymentTermId);
 	}
 
+	@Nullable
 	@Override
 	public ShipperId getShipperId(
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
@@ -281,6 +280,7 @@ public class OLCandBL implements IOLCandBL
 						orderDefaultsShipperId);
 	}
 
+	@Nullable
 	@Override
 	public DocTypeId getOrderDocTypeId(
 			@Nullable final OLCandOrderDefaults orderDefaults,
@@ -295,6 +295,7 @@ public class OLCandBL implements IOLCandBL
 						orderDefaultsDocTypeId);
 	}
 
+	@Nullable
 	@Override
 	public I_C_OLCand invokeOLCandCreator(final PO po, final IOLCandCreator olCandCreator)
 	{
@@ -341,7 +342,7 @@ public class OLCandBL implements IOLCandBL
 				.getDropShipPartnerInfo(olCandRecord)
 				.orElseGet(() -> effectiveValuesBL.getBuyerPartnerInfo(olCandRecord));
 
-		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCandRecord.getQtyEntered();
+		final BigDecimal qty = qtyOverride != null ? qtyOverride : effectiveValuesBL.getEffectiveQtyEntered(olCandRecord);
 
 		final BPartnerOrderParams bPartnerOrderParams = getBPartnerOrderParams(olCandRecord);
 
@@ -489,68 +490,6 @@ public class OLCandBL implements IOLCandBL
 		olCand.setError(ex.getLocalizedMessage(), note.getAD_Note_ID(), issueId);
 
 		saveCandidate(olCand);
-	}
-
-	@NonNull
-	public OLCand toOLCand(
-			@NonNull final I_C_OLCand olCandRecord,
-			@NonNull final OLCandOrderDefaults orderDefaults)
-	{
-		final BPartnerOrderParams params = getBPartnerOrderParams(olCandRecord);
-
-		final DeliveryRule deliveryRule = getDeliveryRule(olCandRecord, params, orderDefaults);
-		final DeliveryViaRule deliveryViaRule = getDeliveryViaRule(olCandRecord, params, orderDefaults);
-		final FreightCostRule freightCostRule = getFreightCostRule(params, orderDefaults);
-		final InvoiceRule invoiceRule = getInvoiceRule(params, orderDefaults);
-		final PaymentRule paymentRule = getPaymentRule(params, orderDefaults, olCandRecord);
-		final PaymentTermId paymentTermId = getPaymentTermId(params, orderDefaults, olCandRecord);
-		final PricingSystemId pricingSystemId = getPricingSystemId(olCandRecord, params, orderDefaults);
-		final ShipperId shipperId = getShipperId(params, orderDefaults, olCandRecord);
-		final DocTypeId orderDocTypeId = getOrderDocTypeId(orderDefaults, olCandRecord);
-		final Quantity qtyItemCapacity = effectiveValuesBL.getQtyItemCapacity_Effective(olCandRecord);
-		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
-		final BPartnerId salesRepInternalId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_Internal_ID());
-		final AssignSalesRepRule assignSalesRepRule = AssignSalesRepRule.ofCode(olCandRecord.getApplySalesRepFrom());
-
-		final OrderLineGroup orderLineGroup = Check.isBlank(olCandRecord.getCompensationGroupKey())
-				? null
-				: OrderLineGroup.builder()
-				.groupKey(Objects.requireNonNull(olCandRecord.getCompensationGroupKey()))
-				.isGroupMainItem(olCandRecord.isGroupCompensationLine())
-				.isGroupingError(olCandRecord.isGroupingError())
-				.groupingErrorMessage(olCandRecord.getGroupingErrorMessage())
-				.discount(Percent.ofNullable(olCandRecord.getGroupCompensationDiscountPercentage()))
-				.groupCompensationOrderBy(GroupCompensationOrderBy.ofCodeOrNull(olCandRecord.getCompensationGroupOrderBy()))
-				.build();
-
-		return OLCand.builder()
-				.olCandEffectiveValuesBL(effectiveValuesBL)
-				.olCandRecord(olCandRecord)
-
-				.deliveryRule(deliveryRule)
-				.deliveryViaRule(deliveryViaRule)
-				.freightCostRule(freightCostRule)
-				.invoiceRule(invoiceRule)
-				.paymentRule(paymentRule)
-				.paymentTermId(paymentTermId)
-				.pricingSystemId(pricingSystemId)
-				.shipperId(shipperId)
-				.orderDocTypeId(orderDocTypeId)
-				.salesRepId(salesRepId)
-				.orderLineGroup(orderLineGroup)
-				.salesRepInternalId(salesRepInternalId)
-				.assignSalesRepRule(assignSalesRepRule)
-				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(olCandRecord.getC_Async_Batch_ID()))
-				.qtyItemCapacityEff(qtyItemCapacity)
-				.bpartnerName(olCandRecord.getBPartnerName())
-				.email(olCandRecord.getEMail())
-				.phone(olCandRecord.getPhone())
-				.projectId(ProjectId.ofRepoIdOrNull(olCandRecord.getC_Project_ID()))
-				.adIssueId(AdIssueId.ofRepoIdOrNull(olCandRecord.getAD_Issue_ID()))
-				.headerAggregationKey(olCandRecord.getHeaderAggregationKey())
-				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(olCandRecord.getM_SectionCode_ID()))
-				.auctionId(AuctionId.ofRepoIdOrNull(olCandRecord.getC_Auction_ID()))
-				.build();
 	}
 
 	public void saveCandidate(@NonNull final OLCand cand)

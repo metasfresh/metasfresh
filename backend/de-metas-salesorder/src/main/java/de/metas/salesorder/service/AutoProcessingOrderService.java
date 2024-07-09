@@ -24,6 +24,9 @@ package de.metas.salesorder.service;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
@@ -38,19 +41,25 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
 
 @Service
 public class AutoProcessingOrderService
@@ -64,6 +73,8 @@ public class AutoProcessingOrderService
 	private final ShipmentService shipmentService;
 	private final InvoiceService invoiceService;
 	private final ShipperDeliveryService shipperDeliveryService;
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	public AutoProcessingOrderService(
 			@NonNull final OrderService orderService,
@@ -96,7 +107,7 @@ public class AutoProcessingOrderService
 		final GenerateShipmentsForSchedulesRequest request = GenerateShipmentsForSchedulesRequest.builder()
 				.scheduleIds(scheduleIds)
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
-				
+
 				// Usually we want only *CUs* to be picked on-the-fly, because we don't know and care which HUs are shipped and don't want to make assumptions regarding their TU-Packaging.
 				// But here it is different: we want that whatever HUs are picked, exactly those HUs shall be boxed and send to the customer.
 				.onTheFlyPickToPackingInstructions(true)
@@ -133,7 +144,29 @@ public class AutoProcessingOrderService
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
+		final AsyncBatchId asyncBatchId = extractOrCreateAsyncBatchId(orderId);
+
+		invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds, asyncBatchId);
+	}
+
+	@NonNull
+	private AsyncBatchId extractOrCreateAsyncBatchId(final @NonNull OrderId orderId)
+	{
+		final I_C_Order orderRecord = orderBL.getById(orderId);
+		final int asyncBatchIdInt = orderRecord.getC_Async_Batch_ID();
+		
+		if (orderRecord.getC_Async_Batch_ID() > 0)
+		{
+			return AsyncBatchId.ofRepoId(asyncBatchIdInt);
+		}
+
+		final I_C_Async_Batch asyncBatchRecord = asyncBatchBL.newAsyncBatch()
+				.setContext(Env.getCtx())
+				.setC_Async_Batch_Type(C_Async_Batch_InternalName_InvoiceCandidate_Processing)
+				.setName("Process ICs for C_Order_ID=" + OrderId.toRepoId(orderId))
+				.setOrgId(OrgId.ofRepoId(orderRecord.getAD_Org_ID()))
+				.build();
+		return AsyncBatchId.ofRepoId(asyncBatchRecord.getC_Async_Batch_ID());
 	}
 
 	private boolean sameShippingAndBillingAddress(

@@ -8,7 +8,7 @@ Feature: Import Invoice Candidates via DataImportRestController (external refere
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And metasfresh has current date and time
-    And  metasfresh initially has no I_Invoice_Candidate data
+    And metasfresh initially has no I_Invoice_Candidate import data
     And metasfresh contains M_PricingSystems
       | Identifier | Name              | Value     | OPT.IsActive |
       | ps_1       | PricingSystemName | ps_280822 | true         |
@@ -32,7 +32,7 @@ Feature: Import Invoice Candidates via DataImportRestController (external refere
   @from:cucumber
   @Id:S0178_10
   Scenario: Import sales I_Invoice_Candidate from csv - setting all available fields
-    Given metasfresh initially has no I_Invoice_Candidate data
+    Given metasfresh initially has no I_Invoice_Candidate import data
     And metasfresh contains M_Products:
       | Identifier | Name                 | Value                      |
       | product_1  | Product_25_08_2022_1 | Product_Value_25_08_2022_1 |

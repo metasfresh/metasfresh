@@ -30,21 +30,33 @@ import de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest;
 import de.metas.edi.api.impl.pack.EDIDesadvPack;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
+import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator.LUQtys;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
+import de.metas.inout.impl.InOutBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -61,6 +73,8 @@ public class DesadvLineSSCC18Generator
 
 	// services
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final InOutBL inOutBL = Services.get(InOutBL.class);
 	private final SSCC18CodeBL sscc18CodeBL;
 	private final IDesadvBL desadvBL;
 	private final EDIDesadvPackRepository ediDesadvPackRepository;
@@ -115,7 +129,7 @@ public class DesadvLineSSCC18Generator
 				// Subtract the "LU" of this SSCC from total QtyCUs remaining
 				totalQtyCUsRemaining.subtractLU()
 						.setQtyTUsPerLU(desadvPack.getQtyTU())
-						.setQtyCUsPerTU(desadvPack.getQtyCU())
+						.setQtyCUsPerTU(desadvPack.getQtyCUsPerTU())
 						.setQtyCUsPerLU_IfGreaterThanZero(desadvPack.getQtyCUsPerLU())
 						.build();
 
@@ -193,14 +207,7 @@ public class DesadvLineSSCC18Generator
 		final String ipaSSCC18 = sscc18.asString(); // humanReadable=false
 
 		// Create SSCC record
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest
-				.builder()
-				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLine.getEDI_DesadvLine_ID()))
-				.qtyCu(luQtys.getQtyCUsPerTU())
-				.qtyTu(luQtys.getQtyTUsPerLU().intValueExact())
-				.qtyCUsPerLU(luQtys.getQtyCUsPerLU())
-				.movementQtyInStockUOM(luQtys.getQtyCUsPerLU())
-				.build();
+		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = buildCreateEDIDesadvPackItemRequest(desadvLine, luQtys);
 
 		final CreateEDIDesadvPackRequest createEDIDesadvPackRequest = CreateEDIDesadvPackRequest.builder()
 				.orgId(OrgId.ofRepoId(desadvLine.getAD_Org_ID()))
@@ -211,6 +218,66 @@ public class DesadvLineSSCC18Generator
 				.build();
 
 		return ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequest);
+	}
+
+	@NonNull
+	private CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest buildCreateEDIDesadvPackItemRequest(
+			@NonNull final I_EDI_DesadvLine desadvLine,
+			@NonNull final LUQtys luQtys)
+	{
+		final UomId stockUOMId = UomId.ofRepoId(desadvLine.getC_UOM_ID());
+		final Quantity qtyCUsPerTU = Quantitys.of(luQtys.getQtyCUsPerTU(), stockUOMId);
+		final Quantity qtyCUsPerLU = Quantitys.of(luQtys.getQtyCUsPerLU(), stockUOMId);
+
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofCode(desadvLine.getInvoicableQtyBasedOn());
+		final List<I_M_InOutLine> lines = desadvBL.retrieveAllInOutLines(desadvLine);
+		final UomId invoiceUomId = UomId.ofRepoIdOrNull(desadvLine.getC_UOM_Invoice_ID());
+
+		final BigDecimal qtyCUPerTUinInvoiceUOM;
+		final BigDecimal qtyCUPerLUinInvoiceUOM;
+		if (invoicableQtyBasedOn.isCatchWeight() && !lines.isEmpty())
+		{
+			final BigDecimal uomToStockRatio = lines.stream()
+					.map(line -> inOutBL.extractInOutLineQty(line, invoicableQtyBasedOn))
+					.reduce(StockQtyAndUOMQty::add)
+					.map(StockQtyAndUOMQty::getUOMToStockRatio)
+					.orElseThrow(() -> new AdempiereException("Invoicable Quantity Based on is CatchWeight, but ratio is missing!"));
+
+			qtyCUPerTUinInvoiceUOM = qtyCUsPerTU.toBigDecimal().multiply(uomToStockRatio);
+			qtyCUPerLUinInvoiceUOM = qtyCUsPerLU.toBigDecimal().multiply(uomToStockRatio);
+		}
+		else if (invoiceUomId != null)
+		{
+			final ProductId productId = ProductId.ofRepoId(desadvLine.getM_Product_ID());
+			final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
+
+			qtyCUPerTUinInvoiceUOM = uomConversionBL.convertQuantityTo(
+							qtyCUsPerTU,
+							conversionCtx,
+							invoiceUomId)
+					.toBigDecimal();
+
+			qtyCUPerLUinInvoiceUOM = uomConversionBL.convertQuantityTo(
+							qtyCUsPerLU,
+							conversionCtx,
+							invoiceUomId)
+					.toBigDecimal();
+		}
+		else
+		{
+			qtyCUPerTUinInvoiceUOM = null;
+			qtyCUPerLUinInvoiceUOM = null;
+		}
+
+		return CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
+				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLine.getEDI_DesadvLine_ID()))
+				.qtyCUsPerTU(qtyCUsPerTU.toBigDecimal())
+				.qtyTu(luQtys.getQtyTUsPerLU().intValueExact())
+				.qtyCUsPerLU(qtyCUsPerLU.toBigDecimal())
+				.movementQtyInStockUOM(qtyCUsPerLU.toBigDecimal())
+				.qtyCUPerTUinInvoiceUOM(qtyCUPerTUinInvoiceUOM)
+				.qtyCUsPerLUinInvoiceUOM(qtyCUPerLUinInvoiceUOM)
+				.build();
 	}
 
 	private void enqueueToPrint(@NonNull final EDIDesadvPack desadvLineSSCC)

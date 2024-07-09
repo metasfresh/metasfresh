@@ -23,133 +23,164 @@
 package de.metas.contracts.modular.workpackage;
 
 import de.metas.async.QueueWorkPackageId;
+import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ProductPriceWithFlags;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty.ColumnOption;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
+import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.log.ModularContractLogEntry;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
-import de.metas.contracts.modular.settings.ModuleConfigId;
-import de.metas.i18n.BooleanWithReason;
+import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.contracts.modular.settings.ModuleConfigAndSettingsId;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
-import de.metas.util.Loggables;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
+import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
-public interface IModularContractLogHandler<T>
+public interface IModularContractLogHandler
 {
-	LogAction getLogAction(@NonNull HandleLogsRequest<T> request);
 
-	BooleanWithReason doesRecordStateRequireLogCreation(@NonNull T model);
-
-	@NonNull
-	ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull CreateLogRequest<T> createLogRequest);
+	default boolean applies(@NonNull final CreateLogRequest ignoredRequest) {return true;}
 
 	@NonNull
-	ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull HandleLogsRequest<T> handleLogsRequest);
+	String getSupportedTableName();
 
 	@NonNull
-	IModularContractTypeHandler<T> getModularContractTypeHandler();
+	LogEntryDocumentType getLogEntryDocumentType();
 
 	@NonNull
-	default Optional<ProductId> getProductId(@NonNull final HandleLogsRequest<T> handleLogsRequest)
-	{
-		return Optional.ofNullable(handleLogsRequest.getContractInfo().getProductId());
-	}
-
-	default boolean applies(@NonNull final HandleLogsRequest<T> request)
-	{
-		final IModularContractTypeHandler<T> contractTypeHandler = getModularContractTypeHandler();
-
-		final boolean isHandlerMatchingRequest = contractTypeHandler.getClass().getName().equals(request.getHandlerClassname())
-				&& contractTypeHandler.applies(request.getLogEntryContractType())
-				&& contractTypeHandler.applies(request.getModel());
-
-		if (!isHandlerMatchingRequest)
-		{
-			return false;
-		}
-
-		final boolean isHandlerMatchingContract = getModularContractTypeHandler()
-				.streamContractIds(request.getModel())
-				.anyMatch(contractId -> contractId.equals(request.getContractId()));
-
-		if (!isHandlerMatchingContract)
-		{
-			Loggables.addLog("Handler: {} is matching request, but not the contractId! see request: {}!", this.getClass().getName(), request);
-		}
-
-		return isHandlerMatchingContract;
-	}
+	default LogEntryContractType getLogEntryContractType() {return LogEntryContractType.MODULAR_CONTRACT;}
 
 	@NonNull
-	default Class<T> getType()
-	{
-		return getModularContractTypeHandler().getType();
-	}
+	ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull CreateLogRequest createLogRequest);
 
 	@NonNull
-	default LogEntryDeleteRequest getDeleteRequestFor(@NonNull final HandleLogsRequest<T> handleLogsRequest)
+	ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull CreateLogRequest createLogRequest);
+
+	@NonNull
+	IComputingMethodHandler getComputingMethod();
+
+	@NonNull
+	default LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest, final @NonNull ModularContractModuleId modularContractModuleId)
 	{
 		return LogEntryDeleteRequest.builder()
-				.referencedModel(handleLogsRequest.getModelRef())
+				.referencedModel(handleLogsRequest.getTableRecordReference())
 				.flatrateTermId(handleLogsRequest.getContractId())
-				.logEntryContractType(handleLogsRequest.getLogEntryContractType())
+				.logEntryContractType(getLogEntryContractType())
+				.modularContractModuleId(modularContractModuleId)
 				.build();
 	}
 
+	@NonNull
+	default ModularContractLogEntry calculateAmountWithNewPrice(
+			@NonNull final ModularContractLogEntry logEntry,
+			@NonNull final ProductPriceWithFlags newPrice,
+			@NonNull final QuantityUOMConverter uomConverter)
+	{
+		final ProductPrice priceActual = newPrice.toProductPrice();
+		final Quantity logEntryQuantity = logEntry.getQuantity();
+		Check.assumeNotNull(logEntryQuantity, "Quantity shouldn't be null");
+		return logEntry.toBuilder()
+				.amount(priceActual.computeAmount(logEntryQuantity, uomConverter))
+				.priceActual(priceActual)
+				.build();
+	}
+
+	@NonNull
+	ProductPriceWithFlags getPriceActualWithFlags(final @NonNull ProductPrice productPrice, final @NonNull ModularContractLogEntry logEntry);
+
 	@Value
 	@Builder
-	class HandleLogsRequest<T>
+	class HandleLogsRequest
 	{
-		@NonNull T model;
+		@NonNull TableRecordReference tableRecordReference;
 		@NonNull LogEntryContractType logEntryContractType;
 		@NonNull ModelAction modelAction;
 		@NonNull QueueWorkPackageId workPackageId;
-		@NonNull String handlerClassname;
-		@NonNull FlatrateTermInfo contractInfo;
-
-		public TableRecordReference getModelRef()
-		{
-			return TableRecordReference.of(model);
-		}
+		@NonNull ComputingMethodType computingMethodType;
+		@NonNull @Getter(AccessLevel.NONE) FlatrateTermInfo contractInfo;
 
 		@NonNull
 		public FlatrateTermId getContractId()
 		{
 			return contractInfo.getFlatrateTermId();
 		}
+
+		@NonNull
+		public ModularContractSettings getModularContractSettings()
+		{
+			return contractInfo.getModularContractSettings();
+		}
 	}
 
 	@Value
 	@Builder
-	class CreateLogRequest<T>
+	class CreateLogRequest
 	{
-		@NonNull HandleLogsRequest<T> handleLogsRequest;
+		@NonNull HandleLogsRequest handleLogsRequest;
 		@NonNull ModularContractSettings modularContractSettings;
-		@NonNull ModuleConfigId configId;
+		@NonNull String productName;
+		@NonNull ModuleConfig moduleConfig;
 		@NonNull ModularContractTypeId typeId;
 
-		public FlatrateTermId getContractId()
+		public YearId getYearId() {return getModularContractSettings().getYearId();}
+
+		public @NonNull FlatrateTermId getContractId()
 		{
 			return handleLogsRequest.getContractId();
 		}
-	}
 
-	enum LogAction
-	{
-		CREATE,
-		REVERSE,
-		RECOMPUTE
+		public @NonNull TableRecordReference getRecordRef()
+		{
+			return handleLogsRequest.getTableRecordReference();
+		}
+
+		public @NonNull ModuleConfigAndSettingsId getConfigId()
+		{
+			return moduleConfig.getId();
+		}
+
+		@NonNull
+		public ModularContractModuleId getModularContractModuleId()
+		{
+			return getConfigId().getModularContractModuleId();
+		}
+
+		public boolean isCostsType()
+		{
+			return moduleConfig.isCostsType();
+		}
+
+		@NonNull
+		public ProductId getProductId()
+		{
+			return moduleConfig.getProductId();
+		}
+
+		@Nullable
+		public ColumnOption getColumnOption()
+		{
+			return getModuleConfig().getModularContractType().getColumnOption();
+		}
 	}
 
 	@Value
@@ -157,6 +188,6 @@ public interface IModularContractLogHandler<T>
 	class FlatrateTermInfo
 	{
 		@NonNull FlatrateTermId flatrateTermId;
-		@Nullable ProductId productId;
+		@NonNull ModularContractSettings modularContractSettings;
 	}
 }

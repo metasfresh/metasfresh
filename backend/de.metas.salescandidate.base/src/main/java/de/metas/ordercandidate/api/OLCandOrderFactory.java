@@ -155,6 +155,7 @@ class OLCandOrderFactory
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
@@ -232,9 +233,9 @@ class OLCandOrderFactory
 					.setFrom(billBPartner);
 		}
 
-		final Timestamp dateDoc = TimeUtil.asTimestamp(candidateOfGroup.getDateDoc());
-		order.setDateOrdered(dateDoc);
-		order.setDateAcct(dateDoc);
+		final Timestamp dateOrdered = TimeUtil.asTimestamp(candidateOfGroup.getDateOrdered());
+		order.setDateOrdered(dateOrdered);
+		order.setDateAcct(dateOrdered);
 
 		// task 06269 (see KurzBeschreibung)
 		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder()
@@ -524,7 +525,7 @@ class OLCandOrderFactory
 		//
 		// Quantity
 		{
-			final Quantity currentQty = Quantitys.create(currentOrderLine.getQtyEntered(), UomId.ofRepoId(currentOrderLine.getC_UOM_ID()));
+			final Quantity currentQty = Quantitys.of(currentOrderLine.getQtyEntered(), UomId.ofRepoId(currentOrderLine.getC_UOM_ID()));
 			final Quantity newQtyEntered = Quantitys.add(UOMConversionContext.of(candidate.getM_Product_ID()), currentQty, candidate.getQty());
 			currentOrderLine.setQtyEntered(newQtyEntered.toBigDecimal());
 
@@ -745,7 +746,7 @@ class OLCandOrderFactory
 		return null;
 	}
 
-	private static void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
+	private void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
 	{
 		orderLine.setExternalSeqNo(candidate.getLine());
 
@@ -758,7 +759,7 @@ class OLCandOrderFactory
 		if (uomId != null)
 		{
 			orderLine.setC_UOM_BPartner_ID(uomId.getRepoId());
-			orderLine.setQtyEnteredInBPartnerUOM(olCand.getQtyEntered());
+			orderLine.setQtyEnteredInBPartnerUOM(olCandEffectiveValuesBL.getEffectiveQtyEntered(olCand));
 		}
 	}
 }

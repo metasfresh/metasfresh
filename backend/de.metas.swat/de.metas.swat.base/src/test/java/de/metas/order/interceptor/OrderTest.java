@@ -154,4 +154,5 @@ public class OrderTest
 
 		Assertions.assertThrows(AdempiereException.class, () -> save(order));
 	}
+
 }

@@ -216,7 +216,7 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	{
 		final HUPIItemProductId huPIItemProductId = HUPIItemProductId.ofRepoIdOrNull(lutuConfiguration.getM_HU_PI_Item_Product_ID());
 		return huPIItemProductId != null
-				? Services.get(IHUPIItemProductDAO.class).getById(huPIItemProductId)
+				? Services.get(IHUPIItemProductDAO.class).getRecordById(huPIItemProductId)
 				: null;
 	}
 
@@ -231,7 +231,7 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 		BigDecimal qtyTU;
 
 		@NonNull
-		BigDecimal qtyCU;
+		BigDecimal qtyCUsPerTU;
 
 		@NonNull
 		Integer tuHUPIItemProductID;

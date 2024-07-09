@@ -104,7 +104,7 @@ class PPOrderWeightingRunLoaderAndSaver
 		return PPOrderWeightingRunCheck.builder()
 				.id(extractId(record))
 				.lineNo(SeqNo.ofInt(record.getLine()))
-				.weight(Quantitys.create(record.getWeight(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.weight(Quantitys.of(record.getWeight(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.isToleranceExceeded(record.isToleranceExceeded())
 				.description(record.getDescription())
 				.build();
@@ -132,10 +132,10 @@ class PPOrderWeightingRunLoaderAndSaver
 				.weightingSpecificationsId(WeightingSpecificationsId.ofRepoId(record.getPP_Weighting_Spec_ID()))
 				.tolerance(Percent.of(record.getTolerance_Perc()))
 				.weightChecksRequired(record.getWeightChecksRequired())
-				.targetWeight(Quantitys.create(record.getTargetWeight(), uomId))
+				.targetWeight(Quantitys.of(record.getTargetWeight(), uomId))
 				.targetWeightRange(Range.closed(
-						Quantitys.create(record.getMinWeight(), uomId),
-						Quantitys.create(record.getMaxWeight(), uomId)))
+						Quantitys.of(record.getMinWeight(), uomId),
+						Quantitys.of(record.getMaxWeight(), uomId)))
 				.isToleranceExceeded(record.isToleranceExceeded())
 				.isProcessed(record.isProcessed())
 				.checks(checks)

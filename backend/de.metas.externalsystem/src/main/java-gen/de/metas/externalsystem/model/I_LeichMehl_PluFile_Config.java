@@ -1,8 +1,7 @@
 package de.metas.externalsystem.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for LeichMehl_PluFile_Config
  *  @author metasfresh (generated) 
@@ -77,29 +76,25 @@ public interface I_LeichMehl_PluFile_Config
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Leich + Mehl.
+	 * Set Description.
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Type: String
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystem_Config_LeichMehl_ID (int ExternalSystem_Config_LeichMehl_ID);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Leich + Mehl.
+	 * Get Description.
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Type: String
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getExternalSystem_Config_LeichMehl_ID();
+	@Nullable java.lang.String getDescription();
 
-	de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl getExternalSystem_Config_LeichMehl();
-
-	void setExternalSystem_Config_LeichMehl(de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl ExternalSystem_Config_LeichMehl);
-
-	ModelColumn<I_LeichMehl_PluFile_Config, de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl> COLUMN_ExternalSystem_Config_LeichMehl_ID = new ModelColumn<>(I_LeichMehl_PluFile_Config.class, "ExternalSystem_Config_LeichMehl_ID", de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl.class);
-	String COLUMNNAME_ExternalSystem_Config_LeichMehl_ID = "ExternalSystem_Config_LeichMehl_ID";
+	ModelColumn<I_LeichMehl_PluFile_Config, Object> COLUMN_Description = new ModelColumn<>(I_LeichMehl_PluFile_Config.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Active.
@@ -123,6 +118,31 @@ public interface I_LeichMehl_PluFile_Config
 
 	ModelColumn<I_LeichMehl_PluFile_Config, Object> COLUMN_IsActive = new ModelColumn<>(I_LeichMehl_PluFile_Config.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set PLU File Configuration.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setLeichMehl_PluFile_ConfigGroup_ID (int LeichMehl_PluFile_ConfigGroup_ID);
+
+	/**
+	 * Get PLU File Configuration.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getLeichMehl_PluFile_ConfigGroup_ID();
+
+	de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup getLeichMehl_PluFile_ConfigGroup();
+
+	void setLeichMehl_PluFile_ConfigGroup(de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup LeichMehl_PluFile_ConfigGroup);
+
+	ModelColumn<I_LeichMehl_PluFile_Config, de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup> COLUMN_LeichMehl_PluFile_ConfigGroup_ID = new ModelColumn<>(I_LeichMehl_PluFile_Config.class, "LeichMehl_PluFile_ConfigGroup_ID", de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup.class);
+	String COLUMNNAME_LeichMehl_PluFile_ConfigGroup_ID = "LeichMehl_PluFile_ConfigGroup_ID";
 
 	/**
 	 * Set PLU file config.

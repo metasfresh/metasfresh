@@ -69,6 +69,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
@@ -731,7 +732,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(getC_DocType_ID());
 		final I_C_DocType dt = docTypeId != null
-				? Services.get(IDocTypeDAO.class).getById(docTypeId)
+				? Services.get(IDocTypeDAO.class).getRecordById(docTypeId)
 				: null;
 		final String docTypeName = dt != null ? dt.getName() : null;
 		return Joiner.on(" ").skipNulls().join(docTypeName, getDocumentNo());
@@ -835,13 +836,14 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final MInvoiceLine[] lines = getLines(true);
 		if (lines.length == 0)
 		{
-			throw new AdempiereException("@NoLines@");
+			throw AdempiereException.noLines();
 		}
 
 		// No Cash Book
 		final PaymentRule paymentRule = PaymentRule.ofCode(getPaymentRule());
-		if (paymentRule.isCash()
-				&& MCashBook.get(getCtx(), getAD_Org_ID(), getC_Currency_ID()) == null)
+		if (paymentRule.isCash() &&
+				!Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()) &&
+				MCashBook.get(getCtx(), getAD_Org_ID(), getC_Currency_ID()) == null)
 		{
 			throw new AdempiereException("@NoCashBook@");
 		}
@@ -1065,7 +1067,9 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		// Create Cash
 		final PaymentRule paymentRule = PaymentRule.ofCode(getPaymentRule());
-		if (paymentRule.isCash() && !fromPOS)
+		if (paymentRule.isCash() && 
+				!fromPOS &&
+				!Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
 		{
 			// Modifications for POSterita
 			//

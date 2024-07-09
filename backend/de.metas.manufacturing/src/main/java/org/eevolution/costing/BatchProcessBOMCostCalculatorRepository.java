@@ -13,6 +13,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -38,7 +39,6 @@ import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.I_PP_Product_Planning;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -104,7 +104,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 	@Override
 	public Optional<BOM> getBOM(final ProductId productId)
 	{
-		final I_PP_Product_Planning productPlanning = Services.get(IProductPlanningDAO.class)
+		final ProductPlanning productPlanning = Services.get(IProductPlanningDAO.class)
 				.find(ProductPlanningQuery.builder()
 							  .orgId(orgId)
 							  .productId(productId)
@@ -115,7 +115,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 		ProductBOMVersionsId bomVersionsId = null;
 		if (productPlanning != null)
 		{
-			bomVersionsId = ProductBOMVersionsId.ofRepoIdOrNull(productPlanning.getPP_Product_BOMVersions_ID());
+			bomVersionsId = productPlanning.getBomVersionsId();
 		}
 		else
 		{

@@ -2,7 +2,7 @@ package de.metas.manufacturing.job.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.dao.ValueRestriction;
 import de.metas.device.accessor.DeviceAccessor;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
@@ -25,6 +25,7 @@ import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
+import de.metas.manufacturing.job.model.ManufacturingJobFacets;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.model.ScaleDevice;
@@ -32,15 +33,23 @@ import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonReceivingTarget;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderTargetPlanningStatus;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.resource.ResourceService;
+import de.metas.resource.ResourceType;
+import de.metas.resource.ResourceTypeId;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -60,20 +69,22 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
+
+import static de.metas.device.config.SysConfigDeviceConfigPool.DEVICE_PARAM_RoundingToQty;
+import static de.metas.device.config.SysConfigDeviceConfigPool.DEVICE_PARAM_RoundingToQty_UOM_ID;
 
 @Service
 public class ManufacturingJobService
 {
 	private static final Logger logger = LogManager.getLogger(ManufacturingJobService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ResourceService resourceService;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -126,6 +137,7 @@ public class ManufacturingJobService
 		return newLoader().load(ppOrderId);
 	}
 
+	@NonNull
 	public ManufacturingJob assignJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId newResponsibleId)
 	{
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
@@ -158,115 +170,223 @@ public class ManufacturingJobService
 		return new ManufacturingJobLoaderAndSaver(loadingAndSavingSupportServices);
 	}
 
-	public Stream<ManufacturingJobReference> streamJobReferencesForUser(
-			final @NonNull UserId responsibleId,
-			final @Nullable ResourceId plantId,
-			final @NonNull Instant now,
-			final @NonNull QueryLimit suggestedLimit)
+	public interface ManufacturingOrderCollector<T>
 	{
-		final ArrayList<ManufacturingJobReference> result = new ArrayList<>();
+		void collect(I_PP_Order ppOrder, boolean isJobStarted);
+
+		Collection<T> getCollectedItems();
+	}
+
+	@RequiredArgsConstructor
+	private static class ManufacturingJobReferenceCollector implements ManufacturingOrderCollector<ManufacturingJobReference>
+	{
+		@NonNull private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
+
+		private final ArrayList<ManufacturingJobReference> result = new ArrayList<>();
+
+		@Override
+		public void collect(final I_PP_Order ppOrder, final boolean isJobStarted)
+		{
+			result.add(toManufacturingJobReference(ppOrder, isJobStarted));
+		}
+
+		@Override
+		public Collection<ManufacturingJobReference> getCollectedItems()
+		{
+			return result;
+		}
+
+		public Stream<ManufacturingJobReference> streamCollectedItems()
+		{
+			return result.stream();
+		}
+
+		private ManufacturingJobReference toManufacturingJobReference(final I_PP_Order ppOrder, final boolean isJobStarted)
+		{
+			return ManufacturingJobReference.builder()
+					.ppOrderId(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
+					.documentNo(ppOrder.getDocumentNo())
+					.dateStartSchedule(loadingAndSavingSupportServices.getDateStartSchedule(ppOrder))
+					.productName(loadingAndSavingSupportServices.getProductName(ProductId.ofRepoId(ppOrder.getM_Product_ID())))
+					.productValue(loadingAndSavingSupportServices.getProductValue(ProductId.ofRepoId(ppOrder.getM_Product_ID())))
+					.qtyRequiredToProduce(loadingAndSavingSupportServices.getQuantities(ppOrder).getQtyRequiredToProduce())
+					.isJobStarted(isJobStarted)
+					.build();
+		}
+	}
+
+	public Stream<ManufacturingJobReference> streamJobReferencesForUser(@NonNull final ManufacturingJobReferenceQuery query)
+	{
+		final ManufacturingJobReferenceCollector collector = new ManufacturingJobReferenceCollector(loadingAndSavingSupportServices);
+		collect(query, collector);
+		return collector.streamCollectedItems();
+	}
+
+	@RequiredArgsConstructor
+	private static class FacetsCollector implements ManufacturingOrderCollector<ManufacturingJobFacets.Facet>
+	{
+		@NonNull private final ResourceService resourceService;
+
+		private final HashSet<ManufacturingJobFacets.Facet> result = new HashSet<>();
+		private final HashSet<ResourceId> seenResourceIds = new HashSet<>();
+		private final HashSet<ResourceTypeId> seenResourceTypeIds = new HashSet<>();
+
+		@Override
+		public void collect(final I_PP_Order ppOrder, final boolean isJobStarted)
+		{
+			final ResourceId resourceId = ResourceId.ofRepoId(ppOrder.getS_Resource_ID());
+			if (!seenResourceIds.add(resourceId))
+			{
+				// already considered
+				return;
+			}
+
+			final ResourceTypeId resourceTypeId = resourceService.getResourceTypeIdByResourceId(resourceId);
+			if (!seenResourceTypeIds.add(resourceTypeId))
+			{
+				// already considered
+				return;
+			}
+
+			final ResourceType resourceType = resourceService.getResourceTypeById(resourceTypeId);
+			final ManufacturingJobFacets.Facet facet = toFacet(resourceType);
+
+			result.add(facet);
+		}
+
+		private static ManufacturingJobFacets.Facet toFacet(final ResourceType resourceType)
+		{
+			return ManufacturingJobFacets.Facet.of(
+					ManufacturingJobFacets.FacetId.ofResourceTypeId(resourceType.getId()),
+					resourceType.getCaption());
+		}
+
+		@Override
+		public Collection<ManufacturingJobFacets.Facet> getCollectedItems()
+		{
+			return result;
+		}
+
+		public ManufacturingJobFacets.FacetsCollection toFacetsCollection()
+		{
+			return ManufacturingJobFacets.FacetsCollection.ofCollection(result);
+		}
+	}
+
+	public ManufacturingJobFacets.FacetsCollection getFacets(@NonNull ManufacturingJobReferenceQuery query)
+	{
+		final FacetsCollector collector = new FacetsCollector(resourceService);
+		collect(query.withNoLimit(), collector);
+		return collector.toFacetsCollection();
+	}
+
+	private <T> void collect(
+			@NonNull final ManufacturingJobReferenceQuery query,
+			@NonNull final ManufacturingOrderCollector<T> collector)
+	{
+		final @NonNull UserId responsibleId = query.getResponsibleId();
+		final @NonNull QueryLimit suggestedLimit = query.getSuggestedLimit();
 
 		//
 		// Already started jobs
-		streamAlreadyStartedJobs(responsibleId)
-				.forEach(result::add);
+		streamAlreadyAssignedManufacturingOrders(responsibleId)
+				.forEach(ppOrder -> collector.collect(ppOrder, true));
 
 		//
 		// New possible jobs
-		if (!suggestedLimit.isLimitHitOrExceeded(result))
+		if (suggestedLimit.isNoLimit() || !suggestedLimit.isLimitHitOrExceeded(collector.getCollectedItems()))
 		{
-			streamJobCandidatesToCreate(responsibleId, plantId, now)
-					.limit(suggestedLimit.minusSizeOf(result).toIntOr(Integer.MAX_VALUE))
-					.forEach(result::add);
+			ppOrderBL.streamManufacturingOrders(toManufacturingOrderQuery(query))
+					.limit(suggestedLimit.minusSizeOf(collector.getCollectedItems()).toIntOr(Integer.MAX_VALUE))
+					.forEach(ppOrder -> collector.collect(ppOrder, false));
 		}
-
-		return result.stream();
-	}
-
-	private Stream<ManufacturingJobReference> streamAlreadyStartedJobs(@NonNull final UserId responsibleId)
-	{
-		return streamAlreadyAssignedManufacturingOrders(responsibleId)
-				.map(ppOrder -> toManufacturingJobReference(ppOrder, true));
 	}
 
 	private Stream<de.metas.handlingunits.model.I_PP_Order> streamAlreadyAssignedManufacturingOrders(final @NonNull UserId responsibleId)
 	{
 		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
-														   .onlyCompleted(true)
-														   .sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
-														   .responsibleId(ValueRestriction.equalsTo(responsibleId))
-														   .onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
-														   .build());
+				.onlyCompleted(true)
+				.sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
+				.responsibleId(ValueRestriction.equalsTo(responsibleId))
+				.onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
+				.build());
 	}
 
-	private Stream<ManufacturingJobReference> streamJobCandidatesToCreate(
-			@NonNull final UserId userId,
-			@Nullable final ResourceId plantId,
-			@Nullable Instant now)
+	private ManufacturingOrderQuery toManufacturingOrderQuery(@NonNull ManufacturingJobReferenceQuery query)
 	{
+		final ManufacturingJobDefaultFilterCollection defaultFilters = getDefaultFilters();
+
 		final ManufacturingOrderQuery.ManufacturingOrderQueryBuilder queryBuilder = ManufacturingOrderQuery.builder()
 				.onlyCompleted(true)
 				.sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
 				.onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
 				.responsibleId(ValueRestriction.isNull());
 
-		Set<ResourceId> onlyPlantIds = plantId != null ? ImmutableSet.of(plantId) : ImmutableSet.of();
-
-		for (ManufacturingJobDefaultFilter defaultFilter : getDefaultFilters())
+		if (query.getPlantOrWorkstationId() != null)
 		{
-			switch (defaultFilter)
+			queryBuilder.onlyPlantOrWorkstationId(query.getPlantOrWorkstationId());
+		}
+
+		final InSetPredicate<ResourceId> onlyPlantIds = computeOnlyPlantIds(query, defaultFilters, resourceService);
+		if (!onlyPlantIds.isAny())
+		{
+			queryBuilder.onlyPlantIds(onlyPlantIds.toSet());
+		}
+
+		if (query.getWorkstationId() != null)
+		{
+			queryBuilder.onlyWorkstationId(query.getWorkstationId());
+		}
+
+		if (defaultFilters.contains(ManufacturingJobDefaultFilter.TodayDateStartSchedule))
+		{
+			queryBuilder.dateStartScheduleDay(query.getNow());
+		}
+
+		//
+		return queryBuilder.build();
+	}
+
+	private static InSetPredicate<ResourceId> computeOnlyPlantIds(
+			@NonNull ManufacturingJobReferenceQuery query,
+			@NonNull ManufacturingJobDefaultFilterCollection defaultFilters,
+			@NonNull ResourceService resourceService)
+	{
+		InSetPredicate<ResourceId> onlyPlantIds = InSetPredicate.any();
+
+		// if (query.getPlantId() != null)
+		// {
+		// 	onlyPlantIds = onlyPlantIds.intersectWith(query.getPlantId());
+		// }
+
+		if (!onlyPlantIds.isNone())
+		{
+			final ImmutableSet<ResourceTypeId> facetResourceTypeIds = query.getActiveFacetIds().getResourceTypeIds();
+			if (!facetResourceTypeIds.isEmpty())
 			{
-				case UserPlant:
+			final ImmutableSet<ResourceId> facetPlantIds = resourceService.getResourceIdsByResourceTypeIds(facetResourceTypeIds);
+				onlyPlantIds = onlyPlantIds.intersectWith(facetPlantIds);
+			}
+		}
+
+		if (!onlyPlantIds.isNone())
+		{
+			if (defaultFilters.contains(ManufacturingJobDefaultFilter.UserPlant))
+			{
+				final ImmutableSet<ResourceId> userPlantIds = resourceService.getResourceIdsByUserId(query.getResponsibleId());
+				if (!userPlantIds.isEmpty())
 				{
-					final ImmutableSet<ResourceId> userPlantIds = resourceService.getResourceIdsByUserId(userId);
-					if (!userPlantIds.isEmpty())
-					{
-						if (onlyPlantIds.isEmpty())
-						{
-							onlyPlantIds = userPlantIds;
-						}
-						else
-						{
-							onlyPlantIds = Sets.intersection(onlyPlantIds, userPlantIds);
-						}
-					}
-					break;
-				}
-				case TodayDatePromised:
-				{
-					queryBuilder.datePromisedDay(now);
-					break;
-				}
-				default:
-				{
-					logger.warn("Skip unhandled default filter option: {}", defaultFilter);
-					break;
+					onlyPlantIds = onlyPlantIds.intersectWith(userPlantIds);
 				}
 			}
 		}
 
-		return ppOrderBL.streamManufacturingOrders(
-						queryBuilder
-								.onlyPlantIds(onlyPlantIds)
-								.build())
-				.map(ppOrder -> toManufacturingJobReference(ppOrder, false));
+		return onlyPlantIds;
 	}
 
-	ImmutableSet<ManufacturingJobDefaultFilter> getDefaultFilters()
+	ManufacturingJobDefaultFilterCollection getDefaultFilters()
 	{
-		return sysConfigBL.getCommaSeparatedEnums(SYSCONFIG_defaultFilters, ManufacturingJobDefaultFilter.class);
-	}
-
-	private ManufacturingJobReference toManufacturingJobReference(final I_PP_Order ppOrder, final boolean isJobStarted)
-	{
-		return ManufacturingJobReference.builder()
-				.ppOrderId(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
-				.documentNo(ppOrder.getDocumentNo())
-				.datePromised(InstantAndOrgId.ofTimestamp(ppOrder.getDatePromised(), ppOrder.getAD_Org_ID()).toZonedDateTime(orgDAO::getTimeZone))
-				.productName(loadingAndSavingSupportServices.getProductName(ProductId.ofRepoId(ppOrder.getM_Product_ID())))
-				.qtyRequiredToProduce(loadingAndSavingSupportServices.getQuantities(ppOrder).getQtyRequiredToProduce())
-				.isJobStarted(isJobStarted)
-				.build();
+		return ManufacturingJobDefaultFilterCollection.ofCollection(sysConfigBL.getCommaSeparatedEnums(SYSCONFIG_defaultFilters, ManufacturingJobDefaultFilter.class));
 	}
 
 	public ManufacturingJob createJob(final PPOrderId ppOrderId, final UserId responsibleId)
@@ -337,7 +457,9 @@ public class ManufacturingJobService
 
 		if (job.isLastActivity(jobActivityId))
 		{
-			ppOrderBL.closeOrder(ppOrderId);
+			final ManufacturingJobActivity activity = job.getActivityById(jobActivityId);
+			PPOrderTargetPlanningStatus targetPlanningStatus = CoalesceUtil.coalesceNotNull(activity.getTargetPlanningStatus(), PPOrderTargetPlanningStatus.COMPLETE);
+			ppOrderBL.processPlanning(ppOrderId, PPOrderPlanningStatus.of(targetPlanningStatus));
 			jobNeedsReload = true;
 		}
 
@@ -473,10 +595,21 @@ public class ManufacturingJobService
 
 	private ScaleDevice toScaleDevice(@NonNull final DeviceAccessor deviceAccessor)
 	{
+		final Quantity roundingToQty = deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty)
+				.filter(Check::isNotBlank)
+				.map(BigDecimal::new)
+				.flatMap(qtyBD -> deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty_UOM_ID)
+						.filter(Check::isNotBlank)
+						.map(Integer::parseInt)
+						.map(UomId::ofRepoId)
+						.map(uomId -> Quantitys.of(qtyBD, uomId)))
+				.orElse(null);
+
 		return ScaleDevice.builder()
 				.deviceId(deviceAccessor.getId())
 				.caption(deviceAccessor.getDisplayName())
 				.websocketEndpoint(deviceWebsocketNamingStrategy.toWebsocketEndpoint(deviceAccessor.getId()))
+				.roundingToScale(roundingToQty)
 				.build();
 	}
 

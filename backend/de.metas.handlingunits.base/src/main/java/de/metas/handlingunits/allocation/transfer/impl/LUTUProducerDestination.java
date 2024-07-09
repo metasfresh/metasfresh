@@ -15,14 +15,16 @@ package de.metas.handlingunits.allocation.transfer.impl;
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+l *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
@@ -33,6 +35,7 @@ import de.metas.handlingunits.allocation.impl.AbstractProducerDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.allocation.transfer.IHUSplitDefinition;
+import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionBL;
@@ -51,10 +54,12 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,17 +78,18 @@ public class LUTUProducerDestination
 	/**
 	 * Load Unit PI
 	 */
-	private I_M_HU_PI luPI;
+	private I_M_HU_PI _luPI;
 
 	/**
 	 * Load Unit PI Item (where we will link produced TUs)
 	 */
-	private I_M_HU_PI_Item luItemPI;
+	private I_M_HU_PI_Item _luPIItem;
+	private I_M_HU _existingLU;
 
 	/**
 	 * Current Transport Units (TUs) producer
 	 */
-	private final Map<Integer, TUProducerDestination> luId2tuProducer = new HashMap<>();
+	private final HashMap<HuId, TUProducerDestination> luId2tuProducer = new HashMap<>();
 
 	/**
 	 * Current Transport Units (TUs) producer for remaining qty (which could not loaded to some LUs).
@@ -136,14 +142,14 @@ public class LUTUProducerDestination
 	private int maxTUsForRemainingQty_ActuallyCreated = 0;
 
 	/**
-	 * How many LUs were actually created
+	 * LUs that were actually created
 	 */
-	private int _createdLUsCount = 0;
+	private final ArrayList<I_M_HU> _createdLUs = new ArrayList<>();
 
 	/**
-	 * How many TUs were actually created for remaining Qty
+	 * TUs that were actually created for remaining Qty
 	 */
-	private int _createdTUsForRemaingQtyCount = 0;
+	private final ArrayList<I_M_HU> _createdTUsForRemainingQty = new ArrayList<>();
 
 	/**
 	 * Config: existing HUs to be considered when we create the actual LUs/TUs.
@@ -160,8 +166,8 @@ public class LUTUProducerDestination
 	{
 		Check.assumeNotNull(splitDefinition, "Param 'splitDefinition' is not null");
 
-		luItemPI = splitDefinition.getLuPIItem();
-		luPI = splitDefinition.getLuPI();
+		_luPIItem = splitDefinition.getLuPIItem();
+		_luPI = splitDefinition.getLuPI();
 
 		tuPI = splitDefinition.getTuPI();
 		final ProductId cuProductId = splitDefinition.getCuProductId();
@@ -280,6 +286,12 @@ public class LUTUProducerDestination
 	}
 
 	@Override
+	public void setMaxTUsPerLUInfinite()
+	{
+		setMaxTUsPerLU(Integer.MAX_VALUE);
+	}
+
+	@Override
 	protected final I_M_HU_PI getM_HU_PI()
 	{
 		return getLUPI();
@@ -325,33 +337,37 @@ public class LUTUProducerDestination
 		return countLUsCreated < maxLUs;
 	}
 
-	/**
-	 * Gets/Creates the TU Producer for given LU.
-	 *
-	 * @return TU producer; never return null
-	 */
-	private TUProducerDestination getCreateTUProducerDestination(final I_M_HU luHU)
+	private TUProducerDestination getTUProducerOrNull(final I_M_HU luHU)
 	{
-		//
-		// Get existing TU Producer
-		final int luId = luHU.getM_HU_ID();
-		TUProducerDestination tuProducer = luId2tuProducer.get(luId);
-		if (tuProducer != null)
-		{
-			return tuProducer;
-		}
+		final HuId luId = HuId.ofRepoId(luHU.getM_HU_ID());
+		return luId2tuProducer.get(luId);
+	}
 
-		//
-		// Create a new TU Producer
+	private TUProducerDestination getOrCreateTUProducer(final I_M_HU luHU)
+	{
+		final HuId luId = HuId.ofRepoId(luHU.getM_HU_ID());
+		return luId2tuProducer.computeIfAbsent(luId, k -> createTUProducer(luHU));
+	}
+
+	private TUProducerDestination createTUProducer(@NonNull final I_M_HU luHU)
+	{
 		final I_M_HU_PI_Item luItemPI = getLUItemPI();
 		Check.assumeNotNull(luItemPI, "Member luItemPI not null");
 
-		// at this point in time, luHU might not even have an item with itemType=HandingUnit, but it will have one with itemType=HUAggregate,
-		// and in that case, the "HUAggregate" one will be returned. This means that the tuProducer will load to an aggregate VHU that represents a number of TUs
-		final I_M_HU_Item luItem = handlingUnitsDAO.retrieveItem(luHU, luItemPI);
-		Check.errorIf(luItem == null, "luItem is null for the current luHU and luItemPI; huHU={}; luItemPI={}", luHU, luItemPI);
+		final I_M_HU_Item luItem;
+		if (isExistingLU(luHU))
+		{
+			// when 
+			luItem = handlingUnitsDAO.createAggregateHUItem(luHU);
+		}
+		else
+		{
+			// at this point in time, luHU might not even have an item with itemType=HandingUnit, but it will have one with itemType=HUAggregate,
+			// and in that case, the "HUAggregate" one will be returned. This means that the tuProducer will load to an aggregate VHU that represents a number of TUs
+			luItem = handlingUnitsDAO.retrieveItem(luHU, luItemPI);
+		}
 
-		tuProducer = createTUProducerDestination(getMaxTUsPerLU_Effective());
+		final TUProducerDestination tuProducer = createTUProducerDestination(getMaxTUsPerLU_Effective());
 		tuProducer.setParentItem(luItem);
 
 		// provide not only the item (which might have ItemType=HUAggregate),
@@ -362,40 +378,37 @@ public class LUTUProducerDestination
 		// TODO remove
 		// tuProducer.setM_HU_LUTU_Configuration(getM_HU_LUTU_Configuration());
 
-		luId2tuProducer.put(luId, tuProducer);
-
 		return tuProducer;
 	}
 
-	/**
-	 * Intended use is for unit testing only.
-	 */
-	@VisibleForTesting
-	void setTUProducer(
-			@NonNull final I_M_HU luHU,
-			@NonNull final TUProducerDestination tuProducerDestination)
+	@Override
+	public void setLUPI(@Nullable final HuPackingInstructionsId luPIId)
 	{
-		final int luId = luHU.getM_HU_ID();
-		luId2tuProducer.put(luId, tuProducerDestination);
+		setLUPI(luPIId != null ? handlingUnitsBL.getPI(luPIId) : null);
 	}
 
 	@Override
 	public void setLUPI(@Nullable final I_M_HU_PI luPI)
 	{
+		assertConfigurable();
+
 		// verify the luPI's HU-type
 		if (luPI != null)
 		{
 			assertCorrectHuType(luPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		}
 
-		assertConfigurable();
-		this.luPI = luPI;
+		this._luPI = luPI;
 	}
 
 	@Override
 	public I_M_HU_PI getLUPI()
 	{
-		return luPI;
+		if (_luPI == null && _luPIItem != null)
+		{
+			_luPI = _luPIItem.getM_HU_PI_Version().getM_HU_PI();
+		}
+		return _luPI;
 	}
 
 	@Override
@@ -406,28 +419,63 @@ public class LUTUProducerDestination
 		Check.errorUnless(luItemPI == null
 				|| X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(luItemPI.getItemType()), "Param 'luItemPI' has to have type=HU; luItemPI={}", luItemPI);
 
-		this.luItemPI = luItemPI;
+		this._luPIItem = luItemPI;
 	}
 
 	@Override
 	public I_M_HU_PI_Item getLUItemPI()
 	{
-		return luItemPI;
+		if (_luPIItem == null && _luPI != null)
+		{
+			final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoId(_luPI.getM_HU_PI_ID());
+			final BPartnerId bpartnerId = getBPartnerId();
+			_luPIItem = handlingUnitsDAO.retrieveFirstPIItem(luPIId, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId)
+					.orElseThrow(() -> new AdempiereException("No LU PI Item found for " + _luPI + " and " + bpartnerId));
+		}
+		return _luPIItem;
 	}
 
 	@Override
 	public boolean isNoLU()
 	{
-		return luItemPI == null;
+		return _luPI == null && _luPIItem == null;
 	}
 
 	@Override
 	public void setNoLU()
 	{
+		assertConfigurable();
+
 		setLUItemPI(null);
-		setLUPI(null);
+		setLUPI((I_M_HU_PI)null);
 		setMaxLUs(0);
 		setCreateTUsForRemainingQty(true);
+	}
+
+	public void setLU(@NonNull final HuId luId)
+	{
+		assertConfigurable();
+
+		final I_M_HU lu = handlingUnitsBL.getById(luId);
+		final I_M_HU_PI luPI = handlingUnitsBL.getPI(lu);
+
+		this._existingLU = lu;
+		setLUPI(luPI);
+		setMaxLUs(0);
+
+		clearPreviouslyCreatedHUs();
+		addPreviouslyCreatedHU(lu);
+	}
+
+	private boolean isExistingLU(@NonNull final I_M_HU lu)
+	{
+		return _existingLU != null && _existingLU.getM_HU_ID() == lu.getM_HU_ID();
+	}
+
+	@Override
+	public void setTUPI(@NonNull final HuPackingInstructionsId tuPIId)
+	{
+		setTUPI(handlingUnitsBL.getPI(tuPIId));
 	}
 
 	@Override
@@ -495,8 +543,7 @@ public class LUTUProducerDestination
 	@Override
 	public Capacity getCUPerTU(@NonNull final ProductId cuProductId)
 	{
-		final Capacity tuCapacity = productId2tuCapacity.get(cuProductId);
-		return tuCapacity;
+		return productId2tuCapacity.get(cuProductId);
 	}
 
 	private Capacity createCapacity(
@@ -522,7 +569,7 @@ public class LUTUProducerDestination
 		final IHUTransactionCandidate luTrx = huTransactionBL.createLUTransactionForAttributeTransfer(luHU, luItemPI, request);
 		result.addTransaction(luTrx);
 
-		final TUProducerDestination tuProducer = getCreateTUProducerDestination(luHU);
+		final TUProducerDestination tuProducer = getOrCreateTUProducer(luHU);
 
 		//
 		// now do the actual job of loading the Qtys to the TUs
@@ -712,8 +759,8 @@ public class LUTUProducerDestination
 	{
 		return "LUTUProducerDestination ["
 				// LU
-				+ "\n luPI=" + luPI
-				+ "\n , luItemPI=" + luItemPI
+				+ "\n luPI=" + _luPI
+				+ "\n , luItemPI=" + _luPIItem
 				+ "\n , maxLUs=" + maxLUs
 				+ "\n , maxTUsPerLU=" + maxTUsPerLU
 				// TU/CU
@@ -758,39 +805,24 @@ public class LUTUProducerDestination
 	{
 		if (handlingUnitsBL.isLoadingUnit(hu))
 		{
-			_createdLUsCount++;
+			_createdLUs.add(hu);
 		}
 		else
 		{
-			_createdTUsForRemaingQtyCount++;
-		}
-	}
-
-	@Override
-	protected void afterHURemovedFromCreatedList(final I_M_HU hu)
-	{
-		if (handlingUnitsBL.isLoadingUnit(hu))
-		{
-			_createdLUsCount--;
-			Check.assume(_createdLUsCount >= 0, "createdLUsCount >= 0"); // shall not happen. development error
-		}
-		else
-		{
-			_createdTUsForRemaingQtyCount--;
-			Check.assume(_createdTUsForRemaingQtyCount >= 0, "createdTUsForRemaingQtyCount >= 0"); // shall not happen. development error
+			_createdTUsForRemainingQty.add(hu);
 		}
 	}
 
 	@Override
 	public int getCreatedLUsCount()
 	{
-		return _createdLUsCount;
+		return _createdLUs.size();
 	}
 
 	@Override
 	public int getCreatedTUsForRemainingQtyCount()
 	{
-		return _createdTUsForRemaingQtyCount;
+		return _createdTUsForRemainingQty.size();
 	}
 
 	@Override
@@ -878,5 +910,30 @@ public class LUTUProducerDestination
 	public void setIsDestroyExistingHUs(final boolean isDestroyExistingHUs)
 	{
 		this.isDestroyExistingHUs = isDestroyExistingHUs;
+	}
+
+	@Override
+	public LUTUResult getResult()
+	{
+		final LUTUResult.LUTUResultBuilder result = LUTUResult.builder()
+				.topLevelTUs(LUTUResult.TUsList.ofSingleTUsList(_createdTUsForRemainingQty));
+
+		for (final I_M_HU lu : _createdLUs)
+		{
+			final TUProducerDestination tuProducer = getTUProducerOrNull(lu);
+			final List<LUTUResult.TU> tus = tuProducer != null ? tuProducer.getResult() : ImmutableList.of();
+
+			result.lu(LUTUResult.LU.of(lu, tus));
+		}
+
+		if (_existingLU != null)
+		{
+			final TUProducerDestination tuProducer = getTUProducerOrNull(_existingLU);
+			final List<LUTUResult.TU> tus = tuProducer != null ? tuProducer.getResult() : ImmutableList.of();
+
+			result.lu(LUTUResult.LU.of(_existingLU, tus).markedAsPreExistingLU());
+		}
+
+		return result.build();
 	}
 }

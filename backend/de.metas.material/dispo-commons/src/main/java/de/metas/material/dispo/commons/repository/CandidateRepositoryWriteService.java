@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-material-dispo-commons
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.material.dispo.commons.repository;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -5,7 +27,6 @@ import com.google.common.base.Preconditions;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.IdConstants;
-import de.metas.common.util.StringUtils;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
@@ -70,28 +91,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * metasfresh-material-dispo-commons
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Service
 public class CandidateRepositoryWriteService
@@ -678,8 +677,6 @@ public class CandidateRepositoryWriteService
 		{
 			final I_MD_Candidate_Transaction_Detail detailRecordToUpdate;
 
-			final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 			final ICompositeQueryFilter<I_MD_Candidate_Transaction_Detail> //
 					transactionOrPInstanceId = queryBL
 					.createCompositeQueryFilter(I_MD_Candidate_Transaction_Detail.class)
@@ -761,13 +758,21 @@ public class CandidateRepositoryWriteService
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{
-			deleteRecord(candidateRecord);
-			deleteRecord(stockCandidate);
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(candidateId)
+					.build());
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(stockCandidateId)
+					.build());
 		}
 		else
 		{
-			deleteRecord(stockCandidate);
-			deleteRecord(candidateRecord);
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(stockCandidateId)
+					.build());
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+					.candidateId(candidateId)
+					.build());
 		}
 
 		return deleteResult;
@@ -816,7 +821,7 @@ public class CandidateRepositoryWriteService
 		final Set<CandidateId> alreadyDeletedIds = new HashSet<>();
 
 		final IQueryBuilder<I_MD_Candidate> queryBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class);
-		
+
 		if (deleteCandidatesQuery.getIsActive() != null)
 		{
 			queryBuilder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_IsActive, deleteCandidatesQuery.getIsActive());
@@ -852,12 +857,12 @@ public class CandidateRepositoryWriteService
 		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 
 		final DeleteResult deleteResult = new DeleteResult(candidateId,
-														   DateAndSeqNo
-																   .builder()
-																   .date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
-																   .seqNo(candidateRecord.getSeqNo())
-																   .build(),
-														   candidateRecord.getQty());
+				DateAndSeqNo
+						.builder()
+						.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
+						.seqNo(candidateRecord.getSeqNo())
+						.build(),
+				candidateRecord.getQty());
 
 		deleteRecord(candidateRecord);
 
@@ -979,7 +984,7 @@ public class CandidateRepositoryWriteService
 						.setParameter("CandidateId", candidateId))
 				.getId();
 	}
-	
+
 	@NonNull
 	private DeleteResult buildDeleteResultForCandidate(@NonNull final I_MD_Candidate candidateRecord)
 	{
@@ -991,7 +996,7 @@ public class CandidateRepositoryWriteService
 																		 .build(),
 																 candidateRecord.getQty());
 	}
-	
+
 	@Value
 	public static class DeleteResult
 	{

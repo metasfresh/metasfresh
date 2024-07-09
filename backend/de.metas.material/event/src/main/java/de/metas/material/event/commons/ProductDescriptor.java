@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
+import de.metas.product.ProductId;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -46,6 +47,11 @@ public class ProductDescriptor
 	public static ProductDescriptor completeForProductIdAndEmptyAttribute(final int productId)
 	{
 		return new ProductDescriptor(productId, AttributesKey.NONE, AttributeSetInstanceId.NONE.getRepoId());
+	}
+
+	public static ProductDescriptor completeForProductIdAndEmptyAttribute(final ProductId productId)
+	{
+		return completeForProductIdAndEmptyAttribute(ProductId.toRepoId(productId));
 	}
 
 	public static ProductDescriptor forProductAndAttributes(

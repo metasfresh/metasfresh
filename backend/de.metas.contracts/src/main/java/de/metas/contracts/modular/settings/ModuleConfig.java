@@ -22,31 +22,66 @@
 
 package de.metas.contracts.modular.settings;
 
-import de.metas.contracts.modular.ModularContractHandlerType;
+import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty.ColumnOption;
 import de.metas.product.ProductId;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.Collection;
+
 @Value
 @Builder
 public class ModuleConfig
 {
-	@NonNull ModuleConfigId id;
+	@NonNull ModuleConfigAndSettingsId id;
 
 	@NonNull SeqNo seqNo;
 
 	@NonNull String name;
 
-	@NonNull String invoicingGroup;
+	@NonNull InvoicingGroupType invoicingGroup;
 
 	@NonNull ProductId productId;
 
 	@NonNull ModularContractType modularContractType;
 
-	public boolean isMatchingHandler(@NonNull final ModularContractHandlerType handlerType)
+	public ModularContractSettingsId getModularContractSettingsId() {return id.getModularContractSettingsId();}
+
+	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
 	{
-		return modularContractType.isMatchingHandler(handlerType);
+		return modularContractType.isMatching(computingMethodType);
+	}
+
+	public boolean isMatchingAnyOf(@NonNull final ComputingMethodType computingMethodType1, @NonNull final ComputingMethodType computingMethodType2)
+	{
+		return isMatching(computingMethodType1) || isMatching(computingMethodType2);
+	}
+
+	public boolean isMatchingAnyOf(@NonNull final Collection<ComputingMethodType> computingMethodTypes)
+	{
+		return computingMethodTypes.stream().anyMatch(this::isMatching);
+	}
+
+	public @NonNull ModularContractTypeId getModularContractTypeId() {return getModularContractType().getId();}
+
+	@NonNull
+	public ComputingMethodType getComputingMethodType()
+	{
+		return modularContractType.getComputingMethodType();
+	}
+
+	public boolean isCostsType()
+	{
+		return getInvoicingGroup().isCostsType();
+	}
+
+	@Nullable
+	public ColumnOption getColumnOption()
+	{
+		return modularContractType.getColumnOption();
 	}
 }

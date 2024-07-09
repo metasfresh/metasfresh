@@ -592,7 +592,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			putValue(PARAM_FilterSql, convertFilterToSql(filter));
 			putValue(PARAM_FilterSqlWithoutWildcards, convertFilterToSqlWithoutWildcards(filter));
 			putValue(SqlForFetchingLookups.PARAM_Offset, offset);
-			putValue(SqlForFetchingLookups.PARAM_Limit, limit);
+			putValue(SqlForFetchingLookups.PARAM_Limit, Math.max(limit, 0));
 
 			return this;
 		}
@@ -673,7 +673,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			{
 				if (failIfNotFound)
 				{
-					throw new ExpressionEvaluationException("@NotFound@: " + variableName);
+					throw ExpressionEvaluationException.newWithTranslatableMessage("@NotFound@: " + variableName);
 				}
 			}
 			else

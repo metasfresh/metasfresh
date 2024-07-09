@@ -55,13 +55,13 @@ public class StorageCleanup extends JavaProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParametersAsArray();
-		for (ProcessInfoParameter element : para)
+		final ProcessInfoParameter[] para = getParametersAsArray();
+		for (final ProcessInfoParameter element : para)
 		{
-			String name = element.getParameterName();
+			final String name = element.getParameterName();
 			if (element.getParameter() == null)
 			{
-				;
+				return;
 			}
 			else if (name.equals("C_DocType_ID"))
 			{
@@ -88,7 +88,7 @@ public class StorageCleanup extends JavaProcess
 		String sql = "DELETE FROM M_Storage "
 				+ "WHERE QtyOnHand = 0 AND QtyReserved = 0 AND QtyOrdered = 0"
 				+ " AND Created < now()-3";
-		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+		final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		log.info("Deleted Empty #" + no);
 
 		//
@@ -151,7 +151,7 @@ public class StorageCleanup extends JavaProcess
 		BigDecimal qty = target.getQtyOnHand().negate();
 
 		// Create Movement
-		MMovement mh = new MMovement(getCtx(), 0, get_TrxName());
+		final MMovement mh = new MMovement(getCtx(), 0, get_TrxName());
 		mh.setAD_Org_ID(target.getAD_Org_ID());
 		mh.setC_DocType_ID(p_C_DocType_ID);
 		mh.setDescription(getName());
@@ -161,11 +161,11 @@ public class StorageCleanup extends JavaProcess
 		}
 
 		int lines = 0;
-		MStorage[] sources = getSources(target.getM_Product_ID(), target.getM_Locator_ID());
-		for (MStorage source : sources)
+		final MStorage[] sources = getSources(target.getM_Product_ID(), target.getM_Locator_ID());
+		for (final MStorage source : sources)
 		{
 			// Movement Line
-			MMovementLine ml = new MMovementLine(mh);
+			final MMovementLine ml = new MMovementLine(mh);
 			ml.setM_Product_ID(target.getM_Product_ID());
 			ml.setM_LocatorTo_ID(target.getM_Locator_ID());
 			ml.setM_AttributeSetInstanceTo_ID(0 /* target.getM_AttributeSetInstance_ID() */);
@@ -198,8 +198,7 @@ public class StorageCleanup extends JavaProcess
 		mh.processIt(MMovement.ACTION_Complete);
 		mh.save();
 
-		final ADReferenceService adReferenceService = ADReferenceService.get();
-		final ITranslatableString docStatus = adReferenceService
+		final ITranslatableString docStatus = ADReferenceService.get()
 				.retrieveListNameTranslatableString(
 						X_M_Movement.DOCSTATUS_AD_Reference_ID,
 						mh.getDocStatus());
@@ -218,7 +217,7 @@ public class StorageCleanup extends JavaProcess
 	 * 
 	 * @param target target Storage
 	 */
-	private void eliminateReservation(MStorage target)
+	private void eliminateReservation(final MStorage target)
 	{
 		// Negative Ordered / Reserved Qty
 		if (target.getQtyReserved().signum() != 0 || target.getQtyOrdered().signum() != 0)
@@ -228,7 +227,7 @@ public class StorageCleanup extends JavaProcess
 					target.getM_Product_ID(), 0, get_TrxName());
 			if (storage0 == null)
 			{
-				MLocator defaultLoc = findOldestLocatorWithSameWarehouse(M_Locator_ID);
+				final MLocator defaultLoc = findOldestLocatorWithSameWarehouse(M_Locator_ID);
 				if (M_Locator_ID != defaultLoc.getM_Locator_ID())
 				{
 					M_Locator_ID = defaultLoc.getM_Locator_ID();
@@ -266,18 +265,11 @@ public class StorageCleanup extends JavaProcess
 		}
 	}	// eliminateReservation
 
-	/**
-	 * Get oldest Default Locator of warehouse with locator
-	 * 
-	 * @param ctx context
-	 * @param M_Locator_ID locator
-	 * @return locator or null
-	 */
 	private MLocator findOldestLocatorWithSameWarehouse(final int M_Locator_ID)
 	{
-		String trxName = null;
+		final String trxName = null;
 		MLocator retValue = null;
-		String sql = "SELECT * FROM M_Locator l "
+		final String sql = "SELECT * FROM M_Locator l "
 				+ "WHERE IsActive = 'Y' AND  IsDefault='Y'"
 				+ " AND EXISTS (SELECT * FROM M_Locator lx "
 				+ "WHERE l.M_Warehouse_ID=lx.M_Warehouse_ID AND lx.M_Locator_ID=?) "
@@ -315,7 +307,7 @@ public class StorageCleanup extends JavaProcess
 	 * @param M_Locator_ID locator
 	 * @return sources
 	 */
-	private MStorage[] getSources(int M_Product_ID, int M_Locator_ID)
+	private MStorage[] getSources(final int M_Product_ID, final int M_Locator_ID)
 	{
 		ArrayList<MStorage> list = new ArrayList<>();
 		String sql = "SELECT * "
@@ -356,7 +348,7 @@ public class StorageCleanup extends JavaProcess
 			rs = null;
 			pstmt = null;
 		}
-		MStorage[] retValue = new MStorage[list.size()];
+		final MStorage[] retValue = new MStorage[list.size()];
 		list.toArray(retValue);
 		return retValue;
 	}	// getSources

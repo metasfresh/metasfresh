@@ -1,17 +1,16 @@
 package de.metas.ui.web.window.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /*
  * #%L
@@ -37,18 +36,39 @@ import lombok.ToString;
 
 /**
  * Mutable ordered documents list.
- * 
+ * <p>
  * It also contains {@link #getOrderBys()}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @ToString
 public final class OrderedDocumentsList
 {
+	@NonNull private final ArrayList<Document> documents;
+	@NonNull @Getter private final DocumentQueryOrderByList orderBys;
+
+	private OrderedDocumentsList(
+			@Nullable final Collection<Document> documents,
+			@NonNull final DocumentQueryOrderByList orderBys)
+	{
+		this.documents = documents == null ? new ArrayList<>() : new ArrayList<>(documents);
+		this.orderBys = orderBys;
+	}
+
 	public static OrderedDocumentsList of(final Collection<Document> documents, final DocumentQueryOrderByList orderBys)
 	{
 		return new OrderedDocumentsList(documents, orderBys);
+	}
+
+	public static OrderedDocumentsList of(@NonNull final Document document)
+	{
+		return new OrderedDocumentsList(ImmutableList.of(document), DocumentQueryOrderByList.EMPTY);
+	}
+
+	@NonNull
+	public static OrderedDocumentsList ofNullable(@Nullable final Document document)
+	{
+		return document != null ? of(document) : newEmpty();
 	}
 
 	public static OrderedDocumentsList newEmpty()
@@ -59,17 +79,6 @@ public final class OrderedDocumentsList
 	public static OrderedDocumentsList newEmpty(final DocumentQueryOrderByList orderBys)
 	{
 		return new OrderedDocumentsList(ImmutableList.of(), orderBys);
-	}
-
-	private final ArrayList<Document> documents;
-	private final DocumentQueryOrderByList orderBys;
-
-	private OrderedDocumentsList(
-			@Nullable final Collection<Document> documents,
-			@NonNull final DocumentQueryOrderByList orderBys)
-	{
-		this.documents = documents == null ? new ArrayList<>() : new ArrayList<>(documents);
-		this.orderBys = orderBys;
 	}
 
 	public ArrayList<Document> toList()
@@ -110,10 +119,5 @@ public final class OrderedDocumentsList
 	public Document get(final int index)
 	{
 		return documents.get(index);
-	}
-
-	public DocumentQueryOrderByList getOrderBys()
-	{
-		return orderBys;
 	}
 }

@@ -1,0 +1,23 @@
+de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTest.getExternalSystemLeichMehlConfigProductMappings_whenConfigWithAndWithoutPartnerExists_getPartnerOne=[
+  {
+    "bPartnerId": 1,
+    "id": 2,
+    "leichMehlPluFileConfigGroup": {
+      "externalSystemLeichMehlPluFileConfigs": [
+        {
+          "id": 1,
+          "leichMehlPluFileConfigGroupId": 1,
+          "replaceRegExp": "replacePattern",
+          "replacement": "replacement",
+          "replacementSource": "PPOrder",
+          "targetFieldName": "targetFileName",
+          "targetFieldType": "Date"
+        }
+      ],
+      "id": 1,
+      "name": "testGroupName"
+    },
+    "pluFile": "pluFilePartner",
+    "productId": 1
+  }
+]

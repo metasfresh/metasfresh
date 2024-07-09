@@ -360,7 +360,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isSimulated()
+	public boolean isSimulated() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSimulated);
 	}

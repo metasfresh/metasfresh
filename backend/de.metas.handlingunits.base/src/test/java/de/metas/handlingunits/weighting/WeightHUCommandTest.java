@@ -2,6 +2,8 @@ package de.metas.handlingunits.weighting;
 
 import de.metas.acct.GLCategoryId;
 import de.metas.business.BusinessTestHelper;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -23,6 +25,7 @@ import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.expectations.HUExpectation;
 import de.metas.handlingunits.expectations.HUItemExpectation;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
+import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -31,7 +34,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.util.TraceUtils;
 import de.metas.inventory.InventoryDocSubType;
 import de.metas.product.ProductId;
@@ -45,6 +47,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.ObjectAssert;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -74,12 +77,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -89,16 +92,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(AdempiereTestWatcher.class)
 public class WeightHUCommandTest
 {
-	private InventoryService inventoryService;
+	private HUQtyService huQtyService;
 	private HUTestHelper helper;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		helper = HUTestHelper.newInstanceOutOfTrx();
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 
-		final InventoryRepository inventoryRepo = new InventoryRepository();
-		this.inventoryService = new InventoryService(inventoryRepo, SourceHUsService.get());
+		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
+		this.huQtyService = new HUQtyService(inventoryService);
 
 		POJOLookupMap.get().addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(inventoryService));
 	}
@@ -262,10 +267,10 @@ public class WeightHUCommandTest
 						.create());
 	}
 
-	private void weight(final HuId huId, PlainWeightable targetWeight)
+	private void weight(final HuId huId, final PlainWeightable targetWeight)
 	{
 		WeightHUCommand.builder()
-				.inventoryService(inventoryService)
+				.huQtyService(huQtyService)
 				.huId(huId)
 				.targetWeight(targetWeight)
 				.build()

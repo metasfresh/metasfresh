@@ -39,7 +39,6 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
-import de.metas.resource.Resource;
 import de.metas.resource.ResourceService;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
@@ -110,7 +109,7 @@ public class DDOrderLowLevelService
 				.subtract(qtyDelivered) // minus: Qty that we already moved (so it's there, on hand)
 				.subtract(qtyInTransit); // minus: Qty that left source locator but did not arrived yet to target locator
 
-		return Quantitys.create(qtyToShipBD, UomId.ofRepoId(ddOrderLineOrAlt.getC_UOM_ID()));
+		return Quantitys.of(qtyToShipBD, UomId.ofRepoId(ddOrderLineOrAlt.getC_UOM_ID()));
 	}
 
 	public void completeDDOrderIfNeeded(final I_DD_Order ddOrder)
@@ -148,19 +147,13 @@ public class DDOrderLowLevelService
 	}
 
 	@Nullable
-	public Resource getPlantTo(final I_DD_OrderLine ddOrderLine)
+	public ResourceId getPlantTo(final I_DD_OrderLine ddOrderLine)
 	{
-		final ResourceId plantToId = ResourceId.ofRepoIdOrNull(ddOrderLine.getDD_Order().getPP_Plant_ID());
-		if (plantToId == null)
-		{
-			return null;
-		}
-
-		return resourceService.getResourceById(plantToId);
+		return ResourceId.ofRepoIdOrNull(ddOrderLine.getDD_Order().getPP_Plant_ID());
 	}
 
 	@Nullable
-	public Resource findPlantFromOrNull(final I_DD_OrderLine ddOrderLine)
+	public ResourceId findPlantFromOrNull(final I_DD_OrderLine ddOrderLine)
 	{
 		Check.assumeNotNull(ddOrderLine, LiberoException.class, "ddOrderLine not null");
 
@@ -179,12 +172,11 @@ public class DDOrderLowLevelService
 
 		try
 		{
-			final ResourceId plantId = productPlanningDAO.findPlantId(
+			return productPlanningDAO.findPlantId(
 					adOrgId,
 					warehouseFrom,
 					ddOrderLine.getM_Product_ID(),
 					ddOrderLine.getM_AttributeSetInstance_ID());
-			return resourceService.getResourceById(plantId);
 		}
 		catch (final NoPlantForWarehouseException e)
 		{
@@ -237,8 +229,8 @@ public class DDOrderLowLevelService
 	}
 
 	private void processDraftDDOrders(final IQueryBuilder<I_DD_OrderLine> ddOrderLinesQuery,
-			final int currentPlantId,
-			final IProcessor<I_DD_Order> ddOrderProcessor)
+									  final int currentPlantId,
+									  final IProcessor<I_DD_Order> ddOrderProcessor)
 	{
 		logger.debug("PP_Plant_ID: {}", currentPlantId);
 		logger.debug("Processor: {}", ddOrderProcessor);
@@ -384,7 +376,7 @@ public class DDOrderLowLevelService
 
 		movementBL.retrieveCompletedMovementLinesForDDOrderLines(ddOrderLineIds)
 				.forEach((ddOrderLineId, movementLines) -> {
-					
+
 					final I_C_UOM uom = movementBL.getC_UOM(movementLines.get(0));
 					final Quantity qtyDelivered = movementLines
 							.stream()

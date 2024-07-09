@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_InvoiceLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1222059933L;
+	private static final long serialVersionUID = 146765435L;
 
     /** Standard Constructor */
     public X_C_InvoiceLine (final Properties ctx, final int C_InvoiceLine_ID, @Nullable final String trxName)
@@ -629,8 +629,29 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 		set_Value (COLUMNNAME_IsDescription, IsDescription);
 	}
 
+	/**
+	 * InvoicingGroup AD_Reference_ID=541742
+	 * Reference name: InvoicingGroup
+	 */
+	public static final int INVOICINGGROUP_AD_Reference_ID=541742;
+	/** Service = Service */
+	public static final String INVOICINGGROUP_Service = "Service";
+	/** Costs = Costs */
+	public static final String INVOICINGGROUP_Costs = "Costs";
 	@Override
-	public boolean isDescription() 
+	public void setInvoicingGroup (final @Nullable java.lang.String InvoicingGroup)
+	{
+		set_Value (COLUMNNAME_InvoicingGroup, InvoicingGroup);
+	}
+
+	@Override
+	public java.lang.String getInvoicingGroup()
+	{
+		return get_ValueAsString(COLUMNNAME_InvoicingGroup);
+	}
+
+	@Override
+	public boolean isDescription()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDescription);
 	}
@@ -1030,6 +1051,18 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
+	public void setProductName (final @Nullable java.lang.String ProductName)
+	{
+		set_Value (COLUMNNAME_ProductName, ProductName);
+	}
+
+	@Override
+	public java.lang.String getProductName()
+	{
+		return get_ValueAsString(COLUMNNAME_ProductName);
+	}
+
+	@Override
 	public void setQtyEntered (final BigDecimal QtyEntered)
 	{
 		set_Value (COLUMNNAME_QtyEntered, QtyEntered);
@@ -1203,6 +1236,32 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public int getUser2_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_User2_ID);
+	}
+
+	@Override
+	public void setUserElementNumber1 (final @Nullable BigDecimal UserElementNumber1)
+	{
+		set_Value (COLUMNNAME_UserElementNumber1, UserElementNumber1);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber1()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber1);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setUserElementNumber2 (final @Nullable BigDecimal UserElementNumber2)
+	{
+		set_Value (COLUMNNAME_UserElementNumber2, UserElementNumber2);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber2()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber2);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

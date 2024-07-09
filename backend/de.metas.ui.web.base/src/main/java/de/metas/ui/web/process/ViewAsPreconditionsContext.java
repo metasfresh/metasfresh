@@ -90,8 +90,6 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 
 	DisplayPlace displayPlace;
 
-	boolean considerTableRelatedProcessDescriptors;
-
 	@Getter(AccessLevel.NONE) MemoizingFunction<Class<?>, SelectedModelsList> _selectedModelsSupplier = Functions.memoizingFirstCall(this::retrieveSelectedModels);
 
 	@Builder
@@ -122,13 +120,17 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 		}
 
 		this.displayPlace = displayPlace;
-
-		this.considerTableRelatedProcessDescriptors = view.isConsiderTableRelatedProcessDescriptors(selectedRowIds);
 	}
 
 	public DocumentIdsSelection getSelectedRowIds()
 	{
 		return viewRowIdsSelection.getRowIds();
+	}
+
+	@Override
+	public boolean isConsiderTableRelatedProcessDescriptors(@NonNull final ProcessHandlerType processHandlerType)
+	{
+		return view.isConsiderTableRelatedProcessDescriptors(processHandlerType, getSelectedRowIds());
 	}
 
 	public <T extends IView> T getView(@SuppressWarnings("unused") final Class<T> viewType)

@@ -207,7 +207,6 @@ public class C_Invoice_Candidate_Builder
 		ic.setPriceEntered(BigDecimal.valueOf(priceEntered));
 		ic.setPriceEntered_Override(priceEntered_Override);
 		ic.setC_UOM_ID(UomId.toRepoId(uomId));
-		ic.setC_Async_Batch_ID(asyncBatchId);
 
 		Check.errorIf(isSOTrx == null, "this builder needs isSOTrx to be set before it is able to build an IC; this={}", this); // avoid autoboxing-NPE
 		ic.setIsSOTrx(isSOTrx);

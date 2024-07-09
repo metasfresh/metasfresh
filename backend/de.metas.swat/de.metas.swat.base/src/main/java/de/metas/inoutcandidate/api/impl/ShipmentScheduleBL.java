@@ -380,6 +380,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final IStorageQuery storageQuery = storageEngine
 				.newStorageQuery()
+				.addBPartnerId(null)
 				.addBPartnerId(bpartnerId)
 				.addWarehouseIds(warehouseIds)
 				.addProductId(ProductId.ofRepoId(sched.getM_Product_ID()));
@@ -430,7 +431,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return Optional.empty();
 		}
 
-		final Quantity result = Quantitys.create(
+		final Quantity result = Quantitys.of(
 				shipmentScheduleRecord.getQtyToDeliverCatch_Override(),
 				UomId.ofRepoId(shipmentScheduleRecord.getCatch_UOM_ID()));
 		return Optional.of(result);
@@ -531,13 +532,25 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public Collection<I_M_ShipmentSchedule> getByOrderId(@NonNull final OrderId orderId)
 	{
-		return shipmentSchedulePA.getByOrderIds(orderId);
+		return shipmentSchedulePA.getByOrderId(orderId);
+	}
+
+	@Override
+	public Collection<I_M_ShipmentSchedule> getByOrderIds(@NonNull final Collection<OrderId> orderIds)
+	{
+		return shipmentSchedulePA.getByOrderIds(orderIds);
 	}
 
 	@Override
 	public boolean anyMatchByOrderId(@NonNull final OrderId orderId)
 	{
 		return shipmentSchedulePA.anyMatchByOrderId(orderId);
+	}
+
+	@Override
+	public boolean anyMatchByOrderIds(@NonNull final Collection<OrderId> orderIds)
+	{
+		return shipmentSchedulePA.anyMatchByOrderIds(orderIds);
 	}
 
 	@Override

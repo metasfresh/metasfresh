@@ -2,7 +2,7 @@ package de.metas.invoice.matchinv;
 
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.order.costs.inout.InOutCostId;
 import lombok.Builder;
 import lombok.Value;
@@ -16,7 +16,7 @@ public class MatchInvQuery
 {
 	@Builder.Default boolean onlyActive = true;
 	@Nullable MatchInvType type;
-	@Nullable InvoiceLineId invoiceLineId;
+	@Nullable InvoiceAndLineId invoiceAndLineId;
 	@Nullable InOutId inoutId;
 	@Nullable InOutLineId inoutLineId;
 	@Nullable InOutCostId inoutCostId;

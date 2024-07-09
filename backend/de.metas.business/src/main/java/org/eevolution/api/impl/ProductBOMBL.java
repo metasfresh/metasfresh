@@ -29,6 +29,8 @@ import com.google.common.collect.Multimaps;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IssuingToleranceSpec;
@@ -54,7 +56,6 @@ import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.IProductLowLevelUpdater;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMQtys;
 import org.eevolution.api.QtyCalculationsBOM;
@@ -68,6 +69,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -119,15 +121,9 @@ public class ProductBOMBL implements IProductBOMBL
 	}
 
 	@Override
-	public int calculateProductLowestLevel(final ProductId productId)
+	public void checkCycles(final ProductId productId)
 	{
-		return ProductLowLevelCalculator.newInstance().getLowLevel(productId);
-	}
-
-	@Override
-	public IProductLowLevelUpdater updateProductLowLevels()
-	{
-		return new ProductLowLevelUpdater();
+		ProductBOMCycleDetection.newInstance().checkCycles(productId);
 	}
 
 	@Override
@@ -376,9 +372,6 @@ public class ProductBOMBL implements IProductBOMBL
 			return;
 		}
 
-		// Check this level
-		updateProductLLCAndMarkAsVerified(product);
-
 		// Get Default BOM from this product
 		final I_PP_Product_BOM bom = bomDAO.getDefaultBOMByProductId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.orElseThrow(() -> {
@@ -393,16 +386,40 @@ public class ProductBOMBL implements IProductBOMBL
 		{
 			final ProductId productId = ProductId.ofRepoId(tbomline.getM_Product_ID());
 			final I_M_Product bomLineProduct = productBL.getById(productId);
-			updateProductLLCAndMarkAsVerified(bomLineProduct);
 		}
 	}
 
-	private void updateProductLLCAndMarkAsVerified(@NonNull final I_M_Product product)
+	@Override
+	public Optional<ProductBOM> retrieveValidProductBOM(@NonNull final ProductBOMRequest request)
 	{
-		// NOTE: when LLC is calculated, the BOM cycles are also checked
-		final int lowLevelCode = calculateProductLowestLevel(ProductId.ofRepoId(product.getM_Product_ID()));
-		product.setLowLevel(lowLevelCode);
-		product.setIsVerified(true);
-		InterfaceWrapperHelper.save(product);
+		return bomDAO.retrieveValidProductBOM(request);
+	}
+
+	@Override
+	public Map<ProductDescriptor, Quantity> calculateRequiredQtyInStockUOMForComponents(@NonNull final Quantity qty, @NonNull final ProductBOM productBOM)
+	{
+		final Map<ProductDescriptor, Quantity> result = new HashMap<>();
+
+		final ProductId productId = ProductId.ofRepoId(productBOM.getProductDescriptor().getProductId());
+		final Quantity qtyInBomUom = uomConversionBL.convertQuantityTo(qty, productId, productBOM.getUomId());
+
+		for (final I_PP_Product_BOMLine component : productBOM.getComponents())
+		{
+			final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(component.getM_Product_ID(), AttributesKey.NONE, component.getM_AttributeSetInstance_ID());
+			final ProductId componentProductId = ProductId.ofRepoId(component.getM_Product_ID());
+			final I_C_UOM componentUOM = uomDAO.getById(component.getC_UOM_ID());
+			final Quantity componentQty = Quantity.of(computeQtyRequired(component, productId, qtyInBomUom.toBigDecimal()), componentUOM);
+			final Quantity componentQtyInStockUOM = uomConversionBL.convertToProductUOM(componentQty, ProductId.ofRepoId(component.getM_Product_ID()));
+			result.merge(productDescriptor, componentQtyInStockUOM, Quantity::add);
+
+			if (productBOM.getComponentsProductBOMs().containsKey(productDescriptor))
+			{
+				final ProductBOM componentProductBOM = productBOM.getComponentsProductBOMs().get(productDescriptor);
+				final Quantity componentQtyInBomUom = uomConversionBL.convertQuantityTo(componentQtyInStockUOM, componentProductId, componentProductBOM.getUomId());
+				calculateRequiredQtyInStockUOMForComponents(componentQtyInBomUom, componentProductBOM).forEach((key, value) -> result.merge(key, value, Quantity::add));
+			}
+		}
+
+		return result;
 	}
 }

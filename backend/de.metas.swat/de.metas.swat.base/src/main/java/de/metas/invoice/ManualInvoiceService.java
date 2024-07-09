@@ -46,7 +46,6 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
-import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
@@ -61,6 +60,7 @@ import de.metas.tax.api.TaxQuery;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
@@ -139,17 +139,17 @@ public class ManualInvoiceService
 				.stream()
 				.filter(line -> line.getExtendedProps() != null)
 				.forEach(line -> {
-					final InvoiceLineId invoiceLineId = invoice.getRepoIdByExternalLineId(line.getExternalLineId());
+					final InvoiceAndLineId invoiceAndLineId = invoice.getRepoIdByExternalLineId(line.getExternalLineId());
 
-					saveInvoiceLineCustomColumns(invoiceLineId, line.getExtendedProps());
+					saveInvoiceLineCustomColumns(invoiceAndLineId, line.getExtendedProps());
 				});
 	}
 
 	private void saveInvoiceLineCustomColumns(
-			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final InvoiceAndLineId invoiceAndLineId,
 			@NonNull final Map<String, Object> valuesByColumnName)
 	{
-		manualInvoiceRepository.applyAndSave(invoiceLineId,
+		manualInvoiceRepository.applyAndSave(invoiceAndLineId,
 				(invoiceLineRecord) -> customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(invoiceLineRecord), valuesByColumnName));
 	}
 
@@ -379,14 +379,14 @@ public class ManualInvoiceService
 	@NonNull
 	private static InvoiceAcctRule buildInvoiceAcctRule(
 			@NonNull final ElementValueId elementValueId,
-			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final InvoiceAndLineId invoiceAndLineId,
 			@NonNull final AcctSchemaId acctSchemaId,
 			@Nullable final ProductAcctType productAcctType)
 	{
 		return InvoiceAcctRule.builder()
 				.elementValueId(elementValueId)
 				.matcher(InvoiceAcctRuleMatcher.builder()
-						.invoiceLineId(invoiceLineId)
+						.invoiceAndLineId(invoiceAndLineId)
 						.acctSchemaId(acctSchemaId)
 						.accountConceptualName(productAcctType != null ? productAcctType.getAccountConceptualName() : null)
 						.build())

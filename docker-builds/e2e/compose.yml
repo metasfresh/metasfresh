@@ -1,0 +1,117 @@
+services:
+
+  db:
+    image: metasfresh/metas-db:$refname-preloaded
+    ports:
+      - "15432:5432"
+    healthcheck:
+      test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
+      interval: 5s
+      timeout: 2s
+      start_period: 10s
+      retries: 120
+    deploy:
+      mode: replicated
+      replicas: 1
+      
+  rabbitmq:
+    image: rabbitmq:3.9.13-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=metasfresh
+      - RABBITMQ_DEFAULT_PASS=metasfresh
+      - RABBITMQ_DEFAULT_VHOST=/
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  search:
+    image: elasticsearch:7.17.8
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+      - LOG4J_FORMAT_MSG_NO_LOOKUPS=true
+      - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  webapi:
+    image: metasfresh/metas-api:$refname
+    ports:
+      - "8080:8080"
+      - "8789:8789"
+    healthcheck:
+      test: curl -m 1 http://127.0.0.1:8080/health
+      interval: 5s
+      timeout: 2s
+      start_period: 10s
+      retries: 60
+    environment:
+      - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  app:
+    image: metasfresh/metas-app:$refname
+    ports:
+      - "8282:8282"
+      - "61616:61616"
+      - "8788:8788"
+    healthcheck:
+      test: curl -m 1 http://127.0.0.1:8282/health
+      interval: 5s
+      timeout: 2s
+      start_period: 10s
+      retries: 60
+    environment:
+      - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  webui:
+    image: metasfresh/metas-frontend:$refname
+    ports:
+      - "80:80"
+    environment:
+      - "WEBUI_API_CLIENT_PROTOCOL=http"
+      - "WEBUI_API_CLIENT_HOST=webui"
+      - "WEBUI_API_CLIENT_PORT=80"
+      - "WEBUI_API_PROXYPASS_PROTOCOL=http"
+      - "WEBUI_API_PROXYPASS_HOST=webapi"
+      - "WEBUI_API_PROXYPASS_PORT=8080"
+    depends_on:
+      - webapi
+      - app
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  e2e:
+    image: metas-e2e:latest
+    ports: []
+    depends_on:
+      webapi:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    secrets:
+      - mysecret
+
+volumes: {}
+configs: {}
+secrets:
+  mysecret:
+    file: mysecret

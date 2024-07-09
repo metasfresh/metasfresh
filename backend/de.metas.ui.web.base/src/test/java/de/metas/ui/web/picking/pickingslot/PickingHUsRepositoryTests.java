@@ -8,6 +8,7 @@ import de.metas.ad_reference.AdRefListRepositoryMocked;
 import de.metas.ad_reference.AdRefTableRepositoryMocked;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
@@ -41,7 +42,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -104,7 +105,7 @@ public class PickingHUsRepositoryTests
 		return huId;
 	}
 
-	private static final PickingSlotId createPickingSlot(final boolean pickingRackSystem)
+	private static PickingSlotId createPickingSlot(final boolean pickingRackSystem)
 	{
 		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
 		pickingSlot.setIsPickingRackSystem(pickingRackSystem);
@@ -191,7 +192,9 @@ public class PickingHUsRepositoryTests
 				new HuId2SourceHUsService(new HUTraceRepository()),
 				new HUReservationService(new HUReservationRepository()),
 				Services.get(IBPartnerBL.class),
-				new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
+				new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()),
+				InventoryService.newInstanceForUnitTesting()
+		);
 
 		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(
 				() -> huEditorViewRepository,

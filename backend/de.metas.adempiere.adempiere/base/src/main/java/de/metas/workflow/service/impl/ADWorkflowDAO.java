@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.cache.CCache;
+import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyId;
 import de.metas.email.EMailAddress;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.i18n.IModelTranslationMap;
@@ -282,6 +283,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 				//
 				// Action: User Choice
 				.userApproval(action.isUserChoice() && "IsApproved".equals(documentColumnName))
+				.docApprovalStrategyId(DocApprovalStrategyId.ofRepoIdOrNull(nodeRecord.getC_Doc_Approval_Strategy_ID()))
 				//
 				// Action: Open Form
 				.adFormId(nodeRecord.getAD_Form_ID())

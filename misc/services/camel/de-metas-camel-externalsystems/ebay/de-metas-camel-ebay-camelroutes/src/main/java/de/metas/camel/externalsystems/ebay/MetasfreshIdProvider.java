@@ -22,8 +22,8 @@
 
 package de.metas.camel.externalsystems.ebay;
 
-import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceRequestItem;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -42,18 +42,18 @@ public class MetasfreshIdProvider
 {
 	@NonNull
 	@Getter(AccessLevel.NONE)
-	Map<JsonExternalReferenceLookupItem, JsonExternalReferenceItem> lookupItemToResponseItem;
+	Map<JsonExternalReferenceLookupItem, JsonExternalReferenceRequestItem> lookupItemToResponseItem;
 
-	public static MetasfreshIdProvider of(final Map<JsonExternalReferenceLookupItem, JsonExternalReferenceItem> lookupItemToResponseItem)
+	public static MetasfreshIdProvider of(final Map<JsonExternalReferenceLookupItem, JsonExternalReferenceRequestItem> lookupItemToResponseItem)
 	{
 		return new MetasfreshIdProvider(lookupItemToResponseItem);
 	}
 
 	@NonNull
-	public Optional<JsonExternalReferenceItem> getExternalReferenceItem(@NonNull final String externalId, @NonNull final String type)
+	public Optional<JsonExternalReferenceRequestItem> getExternalReferenceItem(@NonNull final String externalId, @NonNull final String type)
 	{
 		final JsonExternalReferenceLookupItem lookupItem = JsonExternalReferenceLookupItem.builder()
-				.id(externalId)
+				.externalReference(externalId)
 				.type(type)
 				.build();
 

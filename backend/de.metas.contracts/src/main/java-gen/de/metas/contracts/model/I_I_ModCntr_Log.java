@@ -1,8 +1,9 @@
 package de.metas.contracts.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for I_ModCntr_Log
  *  @author metasfresh (generated) 
@@ -181,6 +182,54 @@ public interface I_I_ModCntr_Log
 	String COLUMNNAME_BPartnerValue = "BPartnerValue";
 
 	/**
+	 * Set Calendar name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCalendarName (java.lang.String CalendarName);
+
+	/**
+	 * Get Calendar name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCalendarName();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_CalendarName = new ModelColumn<>(I_I_ModCntr_Log.class, "CalendarName", null);
+	String COLUMNNAME_CalendarName = "CalendarName";
+
+	/**
+	 * Set Calendar.
+	 * Accounting Calendar Name
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Calendar_ID (int C_Calendar_ID);
+
+	/**
+	 * Get Calendar.
+	 * Accounting Calendar Name
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Calendar_ID();
+
+	@Nullable org.compiere.model.I_C_Calendar getC_Calendar();
+
+	void setC_Calendar(@Nullable org.compiere.model.I_C_Calendar C_Calendar);
+
+	ModelColumn<I_I_ModCntr_Log, org.compiere.model.I_C_Calendar> COLUMN_C_Calendar_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "C_Calendar_ID", org.compiere.model.I_C_Calendar.class);
+	String COLUMNNAME_C_Calendar_ID = "C_Calendar_ID";
+
+	/**
 	 * Set Currency.
 	 * The Currency for this record
 	 *
@@ -317,27 +366,6 @@ public interface I_I_ModCntr_Log
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_CollectionPointValue = new ModelColumn<>(I_I_ModCntr_Log.class, "CollectionPointValue", null);
 	String COLUMNNAME_CollectionPointValue = "CollectionPointValue";
-
-	/**
-	 * Set Contract Module Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setContractModuleName (@Nullable java.lang.String ContractModuleName);
-
-	/**
-	 * Get Contract Module Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getContractModuleName();
-
-	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_ContractModuleName = new ModelColumn<>(I_I_ModCntr_Log.class, "ContractModuleName", null);
-	String COLUMNNAME_ContractModuleName = "ContractModuleName";
 
 	/**
 	 * Get Created.
@@ -697,11 +725,11 @@ public interface I_I_ModCntr_Log
 	 */
 	int getModCntr_InvoicingGroup_ID();
 
-	@Nullable org.compiere.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup();
+	@Nullable de.metas.contracts.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup();
 
-	void setModCntr_InvoicingGroup(@Nullable org.compiere.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup);
+	void setModCntr_InvoicingGroup(@Nullable de.metas.contracts.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup);
 
-	ModelColumn<I_I_ModCntr_Log, org.compiere.model.I_ModCntr_InvoicingGroup> COLUMN_ModCntr_InvoicingGroup_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "ModCntr_InvoicingGroup_ID", org.compiere.model.I_ModCntr_InvoicingGroup.class);
+	ModelColumn<I_I_ModCntr_Log, de.metas.contracts.model.I_ModCntr_InvoicingGroup> COLUMN_ModCntr_InvoicingGroup_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "ModCntr_InvoicingGroup_ID", de.metas.contracts.model.I_ModCntr_InvoicingGroup.class);
 	String COLUMNNAME_ModCntr_InvoicingGroup_ID = "ModCntr_InvoicingGroup_ID";
 
 	/**
@@ -749,7 +777,7 @@ public interface I_I_ModCntr_Log
 	/**
 	 * Set Contract Module Log.
 	 *
-	 * <br>Type: ID
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -758,13 +786,17 @@ public interface I_I_ModCntr_Log
 	/**
 	 * Get Contract Module Log.
 	 *
-	 * <br>Type: ID
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getModCntr_Log_ID();
 
-	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_ModCntr_Log_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "ModCntr_Log_ID", null);
+	@Nullable de.metas.contracts.model.I_ModCntr_Log getModCntr_Log();
+
+	void setModCntr_Log(@Nullable de.metas.contracts.model.I_ModCntr_Log ModCntr_Log);
+
+	ModelColumn<I_I_ModCntr_Log, de.metas.contracts.model.I_ModCntr_Log> COLUMN_ModCntr_Log_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "ModCntr_Log_ID", de.metas.contracts.model.I_ModCntr_Log.class);
 	String COLUMNNAME_ModCntr_Log_ID = "ModCntr_Log_ID";
 
 	/**
@@ -920,6 +952,27 @@ public interface I_I_ModCntr_Log
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
+	 * Set Process Now.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcessing (boolean Processing);
+
+	/**
+	 * Get Process Now.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessing();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Processing = new ModelColumn<>(I_I_ModCntr_Log.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
+
+	/**
 	 * Set Producer.
 	 *
 	 * <br>Type: Table
@@ -991,8 +1044,8 @@ public interface I_I_ModCntr_Log
 	 * Set Record ID.
 	 * Direct internal record ID
 	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
+	 * <br>Type: Button
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setRecord_ID (int Record_ID);
@@ -1001,8 +1054,8 @@ public interface I_I_ModCntr_Log
 	 * Get Record ID.
 	 * Direct internal record ID
 	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
+	 * <br>Type: Button
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getRecord_ID();

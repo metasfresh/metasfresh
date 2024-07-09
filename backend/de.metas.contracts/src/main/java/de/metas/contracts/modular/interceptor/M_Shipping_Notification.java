@@ -22,8 +22,10 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.shippingnotification.ShippingNotificationId;
 import de.metas.shippingnotification.ShippingNotificationService;
@@ -32,7 +34,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
@@ -66,6 +70,11 @@ public class M_Shipping_Notification
 	{
 		final ShippingNotificationId notificationId = ShippingNotificationId.ofRepoId(record.getM_Shipping_Notification_ID());
 		shippingNotificationService.getLines(notificationId)
-				.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
+				.forEach(line -> contractService.scheduleLogCreation(DocStatusChangedEvent.builder()
+																			 .tableRecordReference(TableRecordReference.of(line))
+																			 .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
+																			 .modelAction(modelAction)
+																			 .userInChargeId(Env.getLoggedUserId())
+																			 .build()));
 	}
 }

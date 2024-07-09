@@ -1,5 +1,6 @@
 package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ModCntr_Module
@@ -75,7 +76,32 @@ public interface I_ModCntr_Module
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Invoicing group.
+	 * Set Description.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_ModCntr_Module, Object> COLUMN_Description = new ModelColumn<>(I_ModCntr_Module.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Invoice Line Group.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -84,7 +110,7 @@ public interface I_ModCntr_Module
 	void setInvoicingGroup (java.lang.String InvoicingGroup);
 
 	/**
-	 * Get Invoicing group.
+	 * Get Invoice Line Group.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -119,7 +145,7 @@ public interface I_ModCntr_Module
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Bausteine.
+	 * Set Modules.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -128,7 +154,7 @@ public interface I_ModCntr_Module
 	void setModCntr_Module_ID (int ModCntr_Module_ID);
 
 	/**
-	 * Get Bausteine.
+	 * Get Modules.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -142,7 +168,7 @@ public interface I_ModCntr_Module
 	/**
 	 * Set Modular Contract Settings.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -151,7 +177,7 @@ public interface I_ModCntr_Module
 	/**
 	 * Get Modular Contract Settings.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -165,18 +191,18 @@ public interface I_ModCntr_Module
 	String COLUMNNAME_ModCntr_Settings_ID = "ModCntr_Settings_ID";
 
 	/**
-	 * Set Contract Module Type.
+	 * Set Computing Method.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setModCntr_Type_ID (int ModCntr_Type_ID);
 
 	/**
-	 * Get Contract Module Type.
+	 * Get Computing Method.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -231,6 +257,27 @@ public interface I_ModCntr_Module
 
 	ModelColumn<I_ModCntr_Module, Object> COLUMN_Name = new ModelColumn<>(I_ModCntr_Module.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_ModCntr_Module, Object> COLUMN_Processed = new ModelColumn<>(I_ModCntr_Module.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set SeqNo.

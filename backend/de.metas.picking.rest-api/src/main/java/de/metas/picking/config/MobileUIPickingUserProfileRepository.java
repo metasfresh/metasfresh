@@ -22,10 +22,14 @@
 
 package de.metas.picking.config;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
+import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
+import de.metas.picking.model.I_PickingProfile_Filter;
+import de.metas.picking.model.I_PickingProfile_PickingJobConfig;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -69,8 +73,11 @@ public class MobileUIPickingUserProfileRepository
 		return MobileUIPickingUserProfile.builder()
 				.name(profileRecord.getName())
 				.onlyBPartnerIds(onlyBPartnerIds)
+				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
+				.filters(retrieveFilters(profileRecord))
+				.fields(retrieveFields(profileRecord))
 				.build();
 	}
 
@@ -104,6 +111,7 @@ public class MobileUIPickingUserProfileRepository
 		{
 			profileRecord = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking.class);
 		}
+		profileRecord.setIsAlwaysSplitHUsEnabled(profile.isAlwaysSplitHUsEnabled());
 		profileRecord.setName(profile.getName());
 		profileRecord.setIsAllowPickingAnyHU(profile.isAllowPickingAnyHU());
 		profileRecord.setCreateShipmentPolicy(profile.getCreateShipmentPolicy().getCode());
@@ -130,5 +138,42 @@ public class MobileUIPickingUserProfileRepository
 		}
 
 		InterfaceWrapperHelper.deleteAll(profileBPartnerRecords.values());
+	}
+
+	@NonNull
+	private PickingFiltersList retrieveFilters(@NonNull final I_MobileUI_UserProfile_Picking profileRecord)
+	{
+		return queryBL.createQueryBuilder(I_PickingProfile_Filter.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PickingProfile_Filter.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileRecord.getMobileUI_UserProfile_Picking_ID())
+				.create()
+				.stream()
+				.map(record -> PickingFilter.of(PickingJobFacetGroup.ofCode(record.getFilterType()), record.getSeqNo()))
+				.collect(PickingFiltersList.collect());
+	}
+
+	@NonNull
+	private ImmutableList<PickingJobField> retrieveFields(@NonNull final I_MobileUI_UserProfile_Picking profileRecord)
+	{
+		final ImmutableList<PickingJobField> fields = queryBL.createQueryBuilder(I_PickingProfile_PickingJobConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PickingProfile_PickingJobConfig.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileRecord.getMobileUI_UserProfile_Picking_ID())
+				.create()
+				.stream()
+				.map(MobileUIPickingUserProfileRepository::toPickingJobField)
+				.collect(ImmutableList.toImmutableList());
+
+		return !fields.isEmpty() ? fields : MobileUIPickingUserProfile.DEFAULT.getFields();
+	}
+
+	private static PickingJobField toPickingJobField(final I_PickingProfile_PickingJobConfig config)
+	{
+		return PickingJobField.builder()
+				.field(PickingJobFieldType.ofCode(config.getPickingJobField()))
+				.seqNo(config.getSeqNo())
+				.isShowInDetailed(config.isDisplayInDetailed())
+				.isShowInSummary(config.isDisplayInSummary())
+				.pattern(config.getFormatPattern())
+				.build();
 	}
 }

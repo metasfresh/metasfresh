@@ -104,7 +104,7 @@ public class ArchiveFileNameService
 
 		if (computeFileNameRequest.getDocTypeId() != null)
 		{
-			final I_C_DocType docTypeRecord = docTypeDAO.getById(computeFileNameRequest.getDocTypeId());
+			final I_C_DocType docTypeRecord = docTypeDAO.getRecordById(computeFileNameRequest.getDocTypeId());
 			final I_C_DocType docTypeRecordTrl = InterfaceWrapperHelper.translate(docTypeRecord, I_C_DocType.class);
 			fileNameParts.add(docTypeRecordTrl.getName());
 		}

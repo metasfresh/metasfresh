@@ -80,6 +80,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 
 		return UIComponent.builderFrom(COMPONENTTYPE_PICK_PRODUCTS, wfActivity)
 				.properties(Params.builder()
+						.valueObj("pickTarget", jsonPickingJob.getPickTarget())
 						.valueObj("lines", jsonPickingJob.getLines())
 						.valueObj("pickFromAlternatives", jsonPickingJob.getPickFromAlternatives())
 						.valueObj("qtyRejectedReasons", qtyRejectedReasons)

@@ -94,4 +94,6 @@ public interface IUserBL extends ISingletonService
 	Optional<UserId> getSupervisorId(@NonNull UserId userId, @NonNull OrgId orgId);
 
 	ImmutableSet<UserId> getUserIdsByJobId(@NonNull JobId jobId);
+
+	String getUserFullNameById(@NonNull UserId userId);
 }

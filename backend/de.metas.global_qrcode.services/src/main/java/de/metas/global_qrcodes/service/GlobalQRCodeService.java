@@ -5,6 +5,7 @@ import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
+import de.metas.report.PrintCopies;
 import lombok.NonNull;
 import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -28,6 +29,11 @@ public class GlobalQRCodeService
 		return createPDF(ImmutableList.of(qrCode), null, default_qrCodeProcessId);
 	}
 
+	public QRCodePDFResource createPDF(@NonNull final PrintableQRCode qrCode, @NonNull final AdProcessId qrCodeProcessId)
+	{
+		return createPDF(ImmutableList.of(qrCode), null, qrCodeProcessId);
+	}
+
 	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes)
 	{
 		return createPDF(qrCodes, null, default_qrCodeProcessId);
@@ -35,23 +41,28 @@ public class GlobalQRCodeService
 
 	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes,
 									   @Nullable final PInstanceId pInstanceId,
-									   @NonNull final AdProcessId qrCodeProcessId)
+									   @Nullable final AdProcessId qrCodeProcessId)
 	{
-		final QRCodePDFResource execute = CreatePDFCommand.builder()
+		return CreatePDFCommand.builder()
 				.qrCodes(qrCodes)
 				.pInstanceId(pInstanceId)
-				.qrCodeProcessId(qrCodeProcessId)
+				.qrCodeProcessId(qrCodeProcessId != null ? qrCodeProcessId : default_qrCodeProcessId)
 				.build()
 				.execute();
-		return execute;
 	}
 
-	public void print(@NonNull final QRCodePDFResource pdf)
+    public void print(@NonNull final QRCodePDFResource pdf)
+    {
+        print(pdf, PrintCopies.ONE);
+    }
+
+	public void print(@NonNull final QRCodePDFResource pdf, @NonNull final PrintCopies copies)
 	{
 		final TableRecordReference recordRef = TableRecordReference.of(I_AD_PInstance.Table_Name, pdf.getPinstanceId().getRepoId());
 		final ArchiveInfo archiveInfo = new ArchiveInfo(pdf.getFilename(), recordRef);
 		archiveInfo.setProcessId(pdf.getProcessId());
 		archiveInfo.setPInstanceId(pdf.getPinstanceId());
+		archiveInfo.setCopies(copies);
 
 		massPrintingService.print(pdf, archiveInfo);
 	}

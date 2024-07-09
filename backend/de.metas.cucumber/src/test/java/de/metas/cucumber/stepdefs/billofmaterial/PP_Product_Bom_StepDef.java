@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -36,6 +37,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -52,12 +54,13 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
-import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Product_Bom_StepDef
 {
@@ -184,18 +187,18 @@ public class PP_Product_Bom_StepDef
 
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_ValidFrom);
 
-		final I_PP_Product_BOM productBOMRecord = CoalesceUtil.coalesceSuppliersNotNull(
-				() -> queryBL.createQueryBuilder(I_PP_Product_BOM.class)
-						.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
-						.create()
-						.firstOnly(I_PP_Product_BOM.class),
-				() -> newInstance(I_PP_Product_BOM.class));
+		final BOMType bomType = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Product_BOM.COLUMNNAME_BOMType))
+				.map(BOMType::ofCode)
+				.orElse(BOMType.CurrentActive);
+
+		final I_PP_Product_BOM productBOMRecord = getExistingBOM(ProductId.ofRepoId(productRecord.getM_Product_ID()), bomType)
+				.orElseGet(() -> newInstance(I_PP_Product_BOM.class));
 
 		productBOMRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		productBOMRecord.setC_UOM_ID(productRecord.getC_UOM_ID());
 		productBOMRecord.setValue(productRecord.getValue());
 		productBOMRecord.setName(productRecord.getName());
-		productBOMRecord.setBOMType(BOMType.CurrentActive.getCode());
+		productBOMRecord.setBOMType(bomType.getCode());
 		productBOMRecord.setBOMUse(BOMUse.Manufacturing.getCode());
 		productBOMRecord.setValidFrom(validFrom);
 		productBOMRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
@@ -222,8 +225,60 @@ public class PP_Product_Bom_StepDef
 		productBOMTable.putOrReplace(recordIdentifier, productBOMRecord);
 	}
 
+	private Optional<I_PP_Product_BOM> getExistingBOM(@NonNull final ProductId productId, @NonNull final BOMType bomType)
+	{
+		final List<I_PP_Product_BOM> boms = queryBL.createQueryBuilder(I_PP_Product_BOM.class)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, bomType)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+
+		if (boms.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (boms.size() == 1)
+		{
+			return Optional.of(boms.get(0));
+		}
+		else
+		{
+			throw new AdempiereException("More than one BOM found for " + productId + ": \n" + toString(boms));
+		}
+	}
+
+	@NonNull
+	private String toString(final List<I_PP_Product_BOM> boms)
+	{
+		if (boms.isEmpty())
+		{
+			return "(no BOMs)";
+		}
+
+		final StringBuilder bomInfo = new StringBuilder();
+		for (final I_PP_Product_BOM bom : boms)
+		{
+			if (bomInfo.length() > 0)
+			{
+				bomInfo.append("\n");
+			}
+			bomInfo.append(bom);
+			productBOMTable.getFirstIdentifierByRecord(bom)
+					.ifPresent(identifier -> bomInfo.append(", identified by `").append(identifier).append("`"));
+		}
+
+		return bomInfo.toString();
+	}
+
 	private I_PP_Product_BOMVersions createBOMVersions(@NonNull final Map<String, String> tableRow)
 	{
+		final String bomVersionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		if (productBomVersionsTable.getOptional(bomVersionsIdentifier).isPresent())
+		{
+			return productBomVersionsTable.getOptional(bomVersionsIdentifier).get();
+		}
+
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
@@ -239,7 +294,6 @@ public class PP_Product_Bom_StepDef
 
 		saveRecord(bomVersionsRecord);
 
-		final String bomVersionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		productBomVersionsTable.putOrReplace(bomVersionsIdentifier, bomVersionsRecord);
 
 		return bomVersionsRecord;

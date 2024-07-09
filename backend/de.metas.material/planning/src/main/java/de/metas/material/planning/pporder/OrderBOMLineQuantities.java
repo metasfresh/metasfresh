@@ -23,11 +23,13 @@
 package de.metas.material.planning.pporder;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.NumberUtils;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,6 +39,7 @@ import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.util.function.UnaryOperator;
+import java.math.BigDecimal;
 
 @Value
 public class OrderBOMLineQuantities
@@ -167,7 +170,7 @@ public class OrderBOMLineQuantities
 			if (!request.isUsageVariance())
 			{
 				final Quantity qtyIssuedOrReceivedActualNew = getQtyIssuedOrReceivedActual().add(request.getQtyIssuedOrReceivedToAdd());
-				assertQtyToIssueToleranceIsRespected_UpperBound(qtyIssuedOrReceivedActualNew);
+				assertQtyToIssueToleranceIsRespected_UpperBound(qtyIssuedOrReceivedActualNew, request.getRoundToScaleQuantity());
 
 				builder.qtyIssuedOrReceivedActual(qtyIssuedOrReceivedActualNew);
 			}
@@ -207,20 +210,21 @@ public class OrderBOMLineQuantities
 		return adjustCoProductQty(getQtyIssuedOrReceived());
 	}
 
-	public void assertQtyToIssueToleranceIsRespected()
+	public void assertQtyToIssueToleranceIsRespected(@Nullable final Quantity roundToScale)
 	{
-		assertQtyToIssueToleranceIsRespected_LowerBound(qtyIssuedOrReceivedActual);
-		assertQtyToIssueToleranceIsRespected_UpperBound(qtyIssuedOrReceivedActual);
+		assertQtyToIssueToleranceIsRespected_LowerBound(qtyIssuedOrReceivedActual, roundToScale);
+		assertQtyToIssueToleranceIsRespected_UpperBound(qtyIssuedOrReceivedActual, roundToScale);
 	}
 
-	private void assertQtyToIssueToleranceIsRespected_LowerBound(final Quantity qtyIssuedOrReceivedActual)
+	private void assertQtyToIssueToleranceIsRespected_LowerBound(final Quantity qtyIssuedOrReceivedActual, @Nullable final Quantity roundToScale)
 	{
 		if (doNotRestrictQtyIssued || issuingToleranceSpec == null)
 		{
 			return;
 		}
 
-		final Quantity qtyIssuedOrReceivedActualMin = issuingToleranceSpec.subtractFrom(qtyRequired);
+		final Quantity qtyIssuedOrReceivedActualMin = roundToQuantity(issuingToleranceSpec.subtractFrom(qtyRequired), roundToScale);
+
 		if (qtyIssuedOrReceivedActual.compareTo(qtyIssuedOrReceivedActualMin) < 0)
 		{
 			final ITranslatableString qtyStr = TranslatableStrings.builder()
@@ -236,14 +240,15 @@ public class OrderBOMLineQuantities
 		}
 	}
 
-	private void assertQtyToIssueToleranceIsRespected_UpperBound(final Quantity qtyIssuedOrReceivedActual)
+	private void assertQtyToIssueToleranceIsRespected_UpperBound(final Quantity qtyIssuedOrReceivedActual, @Nullable final Quantity roundToScale)
 	{
 		if (doNotRestrictQtyIssued || issuingToleranceSpec == null)
 		{
 			return;
 		}
 
-		final Quantity qtyIssuedOrReceivedActualMax = issuingToleranceSpec.addTo(qtyRequired);
+		final Quantity qtyIssuedOrReceivedActualMax = roundToQuantity(issuingToleranceSpec.addTo(qtyRequired), roundToScale);
+
 		if (qtyIssuedOrReceivedActual.compareTo(qtyIssuedOrReceivedActualMax) > 0)
 		{
 			final ITranslatableString qtyStr = TranslatableStrings.builder()
@@ -274,4 +279,24 @@ public class OrderBOMLineQuantities
 				.build();
 	}
 
+	@NonNull
+	private Quantity roundToQuantity(@NonNull final Quantity qty, @Nullable final Quantity roundingQty)
+	{
+		if (roundingQty == null)
+		{
+			return qty;
+		}
+
+		if (!qty.getUomId().equals(roundingQty.getUomId()))
+		{
+			throw new AdempiereException("UOM doesn't match!")
+					.appendParametersToMessage()
+					.setParameter("qty", qty)
+					.setParameter("roundingQty", roundingQty);
+		}
+
+		final BigDecimal roundedQtyBD = NumberUtils.roundToBigDecimal(qty.toBigDecimal(), roundingQty.toBigDecimal());
+
+		return Quantitys.of(roundedQtyBD, qty.getUomId());
+	}
 }

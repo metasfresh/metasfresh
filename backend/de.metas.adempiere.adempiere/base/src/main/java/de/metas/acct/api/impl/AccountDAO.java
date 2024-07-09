@@ -21,6 +21,9 @@ import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -48,10 +51,10 @@ import java.util.Properties;
 
 public class AccountDAO implements IAccountDAO
 {
-	/**
-	 * Maps {@link AcctSegmentType} to {@link I_C_ValidCombination}'s column name
-	 */
-	private static final Map<AcctSegmentType, String> segmentType2column = ImmutableMap.<AcctSegmentType, String>builder()
+	final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/** Maps {@link AcctSegmentType} to {@link I_C_ValidCombination}'s column name */
+	private static final Map<AcctSegmentType, String> segmentType2column = ImmutableMap.<AcctSegmentType, String> builder()
 			.put(AcctSegmentType.Client, I_C_ValidCombination.COLUMNNAME_AD_Client_ID)
 			.put(AcctSegmentType.Organization, I_C_ValidCombination.COLUMNNAME_AD_Org_ID)
 			.put(AcctSegmentType.Account, I_C_ValidCombination.COLUMNNAME_Account_ID)
@@ -99,7 +102,6 @@ public class AccountDAO implements IAccountDAO
 	@Override
 	public MAccount retrieveAccount(final Properties ctx, final AccountDimension dimension)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_ValidCombination> queryBuilder = queryBL.createQueryBuilder(I_C_ValidCombination.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_ValidCombination.COLUMNNAME_C_AcctSchema_ID, dimension.getAcctSchemaId());
@@ -181,6 +183,8 @@ public class AccountDAO implements IAccountDAO
 		vc.setUser2_ID(dimension.getUser2_ID());
 		vc.setUserElement1_ID(dimension.getUserElement1_ID());
 		vc.setUserElement2_ID(dimension.getUserElement2_ID());
+		vc.setUserElementNumber1(dimension.getUserElementNumber1());
+		vc.setUserElementNumber2(dimension.getUserElementNumber2());
 		vc.setUserElementString1(dimension.getUserElementString1());
 		vc.setUserElementString2(dimension.getUserElementString2());
 		vc.setUserElementString3(dimension.getUserElementString3());

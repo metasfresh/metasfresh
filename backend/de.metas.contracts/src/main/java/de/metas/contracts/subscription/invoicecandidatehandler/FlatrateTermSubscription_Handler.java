@@ -153,7 +153,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		final UomId uomId = HandlerTools.retrieveUomId(icRecord);
 
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(icRecord);
-		return Quantitys.create(term.getPlannedQtyPerUnit(), uomId);
+		return Quantitys.of(term.getPlannedQtyPerUnit(), uomId);
 	}
 
 	/**

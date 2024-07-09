@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -49,6 +50,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderDocBaseType;
@@ -59,31 +61,21 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
+@RequiredArgsConstructor
 @ViewFactory(windowId = PPOrderConstants.AD_WINDOW_ID_IssueReceipt_String)
 public class PPOrderLinesViewFactory implements IViewFactory
 {
-	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private static final AdMessageKey MANUFACTURING_ISSUE_RECEIPT_CAPTION = AdMessageKey.of("de.metas.ui.web.pporder.MANUFACTURING_ISSUE_RECEIPT_CAPTION");
 
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final ASIRepository asiRepository;
-	private final DefaultHUEditorViewFactory huEditorViewFactory;
-	private final HUReservationService huReservationService;
-	private final ADReferenceService adReferenceService;
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final ASIRepository asiRepository;
+	@NonNull private final DefaultHUEditorViewFactory huEditorViewFactory;
+	@NonNull private final HUReservationService huReservationService;
+	@NonNull private final ADReferenceService adReferenceService;
 
 	private final transient CCache<WindowId, ViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
-
-	public PPOrderLinesViewFactory(
-			@NonNull final ASIRepository asiRepository,
-			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
-			@NonNull final HUReservationService huReservationService,
-			@NonNull final ADReferenceService adReferenceService)
-	{
-		this.asiRepository = asiRepository;
-		this.huEditorViewFactory = huEditorViewFactory;
-		this.huReservationService = huReservationService;
-		this.adReferenceService = adReferenceService;
-	}
 
 	@Override
 	public PPOrderLinesView createView(final @NonNull CreateViewRequest request)
@@ -120,9 +112,9 @@ public class PPOrderLinesViewFactory implements IViewFactory
 
 	@Override
 	public IView filterView(
-			final IView view,
-			final JSONFilterViewRequest filterViewRequest,
-			final Supplier<IViewsRepository> viewsRepo)
+			@NonNull final IView view,
+			@NonNull final JSONFilterViewRequest filterViewRequest,
+			@NonNull final Supplier<IViewsRepository> viewsRepo)
 	{
 		throw new AdempiereException("View does not support filtering")
 				.setParameter("view", view)
@@ -147,7 +139,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	{
 		return ViewLayout.builder()
 				.setWindowId(windowId)
-				.setCaption("PP Order Issue/Receipt")
+				.setCaption(msgBL.getTranslatableMsgText(MANUFACTURING_ISSUE_RECEIPT_CAPTION))
 				.setEmptyResultText(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_TEXT))
 				.setEmptyResultHint(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_HINT))
 				//

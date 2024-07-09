@@ -3,6 +3,7 @@ package org.adempiere.warehouse.api;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.location.LocationId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.ISingletonService;
@@ -56,6 +57,8 @@ import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 public interface IWarehouseDAO extends ISingletonService
 {
 	I_M_Warehouse getById(WarehouseId warehouseId);
+
+	<T extends I_M_Warehouse> T getByIdInTrx(@NonNull WarehouseId warehouseId, @NonNull Class<T> modelType);
 
 	<T extends I_M_Warehouse> T getById(WarehouseId warehouseId, Class<T> modelType);
 
@@ -168,6 +171,8 @@ public interface IWarehouseDAO extends ISingletonService
 
 	ImmutableSet<WarehouseId> retrieveWarehouseWithLocation(@NonNull LocationId locationId);
 
+	ClientAndOrgId getClientAndOrgIdByLocatorId(@NonNull LocatorId locatorId);
+
 	@Value
 	class WarehouseQuery
 	{
@@ -219,4 +224,19 @@ public interface IWarehouseDAO extends ISingletonService
 	WarehouseId retrieveWarehouseIdBy(WarehouseQuery query);
 
 	WarehouseAndLocatorValue retrieveWarehouseAndLocatorValueByLocatorRepoId(int locatorRepoId);
+
+	@NonNull
+	Optional<WarehouseId> getOptionalIdByValue(@NonNull String value);
+
+	@NonNull
+	Optional<Warehouse> getOptionalById(@NonNull WarehouseId id);
+
+	void save(@NonNull Warehouse warehouse);
+
+	/**
+	 * Create a warehouse and a default locator.
+	 */
+	@NonNull
+	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);
+
 }

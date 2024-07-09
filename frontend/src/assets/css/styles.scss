@@ -4,6 +4,7 @@
 
 @import './board.scss';
 @import './charts.scss';
+@import './URLsChart.scss';
 @import './datepicker.scss';
 @import './daterangepicker.scss';
 @import './datetime.scss';
@@ -12,6 +13,7 @@
 @import './header.scss';
 @import './inbox.scss';
 @import './indicator.scss';
+@import './window-indicator.scss';
 @import './inputs.scss';
 @import './notification.scss';
 @import './panel.scss';
@@ -28,6 +30,7 @@
 @import './attachments.scss';
 @import './labels.scss';
 @import './filtersitem.scss';
+@import './UserDropdown.scss';
 
 @import './intro.scss';
 
@@ -200,6 +203,11 @@ body {
 
 .context-menu-item:last-of-type {
   margin: 0;
+}
+
+.context-menu-item-pending {
+  cursor: wait;
+  color: $brand-color-disabled;
 }
 
 .backdrop {
@@ -1552,54 +1560,6 @@ body {
 .avatar-sm {
   width: 25px;
   height: 25px;
-}
-
-.avatar-container {
-  width: 100%;
-  height: 100%;
-  padding-top: 2px;
-  margin: 0 8px;
-}
-
-.meta-text-primary {
-  font-weight: bold;
-  color: $brand-color-primary;
-}
-
-.user-dropdown-container {
-  position: relative;
-}
-
-.user-dropdown-list {
-  position: absolute;
-  top: 54px;
-  right: -1px;
-  z-index: 0;
-  min-width: 200px;
-  background-color: #F8FAFB;
-  border: 1px solid #e1e8ee;
-  border-top: 0;
-  pointer-events: all;
-  box-shadow: 0 6px 10px 0 rgba(165, 165, 165, 0.8);
-}
-
-.user-dropdown-header-item {
-  letter-spacing: .02rem;
-  cursor: default;
-}
-
-.user-dropdown-item {
-  padding: 1rem .7rem;
-}
-
-.user-dropdown-item i {
-  margin-right: 5px;
-}
-
-.user-dropdown-item:not(.user-dropdown-header-item):hover,
-.user-dropdown-item:not(.user-dropdown-header-item):focus {
-  background-color: $brand-color-primary;
-  color: #fff;
 }
 
 .disabled {

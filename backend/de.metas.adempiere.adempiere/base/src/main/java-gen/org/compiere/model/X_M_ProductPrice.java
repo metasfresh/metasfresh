@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_ProductPrice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1511391541L;
+	private static final long serialVersionUID = -223919631L;
 
     /** Standard Constructor */
     public X_M_ProductPrice (final Properties ctx, final int M_ProductPrice_ID, @Nullable final String trxName)
@@ -159,6 +159,18 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	}
 
 	@Override
+	public void setMatchSeqNo (final int MatchSeqNo)
+	{
+		set_Value (COLUMNNAME_MatchSeqNo, MatchSeqNo);
+	}
+
+	@Override
+	public int getMatchSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MatchSeqNo);
+	}
+
+	@Override
 	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
@@ -296,18 +308,6 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	}
 
 	@Override
-	public void setMatchSeqNo (final int MatchSeqNo)
-	{
-		set_Value (COLUMNNAME_MatchSeqNo, MatchSeqNo);
-	}
-
-	@Override
-	public int getMatchSeqNo() 
-	{
-		return get_ValueAsInt(COLUMNNAME_MatchSeqNo);
-	}
-
-	@Override
 	public void setPriceLimit (final BigDecimal PriceLimit)
 	{
 		set_Value (COLUMNNAME_PriceLimit, PriceLimit);
@@ -344,6 +344,29 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceStd);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	/** 
+	 * ScalePriceQuantityFrom AD_Reference_ID=541870
+	 * Reference name: Scale price quantity from
+	 */
+	public static final int SCALEPRICEQUANTITYFROM_AD_Reference_ID=541870;
+	/** Quantity = Q */
+	public static final String SCALEPRICEQUANTITYFROM_Quantity = "Q";
+	/** UserElementNumber1 = UEN1 */
+	public static final String SCALEPRICEQUANTITYFROM_UserElementNumber1 = "UEN1";
+	/** UserElementNumber2 = UEN2 */
+	public static final String SCALEPRICEQUANTITYFROM_UserElementNumber2 = "UEN2";
+	@Override
+	public void setScalePriceQuantityFrom (final java.lang.String ScalePriceQuantityFrom)
+	{
+		set_Value (COLUMNNAME_ScalePriceQuantityFrom, ScalePriceQuantityFrom);
+	}
+
+	@Override
+	public java.lang.String getScalePriceQuantityFrom() 
+	{
+		return get_ValueAsString(COLUMNNAME_ScalePriceQuantityFrom);
 	}
 
 	@Override

@@ -155,6 +155,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		candidate.setDueDate(sourceDoc.getDueDate().toTimestamp(orgDAO::getTimeZone));
 		candidate.setDunningGrace(LocalDateAndOrgId.toTimestamp(sourceDoc.getGraceDate(), orgDAO::getTimeZone));
 		candidate.setDaysDue(sourceDoc.getDaysDue());
+		candidate.setPOReference(sourceDoc.getPoReference());
 		candidate.setIsWriteOff(dunningLevel.isWriteOff());
 
 		final I_C_Dunning dunning = dunningLevel.getC_Dunning();

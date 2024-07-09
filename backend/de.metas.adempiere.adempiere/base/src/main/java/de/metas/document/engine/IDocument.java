@@ -1,8 +1,12 @@
 package de.metas.document.engine;
 
 import de.metas.ad_reference.ReferenceId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -167,6 +171,12 @@ public interface IDocument
 
 	BigDecimal getApprovalAmt();
 
+	default Money getApprovalAmtAsMoney()
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(getC_Currency_ID());
+		return currencyId != null ? Money.of(getApprovalAmt(), currencyId) : null;
+	}
+
 	int getAD_Client_ID();
 
 	int getAD_Org_ID();
@@ -223,4 +233,10 @@ public interface IDocument
 	{
 		return InterfaceWrapperHelper.getValue(getDocumentModel(), columnName);
 	}
+
+	default <T extends RepoIdAware> Optional<T> getValueAsId(@NonNull final String columnName, @NonNull Class<T> idType)
+	{
+		return getValue(columnName).map(valueObj -> RepoIdAwares.ofObject(valueObj, idType));
+	}
+
 }

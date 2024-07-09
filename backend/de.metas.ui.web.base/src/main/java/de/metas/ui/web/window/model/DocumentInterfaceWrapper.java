@@ -589,7 +589,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	public static void save(final Object model)
 	{
 		final Document document = getDocument(model);
-		document.saveIfHasChanges();
+		document.saveIfHasChanges().throwIfError();
 	}
 
 	/**

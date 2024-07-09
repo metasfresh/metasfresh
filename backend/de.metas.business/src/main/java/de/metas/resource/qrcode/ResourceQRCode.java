@@ -4,6 +4,7 @@ import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.product.ResourceId;
 import de.metas.resource.ManufacturingResourceType;
+import de.metas.resource.Resource;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -29,6 +30,20 @@ public class ResourceQRCode
 	public String toGlobalQRCodeJsonString() {return ResourceQRCodeJsonConverter.toGlobalQRCodeJsonString(this);}
 
 	public static ResourceQRCode ofGlobalQRCode(final GlobalQRCode globalQRCode) {return ResourceQRCodeJsonConverter.fromGlobalQRCode(globalQRCode);}
+
+	public static ResourceQRCode ofGlobalQRCodeJsonString(final String qrCodeString)
+	{
+		return ResourceQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
+	}
+
+	public static ResourceQRCode ofResource(@NonNull final Resource resource)
+	{
+		return ResourceQRCode.builder()
+				.resourceId(resource.getResourceId())
+				.resourceType(resource.getManufacturingResourceType())
+				.caption(resource.getName().getDefaultValue())
+				.build();
+	}
 
 	public PrintableQRCode toPrintableQRCode()
 	{

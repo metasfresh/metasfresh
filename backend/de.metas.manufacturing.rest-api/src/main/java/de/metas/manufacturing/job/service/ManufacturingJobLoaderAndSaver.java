@@ -29,11 +29,11 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -80,7 +80,7 @@ public class ManufacturingJobLoaderAndSaver
 				.ppOrderId(ppOrderId)
 				.documentNo(ppOrder.getDocumentNo())
 				.customerId(BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID()))
-				.datePromised(InstantAndOrgId.ofTimestamp(ppOrder.getDatePromised(), ppOrder.getAD_Org_ID()).toZonedDateTime(supportingServices::getTimeZone))
+				.dateStartSchedule(InstantAndOrgId.ofTimestamp(ppOrder.getDateStartSchedule(), ppOrder.getAD_Org_ID()).toZonedDateTime(supportingServices::getTimeZone))
 				.responsibleId(extractResponsibleId(ppOrder))
 				.allowUserReporting(ppOrderDocStatus.isCompleted())
 				//
@@ -106,9 +106,8 @@ public class ManufacturingJobLoaderAndSaver
 		ppOrders.put(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()), ppOrder);
 	}
 
-	public void addToCache(List<PPOrderIssueSchedule> schedules)
+	public void addToCache(@NonNull final PPOrderId ppOrderId, @NonNull final List<PPOrderIssueSchedule> schedules)
 	{
-		final PPOrderId ppOrderId = CollectionUtils.extractSingleElement(schedules, PPOrderIssueSchedule::getPpOrderId);
 		final ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> schedulesByBOMLineId = Multimaps.index(schedules, PPOrderIssueSchedule::getPpOrderBOMLineId);
 		issueSchedules.put(ppOrderId, schedulesByBOMLineId);
 	}
@@ -163,6 +162,7 @@ public class ManufacturingJobLoaderAndSaver
 				.routingActivityStatus(from.getStatus())
 				.alwaysAvailableToUser(from.getAlwaysAvailableToUser())
 				.userInstructions(from.getUserInstructions())
+				.targetPlanningStatus(from.getTargetPlanningStatus())
 				.scannedQRCode(from.getScannedQRCode());
 	}
 
@@ -203,6 +203,7 @@ public class ManufacturingJobLoaderAndSaver
 				.productId(productId)
 				.productName(productInfo.getName())
 				.productValue(productInfo.getValue())
+				.productValue(supportingServices.getProductValue(productId))
 				.isWeightable(isWeightable)
 				.qtyToIssue(qtyToIssue)
 				.issuingToleranceSpec(quantities.getIssuingToleranceSpec())
@@ -213,11 +214,13 @@ public class ManufacturingJobLoaderAndSaver
 						.sorted(Comparator.comparing(PPOrderIssueSchedule::getSeqNo))
 						.map(this::toRawMaterialsIssueStep)
 						.collect(ImmutableList.toImmutableList()))
+				.seqNo(orderBOMLine.getLine())
 				.build();
 	}
 
 	private RawMaterialsIssueStep toRawMaterialsIssueStep(final PPOrderIssueSchedule schedule)
 	{
+		final String locatorCaption = supportingServices.getLocatorName(schedule.getIssueFromLocatorId());
 		return RawMaterialsIssueStep.builder()
 				.id(schedule.getId())
 				.scaleTolerance(supportingServices.getScaleTolerance(schedule.getPpOrderBOMLineId()).orElse(null))
@@ -227,12 +230,16 @@ public class ManufacturingJobLoaderAndSaver
 				.qtyToIssue(schedule.getQtyToIssue())
 				.issueFromLocator(LocatorInfo.builder()
 						.id(schedule.getIssueFromLocatorId())
-						.caption(supportingServices.getLocatorName(schedule.getIssueFromLocatorId()))
+						.caption(locatorCaption)
+						.qrCode(LocatorQRCode.builder()
+								.locatorId(schedule.getIssueFromLocatorId())
+								.caption(locatorCaption)
+								.build())
 						.build())
 				.issueFromHU(HUInfo.builder()
 						.id(schedule.getIssueFromHUId())
-						.barcode(supportingServices.getQRCodeByHuId(schedule.getIssueFromHUId()))
 						.huCapacity(getHUCapacity(schedule))
+						.barcode(supportingServices.getFirstQRCodeByHuId(schedule.getIssueFromHUId()))
 						.build())
 				.issued(schedule.getIssued())
 				.build();
@@ -268,6 +275,7 @@ public class ManufacturingJobLoaderAndSaver
 		return FinishedGoodsReceiveLine.builder()
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
+				.productValue(supportingServices.getProductValue(productId))
 				.attributes(supportingServices.getImmutableAttributeSet(AttributeSetInstanceId.ofRepoId(ppOrder.getM_AttributeSetInstance_ID())))
 				.qtyToReceive(orderQuantities.getQtyRequiredToProduce())
 				.qtyReceived(orderQuantities.getQtyReceived())
@@ -318,6 +326,7 @@ public class ManufacturingJobLoaderAndSaver
 		return FinishedGoodsReceiveLine.builder()
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
+				.productValue(supportingServices.getProductValue(productId))
 				.attributes(supportingServices.getImmutableAttributeSet(AttributeSetInstanceId.ofRepoId(orderBOMLine.getM_AttributeSetInstance_ID())))
 				.qtyToReceive(bomLineQuantities.getQtyRequired().negate())
 				.qtyReceived(bomLineQuantities.getQtyIssuedOrReceived().negate())

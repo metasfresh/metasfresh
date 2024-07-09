@@ -188,16 +188,6 @@ public class PPOrderCost
 		return addingAccumulatedAmountAndQty(amt.negate(), qty.negate(), uomConverter);
 	}
 
-	public PPOrderCost withPrice(@NonNull final CostPrice newPrice)
-	{
-		if (this.getPrice().equals(newPrice))
-		{
-			return this;
-		}
-
-		return toBuilder().price(newPrice).build();
-	}
-
 	/* package */void setPostCalculationAmount(@NonNull final CostAmount postCalculationAmount)
 	{
 		this.postCalculationAmount = postCalculationAmount;

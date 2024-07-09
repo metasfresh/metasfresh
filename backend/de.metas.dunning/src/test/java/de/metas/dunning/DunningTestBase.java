@@ -50,6 +50,7 @@ import de.metas.dunning.spi.impl.MockedCloseableIterator;
 import de.metas.dunning.spi.impl.MockedDunnableSource;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.impl.PlainInvoiceBL;
+import de.metas.letter.BoilerPlateRepository;
 import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
@@ -72,7 +73,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 import org.junit.After;
 import org.junit.Before;
@@ -112,7 +112,7 @@ public class DunningTestBase
 
 	protected CurrencyId currencyEUR;
 	protected CurrencyId currencyCHF;
-	protected final IDunningBL dunningBL = Services.get(IDunningBL.class);
+	protected IDunningBL dunningBL;
 	protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Before
@@ -131,6 +131,7 @@ public class DunningTestBase
 		db = dao.getDB();
 
 		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
+		SpringContextHolder.registerJUnitBean(new BoilerPlateRepository());
 
 		//
 		invoiceBL = new PlainInvoiceBL();
@@ -140,6 +141,7 @@ public class DunningTestBase
 
 		final PlainDocumentBL docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
 		docActionBL.setDefaultProcessInterceptor(PlainDocumentBL.PROCESSINTERCEPTOR_CompleteDirectly);
+		dunningBL = Services.get(IDunningBL.class);
 
 		MockedCloseableIterator.clear();
 
@@ -226,8 +228,8 @@ public class DunningTestBase
 	{
 		final PlainDunningContext dunningContext = createPlainDunningContext();
 		dunningContext.setDunningDate(Optional.ofNullable(dunningDate)
-											  .map(date -> LocalDateAndOrgId.ofLocalDate(date.toInstant().atZone(orgDAO.getTimeZone(OrgId.MAIN)).toLocalDate(), OrgId.MAIN))
-											  .orElse(null));
+				.map(date -> LocalDateAndOrgId.ofLocalDate(date.toInstant().atZone(orgDAO.getTimeZone(OrgId.MAIN)).toLocalDate(), OrgId.MAIN))
+				.orElse(null));
 		dunningContext.setDunningLevel(dunningLevel);
 		return dunningContext;
 	}
@@ -291,8 +293,8 @@ public class DunningTestBase
 	protected OrgInfo createOrgInfo()
 	{
 		return orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
-											 .orgId(OrgId.MAIN)
-											 .build());
+				.orgId(OrgId.MAIN)
+				.build());
 	}
 
 	public MockedDunnableSource getMockedDunnableSource(final IDunningContext context)
@@ -309,4 +311,5 @@ public class DunningTestBase
 		final MockedDunnableSource source = getMockedDunnableSource(context);
 		return source.getDunnableDocList();
 	}
+
 }

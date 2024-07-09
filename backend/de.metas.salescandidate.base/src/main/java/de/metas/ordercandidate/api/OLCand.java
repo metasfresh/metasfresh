@@ -31,7 +31,6 @@ import lombok.Setter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -68,10 +67,19 @@ public final class OLCand implements IProductPriceAware
 
 	private final I_C_OLCand olCandRecord;
 
+	/**
+	 * This value - if not null - ends up as {@code C_Order.DateOrdered}. If null, the current date will be used.
+	 */
 	@Getter
 	@Setter
-	private LocalDate dateDoc;
+	private LocalDate dateOrdered;
 
+	@Getter
+	private final LocalDate presetDateShipped;
+
+	@Getter
+	private final LocalDate presetDateInvoiced;
+	
 	private final BPartnerInfo bpartnerInfo;
 
 	@Getter
@@ -168,6 +176,9 @@ public final class OLCand implements IProductPriceAware
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
 			@NonNull final I_C_OLCand olCandRecord,
 			//
+			@Nullable final LocalDate dateOrdered,
+			@Nullable final LocalDate presetDateShipped,
+			@Nullable final LocalDate presetDateInvoiced,
 			@Nullable final DeliveryRule deliveryRule,
 			@Nullable final DeliveryViaRule deliveryViaRule,
 			@Nullable final FreightCostRule freightCostRule,
@@ -197,7 +208,9 @@ public final class OLCand implements IProductPriceAware
 
 		this.olCandRecord = olCandRecord;
 
-		this.dateDoc = TimeUtil.asLocalDate(olCandRecord.getDateOrdered());
+		this.dateOrdered = dateOrdered;
+		this.presetDateShipped = presetDateShipped;
+		this.presetDateInvoiced = presetDateInvoiced;
 		this.auctionId = auctionId;
 
 		this.bpartnerInfo = olCandEffectiveValuesBL.getBuyerPartnerInfo(olCandRecord);
@@ -216,8 +229,8 @@ public final class OLCand implements IProductPriceAware
 		this.paymentTermId = paymentTermId;
 		this.pricingSystemId = pricingSystemId;
 
-		this.qty = Quantitys.create(
-				olCandRecord.getQtyEntered(),
+		this.qty = Quantitys.of(
+				this.olCandEffectiveValuesBL.getEffectiveQtyEntered(olCandRecord),
 				this.olCandEffectiveValuesBL.getEffectiveUomId(olCandRecord));
 
 		this.qtyItemCapacityEff = qtyItemCapacityEff;
@@ -438,7 +451,7 @@ public final class OLCand implements IProductPriceAware
 		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DateOrdered))
 		{
-			return getDateDoc();
+			return getDateOrdered();
 		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DatePromised_Effective))
 		{
@@ -491,16 +504,6 @@ public final class OLCand implements IProductPriceAware
 	public InvoicableQtyBasedOn getInvoicableQtyBasedOn()
 	{
 		return InvoicableQtyBasedOn.ofNullableCodeOrNominal(olCandRecord.getInvoicableQtyBasedOn());
-	}
-
-	public LocalDate getPresetDateInvoiced()
-	{
-		return TimeUtil.asLocalDate(olCandRecord.getPresetDateInvoiced());
-	}
-
-	public LocalDate getPresetDateShipped()
-	{
-		return TimeUtil.asLocalDate(olCandRecord.getPresetDateShipped());
 	}
 
 	public BPartnerInfo getBPartnerInfo()

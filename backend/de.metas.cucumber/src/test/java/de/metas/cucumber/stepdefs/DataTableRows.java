@@ -44,6 +44,18 @@ public class DataTableRows
 
 	public Stream<DataTableRow> stream() {return list.stream();}
 
+	public DataTableRow singleRow()
+	{
+		if (list.size() == 1)
+		{
+			return list.get(0);
+		}
+		else
+		{
+			throw new AdempiereException("Expected single row but have: " + list);
+		}
+	}
+
 	public void forEach(final ThrowingConsumer<? super DataTableRow> consumer)
 	{
 		forEach((row, index) -> consumer.accept(row));

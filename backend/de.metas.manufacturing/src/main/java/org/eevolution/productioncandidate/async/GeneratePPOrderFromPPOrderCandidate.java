@@ -51,6 +51,7 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_AUTO_CLOSE_CANDIDATES_AFTER_PRODUCTION;
 import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION;
 import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_COMPLETE_DOC_PARAM;
 import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_PINSTANCE_ID_PARAM;
@@ -79,6 +80,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 		final PInstanceId pInstanceId = params.getParameterAsId(WP_PINSTANCE_ID_PARAM, PInstanceId.class);
 		final Boolean isDocCompleteOverride = params.getParameterAsBoolean(WP_COMPLETE_DOC_PARAM);
 		final boolean autoProcessCandidatesAfterProduction = params.getParameterAsBool(WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION);
+		final boolean autoCloseCandidatesAfterProduction = params.getParameterAsBool(WP_AUTO_CLOSE_CANDIDATES_AFTER_PRODUCTION);
 
 		Check.assumeNotNull(pInstanceId, "adPInstanceId is not null");
 
@@ -90,6 +92,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 		return PPOrderCandidateProcessRequest.builder()
 				.isDocCompleteOverride(isDocCompleteOverride)
 				.autoProcessCandidatesAfterProduction(autoProcessCandidatesAfterProduction)
+				.autoCloseCandidatesAfterProduction(autoCloseCandidatesAfterProduction)
 				.sortedCandidates(getSortedCandidates(candidateStream))
 				.build();
 	}

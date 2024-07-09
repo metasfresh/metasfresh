@@ -111,11 +111,11 @@ public class BPartnerRecordsUtil
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 		orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
-											 .orgId(OrgId.ofRepoId(AD_ORG_ID))
-											 .build());
+				.orgId(OrgId.ofRepoId(AD_ORG_ID))
+				.build());
 
 		setupTimeSource();
-		try (final IAutoCloseable c = Env.temporaryChangeLoggedUserId(adUserId))
+		try (final IAutoCloseable ignored = Env.temporaryChangeLoggedUserId(adUserId))
 		{
 			final I_M_SectionCode sectionCode = createSectionCode("bpartnerRecord.sectionCode");
 			final I_C_PaymentTerm paymentTermCustomer = createPaymentTerm();
@@ -151,10 +151,10 @@ public class BPartnerRecordsUtil
 			saveRecord(sinceRecord);
 
 			createExternalReference(C_BPARTNER_EXTERNAL_ID + idOffSetStr,
-									"BPartner",
-									bpartnerRecord.getC_BPartner_ID(),
-									ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID,
-									false);
+					"BPartner",
+					bpartnerRecord.getC_BPartner_ID(),
+					ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID,
+					false);
 
 			final I_AD_User contactRecord = newInstance(I_AD_User.class);
 			contactRecord.setAD_User_ID(adUserId.getRepoId());
@@ -171,10 +171,10 @@ public class BPartnerRecordsUtil
 			saveRecord(contactRecord);
 
 			createExternalReference(C_CONTACT_EXTERNAL_ID + idOffSetStr,
-									"UserID",
-									contactRecord.getAD_User_ID(),
-									ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID,
-									true);
+					"UserID",
+					contactRecord.getAD_User_ID(),
+					ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID,
+					true);
 
 			final I_C_Country countryRecord = newInstance(I_C_Country.class);
 			countryRecord.setCountryCode(C_COUNTRY_RECORD_COUNTRY_CODE);
@@ -183,8 +183,10 @@ public class BPartnerRecordsUtil
 
 			final I_C_Postal postalRecord = newInstance(I_C_Postal.class);
 			postalRecord.setC_Country(countryRecord);
-			postalRecord.setPostal("postalRecord.postal" + idOffSetStr);
+			postalRecord.setPostal("locationRecord.postal" + idOffSetStr);
 			postalRecord.setDistrict("postalRecord.district" + idOffSetStr);
+			postalRecord.setCity("locationRecord.city" + idOffSetStr);
+			postalRecord.setRegionName("locationRecord.regionName" + idOffSetStr);
 			saveRecord(postalRecord);
 
 			final I_C_Location locationRecord = newInstance(I_C_Location.class);
@@ -214,10 +216,10 @@ public class BPartnerRecordsUtil
 			saveRecord(bpartnerLocationRecord);
 
 			createExternalReference(C_BPARTNER_LOCATION_EXTERNAL_ID + idOffSetStr,
-									"BPartnerLocation",
-									C_BBPARTNER_LOCATION_ID + idOffSet,
-									ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID,
-									true);
+					"BPartnerLocation",
+					C_BBPARTNER_LOCATION_ID + idOffSet,
+					ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID,
+					true);
 
 			{
 				final CurrencyRepository currencyRepo = new CurrencyRepository();
@@ -251,14 +253,14 @@ public class BPartnerRecordsUtil
 						new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
 
 				externalReferenceRepository.save(ExternalReference.builder()
-														 .externalReference(AD_USER_EXTERNAL_ID)
-														 .externalReferenceType(ExternalUserReferenceType.USER_ID)
-														 .externalSystem(OtherExternalSystem.OTHER)
-														 .orgId(OrgId.ofRepoId(10))
-														 .recordId(AD_USER_ID)
-														 .externalSystemParentConfigId(ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID)
-														 .isReadOnlyInMetasfresh(true)
-														 .build());
+						.externalReference(AD_USER_EXTERNAL_ID)
+						.externalReferenceType(ExternalUserReferenceType.USER_ID)
+						.externalSystem(OtherExternalSystem.OTHER)
+						.orgId(OrgId.ofRepoId(10))
+						.recordId(AD_USER_ID)
+						.externalSystemParentConfigId(ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID)
+														 .readOnlyInMetasfresh(true)
+						.build());
 			}
 		}
 		finally

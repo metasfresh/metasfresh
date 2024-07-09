@@ -6,13 +6,14 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.util.Loggables;
 import lombok.NonNull;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -67,7 +68,7 @@ public class PurchaseCandidateAdvisedEventCreator
 		}
 
 		// temporary workaround to avoid creating 2 PurchaseCandidates, one for each PPOrderCandidate and PPOrder
-		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+		final ProductPlanning productPlanning = mrpContext.getProductPlanning();
 		final BigDecimal requiredQty = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
 		if(!productPlanning.isLotForLot() && requiredQty.signum() <= 0)
 		{
@@ -75,7 +76,7 @@ public class PurchaseCandidateAdvisedEventCreator
 			return Optional.empty();
 		}
 
-		final I_PP_Product_Planning ppOrderProductPlanning = mrpContext.getPpOrderProductPlanning();
+		final ProductPlanning ppOrderProductPlanning = mrpContext.getPpOrderProductPlanning();
 		if(productPlanning.isLotForLot()
 				&& supplyRequiredDescriptor.getPpOrderLineCandidateId() > 0
 				&& ppOrderProductPlanning != null
@@ -106,7 +107,7 @@ public class PurchaseCandidateAdvisedEventCreator
 		final PurchaseCandidateAdvisedEvent.PurchaseCandidateAdvisedEventBuilder eventBuilder = PurchaseCandidateAdvisedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
 				.directlyCreatePurchaseCandidate(productPlanning.isCreatePlan())
-				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
+				.productPlanningId(ProductPlanningId.toRepoId(productPlanning.getId()))
 				.vendorId(defaultVendorProductInfo.get().getVendorId().getRepoId());
 
 		if(productPlanning.isLotForLot())
@@ -146,7 +147,6 @@ public class PurchaseCandidateAdvisedEventCreator
 			final BigDecimal deltaToApply = finalQtyUsed.subtract(requiredQty);
 			SupplyRequiredHandlerUtils.updateMainDataWithQty(supplyRequiredDescriptor, deltaToApply);
 		}
-
 
 		Loggables.addLog("Created PurchaseCandidateAdvisedEvent");
 		return Optional.of(event);

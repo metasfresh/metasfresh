@@ -18,15 +18,15 @@
 		<migration-sql-basedir/>
 		<metasfresh.version>10.0.0</metasfresh.version>
 		<metasfresh-common.version>10.0.0</metasfresh-common.version>
-		<version.org.optaplanner>8.37.0.Final</version.org.optaplanner>
+		<version.ai.timefold.solver>1.2.0</version.ai.timefold.solver>
 	</properties>
 
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>org.optaplanner</groupId>
-				<artifactId>optaplanner-bom</artifactId>
-				<version>${version.org.optaplanner}</version>
+				<groupId>ai.timefold.solver</groupId>
+				<artifactId>timefold-solver-bom</artifactId>
+				<version>${version.ai.timefold.solver}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -92,12 +92,12 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.optaplanner</groupId>
-			<artifactId>optaplanner-spring-boot-starter</artifactId>
+			<groupId>ai.timefold.solver</groupId>
+			<artifactId>timefold-solver-spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.optaplanner</groupId>
-			<artifactId>optaplanner-test</artifactId>
+			<groupId>ai.timefold.solver</groupId>
+			<artifactId>timefold-solver-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 

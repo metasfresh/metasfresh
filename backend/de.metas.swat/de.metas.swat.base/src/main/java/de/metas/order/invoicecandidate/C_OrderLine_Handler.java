@@ -8,6 +8,7 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.interfaces.I_C_OrderLine;
@@ -62,6 +63,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -98,6 +100,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
+	private static final AdMessageKey MSG_ERROR_INVOICE_CANDIDATE_IS_PROCESSED = AdMessageKey.of("C_OrderLine.onProductChanged.Msg_Error_Invoice_Candidate_Is_Processed");
 
 	/**
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
@@ -165,14 +169,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setC_OrderLine(orderLine);
 
-		final int productRecordId = orderLine.getM_Product_ID();
-		icRecord.setM_Product_ID(productRecordId);
-
-		final boolean isFreightCostProduct = productBL
-				.getProductType(ProductId.ofRepoId(productRecordId))
-				.isFreightCost();
-
-		icRecord.setIsFreightCost(isFreightCostProduct);
 		icRecord.setIsPackagingMaterial(orderLine.isPackagingMaterial());
 		icRecord.setC_Charge_ID(orderLine.getC_Charge_ID());
 
@@ -253,8 +249,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			icRecord.setEMail(order.getEMail());
 		}
 
-		icRecord.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
-
 		final de.metas.order.model.I_C_Order orderModel = orderDAO.getById(OrderId.ofRepoId(order.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
 		icRecord.setAD_InputDataSource_ID(orderModel.getAD_InputDataSource_ID());
 
@@ -331,6 +325,16 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
+		// Product related data
+		{
+			assertOrderLineProductNotChangedIfInvoiceCandidateIsProcessed(ic, orderLine);
+			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+			ic.setM_Product_ID(productId.getRepoId());
+			ic.setIsFreightCost(productBL.getProductType(productId).isFreightCost());
+			ic.setIsPackagingMaterial(orderLine.isPackagingMaterial());
+			ic.setC_Charge_ID(orderLine.getC_Charge_ID());
+		}
+
 		// prefer priceUOM, if given
 		if (orderLine.getPrice_UOM_ID() > 0)
 		{
@@ -359,6 +363,16 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setC_Flatrate_Term_ID(ic, orderLine);
 
 		setPaymentRule(ic, orderLine);
+	}
+
+	public static void assertOrderLineProductNotChangedIfInvoiceCandidateIsProcessed(final I_C_Invoice_Candidate ic, final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final ProductId orderLineProductId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final ProductId icProductId = ProductId.ofRepoIdOrNull(ic.getM_Product_ID());
+		if (icProductId != null && ic.isProcessed() && !ProductId.equals(icProductId, orderLineProductId))
+		{
+			throw new AdempiereException(MSG_ERROR_INVOICE_CANDIDATE_IS_PROCESSED);
+		}
 	}
 
 	private void setPaymentRule(

@@ -31,6 +31,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
@@ -77,11 +78,13 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	I_C_InvoiceLine createInvoiceLine(org.compiere.model.I_C_Invoice invoice);
 
-	I_C_InvoiceLine retrieveLineById(InvoiceLineId invoiceLineId);
+	I_C_InvoiceLine retrieveLineById(InvoiceAndLineId invoiceAndLineId);
 
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice);
 
 	List<I_C_InvoiceLine> retrieveLines(@NonNull InvoiceId invoiceId);
+
+	Amount retrieveOpenAmt(org.compiere.model.I_C_Invoice invoice, boolean creditMemoAdjusted);
 
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice, String trxName);
 
@@ -98,7 +101,9 @@ public interface IInvoiceDAO extends ISingletonService
 
 	ImmutableSet<InvoiceId> retainReferencingCompletedInvoices(Collection<InvoiceId> invoiceIds, DocBaseAndSubType targetDocType);
 
-	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceLineId invoiceLineId);
+	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceAndLineId invoiceAndLineId);
+
+	I_C_InvoiceLine retrieveLineById(@NonNull InvoiceLineId invoiceLineId);
 
 	/**
 	 * Search by the invoice when the document number and the bpartner id are known.
@@ -185,7 +190,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	ImmutableMap<InvoiceId, String> getDocumentNosByInvoiceIds(@NonNull Collection<InvoiceId> invoiceIds);
 
-	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
+	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceAndLineId invoiceAndLineId);
 
 	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
 
@@ -197,7 +202,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	ImmutableList<I_C_Invoice> retrieveUnpaid(UnpaidInvoiceQuery query);
 
-	Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id);
+	Collection<InvoiceAndLineId> getInvoiceLineIds(final InvoiceId id);
 
 	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
 

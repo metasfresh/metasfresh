@@ -11,9 +11,16 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ddorder.DistributionNetworkId;
+import de.metas.organization.OrgId;
+import de.metas.product.OnMaterialReceiptWithDestWarehouse;
+import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
@@ -24,7 +31,6 @@ import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -34,7 +40,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -60,6 +66,15 @@ import static org.assertj.core.api.Assertions.*;
 
 public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_WarehouseDest_Test
 {
+	private IProductPlanningDAO productPlanningDAO;
+
+	@Override
+	public void setup()
+	{
+		super.setup();
+		this.productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	}
+
 	@Test
 	public void createDistributionOrder_noMovementCreated()
 	{
@@ -100,13 +115,11 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 		final I_M_InOutLine receiptLine = createReceiptLine("Product1", receiptLocator, receipt, qty1, false);
 		// receiptLine.setM_Warehouse_Dest(transitWarehouse);
 		save(receiptLine);
-		final int productID = receiptLine.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(receiptLine.getM_Product_ID());
 
-		final I_DD_NetworkDistribution networkDistribution = createNetworkDistributionWithLine(receiptWarehouse, transitWarehouse);
+		final DistributionNetworkId distributionNetworkId = createNetworkDistributionWithLine(receiptWarehouse, transitWarehouse);
 
-		final String createDDOrder = X_M_ReceiptSchedule.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateDistributionOrder;
-
-		createProductPlanning(productID, networkDistribution, createDDOrder);
+		createProductPlanning(productId, distributionNetworkId, OnMaterialReceiptWithDestWarehouse.CREATE_DISTRIBUTION_ORDER);
 
 		final I_M_ReceiptSchedule rs = createReceiptSchedule(transitWarehouse, X_M_ReceiptSchedule.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateDistributionOrder);
 
@@ -127,7 +140,7 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 
 		final I_DD_OrderLine
 
-		ddOrderLine = ddOrderLines.get(0);
+				ddOrderLine = ddOrderLines.get(0);
 
 		assertThat(ddOrderLine.getM_Locator_ID()).isEqualTo(receiptLocator.getM_Locator_ID());
 		assertThat(ddOrderLine.getM_LocatorTo_ID()).isEqualTo(transitLocator.getM_Locator_ID());
@@ -146,22 +159,21 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 	}
 
 	@SuppressWarnings("SameParameterValue")
-	private void createProductPlanning(final int productID, final I_DD_NetworkDistribution nwDist, final String onMaterialReceiptWithDestWarehouse)
+	private void createProductPlanning(final ProductId productId, final DistributionNetworkId distributionNetworkId, final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse)
 	{
-		final I_PP_Product_Planning prodPlanning = newInstance(I_PP_Product_Planning.class);
-		prodPlanning.setDD_NetworkDistribution(nwDist);
-		prodPlanning.setM_Product_ID(productID);
-		prodPlanning.setM_Warehouse_ID(0);
-		prodPlanning.setS_Resource_ID(0);
-		prodPlanning.setM_AttributeSetInstance_ID(0);
-		prodPlanning.setAD_Org_ID(0);
-		prodPlanning.setIsAttributeDependant(false);
-		prodPlanning.setOnMaterialReceiptWithDestWarehouse(onMaterialReceiptWithDestWarehouse);
-
-		save(prodPlanning);
+		productPlanningDAO.save(ProductPlanning.builder()
+				.distributionNetworkId(distributionNetworkId)
+				.productId(productId)
+				.warehouseId(null)
+				.plantId(null)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.orgId(OrgId.ANY)
+				.isAttributeDependant(false)
+				.onMaterialReceiptWithDestWarehouse(onMaterialReceiptWithDestWarehouse)
+				.build());
 	}
 
-	private I_DD_NetworkDistribution createNetworkDistributionWithLine(final I_M_Warehouse whSource, final I_M_Warehouse whTarget)
+	private DistributionNetworkId createNetworkDistributionWithLine(final I_M_Warehouse whSource, final I_M_Warehouse whTarget)
 	{
 		final I_DD_NetworkDistribution networkDistribution = newInstance(I_DD_NetworkDistribution.class);
 
@@ -174,7 +186,7 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 
 		save(networkDistributionLine);
 
-		return networkDistribution;
+		return DistributionNetworkId.ofRepoId(networkDistribution.getDD_NetworkDistribution_ID());
 	}
 
 	private void createRSAlloc(final I_M_InOutLine receiptLine, final I_M_ReceiptSchedule rs)

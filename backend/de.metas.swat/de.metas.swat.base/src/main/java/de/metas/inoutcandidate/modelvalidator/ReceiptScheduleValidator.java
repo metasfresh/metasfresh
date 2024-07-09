@@ -95,7 +95,8 @@ public class ReceiptScheduleValidator extends AbstractModuleInterceptor
 				I_M_ReceiptSchedule.COLUMNNAME_AD_User_Override_ID,
 				I_M_ReceiptSchedule.COLUMNNAME_AD_Org_ID,
 				I_M_ReceiptSchedule.COLUMNNAME_DateOrdered,
-				I_M_ReceiptSchedule.COLUMNNAME_C_Order_ID);
+				I_M_ReceiptSchedule.COLUMNNAME_C_Order_ID,
+				I_M_ReceiptSchedule.COLUMNNAME_POReference);
 	}
 
 	public void registerFactories()

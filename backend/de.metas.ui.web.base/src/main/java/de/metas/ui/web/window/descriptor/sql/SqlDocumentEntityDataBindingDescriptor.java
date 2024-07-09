@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.common.util.pair.IPair;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.impl.AccessSqlStringExpression;
 import de.metas.security.permissions.Access;
@@ -17,6 +18,7 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.sql.SqlDocumentQueryBuilder;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.expression.api.ICachedStringExpression;
@@ -24,7 +26,6 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.common.util.pair.IPair;
 import org.compiere.model.POInfo;
 
 import javax.annotation.Nullable;
@@ -71,6 +72,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return (SqlDocumentEntityDataBindingDescriptor)descriptor;
 	}
 
+	public static boolean isAssignableFrom(@Nullable final DocumentEntityDataBindingDescriptor descriptor)
+	{
+		return descriptor instanceof SqlDocumentEntityDataBindingDescriptor;
+	}
+
 	private static final String TABLEALIAS_Master = "master";
 
 	public static final String FIELDNAME_Version = "Updated";
@@ -89,12 +95,12 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	private final ICachedStringExpression sqlSelectAllFrom;
 	private final ICachedStringExpression sqlWhereClause;
-	private final DocumentQueryOrderByList defaultOrderBys;
+	@Getter private final DocumentQueryOrderByList defaultOrderBys;
 
 	private final ImmutableMap<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName;
 	private final ImmutableList<SqlDocumentFieldDataBindingDescriptor> keyFields;
 
-	private final Optional<String> sqlSelectVersionById;
+	@Getter private final Optional<String> sqlSelectVersionById;
 
 	private SqlDocumentEntityDataBindingDescriptor(final Builder builder)
 	{
@@ -219,11 +225,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	}
 
-	public DocumentQueryOrderByList getDefaultOrderBys()
-	{
-		return defaultOrderBys;
-	}
-
 	@Override
 	public SqlDocumentFieldDataBindingDescriptor getFieldByFieldName(final String fieldName)
 	{
@@ -238,11 +239,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	public Collection<SqlDocumentFieldDataBindingDescriptor> getFields()
 	{
 		return _fieldsByFieldName.values();
-	}
-
-	public Optional<String> getSqlSelectVersionById()
-	{
-		return sqlSelectVersionById;
 	}
 
 	@Override
@@ -392,7 +388,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return getFieldsByFieldName()
 					.values()
 					.stream()
-					.filter(field -> field.isDefaultOrderBy())
+					.filter(SqlDocumentFieldDataBindingDescriptor::isDefaultOrderBy)
 					.sorted(Comparator.comparing(SqlDocumentFieldDataBindingDescriptor::getDefaultOrderByPriority))
 					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
 					.collect(DocumentQueryOrderByList.toDocumentQueryOrderByList());
@@ -493,7 +489,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		{
 			assertNotBuilt();
 
-			final SqlDocumentFieldDataBindingDescriptor sqlField = SqlDocumentFieldDataBindingDescriptor.castOrNull(field);
+			final SqlDocumentFieldDataBindingDescriptor sqlField = SqlDocumentFieldDataBindingDescriptor.cast(field);
 			_fieldsByFieldName.put(sqlField.getFieldName(), sqlField);
 
 			return this;

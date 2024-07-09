@@ -1,8 +1,8 @@
-import { post, get, delete as del } from 'axios';
+import { delete as del, get, post } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
-import { formatSortingQuery } from '../utils';
+import { getQueryString } from '../utils';
 
 export function topActionsRequest(windowId, documentId, tabId = null) {
   const url =
@@ -70,25 +70,37 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     docId: docId,
     tabId: tabId,
     rowId: null, // all rows
-    orderBy: formatSortingQuery(orderBy),
+    orderBy,
   })
-    .then(
-      (res) =>
-        res.data &&
-        res.data.result &&
-        res.data.result.map((row) => ({
+    .then((res) => {
+      const rows =
+        res?.data?.result?.map((row) => ({
           ...row,
           fieldsByName: parseToDisplay(row.fieldsByName),
-        }))
-    )
+        })) ?? [];
+
+      const orderBys = res?.data?.orderBys ?? [];
+
+      return { rows, orderBys };
+    })
     .catch((error) => {
       // eslint-disable-next-line no-console
       console.error('getTabRequest error: ', error);
     });
 }
 
-export function getTabLayoutRequest(windowId, tabId) {
-  return get(`${config.API_URL}/window/${windowId}/${tabId}/layout`);
+export function getTabLayoutRequest(windowId, tabId, isAdvanced = false) {
+  const queryParams = {};
+  if (isAdvanced) {
+    queryParams.advanced = true;
+  }
+  const queryParamsString = getQueryString(queryParams);
+
+  return get(
+    `${config.API_URL}/window/${windowId}${tabId ? `/${tabId}` : ''}/layout${
+      queryParamsString ? `?${queryParamsString}` : ''
+    }`
+  ).then(({ data }) => data); // unbox
 }
 
 /**
@@ -149,4 +161,32 @@ export function getPrintingOptions({ entity, windowId, docId, tabId, rowId }) {
       (rowId ? '/' + rowId : '') +
       '/printingOptions'
   );
+}
+
+export function getPrintUrl({ windowId, documentId, filename, options }) {
+  let filenameNorm = filename.replace(/[/\\?%*:|"<>]/g, '-');
+  filenameNorm = encodeURIComponent(filenameNorm);
+
+  let url = `${config.API_URL}/window/${windowId}/${documentId}/print/${filenameNorm}`;
+  if (options) {
+    const optionsStr = getQueryString(options);
+    url += '?' + optionsStr;
+  }
+  return url;
+}
+
+export function getPrintFile({ windowId, documentId, filename, options }) {
+  return get(getPrintUrl({ windowId, documentId, filename, options }));
+}
+
+export function getAttachments({ windowId, documentId }) {
+  return get(`${config.API_URL}/window/${windowId}/${documentId}/attachments`);
+}
+
+export function getAttachmentUrl({ windowId, documentId, attachmentEntryId }) {
+  return `${config.API_URL}/window/${windowId}/${documentId}/attachments/${attachmentEntryId}`;
+}
+
+export function deleteAttachment({ windowId, documentId, attachmentEntryId }) {
+  return del(getAttachmentUrl({ windowId, documentId, attachmentEntryId }));
 }

@@ -73,7 +73,7 @@ public class PickingJobCreateCommand
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
 			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
 			//
-			@NonNull PickingJobCreateRequest request)
+			@NonNull final PickingJobCreateRequest request)
 	{
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
@@ -117,6 +117,7 @@ public class PickingJobCreateCommand
 							.isPickingReviewRequired(getPickingConfig().isPickingReviewRequired())
 							.isAllowPickingAnyHU(request.isAllowPickingAnyHU())
 							.lines(createLinesRequests(items))
+							.handoverLocationId(headerKey.getHandoverLocationId())
 							.build(),
 					loadingSupportServices);
 
@@ -192,6 +193,7 @@ public class PickingJobCreateCommand
 		@NonNull InstantAndOrgId deliveryDate;
 		@NonNull BPartnerLocationId deliveryBPLocationId;
 		@NonNull String deliveryRenderedAddress;
+		@NonNull BPartnerLocationId handoverLocationId;
 	}
 
 	private static PickingJobHeaderKey extractPickingJobHeaderKey(@NonNull final Packageable item)
@@ -203,6 +205,7 @@ public class PickingJobCreateCommand
 				.deliveryDate(item.getDeliveryDate())
 				.deliveryBPLocationId(item.getCustomerLocationId())
 				.deliveryRenderedAddress(item.getCustomerAddress())
+				.handoverLocationId(item.getHandoverLocationId())
 				.build();
 	}
 
@@ -266,6 +269,7 @@ public class PickingJobCreateCommand
 
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(plan.getSingleProductId())
+				.huPIItemProductId(items.getSinglePackToHUPIItemProductId())
 				.qtyToPick(plan.getQtyToPick())
 				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
 				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElse(null))
@@ -287,6 +291,7 @@ public class PickingJobCreateCommand
 				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElseThrow(() -> new AdempiereException("No shipment schedule found for " + items)))
 				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.productId(items.getSingleProductId())
+				.huPIItemProductId(items.getSinglePackToHUPIItemProductId())
 				.qtyToPick(items.getQtyToPick())
 				.build();
 	}

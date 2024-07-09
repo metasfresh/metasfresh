@@ -21,7 +21,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.logging.TableRecordMDC;
-import de.metas.tax.api.Tax;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -69,6 +69,7 @@ public class C_Invoice_Candidate
 		this.groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()
 				.groupsRepo(groupsRepo)
 				.build();
+		
 		this.attachmentEntryService = attachmentEntryService;
 		this.documentLocationBL = documentLocationBL;
 	}
@@ -78,8 +79,9 @@ public class C_Invoice_Candidate
 			ifColumnsChanged = {
 					I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 					I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override,
-					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
-	public void updateInvoiceCandidateDirectly(final I_C_Invoice_Candidate icRecord)
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override })
+	public void updateInvoiceCandidateDirectly(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
 		{
@@ -94,6 +96,22 @@ public class C_Invoice_Candidate
 			{
 				invoiceCandidateHandlerBL.setDeliveredData(icRecord);
 			}
+
+			if ((isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override))
+					&& (icRecord.getQtyToInvoiceInUOM_Override() != null))
+			{
+				final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(icRecord.getInvoicableQtyBasedOn());
+				if (InvoicableQtyBasedOn.NominalWeight.equals(invoicableQtyBasedOn))
+				{
+					icRecord.setQtyToInvoice_Override(null);
+				}
+			}
+			else if ((isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
+					&& (icRecord.getQtyToInvoice_Override() != null))
+			{
+				icRecord.setQtyToInvoiceInUOM_Override(null);
+			}
+
 			final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
 			invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 		}
@@ -352,7 +370,7 @@ public class C_Invoice_Candidate
 	 * After an invoice candidate was deleted, schedule the recreation of it.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
-	public void scheduleRecreate(final I_C_Invoice_Candidate ic)
+	public void scheduleRecreate(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		//
 		// Skip recreation scheduling if we were asked to avoid that
@@ -430,23 +448,7 @@ public class C_Invoice_Candidate
 		invoiceCandDAO.invalidateCand(ic);
 	}
 
-
-	/**
-	 * In case the correct tax was not found for the invoice candidate and it was set to the Tax_Not_Found placeholder instead, mark the candidate as Error.
-	 * <p>
-	 * Task 07814
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
-	public void errorIfTaxNotFound(final I_C_Invoice_Candidate candidate)
-	{
-		final Tax taxEffective = Services.get(IInvoiceCandBL.class).getTaxEffective(candidate);
-
-		if (taxEffective.isTaxNotFound())
-		{
-			candidate.setIsError(true);
-		}
-	}
-
+	
 	@ModelChange( //
 			timings = ModelValidator.TYPE_AFTER_CHANGE, //
 			ifColumnsChanged = {

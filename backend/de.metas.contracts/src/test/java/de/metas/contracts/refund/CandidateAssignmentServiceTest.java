@@ -34,6 +34,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,7 +54,8 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /*
  * #%L
@@ -99,6 +101,12 @@ public class CandidateAssignmentServiceTest
 	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 	private RefundContractRepository refundContractRepository;
 
+	@BeforeAll
+	public static void beforeAll()
+	{
+		AdempiereTestHelper.get().forceStaticInit();
+	}
+
 	@BeforeEach
 	public void init()
 	{
@@ -137,7 +145,6 @@ public class CandidateAssignmentServiceTest
 				refundConfigChangeService);
 
 		refundTestTools = RefundTestTools.newInstance();
-
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
@@ -222,7 +229,7 @@ public class CandidateAssignmentServiceTest
 	{
 		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateWithAssignment();
 		final RefundInvoiceCandidate //
-		refundInvoiceCandidate = singleElement(assignableInvoiceCandidate.getAssignmentsToRefundCandidates()).getRefundInvoiceCandidate();
+				refundInvoiceCandidate = singleElement(assignableInvoiceCandidate.getAssignmentsToRefundCandidates()).getRefundInvoiceCandidate();
 
 		// invoke the method under test
 		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
@@ -258,7 +265,7 @@ public class CandidateAssignmentServiceTest
 		assertThat(assignedCandidate.getAssignmentsToRefundCandidates()).hasSize(1);
 
 		final RefundInvoiceCandidate //
-		resultRefundInvoiceCandidate = singleElement(assignedCandidate.getAssignmentsToRefundCandidates()).getRefundInvoiceCandidate();
+				resultRefundInvoiceCandidate = singleElement(assignedCandidate.getAssignmentsToRefundCandidates()).getRefundInvoiceCandidate();
 
 		assertThat(resultRefundInvoiceCandidate).isNotNull();
 		assertThat(resultRefundInvoiceCandidate.getId()).isEqualTo(refundInvoiceCandidate.getId()); // guard
@@ -268,10 +275,10 @@ public class CandidateAssignmentServiceTest
 	/**
 	 * existing refund-candidate and assigned candidate.
 	 * the assigned candidate has a money amount of 10 and a refund config with 20%, so money=2 is assigned to the refund candidate.
-	 *
+	 * <p>
 	 * change the assigned candidate's record's money amount from 10 to 20,
 	 * then invoke the method under test
-	 *
+	 * <p>
 	 * expected: now, money=4 is assigned to the refund candidate.
 	 */
 	@Test
@@ -369,7 +376,7 @@ public class CandidateAssignmentServiceTest
 	 * No existing refund-candidate
 	 * per-scale-configs with quantities zero and 15
 	 * assignable candidate with qty 16
-	 *
+	 * <p>
 	 * expected: 14 is assigned one new refund-candidate, 2 to a new refund-candidate
 	 */
 	@Test
@@ -415,11 +422,11 @@ public class CandidateAssignmentServiceTest
 	 * two existing refund-candidates; one with assigned 14, one with assigned 3.
 	 * the assignable-candidate with 10 is exclusively assigned to the refund-candidates with 15.
 	 * the assignable-candidate with 7 is partially assigned to both refund candidates.
-	 *
+	 * <p>
 	 * unassign the assignable-candidates with 7.
-	 *
+	 * <p>
 	 * expected: the remaining assigned quantity of refund-candidates is 10
-	 *
+	 * <p>
 	 * Hint: if this one fails, first check if the tests for {@link CandidateAssignmentService#updateAssignment(AssignableInvoiceCandidate)} work.
 	 */
 	@Test
@@ -457,14 +464,14 @@ public class CandidateAssignmentServiceTest
 	 * two existing refund-candidates; one with assigned 14, one with assigned 3.
 	 * the assignable-candidate with 10 is exclusively assigned to the refund-candidates with 15.
 	 * the assignable-candidate with 7 is partially assigned to both refund candidates.
-	 *
+	 * <p>
 	 * unassign the assignable-candidates with 10.
-	 *
+	 * <p>
 	 * expected:
 	 * the refund-candidate that had 3 now has zero;
 	 * the refund-candidate that had 14 now has 14-7=7
 	 * the assignable-candidate with 8 is now exclusively assigned to the refund-candidates with 0
-	 *
+	 * <p>
 	 * Hint: if this one fails, first check if the tests for {@link CandidateAssignmentService#updateAssignment(AssignableInvoiceCandidate)} work.
 	 */
 	@Test
@@ -506,7 +513,7 @@ public class CandidateAssignmentServiceTest
 	 * existing refund-candidate with qty = 13
 	 * all-max-scale-configs with quantities zero and 15
 	 * assignable candidate with qty = 3 and money = 10.
-	 *
+	 * <p>
 	 * expected:
 	 *
 	 * <li>the assignable candidate's 3 are assigned to the existing refund-candidate; 1 is assigned via the config with MinQty=0, and 2 is assigned via the config with MinQty=15
@@ -593,25 +600,25 @@ public class CandidateAssignmentServiceTest
 				refundContract.getRefundConfig(ZERO),
 				FOURTEEN, // assignedQty
 				ImmutableList.of( // individualAssignments
-						new IndividualTestAssignment(assignableCandidateWithTen, TEN, ONE),
-						new IndividualTestAssignment(assignableCandidateWithSeven, FOUR, ONE)));
+								  new IndividualTestAssignment(assignableCandidateWithTen, TEN, ONE),
+								  new IndividualTestAssignment(assignableCandidateWithSeven, FOUR, ONE)));
 
 		final RefundInvoiceCandidate refundCandidate15 = prepareRefundCandidate(
 				refundContract,
 				refundContract.getRefundConfig(FIFTEEN),
 				THREE, // assignedQty
 				ImmutableList.of( // individualAssignments
-						new IndividualTestAssignment(assignableCandidateWithSeven, THREE, ONE)));
+								  new IndividualTestAssignment(assignableCandidateWithSeven, THREE, ONE)));
 		final CurrencyId currencyId = refundTestTools.getCurrencyId();
 		final I_C_UOM uom = refundTestTools.getUomRecord();
 
 		//
 		// reload the two assignable candidate with their assigned refund candidates
 		final AssignableInvoiceCandidate //
-		reloadedAssignableCandidateWithSeven = assignableInvoiceCandidateRepository
+				reloadedAssignableCandidateWithSeven = assignableInvoiceCandidateRepository
 				.getById(assignableCandidateWithSeven.getId());
 		final AssignableInvoiceCandidate //
-		reloadedAssignableCandidateWithTen = assignableInvoiceCandidateRepository
+				reloadedAssignableCandidateWithTen = assignableInvoiceCandidateRepository
 				.getById(assignableCandidateWithTen.getId());
 
 		//
@@ -769,19 +776,27 @@ public class CandidateAssignmentServiceTest
 	@Builder
 	private static class AssignmentExpectation
 	{
-		/** money assigned to the refund candidate via a particular assignment */
+		/**
+		 * money assigned to the refund candidate via a particular assignment
+		 */
 		@Singular("moneyAssignedToRefundCandidate")
 		final List<Money> moneysAssignedToRefundCandidate;
 
-		/** overall money of the refund candidate */
+		/**
+		 * overall money of the refund candidate
+		 */
 		@Singular("moneyOfRefundCandidate")
 		final List<Money> moneysOfRefundCandidate;
 
-		/** quantity assigned to the refund candidate via a particular assignment */
+		/**
+		 * quantity assigned to the refund candidate via a particular assignment
+		 */
 		@Singular("quantityAssignedToRefundCandidate")
 		final List<Quantity> quantitiesAssignedToRefundCandidate;
 
-		/** *overall* quantity assigned to the refund candidate */
+		/**
+		 * overall* quantity assigned to the refund candidate
+		 */
 		@Singular("quantityOfRefundCandidate")
 		final List<Quantity> quantitesOfRefundCandidate;
 	}

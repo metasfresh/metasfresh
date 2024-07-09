@@ -897,6 +897,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+	public void setIsReceiveMassDunningReports (final boolean IsReceiveMassDunningReports)
+	{
+		set_Value (COLUMNNAME_IsReceiveMassDunningReports, IsReceiveMassDunningReports);
+	}
+
+	@Override
+	public boolean isReceiveMassDunningReports()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReceiveMassDunningReports);
+	}
+
+	@Override
 	public void setIsSalesContact (final boolean IsSalesContact)
 	{
 		set_Value (COLUMNNAME_IsSalesContact, IsSalesContact);

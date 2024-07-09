@@ -25,6 +25,8 @@ package de.metas.dunning.api;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.dunning.DunningDocId;
+import de.metas.dunning.DunningLevel;
+import de.metas.dunning.DunningLevelId;
 import de.metas.dunning.api.impl.RecomputeDunningCandidatesQuery;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
@@ -36,6 +38,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -173,4 +176,8 @@ public interface IDunningDAO extends ISingletonService
 	I_C_DunningDoc getByIdInTrx(@NonNull DunningDocId dunningDocId);
 
 	int deleteTargetObsoleteCandidates(RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery, I_C_DunningLevel dunningLevel);
+
+	Collection<I_C_DunningDoc> getByIdsInTrx(@NonNull Collection<DunningDocId> dunningDocIds);
+
+	DunningLevel getById(@NonNull DunningLevelId id);
 }

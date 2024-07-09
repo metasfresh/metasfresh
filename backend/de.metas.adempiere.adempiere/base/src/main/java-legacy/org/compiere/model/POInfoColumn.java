@@ -123,6 +123,7 @@ public final class POInfoColumn implements Serializable
 		this.cloningStrategy = cloningStrategy;
 
 		this._referencedTableName = computeReferencedTableName(this.displayType, AD_Reference_Value_TableName);
+		
 	}   // Column
 
 	private static boolean isString(

@@ -22,8 +22,10 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
@@ -31,9 +33,11 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
@@ -70,6 +74,13 @@ public class M_Inventory
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 		inventoryDAO.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class)
-				.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
+				.forEach(line -> contractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(line))
+								.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
+								.modelAction(modelAction)
+								.userInChargeId(Env.getLoggedUserId())
+								.build())
+				);
 	}
 }

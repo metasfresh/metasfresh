@@ -1,3 +1,19 @@
+-- New JasperDocument
+-- 2021-07-08T12:07:57.620Z
+-- URL zum Konzept
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,JasperReport,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,584863,'N','de.metas.report.jasper.client.process.JasperReportStarter',TO_TIMESTAMP('2021-07-08 14:07:57','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','N','Y','N','N','N','Y','Y','Y','@PREFIX@de/metas/docs/sales/order/report.jasper','CostEstimate(Jasper)','json','N','N','JasperReportsSQL',TO_TIMESTAMP('2021-07-08 14:07:57','YYYY-MM-DD HH24:MI:SS'),100,'CostEstimate(Jasper)')
+;
+
+-- 2021-07-08T12:07:57.628Z
+-- URL zum Konzept
+INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Process_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_ID=584863 AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
+;
+
+-- 2021-07-08T12:08:01.838Z
+-- URL zum Konzept
+UPDATE AD_Process SET IsDirectPrint='Y',Updated=TO_TIMESTAMP('2021-07-08 14:08:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584863
+;
+
 --Create docType
 -- 2021-07-08T12:24:00.618Z
 -- URL zum Konzept

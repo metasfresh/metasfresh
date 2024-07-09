@@ -12,6 +12,8 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUFactory;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUSupportingServices;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -19,6 +21,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 
 import javax.annotation.Nullable;
 
@@ -30,6 +33,23 @@ import javax.annotation.Nullable;
 public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 {
 	public static final ShipmentScheduleHUTrxListener instance = new ShipmentScheduleHUTrxListener();
+
+	private static final ThreadLocal<Boolean> updateAllocationLUAndTUForCUThreadLocal = new ThreadLocal<>();
+
+	public static IAutoCloseable temporaryEnableUpdateAllocationLUAndTUForCU()
+	{
+		final Boolean previousValue = updateAllocationLUAndTUForCUThreadLocal.get();
+		updateAllocationLUAndTUForCUThreadLocal.set(true);
+		return () -> {
+			updateAllocationLUAndTUForCUThreadLocal.set(previousValue);
+		};
+	}
+
+	private boolean isUpdateAllocationLUAndTUForCU()
+	{
+		final Boolean enabled = updateAllocationLUAndTUForCUThreadLocal.get();
+		return enabled != null && enabled;
+	}
 
 	private ShipmentScheduleHUTrxListener()
 	{
@@ -85,7 +105,11 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 		// Link VHU to shipment schedule
 		final boolean anonymousHuPickedOnTheFly = false;
 		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, vhu, huContext, anonymousHuPickedOnTheFly);
+		final ShipmentScheduleWithHUFactory factory = ShipmentScheduleWithHUFactory.builder()
+				.supportingServices(ShipmentScheduleWithHUSupportingServices.getInstance())
+				.huContext(huContext)
+				.build();
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, vhu, factory, anonymousHuPickedOnTheFly);
 	}
 
 	private I_M_ShipmentSchedule findShipmentSchedule(final I_M_HU_Trx_Line trxLine)
@@ -184,15 +208,18 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 	public void huParentChanged(final I_M_HU hu, final I_M_HU_Item parentHUItemOld)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 
-		// If it's not an TU or VHU, we shall do nothing
-		if (!handlingUnitsBL.isTransportUnitOrVirtual(hu))
+		if (isUpdateAllocationLUAndTUForCU() && handlingUnitsBL.isPureVirtual(hu))
 		{
-			return;
+			huShipmentScheduleBL.updateAllocationLUAndTUForCU(hu);
+		}
+		else if (handlingUnitsBL.isTransportUnitOrVirtual(hu))
+		{
+			huShipmentScheduleBL.updateAllocationLUForTU(hu);
 		}
 
-		@SuppressWarnings("UnnecessaryLocalVariable")
-		final I_M_HU tuHU = hu;
+		@SuppressWarnings("UnnecessaryLocalVariable") final I_M_HU tuHU = hu;
 		Services.get(IHUShipmentScheduleBL.class).updateAllocationLUForTU(tuHU);
 	}
 }

@@ -179,7 +179,7 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 				final CurrencyId currencyId = CurrencyId.ofRepoId(icRecord.getC_Currency_ID());
 
 				throw new InvalidQtyForPartialAmtToInvoiceException(
-						Quantitys.create(qtyToInvoiceInStockUOM, productId),
+						Quantitys.of(qtyToInvoiceInStockUOM, productId),
 						icRecord,
 						Money.of(netAmtToInvoice, currencyId),
 						Money.of(netAmtToInvoiceNew, currencyId));

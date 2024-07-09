@@ -22,17 +22,8 @@
 
 package de.metas.ui.web.order.products_proposal.view;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.AdProcessId;
@@ -56,15 +47,21 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 abstract class ProductsProposalViewFactoryTemplate implements IViewFactory, IViewsIndexStorage
 {
 	private static final String PARAM_RecordRef = "recordRef";
 
 	private final CCache<ViewLayoutKey, ViewLayout> viewLayoutCache = CCache.<ViewLayoutKey, ViewLayout> builder()
-			.cacheName(OrderProductsProposalViewFactory.class.getName() + "#ViewLayout")
+			.cacheName(ProductsProposalViewFactoryTemplate.class.getName() + "#ViewLayout")
 			.initialCapacity(1)
 			.build();
 
@@ -131,7 +128,7 @@ abstract class ProductsProposalViewFactoryTemplate implements IViewFactory, IVie
 				.load();
 	}
 
-	private final TableRecordReference getRecordReference(final CreateViewRequest request)
+	private TableRecordReference getRecordReference(final CreateViewRequest request)
 	{
 		final TableRecordReference recordRef = request.getParameterAs(PARAM_RecordRef, TableRecordReference.class);
 		if (recordRef == null)
@@ -212,7 +209,7 @@ abstract class ProductsProposalViewFactoryTemplate implements IViewFactory, IVie
 	}
 
 	@lombok.Value(staticConstructor = "of")
-	protected static final class ViewLayoutKey
+	protected static class ViewLayoutKey
 	{
 		WindowId windowId;
 		JSONViewDataType viewDataType;

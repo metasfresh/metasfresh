@@ -23,6 +23,7 @@ package de.metas.contracts;
  */
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermBillPartnerRequest;
@@ -44,6 +45,7 @@ import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
@@ -56,6 +58,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -114,7 +117,11 @@ public interface IFlatrateBL extends ISingletonService
 
 	@NonNull Stream<FlatrateTermId> streamModularFlatrateTermIdsByQuery(@NonNull ModularFlatrateTermQuery query);
 
-	FlatrateTermId getInterimContractIdByModularContractIdAndDate(@NonNull FlatrateTermId modularFlatrateTermId, @NonNull Instant date);
+	@Nullable FlatrateTermId getInterimContractIdByModularContractIdAndDate(@NonNull FlatrateTermId modularFlatrateTermId, @NonNull Instant date);
+
+	void prepareForDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
+
+	void reverseDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
 
 	/**
 	 * term to extend
@@ -182,7 +189,7 @@ public interface IFlatrateBL extends ISingletonService
 	 * @return the newly created and completed term; never returns <code>null</code>
 	 * @throws AdempiereException in case of any error
 	 */
-	I_C_Flatrate_Term createTerm(CreateFlatrateTermRequest createFlatrateTermRequest);
+	I_C_Flatrate_Term createTerm(@NonNull CreateFlatrateTermRequest createFlatrateTermRequest);
 
 	/**
 	 * Complete given contract.
@@ -233,9 +240,14 @@ public interface IFlatrateBL extends ISingletonService
 
 	boolean isModularContract(ConditionsId conditionsId);
 
+	boolean isInterimContract(@NonNull ConditionsId conditionsId);
+
 	I_C_Flatrate_Term createContractForOrderLine(I_C_OrderLine orderLine);
 
 	boolean isModularContract(@NonNull FlatrateTermId flatrateTermId);
+
+	@NonNull
+	ImmutableSet<FlatrateTermId> getReadyForDefinitiveInvoicingModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
 
 	/**
 	 * Extend the C_Flatrate_Conditions to the new year
@@ -247,7 +259,8 @@ public interface IFlatrateBL extends ISingletonService
 	 */
 	boolean isExtendableContract(I_C_Flatrate_Term contract);
 
-	Stream<I_C_Flatrate_Term> streamModularFlatrateTermsByQuery(ModularFlatrateTermQuery modularFlatrateTermQuery);
+	@NonNull
+	Stream<I_C_Flatrate_Term> streamModularFlatrateTermsByQuery(@NonNull ModularFlatrateTermQuery modularFlatrateTermQuery);
 
 	@NonNull
 	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId, @NonNull TypeConditions typeConditions);
@@ -257,4 +270,13 @@ public interface IFlatrateBL extends ISingletonService
 
 	@NonNull
 	Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull ModularContractSettingsId modularContractSettingsId);
+
+	boolean isInterimContract(@NonNull FlatrateTermId flatrateTermId);
+
+	boolean isFinalInvoiceableModularContractExists(@NonNull IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter);
+
+	boolean isDefinitiveInvoiceableModularContractExists(@NonNull IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter);
+
+	@NonNull
+	ImmutableSet<FlatrateTermId> getReadyForFinalInvoicingModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
 }

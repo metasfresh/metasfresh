@@ -28,7 +28,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -59,6 +61,7 @@ public class TimeUtilTest
 
 	private static Timestamp createTimestamp(final int year, int month, int day)
 	{
+		//noinspection deprecation
 		return TimeUtil.getDay(year, month, day);
 	}
 
@@ -104,82 +107,214 @@ public class TimeUtilTest
 		Assertions.assertEquals(isValid, isValidActual, message);
 	}
 
-	@Test
-	public void testDateMin()
+	@Nested
+	class max_with_Duration
 	{
-		final Timestamp date1 = createTimestamp(2014, 1, 1);
-		final Timestamp date1_copy = createTimestamp(2014, 1, 1);
-		final Timestamp date2 = createTimestamp(2014, 1, 2);
-		final Timestamp date3 = createTimestamp(2014, 1, 3);
+		@Test
+		public void test()
+		{
+			final Duration min = Duration.ofMinutes(1);
+			final Duration max = Duration.ofMinutes(2);
 
-		// NULLs check
-		assertDateMin(null, null, null);
-		assertDateMin(date1, date1, null);
-		assertDateMin(date1, null, date1);
+			//noinspection ConstantValue
+			assertThat(TimeUtil.max((Duration)null, null)).isNull();
 
-		// Same (reference) value check
-		assertDateMin(date1, date1, date1);
-
-		// Same (value) check
-		assertDateMin(date1, date1, date1_copy);
-
-		assertDateMin(date1, date1, date2);
-		assertDateMin(date1, date2, date1);
-		assertDateMin(date2, date2, date3);
-		assertDateMin(date2, date3, date2);
+			assertThat(TimeUtil.max(min, null)).isSameAs(min);
+			assertThat(TimeUtil.max(null, min)).isSameAs(min);
+			assertThat(TimeUtil.max(min, min)).isSameAs(min);
+			assertThat(TimeUtil.max(max, max)).isSameAs(max);
+			assertThat(TimeUtil.max(min, max)).isSameAs(max);
+			assertThat(TimeUtil.max(max, min)).isSameAs(max);
+		}
 	}
 
-	private void assertDateMin(final Date dateExpected, final Date date1, final Date date2)
+	@Nested
+	class min_with_JUL_Date
 	{
-		final Date dateMin = TimeUtil.min(date1, date2);
+		@Test
+		public void test()
+		{
+			final Timestamp date1 = createTimestamp(2014, 1, 1);
+			final Timestamp date1_copy = createTimestamp(2014, 1, 1);
+			final Timestamp date2 = createTimestamp(2014, 1, 2);
 
-		Assertions.assertSame(dateExpected, dateMin, "Invalid minimum date: date1=" + date1 + ", date2=" + date2);
+			// NULLs check
+			assertThat(TimeUtil.min(null, (Date)null)).isSameAs(null);
+			assertThat(TimeUtil.min(date1, null)).isSameAs(date1);
+			assertThat(TimeUtil.min(null, date1)).isSameAs(date1);
+
+			// Same (reference) value check
+			assertThat(TimeUtil.min(date1, date1)).isSameAs(date1);
+
+			// Same (value) check
+			assertThat(TimeUtil.min(date1, date1_copy)).isSameAs(date1);
+
+			assertThat(TimeUtil.min(date1, date2)).isSameAs(date1);
+			assertThat(TimeUtil.min(date2, date1)).isSameAs(date1);
+		}
 	}
 
-	@Test
-	public void testZonedDateTimeMin()
+	@SuppressWarnings({ "unused", "JUnitMalformedDeclaration" })
+	abstract static class MinMaxTemporalTest
 	{
-		final ZoneId zone = ZoneId.systemDefault();
-		final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
-		final ZonedDateTime date1_copy = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
-		final ZonedDateTime date2 = LocalDate.of(2014, 1, 2).atStartOfDay().atZone(zone);
-		final ZonedDateTime date3 = LocalDate.of(2014, 1, 3).atStartOfDay().atZone(zone);
+		abstract <DT extends Temporal & Comparable<?>> void test(DT minDate, DT maxDate);
 
-		// NULLs check
-		assertZonedDateTimeMin(null, null, null);
-		assertZonedDateTimeMin(date1, date1, null);
-		assertZonedDateTimeMin(date1, null, date1);
+		@Test
+		void zonedDateTime()
+		{
+			final ZonedDateTime minDate = LocalDateTime.parse("2023-11-01T10:00").atZone(ZoneId.of("UTC-8"));
+			final ZonedDateTime maxDate = LocalDateTime.parse("2023-11-01T11:00").atZone(ZoneId.of("UTC-8"));
+			test(minDate, maxDate);
+		}
 
-		// Same (reference) value check
-		assertZonedDateTimeMin(date1, date1, date1);
+		@Test
+		void localDateTime()
+		{
+			final LocalDateTime minDate = LocalDateTime.parse("2023-11-01T10:00");
+			final LocalDateTime maxDate = LocalDateTime.parse("2023-11-01T11:00");
+			test(minDate, maxDate);
+		}
 
-		// Same (value) check
-		assertZonedDateTimeMin(date1, date1, date1_copy);
+		@Test
+		void localDate()
+		{
+			final LocalDate minDate = LocalDate.parse("2023-11-01");
+			final LocalDate maxDate = LocalDate.parse("2023-11-02");
+			test(minDate, maxDate);
+		}
 
-		assertZonedDateTimeMin(date1, date1, date2);
-		assertZonedDateTimeMin(date1, date2, date1);
-		assertZonedDateTimeMin(date2, date2, date3);
-		assertZonedDateTimeMin(date2, date3, date2);
+		@Test
+		void localTime()
+		{
+			final LocalTime minDate = LocalTime.parse("10:40");
+			final LocalTime maxDate = LocalTime.parse("10:41");
+			test(minDate, maxDate);
+		}
+
+		@Test
+		void instant()
+		{
+			final Instant minDate = LocalDate.parse("2023-11-01").atStartOfDay().toInstant(ZoneOffset.UTC);
+			final Instant maxDate = LocalDate.parse("2023-11-02").atStartOfDay().toInstant(ZoneOffset.UTC);
+			test(minDate, maxDate);
+		}
+
 	}
 
-	private void assertZonedDateTimeMin(final ZonedDateTime dateExpected, final ZonedDateTime date1, final ZonedDateTime date2)
+	@Nested
+	class min_with_ZonedDateTime
 	{
-		final ZonedDateTime dateMin = TimeUtil.min(date1, date2);
+		@Test
+		void null_params()
+		{
+			final ZoneId zone = ZoneId.systemDefault();
+			final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
 
-		Assertions.assertSame(dateExpected, dateMin, "Invalid minimum date: date1=" + date1 + ", date2=" + date2);
+			assertThat(TimeUtil.min(null, (ZonedDateTime)null)).isNull();
+			assertThat(TimeUtil.min(date1, null)).isSameAs(date1);
+			assertThat(TimeUtil.min(null, date1)).isSameAs(date1);
+		}
+
+		@Test
+		void same_values()
+		{
+			final ZoneId zone = ZoneId.systemDefault();
+			final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+
+			assertThat(TimeUtil.min(date1, date1)).isSameAs(date1);
+		}
+
+		@Test
+		void equal_values()
+		{
+			final ZoneId zone = ZoneId.systemDefault();
+			final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+			final ZonedDateTime date1_copy = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+
+			assertThat(TimeUtil.min(date1, date1_copy)).isEqualTo(date1);
+		}
+
+		@Test
+		void standardCases()
+		{
+			final ZoneId zone = ZoneId.systemDefault();
+			final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+			final ZonedDateTime date2 = LocalDate.of(2014, 1, 2).atStartOfDay().atZone(zone);
+
+			assertThat(TimeUtil.min(date1, date2)).isSameAs(date1);
+			assertThat(TimeUtil.min(date2, date1)).isSameAs(date1);
+		}
+	}
+
+	@Nested
+	class minNotNull_with_Temporal extends MinMaxTemporalTest
+	{
+		@Override
+		<DT extends Temporal & Comparable<?>> void test(DT minDate, DT maxDate)
+		{
+			assertThat(TimeUtil.minNotNull(minDate, minDate)).isSameAs(minDate);
+			assertThat(TimeUtil.minNotNull(maxDate, maxDate)).isSameAs(maxDate);
+			assertThat(TimeUtil.minNotNull(minDate, maxDate)).isSameAs(minDate);
+			assertThat(TimeUtil.minNotNull(maxDate, minDate)).isSameAs(minDate);
+		}
+	}
+
+	@Nested
+	class minOfNullables_with_Temporal extends MinMaxTemporalTest
+	{
+		@Override
+		<DT extends Temporal & Comparable<?>> void test(DT minDate, DT maxDate)
+		{
+			assertThat(TimeUtil.minOfNullables((DT)null, null)).isNull();
+			assertThat(TimeUtil.minOfNullables(null, minDate)).isSameAs(minDate);
+			assertThat(TimeUtil.minOfNullables(minDate, null)).isSameAs(minDate);
+
+			assertThat(TimeUtil.minOfNullables(minDate, minDate)).isSameAs(minDate);
+			assertThat(TimeUtil.minOfNullables(maxDate, maxDate)).isSameAs(maxDate);
+			assertThat(TimeUtil.minOfNullables(minDate, maxDate)).isSameAs(minDate);
+			assertThat(TimeUtil.minOfNullables(maxDate, minDate)).isSameAs(minDate);
+		}
+	}
+
+	@Nested
+	class maxNotNull_with_Temporal extends MinMaxTemporalTest
+	{
+		@Override
+		<DT extends Temporal & Comparable<?>> void test(DT minDate, DT maxDate)
+		{
+			assertThat(TimeUtil.maxNotNull(minDate, minDate)).isSameAs(minDate);
+			assertThat(TimeUtil.maxNotNull(maxDate, maxDate)).isSameAs(maxDate);
+			assertThat(TimeUtil.maxNotNull(minDate, maxDate)).isSameAs(maxDate);
+			assertThat(TimeUtil.maxNotNull(maxDate, minDate)).isSameAs(maxDate);
+		}
+	}
+
+	@Nested
+	class maxOfNullables_with_Temporal extends MinMaxTemporalTest
+	{
+		@Override
+		<DT extends Temporal & Comparable<?>> void test(@Nullable DT minDate, @Nullable DT maxDate)
+		{
+			//noinspection ConstantValue
+			assertThat(TimeUtil.maxOfNullables((DT)null, null)).isNull();
+			assertThat(TimeUtil.maxOfNullables(minDate, null)).isSameAs(minDate);
+			assertThat(TimeUtil.maxOfNullables(null, minDate)).isSameAs(minDate);
+
+			assertThat(TimeUtil.maxOfNullables(minDate, minDate)).isSameAs(minDate);
+			assertThat(TimeUtil.maxOfNullables(minDate, maxDate)).isSameAs(maxDate);
+			assertThat(TimeUtil.maxOfNullables(maxDate, minDate)).isSameAs(maxDate);
+		}
 	}
 
 	@Test
 	public void test_isSameDay()
 	{
-		// NOTE: this test was initially in org.compiere.util.TimeUtil.main(String[])
+		final Timestamp t1 = createTimestamp(1, 1, 1);
+		final Timestamp t2 = createTimestamp(2, 2, 2);
+		final Timestamp t3 = createTimestamp(3, 3, 3);
 
-		final Timestamp t1 = createTimestamp(01, 01, 01);
-		final Timestamp t2 = createTimestamp(02, 02, 02);
-		final Timestamp t3 = createTimestamp(03, 03, 03);
-
-		final Timestamp t4 = createTimestamp(01, 01, 01);
-		final Timestamp t5 = createTimestamp(02, 02, 02);
+		final Timestamp t4 = createTimestamp(1, 1, 1);
+		final Timestamp t5 = createTimestamp(2, 2, 2);
 
 		assertSameDay(true, t1, t4);
 		assertSameDay(true, t2, t5);
@@ -196,8 +331,6 @@ public class TimeUtilTest
 	@Test
 	public void test_formatElapsed()
 	{
-		// NOTE: this test was initially in org.compiere.util.TimeUtil.main(String[])
-
 		assertFormatElapsed("1.000 s", 1000);
 		assertFormatElapsed("1.234 s", 1234);
 		assertFormatElapsed("1.000 h", 3601234);
@@ -282,23 +415,6 @@ public class TimeUtilTest
 	}
 
 	@Test
-	public void testMaxDuration()
-	{
-		testMaxDuration(null, null, null);
-		testMaxDuration(Duration.ofMinutes(1), Duration.ofMinutes(1), null);
-		testMaxDuration(Duration.ofMinutes(1), null, Duration.ofMinutes(1));
-		testMaxDuration(Duration.ofMinutes(1), Duration.ofMinutes(1), Duration.ofMinutes(1));
-		testMaxDuration(Duration.ofMinutes(2), Duration.ofMinutes(1), Duration.ofMinutes(2));
-		testMaxDuration(Duration.ofMinutes(2), Duration.ofMinutes(2), Duration.ofMinutes(1));
-	}
-
-	private void testMaxDuration(final Duration expected, final Duration duration1, final Duration duration2)
-	{
-		final Duration actual = TimeUtil.max(duration1, duration2);
-		assertThat(actual).isEqualTo(expected);
-	}
-
-	@Test
 	public void test_isLastDayOfMonth()
 	{
 		assertLastDayOfMonth(false, LocalDate.of(2019, 1, 1));
@@ -327,7 +443,6 @@ public class TimeUtilTest
 
 		assertThat(TimeUtil.isDateOrTimeObject(null)).isFalse();
 		assertThat(TimeUtil.isDateOrTimeObject("aaa")).isFalse();
-		assertThat(TimeUtil.isDateOrTimeObject("aaa")).isFalse();
 		assertThat(TimeUtil.isDateOrTimeObject(1)).isFalse();
 		assertThat(TimeUtil.isDateOrTimeObject(new BigDecimal("1234"))).isFalse();
 	}
@@ -347,17 +462,6 @@ public class TimeUtilTest
 		assertThat(TimeUtil.isDateOrTimeClass(String.class)).isFalse();
 		assertThat(TimeUtil.isDateOrTimeClass(Integer.class)).isFalse();
 		assertThat(TimeUtil.isDateOrTimeClass(BigDecimal.class)).isFalse();
-	}
-
-	@Test
-	public void testMaxLocalDate()
-	{
-		assertThat(TimeUtil.maxOfNullables(null, LocalDate.parse("2021-02-10")))
-				.isEqualTo(LocalDate.parse("2021-02-10"));
-		assertThat(TimeUtil.maxOfNullables(LocalDate.parse("2021-02-10"), null))
-				.isEqualTo(LocalDate.parse("2021-02-10"));
-		assertThat(TimeUtil.max(LocalDate.parse("2021-02-10"), LocalDate.parse("2021-02-11")))
-				.isEqualTo(LocalDate.parse("2021-02-11"));
 	}
 
 	@Nested
@@ -575,7 +679,7 @@ public class TimeUtilTest
 		{
 			final Date nowDate = new Date();
 			final Timestamp nowTimestamp = new Timestamp(nowDate.getTime());
-			assertThat(nowTimestamp).isNotEqualTo(nowDate); // guard, just to make sure that noone magically fixed timestamp
+			assertThat(nowTimestamp).isNotEqualTo(nowDate); // guard, just to make sure that none magically fixed timestamp
 
 			assertThat(TimeUtil.asDate(nowTimestamp)).isEqualTo(nowDate);
 		}

@@ -98,7 +98,7 @@ public class M_ShipmentSchedulePostMaterialEventTest
 		}
 
 		@Override
-		I_M_ShipmentSchedule toOldValues(I_M_ShipmentSchedule shipmentSchedule)
+		I_M_ShipmentSchedule toOldValues(final I_M_ShipmentSchedule shipmentSchedule)
 		{
 			return oldShipmentSchedule;
 		}

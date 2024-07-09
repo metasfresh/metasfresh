@@ -1,11 +1,5 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.materialtracking.IMaterialTrackingBL;
@@ -13,6 +7,11 @@ import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IInvoicedSumProvider;
 import de.metas.util.Services;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /*
  * #%L
@@ -70,7 +69,7 @@ public class InvoicedSumProvider implements IInvoicedSumProvider
 			}
 
 			// note: completed/closed implies that a C_DocType is set.
-			final I_C_DocType docType = docTypeDAO.getById(invoice.getC_DocType_ID());
+			final I_C_DocType docType = docTypeDAO.getRecordById(invoice.getC_DocType_ID());
 			final String docSubType = docType.getDocSubType();
 
 			if (!IMaterialTrackingBL.C_DocType_INVOICE_DOCSUBTYPE_QI_DownPayment.equals(docSubType)

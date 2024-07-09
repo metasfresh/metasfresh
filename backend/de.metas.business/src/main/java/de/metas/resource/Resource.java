@@ -26,6 +26,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
+import de.metas.workplace.WorkplaceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -47,8 +48,12 @@ public class Resource
 	@Nullable ManufacturingResourceType manufacturingResourceType;
 
 	@Nullable UserId responsibleId;
-	
+
 	@Nullable String internalName;
 
 	@Nullable HumanResourceTestGroupId humanResourceTestGroupId;
+
+	@Nullable WorkplaceId workplaceId;
+
+	public boolean isPlant() {return manufacturingResourceType != null && manufacturingResourceType.isPlant();}
 }

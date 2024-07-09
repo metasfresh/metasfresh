@@ -364,8 +364,7 @@ public final class StringUtils
 		{
 			if (param instanceof Supplier)
 			{
-				@SuppressWarnings("rawtypes")
-				final Supplier paramSupplier = (Supplier)param;
+				@SuppressWarnings("rawtypes") final Supplier paramSupplier = (Supplier)param;
 
 				result.add(paramSupplier.get());
 			}

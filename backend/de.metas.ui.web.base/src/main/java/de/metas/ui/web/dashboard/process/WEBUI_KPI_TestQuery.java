@@ -10,10 +10,12 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.ui.web.kpi.data.KPIDataContext;
 import de.metas.ui.web.kpi.data.KPIDataProvider;
 import de.metas.ui.web.kpi.data.KPIDataRequest;
 import de.metas.ui.web.kpi.data.KPIDataResult;
+import de.metas.ui.web.kpi.data.KPIPermissionsProvider;
 import de.metas.ui.web.kpi.descriptor.KPI;
 import de.metas.ui.web.kpi.descriptor.KPIId;
 import de.metas.ui.web.kpi.descriptor.KPIRepository;
@@ -52,6 +54,7 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 	private final IESSystem esSystem = Services.get(IESSystem.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final KPIRepository kpisRepo = SpringContextHolder.instance.getBean(KPIRepository.class);
+	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	private final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	@Param(parameterName = "DateFrom")
@@ -81,6 +84,7 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 				.kpiRepository(kpisRepo)
 				.esSystem(esSystem)
 				.sysConfigBL(sysConfigBL)
+				.kpiPermissionsProvider(new KPIPermissionsProvider(userRolePermissionsDAO))
 				.build()
 				.getKPIData(KPIDataRequest.builder()
 						.kpiId(kpiId)

@@ -9,6 +9,7 @@ import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.util.ColorId;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -29,7 +30,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-class AdRefListRepositoryOverJdbc implements AdRefListRepository
+public class AdRefListRepositoryOverJdbc implements AdRefListRepository
 {
 	private static final Logger logger = LogManager.getLogger(AdRefListRepositoryOverJdbc.class);
 
@@ -78,6 +79,7 @@ class AdRefListRepositoryOverJdbc implements AdRefListRepository
 								+ " , rl." + I_AD_Ref_List.COLUMNNAME_ValueName
 								+ " , rl." + I_AD_Ref_List.COLUMNNAME_Name
 								+ " , rl." + I_AD_Ref_List.COLUMNNAME_Description
+								+ " , rl." + I_AD_Ref_List.COLUMNNAME_AD_Color_ID
 								+ ", (SELECT array_agg(ARRAY[trl.ad_language, trl.name, trl.description]) FROM ad_ref_list_trl trl WHERE trl.ad_ref_list_id = rl.ad_ref_list_id) AS trls"
 								+ " FROM " + I_AD_Ref_List.Table_Name + " rl "
 								+ " WHERE rl." + I_AD_Ref_List.COLUMNNAME_IsActive + "=?"
@@ -131,6 +133,7 @@ class AdRefListRepositoryOverJdbc implements AdRefListRepository
 				.valueName(rs.getString(I_AD_Ref_List.COLUMNNAME_ValueName))
 				.name(name.build())
 				.description(description.build())
+				.colorId(ColorId.ofRepoIdOrNull(rs.getInt(I_AD_Ref_List.COLUMNNAME_AD_Color_ID)))
 				.build();
 	}
 
@@ -155,7 +158,7 @@ class AdRefListRepositoryOverJdbc implements AdRefListRepository
 	{
 		private final ImmutableMap<ReferenceId, ADRefList> byId;
 
-		private AdRefListsMap(@NonNull List<ADRefList> lists)
+		private AdRefListsMap(@NonNull final List<ADRefList> lists)
 		{
 			this.byId = Maps.uniqueIndex(lists, ADRefList::getReferenceId);
 		}

@@ -4,9 +4,13 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.document.DocumentNoFilter;
 import de.metas.freighcost.FreightCostRule;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.lock.api.ILockManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;
@@ -28,10 +32,12 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.compiere.model.IQuery;
@@ -46,15 +52,27 @@ import java.util.stream.Stream;
 
 public class PackagingDAO implements IPackagingDAO
 {
+	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private static final String SYSCONFIG_stream_BufferSize = "de.metas.picking.api.impl.PackagingDAO.stream.BufferSize";
+	private static final int DEFAULT_stream_BufferSize = 500;
 
 	@Override
 	public Stream<Packageable> stream(@NonNull final PackageableQuery query)
 	{
 		return createQuery(query)
+				.setOption(IQuery.OPTION_IteratorBufferSize, getStreamBufferSize())
 				.iterateAndStream()
 				.map(this::toPackageable);
+	}
+
+	private int getStreamBufferSize()
+	{
+		final int bufferSize = sysConfigBL.getIntValue(SYSCONFIG_stream_BufferSize, -1);
+		return bufferSize > 0 ? bufferSize : DEFAULT_stream_BufferSize;
 	}
 
 	private IQuery<I_M_Packageable_V> createQuery(@NonNull final PackageableQuery query)
@@ -128,7 +146,15 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter by Locked By
+		// Filter: sales order document no
+		final DocumentNoFilter salesOrderDocumentNo = query.getSalesOrderDocumentNo();
+		if (salesOrderDocumentNo != null)
+		{
+			queryBuilder.filter(salesOrderDocumentNo.toSqlFilter(I_M_Packageable_V.COLUMN_OrderDocumentNo));
+		}
+
+		//
+		// Filter by Locked By User (via M_ShipmentSchedule_Lock table)
 		if (query.getLockedBy() != null)
 		{
 			if (query.isIncludeNotLocked())
@@ -142,10 +168,30 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
+		// Exclude shipment-schedules that are currently locked for processing/shipment-creation (via T_Lock table)
+		if (query.isExcludeLockedForProcessing())
+		{
+			queryBuilder.filter(lockManager.getNotLockedFilter(
+					I_M_ShipmentSchedule.Table_Name,
+					I_M_Packageable_V.Table_Name + "." + I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID));
+		}
+
+		//
 		// Filter by excludeShipmentScheduleIds
 		if (query.getExcludeShipmentScheduleIds() != null && !query.getExcludeShipmentScheduleIds().isEmpty())
 		{
 			queryBuilder.addNotInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, query.getExcludeShipmentScheduleIds());
+		}
+
+		// Filter: Handover Location
+		if (!query.getHandoverLocationIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_HandOver_Location_ID, query.getHandoverLocationIds());
+		}
+
+		if (query.getOnlyShipmentScheduleIds() != null && !query.getOnlyShipmentScheduleIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, query.getOnlyShipmentScheduleIds());
 		}
 
 		//
@@ -156,27 +202,37 @@ public class PackagingDAO implements IPackagingDAO
 			@NonNull final IQueryBuilder<I_M_Packageable_V> queryBuilder,
 			@NonNull final ImmutableSet<PackageableQuery.OrderBy> orderBys)
 	{
-		orderBys.forEach(orderBy -> queryBuilder.orderBy(toSqlColumnName(orderBy)));
+		orderBys.forEach(orderBy -> appendOrderBy(queryBuilder, orderBy));
 	}
 
-	private static String toSqlColumnName(@NonNull final PackageableQuery.OrderBy orderBy)
+	private static void appendOrderBy(@NonNull final IQueryBuilder<I_M_Packageable_V> queryBuilder, @NonNull final PackageableQuery.OrderBy orderBy)
 	{
 		switch (orderBy)
 		{
 			case ProductName:
-				return I_M_Packageable_V.COLUMNNAME_ProductName;
+				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_ProductName);
+				break;
 			case PriorityRule:
-				return I_M_Packageable_V.COLUMNNAME_PriorityRule;
+				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_PriorityRule);
+				break;
 			case DateOrdered:
-				return I_M_Packageable_V.COLUMNNAME_DateOrdered;
+				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_DateOrdered);
+				break;
 			case PreparationDate:
-				return I_M_Packageable_V.COLUMNNAME_PreparationDate;
+				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_PreparationDate);
+				break;
 			case SalesOrderId:
-				return I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID;
+				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID);
+				break;
 			case DeliveryBPLocationId:
-				return I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID;
+				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
+				break;
 			case WarehouseTypeId:
-				return I_M_Packageable_V.COLUMNNAME_M_Warehouse_Type_ID;
+				queryBuilder.orderBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_Type_ID);
+				break;
+			case SetupPlaceNo_Descending:
+				queryBuilder.orderBy().addColumn(I_M_Packageable_V.COLUMNNAME_Setup_Place_No, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last);
+				break;
 			default:
 				throw new AdempiereException("Unknown ORDER BY: " + orderBy);
 		}
@@ -221,6 +277,7 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.customerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
 		packageable.customerBPLocationName(record.getBPartnerLocationName());
 		packageable.customerAddress(record.getBPartnerAddress_Override());
+		packageable.handoverLocationId(BPartnerLocationId.ofRepoId(record.getHandOver_Partner_ID(), record.getHandOver_Location_ID()));
 
 		packageable.qtyOrdered(Quantity.of(record.getQtyOrdered(), uom));
 		packageable.qtyToDeliver(Quantity.of(record.getQtyToDeliver(), uom));
@@ -271,7 +328,7 @@ public class PackagingDAO implements IPackagingDAO
 
 		//
 		// Packing
-		packageable.packToHUPIItemProductId(record.getPackTo_HU_PI_Item_Product_ID());
+		packageable.packToHUPIItemProductId(HUPIItemProductId.ofRepoIdOrNone(record.getPackTo_HU_PI_Item_Product_ID()));
 
 		final UserId lockedBy = !InterfaceWrapperHelper.isNull(record, I_M_Packageable_V.COLUMNNAME_LockedBy_User_ID) ? UserId.ofRepoId(record.getLockedBy_User_ID()) : null;
 		packageable.lockedBy(lockedBy);

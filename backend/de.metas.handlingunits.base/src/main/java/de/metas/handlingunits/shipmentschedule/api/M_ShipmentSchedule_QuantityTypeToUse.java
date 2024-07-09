@@ -30,14 +30,24 @@ import lombok.NonNull;
 
 public enum M_ShipmentSchedule_QuantityTypeToUse implements ReferenceListAwareEnum
 {
-	/** only use the shipment schedule's picked qty (which is based on the actually picked HUs). */
+	/**
+	 * only use the shipment schedule's picked qty (which is based on the actually picked HUs).
+	 */
 	TYPE_PICKED_QTY("P"),
 
-	/** only use the shipment schedule's qty to deliver. */
+	/**
+	 * only use the shipment schedule's qty to deliver.
+	 */
 	TYPE_QTY_TO_DELIVER("D"),
 
-	/** use both picked and shipment schedule's qty to deliver. */
-	TYPE_BOTH("PD");
+	/**
+	 * use both picked and shipment schedule's qty to deliver.
+	 */
+	TYPE_BOTH("PD"),
+
+	TYPE_SPLIT_SHIPMENT("SPLIT_SHIPMENT"),
+	
+	;
 
 	@Getter
 	private final String code;

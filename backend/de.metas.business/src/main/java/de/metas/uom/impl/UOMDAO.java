@@ -98,6 +98,12 @@ public class UOMDAO implements IUOMDAO
 				.orElseThrow(() -> new AdempiereException("No UOM found for X12DE355=" + x12de355));
 	}
 
+	@NonNull
+	public Optional<UomId> getIdByX12DE355IfExists(@NonNull final X12DE355 x12de355)
+	{
+		return getUomIdByX12DE355IfExists(x12de355);
+	}
+	
 	private Optional<UomId> getUomIdByX12DE355IfExists(@NonNull final X12DE355 x12de355)
 	{
 		return uomIdsByX12DE355.getOrLoad(x12de355, this::retrieveUomIdByX12DE355);
@@ -191,7 +197,13 @@ public class UOMDAO implements IUOMDAO
 	@Override
 	public boolean isUOMForTUs(@NonNull final UomId uomId)
 	{
-		final X12DE355 x12de355 = getX12DE355ById(uomId);
+		final I_C_UOM uom = getById(uomId);
+		return isUOMForTUs(uom);
+	}
+
+	public static boolean isUOMForTUs(@NonNull final I_C_UOM uom)
+	{
+		final X12DE355 x12de355 = X12DE355.ofCode(uom.getX12DE355());
 		return X12DE355.COLI.equals(x12de355) || X12DE355.TU.equals(x12de355);
 	}
 

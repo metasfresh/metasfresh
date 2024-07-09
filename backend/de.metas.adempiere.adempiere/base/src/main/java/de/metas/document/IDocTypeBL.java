@@ -18,6 +18,9 @@ public interface IDocTypeBL extends ISingletonService
 	DocTypeId getDocTypeIdOrNull(DocTypeQuery docTypeQuery);
 
 	@NonNull
+	DocTypeId getDocTypeId(DocTypeQuery docTypeQuery);
+
+	@NonNull
 	ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull DocTypeInvoicingPoolId docTypeInvoicingPoolId);
 
 	ITranslatableString getNameById(DocTypeId docTypeId);
@@ -73,7 +76,11 @@ public interface IDocTypeBL extends ISingletonService
 
 	boolean isProFormaSO(DocTypeId docTypeId);
 
-	boolean isDownPayment(DocTypeId docTypeId);
+	boolean isInterimInvoice(DocTypeId docTypeId);
+
+	boolean isFinalInvoiceOrFinalCreditMemo(@NonNull DocTypeId docTypeId);
+
+	boolean isDefinitiveInvoiceOrDefinitiveCreditMemo(@NonNull DocTypeId docTypeId);
 
 	void save(I_C_DocType dt);
 

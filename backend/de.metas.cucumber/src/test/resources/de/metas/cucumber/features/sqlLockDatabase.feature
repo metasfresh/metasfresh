@@ -6,7 +6,7 @@ Feature: DB-Based Locking
 
   Background:
     Given infrastructure and metasfresh are running
-  
+
   @from:cucumber
   Scenario: Acquiring a lock on an not-yet-locked record succeeds
     Given I_AD_PInstance with id 123124 is created

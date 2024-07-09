@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.aggregation.model.I_C_Aggregation;
-import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
@@ -629,8 +628,23 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.list();//
 	}
 
+@Override
 	@NonNull
 	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidates(@NonNull final InvoiceId invoiceId)
+	{
+		return toInvoiceCandidateQuery(invoiceId)
+				.list();
+	}
+
+	@NonNull
+	@Override
+	public Collection<InvoiceCandidateId> retrieveInvoiceCandidateIds(@NonNull final InvoiceId invoiceId)
+	{
+		return toInvoiceCandidateQuery(invoiceId)
+				.listIds(InvoiceCandidateId::ofRepoId);
+	}
+
+	private IQuery<I_C_Invoice_Candidate> toInvoiceCandidateQuery(final @NonNull InvoiceId invoiceId)
 	{
 		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
@@ -640,8 +654,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				//collect related invoice candidates
 				.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID)
 				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
+				.create();
 	}
 
 	@Override
@@ -799,7 +812,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final int count = icQuery
 				.insertDirectlyInto(I_C_Invoice_Candidate_Recompute.class)
 				.mapColumn(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
-				.mapColumn(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Async_Batch_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Async_Batch_ID)
 				.mapColumnToConstant(I_C_Invoice_Candidate_Recompute.COLUMNNAME_ChunkUUID, chunkUUID)
 				// NOTE: not setting the AD_PInstance_ID to null, because:
 				// 1. null is the default
@@ -808,29 +820,16 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.execute()
 				.getRowsInserted();
 
-		logger.info("Invalidated {} invoice candidates with chunkUUID={}, trxName={} and query={}", count, chunkUUID, icQuery.getTrxName(), icQuery);
-
-		// collect the different C_Async_Batch_IDs (including null) of the ICs that we just created recompute-records for
-		final List<Integer> asyncBatchIDs = queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
-				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_ChunkUUID, chunkUUID)
-				.create()
-				.listDistinct(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Async_Batch_ID, Integer.class);
+		logger.debug("Invalidated {} invoice candidates with chunkUUID={}, trxName={} and query={}", count, chunkUUID, icQuery.getTrxName(), icQuery);
 
 		//
 		// Schedule an update for invalidated invoice candidates
 		if (count > 0)
 		{
-			// create an equ
-			for (final Integer asyncBatchIdInt : asyncBatchIDs)
-			{
-				final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNone(asyncBatchIdInt);
 				final InvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(
 						icQuery.getCtx(),
-						icQuery.getTrxName(),
-						AsyncBatchId.toAsyncBatchIdOrNull(asyncBatchId));
-				logger.info("Scheduling ICs with AsyncBatchId={} for update.", asyncBatchIdInt);
+						icQuery.getTrxName());
 				invoiceCandScheduler.scheduleForUpdate(request);
-			}
 		}
 		
 		return count;
@@ -1231,7 +1230,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			return false;
 		}
-		
+
 		// Without the newOutOfTrx-context, we had InvoiceCandBL.waitForInvoiceCandidatesUpdated consistently hit the 1hr-timeout on one instance,
 		// although multiple UpdateInvalidInvoiceCandidatesWorkpackageProcessors executed successfully during that hour.
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, PlainContextAware.newOutOfTrx());
@@ -2009,4 +2008,5 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	{
 		return InterfaceWrapperHelper.load(invoiceLineAllocId, I_C_Invoice_Line_Alloc.class);
 	}
+
 }

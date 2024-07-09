@@ -38,7 +38,10 @@ public class ExternalSystemsPrintingNotifier
 
 	public void notifyExternalSystemsIfNeeded(@NonNull final PrintingClientRequest request)
 	{
-		handlerList.forEach(handler -> handler.notify(request));
+		for (final IPrintingHandler handler : handlerList)
+		{
+			handler.notify(request);
+		}
 	}
 
 }

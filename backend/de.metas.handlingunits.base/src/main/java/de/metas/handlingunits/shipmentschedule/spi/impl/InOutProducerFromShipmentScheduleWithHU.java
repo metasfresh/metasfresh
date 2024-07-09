@@ -88,13 +88,11 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -271,14 +269,12 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 */
 	private I_M_InOut getCreateShipmentHeader(@NonNull final ShipmentScheduleWithHU candidate)
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
-
-		final LocalDate shipmentDate = calculateShipmentDate(shipmentSchedule, calculateShippingDateRule);
+		final LocalDate shipmentDate = calculateShipmentDate(candidate, calculateShippingDateRule);
 
 		//
 		// Search for existing shipment to consolidate on
 		I_M_InOut shipment = null;
-		if (shipmentScheduleBL.isSchedAllowsConsolidate(shipmentSchedule))
+		if (shipmentScheduleBL.isSchedAllowsConsolidate(candidate.getM_ShipmentSchedule()))
 		{
 			shipment = huShipmentScheduleBL.getOpenShipmentOrNull(candidate, shipmentDate);
 		}
@@ -294,9 +290,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@VisibleForTesting
-	LocalDate calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, @NonNull final CalculateShippingDateRule calculateShippingDateType)
+	LocalDate calculateShipmentDate(@NonNull final ShipmentScheduleWithHU candidate, @NonNull final CalculateShippingDateRule calculateShippingDateType)
 	{
-		return calculateShippingDateType.map(new CalculateShippingDateRule.CaseMapper<LocalDate>()
+		return calculateShippingDateType.map(new CalculateShippingDateRule.CaseMapper<>()
 		{
 			@Override
 			public LocalDate today()
@@ -307,14 +303,14 @@ public class InOutProducerFromShipmentScheduleWithHU
 			@Override
 			public LocalDate deliveryDate()
 			{
-				return getDeliveryDateAsLocalDate(schedule).orElseGet(SystemTime::asLocalDate);
+				return candidate.getDeliveryDate().orElseGet(SystemTime::asLocalDate);
 			}
 
 			@Override
 			public LocalDate deliveryDateOrToday()
 			{
 				final LocalDate today = SystemTime.asLocalDate();
-				final LocalDate deliveryDate = getDeliveryDateAsLocalDate(schedule).orElse(today);
+				final LocalDate deliveryDate = candidate.getDeliveryDate().orElse(today);
 				return TimeUtil.max(deliveryDate, today);
 			}
 
@@ -324,12 +320,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 				return fixedDate;
 			}
 		});
-	}
-
-	private Optional<LocalDate> getDeliveryDateAsLocalDate(final @NonNull I_M_ShipmentSchedule schedule)
-	{
-		return Optional.ofNullable(shipmentScheduleEffectiveValuesBL.getDeliveryDate(schedule))
-				.map(ZonedDateTime::toLocalDate);
 	}
 
 	/**
@@ -441,7 +431,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
 		if (order != null && order.getC_Order_ID() > 0)
 		{
-			final I_C_DocType orderDoctype = docTypeDAO.getById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+			final I_C_DocType orderDoctype = docTypeDAO.getRecordById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
 			if (orderDoctype.getC_DocTypeShipment_ID() > 0)
 			{
 				return orderDoctype.getC_DocTypeShipment_ID();
@@ -644,8 +634,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	private void updateShipmentDate(@NonNull final I_M_InOut shipment, @NonNull final ShipmentScheduleWithHU candidate)
 	{
-		final I_M_ShipmentSchedule schedule = candidate.getM_ShipmentSchedule();
-		final LocalDate candidateShipmentDate = calculateShipmentDate(schedule, calculateShippingDateRule);
+		final LocalDate candidateShipmentDate = calculateShipmentDate(candidate, calculateShippingDateRule);
 
 		// the shipment was created before but wasn't yet completed;
 		if (isShipmentDeliveryDateBetterThanMovementDate(shipment, candidateShipmentDate))

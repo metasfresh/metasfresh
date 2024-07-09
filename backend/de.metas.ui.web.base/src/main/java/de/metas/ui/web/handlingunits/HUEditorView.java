@@ -5,13 +5,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.report.HUReportAwareView;
+import de.metas.ui.web.process.ProcessHandlerType;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewFilterParameterLookupEvaluationCtx;
@@ -24,7 +24,6 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -69,7 +68,7 @@ import java.util.stream.Stream;
  * #L%
  */
 
-public class HUEditorView implements IView
+public class HUEditorView implements IView, HUReportAwareView
 {
 	public static HUEditorViewBuilder builder()
 	{
@@ -143,12 +142,6 @@ public class HUEditorView implements IView
 		return viewType;
 	}
 
-	@Override
-	public ITranslatableString getDescription()
-	{
-		return TranslatableStrings.empty();
-	}
-
 	/**
 	 * Always returns {@link I_M_HU#Table_Name}, even if the underlying {@link HUEditorRow}'s type is {@link HUEditorRowType#HUStorage}.<br>
 	 * (because I don't understand it well enough)
@@ -197,7 +190,7 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public boolean isConsiderTableRelatedProcessDescriptors(@NonNull final DocumentIdsSelection selectedRowIds)
+	public boolean isConsiderTableRelatedProcessDescriptors(@NonNull final ProcessHandlerType processHandlerType, @NonNull final DocumentIdsSelection selectedRowIds)
 	{
 		return considerTableRelatedProcessDescriptors;
 	}
@@ -252,14 +245,13 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final ViewFilterParameterLookupEvaluationCtx ctx)
+	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup source for filterId=" + filterId + ", parameterName=" + filterParameterName))
-				.findEntities(ctx.toEvaluatee())
-				.getValues();
+				.findEntities(ctx.toEvaluatee());
 	}
 
 	@Override

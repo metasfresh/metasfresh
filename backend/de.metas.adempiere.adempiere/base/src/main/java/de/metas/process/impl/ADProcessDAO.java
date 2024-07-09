@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.process.impl;
 
 import ch.qos.logback.classic.Level;
@@ -24,12 +46,14 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.window.api.WindowCopyResult;
 import org.adempiere.ad.window.api.WindowCopyResult.TabCopyResult;
 import org.adempiere.exceptions.AdempiereException;
@@ -687,5 +711,16 @@ public class ADProcessDAO implements IADProcessDAO
 				.orderBy(I_AD_Process.COLUMNNAME_AD_Process_ID)
 				.create()
 				.listIds(AdProcessId::ofRepoId);
+	}
+
+	@NonNull
+	@Override
+	public List<I_AD_Process> retrieveProcessRecordsByValRule(@NonNull final AdValRuleId valRuleId)
+	{
+		return queryBL.createQueryBuilder(I_AD_Process.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(new ValidationRuleQueryFilter<>(I_AD_Process.Table_Name, valRuleId))
+				.create()
+				.list();
 	}
 }

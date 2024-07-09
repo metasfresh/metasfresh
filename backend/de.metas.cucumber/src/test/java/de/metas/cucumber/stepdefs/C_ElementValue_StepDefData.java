@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.acct.api.impl.ElementValueId;
 import org.compiere.model.I_C_ElementValue;
 
 /**
@@ -33,4 +34,7 @@ public class C_ElementValue_StepDefData extends StepDefData<I_C_ElementValue>
 	{
 		super(I_C_ElementValue.class);
 	}
+
+	public ElementValueId getId(final StepDefDataIdentifier identifier) {return ElementValueId.ofRepoId(get(identifier).getC_ElementValue_ID());}
+
 }

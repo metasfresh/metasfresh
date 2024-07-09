@@ -59,12 +59,12 @@ public class WEBUI_Picking_PickQtyToComputedHU extends WEBUI_Picking_PickQtyToNe
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
-		if (qtyCU == null || huPIItemProduct == null)
+		if (qtyCUsPerTU == null || huPIItemProduct == null)
 		{
 			return;
 		}
 
-		if (parameterName.equals(PARAM_M_HU_PI_Item_Product_ID) || parameterName.equals(PARAM_QTY_CU))
+		if (parameterName.equals(PARAM_M_HU_PI_Item_Product_ID) || parameterName.equals(PARAM_QtyCUsPerTU))
 		{
 			noOfHUs = getQtyTU().toBigDecimal();
 		}
@@ -148,10 +148,10 @@ public class WEBUI_Picking_PickQtyToComputedHU extends WEBUI_Picking_PickQtyToNe
 	@NonNull
 	private QuantityTU getQtyTU()
 	{
-		return getPIIPCapacity().calculateQtyTU(qtyCU, getCurrentShipmentScheuduleUOM(), uomConversionBL)
+		return getPIIPCapacity().calculateQtyTU(qtyCUsPerTU, getCurrentShipmentScheuduleUOM(), uomConversionBL)
 				.orElseThrow(() -> new AdempiereException("QtyTU cannot be obtained for the current request!")
 						.appendParametersToMessage()
-						.setParameter("QtyCU", qtyCU)
+						.setParameter("QtyCUsPerTU", qtyCUsPerTU)
 						.setParameter("ShipmentScheduleId", getCurrentShipmentScheduleId()));
 	}
 
@@ -169,7 +169,7 @@ public class WEBUI_Picking_PickQtyToComputedHU extends WEBUI_Picking_PickQtyToNe
 	@NonNull
 	private BigDecimal getDefaultNrOfHUs()
 	{
-		if (qtyCU == null || huPIItemProduct == null)
+		if (qtyCUsPerTU == null || huPIItemProduct == null)
 		{
 			return BigDecimal.ONE;
 		}

@@ -67,6 +67,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -114,6 +116,9 @@ public class LoginRestController
 	private final UserDashboardSessionContextHolder userDashboardContextHolder;
 	private final User2FAService user2FAService;
 	private final static AdMessageKey MSG_UserLoginInternalError = AdMessageKey.of("UserLoginInternalError");
+
+	private static final Comparator<JSONLoginRole> ROLES_ORDERING = Comparator.<JSONLoginRole, Integer>comparing(role -> RoleId.isRegular(role.getRoleId()) ? 0 : 100) // Regular roles first
+			.thenComparing(JSONLoginRole::getCaption); // by caption
 
 	private Login getLoginService()
 	{
@@ -203,7 +208,7 @@ public class LoginRestController
 			final LoginAuthenticateResponse authResponse = loginService.authenticate2FA(otp);
 			return continueAuthenticationSelectingRole(loginService, authResponse.getAvailableRoles(), null);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw convertToUserFriendlyException(ex);
 		}
@@ -264,7 +269,7 @@ public class LoginRestController
 
 		final Joiner captionJoiner = Joiner.on(", ");
 
-		final ImmutableList.Builder<JSONLoginRole> result = ImmutableList.builder();
+		final ArrayList<JSONLoginRole> result = new ArrayList<>();
 		for (final Role role : availableRoles)
 		{
 			final RoleId roleId = role.getId();
@@ -293,7 +298,9 @@ public class LoginRestController
 			}
 		}
 
-		return result.build();
+		result.sort(ROLES_ORDERING);
+
+		return result;
 	}
 
 	private void startMFSession(final Login loginService)

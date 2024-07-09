@@ -17,6 +17,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityId;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
@@ -27,7 +28,7 @@ public class ManufacturingJob
 	@NonNull PPOrderId ppOrderId;
 	@NonNull String documentNo;
 	@Nullable BPartnerId customerId;
-	@NonNull ZonedDateTime datePromised;
+	@NonNull ZonedDateTime dateStartSchedule;
 	@Nullable UserId responsibleId;
 	boolean allowUserReporting;
 
@@ -41,7 +42,7 @@ public class ManufacturingJob
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final String documentNo,
 			@Nullable final BPartnerId customerId,
-			@NonNull final ZonedDateTime datePromised,
+			@NonNull final ZonedDateTime dateStartSchedule,
 			@Nullable final UserId responsibleId,
 			final boolean allowUserReporting,
 			//
@@ -57,7 +58,7 @@ public class ManufacturingJob
 		this.ppOrderId = ppOrderId;
 		this.documentNo = documentNo;
 		this.customerId = customerId;
-		this.datePromised = datePromised;
+		this.dateStartSchedule = dateStartSchedule;
 		this.responsibleId = responsibleId;
 		this.allowUserReporting = allowUserReporting;
 		this.activities = activities;
@@ -149,5 +150,12 @@ public class ManufacturingJob
 		return !DeviceId.equals(this.currentScaleDeviceId, currentScaleDeviceId)
 				? toBuilder().currentScaleDeviceId(currentScaleDeviceId).build()
 				: this;
+	}
+
+
+	@NonNull
+	public LocalDate getDateStartScheduleAsLocalDate()
+	{
+		return dateStartSchedule.toLocalDate();
 	}
 }

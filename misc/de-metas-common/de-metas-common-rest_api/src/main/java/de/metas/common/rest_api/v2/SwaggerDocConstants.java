@@ -108,4 +108,9 @@ public class SwaggerDocConstants
 	public static final String PAYMENT_TERM_IDENTIFIER_DOC = "Identifier of the paymentTerm in question. Can be\n"
 			+ "* a plain `<C_PaymentTerm_ID>`\n"
 			+ "* or something like `val-<C_PaymentTerm.Value>`\n";
+
+	public static final String WAREHOUSE_IDENTIFIER_DOC = "Identifier of the warehouse in question. Can be\n"
+			+ "* a plain `<M_Warehouse_ID>`\n"
+			+ "* or something like `val-<M_Warehouse.Value>`\n"
+			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>` where `<ExternalReference>` translates to an identifier of the warehouse within the given `<ExternalSystem>`";
 }

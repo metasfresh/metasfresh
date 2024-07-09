@@ -30,8 +30,6 @@ import de.metas.externalsystem.ebay.ApiMode;
 import de.metas.externalsystem.ebay.ExternalSystemEbayConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
-import de.metas.externalsystem.leichmehl.ReplacementSource;
-import de.metas.externalsystem.leichmehl.TargetFieldType;
 import de.metas.externalsystem.metasfresh.ExternalSystemMetasfreshConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
@@ -39,7 +37,6 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay_Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Metasfresh;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
@@ -47,7 +44,6 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
-import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -59,6 +55,7 @@ import de.metas.externalsystem.shopware6.OrderProcessingConfig;
 import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.tax.TaxCategoryDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,7 +69,7 @@ import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6Map
 import static de.metas.externalsystem.other.ExternalSystemOtherConfigRepositoryTest.createExternalConfigParameterRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(SnapshotExtension.class)
 class ExternalSystemConfigRepoTest
@@ -84,7 +81,7 @@ class ExternalSystemConfigRepoTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		externalSystemConfigRepo = new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository());
+		externalSystemConfigRepo = new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO());
 	}
 
 	@Test
@@ -294,7 +291,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		childRecord.setExternalSystemValue(value);
 		saveRecord(childRecord);
-		
+
 		// when
 		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Metasfresh, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
@@ -1311,49 +1308,5 @@ class ExternalSystemConfigRepoTest
 		assertThat(result.size()).isEqualTo(1);
 		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
-
-	@Test
-	void givenLeichMehlCofing_withProductMappings_andPluFileConfigs_whenGetById_thenReturnWholeInfo()
-	{
-		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
-				.build();
-
-		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
-		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
-		leichMehlConfig.setExternalSystemValue("LeichMehl");
-		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
-		leichMehlConfig.setTCP_PortNumber(8080);
-		leichMehlConfig.setTCP_Host("tcpHost");
-
-		saveRecord(leichMehlConfig);
-
-		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
-		productMappingRecord.setExternalSystem_Config_LeichMehl_ID(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID());
-		productMappingRecord.setSeqNo(10);
-		productMappingRecord.setM_Product_ID(1);
-		productMappingRecord.setM_Product_Category_ID(2);
-		productMappingRecord.setC_BPartner_ID(3);
-		productMappingRecord.setPLU_File("plufile");
-
-		saveRecord(productMappingRecord);
-
-		final I_LeichMehl_PluFile_Config pluFileConfig = newInstance(I_LeichMehl_PluFile_Config.class);
-		pluFileConfig.setExternalSystem_Config_LeichMehl_ID(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID());
-		pluFileConfig.setTargetFieldName("targetFileName");
-		pluFileConfig.setTargetFieldType(TargetFieldType.Date.getCode());
-		pluFileConfig.setReplacement("replacement");
-		pluFileConfig.setReplaceRegExp("replacePattern");
-		pluFileConfig.setReplacementSource(ReplacementSource.PPOrder.getCode());
-
-		saveRecord(pluFileConfig);
-
-		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(ExternalSystemLeichMehlConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID()));
-
-		// then
-		assertThat(result).isNotNull();
-		expect.serializer("orderedJson").toMatchSnapshot(result);
-	}
 }
+

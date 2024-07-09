@@ -42,7 +42,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public String getAttributesKey() 
+	public String getAttributesKey()
 	{
 		return get_ValueAsString(COLUMNNAME_AttributesKey);
 	}
@@ -92,14 +92,14 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	@Override
 	public void setMD_Cockpit_ID (final int MD_Cockpit_ID)
 	{
-		if (MD_Cockpit_ID < 1) 
+		if (MD_Cockpit_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, MD_Cockpit_ID);
 	}
 
 	@Override
-	public int getMD_Cockpit_ID() 
+	public int getMD_Cockpit_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_MD_Cockpit_ID);
 	}
@@ -111,7 +111,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getMDCandidateQtyStock_AtDate() 
+	public BigDecimal getMDCandidateQtyStock_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MDCandidateQtyStock_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -124,9 +124,22 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getPMM_QtyPromised_OnDate_AtDate() 
+	public BigDecimal getPMM_QtyPromised_OnDate_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PMM_QtyPromised_OnDate_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPMM_QtyPromised_NextDay(final @Nullable BigDecimal PMM_QtyPromised_NextDay)
+	{
+		set_Value(COLUMNNAME_PMM_QtyPromised_NextDay, PMM_QtyPromised_NextDay);
+	}
+
+	@Override
+	public BigDecimal getPMM_QtyPromised_NextDay()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PMM_QtyPromised_NextDay);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -137,7 +150,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public String getProductName() 
+	public String getProductName()
 	{
 		return get_ValueAsString(COLUMNNAME_ProductName);
 	}
@@ -149,7 +162,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public String getProductValue() 
+	public String getProductValue()
 	{
 		return get_ValueAsString(COLUMNNAME_ProductValue);
 	}
@@ -161,7 +174,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtyDemand_DD_Order_AtDate() 
+	public BigDecimal getQtyDemand_DD_Order_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDemand_DD_Order_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -174,7 +187,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtyDemand_PP_Order_AtDate() 
+	public BigDecimal getQtyDemand_PP_Order_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDemand_PP_Order_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -187,7 +200,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtyDemand_SalesOrder_AtDate() 
+	public BigDecimal getQtyDemand_SalesOrder_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDemand_SalesOrder_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -200,7 +213,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtyDemandSum_AtDate() 
+	public BigDecimal getQtyDemandSum_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDemandSum_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -213,7 +226,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtyExpectedSurplus_AtDate() 
+	public BigDecimal getQtyExpectedSurplus_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyExpectedSurplus_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -226,7 +239,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtyInventoryCount_AtDate() 
+	public BigDecimal getQtyInventoryCount_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInventoryCount_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -239,7 +252,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public java.sql.Timestamp getQtyInventoryTime_AtDate() 
+	public java.sql.Timestamp getQtyInventoryTime_AtDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_QtyInventoryTime_AtDate);
 	}
@@ -251,7 +264,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtyMaterialentnahme_AtDate() 
+	public BigDecimal getQtyMaterialentnahme_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyMaterialentnahme_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -267,6 +280,32 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	public BigDecimal getQtyOnHandCount() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOnHandCount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyOrdered_PurchaseOrder_AtDate(final @Nullable BigDecimal QtyOrdered_PurchaseOrder_AtDate)
+	{
+		set_Value(COLUMNNAME_QtyOrdered_PurchaseOrder_AtDate, QtyOrdered_PurchaseOrder_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtyOrdered_PurchaseOrder_AtDate()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered_PurchaseOrder_AtDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyOrdered_SalesOrder_AtDate(final @Nullable BigDecimal QtyOrdered_SalesOrder_AtDate)
+	{
+		set_Value(COLUMNNAME_QtyOrdered_SalesOrder_AtDate, QtyOrdered_SalesOrder_AtDate);
+	}
+
+	@Override
+	public BigDecimal getQtyOrdered_SalesOrder_AtDate()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered_SalesOrder_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -290,7 +329,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtyStockCurrent_AtDate() 
+	public BigDecimal getQtyStockCurrent_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyStockCurrent_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -303,7 +342,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtyStockEstimateCount_AtDate() 
+	public BigDecimal getQtyStockEstimateCount_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyStockEstimateCount_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -316,7 +355,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public int getQtyStockEstimateSeqNo_AtDate() 
+	public int getQtyStockEstimateSeqNo_AtDate()
 	{
 		return get_ValueAsInt(COLUMNNAME_QtyStockEstimateSeqNo_AtDate);
 	}
@@ -328,7 +367,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public java.sql.Timestamp getQtyStockEstimateTime_AtDate() 
+	public java.sql.Timestamp getQtyStockEstimateTime_AtDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_QtyStockEstimateTime_AtDate);
 	}
@@ -340,7 +379,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtySupply_DD_Order_AtDate() 
+	public BigDecimal getQtySupply_DD_Order_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtySupply_DD_Order_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -353,7 +392,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtySupply_PP_Order_AtDate() 
+	public BigDecimal getQtySupply_PP_Order_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtySupply_PP_Order_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -366,7 +405,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtySupply_PurchaseOrder_AtDate() 
+	public BigDecimal getQtySupply_PurchaseOrder_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtySupply_PurchaseOrder_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -379,7 +418,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtySupplyRequired_AtDate() 
+	public BigDecimal getQtySupplyRequired_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtySupplyRequired_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -392,7 +431,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtySupplySum_AtDate() 
+	public BigDecimal getQtySupplySum_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtySupplySum_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -405,7 +444,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public BigDecimal getQtySupplyToSchedule_AtDate() 
+	public BigDecimal getQtySupplyToSchedule_AtDate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtySupplyToSchedule_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;

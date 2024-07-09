@@ -3,7 +3,10 @@ package de.metas.report;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
+import de.metas.util.FileUtil;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.SpringResourceUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -11,11 +14,16 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.io.FileUtils;
 import org.compiere.util.MimeType;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Objects;
 
 /*
  * #%L
@@ -45,13 +53,16 @@ import java.io.IOException;
 @Value
 public class ReportResultData
 {
-	Resource reportData;
+	@NonNull Resource reportData;
 
-	String reportFilename;
+	/**
+	 * The filename to be used when the report data is stored (either via browser or directly on the metasfresh-server).
+	 * Might be "influenced" on the go, see {@link #withReportFilename(String)}.
+	 */
+	@NonNull String reportFilename;
+	@NonNull String reportContentType;
 
-	String reportContentType;
-
-	@Builder
+	@Builder(toBuilder = true)
 	private ReportResultData(
 			@NonNull final Resource reportData,
 			@NonNull final String reportFilename,
@@ -83,6 +94,11 @@ public class ReportResultData
 	{
 		final String reportFilename = file.getName();
 
+		return ofFile(file, reportFilename);
+	}
+
+	public static ReportResultData ofFile(final @NotNull File file, @NotNull final String reportFilename)
+	{
 		return ReportResultData.builder()
 				.reportData(new FileSystemResource(file))
 				.reportFilename(reportFilename)
@@ -118,6 +134,26 @@ public class ReportResultData
 		}
 	}
 
+	public Path writeToDirectory(@NonNull final Path directory)
+	{
+		final Path file = FileUtil.findNotExistingFile(directory, getReportFilename(), 200)
+				.orElseGet(() -> {
+					final String extWithDot = MimeType.getExtensionByType(reportContentType);
+					final String fileBaseName = FileUtil.getFileBaseName(getReportFilename());
+					return directory.resolve(fileBaseName + "_" + SystemTime.millis() + extWithDot);
+				});
+
+		try
+		{
+			Files.copy(reportData.getInputStream(), file, StandardCopyOption.REPLACE_EXISTING);
+			return file;
+		}
+		catch (final IOException ex)
+		{
+			throw new AdempiereException("Failed writing " + file, ex);
+		}
+	}
+
 	@NonNull
 	private File createTemporaryFile(@NonNull final String filenamePrefix)
 	{
@@ -131,5 +167,13 @@ public class ReportResultData
 		{
 			throw new AdempiereException("Failed creating temporary file with `" + filenamePrefix + "` prefix", ex);
 		}
+	}
+
+	public ReportResultData withReportFilename(@NonNull final String reportFilename)
+	{
+		final String reportFilenameNorm = StringUtils.trim(reportFilename);
+		return !Objects.equals(this.reportFilename, reportFilenameNorm)
+				? toBuilder().reportFilename(reportFilenameNorm).build()
+				: this;
 	}
 }

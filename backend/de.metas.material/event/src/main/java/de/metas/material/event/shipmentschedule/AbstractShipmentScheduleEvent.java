@@ -79,23 +79,26 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 	public abstract BigDecimal getReservedQuantityDelta();
 
 	@NonNull
+	public abstract BigDecimal getOrderedQuantityDelta();
+
+	@NonNull
 	public BigDecimal getOrderedQuantity()
 	{
 		return getShipmentScheduleDetail().getOrderedQuantity();
 	}
-	
+
 	@NonNull
 	public BigDecimal getReservedQuantity()
 	{
 		return getShipmentScheduleDetail().getReservedQuantity();
 	}
-	
+
 	@Nullable
 	public OldShipmentScheduleData getOldShipmentScheduleData()
 	{
 		return getShipmentScheduleDetail().getOldShipmentScheduleData();
 	}
-	
+
 	@OverridingMethodsMustInvokeSuper
 	public void validate()
 	{

@@ -1,6 +1,9 @@
 package de.metas.contracts.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.GLCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.model.C_Aggregation_Builder;
@@ -21,9 +24,20 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
+import de.metas.contracts.modular.ModularContractPriceRepository;
+import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.ComputingMethodService;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.log.status.ModularLogCreateStatusRepository;
+import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
+import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
+import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.api.IAggregationDAO;
@@ -38,8 +52,6 @@ import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.pricing.tax.ProductTaxCategoryRepository;
-import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserRepository;
 import de.metas.util.OptionalBoolean;
@@ -75,6 +87,17 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	protected void afterInit()
 	{
 		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractComputingMethodHandlerRegistry(ImmutableList.of()));
+		SpringContextHolder.registerJUnitBean(new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())));
+		SpringContextHolder.registerJUnitBean(new ComputingMethodService(new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository())));
+		SpringContextHolder.registerJUnitBean(new ModularContractPriceRepository());
+		SpringContextHolder.registerJUnitBean(new ModularContractService(new ModularContractComputingMethodHandlerRegistry(ImmutableList.of()),
+				new ModularContractSettingsRepository(),
+				new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
+				new ComputingMethodService(new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository())),
+				new ModularContractPriceRepository()));
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(
 				new C_Flatrate_Term(
@@ -109,7 +132,6 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		}
 
 		de.metas.common.util.time.SystemTime.setTimeSource(today);
-
 
 		contractChangeBL = Services.get(IContractChangeBL.class);
 		contractsDAO = Services.get(IContractsDAO.class);

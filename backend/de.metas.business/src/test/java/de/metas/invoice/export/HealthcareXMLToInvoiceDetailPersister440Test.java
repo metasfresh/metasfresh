@@ -25,8 +25,8 @@ package de.metas.invoice.export;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.TestInvoice;
 import de.metas.business.TestInvoiceLine;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.detail.InvoiceWithDetailsRepository;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
@@ -164,6 +164,6 @@ public class HealthcareXMLToInvoiceDetailPersister440Test
 
 	private int invoiceLineId(final int idx)
 	{
-		return InvoiceLineId.toRepoId(testInvoice.getTestInvoiceLines().get(idx).getInvoiceLineId());
+		return InvoiceAndLineId.toRepoId(testInvoice.getTestInvoiceLines().get(idx).getInvoiceAndLineId());
 	}
 }

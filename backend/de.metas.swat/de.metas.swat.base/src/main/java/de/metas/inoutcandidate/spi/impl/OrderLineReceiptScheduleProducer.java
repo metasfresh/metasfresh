@@ -16,7 +16,9 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.OrgId;
+import de.metas.product.OnMaterialReceiptWithDestWarehouse;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -38,8 +40,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.model.X_PP_Product_Planning;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -77,7 +77,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 public class OrderLineReceiptScheduleProducer extends AbstractReceiptScheduleProducer
 {
 
-	private final static String DEFAULT_OnMaterialReceiptWithDestWarehouse = X_PP_Product_Planning.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateMovement;
+	private final static OnMaterialReceiptWithDestWarehouse DEFAULT_OnMaterialReceiptWithDestWarehouse = OnMaterialReceiptWithDestWarehouse.CREATE_MOVEMENT;
 
 	@Override
 	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
@@ -169,6 +169,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		receiptSchedule.setC_Project_ID(line.getC_Project_ID()); // C_OrderLine.C_Project_ID is set from order via model interceptor
 
+		receiptSchedule.setPOReference(order.getPOReference());
 		//
 		// Delivery rule, Priority rule
 		{
@@ -251,7 +252,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		receiptSchedule.setHeaderAggregationKey(headerAggregationKey);
 
 		// #3549
-		receiptSchedule.setOnMaterialReceiptWithDestWarehouse(getOnMaterialReceiptWithDestWarehouse(line));
+		receiptSchedule.setOnMaterialReceiptWithDestWarehouse(getOnMaterialReceiptWithDestWarehouse(line).getCode());
 
 		final Dimension orderLineDimension = dimensionService.getFromRecord(line);
 		dimensionService.updateRecord(receiptSchedule, orderLineDimension);
@@ -262,7 +263,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		return receiptSchedule;
 	}
 
-	private String getOnMaterialReceiptWithDestWarehouse(final I_C_OrderLine orderLine)
+	@NonNull
+	private OnMaterialReceiptWithDestWarehouse getOnMaterialReceiptWithDestWarehouse(final I_C_OrderLine orderLine)
 	{
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
@@ -277,17 +279,16 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 				.attributeSetInstanceId(asiId)
 				// no warehouse, no plant
 				.build();
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query).orElse(null);
+		final ProductPlanning productPlanning = productPlanningDAO.find(query).orElse(null);
 		if (productPlanning == null)
 		{
 			// fallback to old behavior -> a movement is created instead of dd_Order
 			return DEFAULT_OnMaterialReceiptWithDestWarehouse;
 		}
 
-		final String onMaterialReceiptWithDestWarehouse = productPlanning.getOnMaterialReceiptWithDestWarehouse();
+		final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse = productPlanning.getOnMaterialReceiptWithDestWarehouse();
 
-		return Check.isEmpty(onMaterialReceiptWithDestWarehouse) ? DEFAULT_OnMaterialReceiptWithDestWarehouse : onMaterialReceiptWithDestWarehouse;
-
+		return onMaterialReceiptWithDestWarehouse != null ? onMaterialReceiptWithDestWarehouse : DEFAULT_OnMaterialReceiptWithDestWarehouse;
 	}
 
 	/**
@@ -435,7 +436,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		// If document type is set, get it's C_DocTypeShipment_ID (if any)
 		if (docTypeId != null)
 		{
-			final I_C_DocType docType = docTypeDAO.getById(docTypeId);
+			final I_C_DocType docType = docTypeDAO.getRecordById(docTypeId);
 			final int receiptDocTypeId = docType.getC_DocTypeShipment_ID();
 			if (receiptDocTypeId > 0)
 			{

@@ -25,9 +25,11 @@ package de.metas.workplace;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.WarehouseId;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -56,5 +58,33 @@ public class WorkplaceService
 	{
 		return workplaceUserAssignRepository.getWorkplaceIdByUserId(userId)
 				.map(workplaceRepository::getById);
+	}
+
+	public List<Workplace> getAllActive() {return workplaceRepository.getAllActive();}
+
+	public Optional<WarehouseId> getWarehouseIdByUserId(@NonNull final UserId userId)
+	{
+		return getWorkplaceByUserId(userId).map(Workplace::getWarehouseId);
+	}
+
+	public void assignWorkplace(@NonNull UserId userId, @NonNull WorkplaceId workplaceId)
+	{
+		workplaceUserAssignRepository.create(WorkplaceAssignmentCreateRequest.builder().userId(userId).workplaceId(workplaceId).build());
+	}
+
+	public void assignWorkplace(@NonNull final WorkplaceAssignmentCreateRequest request)
+	{
+		workplaceUserAssignRepository.create(request);
+	}
+
+	public boolean isUserAssigned(@NonNull final UserId userId, @NonNull final WorkplaceId expectedWorkplaceId)
+	{
+		final WorkplaceId workplaceId = workplaceUserAssignRepository.getWorkplaceIdByUserId(userId).orElse(null);
+		return WorkplaceId.equals(workplaceId, expectedWorkplaceId);
+	}
+
+	public boolean isAnyWorkplaceActive()
+	{
+		return workplaceRepository.isAnyWorkplaceActive();
 	}
 }

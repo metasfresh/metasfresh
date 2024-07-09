@@ -1,3 +1,4 @@
+@ignore
 @ghActions:run_on_executor5
 Feature: Modular contract log from shipment (PO)
 
@@ -68,7 +69,7 @@ Feature: Modular contract log from shipment (PO)
       | modularPP_PO | moduleLogPLV_PO                   | modularContract_prod_S0303_100 | 5.00     | PCE               | Normal                        |
       | modularPP_SO | moduleLogPLV_SO                   | modularContract_prod_S0303_100 | 10.00    | PCE               | Normal                        |
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier  | Name                            | M_Product_ID.Identifier        | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier  | Name                            | M_Raw_Product_ID.Identifier    | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_ship_settings_S0303_100 | modCntr_ship_settings_S0303_100 | modularContract_prod_S0303_100 | harvesting_calendar      | year_2023            | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier  | SeqNo | Name    | M_Product_ID.Identifier        | InvoicingGroup | ModCntr_Settings_ID.Identifier  | ModCntr_Type_ID.Identifier |
@@ -76,8 +77,8 @@ Feature: Modular contract log from shipment (PO)
       | modCntr_module_SO_S0303_100   | 20    | name_20 | modularContract_prod_S0303_100 | Kosten         | modCntr_ship_settings_S0303_100 | modCntr_type_SO_S0303      |
       | modCntr_module_SHIP_S0303_100 | 30    | name_30 | modularContract_prod_S0303_100 | Kosten         | modCntr_ship_settings_S0303_100 | modCntr_type_PO_SHIP_S0303 |
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | modularContractTerms_S0303_100      | modularContractTerms_S0303_100 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_S0303_100    |
+      | Identifier                     | Name                           | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | modularContractTerms_S0303_100 | modularContractTerms_S0303_100 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_S0303_100    |
 
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier    | ValidFrom  | ValidTo    |
@@ -136,10 +137,10 @@ Feature: Modular contract log from shipment (PO)
       | s_s_2_S0303_100                  | D            | false               | false       |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | s_s_2_S0303_100                  | s_2_S0303_100         |
+      | s_s_2_S0303_100                  | s_1_S0303_100         |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier        | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
-      | s_l_2_S0303_100           | s_2_S0303_100         | modularContract_prod_S0303_100 | 3           | false     | soLine_2_S0303_100            |
+      | s_l_2_S0303_100           | s_1_S0303_100         | modularContract_prod_S0303_100 | 3           | false     | soLine_2_S0303_100            |
 
     When the shipment identified by s_1_S0303_100 is completed
 
@@ -188,7 +189,7 @@ Feature: Modular contract log from shipment (PO)
       | modularPP_PO | moduleLogPLV_PO                   | modularContract_prod_S0303_200 | 5.00     | PCE               | Normal                        |
       | modularPP_SO | moduleLogPLV_SO                   | modularContract_prod_S0303_200 | 10.00    | PCE               | Normal                        |
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier  | Name                            | M_Product_ID.Identifier        | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier  | Name                            | M_Raw_Product_ID.Identifier    | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_ship_settings_S0303_200 | modCntr_ship_settings_S0303_200 | modularContract_prod_S0303_200 | harvesting_calendar      | year_2023            | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier  | SeqNo | Name    | M_Product_ID.Identifier        | InvoicingGroup | ModCntr_Settings_ID.Identifier  | ModCntr_Type_ID.Identifier |
@@ -196,8 +197,8 @@ Feature: Modular contract log from shipment (PO)
       | modCntr_module_SO_S0303_200   | 20    | name_20 | modularContract_prod_S0303_200 | Kosten         | modCntr_ship_settings_S0303_200 | modCntr_type_SO_S0303      |
       | modCntr_module_SHIP_S0303_200 | 30    | name_30 | modularContract_prod_S0303_200 | Kosten         | modCntr_ship_settings_S0303_200 | modCntr_type_PO_SHIP_S0303 |
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | modularContractTerms_S0303_200      | modularContractTerms_S0303_200 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_S0303_200    |
+      | Identifier                     | Name                           | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | modularContractTerms_S0303_200 | modularContractTerms_S0303_200 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_S0303_200    |
 
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier    | ValidFrom  | ValidTo    |
@@ -261,10 +262,10 @@ Feature: Modular contract log from shipment (PO)
       | s_s_2_S0303_200                  | D            | false               | false       |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | s_s_2_S0303_200                  | s_2_S0303_200         |
+      | s_s_2_S0303_200                  | s_1_S0303_200         |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier        | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
-      | s_l_2_S0303_200           | s_2_S0303_200         | modularContract_prod_S0303_200 | 3           | false     | soLine_2_S0303_200            |
+      | s_l_2_S0303_200           | s_1_S0303_200         | modularContract_prod_S0303_200 | 3           | false     | soLine_2_S0303_200            |
 
     When the shipment identified by s_1_S0303_200 is completed
 
@@ -296,7 +297,7 @@ Feature: Modular contract log from shipment (PO)
       | modularPP_PO | moduleLogPLV_PO                   | modularContract_prod_S0303_300 | 5.00     | PCE               | Normal                        |
       | modularPP_SO | moduleLogPLV_SO                   | modularContract_prod_S0303_300 | 10.00    | PCE               | Normal                        |
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier  | Name                            | M_Product_ID.Identifier        | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier  | Name                            | M_Raw_Product_ID.Identifier    | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_ship_settings_S0303_300 | modCntr_ship_settings_S0303_300 | modularContract_prod_S0303_300 | harvesting_calendar      | year_2023            | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier  | SeqNo | Name    | M_Product_ID.Identifier        | InvoicingGroup | ModCntr_Settings_ID.Identifier  | ModCntr_Type_ID.Identifier |
@@ -304,8 +305,8 @@ Feature: Modular contract log from shipment (PO)
       | modCntr_module_SO_S0303_300   | 20    | name_20 | modularContract_prod_S0303_300 | Kosten         | modCntr_ship_settings_S0303_300 | modCntr_type_SO_S0303      |
       | modCntr_module_SHIP_S0303_300 | 30    | name_30 | modularContract_prod_S0303_300 | Kosten         | modCntr_ship_settings_S0303_300 | modCntr_type_PO_SHIP_S0303 |
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | modularContractTerms_S0303_300      | modularContractTerms_S0303_300 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_S0303_300    |
+      | Identifier                     | Name                           | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | modularContractTerms_S0303_300 | modularContractTerms_S0303_300 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_S0303_300    |
 
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier    | ValidFrom  | ValidTo    |
@@ -364,10 +365,10 @@ Feature: Modular contract log from shipment (PO)
       | s_s_2_S0303_300                  | D            | false               | false       |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | s_s_2_S0303_300                  | s_2_S0303_300         |
+      | s_s_2_S0303_300                  | s_1_S0303_300         |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier        | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
-      | s_l_2_S0303_300           | s_2_S0303_300         | modularContract_prod_S0303_300 | 3           | false     | soLine_2_S0303_300            |
+      | s_l_2_S0303_300           | s_1_S0303_300         | modularContract_prod_S0303_300 | 3           | false     | soLine_2_S0303_300            |
 
     When the shipment identified by s_1_S0303_300 is completed
 

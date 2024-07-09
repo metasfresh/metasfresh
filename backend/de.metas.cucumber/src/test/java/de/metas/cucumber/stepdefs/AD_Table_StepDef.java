@@ -108,7 +108,7 @@ public class AD_Table_StepDef
 		final StringBuilder sqlSelectColumns = new StringBuilder();
 		for (final POInfoColumn poInfoColumn : poInfo.getColumns())
 		{
-			if (sqlSelectColumns.length() > 0)
+			if (!sqlSelectColumns.isEmpty())
 			{
 				sqlSelectColumns.append(",");
 			}

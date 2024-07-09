@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.location.DocumentLocation;
+import de.metas.location.CountryId;
 import de.metas.pricing.PricingSystemId;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -59,6 +60,8 @@ public interface IVendorInvoicingInfo
 	 */
 	int getC_Currency_ID();
 
+	CountryId getCountryId();
+	
 	I_M_PriceList_Version getM_PriceList_Version();
 
 	/**

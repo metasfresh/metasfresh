@@ -52,10 +52,14 @@ public interface IAttributeSet
 	Collection<I_M_Attribute> getAttributes();
 
 	/**
-	 * @return true if the given attribute is available for getting/setting
+	 * @return true if the given attribute is available for getting/setting.<br>
+	 * Note that the attribute's value might still be {@code null}!
 	 */
 	boolean hasAttribute(AttributeCode attributeCode);
 
+	/**
+	 * @see #hasAttribute(AttributeCode)
+	 */
 	default boolean hasAttribute(@NonNull final String attributeKey)
 	{
 		return hasAttribute(AttributeCode.ofString(attributeKey));

@@ -30,7 +30,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.util.Services;
@@ -46,14 +46,14 @@ public class BPartnerInterimContractService
 	private static final AdMessageKey MSG_InterimContractExists = AdMessageKey.of("de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService.InterimContractExists");
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final BPartnerInterimContractRepo bPartnerInterimContractRepo;
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final ModularContractSettingsRepository modularContractSettingsRepository;
 
 	public BPartnerInterimContractService(
 			@NonNull final BPartnerInterimContractRepo bPartnerInterimContractRepo,
-			@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
+			@NonNull final ModularContractSettingsRepository modularContractSettingsRepository)
 	{
 		this.bPartnerInterimContractRepo = bPartnerInterimContractRepo;
-		this.modularContractSettingsDAO = modularContractSettingsDAO;
+		this.modularContractSettingsRepository = modularContractSettingsRepository;
 	}
 
 	@NonNull
@@ -109,7 +109,7 @@ public class BPartnerInterimContractService
 	public boolean isBpartnerInterimInvoice(final I_C_Flatrate_Term modularFlatrateTermRecord)
 	{
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(modularFlatrateTermRecord.getC_Flatrate_Conditions_ID());
-		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateConditionsId(conditionsId);
+		final ModularContractSettings modularContractSettings = modularContractSettingsRepository.getByFlatrateConditionsId(conditionsId);
 
 		return bPartnerInterimContractRepo.getByRequest(BPartnerInterimContractUpsertRequest.builder()
 																.bPartnerId(BPartnerId.ofRepoId(modularFlatrateTermRecord.getBill_BPartner_ID()))

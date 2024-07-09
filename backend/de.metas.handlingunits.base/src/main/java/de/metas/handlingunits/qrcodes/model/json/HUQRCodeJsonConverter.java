@@ -13,7 +13,12 @@ import org.adempiere.exceptions.AdempiereException;
 @UtilityClass
 public class HUQRCodeJsonConverter
 {
-	public static GlobalQRCodeType GLOBAL_QRCODE_TYPE = GlobalQRCodeType.ofString("HU");
+	private static final GlobalQRCodeType GLOBAL_QRCODE_TYPE = GlobalQRCodeType.ofString("HU");
+
+	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode)
+	{
+		return GlobalQRCodeType.equals(GLOBAL_QRCODE_TYPE, globalQRCode.getType());
+	}
 
 	public static String toGlobalQRCodeJsonString(final HUQRCode qrCode)
 	{
@@ -32,7 +37,7 @@ public class HUQRCodeJsonConverter
 
 	public static HUQRCode fromGlobalQRCode(final GlobalQRCode globalQRCode)
 	{
-		if (!GlobalQRCodeType.equals(GLOBAL_QRCODE_TYPE, globalQRCode.getType()))
+		if (!isHandled(globalQRCode))
 		{
 			throw new AdempiereException("Invalid HU QR Code")
 					.setParameter("globalQRCode", globalQRCode); // avoid adding it to error message, it might be quite long
@@ -59,5 +64,10 @@ public class HUQRCodeJsonConverter
 				.code(toGlobalQRCodeJsonString(huQRCode))
 				.displayable(huQRCode.toDisplayableQRCode())
 				.build();
+	}
+
+	public static boolean isTypeMatching(@NonNull final GlobalQRCode globalQRCode)
+	{
+		return GlobalQRCodeType.equals(GLOBAL_QRCODE_TYPE, globalQRCode.getType());
 	}
 }

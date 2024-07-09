@@ -1,6 +1,7 @@
 package org.eevolution.api;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.order.OrderLineId;
 import de.metas.product.ResourceId;
@@ -35,14 +36,19 @@ public interface IPPOrderDAO extends ISingletonService
 
 	/**
 	 * Gets released manufacturing orders based on {@link I_M_Warehouse}s.
-	 * 
+	 *
 	 * @return manufacturing orders
 	 */
 	List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(WarehouseId warehouseId);
 
 	Stream<I_PP_Order> streamManufacturingOrders(@NonNull ManufacturingOrderQuery query);
 
+	ImmutableSet<PPOrderId> getManufacturingOrderIds(@NonNull ManufacturingOrderQuery query);
+
+	boolean anyMatch(@NonNull ManufacturingOrderQuery query);
+
 	int getLastSeqNoPerOrderDate(@NonNull final I_PP_Order ppOrder);
+
 	/**
 	 * @return PP_Order_ID or -1 if not found.
 	 */

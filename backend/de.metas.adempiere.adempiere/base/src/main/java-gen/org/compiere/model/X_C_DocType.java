@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1092241655L;
+	private static final long serialVersionUID = -38968484L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -77,16 +77,43 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	}
 
 	@Override
+	public org.compiere.model.I_C_Doc_Approval_Strategy getC_Doc_Approval_Strategy()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Doc_Approval_Strategy_ID, org.compiere.model.I_C_Doc_Approval_Strategy.class);
+	}
+
+	@Override
+	public void setC_Doc_Approval_Strategy(final org.compiere.model.I_C_Doc_Approval_Strategy C_Doc_Approval_Strategy)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Doc_Approval_Strategy_ID, org.compiere.model.I_C_Doc_Approval_Strategy.class, C_Doc_Approval_Strategy);
+	}
+
+	@Override
+	public void setC_Doc_Approval_Strategy_ID (final int C_Doc_Approval_Strategy_ID)
+	{
+		if (C_Doc_Approval_Strategy_ID < 1)
+			set_Value (COLUMNNAME_C_Doc_Approval_Strategy_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Doc_Approval_Strategy_ID, C_Doc_Approval_Strategy_ID);
+	}
+
+	@Override
+	public int getC_Doc_Approval_Strategy_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Doc_Approval_Strategy_ID);
+	}
+
+	@Override
 	public void setC_DocTypeDifference_ID (final int C_DocTypeDifference_ID)
 	{
-		if (C_DocTypeDifference_ID < 1) 
+		if (C_DocTypeDifference_ID < 1)
 			set_Value (COLUMNNAME_C_DocTypeDifference_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_DocTypeDifference_ID, C_DocTypeDifference_ID);
 	}
 
 	@Override
-	public int getC_DocTypeDifference_ID() 
+	public int getC_DocTypeDifference_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeDifference_ID);
 	}
@@ -109,14 +136,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocTypeInvoice_ID (final int C_DocTypeInvoice_ID)
 	{
-		if (C_DocTypeInvoice_ID < 1) 
+		if (C_DocTypeInvoice_ID < 1)
 			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, C_DocTypeInvoice_ID);
 	}
 
 	@Override
-	public int getC_DocTypeInvoice_ID() 
+	public int getC_DocTypeInvoice_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeInvoice_ID);
 	}
@@ -176,6 +203,21 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public int getC_DocTypeShipment_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeShipment_ID);
+	}
+
+	@Override
+	public void setCompletedNotification_BoilerPlate_ID (final int CompletedNotification_BoilerPlate_ID)
+	{
+		if (CompletedNotification_BoilerPlate_ID < 1)
+			set_Value (COLUMNNAME_CompletedNotification_BoilerPlate_ID, null);
+		else
+			set_Value (COLUMNNAME_CompletedNotification_BoilerPlate_ID, CompletedNotification_BoilerPlate_ID);
+	}
+
+	@Override
+	public int getCompletedNotification_BoilerPlate_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_CompletedNotification_BoilerPlate_ID);
 	}
 
 	@Override
@@ -347,7 +389,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 
 	/** 
 	 * DocSubType AD_Reference_ID=148
-	 * Reference name: C_DocType SubType
+	 * Reference name: C_DocType SubTypeSO
 	 */
 	public static final int DOCSUBTYPE_AD_Reference_ID=148;
 	/** OnCreditOrder = WI */
@@ -456,39 +498,36 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_Withholding = "WH";
 	/** InternalVendorInvoice = IVI */
 	public static final String DOCSUBTYPE_InternalVendorInvoice = "IVI";
-	/**
-	 * Delivery Instruction = DI
-	 */
+	/** Delivery Instruction = DI */
 	public static final String DOCSUBTYPE_DeliveryInstruction = "DI";
-	/**
-	 * InventoryShortageDocument = ISD
-	 */
+	/** InventoryShortageDocument = ISD */
 	public static final String DOCSUBTYPE_InventoryShortageDocument = "ISD";
-	/**
-	 * InventoryOverageDocument = IOD
-	 */
+	/** InventoryOverageDocument = IOD */
 	public static final String DOCSUBTYPE_InventoryOverageDocument = "IOD";
-	/**
-	 * CorrectionInvoice = CI
-	 */
+	/** CorrectionInvoice = CI */
 	public static final String DOCSUBTYPE_CorrectionInvoice = "CI";
-	/**
-	 * Provision = PRV
-	 */
+	/** Provision = PRV */
 	public static final String DOCSUBTYPE_Provision = "PRV";
-	/**
-	 * ProFormaSO = PF
-	 */
+	/** ProFormaSO = PF */
 	public static final String DOCSUBTYPE_ProFormaSO = "PF";
-
+	/** Expense Invoice = EX */
+	public static final String DOCSUBTYPE_ExpenseInvoice = "EX";
+	/** Final Invoice = FI */
+	public static final String DOCSUBTYPE_FinalInvoice = "FI";
+	/** Final Credit Memo = FCM */
+	public static final String DOCSUBTYPE_FinalCreditMemo = "FCM";
+	/** Definitive Invoice = DS */
+	public static final String DOCSUBTYPE_DefinitiveInvoice = "DS";
+	/** DefinitiveCreditMemo = DCM */
+	public static final String DOCSUBTYPE_DefinitiveCreditMemo = "DCM";
 	@Override
-	public void setDocSubType(final @Nullable java.lang.String DocSubType)
+	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
-		set_Value(COLUMNNAME_DocSubType, DocSubType);
+		set_Value (COLUMNNAME_DocSubType, DocSubType);
 	}
 
 	@Override
-	public java.lang.String getDocSubType()
+	public java.lang.String getDocSubType() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocSubType);
 	}
@@ -778,6 +817,36 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public int getLotNo_Sequence_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_LotNo_Sequence_ID);
+	}
+
+	@Override
+	public void setMass_Generate_Boilerplate_ID (final int Mass_Generate_Boilerplate_ID)
+	{
+		if (Mass_Generate_Boilerplate_ID < 1)
+			set_Value (COLUMNNAME_Mass_Generate_Boilerplate_ID, null);
+		else
+			set_Value (COLUMNNAME_Mass_Generate_Boilerplate_ID, Mass_Generate_Boilerplate_ID);
+	}
+
+	@Override
+	public int getMass_Generate_Boilerplate_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Mass_Generate_Boilerplate_ID);
+	}
+
+	@Override
+	public void setMass_Generate_Line_Boilerplate_ID (final int Mass_Generate_Line_Boilerplate_ID)
+	{
+		if (Mass_Generate_Line_Boilerplate_ID < 1)
+			set_Value (COLUMNNAME_Mass_Generate_Line_Boilerplate_ID, null);
+		else
+			set_Value (COLUMNNAME_Mass_Generate_Line_Boilerplate_ID, Mass_Generate_Line_Boilerplate_ID);
+	}
+
+	@Override
+	public int getMass_Generate_Line_Boilerplate_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Mass_Generate_Line_Boilerplate_ID);
 	}
 
 	@Override

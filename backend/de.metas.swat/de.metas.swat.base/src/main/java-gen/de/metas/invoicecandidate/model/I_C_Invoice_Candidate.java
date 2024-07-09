@@ -380,27 +380,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
-	 * Set Async Batch.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Async_Batch_ID (int C_Async_Batch_ID);
-
-	/**
-	 * Get Async Batch.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Async_Batch_ID();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Async_Batch_ID", null);
-	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
-
-	/**
 	 * Set Auction.
 	 *
 	 * <br>Type: TableDir
@@ -2233,27 +2212,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsInOutApprovedForInvoicing = "IsInOutApprovedForInvoicing";
 
 	/**
-	 * Set Interim Invoice.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsInterimInvoice (boolean IsInterimInvoice);
-
-	/**
-	 * Get Interim Invoice.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isInterimInvoice();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsInterimInvoice = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsInterimInvoice", null);
-	String COLUMNNAME_IsInterimInvoice = "IsInterimInvoice";
-
-	/**
 	 * Set Invoicing error.
 	 *
 	 * <br>Type: YesNo
@@ -2432,8 +2390,8 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Price incl. Tax.
-	 * Tax is included in the price
+	 * Set Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2442,8 +2400,8 @@ public interface I_C_Invoice_Candidate
 	void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
-	 * Get Price incl. Tax.
-	 * Tax is included in the price
+	 * Get Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2633,6 +2591,33 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
+	 * Set Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+
+	/**
+	 * Get Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_AttributeSetInstance_ID();
+
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
 	 * Set Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
@@ -2658,6 +2643,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
 	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
+
+	/**
+	 * Set Modules.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Module_ID (int ModCntr_Module_ID);
+
+	/**
+	 * Get Modules.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Module_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ModCntr_Module_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "ModCntr_Module_ID", null);
+	String COLUMNNAME_ModCntr_Module_ID = "ModCntr_Module_ID";
 
 	/**
 	 * Set Price List Version.
@@ -3557,6 +3563,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyToInvoiceInUOM_Calc = "QtyToInvoiceInUOM_Calc";
 
 	/**
+	 * Set To invoice Override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyToInvoiceInUOM_Override (@Nullable BigDecimal QtyToInvoiceInUOM_Override);
+
+	/**
+	 * Get To invoice Override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyToInvoiceInUOM_Override();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInUOM_Override = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyToInvoiceInUOM_Override", null);
+	String COLUMNNAME_QtyToInvoiceInUOM_Override = "QtyToInvoiceInUOM_Override";
+
+	/**
 	 * Set Qty to invoice override.
 	 *
 	 * <br>Type: Quantity
@@ -3978,6 +4005,48 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_UserElementDate2 = "UserElementDate2";
 
 	/**
+	 * Set UserElementNumber1.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementNumber1 (@Nullable BigDecimal UserElementNumber1);
+
+	/**
+	 * Get UserElementNumber1.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUserElementNumber1();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementNumber1 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementNumber1", null);
+	String COLUMNNAME_UserElementNumber1 = "UserElementNumber1";
+
+	/**
+	 * Set UserElementNumber2.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementNumber2 (@Nullable BigDecimal UserElementNumber2);
+
+	/**
+	 * Get UserElementNumber2.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUserElementNumber2();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementNumber2 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementNumber2", null);
+	String COLUMNNAME_UserElementNumber2 = "UserElementNumber2";
+
+	/**
 	 * Set UserElementString1.
 	 *
 	 * <br>Type: String
@@ -4123,4 +4192,49 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set Invoicing group.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoicingGroup (@Nullable String InvoicingGroup);
+
+	/**
+	 * Get Invoicing group.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getInvoicingGroup();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_InvoicingGroup = new ModelColumn<>(I_C_Invoice_Candidate.class, "InvoicingGroup", null);
+	String COLUMNNAME_InvoicingGroup = "InvoicingGroup";
+
+
+	/**
+	 * Set Product Name.
+	 * Name of the Product
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductName (@Nullable String ProductName);
+
+	/**
+	 * Get Product Name.
+	 * Name of the Product
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getProductName();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ProductName = new ModelColumn<>(I_C_Invoice_Candidate.class, "ProductName", null);
+	String COLUMNNAME_ProductName = "ProductName";
 }

@@ -1,46 +1,5 @@
 package de.metas.acct.api.impl;
 
-import java.util.List;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrxListenerManager;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.IClientDAO;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.acct.Doc;
-import org.compiere.acct.PostingExecutionException;
-import org.compiere.model.I_AD_Client;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.Profiles;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -61,6 +20,23 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.trx.api.ITrxListenerManager;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.acct.Doc;
+import org.compiere.acct.PostingExecutionException;
+import org.compiere.model.I_AD_Client;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.List;
+import java.util.Properties;
 
 @ToString(of = { "_force", "_clientId", "_documentRef", "_postImmediate", "_postWithoutServer", "_failOnError" })
 /* package */class PostingRequestBuilder implements IPostingRequestBuilder

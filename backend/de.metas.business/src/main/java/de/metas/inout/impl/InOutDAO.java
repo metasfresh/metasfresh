@@ -112,6 +112,12 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
+	public I_M_InOut getByLineIdInTrx(@NonNull final InOutLineId inoutLineId)
+	{
+		return getById(InOutId.ofRepoId(getLineByIdInTrx(inoutLineId).getM_InOut_ID()));
+	}
+
+	@Override
 	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutAndLineId inoutLineId)
 	{
 		return load(inoutLineId.getInOutLineId(), I_M_InOutLine.class);

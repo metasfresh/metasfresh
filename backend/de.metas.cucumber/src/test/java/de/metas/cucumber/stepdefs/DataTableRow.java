@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -40,9 +42,12 @@ import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -80,19 +85,128 @@ public class DataTableRow
 	@NonNull
 	public String getAsString(@NonNull final String columnName)
 	{
-		return DataTableUtil.extractStringForColumnName(map, columnName);
+		final String columnNameEffective = findEffectiveColumnName(columnName);
+		if (columnNameEffective == null)
+		{
+			throw new AdempiereException("Column `" + columnName + "` is missing from " + this);
+		}
+
+		final String string = map.get(columnNameEffective);
+		if (string == null || Check.isBlank(string))
+		{
+			throw new AdempiereException("Missing value for columnName=" + columnNameEffective)
+					.appendParametersToMessage()
+					.setParameter("row", this);
+		}
+		return string;
+	}
+
+	@NonNull
+	public List<String> getAsCommaSeparatedString(@NonNull final String columnName)
+	{
+		final String value = getAsString(columnName);
+		return COMMA_SEPARATED_SPLITTER.splitToList(value);
+	}
+
+	@Nullable
+	private String findEffectiveColumnName(@NonNull final String columnName)
+	{
+		if (map.containsKey(columnName))
+		{
+			return columnName;
+		}
+
+		if (!columnName.startsWith("OPT."))
+		{
+			final String optColumnName = "OPT." + columnName;
+			if (map.containsKey(optColumnName))
+			{
+				return optColumnName;
+			}
+		}
+
+		return null;
 	}
 
 	@NonNull
 	public Optional<String> getAsOptionalString(@NonNull final String columnName)
 	{
-		String value = map.get(columnName);
-		if (value == null && !columnName.startsWith("OPT."))
+		final String columnNameEffective = findEffectiveColumnName(columnName);
+		if (columnNameEffective == null)
 		{
-			value = map.get("OPT." + columnName);
+			return Optional.empty(); // column is missing
 		}
 
+		String value = map.get(columnNameEffective);
 		return Optional.ofNullable(value);
+	}
+
+	public String getAsName(@NonNull final String columnName)
+	{
+		return resolveName(getAsString(columnName));
+	}
+
+	public Optional<String> getAsOptionalName(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(DataTableRow::resolveName);
+	}
+
+	@NonNull
+	private static String resolveName(@NonNull final String name)
+	{
+		String nameResolved = StringUtils.trimBlankToNull(name);
+		if (nameResolved == null)
+		{
+			throw new AdempiereException("Invalid name: `" + name + "`");
+		}
+
+		nameResolved = nameResolved.replace("@Date@", Instant.now().toString());
+		return nameResolved;
+	}
+
+	public ValueAndName suggestValueAndName()
+	{
+		ValueAndName valueAndName = getOptionalValueAndName().orElse(null);
+		if (valueAndName != null)
+		{
+			return valueAndName;
+		}
+
+		final StepDefDataIdentifier recordIdentifier = getAsOptionalIdentifier().orElse(null);
+		if (recordIdentifier != null)
+		{
+			return ValueAndName.unique(recordIdentifier.getAsString());
+		}
+
+		return ValueAndName.unique();
+	}
+
+	public ExplainedOptional<ValueAndName> getOptionalValueAndName()
+	{
+		String name = getAsOptionalName("Name").orElse(null);
+		String value = getAsOptionalName("Value").orElse(null);
+		if (name == null)
+		{
+			if (value == null)
+			{
+				return ExplainedOptional.emptyBecause("At least Value or Name columns shall contain a valid name string");
+			}
+			else
+			{
+				return ExplainedOptional.of(ValueAndName.ofValue(value));
+			}
+		}
+		else
+		{
+			if (value == null)
+			{
+				return ExplainedOptional.of(ValueAndName.ofName(name));
+			}
+			else
+			{
+				return ExplainedOptional.of(ValueAndName.ofValueAndName(value, name));
+			}
+		}
 	}
 
 	@NonNull
@@ -102,78 +216,123 @@ public class DataTableRow
 	}
 
 	@NonNull
+	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier() {return getAsOptionalIdentifier(StepDefDataIdentifier.SUFFIX);}
+
+	@NonNull
 	public StepDefDataIdentifier getAsIdentifier(@NonNull final String columnName)
 	{
-		String string = map.get(columnName);
-		if (string == null && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
-		{
-			string = map.get(columnName + "." + StepDefDataIdentifier.SUFFIX);
-		}
-
-		if (string == null || Check.isBlank(string))
-		{
-			throw new AdempiereException("Missing value for columnName=" + columnName)
-					.appendParametersToMessage()
-					.setParameter("row", map);
-		}
-
-		return StepDefDataIdentifier.ofString(string);
+		return getAsOptionalIdentifier(columnName)
+				.orElseThrow(() -> new AdempiereException("Missing value for columnName=" + columnName)
+						.appendParametersToMessage()
+						.setParameter("row", map));
 	}
 
 	@NonNull
 	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier(@NonNull final String columnName)
 	{
-		String string = map.get(columnName);
-		if (string == null && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
-		{
-			string = map.get(columnName + "." + StepDefDataIdentifier.SUFFIX);
-		}
-		if (string == null && !columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
+		return getAsOptionalIdentifierString(columnName).map(StepDefDataIdentifier::ofString);
+	}
+
+	public ImmutableList<StepDefDataIdentifier> getAsCommaSeparatedIdentifiers(@NonNull final String columnName)
+	{
+		final String identifiers = getAsOptionalIdentifierString(columnName)
+				.orElseThrow(() -> new AdempiereException("Missing value for columnName=" + columnName)
+						.appendParametersToMessage()
+						.setParameter("row", map));
+
+		return COMMA_SEPARATED_SPLITTER.splitToList(identifiers)
+				.stream()
+				.map(StepDefDataIdentifier::ofString)
+				//.distinct() // NO! making sure the list is distinct shall be the job of the caller, there might be cases where duplicates are needed
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private Optional<String> getAsOptionalIdentifierString(@NonNull final String columnName)
+	{
+		String string = null;
+
+		if (!columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
 		{
 			string = map.get("OPT." + columnName + "." + StepDefDataIdentifier.SUFFIX);
 		}
 
-		if (string == null || Check.isBlank(string))
+		if (string == null && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
 		{
-			return Optional.empty();
+			string = map.get(columnName + "." + StepDefDataIdentifier.SUFFIX);
 		}
 
-		return Optional.of(StepDefDataIdentifier.ofString(string));
+		if (string == null)
+		{
+			string = map.get(columnName);
+		}
+
+		return StringUtils.trimBlankToOptional(string);
 	}
 
 	public BigDecimal getAsBigDecimal(@NonNull final String columnName)
 	{
-		return DataTableUtil.extractBigDecimalForColumnName(map, columnName);
+		return parseBigDecimal(getAsString(columnName), columnName);
 	}
 
 	public Optional<BigDecimal> getAsOptionalBigDecimal(@NonNull final String columnName)
 	{
-		return Optional.ofNullable(DataTableUtil.extractBigDecimalOrNullForColumnName(map, columnName));
+		return getAsOptionalString(columnName).map(valueStr -> parseBigDecimal(valueStr, columnName));
+	}
+
+	private BigDecimal parseBigDecimal(@Nullable String valueStr, @NonNull String columnInfo)
+	{
+		try
+		{
+			return NumberUtils.asBigDecimal(valueStr);
+		}
+		catch (Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex)
+					.appendParametersToMessage()
+					.setParameter("columnName", columnInfo);
+		}
 	}
 
 	public int getAsInt(@NonNull final String columnName)
 	{
-		return DataTableUtil.extractIntForColumnName(map, columnName);
+		return parseInt(getAsString(columnName), columnName);
 	}
 
 	@NonNull
 	public OptionalInt getAsOptionalInt(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName)
-				.map(DataTableRow::parseOptionalInt)
+				.map(valueStr -> parseOptionalInt(valueStr, columnName))
 				.orElseGet(OptionalInt::empty);
 	}
 
-	private static OptionalInt parseOptionalInt(@Nullable final String value)
+	private static OptionalInt parseOptionalInt(@Nullable final String valueStr, String columnInfo)
 	{
-		final String valueNorm = StringUtils.trimBlankToNull(value);
-		if (valueNorm == null)
+		final String valueStrNorm = StringUtils.trimBlankToNull(valueStr);
+		if (valueStrNorm == null)
 		{
 			return OptionalInt.empty();
 		}
 
-		final int valueInt = NumberUtils.asInt(value);
+		final int valueInt = parseInt(valueStrNorm, columnInfo);
 		return OptionalInt.of(valueInt);
+	}
+
+	private static int parseInt(@Nullable final String valueStr, String columnInfo)
+	{
+		final String valueStrNorm = StringUtils.trimBlankToNull(valueStr);
+		if (valueStrNorm == null)
+		{
+			throw new AdempiereException("Column `" + columnInfo + "` contains empty/blank value. Please use a legit integer.");
+		}
+
+		final Integer valueInt = NumberUtils.asIntegerOrNull(valueStrNorm);
+		if (valueInt == null)
+		{
+			throw new AdempiereException("Column `" + columnInfo + "` has invalid Integer value `" + valueStr + "`");
+		}
+		return valueInt;
 	}
 
 	public boolean getAsBoolean(@NonNull final String columnName)
@@ -238,22 +397,55 @@ public class DataTableRow
 		}
 	}
 
+	public Timestamp getAsLocalDateTimestamp(@NonNull final String columnName)
+	{
+		return Timestamp.valueOf(getAsLocalDate(columnName).atStartOfDay());
+	}
+
+	public Timestamp getAsInstantTimestamp(@NonNull final String columnName)
+	{
+		return Timestamp.from(getAsInstant(columnName));
+	}
+
 	public Instant getAsInstant(@NonNull final String columnName)
 	{
 		return parseInstant(getAsString(columnName), columnName);
 	}
 
 	@NonNull
-	private static Instant parseInstant(final String valueStr, final String columnInfo)
+	private static Instant parseInstant(@NonNull final String valueStr, final String columnInfo)
 	{
 		try
 		{
-			return Instant.parse(valueStr);
+			if (valueStr.contains("T"))
+			{
+				if (valueStr.endsWith("Z"))
+				{
+					return Instant.parse(valueStr);
+				}
+				else
+				{
+					return toInstant(LocalDateTime.parse(valueStr));
+				}
+			}
+			else
+			{
+				return toInstant(LocalDate.parse(valueStr).atStartOfDay());
+			}
 		}
 		catch (Exception ex)
 		{
 			throw new AdempiereException("Column `" + columnInfo + "` has invalid Instant `" + valueStr + "`");
 		}
+	}
+
+	private static Instant toInstant(@NonNull final LocalDateTime ldt)
+	{
+		// IMPORTANT: we use JVM timezone instead of SystemTime.zoneId()
+		// because that's the timezone java.sql.Timestamp would use it too,
+		// and because most of currently logic is silently assuming that
+		final ZoneId jvmTimeZone = ZoneId.systemDefault();
+		return ldt.atZone(jvmTimeZone).toInstant();
 	}
 
 	public Optional<LocalDateTime> getAsOptionalLocalDateTime(@NonNull final String columnName)

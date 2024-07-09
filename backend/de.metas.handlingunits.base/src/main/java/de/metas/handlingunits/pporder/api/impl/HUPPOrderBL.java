@@ -2,6 +2,8 @@ package de.metas.handlingunits.pporder.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -10,6 +12,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
@@ -20,17 +23,32 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcess
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.PPOrderIssueServiceProductRequest;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
+import de.metas.material.maturing.MaturingConfigLine;
+import de.metas.material.maturing.MaturingConfigRepository;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
@@ -42,10 +60,11 @@ import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -61,6 +80,13 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUAttributesBL attributesBL = Services.get(IHUAttributesBL.class);
+	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+
+	private final SpringContextHolder.Lazy<HUQRCodesService> huqrCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class);
+	private final SpringContextHolder.Lazy<QRCodeConfigurationService> qrCodeConfigurationService = SpringContextHolder.lazyBean(QRCodeConfigurationService.class);
+	private final SpringContextHolder.Lazy<MaturingConfigRepository> maturingConfigRepository = SpringContextHolder.lazyBean(MaturingConfigRepository.class);
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
 	@Override
 	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
@@ -72,6 +98,26 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	public List<I_PP_Order> getByIds(@NonNull final Set<PPOrderId> ppOrderIds)
 	{
 		return ppOrderDAO.getByIds(ppOrderIds, I_PP_Order.class);
+	}
+
+	@Override
+	public List<I_PP_Order> list(@NonNull final ManufacturingOrderQuery query)
+	{
+		return ppOrderDAO.streamManufacturingOrders(query)
+				.map(ppOrder -> InterfaceWrapperHelper.create(ppOrder, I_PP_Order.class))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public ImmutableSet<PPOrderId> getManufacturingOrderIds(@NonNull final ManufacturingOrderQuery query)
+	{
+		return ppOrderDAO.getManufacturingOrderIds(query);
+	}
+
+	@Override
+	public boolean anyMatch(@NonNull final ManufacturingOrderQuery query)
+	{
+		return ppOrderDAO.anyMatch(query);
 	}
 
 	@Override
@@ -173,19 +219,42 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	}
 
 	@Override
-	public void processPlanning(@NonNull final PPOrderPlanningStatus targetPlanningStatus, @NonNull final PPOrderId ppOrderId)
+	public void processPlanning(@NonNull final PPOrderId ppOrderId, @NonNull final PPOrderPlanningStatus targetPlanningStatus)
+	{
+		trxManager.runInThreadInheritedTrx(() -> {
+			final I_PP_Order ppOrder = getById(ppOrderId);
+			processPlanning(ppOrder, targetPlanningStatus, false);
+		});
+	}
+
+	@Override
+	public void processPlanning(@NonNull final Set<PPOrderId> ppOrderIds, @NonNull final PPOrderPlanningStatus targetPlanningStatus)
+	{
+		if (ppOrderIds.isEmpty())
+		{
+			return;
+		}
+
+		for (final I_PP_Order ppOrder : getByIds(ppOrderIds))
+		{
+			processPlanning(ppOrder, targetPlanningStatus, false);
+		}
+	}
+
+	@Override
+	public void processPlanning(@NonNull final I_PP_Order ppOrder, @NonNull final PPOrderPlanningStatus targetPlanningStatus, boolean doNotCloseOrder)
 	{
 		trxManager.assertThreadInheritedTrxExists();
 
-		final I_PP_Order ppOrder = getById(ppOrderId);
 		final PPOrderPlanningStatus planningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
-		if (Objects.equals(planningStatus, targetPlanningStatus))
+		if (PPOrderPlanningStatus.equals(planningStatus, targetPlanningStatus))
 		{
-			throw new IllegalStateException("Already " + targetPlanningStatus);
+			//throw new AdempiereException("Already " + targetPlanningStatus);
+			return; // already processed
 		}
 		if (!canChangePlanningStatus(planningStatus, targetPlanningStatus))
 		{
-			throw new IllegalStateException("Cannot change planning status from " + planningStatus + " to " + targetPlanningStatus);
+			throw new AdempiereException("Cannot change planning status from " + planningStatus + " to " + targetPlanningStatus);
 		}
 
 		if (PPOrderPlanningStatus.PLANNING.equals(targetPlanningStatus))
@@ -199,18 +268,24 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		else if (PPOrderPlanningStatus.COMPLETE.equals(targetPlanningStatus))
 		{
 			HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
-					.setCandidatesToProcessByPPOrderId(ppOrderId)
+					.setCandidatesToProcessByPPOrderId(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
 					.process();
+
+			if (!doNotCloseOrder)
+			{
+				ppOrderBL.closeOrder(ppOrder);
+				InterfaceWrapperHelper.refresh(ppOrder);
+			}
 		}
 		else
 		{
-			throw new IllegalArgumentException("Unknown target planning status: " + targetPlanningStatus);
+			throw new AdempiereException("Unknown target planning status: " + targetPlanningStatus);
 		}
 
 		//
 		// Update ppOrder's planning status
 		ppOrder.setPlanningStatus(targetPlanningStatus.getCode());
-		InterfaceWrapperHelper.save(ppOrder);
+		ppOrderDAO.save(ppOrder);
 	}
 
 	@Override
@@ -223,6 +298,11 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	public void addAssignedHandlingUnits(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine, @NonNull final Collection<I_M_HU> hus)
 	{
 		huAssignmentBL.addAssignedHandlingUnits(ppOrderBOMLine, hus);
+	}
+
+	private static ImmutableSet<TableRecordReference> toRecordRefs(final Set<PPOrderId> ppOrderIds)
+	{
+		return ppOrderIds.stream().map(PPOrderId::toRecordRef).collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -257,6 +337,28 @@ public class HUPPOrderBL implements IHUPPOrderBL
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Override
+	public void issueAndReceiveMaturingHUs(@NonNull final I_PP_Order ppOrder)
+	{
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		final I_M_HU huToBeIssued = getMaturingHU(ppOrder);
+
+		createIssueProducer(ppOrderId)
+				.considerIssueMethodForQtyToIssueCalculation(false) // issue exactly the HUs selected for maturing
+				.createIssues(ImmutableList.of(huToBeIssued));
+
+		receiveMaturedHU(ppOrder, huToBeIssued);
+
+		ppOrderBL.closeOrder(ppOrderId);
+	}
+
+	public boolean isAtLeastOneCandidateMaturing(@NonNull final List<I_PP_Order_Candidate> candidates)
+	{
+		return candidates
+				.stream()
+				.anyMatch(I_PP_Order_Candidate::isMaturing);
+	}
+
 	private boolean isEligibleHuToIssue(final HuId huId)
 	{
 		if (SourceHUsService.get().isHuOrAnyParentSourceHu(huId) || !handlingUnitsBL.isHUHierarchyCleared(huId))
@@ -265,5 +367,96 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		}
 
 		return !huStatusBL.isStatusIssued(huId);
+	}
+
+	private boolean isHUEligibleForMaturing(
+			@NonNull final I_M_HU hu,
+			@NonNull final ProductId maturedProductId)
+	{
+		if (!hu.isActive() || !hu.isReserved() || !hu.isLocked() || !huStatusBL.isStatusActiveOrIssued(hu))
+		{
+			return false;
+		}
+
+		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoId(hu.getM_Locator_ID());
+		if (locatorId == null)
+		{
+			return false;
+		}
+
+		final IHUProductStorage productStorage = handlingUnitsBL.getStorageFactory()
+				.getSingleHUProductStorage(hu);
+
+		final List<MaturingConfigLine> maturingConfigLines = maturingConfigRepository.get().getByFromProductId(productStorage.getProductId());
+
+		if (maturingConfigLines.isEmpty())
+		{
+			return false;
+		}
+
+		final MaturingConfigLine maturingConfigLine = CollectionUtils.singleElement(maturingConfigLines);
+
+		return productPlanningDAO.find(IProductPlanningDAO.ProductPlanningQuery.builder()
+											   .productId(maturedProductId)
+											   .warehouseId(locatorId.getWarehouseId())
+											   .maturingConfigLineId(maturingConfigLine.getId())
+											   .build())
+				.map(ProductPlanning::isMatured)
+				.orElse(false);
+	}
+
+	@NonNull
+	private I_PP_Order_Candidate getSingleMaturingCandidate(@NonNull final PPOrderId ppOrderId)
+	{
+		final ImmutableList<I_PP_Order_Candidate> maturingCandidates = ppOrderCandidateDAO.getByOrderId(ppOrderId);
+		if (!isAtLeastOneCandidateMaturing(maturingCandidates))
+		{
+			throw new AdempiereException("No maturing candidates found for PPOrderId!")
+					.appendParametersToMessage()
+					.setParameter("PPOrderId", ppOrderId);
+		}
+
+		return CollectionUtils.singleElement(maturingCandidates);
+	}
+
+	@NonNull
+	private I_M_HU getMaturingHU(@NonNull final I_PP_Order ppOrder)
+	{
+		final I_PP_Order_Candidate maturingCandidate = getSingleMaturingCandidate(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()));
+		final HuId maturingHUId = HuId.ofRepoId(maturingCandidate.getIssue_HU_ID());
+
+		final I_M_HU maturingHU = handlingUnitsBL.getById(maturingHUId);
+
+		final ProductId maturedProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+
+		if (isHUEligibleForMaturing(maturingHU, maturedProductId))
+		{
+			throw new AdempiereException("Issue HU is not eligible for maturing !");
+		}
+
+		return maturingHU;
+	}
+
+	private void receiveMaturedHU(
+			@NonNull final I_PP_Order ppOrder,
+			@NonNull final I_M_HU huToBeIssued)
+	{
+		final LocatorId locatorId = LocatorId.ofRepoId(ppOrder.getM_Warehouse_ID(), ppOrder.getM_Locator_ID());
+
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		final I_M_HU receivedHu = receivingMainProduct(ppOrderId)
+				.locatorId(locatorId)
+				.receiveVHU(Quantitys.of(ppOrder.getQtyOrdered(), UomId.ofRepoId(ppOrder.getC_UOM_ID())));
+
+		attributesBL.transferAttributesForSingleProductHUs(huToBeIssued, receivedHu);
+		attributesBL.updateHUAttribute(HuId.ofRepoId(receivedHu.getM_HU_ID()), AttributeConstants.ProductionDate, SystemTime.asTimestamp());
+
+		final HUQRCode huqrCode = huqrCodesService.get().getQRCodeByHuId(HuId.ofRepoId(huToBeIssued.getM_HU_ID()));
+		huqrCodesService.get().removeAssignment(huqrCode, ImmutableSet.of(HuId.ofRepoId(huToBeIssued.getM_HU_ID())));
+
+		final boolean ensureSingleQrAssignment = qrCodeConfigurationService.get().isOneQrCodeForAggregatedHUsEnabledFor(receivedHu);
+		huqrCodesService.get().assign(huqrCode, HuId.ofRepoId(receivedHu.getM_HU_ID()), ensureSingleQrAssignment);
+
+		processPlanning(ppOrderId, PPOrderPlanningStatus.COMPLETE);
 	}
 }

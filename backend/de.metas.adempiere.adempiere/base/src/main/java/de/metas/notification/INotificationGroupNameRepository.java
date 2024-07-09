@@ -1,8 +1,10 @@
 package de.metas.notification;
 
-import java.util.Set;
-
+import de.metas.notification.impl.NotificationGroupId;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -30,7 +32,11 @@ public interface INotificationGroupNameRepository extends ISingletonService
 {
 	NotificationGroupName getById(int notificationGroupId);
 
-	int getNotificationGroupId(final NotificationGroupName notificationGroupName);
+	NotificationGroupId getNotificationGroupId(final NotificationGroupName notificationGroupName);
 
 	Set<NotificationGroupName> getAll();
+
+	UserId getDeadletterUserId(NotificationGroupName notificationGroupName);
+
+	boolean isNotifyOrgBpUsersOnly(NotificationGroupName notificationGroupName);
 }

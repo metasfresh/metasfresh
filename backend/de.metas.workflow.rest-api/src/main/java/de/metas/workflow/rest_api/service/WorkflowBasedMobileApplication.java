@@ -9,6 +9,7 @@ import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
 
 import java.util.function.UnaryOperator;
@@ -32,7 +33,7 @@ public interface WorkflowBasedMobileApplication extends MobileApplication
 
 	void abortAll(UserId callerId);
 
-	default WorkflowLaunchersFacetGroupList getFacets(@NonNull UserId userId) {return WorkflowLaunchersFacetGroupList.EMPTY;}
+	default WorkflowLaunchersFacetGroupList getFacets(WorkflowLaunchersFacetQuery query) {return WorkflowLaunchersFacetGroupList.EMPTY;}
 
 	WFProcess getWFProcessById(WFProcessId wfProcessId);
 

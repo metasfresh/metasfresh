@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.factacct;
 
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.IPostingRequestBuilder;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.PostingType;
@@ -10,7 +11,8 @@ import de.metas.calendar.standard.YearId;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_Currency_StepDefData;
 import de.metas.cucumber.stepdefs.C_ElementValue_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -29,7 +31,6 @@ import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -49,7 +50,6 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Year;
@@ -57,25 +57,19 @@ import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class Fact_Acct_StepDef
 {
-	private static final String TABLE_COLUMN_ACCOUNT_FEATURE = "Account";
-	private static final String TABLE_COLUMN_DR_FEATURE = "DR";
-	private static final String TABLE_COLUMN_CR_FEATURE = "CR";
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
@@ -131,56 +125,53 @@ public class Fact_Acct_StepDef
 	}
 
 	@And("^after not more than (.*)s, Fact_Acct are found$")
-	public void find_Fact_Acct(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void find_Fact_Accts(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			final SoftAssertions softly = new SoftAssertions();
 
 			final List<I_Fact_Acct> factAcctRecords = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> load_Fact_Acct(row));
 
-			final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_SectionCode.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(sectionCodeIdentifier))
-			{
-				final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
-				final boolean allFactAcctRecordsMatch = factAcctRecords.stream()
-						.allMatch(factAcct -> sectionCode.getM_SectionCode_ID() == factAcct.getM_SectionCode_ID());
+			row.getAsOptionalIdentifier(I_M_SectionCode.COLUMNNAME_M_SectionCode_ID)
+					.ifPresent(sectionCodeIdentifier -> {
+						final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
+						final boolean allFactAcctRecordsMatch = factAcctRecords.stream()
+								.allMatch(factAcct -> sectionCode.getM_SectionCode_ID() == factAcct.getM_SectionCode_ID());
 
-				softly.assertThat(allFactAcctRecordsMatch).isTrue();
-			}
+						softly.assertThat(allFactAcctRecordsMatch).isTrue();
+					});
 
-			final String postingType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_PostingType);
-			if (Check.isNotBlank(postingType))
-			{
-				final PostingType type = PostingType.valueOf(postingType);
+			row.getAsOptionalString(I_Fact_Acct.COLUMNNAME_PostingType)
+					.ifPresent(postingType -> {
+						final PostingType type = PostingType.valueOf(postingType);
 
-				final boolean allFactAcctRecordsMatchPostingType = factAcctRecords.stream()
-						.allMatch(factAcct -> factAcct.getPostingType().equals(type.getCode()));
-				softly.assertThat(allFactAcctRecordsMatchPostingType).isTrue();
-			}
+						final boolean allFactAcctRecordsMatchPostingType = factAcctRecords.stream()
+								.allMatch(factAcct -> factAcct.getPostingType().equals(type.getCode()));
+						softly.assertThat(allFactAcctRecordsMatchPostingType).isTrue();
+					});
 
-			final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(projectIdentifier))
-			{
-				final I_C_Project project = projectTable.get(projectIdentifier);
+			row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_C_Project_ID)
+					.ifPresent(projectIdentifier ->
+					{
+						final I_C_Project project = projectTable.get(projectIdentifier);
 
-				final boolean allFactAcctRecordsMatchProjectId = factAcctRecords.stream()
-						.allMatch(factAcct -> project.getC_Project_ID() == factAcct.getC_Project_ID());
-				softly.assertThat(allFactAcctRecordsMatchProjectId).isTrue();
-			}
+						final boolean allFactAcctRecordsMatchProjectId = factAcctRecords.stream()
+								.allMatch(factAcct -> project.getC_Project_ID() == factAcct.getC_Project_ID());
+						softly.assertThat(allFactAcctRecordsMatchProjectId).isTrue();
+					});
 
-			final String activityIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(activityIdentifier))
-			{
-				final I_C_Activity activity = activityTable.get(activityIdentifier);
+			row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_C_Activity_ID)
+					.ifPresent(activityIdentifier ->
+					{
+						final I_C_Activity activity = activityTable.get(activityIdentifier);
 
-				final boolean allFactAcctRecordsMatchProjectId = factAcctRecords.stream()
-						.allMatch(factAcct -> activity.getC_Activity_ID() == factAcct.getC_Activity_ID());
-				softly.assertThat(allFactAcctRecordsMatchProjectId).isTrue();
-			}
+						final boolean allFactAcctRecordsMatchProjectId = factAcctRecords.stream()
+								.allMatch(factAcct -> activity.getC_Activity_ID() == factAcct.getC_Activity_ID());
+						softly.assertThat(allFactAcctRecordsMatchProjectId).isTrue();
+					});
 
 			softly.assertAll();
-		}
+		});
 	}
 
 	@And("^after not more than (.*)s, the (invoice|matchInvoice|inout|shippingNotification) document with identifier (.*) has the following accounting records:$")
@@ -190,11 +181,9 @@ public class Fact_Acct_StepDef
 			@NonNull final String identifier,
 			@NonNull final DataTable dataTable) throws InterruptedException
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			findFactAcct(getTableRecordReference(tableType, identifier), row, timeoutSec);
-		}
+		final TableRecordReference recordRef = getTableRecordReference(tableType, identifier);
+
+		DataTableRows.of(dataTable).forEach((row) -> findFactAcct(recordRef, row, timeoutSec));
 	}
 
 	@And("^fact account repost (invoice|matchInvoice) document with identifier (.*):$")
@@ -203,15 +192,11 @@ public class Fact_Acct_StepDef
 			@NonNull final String identifier,
 			@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			repostDocument(row, documentType, identifier);
-		}
+		DataTableRows.of(dataTable).forEach((row) -> repostDocument(row, documentType, identifier));
 	}
 
 	@NonNull
-	private ItemProvider.ProviderResult<List<I_Fact_Acct>> load_Fact_Acct(@NonNull final Map<String, String> row)
+	private ItemProvider.ProviderResult<List<I_Fact_Acct>> load_Fact_Acct(@NonNull final DataTableRow row)
 	{
 		final List<I_Fact_Acct> factAcctRecords = buildQuery(row)
 				.list();
@@ -225,16 +210,16 @@ public class Fact_Acct_StepDef
 	}
 
 	@NonNull
-	private IQuery<I_Fact_Acct> buildQuery(@NonNull final Map<String, String> row)
+	private IQuery<I_Fact_Acct> buildQuery(@NonNull final DataTableRow row)
 	{
-		final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_TableName);
+		final String tableName = row.getAsString(I_AD_Table.COLUMNNAME_TableName);
 		final AdTableId tableId = AdTableId.ofRepoIdOrNull(tableDAO.retrieveTableId(tableName));
 		assertThat(tableId).isNotNull();
 
 		final IQueryBuilder<I_Fact_Acct> queryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, tableId);
 
-		final String recordIdentifier = DataTableUtil.extractStringForColumnName(row, I_Fact_Acct.COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String recordIdentifier = String.valueOf(row.getAsIdentifier(I_Fact_Acct.COLUMNNAME_Record_ID));
 
 		switch (tableName)
 		{
@@ -256,11 +241,11 @@ public class Fact_Acct_StepDef
 	}
 
 	private void repostDocument(
-			@NonNull final Map<String, String> row,
+			@NonNull final DataTableRow row,
 			@NonNull final String tableType,
 			@NonNull final String identifier)
 	{
-		final boolean isEnforcePosting = DataTableUtil.extractBooleanForColumnNameOr(row, "IsEnforcePosting", false);
+		final boolean isEnforcePosting = row.getAsOptionalBoolean("IsEnforcePosting").orElse(false);
 		final TableRecordReference tableRecordReference = getTableRecordReference(tableType, identifier);
 
 		postingService
@@ -276,78 +261,76 @@ public class Fact_Acct_StepDef
 
 	private void findFactAcct(
 			@NonNull final TableRecordReference tableRecordReference,
-			@NonNull final Map<String, String> row,
+			@NonNull final DataTableRow row,
 			final int timeoutSec) throws InterruptedException
 	{
 		final FactAcctQuery factAcctQuery = buildFactAcctQuery(tableRecordReference, row);
 
-		final Integer noOfHits = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.NoOfHits");
+		final Integer noOfHits = row.getAsOptionalInt("NoOfHits").orElse(-1);
 
 		final I_Fact_Acct factAcctRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> loadFactAcct(factAcctQuery, noOfHits), () -> getCurrentContext(factAcctQuery));
 
-		final String identifier = DataTableUtil.extractStringForColumnName(row, I_Fact_Acct.COLUMNNAME_Fact_Acct_ID + "." + TABLECOLUMN_IDENTIFIER);
-		factAcctTable.putOrReplace(identifier, factAcctRecord);
+		row.getAsOptionalIdentifier(TABLECOLUMN_IDENTIFIER)
+				.ifPresent(idenfifier -> factAcctTable.putOrReplace(idenfifier, factAcctRecord));
 	}
 
 	@NonNull
 	private FactAcctQuery buildFactAcctQuery(
 			@NonNull final TableRecordReference tableRecordReference,
-			@NonNull final Map<String, String> row)
+			@NonNull final DataTableRow row)
 	{
-		final String accountIdentifier = DataTableUtil.extractStringForColumnName(row, TABLE_COLUMN_ACCOUNT_FEATURE);
-		final BigDecimal crAmt = DataTableUtil.extractBigDecimalForColumnName(row, TABLE_COLUMN_CR_FEATURE);
-		final BigDecimal drAmt = DataTableUtil.extractBigDecimalForColumnName(row, TABLE_COLUMN_DR_FEATURE);
-
-		final String currencyIdentifier = DataTableUtil.extractStringForColumnName(row, I_Fact_Acct.COLUMNNAME_C_Currency_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_Currency currencyRecord = currencyTable.get(currencyIdentifier);
-
 		final FactAcctQuery.FactAcctQueryBuilder factAcctQueryBuilder = FactAcctQuery.builder()
 				.tableRecordReference(tableRecordReference)
-				.accountId(getAccountId(accountIdentifier))
-				.crAmt(crAmt)
-				.drAmt(drAmt)
-				.currencyId(CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID()));
+				.drAmt(row.getAsBigDecimal("DR"))
+				.crAmt(row.getAsBigDecimal("CR"));
 
-		Optional.ofNullable(DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_CurrencyRate))
+		row.getAsOptionalIdentifier("Account")
+				.map(elementValueTable::getId)
+				.ifPresent(factAcctQueryBuilder::accountId);
+
+		row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_C_Currency_ID)
+				.map(currencyTable::getId)
+				.ifPresent(factAcctQueryBuilder::currencyId);
+
+		row.getAsOptionalBigDecimal(I_Fact_Acct.COLUMNNAME_CurrencyRate)
 				.ifPresent(factAcctQueryBuilder::currencyRate);
 
-		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_AccountConceptualName))
+		row.getAsOptionalString(I_Fact_Acct.COLUMNNAME_AccountConceptualName)
+				.map(AccountConceptualName::ofNullableString)
 				.ifPresent(factAcctQueryBuilder::accountConceptualName);
 
-		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_C_Harvesting_Calendar_ID+ "." + TABLECOLUMN_IDENTIFIER))
+		row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_C_Harvesting_Calendar_ID)
 				.ifPresent(calendarIdentifier -> {
 					final I_C_Calendar calendarRecord = calendarTable.get(calendarIdentifier);
 					factAcctQueryBuilder.calendarId(CalendarId.ofRepoId(calendarRecord.getC_Calendar_ID()));
 				});
 
-		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_Harvesting_Year_ID+ "." + TABLECOLUMN_IDENTIFIER))
+		row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_Harvesting_Year_ID)
 				.ifPresent(yearIdentifier -> {
 					final I_C_Year year = yearTable.get(yearIdentifier);
 					factAcctQueryBuilder.yearId(YearId.ofRepoId(year.getC_Year_ID()));
 				});
 
-		Optional.ofNullable(DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_Qty))
+		row.getAsOptionalBigDecimal(I_Fact_Acct.COLUMNNAME_Qty)
 				.ifPresent(factAcctQueryBuilder::qty);
 
-		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER))
+		row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_C_BPartner_Location_ID)
 				.ifPresent(bPartnerLocationIdentifier -> {
 					final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(bPartnerLocationIdentifier);
 					factAcctQueryBuilder.bPartnerLocationId(BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID()));
 				});
 
-		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER))
-				.ifPresent(productIdentifier -> {
-					final I_M_Product product = productTable.get(productIdentifier);
-					factAcctQueryBuilder.productId(ProductId.ofRepoId(product.getM_Product_ID()));
-				});
+		row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_M_Product_ID)
+				.map(productTable::getId)
+				.ifPresent(factAcctQueryBuilder::productId);
 
-		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER))
+		row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_M_Locator_ID)
 				.ifPresent(locatorIdentifier -> {
 					final I_M_Locator locator = locatorTable.get(locatorIdentifier);
 					factAcctQueryBuilder.locatorId(LocatorId.ofRepoId(locator.getM_Warehouse_ID(), locator.getM_Locator_ID()));
 				});
 
-		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER))
+		row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_M_SectionCode_ID)
 				.ifPresent(sectionCodeIdentifier -> {
 					final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
 					factAcctQueryBuilder.sectionCodeId(SectionCodeId.ofRepoId(sectionCode.getM_SectionCode_ID()));
@@ -364,32 +347,38 @@ public class Fact_Acct_StepDef
 
 		message.append("Looking for instance with:").append("\n")
 				.append(I_Fact_Acct.COLUMNNAME_AD_Table_ID).append(" : ").append(factAcctQuery.getAD_Table_ID()).append("\n")
-				.append(I_Fact_Acct.COLUMNNAME_Record_ID).append(" : ").append(factAcctQuery.getRecord_ID()).append("\n")
-				.append(I_Fact_Acct.COLUMNNAME_Account_ID).append(" : ").append(factAcctQuery.getAccountId()).append("\n")
-				.append(I_Fact_Acct.COLUMNNAME_AmtSourceCr).append(" : ").append(factAcctQuery.getCrAmt()).append("\n")
-				.append(I_Fact_Acct.COLUMNNAME_AmtSourceDr).append(" : ").append(factAcctQuery.getDrAmt()).append("\n")
-				.append(I_Fact_Acct.COLUMNNAME_C_Currency_ID).append(" : ").append(factAcctQuery.getCurrencyId().getRepoId()).append("\n");
+				.append(I_Fact_Acct.COLUMNNAME_Record_ID).append(" : ").append(factAcctQuery.getRecord_ID()).append("\n");
+
+		Optional.ofNullable(factAcctQuery.getAccountId())
+				.ifPresent(accountId -> message.append(I_Fact_Acct.COLUMNNAME_Account_ID).append(" : ").append(accountId.getRepoId()).append("\n"));
+		Optional.ofNullable(factAcctQuery.getAccountConceptualName())
+				.ifPresent(accountConceptualName -> message.append(I_Fact_Acct.COLUMNNAME_AccountConceptualName).append(" : ").append(accountConceptualName).append("\n"));
+
+		message.append(I_Fact_Acct.COLUMNNAME_AmtSourceDr).append(" : ").append(factAcctQuery.getDrAmt()).append("\n")
+				.append(I_Fact_Acct.COLUMNNAME_AmtSourceCr).append(" : ").append(factAcctQuery.getCrAmt()).append("\n");
+
+		Optional.ofNullable(factAcctQuery.getCurrencyId())
+				.ifPresent(currencyId -> message.append(I_Fact_Acct.COLUMNNAME_C_Currency_ID).append(" : ").append(currencyId.getRepoId()).append("\n"));
 
 		Optional.ofNullable(factAcctQuery.getCurrencyRate())
 				.ifPresent(currencyRate -> message.append(I_Fact_Acct.COLUMNNAME_CurrencyRate).append(" : ").append(currencyRate).append("\n"));
 
-		Optional.ofNullable(factAcctQuery.getAccountConceptualName())
-				.ifPresent(accountConceptualName -> message.append(I_Fact_Acct.COLUMNNAME_AccountConceptualName).append(" : ").append(accountConceptualName).append("\n"));
-
 		Optional.ofNullable(factAcctQuery.getQty())
 				.ifPresent(qty -> message.append(I_Fact_Acct.COLUMNNAME_Qty).append(" : ").append(qty).append("\n"));
 
-		message.append("Fact_Acct records:").append("\n");
+		message.append("Fact_Acct records for table/record:").append("\n");
 
 		queryBL.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, factAcctQuery.getAD_Table_ID())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.getRecord_ID())
 				.create()
 				.stream(I_Fact_Acct.class)
 				.forEach(factAcctRecord -> message
 						.append(I_Fact_Acct.COLUMNNAME_AD_Table_ID).append(" : ").append(factAcctRecord.getAD_Table_ID()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_Record_ID).append(" : ").append(factAcctRecord.getRecord_ID()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_Account_ID).append(" : ").append(factAcctRecord.getAccount_ID()).append(" ; ")
-						.append(I_Fact_Acct.COLUMNNAME_AmtSourceCr).append(" : ").append(factAcctRecord.getAmtSourceCr()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_AmtSourceDr).append(" : ").append(factAcctRecord.getAmtSourceDr()).append(" ; ")
+						.append(I_Fact_Acct.COLUMNNAME_AmtSourceCr).append(" : ").append(factAcctRecord.getAmtSourceCr()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_C_Currency_ID).append(" : ").append(factAcctRecord.getC_Currency_ID()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_CurrencyRate).append(" : ").append(factAcctRecord.getCurrencyRate()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_AccountConceptualName).append(" : ").append(factAcctRecord.getAccountConceptualName()).append(" ; ")
@@ -407,18 +396,22 @@ public class Fact_Acct_StepDef
 			@Nullable final Integer noOfHits)
 	{
 		final IQueryBuilder<I_Fact_Acct> queryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.getRecord_ID())
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, factAcctQuery.getAD_Table_ID())
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, factAcctQuery.getAccountId().getRepoId())
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AmtSourceCr, factAcctQuery.getCrAmt())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.getRecord_ID())
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AmtSourceDr, factAcctQuery.getDrAmt())
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_Currency_ID, factAcctQuery.getCurrencyId());
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AmtSourceCr, factAcctQuery.getCrAmt());
+
+		Optional.ofNullable(factAcctQuery.getAccountId())
+				.ifPresent(accountId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, accountId));
+
+		Optional.ofNullable(factAcctQuery.getCurrencyId())
+				.ifPresent(currencyId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_Currency_ID, currencyId));
 
 		Optional.ofNullable(factAcctQuery.getCurrencyRate())
 				.ifPresent(currencyRate -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_CurrencyRate, currencyRate));
 
 		Optional.ofNullable(factAcctQuery.getAccountConceptualName())
-				.ifPresent(accountConceptualName -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, accountConceptualName));
+				.ifPresent(accountConceptualName -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, accountConceptualName.getAsString()));
 
 		Optional.ofNullable(factAcctQuery.getCalendarId())
 				.ifPresent(calendarId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_Harvesting_Calendar_ID, calendarId));
@@ -430,19 +423,19 @@ public class Fact_Acct_StepDef
 				.ifPresent(qty -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Qty, qty));
 
 		Optional.ofNullable(factAcctQuery.getProductId())
-						.ifPresent(productId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_Product_ID, productId));
+				.ifPresent(productId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_Product_ID, productId));
 
 		Optional.ofNullable(factAcctQuery.getBPartnerLocationId())
-						.ifPresent(bPartnerLocationId -> {
-							queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_BPartner_ID, bPartnerLocationId.getBpartnerId());
-							queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_BPartner_Location_ID, bPartnerLocationId);
-						});
+				.ifPresent(bPartnerLocationId -> {
+					queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_BPartner_ID, bPartnerLocationId.getBpartnerId());
+					queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_BPartner_Location_ID, bPartnerLocationId);
+				});
 
 		Optional.ofNullable(factAcctQuery.getLocatorId())
-						.ifPresent(locatorId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_Locator_ID, locatorId));
+				.ifPresent(locatorId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_Locator_ID, locatorId));
 
 		Optional.ofNullable(factAcctQuery.getSectionCodeId())
-						.ifPresent(sectionCodeId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_SectionCode_ID, sectionCodeId));
+				.ifPresent(sectionCodeId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_SectionCode_ID, sectionCodeId));
 
 		final List<I_Fact_Acct> factAcctRecords = queryBuilder
 				.create()
@@ -453,9 +446,9 @@ public class Fact_Acct_StepDef
 			return ItemProvider.ProviderResult.resultWasNotFound("No I_Fact_Acct found for query=" + factAcctQuery);
 		}
 
-		if (noOfHits != null)
+		if (noOfHits != null && noOfHits > 0)
 		{
-			if (!noOfHits.equals(factAcctRecords.size()))
+			if (factAcctRecords.size() != noOfHits)
 			{
 				return ItemProvider.ProviderResult.resultWasNotFound("Number of I_Fact_Acct hits expected for for query=" + factAcctQuery + " is " + noOfHits + " but actual is " + factAcctRecords.size());
 			}
@@ -472,32 +465,17 @@ public class Fact_Acct_StepDef
 	}
 
 	@NonNull
-	private ElementValueId getAccountId(@NonNull final String identifier)
-	{
-		return ElementValueId.ofRepoId(elementValueTable.get(identifier).getC_ElementValue_ID());
-	}
-
-	@NonNull
 	private TableRecordReference getTableRecordReference(
 			@NonNull final String tableType,
 			@NonNull final String identifier)
 	{
-		switch (TableType.valueOf(tableType))
+		return switch (TableType.valueOf(tableType))
 		{
-			case invoice:
-				return TableRecordReference.of(I_C_Invoice.Table_Name, invoiceTable.get(identifier).getC_Invoice_ID());
-			case matchInvoice:
-				return TableRecordReference.of(I_M_MatchInv.Table_Name, matchInvTable.get(identifier).getM_MatchInv_ID());
-			case inout:
-				return TableRecordReference.of(I_M_InOut.Table_Name, inoutTable.get(identifier).getM_InOut_ID());
-			case shippingNotification:
-				return TableRecordReference.of(I_M_Shipping_Notification.Table_Name, shippingNotificationTable.get(identifier).getM_Shipping_Notification_ID());
-			default:
-				throw new AdempiereException("Invalid table type!")
-						.appendParametersToMessage()
-						.setParameter("TableType", tableType)
-						.setParameter("Valid types", TableType.values());
-		}
+			case invoice -> TableRecordReference.of(I_C_Invoice.Table_Name, invoiceTable.get(identifier).getC_Invoice_ID());
+			case matchInvoice -> TableRecordReference.of(I_M_MatchInv.Table_Name, matchInvTable.get(identifier).getM_MatchInv_ID());
+			case inout -> TableRecordReference.of(I_M_InOut.Table_Name, inoutTable.get(identifier).getM_InOut_ID());
+			case shippingNotification -> TableRecordReference.of(I_M_Shipping_Notification.Table_Name, shippingNotificationTable.get(identifier).getM_Shipping_Notification_ID());
+		};
 	}
 
 	@Value
@@ -505,41 +483,19 @@ public class Fact_Acct_StepDef
 	private static class FactAcctQuery
 	{
 		@NonNull TableRecordReference tableRecordReference;
-
-		@NonNull ElementValueId accountId;
-
+		@Nullable ElementValueId accountId;
 		@NonNull BigDecimal crAmt;
-
 		@NonNull BigDecimal drAmt;
-
-		@NonNull CurrencyId currencyId;
-
-		@Nullable
-		BigDecimal currencyRate;
-
-		@Nullable
-		String accountConceptualName;
-
-		@Nullable
-		CalendarId calendarId;
-
-		@Nullable
-		YearId yearId;
-
-		@Nullable
-		BigDecimal qty;
-
-		@Nullable
-		ProductId productId;
-
-		@Nullable
-		SectionCodeId sectionCodeId;
-
-		@Nullable
-		LocatorId locatorId;
-
-		@Nullable
-		BPartnerLocationId bPartnerLocationId;
+		@Nullable CurrencyId currencyId;
+		@Nullable BigDecimal currencyRate;
+		@Nullable AccountConceptualName accountConceptualName;
+		@Nullable CalendarId calendarId;
+		@Nullable YearId yearId;
+		@Nullable BigDecimal qty;
+		@Nullable ProductId productId;
+		@Nullable SectionCodeId sectionCodeId;
+		@Nullable LocatorId locatorId;
+		@Nullable BPartnerLocationId bPartnerLocationId;
 
 		public int getRecord_ID()
 		{

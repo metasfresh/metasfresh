@@ -30,6 +30,8 @@ import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.dunning.DunningDocId;
+import de.metas.dunning.DunningLevel;
+import de.metas.dunning.DunningLevelId;
 import de.metas.dunning.api.IDunningCandidateQuery;
 import de.metas.dunning.api.IDunningCandidateQuery.ApplyAccessFilter;
 import de.metas.dunning.api.IDunningContext;
@@ -50,6 +52,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -59,6 +62,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public abstract class AbstractDunningDAO implements IDunningDAO
 {
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public final I_C_Dunning retrieveDunningForBPartner(@NonNull final BPartnerId bpartnerId)
 	{
@@ -76,6 +82,7 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 	}
 
 	private final transient CCache<OrgId, I_C_Dunning> orgId2dunning = CCache.<OrgId, I_C_Dunning>builder().tableName(I_C_Dunning.Table_Name).cacheMapType(CacheMapType.LRU).initialCapacity(100).build();
+	private final transient CCache<DunningLevelId, DunningLevel> dunningIdToDunningLevel = CCache.<DunningLevelId, DunningLevel>builder().tableName(I_C_DunningLevel.Table_Name).build();
 
 	@Override
 	public final I_C_Dunning retrieveDunningByOrg(@NonNull final OrgId orgId)
@@ -87,7 +94,7 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 	{
 		Check.assume(orgId.isRegular(), "Param 'orgId' needs to be > 0");
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Dunning.class)
+		return queryBL.createQueryBuilder(I_C_Dunning.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Dunning.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_C_Dunning.COLUMNNAME_IsDefault, true)
@@ -187,7 +194,7 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 	@Override
 	public final List<I_C_DunningDoc_Line> retrieveDunningDocLines(@NonNull final I_C_DunningDoc dunningDoc)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_DunningDoc_Line.class)
+		return queryBL.createQueryBuilder(I_C_DunningDoc_Line.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_DunningDoc_Line.COLUMN_C_DunningDoc_ID, dunningDoc.getC_DunningDoc_ID())
 				.orderBy()
@@ -199,7 +206,7 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 	@Override
 	public final List<I_C_DunningDoc_Line_Source> retrieveDunningDocLineSources(@NonNull final I_C_DunningDoc_Line line)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_DunningDoc_Line_Source.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_DunningDoc_Line_Source.COLUMN_C_DunningDoc_Line_ID, line.getC_DunningDoc_Line_ID())
@@ -212,17 +219,17 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 	@NonNull
 	public ImmutableList<I_C_Dunning> retrieveDunningsByOrg(@NonNull final OrgId orgId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_C_Dunning.class)
+		return queryBL.createQueryBuilderOutOfTrx(I_C_Dunning.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Dunning.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
 				.create()
 				.listImmutable();
 	}
-
+	
 	@Cached(cacheName = I_C_DunningLevel.Table_Name + "_for_C_Dunning_ID")
 		/* package */ List<I_C_DunningLevel> retrieveDunningLevels(@CacheCtx Properties ctx, int dunningId, @CacheTrx String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_DunningLevel.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_C_DunningLevel.class, ctx, trxName)
 				.addEqualsFilter(I_C_DunningLevel.COLUMNNAME_C_Dunning_ID, dunningId)
 				.addOnlyActiveRecordsFilter()
 				.orderBy()
@@ -244,5 +251,34 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 	public I_C_DunningDoc getByIdInTrx(@NonNull final DunningDocId dunningDocId)
 	{
 		return load(dunningDocId, I_C_DunningDoc.class);
+	}
+
+	@Override
+	public Collection<I_C_DunningDoc> getByIdsInTrx(@NonNull final Collection<DunningDocId> dunningDocIds)
+	{
+		if (dunningDocIds.isEmpty())
+		{
+			return Collections.emptyList();
+		}
+		return queryBL.createQueryBuilder(I_C_DunningDoc.class)
+				.addInArrayFilter(I_C_DunningDoc.COLUMNNAME_C_DunningDoc_ID, dunningDocIds)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+	}
+
+	@Override
+	public DunningLevel getById(@NonNull final DunningLevelId id)
+	{
+		return dunningIdToDunningLevel.getOrLoad(id, dunningLevelId -> fromRecord(InterfaceWrapperHelper.load(id, I_C_DunningLevel.class)));
+	}
+
+	private DunningLevel fromRecord(@NonNull final I_C_DunningLevel level)
+	{
+		return DunningLevel.builder()
+				.id(DunningLevelId.ofRepoId(level.getC_DunningLevel_ID()))
+				.name(level.getName())
+				.printName(level.getPrintName())
+				.build();
 	}
 }

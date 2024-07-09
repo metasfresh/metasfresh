@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -58,6 +59,7 @@ public class C_BPartner_Location_StepDef
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
 	public C_BPartner_Location_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
@@ -72,11 +74,7 @@ public class C_BPartner_Location_StepDef
 	@Given("metasfresh contains C_BPartner_Locations:")
 	public void createC_BPartner_Location(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createC_BPartner_Location(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::createC_BPartner_Location);
 	}
 
 	@Given("update C_BPartner_Location:")
@@ -102,18 +100,14 @@ public class C_BPartner_Location_StepDef
 	@Given("load C_BPartner_Location:")
 	public void load_bpartner_location(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			load_bpartner_location(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::load_bpartner_location);
 	}
 
-	private void createC_BPartner_Location(@NonNull final Map<String, String> tableRow)
+	private void createC_BPartner_Location(@NonNull final DataTableRow row)
 	{
-		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String bPartnerIdentifier = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).getAsString();
 		final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
-		final String gln = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner_Location.COLUMNNAME_GLN);
+		final String gln = row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_GLN).orElse(null);
 
 		final I_C_BPartner_Location bPartnerLocationRecord = CoalesceUtil.coalesceSuppliers(
 				() -> queryBL.createQueryBuilder(I_C_BPartner_Location.class)
@@ -128,98 +122,99 @@ public class C_BPartner_Location_StepDef
 		bPartnerLocationRecord.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		bPartnerLocationRecord.setGLN(gln);
 
-		final boolean isShipToDefault = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, false);
+		final boolean isShipToDefault = row.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault).orElse(false);
 		bPartnerLocationRecord.setIsShipToDefault(isShipToDefault);
 
-		final boolean isShipTo = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsShipTo, isShipToDefault);
+		final boolean isShipTo = row.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsShipTo).orElse(isShipToDefault);
 		bPartnerLocationRecord.setIsShipTo(isShipTo);
 
-		final boolean isBillToDefault = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault, false);
+		final boolean isBillToDefault = row.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsBillToDefault).orElse(false);
 		bPartnerLocationRecord.setIsBillToDefault(isBillToDefault);
 
-		final boolean isBillTo = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsBillTo, isBillToDefault);
+		final boolean isBillTo = row.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsBillTo).orElse(isBillToDefault);
 		bPartnerLocationRecord.setIsBillTo(isBillTo);
 
-		final String locationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(locationIdentifier))
+		final StepDefDataIdentifier locationIdentifier = row.getAsOptionalIdentifier(I_C_BPartner_Location.COLUMNNAME_C_Location_ID).orElse(null);
+		final I_C_Location locationRecord;
+		if (locationIdentifier != null)
 		{
-			final I_C_Location location = locationTable.get(locationIdentifier);
-			assertThat(location).isNotNull();
-
-			bPartnerLocationRecord.setC_Location_ID(location.getC_Location_ID());
-			bPartnerLocationRecord.setAddress(locationBL.mkAddress(location));
+			locationRecord = locationTable.get(locationIdentifier);
+			assertThat(locationRecord).isNotNull();
 		}
 		else
 		{
-			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
+			locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 			locationRecord.setC_Country_ID(StepDefConstants.COUNTRY_ID.getRepoId());
-			saveRecord(locationRecord);
-
-			bPartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
 		}
 
-		final String emailLocation = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_EMail);
+		row.getAsOptionalString("CountryCode")
+				.map(countryDAO::getCountryIdByCountryCode)
+				.ifPresent(countryId -> locationRecord.setC_Country_ID(countryId.getRepoId()));
+
+		saveRecord(locationRecord);
+		bPartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
+		bPartnerLocationRecord.setAddress(locationBL.mkAddress(locationRecord));
+
+		final String emailLocation = row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_EMail).orElse(null);
 		if (Check.isNotBlank(emailLocation))
 		{
 			bPartnerLocationRecord.setEMail(emailLocation);
 		}
 
-		final String name = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_Name);
+		final String name = row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_Name).orElse(null);
 		if (Check.isNotBlank(name))
 		{
 			bPartnerLocationRecord.setName(name);
 		}
 
-		final String bpLocationBPartnerName = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_BPartnerName);
+		final String bpLocationBPartnerName = row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_BPartnerName).orElse(null);
 		if (Check.isNotBlank(bpLocationBPartnerName))
 		{
 			bPartnerLocationRecord.setBPartnerName(bpLocationBPartnerName);
 		}
 
-		final String phone = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_Phone);
+		final String phone = row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_Phone).orElse(null);
 		if (Check.isNotBlank(phone))
 		{
 			bPartnerLocationRecord.setPhone(phone);
 		}
 
-		final Integer bpartnerLocationId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
-		if (bpartnerLocationId != null && bpartnerLocationId > 0)
+		final int bpartnerLocationRepoId = row.getAsOptionalInt(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID).orElse(-1);
+		if (bpartnerLocationRepoId > 0)
 		{
-			bPartnerLocationRecord.setC_BPartner_Location_ID(bpartnerLocationId);
+			bPartnerLocationRecord.setC_BPartner_Location_ID(bpartnerLocationRepoId);
 		}
 
 		saveRecord(bPartnerLocationRecord);
 
-		final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
-		bPartnerLocationTable.put(bpLocationIdentifier, bPartnerLocationRecord);
+		row.getAsIdentifier(TABLECOLUMN_IDENTIFIER).putOrReplace(bPartnerLocationTable, bPartnerLocationRecord);
 	}
 
-	private void load_bpartner_location(@NonNull final Map<String, String> tableRow)
+	private void load_bpartner_location(@NonNull final DataTableRow tableRow)
 	{
-		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String bpartnerLocationIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID).getAsString();
 
-		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BPartner_Location_ID);
-
-		if (id != null)
+		final int id = tableRow.getAsOptionalInt(COLUMNNAME_C_BPartner_Location_ID).orElse(-1);
+		if (id > 0)
 		{
 			bPartnerLocationTable.putOrReplace(bpartnerLocationIdentifier, InterfaceWrapperHelper.load(id, I_C_BPartner_Location.class));
 			return;
 		}
 
-		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String bpartnerIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_ID).getAsString();
 		final Integer bpartnerId = bPartnerTable.getOptional(bpartnerIdentifier)
 				.map(I_C_BPartner::getC_BPartner_ID)
 				.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
 
-		final int bpartnerLocationId = DataTableUtil.extractIntForColumnName(tableRow, COLUMNNAME_C_BPartner_Location_ID);
-		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationId);
+		final int bpartnerLocationRepoId = tableRow.getAsInt(COLUMNNAME_C_BPartner_Location_ID);
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationRepoId);
 
-		final I_C_BPartner_Location bPartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(bPartnerLocationId);
-		assertThat(bPartnerLocation).isNotNull();
+		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(bPartnerLocationId);
+		assertThat(bpartnerLocation).isNotNull();
 
-		bPartnerLocationTable.put(bpartnerLocationIdentifier, bPartnerLocation);
+		bPartnerLocationTable.put(bpartnerLocationIdentifier, bpartnerLocation);
 	}
-
+	
 	private void updateCBPartnerLocation(@NonNull final Map<String, String> tableRow)
 	{
 		final String bPartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);

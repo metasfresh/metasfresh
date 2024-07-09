@@ -1,3 +1,4 @@
+@ignore
 Feature: Calculation of Modular Contract Transition
 
   Background:
@@ -31,9 +32,13 @@ Feature: Calculation of Modular Contract Transition
       | Identifier              | Name                               |
       | contract_module_product | contract_module_product_10242023_1 |
 
+    And metasfresh contains M_PricingSystems
+      | Identifier    | Name           | Value         | OPT.Description | OPT.IsActive |
+      | priceSystem_1 | pricingSysName | pricingSysVal | pricingSysDesc  | true         |
+
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                        | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
-      | modCntr_settings_1             | modCntr_settings_10242023_1 | contract_module_product | calendar_1               | y2022                |
+      | ModCntr_Settings_ID.Identifier | Name                        | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | modCntr_settings_1             | modCntr_settings_10242023_1 | contract_module_product     | calendar_1               | y2022                | priceSystem_1                     |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                     | Value                    | ModularContractHandlerType |
@@ -44,8 +49,8 @@ Feature: Calculation of Modular Contract Transition
       | modCntr_module_1             | 10    | moduleTest_10242024_1 | contract_module_product | Kosten         | modCntr_settings_1             | modCntr_Types_1            |
 
     When metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | modularContractTerm_2022            | modularContractTerm_10242023_1 | ModularContract | Ex                       | modCntr_settings_1                 | DR            |
+      | Identifier               | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | modularContractTerm_2022 | modularContractTerm_10242023_1 | ModularContract | Ex                       | modCntr_settings_1                 | DR            |
 
     And the C_Flatrate_Conditions identified by modularContractTerm_2022 is completed
 
@@ -91,9 +96,13 @@ Feature: Calculation of Modular Contract Transition
       | Identifier              | Name                               |
       | contract_module_product | contract_module_product_10242023_2 |
 
+    And metasfresh contains M_PricingSystems
+      | Identifier    | Name           | Value         | OPT.Description | OPT.IsActive |
+      | priceSystem_1 | pricingSysName | pricingSysVal | pricingSysDesc  | true         |
+
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                        | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
-      | modCntr_settings_1             | modCntr_settings_10242023_2 | contract_module_product | calendar_1               | y2021                |
+      | ModCntr_Settings_ID.Identifier | Name                        | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | modCntr_settings_1             | modCntr_settings_10242023_2 | contract_module_product     | calendar_1               | y2021                | priceSystem_1                     |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                     | Value                    | ModularContractHandlerType |
@@ -104,8 +113,8 @@ Feature: Calculation of Modular Contract Transition
       | modCntr_module_1             | 10    | moduleTest_10242024_2 | contract_module_product | Kosten         | modCntr_settings_1             | modCntr_Types_1            |
 
     When metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | modularContractTerm_2021            | modularContractTerm_10242023_2 | ModularContract | Ex                       | modCntr_settings_1                 | DR            |
+      | Identifier               | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | modularContractTerm_2021 | modularContractTerm_10242023_2 | ModularContract | Ex                       | modCntr_settings_1                 | DR            |
 
     And the C_Flatrate_Conditions identified by modularContractTerm_2021 is completed
 

@@ -1,20 +1,22 @@
 DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtybook_from_fact_acct(
-    p_M_Inventory_ID      numeric,
-    p_ProductAssetAccount varchar,
-    p_RecreateLines       char(1),
-    p_DryRun              char(1),
-    p_DateAcctFrom        date,
-    p_DateAcctTo          date
+    p_M_Inventory_ID          numeric,
+    p_ProductAssetAccount     varchar,
+    p_RecreateLines           char(1),
+    p_DryRun                  char(1),
+    p_ImportOnlyGivenProducts char(1),
+    p_DateAcctFrom            date,
+    p_DateAcctTo              date
 )
 ;
 
 CREATE OR REPLACE FUNCTION de_metas_acct.m_inventoryline_update_qtybook_from_fact_acct(
-    p_M_Inventory_ID      numeric,
-    p_ProductAssetAccount varchar,
-    p_RecreateLines       char(1) = 'N',
-    p_DryRun              char(1) = 'N',
-    p_DateAcctFrom        date = NULL,
-    p_DateAcctTo          date = NULL
+    p_M_Inventory_ID          numeric,
+    p_ProductAssetAccount     varchar,
+    p_RecreateLines           char(1) = 'N',
+    p_DryRun                  char(1) = 'N',
+    p_ImportOnlyGivenProducts char(1) = 'N',
+    p_DateAcctFrom            date = NULL,
+    p_DateAcctTo              date = NULL
 )
     RETURNS VOID
 AS
@@ -25,11 +27,12 @@ DECLARE
     v_rowcount      numeric;
     v_record        record;
 BEGIN
-    RAISE NOTICE 'Updating inventory line QtyBook from fact acct: p_M_Inventory_ID=%, p_ProductAssetAccount=%, p_RecreateLines=%, p_DryRun=%, p_DateAcctFrom=%, p_DateAcctTo=%',
+    RAISE NOTICE 'Updating inventory line QtyBook from fact acct: p_M_Inventory_ID=%, p_ProductAssetAccount=%, p_RecreateLines=%, p_DryRun=%, p_ImportOnlyGivenProducts=%, p_DateAcctFrom=%, p_DateAcctTo=%',
         p_M_Inventory_ID,
         p_ProductAssetAccount,
         p_RecreateLines,
         p_DryRun,
+        p_ImportOnlyGivenProducts,
         p_DateAcctFrom,
         p_DateAcctTo;
 
@@ -77,7 +80,11 @@ BEGIN
       AND (v_inventoryInfo.DateAcctFrom IS NULL OR fa.dateacct >= v_inventoryInfo.DateAcctFrom::date)
       AND fa.dateacct::date <= v_inventoryInfo.DateAcctTo::date
       AND loc.m_warehouse_id = v_inventoryInfo.m_warehouse_id
-      AND NOT (fa.ad_table_id = get_table_id('M_Inventory') AND fa.record_id IN (p_M_Inventory_ID))
+      AND NOT (fa.ad_table_id = get_table_id('M_Inventory') AND fa.record_id = (p_M_Inventory_ID))
+      AND (p_ImportOnlyGivenProducts = 'N'
+      OR
+          EXISTS(SELECT 1 FROM m_inventoryline il WHERE il.m_inventory_id = p_M_Inventory_ID AND fa.m_product_id = il.m_product_id))
+
     GROUP BY loc.m_warehouse_id, fa.m_product_id, fa.c_uom_id;
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
     CREATE UNIQUE INDEX ON tmp_fact_acct (m_product_id);
@@ -160,7 +167,7 @@ BEGIN
                fa.qty                                            AS qtybook,
                0                                                 AS qtycount,
                'Y'                                               AS iscounted,
-               'Y'                                               AS processed,
+               'N'                                               AS processed,
                'M'                                               AS huaggregationtype
         FROM tmp_fact_acct fa
         WHERE fa.qty != 0
@@ -223,7 +230,7 @@ BEGIN
                0                                                                                      AS qtybook,
                prev_invl.qtycount                                                                     AS qtycount,
                'Y'                                                                                    AS iscounted,
-               'Y'                                                                                    AS processed,
+               'N'                                                                                    AS processed,
                'M'                                                                                    AS huaggregationtype,
                prev_invl.isactive                                                                     AS isactive
         FROM tmp_prev_inventoryline prev_invl

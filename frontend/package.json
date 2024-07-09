@@ -17,6 +17,9 @@
     "setupFiles": [
       "<rootDir>/test_setup/jestSetup.js"
     ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/test_setup/jestSetupAfterEnv.js"
+    ],
     "moduleNameMapper": {
       "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)$": "<rootDir>/test_setup/fileMock.js",
       "\\.(scss)$": "<rootDir>/test_setup/styleMock.js",

@@ -6,12 +6,12 @@ import { trl } from '../../../utils/translations';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { getActivityById, getQtyRejectedReasonsFromActivity, getStepById } from '../../../reducers/wfProcesses';
 import { toastError } from '../../../utils/toast';
-import { getPickFrom, getQtyToPick } from '../../../utils/picking';
+import { getPickFromForStep, getQtyToPickForStep } from '../../../utils/picking';
 import { postStepPicked } from '../../../api/picking';
-import { updatePickingStepQty } from '../../../actions/PickingActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import { toQRCodeString } from '../../../utils/huQRCodes';
+import { toQRCodeString } from '../../../utils/qrCode/hu';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
 
 const PickStepScanScreen = () => {
   const {
@@ -49,19 +49,8 @@ const PickStepScanScreen = () => {
       qtyRejectedReasonCode: reason,
       qtyRejected,
     })
+      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
       .then(() => {
-        dispatch(
-          updatePickingStepQty({
-            wfProcessId,
-            activityId,
-            lineId,
-            stepId,
-            altStepId,
-            qtyPicked: qty,
-            qtyRejected,
-            qtyRejectedReasonCode: reason,
-          })
-        );
         history.go(-2); // go to picking line screen
       })
       .catch((axiosError) => toastError({ axiosError }));
@@ -70,7 +59,7 @@ const PickStepScanScreen = () => {
   return (
     <ScanHUAndGetQtyComponent
       eligibleBarcode={eligibleQRCode}
-      qtyCaption={trl('general.QtyToPick')}
+      qtyTargetCaption={trl('general.QtyToPick')}
       qtyMax={qtyToPick}
       qtyTarget={qtyToPick}
       uom={uom}
@@ -86,8 +75,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId, alt
   const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
 
   const stepProps = getStepById(state, wfProcessId, activityId, lineId, stepId);
-  const eligibleQRCode = toQRCodeString(getPickFrom({ stepProps, altStepId }).huQRCode);
-  const qtyToPick = getQtyToPick({ stepProps, altStepId });
+  const eligibleQRCode = toQRCodeString(getPickFromForStep({ stepProps, altStepId }).huQRCode);
+  const qtyToPick = getQtyToPickForStep({ stepProps, altStepId });
 
   return {
     eligibleQRCode,

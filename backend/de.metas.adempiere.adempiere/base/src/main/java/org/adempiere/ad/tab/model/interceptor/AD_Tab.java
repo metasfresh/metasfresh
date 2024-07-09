@@ -1,5 +1,10 @@
 package org.adempiere.ad.tab.model.interceptor;
 
+import de.metas.quickinput.config.QuickInputConfigLayout;
+import de.metas.translation.api.IElementTranslationBL;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -10,15 +15,13 @@ import org.adempiere.ad.element.api.IElementLinkBL;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import de.metas.translation.api.IElementTranslationBL;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -45,8 +48,11 @@ import de.metas.util.Services;
 @Interceptor(I_AD_Tab.class)
 @Callout(I_AD_Tab.class)
 @Component
+@RequiredArgsConstructor
 public class AD_Tab
 {
+	@NonNull private final ADTabQuickInputLayoutValidatorDispatcher adTabQuickInputLayoutValidatorDispatcher;
+
 	@Init
 	public void init()
 	{
@@ -56,11 +62,11 @@ public class AD_Tab
 	@CalloutMethod(columnNames = I_AD_Tab.COLUMNNAME_AD_Table_ID)
 	public void calloutOnTableIdChanged(final I_AD_Tab tab)
 	{
-		if (tab.getAD_Table_ID() > 0)
+		final AdTableId adTableId = AdTableId.ofRepoIdOrNull(tab.getAD_Table_ID());
+		if (adTableId != null)
 		{
-			final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 			final IADElementDAO adElementsRepo = Services.get(IADElementDAO.class);
-			final String tableName = adTablesRepo.retrieveTableName(tab.getAD_Table_ID());
+			final String tableName = TableIdsCache.instance.getTableName(adTableId);
 
 			tab.setInternalName(tableName);
 
@@ -144,5 +150,16 @@ public class AD_Tab
 		final AdTabId adTabId = AdTabId.ofRepoId(tab.getAD_Tab_ID());
 		adWindowDAO.deleteFieldsByTabId(adTabId);
 		adWindowDAO.deleteUISectionsByTabId(adTabId);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_QuickInputLayout)
+	public void onBeforeSave_WhenQuickInputLayoutChanged(final I_AD_Tab tab)
+	{
+		final QuickInputConfigLayout quickInputConfigLayout = QuickInputConfigLayout.parse(tab.getQuickInputLayout()).orElse(null);
+		if (quickInputConfigLayout != null)
+		{
+			final String tabTablename = TableIdsCache.instance.getTableName(AdTableId.ofRepoId(tab.getAD_Table_ID()));
+			adTabQuickInputLayoutValidatorDispatcher.validateQuickInputLayout(tabTablename, quickInputConfigLayout);
+		}
 	}
 }

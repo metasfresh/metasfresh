@@ -1,15 +1,18 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import de.metas.material.cockpit.QtyDemandQtySupply;
+import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.money.Money;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
@@ -99,6 +102,24 @@ public class MainRowBucket
 	@Nullable
 	private Instant qtyInventoryTimeAtDate;
 
+	@Setter
+	@Nullable
+	private String procurementStatus;
+
+	@Setter
+	@Nullable
+	private Money highestPurchasePrice_AtDate;
+
+	private Quantity qtyOrdered_PurchaseOrder_AtDate;
+
+	private Quantity qtyOrdered_SalesOrder_AtDate;
+
+	private Quantity availableQty_AtDate;
+
+	private Quantity remainingStock_AtDate;
+
+	private Quantity pmm_QtyPromised_NextDay;
+
 	private final Set<Integer> cockpitRecordIds = new HashSet<>();
 
 	private final Set<Integer> stockRecordIds = new HashSet<>();
@@ -107,7 +128,8 @@ public class MainRowBucket
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 
-		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(cockpitRecord.getM_Product_ID());
+		final I_C_UOM uom = productBL.getStockUOM(productId);
 
 		pmmQtyPromisedAtDate = addToNullable(pmmQtyPromisedAtDate, cockpitRecord.getPMM_QtyPromised_OnDate_AtDate(), uom);
 		qtyMaterialentnahmeAtDate = addToNullable(qtyMaterialentnahmeAtDate, cockpitRecord.getQtyMaterialentnahme_AtDate(), uom);
@@ -126,13 +148,36 @@ public class MainRowBucket
 
 		qtyStockEstimateCountAtDate = addToNullable(qtyStockEstimateCountAtDate, cockpitRecord.getQtyStockEstimateCount_AtDate(), uom);
 		qtyStockEstimateTimeAtDate = TimeUtil.max(qtyStockEstimateTimeAtDate, TimeUtil.asInstant(cockpitRecord.getQtyStockEstimateTime_AtDate()));
-		qtyStockEstimateSeqNoAtDate = cockpitRecord.getQtyStockEstimateSeqNo_AtDate();
+
+		// Take the minimum QtyStockEstimateSeqNo_AtDate of all MD_Cockpit records. But take 0 is equivalent to null
+		final Integer seqNoToUse = (cockpitRecord.getQtyStockEstimateSeqNo_AtDate() <= 0) ? null : cockpitRecord.getQtyStockEstimateSeqNo_AtDate();
+		if (qtyStockEstimateSeqNoAtDate != null && seqNoToUse != null)
+		{
+			qtyStockEstimateSeqNoAtDate = Integer.min(qtyStockEstimateSeqNoAtDate, seqNoToUse);
+		}
+		else if(qtyStockEstimateSeqNoAtDate == null && seqNoToUse != null)
+		{
+			qtyStockEstimateSeqNoAtDate = seqNoToUse;
+		}
 
 		qtyInventoryCountAtDate = addToNullable(qtyInventoryCountAtDate, cockpitRecord.getQtyInventoryCount_AtDate(), uom);
 		qtyInventoryTimeAtDate = TimeUtil.max(qtyInventoryTimeAtDate, TimeUtil.asInstant(cockpitRecord.getQtyInventoryTime_AtDate()));
 
 		qtyExpectedSurplusAtDate = addToNullable(qtyExpectedSurplusAtDate, cockpitRecord.getQtyExpectedSurplus_AtDate(), uom);
 		qtyStockCurrentAtDate = addToNullable(qtyStockCurrentAtDate, cockpitRecord.getQtyStockCurrent_AtDate(), uom);
+
+		qtyOrdered_PurchaseOrder_AtDate = addToNullable(qtyOrdered_PurchaseOrder_AtDate, cockpitRecord.getQtyOrdered_PurchaseOrder_AtDate(), uom);
+		qtyOrdered_SalesOrder_AtDate = addToNullable(qtyOrdered_SalesOrder_AtDate, cockpitRecord.getQtyOrdered_SalesOrder_AtDate(), uom);
+
+		availableQty_AtDate = addToNullable(availableQty_AtDate,
+											cockpitRecord.getQtyStockEstimateCount_AtDate().add(cockpitRecord.getQtyOrdered_PurchaseOrder_AtDate()),
+											uom);
+		remainingStock_AtDate = addToNullable(remainingStock_AtDate,
+											  cockpitRecord.getQtyStockEstimateCount_AtDate()
+													  .add(cockpitRecord.getQtyOrdered_PurchaseOrder_AtDate())
+													  .subtract(cockpitRecord.getQtyOrdered_SalesOrder_AtDate()),
+											  uom);
+		pmm_QtyPromised_NextDay = addToNullable(pmm_QtyPromised_NextDay, cockpitRecord.getPMM_QtyPromised_NextDay(), uom);
 
 		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
@@ -145,7 +190,7 @@ public class MainRowBucket
 		stockRecordIds.add(stockRecord.getMD_Stock_ID());
 	}
 
-	public void addQuantitiesRecord(@NonNull final QtyDemandQtySupply quantitiesRecord)
+	public void addQuantitiesRecord(@NonNull final ProductWithDemandSupply quantitiesRecord)
 	{
 		final I_C_UOM uom = uomDAO.getById(quantitiesRecord.getUomId());
 

@@ -75,6 +75,7 @@ public final class StringUtils
 		return strTrim;
 	}
 
+	@NonNull
 	public static Optional<String> trimBlankToOptional(@Nullable final String str)
 	{
 		return Optional.ofNullable(trimBlankToNull(str));

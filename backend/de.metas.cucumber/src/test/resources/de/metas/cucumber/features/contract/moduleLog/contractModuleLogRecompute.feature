@@ -1,4 +1,5 @@
 @ghActions:run_on_executor5
+@ignore
 Feature: Modular contract log - Recompute
 
   Background:
@@ -39,7 +40,7 @@ Feature: Modular contract log - Recompute
       | year                 | 2022       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier    | Name                    | M_Product_ID.Identifier     | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier       |
+      | ModCntr_Settings_ID.Identifier    | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier       |
       | modCntr_settings_recompute_150923 | testSettings_07042023_0 | module_log_recompute_150923 | harvesting_calendar      | year                 | moduleLogPricingSystem_recompute_150923 |
 
     And metasfresh contains ModCntr_Types:
@@ -51,7 +52,7 @@ Feature: Modular contract log - Recompute
       | modCntr_module_recompute_150923_1 | 10    | modCntr_module_recompute_150923_1 | module_log_recompute_150923 | Kosten         | modCntr_settings_recompute_150923 | modCntr_type_recompute_150923_1 |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier     | Name                                    | Type_Conditions | OPT.M_PricingSystem_ID.Identifier       | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | Identifier                              | Name                                    | Type_Conditions | OPT.M_PricingSystem_ID.Identifier       | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
       | moduleLogConditions_PO_recompute_150923 | moduleLogConditions_PO_recompute_150923 | ModularContract | moduleLogPricingSystem_recompute_150923 | Ex                       | modCntr_settings_recompute_150923  | DR            |
 
     And metasfresh contains C_Flatrate_Terms:

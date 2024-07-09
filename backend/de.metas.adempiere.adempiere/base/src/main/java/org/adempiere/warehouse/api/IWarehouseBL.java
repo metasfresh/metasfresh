@@ -22,6 +22,7 @@
 
 package org.adempiere.warehouse.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.location.DocumentLocation;
@@ -101,4 +102,18 @@ public interface IWarehouseBL extends ISingletonService
 	OrgId getOrgIdByLocatorRepoId(int locatorId);
 
 	BPartnerId getBPartnerId(@NonNull final WarehouseId warehouseId);
+
+	@NonNull
+	Optional<WarehouseId> getOptionalIdByValue(@NonNull String value);
+
+	@NonNull
+	Warehouse getByIdNotNull(@NonNull WarehouseId id);
+
+	void save(@NonNull Warehouse warehouse);
+
+	@NonNull
+	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);
+
+	@NonNull
+	ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull WarehouseId warehouseId);
 }

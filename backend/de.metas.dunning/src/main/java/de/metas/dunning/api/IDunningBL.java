@@ -29,21 +29,22 @@ import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunningCandidateSource;
 import de.metas.dunning.spi.IDunningConfigurator;
+import de.metas.notification.NotificationGroupName;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.util.ISingletonService;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
 public interface IDunningBL extends ISingletonService
 {
 	String EVENT_NewDunningCandidate = IDunningBL.class.getName() + "#NewDunningCandidate";
+	NotificationGroupName MASS_DUNNING_NOTIFICATION_GROUP_NAME = NotificationGroupName.of("de.metas.MassDunning.OrgBPUserNotifications");
 
-	public static final String MSG_PAID = "Paid";
-	public static final String MSG_OPEN = "Open";
+	String MSG_PAID = "Paid";
+	String MSG_OPEN = "Open";
 
 	void setDunningConfigurator(IDunningConfigurator configurator);
 
@@ -72,7 +73,7 @@ public interface IDunningBL extends ISingletonService
 
 	/**
 	 * Process {@link I_C_Dunning_Candidate}s and produces {@link I_C_DunningDoc}s.
-	 *
+	 * <p>
 	 * {@link IDunningConfig#createDunningCandidateSource()} will be used for creating the candidates source.
 	 *
 	 * @param context
@@ -89,7 +90,7 @@ public interface IDunningBL extends ISingletonService
 
 	/**
 	 * Get previous dunning levels of given dunning level.
-	 *
+	 * <p>
 	 * For determining previous levels the {@link I_C_DunningLevel#getDaysAfterDue()} + {@link I_C_DunningLevel#getDaysBetweenDunning()} is compared.
 	 *
 	 * @param level
@@ -101,7 +102,7 @@ public interface IDunningBL extends ISingletonService
 
 	/**
 	 * Checks if given candidate is expired. Expired means that the dunning candidate makes no sense to be in our table because the dunning is not required.
-	 *
+	 * <p>
 	 * A dunning candidate is considered expired when:
 	 * <ul>
 	 * <li>is not processed

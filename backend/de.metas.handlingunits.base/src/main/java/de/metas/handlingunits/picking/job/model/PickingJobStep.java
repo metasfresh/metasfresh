@@ -64,7 +64,7 @@ public class PickingJobStep
 	@NonNull PickingJobStepPickFromMap pickFroms;
 
 	//
-	// Pick To Specification
+	// Pack To Specification
 	@NonNull PackToSpec packToSpec;
 
 	@NonNull PickingJobProgress progress;
@@ -104,6 +104,16 @@ public class PickingJobStep
 	public I_C_UOM getUOM() {return qtyToPick.getUOM();}
 
 	public boolean isNothingPicked() {return pickFroms.isNothingPicked();}
+
+	public Quantity getQtyPicked()
+	{
+		return pickFroms.getQtyPicked().orElseGet(qtyToPick::toZero);
+	}
+
+	public Quantity getQtyRejected()
+	{
+		return pickFroms.getQtyRejected().orElseGet(qtyToPick::toZero);
+	}
 
 	public PickingJobStep reduceWithPickedEvent(
 			@NonNull PickingJobStepPickFromKey key,

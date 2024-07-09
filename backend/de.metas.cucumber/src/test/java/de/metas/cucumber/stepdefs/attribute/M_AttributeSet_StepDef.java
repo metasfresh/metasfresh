@@ -82,6 +82,7 @@ public class M_AttributeSet_StepDef
 			final I_M_AttributeSet attributeSet = CoalesceUtil.coalesceSuppliers(
 					() -> queryBL.createQueryBuilder(I_M_AttributeSet.class)
 							.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_Name, name)
+							.addOnlyActiveRecordsFilter()
 							.create()
 							.firstOnly(I_M_AttributeSet.class),
 					() -> InterfaceWrapperHelper.newInstance(I_M_AttributeSet.class));
@@ -92,7 +93,7 @@ public class M_AttributeSet_StepDef
 
 			// dev-note: values for COLUMNNAME_MandatoryType should obey AD_Reference_ID=324
 			final String mandatoryType = DataTableUtil.extractStringForColumnName(row, I_M_AttributeSet.COLUMNNAME_MandatoryType);
-			attributeSet.setName(mandatoryType);
+			attributeSet.setMandatoryType(mandatoryType);
 
 			InterfaceWrapperHelper.saveRecord(attributeSet);
 

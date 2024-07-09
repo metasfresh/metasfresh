@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
@@ -29,7 +30,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -123,7 +123,7 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 			}
 
 			final ProductId productId = ProductId.ofRepoId(candidate.getM_Product_ID());
-			final Quantity qty = Quantitys.create(candidate.getQty(), UomId.ofRepoId(candidate.getC_UOM_ID()));
+			final Quantity qty = Quantitys.of(candidate.getQty(), UomId.ofRepoId(candidate.getC_UOM_ID()));
 			final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(candidate.getPP_Order_BOMLine_ID());
 
 			if (orderBOMLineId == null)
@@ -173,10 +173,29 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 	}
 
 	@Override
+	public Set<HuId> getFinishedGoodsReceivedHUIds(@NonNull final Set<PPOrderId> ppOrderIds)
+	{
+		if (ppOrderIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		
+		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
+		for (final PPOrderId ppOrderId : ppOrderIds)
+		{
+			final Set<HuId> huIds = getFinishedGoodsReceivedHUIds(ppOrderId);
+			result.addAll(huIds);
+		}
+		return result.build();
+	}
+
+	@Override
 	public Set<HuId> getFinishedGoodsReceivedHUIds(@NonNull final PPOrderId ppOrderId)
 	{
 		final HashSet<HuId> receivedHUIds = new HashSet<>();
-		streamFinishedGoodsReceived(ppOrderId)
+		huPPOrderQtyDAO.retrieveOrderQtyForFinishedGoodsReceive(ppOrderId)
+				.stream()
+				.filter(I_PP_Order_Qty::isProcessed)
 				.forEach(processedCandidate -> {
 					final HuId newLUId = HuId.ofRepoIdOrNull(processedCandidate.getNew_LU_ID());
 					if (newLUId != null)
@@ -189,14 +208,6 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 				});
 
 		return receivedHUIds;
-	}
-
-	@NonNull
-	private Stream<I_PP_Order_Qty> streamFinishedGoodsReceived(final @NonNull PPOrderId ppOrderId)
-	{
-		return huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId)
-				.stream()
-				.filter(I_PP_Order_Qty::isProcessed);
 	}
 
 	@Override

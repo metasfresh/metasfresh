@@ -20,7 +20,6 @@ import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import lombok.Builder;
 import lombok.Getter;
@@ -173,11 +172,7 @@ import java.util.List;
 		// Validate parameters, if any
 		if (parametersDocument != null)
 		{
-			final DocumentValidStatus validStatus = parametersDocument.checkAndGetValidStatus();
-			if (!validStatus.isValid())
-			{
-				throw new AdempiereException(validStatus.getReason());
-			}
+			parametersDocument.checkAndGetValidStatus().throwIfInvalid();
 		}
 
 		//

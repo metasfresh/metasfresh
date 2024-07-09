@@ -6,6 +6,7 @@ import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.order.IOrderLineBL;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.service.ProductPrices;
@@ -53,7 +54,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 	 *
 	 *
 	 * @see InterfaceWrapperHelper#isValueChanged(Object, String)
-	 * @see IOrderLineBL#getPriceListVersion(de.metas.interfaces.I_C_OrderLine)
+	 * @see IOrderLineBL#getPriceListVersionId(de.metas.interfaces.I_C_OrderLine)
 	 * @see IAttributePricingBL#getDefaultAttributePriceOrNull(Object, int, I_M_PriceList_Version, boolean)
 	 */
 	@Override
@@ -132,13 +133,13 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 	 *
 	 * @param orderLine
 	 * @return
-	 * @see IOrderLineBL#getPriceListVersion(de.metas.interfaces.I_C_OrderLine)
+	 * @see IOrderLineBL#getPriceListVersionId(de.metas.interfaces.I_C_OrderLine)
 	 * @see IAttributePricingBL#getDefaultAttributePriceOrNull(Object, int, I_M_PriceList_Version, boolean)
 	 */
 	private I_M_ProductPrice getDefaultProductPriceAttribute(final I_C_OrderLine orderLine)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		final I_M_PriceList_Version plv = orderLineBL.getPriceListVersion(orderLine);
+		final PriceListVersionId plvId = orderLineBL.getPriceListVersionId(orderLine);
 
 		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
 		final HUPIItemProductId packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
@@ -147,7 +148,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 		// Check if we have a product price specific to current PI Item Product
 		if(packingMaterialId != null)
 		{
-			final I_M_ProductPrice huProductPrice = ProductPrices.newQuery(plv)
+			final I_M_ProductPrice huProductPrice = ProductPrices.newQuery(plvId)
 					.setProductId(productId)
 					.onlyAttributePricing()
 					.onlyValidPrices(true)
@@ -159,7 +160,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 			}
 		}
 
-		return ProductPrices.newQuery(plv)
+		return ProductPrices.newQuery(plvId)
 				.setProductId(productId)
 				.onlyAttributePricing()
 				.onlyValidPrices(true)

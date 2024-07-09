@@ -4,9 +4,11 @@ import com.google.common.base.Predicates;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -53,48 +55,72 @@ public class ProductFilterUtil
 {
 	private static final AdMessageKey MSG_FILTER_CAPTION = AdMessageKey.of("Product");
 
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	
 	public static DocumentFilterDescriptor createFilterDescriptor()
 	{
 		final DocumentFilterParamDescriptor.Builder productNameParameter = DocumentFilterParamDescriptor.builder()
 				.fieldName(ProductFilterVO.PARAM_ProductName)
-				.displayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_ProductName))
+				.displayName(msgBL.translatable(I_MD_Cockpit.COLUMNNAME_ProductName))
 				.widgetType(DocumentFieldWidgetType.Text)
 				.operator(Operator.LIKE_I);
 
 		final DocumentFilterParamDescriptor.Builder productValueParameter = DocumentFilterParamDescriptor.builder()
 				.fieldName(I_MD_Cockpit.COLUMNNAME_ProductValue)
-				.displayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_ProductValue))
+				.displayName(msgBL.translatable(I_MD_Cockpit.COLUMNNAME_ProductValue))
 				.widgetType(DocumentFieldWidgetType.Text)
 				.operator(Operator.LIKE_I);
 
+		final DocumentFilterParamDescriptor.Builder productParameter = DocumentFilterParamDescriptor.builder()
+				.fieldName(I_M_Product.COLUMNNAME_M_Product_ID)
+				.displayName(msgBL.translatable(I_M_Product.COLUMNNAME_M_Product_ID))
+				.widgetType(DocumentFieldWidgetType.Lookup)
+				.lookupDescriptor(LookupDescriptorProviders.sharedInstance().searchInTable(I_M_Product.Table_Name).provideForFilter())
+				.operator(Operator.EQUAL);
+
 		final DocumentFilterParamDescriptor.Builder productCategoryParameter = DocumentFilterParamDescriptor.builder()
 				.fieldName(I_M_Product.COLUMNNAME_M_Product_Category_ID)
-				.displayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_M_Product_Category_ID))
+				.displayName(msgBL.translatable(I_M_Product.COLUMNNAME_M_Product_Category_ID))
 				.widgetType(DocumentFieldWidgetType.Lookup)
 				.lookupDescriptor(LookupDescriptorProviders.sharedInstance().searchInTable(I_M_Product_Category.Table_Name).provideForFilter())
 				.operator(Operator.EQUAL);
 
 		final DocumentFilterParamDescriptor.Builder isPurchasedParameter = DocumentFilterParamDescriptor.builder()
 				.fieldName(I_M_Product.COLUMNNAME_IsPurchased)
-				.displayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_IsPurchased))
+				.displayName(msgBL.translatable(I_M_Product.COLUMNNAME_IsPurchased))
 				.widgetType(DocumentFieldWidgetType.YesNo)
 				.operator(Operator.EQUAL);
 
 		final DocumentFilterParamDescriptor.Builder isSoldParameter = DocumentFilterParamDescriptor.builder()
 				.fieldName(I_M_Product.COLUMNNAME_IsSold)
-				.displayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_IsSold))
+				.displayName(msgBL.translatable(I_M_Product.COLUMNNAME_IsSold))
 				.widgetType(DocumentFieldWidgetType.YesNo)
 				.operator(Operator.EQUAL);
 
+		final DocumentFilterParamDescriptor.Builder isActive = DocumentFilterParamDescriptor.builder()
+				.fieldName(I_M_Product.COLUMNNAME_IsActive)
+				.displayName(msgBL.translatable(I_M_Product.COLUMNNAME_IsActive))
+				.widgetType(DocumentFieldWidgetType.YesNo)
+				.operator(Operator.EQUAL);
+
+		final DocumentFilterParamDescriptor.Builder isDiscontinued = DocumentFilterParamDescriptor.builder()
+				.fieldName(I_M_Product.COLUMNNAME_Discontinued)
+				.displayName(msgBL.translatable(I_M_Product.COLUMNNAME_Discontinued))
+				.widgetType(DocumentFieldWidgetType.YesNo)
+				.operator(Operator.EQUAL);
+		
 		return DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)
 				.setFilterId(ProductFilterVO.FILTER_ID)
-				.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_FILTER_CAPTION))
+				.setDisplayName(msgBL.getTranslatableMsgText(MSG_FILTER_CAPTION))
 				.addParameter(productNameParameter)
 				.addParameter(productValueParameter)
+				.addParameter(productParameter)
 				.addParameter(productCategoryParameter)
 				.addParameter(isPurchasedParameter)
 				.addParameter(isSoldParameter)
+				.addParameter(isActive)
+				.addParameter(isDiscontinued)
 				.build();
 	}
 
@@ -105,6 +131,16 @@ public class ProductFilterUtil
 				.orElse(ProductFilterVO.EMPTY);
 	}
 
+	@NonNull
+	public static DocumentFilter createFilterActiveProducts()
+	{
+		return DocumentFilter.builder()
+				.setFilterId(ProductFilterVO.FILTER_ID)
+				.setCaption(msgBL.translatable(ProductFilterVO.PARAM_IsActive))
+				.addParameter(DocumentFilterParam.ofNameOperatorValue(ProductFilterVO.PARAM_IsActive, Operator.EQUAL, true))
+				.build();
+	}
+
 	public static ProductFilterVO extractProductFilterVO(@NonNull final DocumentFilter filter)
 	{
 		Check.assume(ProductFilterVO.FILTER_ID.equals(filter.getFilterId()), "Filter ID is {} but it was {}", ProductFilterVO.FILTER_ID, filter);
@@ -112,9 +148,12 @@ public class ProductFilterUtil
 		return ProductFilterVO.builder()
 				.productName(filter.getParameterValueAsString(ProductFilterVO.PARAM_ProductName, null))
 				.productValue(filter.getParameterValueAsString(ProductFilterVO.PARAM_ProductValue, null))
+				.productId(filter.getParameterValueAsInt(ProductFilterVO.PARAM_M_Product_ID, -1))
 				.productCategoryId(filter.getParameterValueAsInt(ProductFilterVO.PARAM_M_Product_Category_ID, -1))
 				.isPurchased(filter.getParameterValueAsBoolean(ProductFilterVO.PARAM_IsPurchased, null))
 				.isSold(filter.getParameterValueAsBoolean(ProductFilterVO.PARAM_IsSold, null))
+				.isActive(filter.getParameterValueAsBoolean(ProductFilterVO.PARAM_IsActive, null))
+				.isDiscontinued(filter.getParameterValueAsBoolean(ProductFilterVO.PARAM_IsDiscontinued, null))
 				.build();
 	}
 
@@ -151,8 +190,7 @@ public class ProductFilterUtil
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ICompositeQueryFilter<I_M_Product> productFilter = queryBL
-				.createCompositeQueryFilter(I_M_Product.class)
-				.addOnlyActiveRecordsFilter();
+				.createCompositeQueryFilter(I_M_Product.class);
 		boolean anyRestrictionAdded = false;
 
 		final String productName = productFilterVO.getProductName();
@@ -168,6 +206,13 @@ public class ProductFilterUtil
 		{
 			final boolean ignoreCase = true;
 			productFilter.addStringLikeFilter(I_M_Product.COLUMN_Value, productValue, ignoreCase);
+			anyRestrictionAdded = true;
+		}
+
+		final ProductId productId = ProductId.ofRepoIdOrNull(productFilterVO.getProductId());
+		if (productId != null)
+		{
+			productFilter.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, productId);
 			anyRestrictionAdded = true;
 		}
 
@@ -192,6 +237,20 @@ public class ProductFilterUtil
 			anyRestrictionAdded = true;
 		}
 
+		final Boolean isActive = productFilterVO.getIsActive();
+		if (isActive != null)
+		{
+			productFilter.addEqualsFilter(I_M_Product.COLUMN_IsActive, isActive);
+			anyRestrictionAdded = true;
+		}
+
+		final Boolean isDiscontinued = productFilterVO.getIsDiscontinued();
+		if (isDiscontinued != null)
+		{
+			productFilter.addEqualsFilter(I_M_Product.COLUMN_Discontinued, isDiscontinued);
+			anyRestrictionAdded = true;
+		}
+		
 		//
 		if (!anyRestrictionAdded && nullForEmptyFilterVO)
 		{
@@ -239,6 +298,12 @@ public class ProductFilterUtil
 			}
 		}
 
+		// Product
+		if (filterVO.getProductId() > 0 && product.getM_Product_ID() != filterVO.getProductId())
+		{
+			return false;
+		}
+
 		// Product Category
 		if (filterVO.getProductCategoryId() > 0 && product.getM_Product_Category_ID() != filterVO.getProductCategoryId())
 		{
@@ -257,6 +322,18 @@ public class ProductFilterUtil
 			return false;
 		}
 
+		// IsActive
+		if (filterVO.getIsActive() != null && filterVO.getIsActive() != product.isActive())
+		{
+			return false;
+		}
+
+		// Discontinued
+		if (filterVO.getIsDiscontinued() != null && filterVO.getIsDiscontinued() != product.isDiscontinued())
+		{
+			return false;
+		}
+		
 		return true;
 	}
 }

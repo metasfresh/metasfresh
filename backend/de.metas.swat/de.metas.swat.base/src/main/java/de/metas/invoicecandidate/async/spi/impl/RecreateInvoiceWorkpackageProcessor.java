@@ -23,10 +23,12 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
+import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
@@ -52,6 +54,7 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final ICommissionTriggerService commissionTriggerService = SpringContextHolder.instance.getBean(ICommissionTriggerService.class);
 
@@ -59,15 +62,18 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 	private static final AdMessageKey MSG_SKIPPED_INVOICE_DUE_TO_COMMISSION = AdMessageKey.of("MSG_SKIPPED_INVOICE_DUE_TO_COMMISSION");
 
 	@Override
+	public boolean isRunInTransaction() {return false;}
+
+	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, @Nullable final String trxName_IGNORED)
 	{
 		final int pinstanceInt = getParameters().getParameterAsInt(I_AD_PInstance.COLUMNNAME_AD_PInstance_ID, workpackage.getAD_PInstance_ID());
 		Check.assume(pinstanceInt > 0, "pinstanceInt>=0 on workpackage={}", workpackage);
-
 		final PInstanceId pinstanceId = PInstanceId.ofRepoId(pinstanceInt);
 
 		Check.assume(workpackage.getC_Async_Batch_ID() > 0, "workpackage.getC_Async_Batch_ID() > 0 for workpackage=", workpackage);
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(workpackage.getC_Async_Batch_ID());
+		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
 		final ILockCommand elementsLocker = lockManager.lock()
 				.setOwner(LockOwner.newOwner(getClass().getSimpleName()))
@@ -77,45 +83,61 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 
 		try (final ILockAutoCloseable ignored = elementsLocker.acquire().asAutoCloseable())
 		{
-			processWorkPackage0(pinstanceId, asyncBatchId);
+			processWorkPackage0(pinstanceId, asyncBatch);
 		}
 
 		return Result.SUCCESS;
 	}
 
-	private void processWorkPackage0(@NonNull final PInstanceId pinstanceId, @NonNull final AsyncBatchId asyncBatchId)
+	private void processWorkPackage0(@NonNull final PInstanceId pinstanceId, @NonNull final I_C_Async_Batch asyncBatch)
 	{
-		final Iterator<I_C_Invoice> invoiceIterator = retrieveSelection(pinstanceId);
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
+		final Iterator<I_C_Invoice> invoiceIterator = retrieveSelection(pinstanceId);
 		while (invoiceIterator.hasNext())
 		{
 			final I_C_Invoice invoice = invoiceIterator.next();
 
-			if (!canVoidPaidInvoice(invoice))
+			if (!canReversePaidInvoice(invoice))
 			{
-				Loggables.withLogger(logger, Level.DEBUG).addLog("C_Invoice_ID={}: Skipping paid invoice because we can't void it.", invoice.getC_Invoice_ID());
+				loggable.addLog("C_Invoice_ID={}: Skipping paid invoice because we can't reverse it.", invoice.getC_Invoice_ID());
 				continue;
 			}
 
-			final Set<InvoiceCandidateId> invoiceCandIds = invoiceCandBL.voidAndReturnInvoiceCandIds(invoice);
-
+			final Set<InvoiceCandidateId> invoiceCandIds = reverseAndReturnInvoiceCandIds(invoice);
+			loggable.addLog("C_Invoice_ID={}: reversal done",invoice.getC_Invoice_ID());
 			if (invoiceCandIds.isEmpty())
 			{
-				Loggables.withLogger(logger, Level.DEBUG).addLog("C_Invoice_ID={}: Skipping invoice that is not based on invoice candidates.", invoice.getC_Invoice_ID());
+				loggable.addLog("C_Invoice_ID={}: Skipping invoice from re-invoicing because it is not based on invoice candidates.", invoice.getC_Invoice_ID());
 				continue;
 			}
 
-			invoiceCandIds.forEach(invoiceCandId -> invoiceCandBL.setAsyncBatch(invoiceCandId, asyncBatchId));
-
-			final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
-
-			invoiceCandBL.enqueueForInvoicing()
-					.setContext(getCtx())
-					.setC_Async_Batch(asyncBatch)
-					.setInvoicingParams(getIInvoicingParams())
-					.setFailIfNothingEnqueued(true)
-					.enqueueInvoiceCandidateIds(invoiceCandIds);
+			loggable.addLog("C_Invoice_ID={}: Start enqueueing invoice candidates for re-invoicing", invoice.getC_Invoice_ID());
+			enqueueForInvoicing(invoiceCandIds, asyncBatch);
+			loggable.addLog("C_Invoice_ID={}: Done enqueueing invoice candidates for re-invoicing", invoice.getC_Invoice_ID());
 		}
+	}
+
+	private Set<InvoiceCandidateId> reverseAndReturnInvoiceCandIds(final I_C_Invoice invoice)
+	{
+		// NOTE: we have to separate voidAndReturnInvoiceCandIds and enqueueForInvoicing in 2 transactions because
+		// InvoiceCandidateEnqueuer is calling updateSelectionBeforeEnqueueing in a new transaction (for some reason?!?)
+		// and that is introducing a deadlock in case we are also changing C_Invoice_Candidate table here.
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		return trxManager.callInNewTrx(() -> invoiceCandBL.reverseAndReturnInvoiceCandIds(invoice));
+	}
+
+	private void enqueueForInvoicing(final Set<InvoiceCandidateId> invoiceCandIds, final @NonNull I_C_Async_Batch asyncBatch)
+	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		invoiceCandBL.enqueueForInvoicing()
+				.setContext(getCtx())
+				.setC_Async_Batch(asyncBatch)
+				.setInvoicingParams(getIInvoicingParams())
+				.setFailIfNothingEnqueued(true)
+				.enqueueInvoiceCandidateIds(invoiceCandIds);
 	}
 
 	@NonNull
@@ -128,7 +150,7 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 				.iterate(I_C_Invoice.class);
 	}
 
-	private boolean canVoidPaidInvoice(@NonNull final I_C_Invoice invoice)
+	private boolean canReversePaidInvoice(@NonNull final I_C_Invoice invoice)
 	{
 		final I_C_Invoice inv = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 

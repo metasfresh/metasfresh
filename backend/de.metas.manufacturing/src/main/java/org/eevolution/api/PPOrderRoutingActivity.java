@@ -5,6 +5,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
+import de.metas.material.planning.pporder.PPOrderTargetPlanningStatus;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
@@ -71,6 +72,7 @@ public final class PPOrderRoutingActivity
 	private final boolean milestone;
 	@NonNull private final PPAlwaysAvailableToUser alwaysAvailableToUser;
 	@Nullable private final UserInstructions userInstructions;
+	@Nullable private final PPOrderTargetPlanningStatus targetPlanningStatus;
 
 	@Nullable private PPRoutingActivityTemplateId activityTemplateId;
 

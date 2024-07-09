@@ -255,6 +255,19 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	public boolean isProductPriceExistsInSystem(final PricingSystemId pricingSystemId, final SOTrx soTrx, final ProductId productId)
+	{
+		final ImmutableSet<PriceListId> priceListIds = retrievePriceListsCollectionByPricingSystemId(pricingSystemId).filterAndListIds(soTrx);
+		return queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+				.addInArrayFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID,priceListIds)
+				.andCollectChildren(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, I_M_ProductPrice.class)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_IsActive, true)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
 	public PriceListId retrievePriceListIdByPricingSyst(
 			@Nullable final PricingSystemId pricingSystemId,
 			final CountryId countryId,
@@ -334,6 +347,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	@Nullable
 	public PriceListVersionId retrievePriceListVersionIdOrNull(
 			@NonNull final PriceListId priceListId,
 			@NonNull final ZonedDateTime date,
@@ -921,13 +935,13 @@ public class PriceListDAO implements IPriceListDAO
 
 	/**
 	 * @param productFilter    when running from a process, you can get an instance of this filter with {@code final IQueryFilter<I_M_Product> queryFilterOrElseFalse = getProcessInfo().getQueryFilterOrElseFalse();}
-	 * @param dateFrom         the method updates product-prices with a PLV that is valid at or after the given date.
+	 * @param dateFrom         the method updates product-prices with a PLV that is valid at or after the given date, if missing all product-prices are updated
 	 * @param newIsActiveValue {@code M_ProductPrice.IsActive} is set this the given value for all matching product prices.
 	 */
 	@Override
 	public void updateProductPricesIsActive(
 			@NonNull final IQueryFilter<I_M_Product> productFilter,
-			@NonNull final LocalDate dateFrom,
+			@Nullable final LocalDate dateFrom,
 			final boolean newIsActiveValue)
 	{
 
@@ -969,8 +983,21 @@ public class PriceListDAO implements IPriceListDAO
 						DateTruncQueryFilterModifier.DAY);
 	}
 
-	private IQuery<I_M_ProductPrice> createProductPriceQueryForDiscontinuedProduct(@NonNull final IQueryFilter<I_M_Product> productFilter, @NonNull final LocalDate dateFrom)
+	@NonNull
+	private IQuery<I_M_ProductPrice> createProductPriceQueryForDiscontinuedProduct(
+			@NonNull final IQueryFilter<I_M_Product> productFilter,
+			@Nullable final LocalDate dateFrom)
 	{
+		final IQueryBuilder<I_M_ProductPrice> queryBuilder = queryBL.createQueryBuilder(I_M_Product.class)
+				.filter(productFilter)
+				.andCollectChildren(I_M_ProductPrice.COLUMNNAME_M_Product_ID, I_M_ProductPrice.class);
+
+		if (dateFrom == null)
+		{
+			return queryBuilder
+					.create();
+		}
+		
 		final IQuery<I_M_PriceList_Version> currentPriceListVersionQuery = currentPriceListVersionQuery(dateFrom);
 
 		final IQueryFilter<I_M_PriceList_Version> futurePriceListVersionFilter = futurePriceListVersionFilter(dateFrom);
@@ -981,12 +1008,9 @@ public class PriceListDAO implements IPriceListDAO
 				.filter(futurePriceListVersionFilter)
 				.create();
 
-		return queryBL.createQueryBuilder(I_M_Product.class)
-				.filter(productFilter)
-				.andCollectChildren(I_M_ProductPrice.COLUMNNAME_M_Product_ID, I_M_ProductPrice.class)
+		return queryBuilder
 				.addInSubQueryFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, I_M_PriceList_Version.COLUMNNAME_M_PriceList_Version_ID, priceListVersionQuery)
 				.create();
-
 	}
 
 	private void invalidateCacheForProductPrice(final int updatedRecords, final IQuery<I_M_ProductPrice> productPriceQuery)

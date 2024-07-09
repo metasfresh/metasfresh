@@ -26,8 +26,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
-import de.metas.contracts.modular.settings.ModuleConfigId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
@@ -43,6 +43,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @Value
@@ -53,6 +54,12 @@ public class LogEntryCreateRequest
 
 	@Nullable
 	ProductId productId;
+
+	@Nullable
+	ProductId initialProductId;
+
+	@NonNull
+	String productName;
 
 	@NonNull
 	TableRecordReference referencedRecord;
@@ -93,6 +100,15 @@ public class LogEntryCreateRequest
 	LocalDateAndOrgId transactionDate;
 
 	@Nullable
+	Integer storageDays;
+
+	@Nullable
+	BigDecimal userElementNumber1;
+
+	@Nullable
+	BigDecimal userElementNumber2;
+
+	@Nullable
 	InvoiceCandidateId invoiceCandidateId;
 
 	@NonNull YearId year;
@@ -104,7 +120,7 @@ public class LogEntryCreateRequest
 	ModularContractTypeId modularContractTypeId;
 
 	@NonNull
-	ModuleConfigId configId;
+	ModularContractModuleId configModuleId;
 
 	@Nullable
 	ProductPrice priceActual;
@@ -114,10 +130,44 @@ public class LogEntryCreateRequest
 
 	boolean isBillable;
 
-	@Builder
+	@NonNull
+	public static LogEntryCreateRequest ofEntry(@NonNull final ModularContractLogEntry entry)
+	{
+		return LogEntryCreateRequest.builder()
+				.contractId(entry.getContractId())
+				.productId(entry.getProductId())
+				.initialProductId(entry.getInitialProductId())
+				.productName(entry.getProductName())
+				.referencedRecord(entry.getReferencedRecord())
+				.collectionPointBPartnerId(entry.getCollectionPointBPartnerId())
+				.producerBPartnerId(entry.getProducerBPartnerId())
+				.invoicingBPartnerId(entry.getInvoicingBPartnerId())
+				.warehouseId(entry.getWarehouseId())
+				.documentType(entry.getDocumentType())
+				.contractType(entry.getContractType())
+				.soTrx(entry.getSoTrx())
+				.processed(entry.isProcessed())
+				.quantity(entry.getQuantity())
+				.amount(entry.getAmount())
+				.transactionDate(entry.getTransactionDate())
+				.storageDays(entry.getStorageDays())
+				.invoiceCandidateId(entry.getInvoiceCandidateId())
+				.year(entry.getYear())
+				.description(entry.getDescription())
+				.modularContractTypeId(entry.getModularContractTypeId())
+				.configModuleId(entry.getModularContractModuleId())
+				.priceActual(entry.getPriceActual())
+				.invoicingGroupId(entry.getInvoicingGroupId())
+				.isBillable(entry.isBillable())
+				.build();
+	}
+
+	@Builder(toBuilder = true)
 	public LogEntryCreateRequest(
 			@Nullable final FlatrateTermId contractId,
 			@Nullable final ProductId productId,
+			@Nullable final ProductId initialProductId,
+			@NonNull final String productName,
 			@NonNull final TableRecordReference referencedRecord,
 			@Nullable final LogSubEntryId subEntryId,
 			@Nullable final BPartnerId collectionPointBPartnerId,
@@ -131,14 +181,17 @@ public class LogEntryCreateRequest
 			@Nullable final Quantity quantity,
 			@Nullable final Money amount,
 			@NonNull final LocalDateAndOrgId transactionDate,
+			@Nullable final Integer storageDays,
 			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final YearId year,
 			@Nullable final String description,
 			@Nullable final ModularContractTypeId modularContractTypeId,
-			@NonNull final ModuleConfigId configId,
+			@NonNull final ModularContractModuleId configModuleId,
 			@Nullable final ProductPrice priceActual,
 			@Nullable final InvoicingGroupId invoicingGroupId,
-			@Nullable final Boolean isBillable)
+			@Nullable final Boolean isBillable,
+			@Nullable BigDecimal userElementNumber1,
+			@Nullable BigDecimal userElementNumber2)
 	{
 		if (amount != null && priceActual != null)
 		{
@@ -151,6 +204,8 @@ public class LogEntryCreateRequest
 		}
 
 		this.contractId = contractId;
+		this.initialProductId = initialProductId;
+		this.productName = productName;
 		this.productId = productId;
 		this.referencedRecord = referencedRecord;
 		this.subEntryId = subEntryId;
@@ -165,14 +220,17 @@ public class LogEntryCreateRequest
 		this.quantity = quantity;
 		this.amount = amount;
 		this.transactionDate = transactionDate;
+		this.storageDays = storageDays;
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.year = year;
 		this.description = description;
 		this.modularContractTypeId = modularContractTypeId;
-		this.configId = configId;
+		this.configModuleId = configModuleId;
 		this.priceActual = priceActual;
 		this.invoicingGroupId = invoicingGroupId;
 		this.isBillable = isBillable != null ? isBillable : true;
+		this.userElementNumber1 = userElementNumber1;
+		this.userElementNumber2 = userElementNumber2;
 	}
 
 	@NonNull

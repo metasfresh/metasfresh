@@ -44,6 +44,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -118,6 +119,8 @@ public class PaymentBL implements IPaymentBL
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+
+	private static final AdMessageKey MSG_PaymentDocTypeInvoiceInconsistent = AdMessageKey.of("PaymentDocTypeInvoiceInconsistent");
 
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
@@ -684,7 +687,7 @@ public class PaymentBL implements IPaymentBL
 		{
 			return;
 		}
-		final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID()));
+		final I_C_DocType docType = docTypeDAO.getRecordById(DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID()));
 		paymentDAO.updateDiscountAndPayment(payment, invoice.getC_Invoice_ID(), docType);
 	}
 
@@ -944,7 +947,7 @@ public class PaymentBL implements IPaymentBL
 			// task: 07564 the SOtrx flags don't match, but that's OK *if* the invoice i a credit memo (either for the vendor or customer side)
 			if (!invoiceBL.isCreditMemo(invoice))
 			{
-				throw new AdempiereException("@PaymentDocTypeInvoiceInconsistent@");
+				throw new AdempiereException(MSG_PaymentDocTypeInvoiceInconsistent);
 			}
 		}
 
@@ -964,7 +967,7 @@ public class PaymentBL implements IPaymentBL
 
 		if (order.isSOTrx() != docType.isSOTrx())
 		{
-			throw new AdempiereException("@PaymentDocTypeInvoiceInconsistent@");
+			throw new AdempiereException(MSG_PaymentDocTypeInvoiceInconsistent);
 		}
 	}
 
