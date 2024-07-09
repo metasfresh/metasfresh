@@ -19,13 +19,6 @@ jobs:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
           config-args: --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-      - name: testspace setup
-        run: |
-          touch github_run.txt
-          echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
-          echo pipeline $PIPELINE_VERSION >> github_run.txt
-          echo ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }} >> github_run.txt 
-          testspace github_run.txt
       - name: sanitize-ref-name
         id: sanitize
         env:
@@ -75,6 +68,13 @@ jobs:
           echo '* find more information at https://github.com/metasfresh/metasfresh/tree/${{ github.ref_name }}/docker-builds/README.md' >> $GITHUB_STEP_SUMMARY
           echo '* artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
           echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
+      - name: testspace setup
+        run: |
+          touch github_run.txt
+          echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
+          echo pipeline $PIPELINE_VERSION >> github_run.txt
+          echo ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }} >> github_run.txt 
+          testspace github_run.txt
 
   java:
     runs-on: ubuntu-latest
