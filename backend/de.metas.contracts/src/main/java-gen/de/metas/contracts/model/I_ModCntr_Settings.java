@@ -1,5 +1,6 @@
 package de.metas.contracts.model;
 
+import java.math.BigDecimal;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ModCntr_Settings
@@ -26,6 +27,27 @@ public interface I_ModCntr_Settings
 	int getAD_Client_ID();
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Additional interest days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAddInterestDays (int AddInterestDays);
+
+	/**
+	 * Get Additional interest days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAddInterestDays();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_AddInterestDays = new ModelColumn<>(I_ModCntr_Settings.class, "AddInterestDays", null);
+	String COLUMNNAME_AddInterestDays = "AddInterestDays";
 
 	/**
 	 * Set Organisation.
@@ -129,6 +151,50 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_C_Year_ID = "C_Year_ID";
 
 	/**
+	 * Set Interest rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setInterestRate (BigDecimal InterestRate);
+
+	/**
+	 * Get Interest rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getInterestRate();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_InterestRate = new ModelColumn<>(I_ModCntr_Settings.class, "InterestRate", null);
+	String COLUMNNAME_InterestRate = "InterestRate";
+
+	/**
+	 * Set Interim price %.
+	 * Set the interim contract specific price to given percentage of modular price for the raw product.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setInterimPricePercent (BigDecimal InterimPricePercent);
+
+	/**
+	 * Get Interim price %.
+	 * Set the interim contract specific price to given percentage of modular price for the raw product.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getInterimPricePercent();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_InterimPricePercent = new ModelColumn<>(I_ModCntr_Settings.class, "InterimPricePercent", null);
+	String COLUMNNAME_InterimPricePercent = "InterimPricePercent";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -175,6 +241,26 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
+	 * Set Co-Product.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Co_Product_ID (int M_Co_Product_ID);
+
+	/**
+	 * Get Co-Product.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Co_Product_ID();
+
+	String COLUMNNAME_M_Co_Product_ID = "M_Co_Product_ID";
+
+	/**
 	 * Set Modular Contract Settings.
 	 *
 	 * <br>Type: ID
@@ -199,7 +285,7 @@ public interface I_ModCntr_Settings
 	 * Set Pricing System.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setM_PricingSystem_ID (int M_PricingSystem_ID);
@@ -208,7 +294,7 @@ public interface I_ModCntr_Settings
 	 * Get Pricing System.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getM_PricingSystem_ID();
@@ -216,26 +302,44 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
-	 * Set Product.
-	 * Product, Service, Item
+	 * Set Processed Product.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_ID (int M_Product_ID);
+	void setM_Processed_Product_ID (int M_Processed_Product_ID);
 
 	/**
-	 * Get Product.
-	 * Product, Service, Item
+	 * Get Processed Product.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Processed_Product_ID();
+
+	String COLUMNNAME_M_Processed_Product_ID = "M_Processed_Product_ID";
+
+	/**
+	 * Set Raw Product.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_Product_ID();
+	void setM_Raw_Product_ID (int M_Raw_Product_ID);
 
-	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	/**
+	 * Get Raw Product.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Raw_Product_ID();
+
+	String COLUMNNAME_M_Raw_Product_ID = "M_Raw_Product_ID";
 
 	/**
 	 * Set Name.
@@ -257,6 +361,27 @@ public interface I_ModCntr_Settings
 
 	ModelColumn<I_ModCntr_Settings, Object> COLUMN_Name = new ModelColumn<>(I_ModCntr_Settings.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Storage Cost Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setStorageCostStartDate (java.sql.Timestamp StorageCostStartDate);
+
+	/**
+	 * Get Storage Cost Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getStorageCostStartDate();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_StorageCostStartDate = new ModelColumn<>(I_ModCntr_Settings.class, "StorageCostStartDate", null);
+	String COLUMNNAME_StorageCostStartDate = "StorageCostStartDate";
 
 	/**
 	 * Get Updated.

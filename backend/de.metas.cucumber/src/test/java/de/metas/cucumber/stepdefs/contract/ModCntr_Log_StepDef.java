@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_I_ModCntr_Log;
+import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Type;
@@ -87,7 +89,6 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_ModCntr_InvoicingGroup;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
 
@@ -98,7 +99,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.cucumber.stepdefs.StepDefUtil.writeRowAsString;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class ModCntr_Log_StepDef
@@ -156,6 +157,8 @@ public class ModCntr_Log_StepDef
 	private final M_InOut_StepDefData inOutTable;
 	@NonNull
 	private final ModCntr_InvoicingGroup_StepDefData invoicingGroupTable;
+	@NonNull
+	private final I_ModCntr_Log_StepDefData importModCntrTable;
 
 	@And("^after not more than (.*)s, ModCntr_Logs are found:$")
 	public void validateModCntr_Logs(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
@@ -254,6 +257,7 @@ public class ModCntr_Log_StepDef
 			case I_C_InvoiceLine.Table_Name -> recordId = invoiceLineTable.get(recordIdentifier).getC_InvoiceLine_ID();
 			case I_C_Flatrate_Term.Table_Name -> recordId = flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID();
 			case I_M_Shipping_NotificationLine.Table_Name -> recordId = shippingNotificationLineStepDefData.get(recordIdentifier).getM_Shipping_NotificationLine_ID();
+			case I_I_ModCntr_Log.Table_Name -> recordId = importModCntrTable.get(recordIdentifier).getI_ModCntr_Log_ID();
 			default -> throw new AdempiereException("Unsupported TableName !")
 					.appendParametersToMessage()
 					.setParameter("TableName", tableName);

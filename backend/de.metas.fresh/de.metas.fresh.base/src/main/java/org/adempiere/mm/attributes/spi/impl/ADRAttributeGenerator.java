@@ -58,7 +58,7 @@ public class ADRAttributeGenerator extends AbstractAttributeValueGenerator
 	 * @return <code>false</code>, because ADR is a List attribute.
 	 */
 	@Override
-	public boolean canGenerateValue(Properties ctx, IAttributeSet attributeSet, I_M_Attribute attribute)
+	public boolean canGenerateValue(final Properties ctx, final IAttributeSet attributeSet, final I_M_Attribute attribute)
 	{
 		return false;
 	}
@@ -67,7 +67,7 @@ public class ADRAttributeGenerator extends AbstractAttributeValueGenerator
 	 * Creates an ADR attribute value for the C_BPartner which is specified by <code>tableId</code> and <code>recordId</code>.
 	 */
 	@Override
-	public AttributeListValue generateAttributeValue(final Properties ctx, final int tableId, final int recordId, boolean isSOTrx, final String trxName)
+	public AttributeListValue generateAttributeValue(final Properties ctx, final int tableId, final int recordId, final boolean isSOTrx, final String trxName)
 	{
 		final IContextAware context = new PlainContextAware(ctx, trxName);
 		final ITableRecordReference record = TableRecordReference.of(tableId, recordId);

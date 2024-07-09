@@ -121,7 +121,7 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Allow Picking any HU.
+	 * Set Allow picking any HU.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -130,7 +130,7 @@ public interface I_MobileUI_UserProfile_Picking
 	void setIsAllowPickingAnyHU (boolean IsAllowPickingAnyHU);
 
 	/**
-	 * Get Allow Picking any HU.
+	 * Get Allow picking any HU.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -140,6 +140,27 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowPickingAnyHU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowPickingAnyHU", null);
 	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
+
+	/**
+	 * Set Always split HU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAlwaysSplitHUsEnabled (boolean IsAlwaysSplitHUsEnabled);
+
+	/**
+	 * Get Always split HU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAlwaysSplitHUsEnabled();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAlwaysSplitHUsEnabled = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAlwaysSplitHUsEnabled", null);
+	String COLUMNNAME_IsAlwaysSplitHUsEnabled = "IsAlwaysSplitHUsEnabled";
 
 	/**
 	 * Set Mobile UI Picking Profile.

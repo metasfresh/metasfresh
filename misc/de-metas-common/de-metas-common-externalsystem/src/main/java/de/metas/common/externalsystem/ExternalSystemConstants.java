@@ -179,5 +179,11 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_TARGET_DIRECTORY = "TargetDirectory";
 	public static final String PARAM_PRINTING_QUEUE_ID = "PrintingQueueId";
+	
+	public static final String PARAM_LOCAL_FILE_WAREHOUSE_FILE_NAME_PATTERN = "LocalFileWarehouseFileNamePattern";
+	
+	public static final String PARAM_LOCAL_FILE_PURCHASE_ORDER_FILE_NAME_PATTERN = "LocalFilePurchaseOrderFileNamePattern";
+
+	public static final String PARAM_TAX_CATEGORY_MAPPINGS = "TaxCategoryMappings";
 }
 

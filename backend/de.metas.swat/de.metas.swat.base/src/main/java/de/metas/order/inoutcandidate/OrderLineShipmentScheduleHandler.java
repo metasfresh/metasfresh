@@ -228,7 +228,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		updateShipmentScheduleFromOrder(shipmentSchedule, orderRecord);
 
-		final Quantity qtyReservedInPriceUOM = orderLineBL.convertQtyToPriceUOM(Quantitys.create(orderLine.getQtyReserved(), productId), orderLine);
+		final Quantity qtyReservedInPriceUOM = orderLineBL.convertQtyToPriceUOM(Quantitys.of(orderLine.getQtyReserved(), productId), orderLine);
 
 		shipmentSchedule.setLineNetAmt(qtyReservedInPriceUOM.toBigDecimal().multiply(orderLine.getPriceActual()));
 

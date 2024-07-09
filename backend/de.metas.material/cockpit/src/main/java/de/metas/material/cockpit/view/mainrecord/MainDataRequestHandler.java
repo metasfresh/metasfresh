@@ -90,13 +90,16 @@ public class MainDataRequestHandler
 			final I_MD_Cockpit dataRecord,
 			final UpdateMainDataRequest dataUpdateRequest)
 	{
+		dataRecord.setQtyOrdered_SalesOrder_AtDate(computeSum(dataRecord.getQtyOrdered_SalesOrder_AtDate(), dataUpdateRequest.getOrderedSalesQty()));
+		dataRecord.setQtyOrdered_PurchaseOrder_AtDate(computeSum(dataRecord.getQtyOrdered_PurchaseOrder_AtDate(), dataUpdateRequest.getOrderedPurchaseQty()));
+
 		// was QtyMaterialentnahme
-		dataRecord.setQtyMaterialentnahme_AtDate(
-				stripTrailingDecimalZeros(dataRecord.getQtyMaterialentnahme_AtDate().add(dataUpdateRequest.getDirectMovementQty())));
+		dataRecord.setQtyMaterialentnahme_AtDate(computeSum(dataRecord.getQtyMaterialentnahme_AtDate(), dataUpdateRequest.getDirectMovementQty()));
 
 		// was PMM_QtyPromised_OnDate
-		dataRecord.setPMM_QtyPromised_OnDate_AtDate(stripTrailingDecimalZeros(
-				dataRecord.getPMM_QtyPromised_OnDate_AtDate().add(dataUpdateRequest.getOfferedQty())));
+		dataRecord.setPMM_QtyPromised_OnDate_AtDate(computeSum(dataRecord.getPMM_QtyPromised_OnDate_AtDate(), dataUpdateRequest.getOfferedQty()));
+
+		dataRecord.setPMM_QtyPromised_NextDay(computeSum(dataRecord.getPMM_QtyPromised_NextDay(), dataUpdateRequest.getOfferedQtyNextDay()));
 
 		// this column was not in the old data model
 		dataRecord.setQtyStockChange(stripTrailingDecimalZeros(
@@ -133,21 +136,17 @@ public class MainDataRequestHandler
 		if (dataUpdateRequest.getQtyStockEstimateCount() != null)
 		{
 			dataRecord.setQtyStockEstimateTime_AtDate(TimeUtil.asTimestamp(dataUpdateRequest.getQtyStockEstimateTime()));
+			dataRecord.setQtyStockEstimateCount_AtDate(dataUpdateRequest.getQtyStockEstimateCount());
 		}
-		else
-		{
-			dataRecord.setQtyStockEstimateTime_AtDate(null);
-		}
-		dataRecord.setQtyStockEstimateCount_AtDate(CoalesceUtil.coalesceNotNull(dataUpdateRequest.getQtyStockEstimateCount(), BigDecimal.ZERO));
 
 		final Integer qtyStockEstimateSeqNo = dataUpdateRequest.getQtyStockEstimateSeqNo();
-		if (qtyStockEstimateSeqNo == null || qtyStockEstimateSeqNo == 0)
+		if (qtyStockEstimateSeqNo != null && qtyStockEstimateSeqNo == 0)
 		{
 			dataRecord.setQtyStockEstimateSeqNo_AtDate(99999);
 		}
 		else
 		{
-			dataRecord.setQtyStockEstimateSeqNo_AtDate(qtyStockEstimateSeqNo);
+			dataRecord.setQtyStockEstimateSeqNo_AtDate(CoalesceUtil.coalesceNotNull(qtyStockEstimateSeqNo, dataRecord.getQtyStockEstimateSeqNo_AtDate(), 99999));
 		}
 	}
 

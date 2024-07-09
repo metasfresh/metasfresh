@@ -26,6 +26,7 @@ import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.comments.ViewRowCommentsSummary;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -35,6 +36,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
 import lombok.NonNull;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -112,8 +114,11 @@ public class ViewRowEditRestController
 		final DocumentId rowId = DocumentId.of(rowIdStr);
 
 		final IEditableView view = getEditableView(viewId);
-		final RowEditingContext editingCtx = createRowEditingContext(viewId, rowId);
-		view.patchViewRow(editingCtx, fieldChangeRequests);
+		try (final IAutoCloseable ignored = ViewChangesCollector.currentOrNewThreadLocalCollector(viewId))
+		{
+			final RowEditingContext editingCtx = createRowEditingContext(viewId, rowId);
+			view.patchViewRow(editingCtx, fieldChangeRequests);
+		}
 
 		final IViewRow row = view.getById(rowId);
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);

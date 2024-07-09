@@ -24,6 +24,7 @@ package de.metas.contracts.modular.interim.invoice.command;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
@@ -32,6 +33,7 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.process.FlatrateTermCreator;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
@@ -40,6 +42,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -52,8 +55,6 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.Optional;
-import java.util.function.Consumer;
 
 public class InterimInvoiceFlatrateTermCreateCommand
 {
@@ -71,8 +72,6 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	private final Instant dateTo;
 	@NonNull
 	private final FlatrateTermId modulareFlatrateTermId;
-	@Nullable
-	private final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor;
 
 	@NonNull
 	private final OrderLine orderLine;
@@ -83,6 +82,14 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	@NonNull
 	private final I_C_Flatrate_Term modularContract;
 
+	@NonNull
+	private final YearAndCalendarId yearAndCalendarId;
+	@NonNull
+	private final Percent interimPricePercent;
+
+	@NonNull
+	private final CurrencyPrecision currencyPrecision;
+
 	@Builder
 	public InterimInvoiceFlatrateTermCreateCommand(
 			@Nullable final BPartnerId bpartnerId,
@@ -92,7 +99,9 @@ public class InterimInvoiceFlatrateTermCreateCommand
 			@NonNull final Instant dateTo,
 			@NonNull final OrderLineId orderLineId,
 			@NonNull final FlatrateTermId modulareFlatrateTermId,
-			@Nullable final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor)
+			@NonNull final YearAndCalendarId yearAndCalendarId,
+			@NonNull final Percent interimPricePercent,
+			@NonNull final CurrencyPrecision currencyPrecision)
 	{
 		final OrderLineRepository orderLineRepository = SpringContextHolder.instance.getBean(OrderLineRepository.class);
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -108,7 +117,9 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		this.modulareFlatrateTermId = modulareFlatrateTermId;
 		this.product = productDAO.getById(this.productId);
 		this.modularContract = flatrateBL.getById(modulareFlatrateTermId);
-		this.beforeCompleteInterceptor = beforeCompleteInterceptor;
+		this.yearAndCalendarId = yearAndCalendarId;
+		this.interimPricePercent = interimPricePercent;
+		this.currencyPrecision = currencyPrecision;
 	}
 
 	public void execute()
@@ -140,7 +151,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		flatrateTermRecord.setContractStatus(modularContract.getContractStatus());
 		flatrateTermRecord.setMasterStartDate(TimeUtil.asTimestamp(dateFrom));
 		flatrateTermRecord.setMasterEndDate(TimeUtil.asTimestamp(dateTo));
-		flatrateTermRecord.setPriceActual(modularContract.getPriceActual());
+		flatrateTermRecord.setPriceActual(interimPricePercent.computePercentageOf(modularContract.getPriceActual(), currencyPrecision.toInt()));
 		flatrateTermRecord.setC_TaxCategory_ID(modularContract.getC_TaxCategory_ID());
 		flatrateTermRecord.setC_Order_Term(modularContract.getC_Order_Term());
 		flatrateTermRecord.setC_OrderLine_Term(modularContract.getC_OrderLine_Term());
@@ -149,11 +160,10 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		flatrateTermRecord.setDeliveryRule(modularContract.getDeliveryRule());
 		flatrateTermRecord.setDeliveryViaRule(modularContract.getDeliveryViaRule());
 		flatrateTermRecord.setC_Currency_ID(modularContract.getC_Currency_ID());
+		flatrateTermRecord.setC_Harvesting_Calendar_ID(yearAndCalendarId.calendarId().getRepoId());
+		flatrateTermRecord.setHarvesting_Year_ID(yearAndCalendarId.yearId().getRepoId());
 
 		flatrateBL.save(flatrateTermRecord);
-
-		Optional.ofNullable(beforeCompleteInterceptor).ifPresent(interceptor -> interceptor.accept(flatrateTermRecord));
-
 		flatrateBL.complete(flatrateTermRecord);
 	}
 

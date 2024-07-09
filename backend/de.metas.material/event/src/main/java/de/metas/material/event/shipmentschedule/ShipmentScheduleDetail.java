@@ -37,13 +37,16 @@ public class ShipmentScheduleDetail
 {
 	@NonNull
 	BigDecimal orderedQuantity;
-	
+
+	@NonNull
+	BigDecimal orderedQuantityDelta;
+
 	@NonNull
 	BigDecimal reservedQuantity;
 
 	@NonNull
 	BigDecimal reservedQuantityDelta;
-	
+
 	@Nullable
 	OldShipmentScheduleData oldShipmentScheduleData;
 }

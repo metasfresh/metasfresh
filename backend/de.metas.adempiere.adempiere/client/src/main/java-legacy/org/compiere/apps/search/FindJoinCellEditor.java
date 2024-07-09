@@ -78,7 +78,7 @@ class FindJoinCellEditor extends FindCellEditor implements TableCellRenderer
 		return defaultRenderer.getTableCellRendererComponent(table, displayValue, isSelected, hasFocus, row, column);
 	}
 
-	private final String getDisplayValue(final Object value)
+	private String getDisplayValue(final Object value)
 	{
 		if (value == null)
 		{

@@ -31,6 +31,7 @@ package org.adempiere.process.rpl.exp;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.service.IAppDictionaryBL;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -53,6 +54,7 @@ import org.adempiere.server.rpl.exceptions.ExportProcessorException;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Column;
@@ -80,9 +82,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
+import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -115,19 +128,27 @@ public class ExportHelper
 	public static final String MSG_EXPFormatNotFound = "EXPFormatNotFound";
 	public static final String MSG_EXPFormatLineError = "EXPFormatLineError";
 
-	/** Logger */
+	/**
+	 * Logger
+	 */
 	private static Logger log = LogManager.getLogger(ExportHelper.class);
 
-	/** XML Document */
+	/**
+	 * XML Document
+	 */
 	private Document outDocument = null;
 
 	/** Custom Date Format */
 	// private SimpleDateFormat m_customDateFormat = null;
 
-	/** Client */
+	/**
+	 * Client
+	 */
 	private int m_AD_Client_ID = -1;
 
-	/** Replication Strategy */
+	/**
+	 * Replication Strategy
+	 */
 	private I_AD_ReplicationStrategy m_rplStrategy = null;
 
 	public ExportHelper(final MClient client, final MReplicationStrategy rplStrategy)
@@ -152,6 +173,22 @@ public class ExportHelper
 		// metas: tsa: refactored
 		final MEXPFormat exportFormat = null;
 		return exportRecord(po, exportFormat, ReplicationMode, ReplicationType, ReplicationEvent);
+	}
+
+	public void exportRecord(
+			final PO po,
+			final MEXPFormat exportFormat,
+			final Integer replicationMode,
+			final String replicationType,
+			final Integer replicationEvent,
+			@Nullable final CreateAttachmentRequest attachResultRequest)
+	{
+		exportRecord(po, exportFormat, replicationMode, replicationType, replicationEvent);
+
+		if (attachResultRequest != null)
+		{
+			createAttachment(attachResultRequest);
+		}
 	}
 
 	public String exportRecord(final PO po, final MEXPFormat exportFormat, final Integer ReplicationMode, final String ReplicationType, final Integer ReplicationEvent) throws ReplicationException
@@ -748,7 +785,7 @@ public class ExportHelper
 		}
 		else if (DisplayType.isYesNo(displayType))
 		{
-			valueString = StringUtils.ofBoolean((Boolean)value,"N");
+			valueString = StringUtils.ofBoolean((Boolean)value, "N");
 		}
 		else
 		{
@@ -839,5 +876,34 @@ public class ExportHelper
 		}
 
 		return column.getAD_Reference_ID();
+	}
+
+	private void createAttachment(@NonNull final CreateAttachmentRequest request)
+	{
+		try
+		{
+			final String documentAsString = writeDocumentToString(outDocument);
+
+			final byte[] data = documentAsString.getBytes();
+			final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+			attachmentEntryService.createNewAttachment(request.getTarget(), request.getAttachmentName(), data);
+		}
+		catch (final Exception exception)
+		{
+			throw AdempiereException.wrapIfNeeded(exception);
+		}
+	}
+
+	private static String writeDocumentToString(@NonNull final Document document) throws TransformerException
+	{
+		final TransformerFactory tranFactory = TransformerFactory.newInstance();
+		final Transformer aTransformer = tranFactory.newTransformer();
+		aTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
+		final Source src = new DOMSource(document);
+		final Writer writer = new StringWriter();
+		final Result dest2 = new StreamResult(writer);
+		aTransformer.transform(src, dest2);
+
+		return writer.toString();
 	}
 }

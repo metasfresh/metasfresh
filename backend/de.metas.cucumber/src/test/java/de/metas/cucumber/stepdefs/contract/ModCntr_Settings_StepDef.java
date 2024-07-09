@@ -42,6 +42,7 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
@@ -84,7 +85,7 @@ public class ModCntr_Settings_StepDef
 	private void createModCntrSettings(@NonNull final Map<String, String> tableRow)
 	{
 		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_Name);
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
 		final String calendarIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -97,7 +98,7 @@ public class ModCntr_Settings_StepDef
 		
 		final I_ModCntr_Settings modCntrSettingsRecord = CoalesceUtil.coalesceSuppliers(
 				() -> queryBL.createQueryBuilder(I_ModCntr_Settings.class)
-						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, productRecord.getM_Product_ID())
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, calendarRecord.getC_Calendar_ID())
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearRecord.getC_Year_ID())
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, isSoTrx)
@@ -106,10 +107,11 @@ public class ModCntr_Settings_StepDef
 				() -> InterfaceWrapperHelper.newInstance(I_ModCntr_Settings.class));
 
 		modCntrSettingsRecord.setName(name);
-		modCntrSettingsRecord.setM_Product_ID(productRecord.getM_Product_ID());
+		modCntrSettingsRecord.setM_Raw_Product_ID(productRecord.getM_Product_ID());
 		modCntrSettingsRecord.setC_Calendar_ID(calendarRecord.getC_Calendar_ID());
 		modCntrSettingsRecord.setC_Year_ID(yearRecord.getC_Year_ID());
 		modCntrSettingsRecord.setIsSOTrx(isSoTrx);
+		modCntrSettingsRecord.setStorageCostStartDate(Timestamp.valueOf("2024-04-24 07:15:00"));
 
 		final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Flatrate_Conditions.COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(pricingSystemIdentifier))

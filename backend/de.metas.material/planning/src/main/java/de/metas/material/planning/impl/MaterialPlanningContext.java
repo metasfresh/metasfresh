@@ -24,6 +24,7 @@ package de.metas.material.planning.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -52,11 +53,11 @@ public final class MaterialPlanningContext implements IMaterialPlanningContext
 	@NonNull private ClientId clientId = ClientId.SYSTEM;
 	@NonNull private OrgId orgId = OrgId.ANY;  // i.e. all organizations
 	private ProductId productId;
-	private I_PP_Product_Planning productPlanning;
+	private ProductPlanning productPlanning;
 	@Nullable private ResourceId plantId;
 	@Nullable private WarehouseId warehouseId;
 	@NonNull private AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.NONE;
-	@Nullable private I_PP_Product_Planning ppOrderProductPlanning;
+	@Nullable private ProductPlanning ppOrderProductPlanning;
 
 	@VisibleForTesting
 	public MaterialPlanningContext()
@@ -76,7 +77,7 @@ public final class MaterialPlanningContext implements IMaterialPlanningContext
 	public void assertContextConsistent()
 	{
 		final ProductId contextProductId = getProductId();
-		final ProductId productPlanningProductId = ProductId.ofRepoIdOrNull(getProductPlanning().getM_Product_ID());
+		final ProductId productPlanningProductId = getProductPlanning().getProductId();
 
 		if (!ProductId.equals(contextProductId, productPlanningProductId))
 		{

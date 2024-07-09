@@ -1,11 +1,10 @@
 package de.metas.material.planning.ddorder;
 
-import org.eevolution.model.I_PP_Product_Planning;
-import org.springframework.stereotype.Service;
-
 import de.metas.material.planning.IMaterialDemandMatcher;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.util.Loggables;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -42,10 +41,10 @@ public class DDOrderDemandMatcher implements IMaterialDemandMatcher
 	@Override
 	public boolean matches(final IMaterialPlanningContext mrpContext)
 	{
-		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+		final ProductPlanning productPlanning = mrpContext.getProductPlanning();
 
 		// Check if there is a distribution network
-		if (productPlanning.getDD_NetworkDistribution_ID() <= 0)
+		if (productPlanning.getDistributionNetworkId() == null)
 		{
 			Loggables.addLog(
 					"No distribution network configured in product data planning of the given mrp context; DDOrderDemandMatcher returns false; productPlanning={}; mrpContext={}",

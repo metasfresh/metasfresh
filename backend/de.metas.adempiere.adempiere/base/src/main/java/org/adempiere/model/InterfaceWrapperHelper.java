@@ -47,7 +47,8 @@ import org.adempiere.ad.persistence.IModelClassInfo;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -72,6 +73,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -237,9 +239,9 @@ public class InterfaceWrapperHelper
 	 *
 	 * @param modelClass   model class
 	 * @param useOldValues <ul>
-	 *                                                    <li>true if old values shall be used
-	 *                                                    <li>false if model's old values flag shall BE PRESERVED. i.e. if it was "true" we shall use old values, if it was "false" we shall NOT use old values.
-	 *                                                    </ul>
+	 *                     <li>true if old values shall be used
+	 *                     <li>false if model's old values flag shall BE PRESERVED. i.e. if it was "true" we shall use old values, if it was "false" we shall NOT use old values.
+	 *                     </ul>
 	 * @deprecated Because this method is tricky and we consider to make it private, please use:
 	 * <ul>
 	 * <li>{@link #create(Object, Class)}
@@ -481,7 +483,6 @@ public class InterfaceWrapperHelper
 	 * Mark the model as staled. It means that it needs to be reloaded first in case some values need to be retrieved.
 	 * <p>
 	 * NOTE: this method is currently refreshing the model right away, because we did not implement it.
-	 *
 	 */
 	public static void markStaled(final Object model)
 	{
@@ -838,6 +839,7 @@ public class InterfaceWrapperHelper
 	 * InterfaceWrapperHelper throws it.
 	 */
 	/* package */
+
 	static class MissingTableNameException extends AdempiereException
 	{
 		private static MissingTableNameException notFound(final Class<?> modelClass)
@@ -961,10 +963,19 @@ public class InterfaceWrapperHelper
 		return modelClassInfo.getTableName() != null;
 	}
 
-	public static int getTableId(final Class<?> clazz)
+	public static int getTableId(@NonNull final Class<?> clazz)
 	{
 		final String tableName = getTableName(clazz);
-		return Services.get(IADTableDAO.class).retrieveTableId(tableName);
+		return TableIdsCache.instance.getTableId(tableName)
+				.map(AdTableId::getRepoId)
+				.orElse(-1);
+	}
+
+	public static AdTableId getAdTableId(@NonNull final Class<?> clazz)
+	{
+		final String tableName = getTableName(clazz);
+		return TableIdsCache.instance.getTableId(tableName)
+				.orElseThrow(() -> new AdempiereException("No AD_Table_ID found for " + tableName));
 	}
 
 	/**
@@ -977,8 +988,10 @@ public class InterfaceWrapperHelper
 		{
 			return -1;
 		}
-		return Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
+		return TableIdsCache.instance.getTableId(tableName)
+				.map(AdTableId::getRepoId)
+				.orElse(-1);
 	}
 
 	public static String getKeyColumnName(final Class<?> clazz)
@@ -1013,7 +1026,9 @@ public class InterfaceWrapperHelper
 	public static int getModelTableId(final Object model)
 	{
 		final String modelTableName = getModelTableName(model);
-		return Services.get(IADTableDAO.class).retrieveTableId(modelTableName);
+		return TableIdsCache.instance.getTableId(modelTableName)
+				.map(AdTableId::getRepoId)
+				.orElse(-1);
 	}
 
 	/**
@@ -1210,7 +1225,13 @@ public class InterfaceWrapperHelper
 		return getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
 
-	public static <T> Optional<T> getValue(@NonNull final Object model, final String columnName)
+	public static BigDecimal getValueAsBigDecimalOrNull(final Object model, final String columnName)
+	{
+		final Object valueObj = getValueOrNull(model, columnName);
+		return NumberUtils.asBigDecimal(valueObj);
+	}
+
+	public static <T> Optional<T> getValue(final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = true;
 		final boolean useOverrideColumnIfAvailable = false;
@@ -1407,6 +1428,7 @@ public class InterfaceWrapperHelper
 	private static final String DYNATTR_SaveDeleteDisabled = "SaveDeleteDisabled";
 
 	/**
+	 * @param model
 	 * @return true if save/delete was not disabled on purpose for given model
 	 * @see #DYNATTR_SaveDeleteDisabled
 	 */
@@ -1584,6 +1606,7 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
+	 * @param model
 	 * @return how many times given model was loaded/reloaded
 	 */
 	public static int getLoadCount(final Object model)
@@ -1689,7 +1712,6 @@ public class InterfaceWrapperHelper
 	 * If the given <code>model</code> is not null and has all the columns which are defined inside the given <code>clazz</code>'s {@link IModelClassInfo},<br>
 	 * then return an instance using {@link #create(Object, Class)}.<br>
 	 * Otherwise, return <code>null</code> .
-	 *
 	 */
 	public static <T> T asColumnReferenceAwareOrNull(final Object model,
 													 final Class<T> clazz)

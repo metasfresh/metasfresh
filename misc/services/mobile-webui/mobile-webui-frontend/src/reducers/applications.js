@@ -1,4 +1,6 @@
 import * as types from '../constants/ApplicationsActionTypes';
+import { shallowEqual, useSelector } from 'react-redux';
+import { useRouteMatch } from 'react-router-dom';
 
 const initialState = {
   availableApplications: {},
@@ -9,8 +11,22 @@ export const getAvailableApplicationsArray = (state) => {
   return availableApplicationsById ? Object.values(availableApplicationsById) : [];
 };
 
-export const getApplicationInfoById = ({ state, applicationId }) => {
-  return state.applications?.availableApplications?.[applicationId];
+const getApplicationInfoById = ({ state, applicationId }) => {
+  return state.applications?.availableApplications?.[applicationId] ?? {};
+};
+
+export const useApplicationInfo = ({ applicationId }) => {
+  const routerMatch = useRouteMatch();
+  const applicationIdEffective = applicationId ? applicationId : routerMatch.params.applicationId;
+
+  return useSelector((state) => getApplicationInfoById({ state, applicationId: applicationIdEffective }), shallowEqual);
+};
+
+export const useApplicationInfoParameters = ({ applicationId }) => {
+  return useSelector(
+    (state) => getApplicationInfoById({ state, applicationId })?.applicationParameters ?? {},
+    shallowEqual
+  );
 };
 
 export default function applications(state = initialState, action) {
@@ -19,11 +35,8 @@ export default function applications(state = initialState, action) {
     case types.POPULATE_APPLICATIONS: {
       const availableApplications = payload.applications.reduce((acc, application) => {
         acc[application.id] = {
-          id: application.id,
-          caption: application.caption,
+          ...application,
           iconClassNames: getIconClassNames(application.id),
-          requiresLaunchersQRCodeFilter: application.requiresLaunchersQRCodeFilter,
-          showFilters: application.showFilters,
         };
         return acc;
       }, {});
@@ -46,6 +59,10 @@ const getIconClassNames = (applicationId) => {
       return 'fas fa-industry';
     case 'huManager':
       return 'fas fa-boxes';
+    case 'workplaceManager':
+      return 'fas fa-location';
+    case 'scanAnything':
+      return 'fas fa-qrcode';
     default:
       return '';
   }

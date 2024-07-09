@@ -1,5 +1,6 @@
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Picking_Job
@@ -205,6 +206,46 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
+	 * Set unloading address.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Location_ID (int HandOver_Location_ID);
+
+	/**
+	 * Get unloading address.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Location_ID();
+
+	String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
+
+	/**
+	 * Set Handover partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Partner_ID (int HandOver_Partner_ID);
+
+	/**
+	 * Get Handover partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Partner_ID();
+
+	String COLUMNNAME_HandOver_Partner_ID = "HandOver_Partner_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -228,7 +269,7 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Allow Picking any HU.
+	 * Set Allow picking any HU.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -237,7 +278,7 @@ public interface I_M_Picking_Job
 	void setIsAllowPickingAnyHU (boolean IsAllowPickingAnyHU);
 
 	/**
-	 * Get Allow Picking any HU.
+	 * Get Allow picking any HU.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -312,6 +353,58 @@ public interface I_M_Picking_Job
 
 	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsReadyToReview = new ModelColumn<>(I_M_Picking_Job.class, "IsReadyToReview", null);
 	String COLUMNNAME_IsReadyToReview = "IsReadyToReview";
+
+	/**
+	 * Set LU.
+	 * Loading Unit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_LU_HU_ID (int M_LU_HU_ID);
+
+	/**
+	 * Get LU.
+	 * Loading Unit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_LU_HU_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_HU getM_LU_HU();
+
+	void setM_LU_HU(@Nullable de.metas.handlingunits.model.I_M_HU M_LU_HU);
+
+	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU> COLUMN_M_LU_HU_ID = new ModelColumn<>(I_M_Picking_Job.class, "M_LU_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_M_LU_HU_ID = "M_LU_HU_ID";
+
+	/**
+	 * Set Packvorschrift (LU).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_LU_HU_PI_ID (int M_LU_HU_PI_ID);
+
+	/**
+	 * Get Packvorschrift (LU).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_LU_HU_PI_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_HU_PI getM_LU_HU_PI();
+
+	void setM_LU_HU_PI(@Nullable de.metas.handlingunits.model.I_M_HU_PI M_LU_HU_PI);
+
+	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_M_LU_HU_PI_ID = new ModelColumn<>(I_M_Picking_Job.class, "M_LU_HU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
+	String COLUMNNAME_M_LU_HU_PI_ID = "M_LU_HU_PI_ID";
 
 	/**
 	 * Set Picking Job.

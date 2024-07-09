@@ -1,41 +1,15 @@
 package de.metas.handlingunits.allocation.transfer;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.hasXPath;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
-import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.Mutable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.FromDataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
-import org.w3c.dom.Node;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
@@ -51,14 +25,46 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.FromDataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
+import org.w3c.dom.Node;
+
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.hasXPath;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /*
  * #%L
@@ -108,6 +114,10 @@ public class HUTransformServiceReceiptCandidatesTests
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
+
+		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
+		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), qrCodeConfigurationService));
 	}
 
 	private I_M_ReceiptSchedule create_receiptSchedule_for_CU(final I_M_HU cu, final String cuQtyStr)
@@ -224,9 +234,10 @@ public class HUTransformServiceReceiptCandidatesTests
 		// invoke the method under test
 		final List<I_M_HU> newLUs = HUTransformService.newInstance(data.helper.getHUContext())
 				.tuToNewLUs(tuToSplit,
-						new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will expect the TU to be moved
+						QtyTU.ofString("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will expect the TU to be moved
 						data.piLU_Item_IFCO,
-						isOwnPackingMaterials);
+						isOwnPackingMaterials)
+				.getLURecords();
 
 		assertThat(newLUs.size(), is(1)); // we transfered 20kg, the target TUs are still IFCOs one IFCO still holds 40kg, one LU holds 5 IFCOS, so we expect one LU with one IFCO to suffice
 		// data.helper.commitAndDumpHU(newLUs.get(0));
@@ -415,7 +426,6 @@ public class HUTransformServiceReceiptCandidatesTests
 
 	/**
 	 * @task https://github.com/metasfresh/metasfresh/issues/1177
-	 *
 	 */
 	@Test
 	public void testMultipleActionsIssue1177()
@@ -508,7 +518,8 @@ public class HUTransformServiceReceiptCandidatesTests
 
 		// "Split off 2 TUs on new LU" (from the screenshot we know that the new LU has the same PI as the existing one)
 		final List<I_M_HU> secondLUs = HUTransformService.newInstance(data.helper.getHUContext())
-				.tuToNewLUs(aggregateTU, new BigDecimal("2"), piLU_Item_10_IFCOs, false);
+				.tuToNewLUs(aggregateTU, QtyTU.ofString("2"), piLU_Item_10_IFCOs, false)
+				.getLURecords();
 		assertThat(secondLUs.size(), is(1));
 		final I_M_HU secondLU = secondLUs.get(0);
 		// secondLU contains 2 x 4kg = 8kg
@@ -520,7 +531,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		verifyQuantities(new BigDecimal("40"), new BigDecimal("9"), firstLU, aggregateTU, newCU, secondLU);
 
 		// "Split off 1 TU on its own, without new LU"
-		final List<I_M_HU> singleNewTUs = HUTransformService.newInstance(data.helper.getHUContext()).tuToNewTUs(aggregateTU, BigDecimal.ONE);
+		final List<I_M_HU> singleNewTUs = HUTransformService.newInstance(data.helper.getHUContext()).tuToNewTUs(aggregateTU, QtyTU.ONE).getAllTURecords();
 		assertThat(singleNewTUs.size(), is(1));
 		final I_M_HU singleNewTU = singleNewTUs.get(0);
 		verifyQuantities(new BigDecimal("4"), new BigDecimal("1"), singleNewTU);
@@ -540,10 +551,6 @@ public class HUTransformServiceReceiptCandidatesTests
 	 * Iterates the given {@code hus} and verifies that the contained CU and TU quantities match the given {@code expectedQtyCU} and {@code expectedQtyTU}.
 	 * The method makes sure to count each HU and HU-storage only once.
 	 * The method also verifies that {@link I_M_ReceiptSchedule_Alloc} quantities match the CU qtys
-	 *
-	 * @param expectedQtyCU
-	 * @param expectedQtyTU
-	 * @param hus
 	 */
 	private void verifyQuantities(final BigDecimal expectedQtyCU, final BigDecimal expectedQtyTU, final I_M_HU... hus)
 	{

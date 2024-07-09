@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -47,10 +47,10 @@ public final class InvoiceAcct
 	public Optional<ElementValueId> getElementValueId(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final AccountConceptualName accountConceptualName,
-			@Nullable final InvoiceLineId invoiceLineId)
+			@Nullable final InvoiceAndLineId invoiceAndLineId)
 	{
 		return this.rulesOrdered.stream()
-				.filter(rule -> rule.matches(acctSchemaId, accountConceptualName, invoiceLineId))
+				.filter(rule -> rule.matches(acctSchemaId, accountConceptualName, invoiceAndLineId))
 				.findFirst()
 				.map(InvoiceAcctRule::getElementValueId);
 	}

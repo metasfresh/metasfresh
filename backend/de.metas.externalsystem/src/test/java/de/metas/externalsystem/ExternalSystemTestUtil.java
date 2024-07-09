@@ -2,7 +2,7 @@
  * #%L
  * de.metas.externalsystem
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,11 +22,9 @@
 
 package de.metas.externalsystem;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Metasfresh;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
@@ -34,8 +32,6 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_Acct_Export;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_LocalFile;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_SFTP;
 import de.metas.externalsystem.model.I_SAP_BPartnerImportSettings;
-import de.metas.product.ProductCategoryId;
-import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -152,27 +148,6 @@ public class ExternalSystemTestUtil
 		saveRecord(childRecord);
 
 		return childRecord;
-	}
-
-	@NonNull
-	@Builder(builderMethodName = "createLeichMehlProductMappingConfigBuilder", builderClassName = "leichMehlProductMappingConfigBuilder")
-	private I_ExternalSystem_Config_LeichMehl_ProductMapping createLeichMehlConfigProductMapping(
-			final int externalSystemLeichMehlConfigId,
-			final int seqNo,
-			@Nullable final ProductId productId,
-			@Nullable final ProductCategoryId productCategoryId,
-			@Nullable final BPartnerId bPartnerId)
-	{
-		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
-		productMappingRecord.setExternalSystem_Config_LeichMehl_ID(externalSystemLeichMehlConfigId);
-		productMappingRecord.setSeqNo(seqNo);
-		productMappingRecord.setM_Product_ID(ProductId.toRepoId(productId));
-		productMappingRecord.setM_Product_Category_ID(ProductCategoryId.toRepoId(productCategoryId));
-		productMappingRecord.setC_BPartner_ID(BPartnerId.toRepoId(bPartnerId));
-
-		saveRecord(productCategoryId);
-
-		return productMappingRecord;
 	}
 
 	@NonNull

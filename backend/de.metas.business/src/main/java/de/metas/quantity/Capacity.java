@@ -133,6 +133,11 @@ public final class Capacity
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity as BigDecimal if it's infinite; this={}", this);
 		return capacity;
 	}
+	
+	public boolean isPositive()
+	{
+		return toBigDecimal().signum() > 0;
+	}
 
 	public Quantity toQuantity()
 	{

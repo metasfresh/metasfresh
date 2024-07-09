@@ -2,11 +2,14 @@ package de.metas.handlingunits.process;
 
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.Param;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.process.RunOutOfTrx;
+import de.metas.report.PrintCopies;
 import org.compiere.SpringContextHolder;
 
 /*
@@ -53,7 +56,7 @@ public class M_HU_Report_QRCode extends JavaProcess
 	protected String doIt()
 	{
 		final PInstanceId selectionId = getPinstanceId();
-		final AdProcessId qrCodeProcessId = AdProcessId.ofRepoId(processId);
+		final AdProcessId qrCodeProcessId = AdProcessId.ofRepoIdOrNull(processId);
 
 		if (getProcessInfo().isPrintPreview())
 		{
@@ -62,7 +65,15 @@ public class M_HU_Report_QRCode extends JavaProcess
 		}
 		else
 		{
-			huQRCodesService.printForSelectionOfHUIds(selectionId, qrCodeProcessId);
+			final PrintCopies printCopies = getParameters().stream()
+					.filter(processInfoParameter -> IMassPrintingService.PARAM_PrintCopies.equals(processInfoParameter.getParameterName()))
+					.findFirst()
+					.map(ProcessInfoParameter::getParameterAsInt)
+					.filter(nrOfCopies -> nrOfCopies > 0)
+					.map(PrintCopies::ofInt)
+					.orElse(PrintCopies.ONE);
+
+			huQRCodesService.printForSelectionOfHUIds(selectionId, qrCodeProcessId, printCopies);
 		}
 
 		return MSG_OK;

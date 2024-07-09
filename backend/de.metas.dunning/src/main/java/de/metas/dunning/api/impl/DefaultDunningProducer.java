@@ -22,10 +22,12 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.dunning.DunningDocId;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.api.IDunningProducer;
@@ -43,11 +45,15 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
@@ -64,6 +70,11 @@ public class DefaultDunningProducer implements IDunningProducer
 	private I_C_DunningDoc dunningDoc = null;
 	private I_C_DunningDoc_Line dunningDocLine = null;
 	private final List<I_C_DunningDoc_Line_Source> dunningDocLineSources = new ArrayList<>();
+	private boolean isFinished = false;
+
+	private final Collection<DunningDocId> createdDunningDocIds = new HashSet<>();
+
+	public static final String SYS_CONFIG_DUNNING_USE_PREFIXED_PO_REFERENCE = "de.metas.dunning.UsePrefixedPoReference";
 
 	@Override
 	public void setDunningContext(IDunningContext context)
@@ -156,6 +167,8 @@ public class DefaultDunningProducer implements IDunningProducer
 		doc.setC_BPartner_ID(candidate.getC_BPartner_ID());
 		doc.setC_BPartner_Location_ID(candidate.getC_BPartner_Location_ID());
 		doc.setC_Dunning_Contact_ID(candidate.getC_Dunning_Contact_ID());
+
+		doc.setPOReference(getPOReferenceToUse(candidate));
 		doc.setIsActive(true);
 		doc.setProcessed(false);
 		doc.setDocStatus(X_C_DunningDoc.DOCSTATUS_InProgress);
@@ -163,6 +176,24 @@ public class DefaultDunningProducer implements IDunningProducer
 		doc.setM_SectionCode_ID(candidate.getM_SectionCode_ID());
 
 		return doc;
+	}
+
+	@Nullable
+	@VisibleForTesting
+	/*package*/ static String getPOReferenceToUse(final I_C_Dunning_Candidate candidate)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final String poReference = candidate.getPOReference();
+		String actualPOReference = poReference;
+		if (sysConfigBL.getBooleanValue(SYS_CONFIG_DUNNING_USE_PREFIXED_PO_REFERENCE, false))
+		{
+			final String documentNo = candidate.getDocumentNo();
+			if (Check.isNotBlank(documentNo) && Check.isNotBlank(poReference) && documentNo.contains(poReference))
+			{
+				actualPOReference = documentNo.substring(0, documentNo.indexOf(poReference) + poReference.length());
+			}
+		}
+		return actualPOReference;
 	}
 
 	protected I_C_DunningDoc_Line createDunningDocLine(final I_C_Dunning_Candidate candidate)
@@ -265,6 +296,8 @@ public class DefaultDunningProducer implements IDunningProducer
 
 		dunningDAO.save(dunningDoc);
 
+		createdDunningDocIds.add(DunningDocId.ofRepoId(dunningDoc.getC_DunningDoc_ID()));
+
 		// If ProcessDunningDoc option is set in context, we need to automatically process the dunningDoc too
 		if (getDunningContext().isProperty(CONTEXT_ProcessDunningDoc, DEFAULT_ProcessDunningDoc))
 		{
@@ -305,12 +338,20 @@ public class DefaultDunningProducer implements IDunningProducer
 	public void finish()
 	{
 		completeDunningDoc();
+		isFinished = true;
 	}
 
 	@Override
 	public void addAggregator(IDunningAggregator aggregator)
 	{
 		dunningAggregators.addAggregator(aggregator);
+	}
+
+	@Override
+	public Collection<DunningDocId> getCreatedDunningDocIds()
+	{
+		Check.assume(isFinished,"Aggregation is not yet completed.");
+		return createdDunningDocIds;
 	}
 
 }

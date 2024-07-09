@@ -160,7 +160,7 @@ public class ManufacturingJobCreateCommand
 			schedules.add(schedule);
 		}
 
-		loader.addToCache(schedules);
+		loader.addToCache(plan.getOrderId(), schedules);
 	}
 
 }

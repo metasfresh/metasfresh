@@ -117,6 +117,7 @@ public class ShipmentScheduleDeletedHandlerTests
 				.shipmentScheduleId(shipmentScheduleId)
 				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
 												.orderedQuantity(ZERO)
+												.orderedQuantityDelta(ZERO)
 												.reservedQuantity(ZERO)
 												.reservedQuantityDelta(ZERO)
 												.build())

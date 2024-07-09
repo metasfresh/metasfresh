@@ -6,9 +6,6 @@ import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.sectionCode.SectionCodeId;
-import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.shipping.model.I_M_ShippingPackage;
-import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -25,7 +22,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
-
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -105,6 +101,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		stat.setDelivery_CreditUsed(BigDecimal.ZERO);
 		stat.setActualLifeTimeValue(BigDecimal.ZERO);
 		stat.setOpenItems(BigDecimal.ZERO);
+		stat.setAD_Org_ID(partner.getAD_Org_ID());
 
 		saveRecord(stat);
 
@@ -122,10 +119,11 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		final Object[] sqlParams = new Object[] { stats.getC_BPartner_ID() };
 		final String sql = "SELECT "
-				+ "currencyBase(openamt,C_Currency_ID,DateInvoiced,AD_Client_ID,AD_Org_ID) from de_metas_endcustomer_fresh_reports.OpenItems_Report(now()::date) where  C_BPartner_ID=?";
+				+ " currencyBase(OpenAmt,C_Currency_ID,DateInvoiced,AD_Client_ID,AD_Org_ID)"
+				+ " FROM de_metas_endcustomer_fresh_reports.OpenItems_Report(now()::date, 'N', ?)";
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-
 		try
 		{
 			pstmt = DB.prepareStatement(sql, trxName);
@@ -133,7 +131,12 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				openItems = rs.getBigDecimal(1);
+				final BigDecimal openAmt = rs.getBigDecimal(1);
+				return openAmt != null ? openAmt : BigDecimal.ZERO;
+			}
+			else
+			{
+				return BigDecimal.ZERO;
 			}
 		}
 		catch (final SQLException e)
@@ -144,8 +147,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		{
 			DB.close(rs, pstmt);
 		}
-
-		return openItems;
 	}
 
 	@Override
@@ -188,6 +189,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			DB.close(rs, pstmt);
 		}
 	}
+
 	@Override
 	public void setSOCreditStatus(@NonNull final BPartnerStats bpStats, final CreditStatus soCreditStatus)
 	{

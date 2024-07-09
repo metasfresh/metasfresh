@@ -1,21 +1,24 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
  *
- * @contributor Victor Perez , e-Evolution.SC FR [ 1757088 ] *
- *****************************************************************************/
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.compiere.model;
 
 import com.google.common.base.MoreObjects;
@@ -25,6 +28,7 @@ import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Getter;
@@ -38,6 +42,7 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.util.DisplayType;
@@ -127,6 +132,7 @@ public class GridFieldVO implements Serializable
 			final AdWindowId AD_Window_ID,
 			final int AD_Tab_ID,
 			final boolean readOnly,
+			@NonNull final TabIncludeFiltersStrategy tabIncludeFiltersStrategy,
 			final boolean loadAllLanguages,
 			final boolean applyRolePermissions,
 			final ResultSet rs)
@@ -388,13 +394,13 @@ public class GridFieldVO implements Serializable
 			}
 
 			//
-			vo.defaultFilterDescriptor = retrieveDefaultFilterDescriptor(rs);
+			vo.defaultFilterDescriptor = retrieveDefaultFilterDescriptor(rs, tabIncludeFiltersStrategy);
 			vo.fieldGroup = FieldGroupVO.build(fieldGroupName, fieldGroupType, fieldGroupCollapsedByDefault);
 			vo.layoutConstraints = layoutConstraints.build();
 		}
 		catch (SQLException e)
 		{
-			logger.error("ColumnName=" + columnName, e);
+			logger.error("Failed creating GridFieldVO for ColumnName={}. Returning null.", columnName, e);
 			return null;
 		}
 
@@ -416,18 +422,47 @@ public class GridFieldVO implements Serializable
 		return vo;
 	}   // create
 
-	private static GridFieldDefaultFilterDescriptor retrieveDefaultFilterDescriptor(final ResultSet rs) throws SQLException
+	@Nullable
+	private static GridFieldDefaultFilterDescriptor retrieveDefaultFilterDescriptor(
+			@NonNull final ResultSet rs,
+			@NonNull final TabIncludeFiltersStrategy tabIncludeFiltersStrategy) throws SQLException
 	{
-		final boolean defaultFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
-		final boolean facetFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
-		if (!defaultFilter && !facetFilter)
+		if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.None)
+		{
+			return null;
+		}
+
+		final OptionalBoolean isFilterField = OptionalBoolean.ofNullableString(rs.getString(I_AD_Field.COLUMNNAME_IsFilterField));
+		if (isFilterField.isFalse())
+		{
+			return null;
+		}
+
+		final boolean isDefaultFilterColumn;
+		final boolean isFacetFilter;
+		if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.Explicit)
+		{
+			isDefaultFilterColumn = isFilterField.isTrue();
+			isFacetFilter = isFilterField.isTrue() && StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
+		}
+		else if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.Auto)
+		{
+			isDefaultFilterColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
+			isFacetFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
+		}
+		else
+		{
+			throw new AdempiereException("Unknown TabIncludeFiltersStrategy: " + tabIncludeFiltersStrategy);
+		}
+
+		if (!isDefaultFilterColumn && !isFacetFilter)
 		{
 			return null;
 		}
 
 		return GridFieldDefaultFilterDescriptor.builder()
 				//
-				.defaultFilter(defaultFilter)
+				.defaultFilter(isDefaultFilterColumn)
 				.defaultFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_SelectionColumnSeqNo))
 				.operator(rs.getString(I_AD_Column.COLUMNNAME_FilterOperator))
 				.showFilterIncrementButtons(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterIncrementButtons)))
@@ -435,7 +470,7 @@ public class GridFieldVO implements Serializable
 				.defaultValue(rs.getString(I_AD_Column.COLUMNNAME_FilterDefaultValue))
 				.adValRuleId(AdValRuleId.ofRepoIdOrNull(rs.getInt(I_AD_Column.COLUMNNAME_Filter_Val_Rule_ID)))
 				//
-				.facetFilter(facetFilter)
+				.facetFilter(isFacetFilter)
 				.facetFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_FacetFilterSeqNo))
 				.maxFacetsToFetch(rs.getInt(I_AD_Column.COLUMNNAME_MaxFacetsToFetch))
 				//
@@ -459,7 +494,7 @@ public class GridFieldVO implements Serializable
 	 * @param rs       result set AD_Process_Para
 	 * @return MFieldVO
 	 */
-	public static GridFieldVO createParameter(final Properties ctx, final int WindowNo, final int tabNo, final ResultSet rs)
+	public static GridFieldVO createParameter(final Properties ctx, final int WindowNo, final int tabNo, final ResultSet rs) throws SQLException
 	{
 		final AdWindowId adWindowId = null;
 		final int adTabId = 0;
@@ -472,7 +507,6 @@ public class GridFieldVO implements Serializable
 		vo.IsReadOnly = false;
 		vo.IsUpdateable = true;
 
-		try
 		{
 			vo.AD_Table_ID = 0;
 			vo.AD_Field_ID = null; // metas
@@ -504,10 +538,6 @@ public class GridFieldVO implements Serializable
 			vo.DisplayLogic = rs.getString("DisplayLogic");
 
 			vo.fieldEntityType = rs.getString("FieldEntityType");
-		}
-		catch (SQLException e)
-		{
-			logger.error("createParameter", e);
 		}
 		//
 		vo.initFinish();
@@ -974,7 +1004,7 @@ public class GridFieldVO implements Serializable
 			}
 			catch (Exception e)     // Cannot create Lookup
 			{
-				logger.error("No LookupInfo for {}", ColumnName, e);
+				logger.warn("No LookupInfo for {}. Considering displayType=ID", ColumnName, e);
 				displayType = DisplayType.ID;
 				lookupInfo = null;
 			}

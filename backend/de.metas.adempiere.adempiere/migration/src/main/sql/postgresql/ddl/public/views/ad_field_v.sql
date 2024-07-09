@@ -69,16 +69,17 @@ SELECT t.ad_window_id
      , c.IsUseDocSequence
      --
      -- Filtering
+    , f.IsFilterField
      , c.IsSelectionColumn
-     , c.SelectionColumnSeqNo
-     , c.filteroperator
+     , (CASE WHEN f.IsFilterField = 'Y' AND COALESCE(f.SelectionColumnSeqNo, 0) != 0 THEN f.SelectionColumnSeqNo ELSE c.SelectionColumnSeqNo END) AS SelectionColumnSeqNo
+     , (CASE WHEN f.IsFilterField = 'Y' AND f.FilterOperator IS NOT NULL THEN f.FilterOperator ELSE c.FilterOperator END)                         AS FilterOperator
      , c.IsShowFilterIncrementButtons
-     , c.IsShowFilterInline
-     , c.FilterDefaultValue
-     , c.IsFacetFilter
-     , c.FacetFilterSeqNo
-     , c.MaxFacetsToFetch
-     , COALESCE(f.filter_val_rule_id, c.filter_val_rule_id)       AS filter_val_rule_id
+     , (CASE WHEN f.IsFilterField = 'Y' AND f.IsShowFilterInline IS NOT NULL THEN f.IsShowFilterInline ELSE c.IsShowFilterInline END)             AS IsShowFilterInline
+     , (CASE WHEN f.IsFilterField = 'Y' AND IsOverrideFilterDefaultValue = 'Y' THEN f.FilterDefaultValue ELSE c.FilterDefaultValue END)           AS FilterDefaultValue
+     , (CASE WHEN f.IsFacetFilter = 'Y' THEN f.IsFacetFilter ELSE c.IsFacetFilter END)                                                            AS IsFacetFilter
+     , (CASE WHEN f.IsFacetFilter = 'Y' AND COALESCE(f.FacetFilterSeqNo, 0) != 0 THEN f.FacetFilterSeqNo ELSE c.FacetFilterSeqNo END)             AS FacetFilterSeqNo
+     , (CASE WHEN f.IsFacetFilter = 'Y' AND COALESCE(f.MaxFacetsToFetch, 0) != 0 THEN f.MaxFacetsToFetch ELSE c.MaxFacetsToFetch END)             AS MaxFacetsToFetch
+     , COALESCE(f.filter_val_rule_id, c.filter_val_rule_id)                                                                                       AS Filter_Val_Rule_ID
      --
 FROM ad_tab t
          JOIN ad_table tbl ON tbl.ad_table_id = t.ad_table_id

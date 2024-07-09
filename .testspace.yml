@@ -3,43 +3,39 @@
 # See https://help.testspace.com/dashboard/project#configuration
 # Please keep in sync with the branch list in .mergify.yml
 release:
-  - adorable_badger_uat
-  - anxious_hippos_uat
   - arctic_north_uat
+  - blue_horizon_uat
   - big_coconut_uat
-  - big_coconut_hotfix
-  - blonde_monkey_uat
-  - blonde_monkey_hotfix
   - clone_wars_uat
   - epic_party_uat
+  - gray_knight_uat
   - hard_encoded_uat
   - hard_encoded_hotfix
-  - holy_cow_uat
-  - hostile_tractor_uat
-  - koala_yawn_uat
   - inner_silence_uat
   - intensive_care_uat
   - intensive_care_hotfix
   - iron_plant_uat
+  - koala_yawn_uat
   - massive_entropy_uat
   - massive_entropy_hotfix
   - mad_orange_uat
   - mad_orange_hotfix
-  - magic_oak_uat
+  - majestic_kangaroo_uat
+  - middle_ages_uat
   - modified_carbon_uat
+  - modus_operandi_uat
   - neon_underwear_uat
-  - pot_hole_uat
+  - pink_rooster_uat
+  - pink_rooster_hotfix
   - release
   - soft_panda_uat
   - soft_panda_hotfix
   - science_vessel_uat
-  - science_vessel_hotfix
   - secondary_opinion_uat
   - secondary_opinion_hotfix
   - tasty_ham_uat
   - tasty_ham_hotfix
   - tenacious_d_uat
-  - tenacious_d_hotfix
+  - vampire_textbook_uat
   - yoyo_uat
   - yoyo_hotfix
-  - zulu_alpha_uat

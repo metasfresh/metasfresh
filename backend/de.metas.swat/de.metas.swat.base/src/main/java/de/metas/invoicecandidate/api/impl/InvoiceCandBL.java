@@ -31,7 +31,6 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -191,6 +190,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -350,7 +350,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 				else
 				{
-					final LocalDate deliveryDate = TimeUtil.asLocalDate(icRecord.getDeliveryDate()); // task 08451: when it comes to invoicing, the important date is not when it was ordered but when the delivery was made
+					final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(icRecord.getAD_Org_ID()));
+					final LocalDate deliveryDate = TimeUtil.asLocalDate(icRecord.getDeliveryDate(), timeZone); // task 08451: when it comes to invoicing, the important date is not when it was ordered but when the delivery was made
 					if (deliveryDate == null)
 					{
 						// task 08451: we have an invoice schedule, but no delivery yet. Set the date to the far future
@@ -361,7 +362,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						final InvoiceScheduleRepository invoiceScheduleRepository = SpringContextHolder.instance.getBean(InvoiceScheduleRepository.class);
 						final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(icRecord.getC_InvoiceSchedule());
 						final LocalDate nextDateToInvoice = invoiceSchedule.calculateNextDateToInvoice(deliveryDate);
-						return TimeUtil.asTimestamp(nextDateToInvoice, orgDAO.getTimeZone(OrgId.ofRepoId(icRecord.getAD_Org_ID())));
+						return TimeUtil.asTimestamp(nextDateToInvoice, timeZone);
 					}
 				}
 			default:
@@ -381,7 +382,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			isAllCandidatesInGroupDeliveredCache = threadInheritedTrx
 					.getProperty("InvoicecandBL#isAllCandidatesInGroupDeliveredCache",
-								 () -> CACHE_BUILDER_IS_ALL_CANDIDATES_IN_GROUP_DELIVERED.build());
+								 CACHE_BUILDER_IS_ALL_CANDIDATES_IN_GROUP_DELIVERED::build);
 		}
 		return isAllCandidatesInGroupDeliveredCache.getOrLoad(ic.getHeaderAggregationKey(), () -> isAllCandidatesInGroupDelivered0(ic));
 	}
@@ -520,7 +521,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void set_QtyInvoiced_NetAmtInvoiced_Aggregation(final Properties ctx, final I_C_Invoice_Candidate ic)
+	public void set_QtyInvoiced_NetAmtInvoiced_Aggregation(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		Check.assume(ic.isManual(), ic + " has IsManual='Y'");
 		set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ic);
@@ -890,10 +891,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final BigDecimal qtyToInvoiceOverride = getQtyToInvoice_OverrideOrNull(ic);
 		if (qtyToInvoiceOverride != null)
 		{
-			return Quantitys.create(qtyToInvoiceOverride, stockUomId);
+			return Quantitys.of(qtyToInvoiceOverride, stockUomId);
 		}
 
-		return Quantitys.create(ic.getQtyToInvoice(), stockUomId);
+		return Quantitys.of(ic.getQtyToInvoice(), stockUomId);
 	}
 
 	/**
@@ -1083,7 +1084,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
-		final Money candNetAmtToInvoiceCalc = moneyService.multiply(Quantitys.create(ic.getQtyToInvoiceInUOM(), UomId.ofRepoId(ic.getC_UOM_ID())), candPriceActual);
+		final Money candNetAmtToInvoiceCalc = moneyService.multiply(Quantitys.of(ic.getQtyToInvoiceInUOM(), UomId.ofRepoId(ic.getC_UOM_ID())), candPriceActual);
 
 		return candNetAmtToInvoiceCalc;
 	}
@@ -1527,7 +1528,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 				final I_C_Invoice_Candidate invoiceCandidate = ilaToReverse.getC_Invoice_Candidate();
 				invoiceCandidate.setProcessed_Override(null); // reset processed_override, because now that the invoice was reversed, the users might want to do something new with the IC.
-
 				invoiceCandidate.setApprovalForInvoicing(false);
 
 				// #870
@@ -1791,7 +1791,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 						// task 08927
-						note = "@C_DocType_ID@=" + docTypeDAO.getById(invoice.getC_DocType_ID()).getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
+						note = "@C_DocType_ID@=" + docTypeDAO.getRecordById(invoice.getC_DocType_ID()).getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
 						if (creditMemoReinvoicable)
 						{
 							qtysInvoiced = StockQtyAndUOMQtys
@@ -1846,7 +1846,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void updateProcessedFlag(final I_C_Invoice_Candidate ic)
+	public void updateProcessedFlag(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		Boolean processed = null;
 		if (!InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_Processed_Override))
@@ -2548,7 +2548,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	@Override
 	@NonNull
-	public Set<InvoiceCandidateId> voidAndReturnInvoiceCandIds(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	public Set<InvoiceCandidateId> reverseAndReturnInvoiceCandIds(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
 		// first make sure that payments have the flag auto-allocate set
 		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
@@ -2656,8 +2656,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Stop waiting for ICs to be updated async-queue; Selection={}",invoiceCandidateIdsSelection);
 		}
 	}
-	
-	
+
+
 	// TODO: would be nice to use de.metas.ui.web.view.descriptor.SqlAndParams but that is in module webui-api, and here we don't have access to it
 	@Override
 	public @NonNull InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable final String extraWhereClause)
@@ -2689,28 +2689,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void setAsyncBatch(@NonNull final InvoiceCandidateId invoiceCandidateId, @NonNull final AsyncBatchId asyncBatchId)
-	{
-		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandDAO.getById(invoiceCandidateId);
-
-		if (invoiceCandidate.isProcessed())
-		{
-			Loggables.withLogger(logger, Level.WARN).addLog("InvoiceCandBL.setAsyncBatch(): C_Invoice_Candidate already processed,"
-																	+ " nothing to do! InvoiceCandidateId: {}", invoiceCandidate.getC_Invoice_Candidate_ID());
-			return;
-		}
-
-		invoiceCandidate.setC_Async_Batch_ID(asyncBatchId.getRepoId());
-
-		invoiceCandDAO.save(invoiceCandidate);
-	}
-
-	@Override
 	public Quantity getQtyOrderedStockUOM(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
-		return Quantitys.create(ic.getQtyOrdered(), productId);
+		return Quantitys.of(ic.getQtyOrdered(), productId);
 	}
 
 	@Override
@@ -2718,7 +2701,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
-		return Quantitys.create(ic.getQtyInvoiced(), productId);
+		return Quantitys.of(ic.getQtyInvoiced(), productId);
 	}
 
 	@Override

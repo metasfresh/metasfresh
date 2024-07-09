@@ -1,8 +1,11 @@
 package org.compiere.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -126,6 +129,7 @@ public final class CtxName
 
 	/**
 	 * @return true if this context name is an explicit global variable (i.e. starts with # or $)
+	 * @name context name
 	 */
 	public static boolean isExplicitGlobal(final String name)
 	{
@@ -188,6 +192,19 @@ public final class CtxName
 			{
 				return "'" + sourceResult + "'";
 			}
+
+			if (hasModifier(CtxNames.MODIFIER_AsJsonString))
+			{
+				try
+				{
+					return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(sourceResult);
+				}
+				catch (JsonProcessingException e)
+				{
+					throw new AdempiereException("Failed to json escape context variable `" + this + "`: `" + sourceResult + "`");
+				}
+			}
+
 			return sourceResult;
 		}
 

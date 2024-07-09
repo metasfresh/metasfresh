@@ -1,5 +1,7 @@
 package org.compiere.model;
 
+import lombok.NonNull;
+
 /**
  * Generated Interface for M_PriceList_Version
  *
@@ -462,6 +464,7 @@ public interface I_M_PriceList_Version
 	 * <br>
 	 * Virtual Column: false
 	 */
+	@NonNull
 	public java.sql.Timestamp getValidFrom();
 
 	/** Column definition for ValidFrom */

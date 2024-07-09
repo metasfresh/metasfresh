@@ -82,6 +82,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -679,7 +680,7 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 		if (docTypeId != null)
 		{
-			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
 			documentInfo.append(docType.getName());
 		}
 
@@ -1183,7 +1184,7 @@ public class MOrder extends X_C_Order implements IDocument
 			return IDocument.STATUS_Invalid;
 		}
 
-		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(getC_DocTypeTarget_ID());
+		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getRecordById(getC_DocTypeTarget_ID());
 
 		// Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID()))
@@ -1196,8 +1197,7 @@ public class MOrder extends X_C_Order implements IDocument
 		final List<MOrderLine> lines = getLinesRequeryOrderedByProduct();
 		if (lines.isEmpty())
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 
 		// Bug 1564431
@@ -1220,7 +1220,7 @@ public class MOrder extends X_C_Order implements IDocument
 			// Cannot change Std to anything else if different warehouses
 			if (getC_DocType_ID() != 0)
 			{
-				final I_C_DocType dtOld = Services.get(IDocTypeDAO.class).getById(getC_DocType_ID());
+				final I_C_DocType dtOld = Services.get(IDocTypeDAO.class).getRecordById(getC_DocType_ID());
 				if (X_C_DocType.DOCSUBTYPE_StandardOrder.equals(dtOld.getDocSubType())        // From SO
 						&& !X_C_DocType.DOCSUBTYPE_StandardOrder.equals(dt.getDocSubType()))    // To !SO
 				{
@@ -1321,7 +1321,7 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 
 		final I_C_DocType dt = docType == null
-				? Services.get(IDocTypeDAO.class).getById(docTypeId)
+				? Services.get(IDocTypeDAO.class).getRecordById(docTypeId)
 				: docType;
 
 		// Binding
@@ -1610,7 +1610,7 @@ public class MOrder extends X_C_Order implements IDocument
 			return DocStatus.InProgress;
 		}
 
-		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(getC_DocType_ID());
+		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getRecordById(getC_DocType_ID());
 		final String docSubType = dt.getDocSubType();
 
 		//
@@ -1771,7 +1771,7 @@ public class MOrder extends X_C_Order implements IDocument
 	 */
 	private void setDefiniteDocumentNo()
 	{
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(getC_DocType_ID());
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(getC_DocType_ID());
 
 		if (docType.isOverwriteDateOnComplete())
 		{
@@ -2293,7 +2293,7 @@ public class MOrder extends X_C_Order implements IDocument
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(getC_DocType_ID());
-		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getRecordById(docTypeId);
 		final String docSubType = dt.getDocSubType();
 
 		if (X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType))

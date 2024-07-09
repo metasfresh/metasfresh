@@ -2,10 +2,10 @@ package de.metas.location.impl;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.greeting.CreateGreetingRequest;
 import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
+import de.metas.greeting.UpsertGreetingRequest;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
@@ -1060,8 +1060,8 @@ public class AddressBuilderTest
 
 		private GreetingId prepareGreeting(@NonNull final String name)
 		{
-			final Greeting greeting = greetingRepository.createGreeting(
-					CreateGreetingRequest.builder()
+			final Greeting greeting = greetingRepository.upsertGreeting(
+					UpsertGreetingRequest.builder()
 							.name(name)
 							.greeting(name)
 							.orgId(orgId)

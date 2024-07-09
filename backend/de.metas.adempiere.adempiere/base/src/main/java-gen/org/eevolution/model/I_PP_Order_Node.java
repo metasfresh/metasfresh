@@ -158,28 +158,6 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -203,6 +181,28 @@ public interface I_PP_Order_Node
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Date planned finished.
@@ -781,28 +781,6 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_QueuingTime = "QueuingTime";
 
 	/**
-	 * Set Resource.
-	 * Resource
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setS_Resource_ID (int S_Resource_ID);
-
-	/**
-	 * Get Resource.
-	 * Resource
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getS_Resource_ID();
-
-	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
-
-	/**
 	 * Set Scanned QR Code.
 	 *
 	 * <br>Type: TextLong
@@ -887,6 +865,49 @@ public interface I_PP_Order_Node
 
 	ModelColumn<I_PP_Order_Node, Object> COLUMN_SetupTimeRequiered = new ModelColumn<>(I_PP_Order_Node.class, "SetupTimeRequiered", null);
 	String COLUMNNAME_SetupTimeRequiered = "SetupTimeRequiered";
+
+	/**
+	 * Set Resource.
+	 * Resource
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Resource.
+	 * Resource
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_Resource_ID();
+
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+
+	/**
+	 * Set Target Planning status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTargetPlanningStatus (@Nullable java.lang.String TargetPlanningStatus);
+
+	/**
+	 * Get Target Planning status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTargetPlanningStatus();
+
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_TargetPlanningStatus = new ModelColumn<>(I_PP_Order_Node.class, "TargetPlanningStatus", null);
+	String COLUMNNAME_TargetPlanningStatus = "TargetPlanningStatus";
 
 	/**
 	 * Get Updated.

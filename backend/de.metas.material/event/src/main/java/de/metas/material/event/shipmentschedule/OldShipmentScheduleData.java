@@ -39,5 +39,8 @@ public class OldShipmentScheduleData
 	BigDecimal oldReservedQuantity;
 
 	@NonNull
+	BigDecimal oldOrderedQuantity;
+
+	@NonNull
 	MaterialDescriptor oldMaterialDescriptor;
 }

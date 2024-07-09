@@ -3,6 +3,8 @@ package org.eevolution.model.validator;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.i18n.AdMessageKey;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.impl.ProductPlanningDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -10,7 +12,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IProductBOMDAO;
@@ -18,7 +20,6 @@ import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.api.impl.ProductBOMService;
 import org.eevolution.api.impl.ProductBOMVersionsDAO;
-import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.I_PP_Product_Planning;
 
@@ -73,24 +74,26 @@ public class PP_Product_Planning
 	}
 
 	@VisibleForTesting
-	void updateStorageAttributesKey(@NonNull final I_PP_Product_Planning productPlanning)
+	void updateStorageAttributesKey(@NonNull final I_PP_Product_Planning record)
 	{
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(productPlanning.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
 		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
-		productPlanning.setStorageAttributesKey(attributesKey.getAsString());
+		record.setStorageAttributesKey(attributesKey.getAsString());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
 			ifColumnsChanged = { I_PP_Product_Planning.COLUMNNAME_M_Product_ID, I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID })
-	public void validateBOMVersionsAndProductId(final I_PP_Product_Planning planning)
+	public void validateBOMVersionsAndProductId(final I_PP_Product_Planning record)
 	{
-		final ProductId productId = ProductId.ofRepoIdOrNull(planning.getM_Product_ID());
+		final ProductPlanning productPlanning = ProductPlanningDAO.fromRecord(record);
+
+		final ProductId productId = productPlanning.getProductId();
 		if (productId == null)
 		{
 			return;
 		}
 
-		Optional.ofNullable(ProductBOMVersionsId.ofRepoIdOrNull(planning.getPP_Product_BOMVersions_ID()))
+		Optional.ofNullable(productPlanning.getBomVersionsId())
 				.map(bomVersionsDAO::getBOMVersions)
 				.ifPresent(bomVersions -> {
 					if (bomVersions.getM_Product_ID() != productId.getRepoId())
@@ -98,7 +101,7 @@ public class PP_Product_Planning
 						throw new AdempiereException(AdMessageKey.of("PP_Product_Planning_BOM_Doesnt_Match"))
 								.appendParametersToMessage()
 								.setParameter("bomVersion", bomVersions)
-								.setParameter("productPlanning", planning)
+								.setParameter("productPlanning", productPlanning)
 								.markAsUserValidationError();
 					}
 				});
@@ -123,14 +126,16 @@ public class PP_Product_Planning
 					I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant,
 					I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID,
 			})
-	public void validateProductBOMASI(@NonNull final I_PP_Product_Planning productPlanning)
+	public void validateProductBOMASI(@NonNull final I_PP_Product_Planning record)
 	{
+		final ProductPlanning productPlanning = ProductPlanningDAO.fromRecord(record);
+
 		if (!productPlanning.isAttributeDependant())
 		{
 			return;
 		}
 
-		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoIdOrNull(productPlanning.getPP_Product_BOMVersions_ID());
+		final ProductBOMVersionsId bomVersionsId = productPlanning.getBomVersionsId();
 		if (bomVersionsId == null)
 		{
 			return;

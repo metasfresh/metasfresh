@@ -74,7 +74,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/purchase/order/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-6" x="56" y="153" width="255" height="127" uuid="90035be5-1ca6-4838-a969-703d8045ded2">
+				<reportElement key="subreport-6" x="37" y="153" width="255" height="127" uuid="90035be5-1ca6-4838-a969-703d8045ded2">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>

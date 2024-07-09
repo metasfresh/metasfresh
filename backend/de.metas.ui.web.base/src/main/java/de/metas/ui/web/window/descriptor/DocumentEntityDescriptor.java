@@ -171,6 +171,8 @@ public class DocumentEntityDescriptor
 	@Getter
 	private final ImmutableList<IDocumentDecorator> documentDecorators;
 
+	@Nullable @Getter private final NotFoundMessages notFoundMessages;
+
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
 		documentType = builder.getDocumentType();
@@ -221,6 +223,8 @@ public class DocumentEntityDescriptor
 		queryIfNoFilters = builder.queryIfNoFilters;
 
 		documentDecorators = CoalesceUtil.coalesceNotNull(builder.getDocumentDecorators(), ImmutableList.of());
+
+		notFoundMessages = builder.notFoundMessages;
 	}
 
 	@Override
@@ -231,7 +235,7 @@ public class DocumentEntityDescriptor
 				.add("tableName", tableName.orElse(null))
 				.add("fields.count", fields.size()) // only fields count because else it's too long
 				// .add("entityDataBinding", dataBinding) // skip it because it's too long
-				.add("includedEntitites.count", includedEntitiesByDetailId.isEmpty() ? null : includedEntitiesByDetailId.size())
+				.add("includedEntities.count", includedEntitiesByDetailId.isEmpty() ? null : includedEntitiesByDetailId.size())
 				.toString();
 	}
 
@@ -475,7 +479,7 @@ public class DocumentEntityDescriptor
 		@Getter
 		private QuickInputSupportDescriptor quickInputSupport = null;
 
-		private IncludedTabNewRecordInputMode includedTabNewRecordInputMode = IncludedTabNewRecordInputMode.ALL_AVAILABLE_METHODS;
+		@Getter private IncludedTabNewRecordInputMode includedTabNewRecordInputMode = IncludedTabNewRecordInputMode.ALL_AVAILABLE_METHODS;
 
 		private boolean _refreshViewOnChangeEvents = false;
 
@@ -499,6 +503,8 @@ public class DocumentEntityDescriptor
 		private int viewPageLength;
 
 		private boolean queryIfNoFilters = true;
+
+		@Getter @Nullable private NotFoundMessages notFoundMessages;
 
 		private Builder()
 		{
@@ -857,7 +863,7 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public Builder setTableName(final Optional<String> tableName)
+		public Builder setTableName(@Nullable final Optional<String> tableName)
 		{
 			//noinspection OptionalAssignedToNull
 			_tableName = tableName != null ? tableName : Optional.empty();
@@ -929,7 +935,7 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public Builder setIsSOTrx(final Optional<SOTrx> soTrx)
+		public Builder setIsSOTrx(@Nullable final Optional<SOTrx> soTrx)
 		{
 			//noinspection OptionalAssignedToNull
 			_soTrx = soTrx != null ? soTrx : Optional.empty();
@@ -1009,11 +1015,6 @@ public class DocumentEntityDescriptor
 		{
 			this.includedTabNewRecordInputMode = includedTabNewRecordInputMode;
 			return this;
-		}
-
-		public IncludedTabNewRecordInputMode getIncludedTabNewRecordInputMode()
-		{
-			return includedTabNewRecordInputMode;
 		}
 
 		public Builder setAutodetectDefaultDateFilter(final boolean autodetectDefaultDateFilter)
@@ -1110,13 +1111,15 @@ public class DocumentEntityDescriptor
 			final AdTabId adTabId = getAdTabId().orElse(null);
 			final Collection<DocumentFieldDescriptor> fields = getFields().values();
 
-			final CreateFiltersProviderContext context = CreateFiltersProviderContext.builder()
-					.adTabId(adTabId)
-					.tableName(tableName)
-					.isAutodetectDefaultDateFilter(isAutodetectDefaultDateFilter())
-					.build();
-
-			return filterDescriptorsProvidersService.createFiltersProvider(context, fields);
+			return filterDescriptorsProvidersService.createFiltersProvider(
+					CreateFiltersProviderContext.builder()
+							.adTabId(adTabId)
+							.tableName(tableName)
+							.isAutodetectDefaultDateFilter(isAutodetectDefaultDateFilter())
+							.fields(ImmutableList.copyOf(fields))
+							.includedEntities(ImmutableList.copyOf(_includedEntitiesByDetailId.values()))
+							.build()
+			);
 		}
 
 		public Builder setFilterDescriptorsProvidersService(final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService)
@@ -1188,6 +1191,12 @@ public class DocumentEntityDescriptor
 		public Builder queryIfNoFilters(final boolean queryIfNoFilters)
 		{
 			this.queryIfNoFilters = queryIfNoFilters;
+			return this;
+		}
+
+		public Builder notFoundMessages(@Nullable final NotFoundMessages notFoundMessages)
+		{
+			this.notFoundMessages = notFoundMessages;
 			return this;
 		}
 	}

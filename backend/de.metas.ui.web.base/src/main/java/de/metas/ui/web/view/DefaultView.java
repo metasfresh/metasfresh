@@ -32,8 +32,6 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
-import de.metas.ui.web.window.model.DocumentSaveStatus;
-import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -49,8 +47,8 @@ import lombok.ToString;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.OldAndNewValues;
+import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.POInfo;
 import org.compiere.util.Evaluatee;
@@ -483,7 +481,7 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final ViewFilterParameterLookupEvaluationCtx ctx)
+	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		assertNotClosed();
 
@@ -493,8 +491,7 @@ public final class DefaultView implements IEditableView
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
-				.findEntities(ctxEffective)
-				.getValues();
+				.findEntities(ctxEffective);
 	}
 
 	@Override
@@ -778,17 +775,8 @@ public final class DefaultView implements IEditableView
 		//
 		// Important: before allowing the document to be stored back in documents collection,
 		// we need to make sure it's valid and saved.
-		final DocumentValidStatus validStatus = document.getValidStatus();
-		if (!validStatus.isValid())
-		{
-			throw new AdempiereException(validStatus.getReason());
-		}
-
-		final DocumentSaveStatus saveStatus = document.getSaveStatus();
-		if (!saveStatus.isSavedOrDeleted())
-		{
-			throw new AdempiereException(saveStatus.getReason());
-		}
+		document.getValidStatus().throwIfInvalid();
+		document.getSaveStatus().throwIfNotSavedNorDelete();
 	}
 
 	@Override

@@ -1,31 +1,10 @@
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ModCntr_Log
  *  @author metasfresh (generated) 
@@ -34,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1279073714L;
+	private static final long serialVersionUID = 649973142L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -259,6 +238,21 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
+	public void setInitial_Product_ID (final int Initial_Product_ID)
+	{
+		if (Initial_Product_ID < 1) 
+			set_Value (COLUMNNAME_Initial_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_Initial_Product_ID, Initial_Product_ID);
+	}
+
+	@Override
+	public int getInitial_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Initial_Product_ID);
+	}
+
+	@Override
 	public void setIsBillable (final boolean IsBillable)
 	{
 		set_Value (COLUMNNAME_IsBillable, IsBillable);
@@ -283,15 +277,15 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public org.compiere.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup()
+	public de.metas.contracts.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup()
 	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, org.compiere.model.I_ModCntr_InvoicingGroup.class);
+		return get_ValueAsPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, de.metas.contracts.model.I_ModCntr_InvoicingGroup.class);
 	}
 
 	@Override
-	public void setModCntr_InvoicingGroup(final org.compiere.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup)
+	public void setModCntr_InvoicingGroup(final de.metas.contracts.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup)
 	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, org.compiere.model.I_ModCntr_InvoicingGroup.class, ModCntr_InvoicingGroup);
+		set_ValueFromPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, de.metas.contracts.model.I_ModCntr_InvoicingGroup.class, ModCntr_InvoicingGroup);
 	}
 
 	@Override
@@ -334,10 +328,10 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_ShipmentDisposition = "ShipmentDisposition";
 	/** Shipment = Shipment */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_Shipment = "Shipment";
-	/** Final Settlement = FinalSettlement */
-	public static final String MODCNTR_LOG_DOCUMENTTYPE_FinalSettlement = "FinalSettlement";
-	/** Definitive Final Settlement = DefinitiveFinalSettlement */
-	public static final String MODCNTR_LOG_DOCUMENTTYPE_DefinitiveFinalSettlement = "DefinitiveFinalSettlement";
+	/** FinalInvoice = FinalInvoice */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_FinalInvoice = "FinalInvoice";
+	/** DefinitiveInvoice = DefinitiveInvoice */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_DefinitiveInvoice = "DefinitiveInvoice";
 	/** Inventory = Inventory */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_Inventory = "Inventory";
 	/** Sales invoice = SalesInvoice */
@@ -548,6 +542,18 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
+	public void setProductName (final java.lang.String ProductName)
+	{
+		set_Value (COLUMNNAME_ProductName, ProductName);
+	}
+
+	@Override
+	public java.lang.String getProductName() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductName);
+	}
+
+	@Override
 	public void setQty (final @Nullable BigDecimal Qty)
 	{
 		set_Value (COLUMNNAME_Qty, Qty);
@@ -573,5 +579,43 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public int getRecord_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
+	}
+
+	@Override
+	public void setStorageDays (final int StorageDays)
+	{
+		set_Value (COLUMNNAME_StorageDays, StorageDays);
+	}
+
+	@Override
+	public int getStorageDays() 
+	{
+		return get_ValueAsInt(COLUMNNAME_StorageDays);
+	}
+
+	@Override
+	public void setUserElementNumber1 (final @Nullable BigDecimal UserElementNumber1)
+	{
+		set_Value (COLUMNNAME_UserElementNumber1, UserElementNumber1);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber1()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber1);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setUserElementNumber2 (final @Nullable BigDecimal UserElementNumber2)
+	{
+		set_Value (COLUMNNAME_UserElementNumber2, UserElementNumber2);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber2()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber2);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

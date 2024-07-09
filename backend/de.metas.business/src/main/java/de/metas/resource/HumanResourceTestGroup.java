@@ -27,8 +27,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.time.Duration;
-
 @Value
 @Builder
 public class HumanResourceTestGroup
@@ -38,6 +36,6 @@ public class HumanResourceTestGroup
 	@NonNull String groupIdentifier;
 	@NonNull String name;
 	@NonNull String department;
-	@NonNull Duration weeklyCapacity;
-	@NonNull Boolean isActive;
+	@NonNull ResourceWeeklyAvailability availability;
+	@Builder.Default boolean isActive = true;
 }

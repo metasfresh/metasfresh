@@ -1,7 +1,10 @@
 version: '3.9'
 services:
   db:
-    build: db
+    build: 
+      context: db
+      args:
+        DB_DOCKER_IMG: ${DB_DOCKER_IMG}
     image: docker-db
     container_name: ${BRANCH_NAME}_db
     #restart: always #avoid restart on docker restart, because we use 1 instance per customer now
@@ -44,7 +47,7 @@ services:
     cap_add:
       - IPC_LOCK
     ports:
-    - "${SEARCH_PORT}:9200"
+      - "${SEARCH_PORT}:9200"
     volumes:
       - metasfresh_elasticsearch:/usr/share/elasticsearch/data
     environment:

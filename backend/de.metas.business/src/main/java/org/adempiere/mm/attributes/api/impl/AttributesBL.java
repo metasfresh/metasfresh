@@ -365,4 +365,10 @@ public class AttributesBL implements IAttributesBL
 	{
 		return attributesRepo.retrieveAttributeValueOrNull(attributeId, value);
 	}
+
+	@Override
+	public AttributeListValue retrieveAttributeValueOrNull(@NonNull final I_M_Attribute attribute, @NonNull final String value)
+	{
+		return attributesRepo.retrieveAttributeValueOrNull(attribute, value);
+	}
 }

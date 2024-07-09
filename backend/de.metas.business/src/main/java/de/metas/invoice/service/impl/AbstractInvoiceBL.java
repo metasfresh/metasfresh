@@ -76,6 +76,7 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -217,6 +218,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public org.compiere.model.I_C_Invoice getByLineId(@NonNull final InvoiceLineId invoiceLineId)
+	{
+		return getById(InvoiceId.ofRepoId(getLineById(invoiceLineId).getC_Invoice_ID()));
+	}
+
+	@Override
 	public Optional<org.compiere.model.I_C_Invoice> getByIdIfExists(@NonNull final InvoiceId invoiceId)
 	{
 		return Optional.ofNullable(invoiceDAO.getByIdInTrxIfExists(invoiceId));
@@ -238,6 +245,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public List<I_C_InvoiceLine> getLines(@NonNull final InvoiceId invoiceId)
 	{
 		return invoiceDAO.retrieveLines(invoiceId);
+	}
+
+	@Override
+	public I_C_InvoiceLine getLineById(@NonNull final InvoiceAndLineId invoiceAndLineId)
+	{
+		return invoiceDAO.retrieveLineById(invoiceAndLineId);
 	}
 
 	@Override
@@ -906,7 +919,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		final org.compiere.model.I_C_DocType docType = docTypeDAO.getById(docTypeId);
+		final org.compiere.model.I_C_DocType docType = docTypeDAO.getRecordById(docTypeId);
 		if (docType == null)
 		{
 			return;
@@ -1534,11 +1547,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		if (invoice.getC_DocType_ID() > 0)
 		{
-			return docTypeDAO.getById(invoice.getC_DocType_ID());
+			return docTypeDAO.getRecordById(invoice.getC_DocType_ID());
 		}
 		else if (invoice.getC_DocTypeTarget_ID() > 0)
 		{
-			return docTypeDAO.getById(invoice.getC_DocTypeTarget_ID());
+			return docTypeDAO.getRecordById(invoice.getC_DocTypeTarget_ID());
 		}
 
 		return null;
@@ -1589,8 +1602,22 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean isDownPayment(final org.compiere.model.I_C_Invoice invoiceRecord)
 	{
-		final DocTypeId docTypeId = assumeNotNull(getDocTypeIdEffectiveOrNull(invoiceRecord), "The given C_Invoice={} needs to have a C_DocType", invoiceRecord);
-		return docTypeBL.isDownPayment(docTypeId);
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
+		return docTypeId != null && docTypeBL.isInterimInvoice(docTypeId);
+	}
+
+	@Override
+	public final boolean isFinalInvoiceOrFinalCreditMemo(final org.compiere.model.I_C_Invoice invoiceRecord)
+	{
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
+		return docTypeId != null && docTypeBL.isFinalInvoiceOrFinalCreditMemo(docTypeId);
+	}
+
+	@Override
+	public final boolean isDefinitiveInvoiceOrDefinitiveCreditMemo(final org.compiere.model.I_C_Invoice invoiceRecord)
+	{
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
+		return docTypeId != null && docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId);
 	}
 
 	@Override
@@ -1767,7 +1794,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		if (invoice.getC_DocTypeTarget_ID() > 0)
 		{
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-			docSubType = docTypeDAO.getById(invoice.getC_DocTypeTarget_ID()).getDocSubType();
+			docSubType = docTypeDAO.getRecordById(invoice.getC_DocTypeTarget_ID()).getDocSubType();
 		}
 		else
 		{
@@ -1885,8 +1912,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			//
 			// Create M_MatchInv reversal records, linked to reversal invoice line and original inout line.
 			final Timestamp reversalDateInvoiced = reversalInvoice.getDateInvoiced();
-			final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(il.getC_Invoice_ID(), il.getC_InvoiceLine_ID());
-			matchInvoiceService.createReversals(invoiceLineId, reversalLine, reversalDateInvoiced);
+			final InvoiceAndLineId invoiceAndLineId = InvoiceAndLineId.ofRepoId(il.getC_Invoice_ID(), il.getC_InvoiceLine_ID());
+			matchInvoiceService.createReversals(invoiceAndLineId, reversalLine, reversalDateInvoiced);
 		}
 	}
 

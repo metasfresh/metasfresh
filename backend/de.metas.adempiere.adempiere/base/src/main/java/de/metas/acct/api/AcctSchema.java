@@ -127,4 +127,9 @@ public class AcctSchema
 	{
 		return getSchemaElements().getChartOfAccountsId();
 	}
+
+	public boolean isAccountingCurrency(@NonNull final CurrencyId currencyId)
+	{
+		return CurrencyId.equals(this.currencyId, currencyId);
+	}
 }

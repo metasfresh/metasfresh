@@ -435,7 +435,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		final BigDecimal payDiscountAmt = rs.getBigDecimal("DiscountAmt");
 		candidateBuilder.setDiscountAmt(payDiscountAmt);
 
-		final boolean isSOTrx = DisplayType.toBoolean(rs.getString("IsSOTrx"), false);
+		final boolean isSOTrx = DisplayType.toBooleanNonNull(rs.getString("IsSOTrx"), false);
 		candidateBuilder.setIsSOTrx(isSOTrx);
 
 		final int bpartnerId = rs.getInt("C_BPartner_ID");
@@ -516,7 +516,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 	}
 
-	private final void deletePaySelectionLine(final I_C_PaySelectionLine paySelectionLine)
+	private void deletePaySelectionLine(@Nullable final I_C_PaySelectionLine paySelectionLine)
 	{
 		if (paySelectionLine == null)
 		{
@@ -536,7 +536,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	/**
 	 * Updates {@link I_C_PaySelectionLine} from: given candidate and current pay selection header
 	 */
-	private final void updatePaySelectionLine(final I_C_PaySelectionLine paySelectionLine, final PaySelectionLineCandidate candidate)
+	private void updatePaySelectionLine(final I_C_PaySelectionLine paySelectionLine, final PaySelectionLineCandidate candidate)
 	{
 		//
 		// Update from C_PaySelection header

@@ -22,7 +22,6 @@ package de.metas.invoicecandidate.async.spi.impl;
  * #L%
  */
 
-import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBL;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -117,9 +116,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 		// After invoices were generated, schedule another update invalid workpackage to update any remaining invoice candidates.
 		// This is a workaround and we do that because our testers reported that randomly, when we do mass invoicing,
 		// sometimes there are some invoice candidates invalidated.
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(getC_Queue_WorkPackage().getC_Async_Batch_ID());
-
-		invoiceCandUpdateSchedulerService.scheduleForUpdate(InvoiceCandUpdateSchedulerRequest.of(localCtx, localTrxName, asyncBatchId));
+		invoiceCandUpdateSchedulerService.scheduleForUpdate(InvoiceCandUpdateSchedulerRequest.of(localCtx, localTrxName));
 
 		return Result.SUCCESS;
 	}

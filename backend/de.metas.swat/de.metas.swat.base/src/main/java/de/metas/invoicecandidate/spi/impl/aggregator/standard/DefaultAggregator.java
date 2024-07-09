@@ -139,7 +139,7 @@ public class DefaultAggregator implements IAggregator
 				final AggregationKeyEvaluationContext evalCtx = AggregationKeyEvaluationContext.builder()
 						.invoiceCandidate(request.getC_Invoice_Candidate())
 						.inoutLine(inoutLine)
-						.invoiceLineAttributes(request.getInvoiceLineAttributes())
+						.invoiceLineAttributes(request.getAttributesFromInoutLines())
 						.build();
 				final AggregationKey lineAggregationKey = lineAggregationKeyUnparsed.parse(evalCtx);
 				aggregationKeyToUse.append(lineAggregationKey.getAggregationKeyString());

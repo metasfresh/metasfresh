@@ -33,6 +33,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.product.ProductId;
@@ -86,7 +87,7 @@ public interface IOrderBL extends ISingletonService
 	 * </ul>
 	 * Note: if the given order is <code>null</code>, then the method returns <code>null</code>; also note that there is sort of a sibling method in IOrderLineBL.
 	 */
-	I_M_PriceList_Version getPriceListVersion(I_C_Order order);
+	PriceListVersionId getPriceListVersion(I_C_Order order);
 
 	BPartnerLocationAndCaptureId getShipToLocationId(I_C_Order order);
 
@@ -330,7 +331,7 @@ public interface IOrderBL extends ISingletonService
 	static Quantity extractQtyEntered(final I_C_OrderLine orderLine)
 	{
 		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
-		return Quantitys.create(orderLine.getQtyEntered(), uomId);
+		return Quantitys.of(orderLine.getQtyEntered(), uomId);
 	}
 
 	de.metas.interfaces.I_C_OrderLine createOrderLine(I_C_Order order);
@@ -358,4 +359,11 @@ public interface IOrderBL extends ISingletonService
 	void setPhysicalClearanceDate(@NonNull OrderId orderId, @Nullable Instant physicalClearanceDate);
 
 	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
+
+	Map<OrderId, String> getDocumentNosByIds(@NonNull Collection<OrderId> orderIds);
+
+	void setWeightFromLines(@NonNull I_C_Order order);
+
+	@NonNull
+	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
 }

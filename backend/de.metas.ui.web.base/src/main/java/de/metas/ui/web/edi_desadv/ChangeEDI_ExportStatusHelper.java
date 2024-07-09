@@ -24,11 +24,11 @@ package de.metas.ui.web.edi_desadv;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADReferenceService;
+import de.metas.document.archive.DocOutboundLogId;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
-import de.metas.edi.model.DocOutboundLogId;
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.esb.edi.model.I_EDI_Desadv;
@@ -52,7 +52,7 @@ import java.util.List;
 public class ChangeEDI_ExportStatusHelper
 {
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
-	private final ADReferenceService adReferenceDAO = ADReferenceService.get();
+	private final ADReferenceService adReferenceService = ADReferenceService.get();
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final EDIDocOutBoundLogService ediDocOutBoundLogService = SpringContextHolder.instance.getBean(EDIDocOutBoundLogService.class);
 
@@ -124,7 +124,7 @@ public class ChangeEDI_ExportStatusHelper
 		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus);
 
 		return availableTargetStatuses.stream()
-				.map(s -> LookupValue.StringLookupValue.of(s.getCode(), adReferenceDAO.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, s.getCode())))
+				.map(s -> LookupValue.StringLookupValue.of(s.getCode(), adReferenceService.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, s.getCode())))
 				.collect(LookupValuesList.collect());
 	}
 
@@ -135,7 +135,7 @@ public class ChangeEDI_ExportStatusHelper
 		if (!availableTargetStatuses.isEmpty())
 		{
 			final String code = availableTargetStatuses.get(0).getCode();
-			return LookupValue.StringLookupValue.of(code, adReferenceDAO.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, code));
+			return LookupValue.StringLookupValue.of(code, adReferenceService.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, code));
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}

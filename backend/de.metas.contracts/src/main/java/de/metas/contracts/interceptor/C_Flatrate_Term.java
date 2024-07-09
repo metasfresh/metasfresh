@@ -169,10 +169,10 @@ public class C_Flatrate_Term
 			final Optional<org.compiere.model.I_C_DocType> existingDocType = docTypeDAO
 					.retrieveDocType(DocTypeQuery.builder()
 							.docBaseType(DocBaseType.CustomerContract)
-							.docSubType(docSubType)
-							.adClientId(org.getAD_Client_ID())
-							.adOrgId(org.getAD_Org_ID())
-							.build());
+											 .docSubType(docSubType)
+											 .adClientId(org.getAD_Client_ID())
+											 .adOrgId(org.getAD_Org_ID())
+											 .build());
 			if (existingDocType.isPresent())
 			{
 				continue;
@@ -182,17 +182,17 @@ public class C_Flatrate_Term
 			final String name = adReferenceService.retrieveListNameTrl(docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
 					+ " (" + org.getValue() + ")";
 			docTypeDAO.createDocType(DocTypeCreateRequest.builder()
-					.ctx(localCtx)
-					.adOrgId(org.getAD_Org_ID())
-					.entityType(Contracts_Constants.ENTITY_TYPE)
-					.name(name)
-					.printName(name)
+											 .ctx(localCtx)
+											 .adOrgId(org.getAD_Org_ID())
+											 .entityType(Contracts_Constants.ENTITY_TYPE)
+											 .name(name)
+											 .printName(name)
 					.docBaseType(DocBaseType.CustomerContract)
-					.docSubType(docSubType)
-					.isSOTrx(true)
-					.newDocNoSequenceStartNo(10000)
+											 .docSubType(docSubType)
+											 .isSOTrx(true)
+											 .newDocNoSequenceStartNo(10000)
 					.glCategoryId(glCategoryRepository.getDefaultId(clientId).orElseThrow(() -> new AdempiereException("No default GL Category found")))
-					.build());
+											 .build());
 		}
 	}
 
@@ -269,7 +269,7 @@ public class C_Flatrate_Term
 			if (periodsOfTerm.isEmpty())
 			{
 				errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_YEAR_WITHOUT_PERIODS_2P,
-						new Object[] { term.getStartDate(), term.getEndDate() }));
+										new Object[] { term.getStartDate(), term.getEndDate() }));
 			}
 			else
 			{
@@ -277,7 +277,7 @@ public class C_Flatrate_Term
 				if (firstPeriodStartDate.compareTo(startDate) > 0)
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P,
-							new Object[] { term.getStartDate(), invoicingCal.getName() }));
+											new Object[] { term.getStartDate(), invoicingCal.getName() }));
 				}
 
 				final LocalDateAndOrgId lastPeriodEndDate = LocalDateAndOrgId.ofTimestamp(periodsOfTerm.get(periodsOfTerm.size() - 1).getEndDate(), orgId, orgDAO::getTimeZone);
@@ -441,7 +441,9 @@ public class C_Flatrate_Term
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void beforeComplete(final I_C_Flatrate_Term term)
 	{
-		if (X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions()))
+		final boolean isFlatFee = X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions());
+		final boolean isRepordedQty = X_C_Flatrate_Term.TYPE_FLATRATE_ReportedQuantity.equals(term.getType_Flatrate());
+		if (isFlatFee && !isRepordedQty)
 		{
 			if (term.getPlannedQtyPerUnit().signum() <= 0)
 			{
@@ -482,7 +484,7 @@ public class C_Flatrate_Term
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void afterComplete(final I_C_Flatrate_Term term)
+	public void afterComplete(@NonNull final I_C_Flatrate_Term term)
 	{
 		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions())
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions()))

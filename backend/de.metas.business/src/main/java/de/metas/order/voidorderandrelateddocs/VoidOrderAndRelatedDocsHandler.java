@@ -52,7 +52,7 @@ public interface VoidOrderAndRelatedDocsHandler
 	void handleOrderVoided(VoidOrderAndRelatedDocsRequest request);
 
 	@Value
-	public class RecordsToHandleKey
+	class RecordsToHandleKey
 	{
 		public static RecordsToHandleKey of(@NonNull final String tableName)
 		{

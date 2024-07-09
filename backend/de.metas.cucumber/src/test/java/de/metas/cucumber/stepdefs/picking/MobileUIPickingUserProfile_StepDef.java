@@ -22,20 +22,17 @@
 
 package de.metas.cucumber.stepdefs.picking;
 
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.logging.LogManager;
 import de.metas.picking.config.MobileUIPickingUserProfile;
 import de.metas.picking.config.MobileUIPickingUserProfileRepository;
-import de.metas.util.StringUtils;
-import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_MobileUI_UserProfile_Picking;
 import org.slf4j.Logger;
-
-import java.util.Map;
 
 public class MobileUIPickingUserProfile_StepDef
 {
@@ -45,16 +42,12 @@ public class MobileUIPickingUserProfile_StepDef
 	@And("set mobile UI picking profile")
 	public void updateProfile(@NonNull final DataTable dataTable)
 	{
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
+
 		final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = repo.getProfile().toBuilder();
-
-		final Map<String, String> row = CollectionUtils.singleElement(dataTable.asMaps());
-		StringUtils.trimBlankToOptional(DataTableUtil.extractNullableStringForColumnName(row, "IsAllowPickingAnyHU"))
-				.map(StringUtils::toBoolean)
-				.ifPresent(newProfileBuilder::isAllowPickingAnyHU);
-		StringUtils.trimBlankToOptional(DataTableUtil.extractNullableStringForColumnName(row, "CreateShipmentPolicy"))
-				.map(CreateShipmentPolicy::ofCodeOrName)
-				.ifPresent(newProfileBuilder::createShipmentPolicy);
-
+		row.getAsOptionalBoolean("IsAllowPickingAnyHU").ifPresent(newProfileBuilder::isAllowPickingAnyHU);
+		row.getAsOptionalString("CreateShipmentPolicy").map(CreateShipmentPolicy::ofCodeOrName).ifPresent(newProfileBuilder::createShipmentPolicy);
+		row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAlwaysSplitHUsEnabled).ifPresent(newProfileBuilder::isAlwaysSplitHUsEnabled);
 		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
 		repo.save(newProfile);
 		logger.info("Profile updated: {}", newProfile);

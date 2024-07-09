@@ -22,12 +22,6 @@ package org.adempiere.invoice.process;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.apps.AEnv;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -36,6 +30,11 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.apps.AEnv;
+
+import java.math.BigDecimal;
+import java.util.Properties;
 
 public class CreateCreditMemoFromInvoice extends JavaProcess
 {
@@ -83,7 +82,7 @@ public class CreateCreditMemoFromInvoice extends JavaProcess
 		final String documentNo = creditMemo.getDocumentNo();
 
 		final String msg = "@Created@: "
-				+ docTypeDAO.getById(creditMemo.getC_DocTypeTarget_ID()).getName() + ", @DocumentNo@ "
+				+ docTypeDAO.getRecordById(creditMemo.getC_DocTypeTarget_ID()).getName() + ", @DocumentNo@ "
 				+ documentNo;
 
 		AD_Table_ID = InterfaceWrapperHelper.getModelTableId(creditMemo);

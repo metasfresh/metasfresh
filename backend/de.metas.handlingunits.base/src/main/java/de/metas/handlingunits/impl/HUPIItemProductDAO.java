@@ -24,10 +24,13 @@ package de.metas.handlingunits.impl;
 
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.handlingunits.model.I_M_HU;
@@ -39,9 +42,13 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.i18n.IModelTranslationMap;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -75,8 +82,39 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class HUPIItemProductDAO implements IHUPIItemProductDAO
 {
+	private final CCache<HUPIItemProductId, HUPIItemProduct> cacheById = CCache.<HUPIItemProductId, HUPIItemProduct>builder()
+			.tableName(I_M_HU_PI_Item_Product.Table_Name)
+			.build();
+
 	@Override
-	public I_M_HU_PI_Item_Product getById(@NonNull final HUPIItemProductId id)
+	public HUPIItemProduct getById(@NonNull final HUPIItemProductId id)
+	{
+		return cacheById.getOrLoad(id, this::retrieveById);
+	}
+
+	public HUPIItemProduct retrieveById(@NonNull final HUPIItemProductId id)
+	{
+		final I_M_HU_PI_Item_Product record = getRecordById(id);
+		return fromRecord(record);
+	}
+
+	public static HUPIItemProduct fromRecord(final I_M_HU_PI_Item_Product record)
+	{
+		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(record);
+
+		return HUPIItemProduct.builder()
+				.id(HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID()))
+				.name(trls.getColumnTrl(I_M_HU_PI_Item_Product.COLUMNNAME_Name, record.getName()))
+				.description(StringUtils.trimBlankToNull(record.getDescription()))
+				.piItemId(HuPackingInstructionsItemId.ofRepoId(record.getM_HU_PI_Item_ID()))
+				.productId(record.isAllowAnyProduct() ? null : ProductId.ofRepoId(record.getM_Product_ID()))
+				.qtyCUsPerTU(record.isInfiniteCapacity() ? null : Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.build();
+	}
+
+	@Override
+	@NonNull
+	public I_M_HU_PI_Item_Product getRecordById(@NonNull final HUPIItemProductId id)
 	{
 		return loadOutOfTrx(id, I_M_HU_PI_Item_Product.class);
 	}
@@ -101,11 +139,11 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	@Cached
 	public I_M_HU_PI_Item_Product retrieveVirtualPIMaterialItemProduct(@CacheCtx final Properties ctx)
 	{
-		final I_M_HU_PI_Item_Product piip = getById(HUPIItemProductId.VIRTUAL_HU);
+		final I_M_HU_PI_Item_Product piip = getRecordById(HUPIItemProductId.VIRTUAL_HU);
 
 		return Check.assumeNotNull(piip,
-								   "There is always a M_HU_PI_Item_Product record for HU_PI_Item_Product_ID={}",
-								   HUPIItemProductId.VIRTUAL_HU);
+				"There is always a M_HU_PI_Item_Product record for HU_PI_Item_Product_ID={}",
+				HUPIItemProductId.VIRTUAL_HU);
 	}
 
 	@Override
@@ -322,8 +360,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 			// We accept NoPI or VirtualPI configurations because those needs to be filtered out by other options (e.g. setAllowVirtualPI())
 			infiniteCapacityFilter.addInArrayOrAllFilter(I_M_HU_PI_Item_Product.COLUMN_M_HU_PI_Item_Product_ID,
-														 HUPIItemProductId.TEMPLATE_HU,
-														 HUPIItemProductId.VIRTUAL_HU);
+					HUPIItemProductId.TEMPLATE_HU,
+					HUPIItemProductId.VIRTUAL_HU);
 
 			filters.addFilter(infiniteCapacityFilter);
 		}
@@ -517,8 +555,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 	@Override
 	public boolean matches(final Properties ctx,
-			final Collection<I_M_HU_PI_Item_Product> itemProducts,
-			final IHUPIItemProductQuery queryVO)
+						   final Collection<I_M_HU_PI_Item_Product> itemProducts,
+						   final IHUPIItemProductQuery queryVO)
 	{
 		if (itemProducts == null || itemProducts.isEmpty())
 		{
@@ -567,8 +605,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 	@Override
 	public List<I_M_HU_PI_Item_Product> retrieveTUs(final Properties ctx,
-			final ProductId cuProductId,
-			final BPartnerId bpartnerId)
+													final ProductId cuProductId,
+													final BPartnerId bpartnerId)
 	{
 		//
 		// Filter out infinite capacity configurations
@@ -578,9 +616,9 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 	@Override
 	public List<I_M_HU_PI_Item_Product> retrieveTUs(final Properties ctx,
-			@NonNull final ProductId cuProductId,
-			final BPartnerId bpartnerId,
-			final boolean allowInfiniteCapacity)
+													@NonNull final ProductId cuProductId,
+													final BPartnerId bpartnerId,
+													final boolean allowInfiniteCapacity)
 	{
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
 
@@ -625,7 +663,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		if (bpartnerId != null)
 		{
 			final I_M_HU_PI_Item_Product originalHUPIItemProduct = retrieveMaterialItemProduct(cuProductId, bpartnerId, currentDate, huUnitType,
-																							   false); // allowInfiniteCapacity = false
+					false); // allowInfiniteCapacity = false
 			if (originalHUPIItemProduct != null)     // kindda redundant check
 			{
 				removeDuplicatePIResultsWithoutPartner(originalHUPIItemProduct, availableHUPIItemProducts);

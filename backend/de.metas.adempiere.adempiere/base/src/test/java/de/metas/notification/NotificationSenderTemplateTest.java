@@ -31,6 +31,7 @@ import de.metas.email.templates.MailTemplateRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.notification.impl.NotificationRepository;
+import de.metas.notification.impl.UserNotificationsConfigService;
 import de.metas.organization.OrgId;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.user.UserGroupRepository;
@@ -52,7 +53,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import static de.metas.notification.NotificationMessageFormatter.MSG_EmailOrigin;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class NotificationSenderTemplateTest
 {
@@ -81,6 +82,7 @@ public class NotificationSenderTemplateTest
 
 		SpringContextHolder.registerJUnitBean(new MailService(new MailboxRepository(), new MailTemplateRepository()));
 		SpringContextHolder.registerJUnitBean(new UserGroupRepository());
+		SpringContextHolder.registerJUnitBean(new UserNotificationsConfigService());
 
 		sender = new NotificationSenderTemplate();
 

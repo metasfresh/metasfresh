@@ -1,6 +1,7 @@
 package de.metas.contracts.model;
 
 import org.adempiere.model.ModelColumn;
+import org.compiere.model.I_C_AcctSchema_Element;
 
 import javax.annotation.Nullable;
 
@@ -28,6 +29,27 @@ public interface I_ModCntr_Type
 	int getAD_Client_ID();
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set ColumnName.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setColumnName (java.lang.String ColumnName);
+
+	/**
+	 * Get ColumnName.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getColumnName();
+
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_ColumnName = new ModelColumn<>(I_ModCntr_Type.class, "ColumnName", null);
+	String COLUMNNAME_ColumnName = "ColumnName";
 
 	/**
 	 * Set Organisation.
@@ -79,20 +101,20 @@ public interface I_ModCntr_Type
 	/**
 	 * Set Description.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescription();
+	@Nullable java.lang.String getDescription();
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_Description = new ModelColumn<>(I_ModCntr_Type.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -121,7 +143,7 @@ public interface I_ModCntr_Type
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Contract Module Type.
+	 * Set Computing Method.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -130,7 +152,7 @@ public interface I_ModCntr_Type
 	void setModCntr_Type_ID (int ModCntr_Type_ID);
 
 	/**
-	 * Get Contract Module Type.
+	 * Get Computing Method.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -145,19 +167,19 @@ public interface I_ModCntr_Type
 	 * Set Modular Contract Handler Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setModularContractHandlerType (@Nullable String ModularContractHandlerType);
+	void setModularContractHandlerType (java.lang.String ModularContractHandlerType);
 
 	/**
 	 * Get Modular Contract Handler Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getModularContractHandlerType();
+	java.lang.String getModularContractHandlerType();
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_ModularContractHandlerType = new ModelColumn<>(I_ModCntr_Type.class, "ModularContractHandlerType", null);
 	String COLUMNNAME_ModularContractHandlerType = "ModularContractHandlerType";
@@ -169,7 +191,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -178,7 +200,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getName();
+	java.lang.String getName();
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_Name = new ModelColumn<>(I_ModCntr_Type.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
@@ -216,7 +238,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setValue (String Value);
+	void setValue (java.lang.String Value);
 
 	/**
 	 * Get Search Key.
@@ -226,7 +248,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getValue();
+	java.lang.String getValue();
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_Value = new ModelColumn<>(I_ModCntr_Type.class, "Value", null);
 	String COLUMNNAME_Value = "Value";

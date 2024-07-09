@@ -550,6 +550,8 @@ public interface IQuery<T>
 	 */
 	<K, ET extends T> ListMultimap<K, ET> listMultimap(Class<ET> modelClass, Function<ET, K> keyFunction);
 
+	default <K> ListMultimap<K, T> listMultimap(@NonNull Function<T, K> keyFunction) {return listMultimap(getModelClass(), keyFunction);}
+
 	/**
 	 * Retrieves the records and then splits them in groups based on the indexing key provided by <code>keyFunction</code>.
 	 *

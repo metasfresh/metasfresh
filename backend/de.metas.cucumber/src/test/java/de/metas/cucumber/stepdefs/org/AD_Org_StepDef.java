@@ -23,8 +23,10 @@
 package de.metas.cucumber.stepdefs.org;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.organization.IOrgDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -33,13 +35,13 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_Org;
 
 import java.util.List;
 import java.util.Map;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class AD_Org_StepDef
@@ -64,10 +66,10 @@ public class AD_Org_StepDef
 			final String value = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Org.COLUMNNAME_Value);
 
 			final I_AD_Org orgRecord = CoalesceUtil.coalesce(queryBL.createQueryBuilder(I_AD_Org.class)
-																	 .addEqualsFilter(I_AD_Org.COLUMNNAME_Value, value)
-																	 .create()
-																	 .firstOnly(I_AD_Org.class),
-															 InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Org.class));
+							.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, value)
+							.create()
+							.firstOnly(I_AD_Org.class),
+					InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Org.class));
 
 			Assertions.assertThat(orgRecord).isNotNull();
 
@@ -84,9 +86,8 @@ public class AD_Org_StepDef
 	@And("load AD_Org:")
 	public void load_AD_Org(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String orgCode = DataTableUtil.extractStringForColumnName(row, I_AD_Org.COLUMNNAME_Value);
+		DataTableRows.of(dataTable).forEach((row) -> {
+			final String orgCode = row.getAsString("Value");
 
 			final I_AD_Org orgRecord = queryBL.createQueryBuilder(I_AD_Org.class)
 					.addOnlyActiveRecordsFilter()
@@ -94,10 +95,14 @@ public class AD_Org_StepDef
 					.create()
 					.firstOnlyOrNull(I_AD_Org.class);
 
-			assertThat(orgRecord).isNotNull();
+			assertThat(orgRecord).as("AD_Org for identifier=%S", orgCode).isNotNull();
 
-			final String orgIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_Org.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
-			orgTable.putOrReplace(orgIdentifier, orgRecord);
-		}
+			final StepDefDataIdentifier orgIdentifier = row.getAsIdentifier("AD_Org_ID");
+
+			try (final IAutoCloseable ignored = orgTable.temporaryDisableDuplicatesChecking())
+			{
+				orgTable.putOrReplace(orgIdentifier, orgRecord);
+			}
+		});
 	}
 }

@@ -39,12 +39,10 @@ import java.time.Instant;
 @Builder
 public class ModularFlatrateTermQuery
 {
-	@NonNull BPartnerId bPartnerId;
-	@Nullable
-	ProductId productId;
+	@Nullable BPartnerId bPartnerId;
+	@Nullable ProductId productId;
 	@NonNull SOTrx soTrx;
-	@Nullable
-	YearId yearId;
+	@Nullable YearId yearId;
 	@NonNull TypeConditions typeConditions;
 	@Nullable
 	CalendarId calendarId;

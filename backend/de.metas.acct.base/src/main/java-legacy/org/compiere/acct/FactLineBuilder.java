@@ -401,6 +401,19 @@ public final class FactLineBuilder
 		return this;
 	}
 
+	public FactLineBuilder setAmt(@Nullable final MoneySourceAndAcct debit, @Nullable final MoneySourceAndAcct credit)
+	{
+		final Money amtSourceDr = debit != null ? debit.getSource() : null;
+		final Money amtSourceCr = credit != null ? credit.getSource() : null;
+		final Money amtAcctDr = debit != null ? debit.getAcct() : null;
+		final Money amtAcctCr = credit != null ? credit.getAcct() : null;
+
+		setAmtSource(amtSourceDr, amtSourceCr);
+		setAmtAcct(amtAcctDr, amtAcctCr);
+
+		return this;
+	}
+
 	public FactLineBuilder setAmtSource(@Nullable final CostAmount amtSourceDr, @Nullable final CostAmount amtSourceCr)
 	{
 		assertNotBuild();

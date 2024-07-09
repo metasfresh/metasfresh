@@ -1,10 +1,6 @@
 package de.metas.event.log.process;
 
-import de.metas.util.Check;
-import org.compiere.SpringContextHolder;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -15,7 +11,9 @@ import de.metas.event.log.EventLogService;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.process.JavaProcess;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
 
 /*
  * #%L

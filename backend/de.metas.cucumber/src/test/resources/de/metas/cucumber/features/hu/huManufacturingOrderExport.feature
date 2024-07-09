@@ -59,8 +59,8 @@ Feature: Handling unit export from manufacturing order
       | ppOrder_manufacturing  | MOP         | manufacturingProduct_HU | 10         | testResource             | 2022-01-05T23:59:00.00Z | 2022-01-05T23:59:00.00Z | 2022-01-05T23:59:00.00Z | Y                |
 
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier |
-      | huLuTuConfig                          | ppOrder_manufacturing  | ppOrderTU          | N               | 0     | N               | 1     | N               | 10    | huItemManufacturingProduct         |
+      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | huLuTuConfig                          | ppOrder_manufacturing  | ppOrderTU          | N               | 0     | N               | 1     | N               | 10          | huItemManufacturingProduct         |
 
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
@@ -83,8 +83,8 @@ Feature: Handling unit export from manufacturing order
       | storagePPOrderCU           | ppOrderCU          | manufacturingProduct_HU | 10  |
 
     And after not more than 60s, PP_Cost_Collector are found:
-      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
-      | ppOrder_CostCollector           | ppOrder_manufacturing  | manufacturingProduct_HU | 10          | CO        |
+      | PP_Cost_Collector_ID.Identifier | CostCollectorType | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
+      | ppOrder_CostCollector           | MaterialReceipt   | ppOrder_manufacturing  | manufacturingProduct_HU | 10          | CO        |
 
     Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
       | ExternalSystem_Config_ID.Identifier | OPT.M_HU_ID.Identifier |

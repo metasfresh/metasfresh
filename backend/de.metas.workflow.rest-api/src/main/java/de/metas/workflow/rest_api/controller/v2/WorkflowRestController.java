@@ -23,11 +23,18 @@
 package de.metas.workflow.rest_api.controller.v2;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
+import de.metas.RestUtils;
+import de.metas.common.rest_api.v2.JsonError;
+import de.metas.common.rest_api.v2.JsonErrorItem;
+import de.metas.document.DocumentNoFilter;
+import de.metas.error.IErrorManager;
+import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.json.JsonLaunchersQuery;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplication;
@@ -37,8 +44,8 @@ import de.metas.workflow.rest_api.controller.v2.json.JsonSetScannedBarcodeReques
 import de.metas.workflow.rest_api.controller.v2.json.JsonSettings;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
-import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersFacet;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersFacetGroupList;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersFacetsQuery;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.WFActivityId;
@@ -47,10 +54,11 @@ import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.Params;
 import org.compiere.util.Env;
@@ -73,6 +81,7 @@ public class WorkflowRestController
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final WorkflowRestAPIService workflowRestAPIService;
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private static final String SYSCONFIG_SETTINGS_PREFIX = "mobileui.frontend.";
 
@@ -105,7 +114,7 @@ public class WorkflowRestController
 				.applications(
 						workflowRestAPIService.streamMobileApplicationInfos(loggedUserId)
 								.map(applicationInfo -> JsonMobileApplication.of(applicationInfo, jsonOpts))
-								.sorted(Comparator.comparing(JsonMobileApplication::getCaption))
+								.sorted(Comparator.comparing(JsonMobileApplication::getSortNo).thenComparing(JsonMobileApplication::getCaption))
 								.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
@@ -130,32 +139,30 @@ public class WorkflowRestController
 		return JsonWorkflowLaunchersList.of(launchers, query, newJsonOpts());
 	}
 
-	private WorkflowLaunchersQuery toWorkflowLaunchersQuery(final @NonNull JsonLaunchersQuery query)
+	private static WorkflowLaunchersQuery toWorkflowLaunchersQuery(final @NonNull JsonLaunchersQuery query)
 	{
-
-		ImmutableSet<WorkflowLaunchersFacetId> facetIds = null;
-		if (query.getFacets() != null && !query.getFacets().isEmpty())
-		{
-			facetIds = query.getFacets().stream()
-					.map(JsonWorkflowLaunchersFacet::getFacetId)
-					.collect(ImmutableSet.toImmutableSet());
-		}
-
 		return WorkflowLaunchersQuery.builder()
 				.applicationId(query.getApplicationId())
 				.userId(Env.getLoggedUserId())
 				.filterByQRCode(query.getFilterByQRCode())
-				.facetIds(facetIds)
+				.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
+				.facetIds(CollectionUtils.toImmutableSetOrNullIfEmpty(query.getFacetIds()))
+				.limit(query.isCountOnly() ? QueryLimit.NO_LIMIT : null)
 				.build();
 	}
 
-	@GetMapping("/facets")
-	public JsonWorkflowLaunchersFacetGroupList getFacets(@RequestParam("applicationId") final String applicationIdStr)
+	@PostMapping("/facets")
+	public JsonWorkflowLaunchersFacetGroupList getFacets(@RequestBody @NonNull final JsonWorkflowLaunchersFacetsQuery query)
 	{
-		final UserId loggedUserId = Env.getLoggedUserId();
-		final MobileApplicationId applicationId = MobileApplicationId.ofString(applicationIdStr);
-		final WorkflowLaunchersFacetGroupList facets = workflowRestAPIService.getFacets(applicationId, loggedUserId);
-		return JsonWorkflowLaunchersFacetGroupList.of(facets, newJsonOpts());
+		final WorkflowLaunchersFacetGroupList result = workflowRestAPIService.getFacets(
+				WorkflowLaunchersFacetQuery.builder()
+						.applicationId(query.getApplicationId())
+						.userId(Env.getLoggedUserId())
+						.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
+						.activeFacetIds(CollectionUtils.toImmutableSetOrEmpty(query.getActiveFacetIds()))
+						.build()
+		);
+		return JsonWorkflowLaunchersFacetGroupList.of(result, newJsonOpts());
 	}
 
 	@GetMapping("/wfProcess/{wfProcessId}")
@@ -261,4 +268,26 @@ public class WorkflowRestController
 		final Map<String, String> map = sysConfigBL.getValuesForPrefix(SYSCONFIG_SETTINGS_PREFIX, true, Env.getClientAndOrgId());
 		return JsonSettings.ofMap(map);
 	}
+
+	@PostMapping("/errors")
+	public void logErrors(@RequestBody @NonNull final JsonError error)
+	{
+		error.getErrors().stream()
+				.map(WorkflowRestController::toInsertRemoteIssueRequest)
+				.forEach(errorManager::insertRemoteIssue);
+	}
+
+	private static InsertRemoteIssueRequest toInsertRemoteIssueRequest(final JsonErrorItem jsonErrorItem)
+	{
+		return InsertRemoteIssueRequest.builder()
+				.issueCategory(jsonErrorItem.getIssueCategory())
+				.issueSummary(StringUtils.trimBlankToOptional(jsonErrorItem.getMessage()).orElse("Error"))
+				.sourceClassName(jsonErrorItem.getSourceClassName())
+				.sourceMethodName(jsonErrorItem.getSourceMethodName())
+				.stacktrace(jsonErrorItem.getStackTrace())
+				.orgId(RestUtils.retrieveOrgIdOrDefault(jsonErrorItem.getOrgCode()))
+				.frontendUrl(jsonErrorItem.getFrontendUrl())
+				.build();
+	}
+
 }

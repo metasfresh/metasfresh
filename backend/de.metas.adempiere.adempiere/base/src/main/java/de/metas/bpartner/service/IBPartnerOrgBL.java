@@ -34,6 +34,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -80,4 +81,6 @@ public interface IBPartnerOrgBL extends ISingletonService
 	I_AD_User retrieveUserInChargeOrNull(Properties ctx, int orgId, String trxName);
 
 	@NonNull String getOrgLanguageOrLoggedInUserLanguage(@NonNull OrgId orgId);
+
+	Collection<UserId> retrieveOrgUsers(OrgId orgId);
 }

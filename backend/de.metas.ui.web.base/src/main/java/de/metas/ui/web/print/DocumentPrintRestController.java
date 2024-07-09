@@ -72,17 +72,21 @@ public class DocumentPrintRestController
 	{
 		userSession.assertLoggedIn();
 
-		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
+		return documentPrintService.createDocumentPrint(WebuiDocumentPrintRequest.builder()
+						.flavor(DocumentReportFlavor.EMAIL)
+						.documentPath(DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), documentIdStr))
+						.userId(userSession.getLoggedUserId())
+						.roleId(userSession.getLoggedRoleId())
+						.printOptions(DocumentPrintOptions.ofMap(requestParams, "user HTTP request"))
+						.build())
+				.filter(report -> !report.isEmpty())
+				.map(documentPrint -> toResponseEntity(documentPrint, filename))
+				.orElseGet(() -> ResponseEntity.ok().build());
+	}
 
-		final ReportResultData documentPrint = documentPrintService.createDocumentPrint(WebuiDocumentPrintRequest.builder()
-				.flavor(DocumentReportFlavor.EMAIL)
-				.documentPath(documentPath)
-				.userId(userSession.getLoggedUserId())
-				.roleId(userSession.getLoggedRoleId())
-				.printOptions(DocumentPrintOptions.ofMap(requestParams, "user HTTP request"))
-				.build());
-
+	@NonNull
+	private static ResponseEntity<Resource> toResponseEntity(@NonNull final ReportResultData documentPrint, @NonNull final String filename)
+	{
 		final Resource reportData = documentPrint.getReportData();
 		final String reportContentType = documentPrint.getReportContentType();
 

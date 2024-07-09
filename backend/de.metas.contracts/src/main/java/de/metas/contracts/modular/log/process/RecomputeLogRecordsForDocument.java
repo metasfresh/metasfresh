@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.log.process;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.modular.log.LogsRecomputationService;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
@@ -61,6 +62,7 @@ public class RecomputeLogRecordsForDocument extends JavaProcess
 			case I_PP_Cost_Collector.Table_Name -> recomputeLogsService.recomputeForCostCollector(getProcessInfo().getQueryFilterOrElseFalse());
 			case I_PP_Order.Table_Name -> recomputeLogsService.recomputeForPPOrder(getProcessInfo().getQueryFilterOrElseFalse());
 			case I_M_Shipping_Notification.Table_Name -> recomputeLogsService.recomputeForShippingNotification(getProcessInfo().getQueryFilterOrElseFalse());
+			case I_I_ModCntr_Log.Table_Name -> {/*Should never recompute import logs;*/}
 			default -> throw new AdempiereException("Process is not supported for table name=" + tableName);
 		}
 

@@ -72,7 +72,7 @@ public class FillMandatoryException extends AdempiereException
 
 			if (firstField)
 			{
-				builder.append(": ");
+				builder.append(" ");
 			}
 			else
 			{
@@ -129,4 +129,13 @@ public class FillMandatoryException extends AdempiereException
 		}
 	}
 
+
+	public static void assumeNotNull(@Nullable final Object objectToCheck,
+			@NonNull final String... fields)
+	{
+		if (objectToCheck == null)
+		{
+			throw new FillMandatoryException(false, fields);
+		}
+	}
 }

@@ -542,7 +542,7 @@ public class JsonInvoiceService
 				.vatCodeId(getVatCodeId(jsonLine.getTaxCode(), orgId))
 				.priceEntered(jsonLine.getPriceEntered())
 				.priceUomId(priceUomId)
-				.qtyToInvoice(Quantitys.create(jsonLine.getQtyToInvoice(), uomId))
+				.qtyToInvoice(Quantitys.of(jsonLine.getQtyToInvoice(), uomId))
 
 				.elementValueId(getElementValueId(jsonLine.getAcctCode(), accountsId))
 				.productAcctType(ProductAcctType.ofName(jsonLine.getAccountName()))

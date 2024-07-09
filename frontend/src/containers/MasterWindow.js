@@ -26,6 +26,7 @@ import {
 
 import MasterWindow from '../components/app/MasterWindow';
 import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
+import { fetchTopActions } from '../actions/Actions';
 
 import history from '../services/History';
 
@@ -179,8 +180,13 @@ class MasterWindowContainer extends PureComponent {
 
   isActiveTab(tabId) {
     const { master } = this.props;
+    const activeTab = master.layout.activeTab;
+    if (!activeTab) {
+      console.log('No active activeTab found', { master });
+      return false;
+    }
 
-    return tabId === master.layout.activeTab;
+    return tabId === activeTab;
   }
 
   mergeDataIntoIncludedTab({ response, tabId }) {
@@ -235,6 +241,7 @@ class MasterWindowContainer extends PureComponent {
       params: { windowId, docId },
       updateTabTableData,
       updateTabLayout,
+      fetchTopActions,
     } = this.props;
 
     const activeTabId = master.layout.activeTab;
@@ -253,11 +260,13 @@ class MasterWindowContainer extends PureComponent {
 
     updateTabLayout(windowId, activeTabId)
       .then(() => {
-        getTabRequest(activeTabId, windowId, docId, orderBy).then((rows) =>
+        getTabRequest(activeTabId, windowId, docId, orderBy).then(({ rows }) =>
           updateTabTableData(tableId, rows)
         );
       })
       .catch((error) => error);
+
+    fetchTopActions({ windowId, tabId: activeTabId, docId });
   };
 
   deleteTabsTables = () => {
@@ -291,21 +300,18 @@ class MasterWindowContainer extends PureComponent {
       master,
       params: { windowId, docId },
     } = this.props;
-    const orderBy = (asc ? '+' : '-') + field;
-    const dataId = master.docId;
-    const activeTabId = master.layout.activeTab;
 
-    if (!activeTabId) {
+    const activeTabId = master.layout.activeTab;
+    if (tabId !== activeTabId) {
       return;
     }
-    const tableId = getTableId({
-      windowId,
-      docId,
-      tabId: activeTabId,
-    });
 
-    sortTab('master', tabId, field, asc);
-    getTabRequest(tabId, windowId, dataId, orderBy).then((rows) => {
+    const orderBy = (asc ? '+' : '-') + field;
+    const dataId = master.docId;
+    const tableId = getTableId({ windowId, docId, tabId });
+
+    sortTab({ scope: 'master', windowId, docId, tabId, field, asc });
+    getTabRequest(tabId, windowId, dataId, orderBy).then(({ rows }) => {
       updateTabTableData(tableId, rows);
     });
   };
@@ -373,6 +379,7 @@ MasterWindowContainer.propTypes = {
   updateTabTableData: PropTypes.func.isRequired,
   updateTabLayout: PropTypes.func.isRequired,
   updateLastBackPage: PropTypes.func.isRequired,
+  fetchTopActions: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -403,6 +410,7 @@ export default connect(mapStateToProps, {
   deleteTable,
   updateTabLayout,
   updateLastBackPage,
+  fetchTopActions,
 })(MasterWindowContainer);
 
 //
@@ -414,8 +422,6 @@ const isLayoutLoaded = (layout) => {
 };
 
 const getFieldFromLayout = (layout, fieldName) => {
-  console.log('getFieldFromLayout', { layout, fieldName });
-
   for (const section of layout.sections ?? []) {
     // console.log('section', section);
 

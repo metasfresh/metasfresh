@@ -64,9 +64,10 @@ import de.metas.workflow.WFResponsible;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFState;
 import de.metas.workflow.WorkflowId;
+import de.metas.workflow.execution.approval.WFActivityApprovalCommand;
+import de.metas.workflow.execution.approval.WFActivityApprovalResponse;
 import de.metas.workflow.execution.approval.WFApprovalRequest;
-import de.metas.workflow.execution.approval.strategy.WFApprovalStrategy;
-import de.metas.workflow.execution.approval.strategy.impl.RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy;
+import de.metas.workflow.execution.approval.strategy.DocApprovalStrategyId;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.With;
@@ -74,7 +75,6 @@ import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MClient;
@@ -111,6 +111,7 @@ public class WFActivity
 	//private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
 
 	@NonNull private final WorkflowExecutionContext context;
+	@NonNull private final WorkflowExecutionSupportingServicesFacade services;
 	@NonNull private final WFProcess wfProcess;
 	@NonNull private final WFNode wfNode;
 	@NonNull @Getter private final TableRecordReference documentRef;
@@ -128,6 +129,7 @@ public class WFActivity
 			@NonNull final WFNodeId nodeId)
 	{
 		this.context = wfProcess.getContext();
+		this.services = this.context.getServices();
 		this.wfProcess = wfProcess;
 		this.wfNode = wfProcess.getWorkflow().getNodeById(nodeId);
 		this.documentRef = wfProcess.getDocumentRef();
@@ -144,7 +146,7 @@ public class WFActivity
 		final WFResponsibleId wfResponsibleId = wfNode.getResponsibleId() != null
 				? wfNode.getResponsibleId()
 				: wfProcess.getWfResponsibleId();
-		final WFResponsible resp = context.getResponsibleById(wfResponsibleId);
+		final WFResponsible resp = services.getWFResponsibleById(wfResponsibleId);
 
 		// User - Directly responsible
 		UserId userId = resp.getUserId();
@@ -176,6 +178,7 @@ public class WFActivity
 			@NonNull final WFActivityState state)
 	{
 		this.context = wfProcess.getContext();
+		this.services = context.getServices();
 		this.wfProcess = wfProcess;
 		this.wfNode = wfProcess.getWorkflow().getNodeById(state.getWfNodeId());
 		this.documentRef = wfProcess.getDocumentRef();
@@ -193,6 +196,9 @@ public class WFActivity
 
 	@Nullable
 	public WFActivityId getId() {return state.getId();}
+
+	@NonNull
+	public WFActivityId getIdNotNull() {return state.getIdNotNull();}
 
 	void setId(@NonNull final WFActivityId id) {state.setId(id);}
 
@@ -400,7 +406,7 @@ public class WFActivity
 	 */
 	WFResponsibleId getWFResponsibleId() {return state.getWfResponsibleId();}
 
-	private WFResponsible getResponsible() {return context.getResponsibleById(getWFResponsibleId());}
+	private WFResponsible getResponsible() {return services.getWFResponsibleById(getWFResponsibleId());}
 
 	public void start()
 	{
@@ -419,7 +425,7 @@ public class WFActivity
 		//noinspection OptionalAssignedToNull
 		m_newValue = null;
 
-		context.getTrxManager().runInThreadInheritedTrx(new TrxRunnableAdapter()
+		services.runInThreadInheritedTrx(new TrxRunnableAdapter()
 		{
 			private boolean docStatusChanged = false;
 			private Throwable exception = null;
@@ -652,7 +658,7 @@ public class WFActivity
 		note.saveEx();
 		// Attachment
 
-		context.createNewAttachment(note, report);
+		services.createNewAttachment(note, report);
 	}
 
 	private PerformWorkResult performWork_WaitSleep()
@@ -698,9 +704,6 @@ public class WFActivity
 
 	private PerformWorkResult performWork_UserChoice()
 	{
-		final WFNode wfNode = getNode();
-		log.debug("UserChoice:AD_Column_ID={}", wfNode.getDocumentColumnId());
-
 		// Approval:
 		if (getNode().isUserApproval())
 		{
@@ -715,86 +718,86 @@ public class WFActivity
 
 	private PerformWorkResult performWork_UserChoice_DocumentApproval()
 	{
-		if (getDocumentOrNull() == null)
+		final IDocument document = getDocumentOrNull();
+		if (document == null)
 		{
 			return PerformWorkResult.SUSPENDED;
 		}
 
-		final WFApprovalStrategy approvalStrategy = getApprovalStrategy();
-		final WFApprovalStrategy.Request request = newWFApprovalRequest();
-		final TableRecordReference documentRef = getDocumentRef();
-
-		final WFApprovalStrategy.Response response = approvalStrategy.approve(request);
-		return response.map(new WFApprovalStrategy.Response.CaseMapper<>()
+		if (getId() == null)
 		{
-			@Override
-			public PerformWorkResult approved()
-			{
-				context.processDocument(documentRef, IDocument.ACTION_Approve);
-				return PerformWorkResult.COMPLETED;
-			}
+			getWorkflowProcess().save();
+		}
+		final WFActivityId wfActivityId = getIdNotNull();
 
-			@Override
-			public PerformWorkResult rejected()
-			{
-				return PerformWorkResult.ABORTED;
-			}
-
-			public PerformWorkResult pending() {return PerformWorkResult.SUSPENDED;}
-
-			@Override
-			public PerformWorkResult forwardTo(@NonNull final UserId forwardToUserId, @Nullable UserNotificationRequest.TargetAction notificationTargetAction)
-			{
-				final UserId invokerId = request.getWorkflowInvokerId();
-
-				WFActivity.this.forwardTo(forwardToUserId,
-						ADMessageAndParams.of(MSG_DocumentApprovalRequest, context.getUserFullnameById(invokerId), documentRef),
-						notificationTargetAction);
-
-				context.sendNotification(WFUserNotification.builder()
-						.userId(invokerId)
-						.content(MSG_DocumentSentToApproval, documentRef, context.getUserFullnameById(forwardToUserId))
-						.documentToOpen(documentRef)
-						.build());
-
-				return PerformWorkResult.SUSPENDED;
-			}
-		});
-	}
-
-	private WFApprovalStrategy.Request newWFApprovalRequest()
-	{
-		final TableRecordReference documentRef = getDocumentRef();
-		final IDocument document = context.getDocument(documentRef);
+		final TableRecordReference documentRef = document.toTableRecordReference();
 		final UserId documentOwnerId = UserId.ofRepoId(document.getDoc_User_ID());
 		final UserId invokerId = CoalesceUtil.coalesceNotNull(getUserId(), documentOwnerId);
+		final DocApprovalStrategyId docApprovalStrategyId = services.getDocApprovalStrategyId(document)
+				.or(wfNode::getDocApprovalStrategyId)
+				.orElse(DocApprovalStrategyId.DEFAULT_ID);
 
-		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(document.getC_Currency_ID());
-		final Money amountToApprove = currencyId != null
-				? Money.of(document.getApprovalAmt(), currencyId)
-				: null;
-
-		return WFApprovalStrategy.Request.builder()
-				.context(context)
+		return WFActivityApprovalCommand.builder()
+				.wfApprovalRequestRepository(services.getWfApprovalRequestRepository())
+				.docApprovalStrategyService(services.getDocApprovalStrategyService())
+				//
+				.evaluationDate(context.getEvaluationTimeAsLocalDate())
 				.documentRef(documentRef)
-				.documentOwnerId(documentOwnerId)
+				.additionalDocumentInfo(toAdditionalDocumentInfo(document))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(document.getAD_Client_ID(), document.getAD_Org_ID()))
-				.documentInfo(newWFApprovalRequestDocumentInfo(document))
+				.docApprovalStrategyId(docApprovalStrategyId)
 				//
-				.amountToApprove(amountToApprove)
+				.documentOwnerId(documentOwnerId)
+				.requestorId(document.getValueAsId(I_C_Order.COLUMNNAME_Requestor_ID, UserId.class).orElse(null))
+				.projectManagerId(document.getValueAsId(I_C_Order.COLUMNNAME_ProjectManager_ID, UserId.class).orElse(null))
 				//
-				.workflowInvokerId(invokerId)
-				.responsible(getResponsible())
+				.amountToApprove(document.getApprovalAmtAsMoney())
+				//
+				.wfInvokerId(invokerId)
+				.wfResponsible(getResponsible())
 				.wfProcessId(getWfProcessId())
-				.wfActivityId(getId())
-				.build();
+				.wfActivityId(wfActivityId)
+				//
+				.executeThenMapResponse(new WFActivityApprovalResponse.CaseMapper<>()
+				{
+					@Override
+					public PerformWorkResult approved()
+					{
+						context.processDocument(documentRef, IDocument.ACTION_Approve);
+						return PerformWorkResult.COMPLETED;
+					}
+
+					@Override
+					public PerformWorkResult rejected()
+					{
+						return PerformWorkResult.ABORTED;
+					}
+
+					public PerformWorkResult pending() {return PerformWorkResult.SUSPENDED;}
+
+					@Override
+					public PerformWorkResult forwardTo(@NonNull final UserId forwardToUserId, @Nullable UserNotificationRequest.TargetAction notificationTargetAction)
+					{
+						WFActivity.this.forwardTo(forwardToUserId,
+								ADMessageAndParams.of(MSG_DocumentApprovalRequest, context.getUserFullnameById(invokerId), documentRef),
+								notificationTargetAction);
+
+						context.sendNotification(WFUserNotification.builder()
+								.userId(invokerId)
+								.content(MSG_DocumentSentToApproval, documentRef, context.getUserFullnameById(forwardToUserId))
+								.documentToOpen(documentRef)
+								.build());
+
+						return PerformWorkResult.SUSPENDED;
+					}
+				});
 	}
 
-	private WFApprovalRequest.DocumentInfo newWFApprovalRequestDocumentInfo(@NonNull final IDocument document)
+	private WFApprovalRequest.AdditionalDocumentInfo toAdditionalDocumentInfo(@NonNull final IDocument document)
 	{
-		final WFApprovalRequest.DocumentInfo.DocumentInfoBuilder builder = WFApprovalRequest.DocumentInfo.builder()
+		final WFApprovalRequest.AdditionalDocumentInfo.AdditionalDocumentInfoBuilder builder = WFApprovalRequest.AdditionalDocumentInfo.builder()
 				.documentNo(document.getDocumentNo())
-				.docBaseType(context.getDocBaseType(document).orElse(null));
+				.docBaseType(services.getDocBaseType(document).orElse(null));
 
 		final String tableName = document.get_TableName();
 		if (I_C_Order.Table_Name.equals(tableName))
@@ -819,13 +822,6 @@ public class WFActivity
 		}
 
 		return builder.build();
-	}
-
-	private WFApprovalStrategy getApprovalStrategy()
-	{
-		// TODO
-		//return SpringContextHolder.instance.getBean(StandardApprovalStrategy.class);
-		return SpringContextHolder.instance.getBean(RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy.class);
 	}
 
 	private void setVariable(@Nullable final String valueStr, final int displayType)

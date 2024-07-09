@@ -32,10 +32,10 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report( $P{org_i
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="135" splitType="Stretch">
+		<band height="96" splitType="Stretch">
 			<textField>
-				<reportElement x="79" y="16" width="188" height="96" uuid="6622332f-b31d-40fc-add3-777b8f875905"/>
-				<textElement>
+				<reportElement x="0" y="0" width="260" height="96" uuid="6622332f-b31d-40fc-add3-777b8f875905"/>
+				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{addressblock}]]></textFieldExpression>

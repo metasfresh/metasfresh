@@ -88,6 +88,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -2787,6 +2788,16 @@ public class DB
 		final ImmutableList.Builder<T> rows = ImmutableList.builder();
 		retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader, rows::add);
 		return rows.build();
+	}
+
+	@NonNull
+	public static <T> ImmutableList<T> retrieveRows(
+			@NonNull final CharSequence sql,
+			@Nullable final Object[] sqlParams,
+			@NonNull final ResultSetRowLoader<T> loader)
+	{
+		final List<Object> sqlParamsList = sqlParams != null && sqlParams.length > 0 ? Arrays.asList(sqlParams) : null;
+		return retrieveRows(sql, sqlParamsList, loader);
 	}
 
 	@NonNull

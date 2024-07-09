@@ -33,6 +33,7 @@ import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.bpartner.service.impl.GLNQuery;
 import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -82,6 +83,8 @@ public interface IBPartnerDAO extends ISingletonService
 	I_C_BPartner getById(final BPartnerId bpartnerId);
 
 	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
+
+	List<I_C_BPartner> getByIds(@NonNull Collection<BPartnerId> bpartnerIds);
 
 	/**
 	 * @deprecated Please use {@link IBPartnerDAO#retrieveBPartnerIdBy(BPartnerQuery)} instead.
@@ -260,6 +263,8 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	List<I_C_BPartner_Location> retrieveBPartnerShipToLocations(I_C_BPartner bpartner);
 
+	List<I_C_BPartner_Location> retrieveBPartnerLocationsByIds(Set<BPartnerLocationId> ids);
+
 	/**
 	 * Performs an non-strict search (e.g. if BP has only one address, it returns it even if it's not flagged as the default ShipTo address).
 	 *
@@ -320,7 +325,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	BPartnerLocationId retrieveBPartnerLocationId(BPartnerLocationQuery query);
 
-	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
+	@Nullable
+	I_C_BPartner_Location retrieveBPartnerLocation(@NonNull BPartnerLocationQuery query);
 
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
 
@@ -339,13 +345,15 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Optional<SalesRegionId> getSalesRegionIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
 
+	@NonNull List<String> getOtherLocationNamesOfBPartner(@NonNull BPartnerId bPartnerId, @Nullable BPartnerLocationId bPartnerLocationId);
+
 	@Value
 	@Builder
 	class BPartnerLocationQuery
 	{
 		public enum Type
 		{
-			BILL_TO, SHIP_TO, REMIT_TO
+			BILL_TO, SHIP_TO, REMIT_TO, BILL_TO_DEFAULT, SHIP_TO_DEFAULT
 		}
 
 		@NonNull
@@ -408,4 +416,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	@NonNull
 	ImmutableList<I_C_BPartner> getBySAPBpartnerCode(@NonNull String sapBPartnerCode);
+
+	@NonNull
+	Optional<BPartnerLocationId> retrieveSingleBPartnerLocationIdBy(@NonNull GLNQuery query);
 }

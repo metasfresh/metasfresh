@@ -190,38 +190,40 @@ public class WFProcessRepository
 			final HashMap<WFActivityId, I_AD_WF_Activity> existingActivityRecords)
 	{
 		I_AD_WF_Activity record = wfActivity.getId() != null ? existingActivityRecords.get(wfActivity.getId()) : null;
-
 		if (record == null && wfActivity.getId() != null)
 		{
 			record = InterfaceWrapperHelper.loadOutOfTrx(wfActivity.getId(), I_AD_WF_Activity.class);
 		}
-
 		if (record == null)
 		{
 			record = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_WF_Activity.class);
 		}
 
-		//record.setAD_Org_ID();
-		record.setAD_WF_Process_ID(wfActivity.getWfProcessId().getRepoId());
-		record.setAD_Workflow_ID(wfActivity.getWorkflowId().getRepoId());
-		record.setAD_WF_Node_ID(wfActivity.getNode().getId().getRepoId());
-		record.setPriority(wfActivity.getPriority());
-		record.setWFState(wfActivity.getState().getCode());
-		record.setProcessed(wfActivity.isProcessed());
-		record.setAD_Table_ID(wfActivity.getDocumentRef().getAD_Table_ID());
-		record.setRecord_ID(wfActivity.getDocumentRef().getRecord_ID());
-		record.setEndWaitTime(TimeUtil.asTimestamp(wfActivity.getEndWaitTime()));
-		record.setTextMsg(wfActivity.getTextMsg());
-		record.setAD_Issue_ID(AdIssueId.toRepoId(wfActivity.getIssueId()));
+		updateRecord(record, wfActivity);
 
-		record.setAD_WF_Responsible_ID(wfActivity.getWFResponsibleId().getRepoId());
-		record.setAD_User_ID(UserId.toRepoId(wfActivity.getUserId()));
-
-		//
 		InterfaceWrapperHelper.save(record);
 		final WFActivityId id = WFActivityId.ofRepoId(record.getAD_WF_Activity_ID());
 		wfActivity.setId(id);
 		existingActivityRecords.put(id, record);
+	}
+
+	private static void updateRecord(final I_AD_WF_Activity record, final @NonNull WFActivity from)
+	{
+		//record.setAD_Org_ID();
+		record.setAD_WF_Process_ID(from.getWfProcessId().getRepoId());
+		record.setAD_Workflow_ID(from.getWorkflowId().getRepoId());
+		record.setAD_WF_Node_ID(from.getNode().getId().getRepoId());
+		record.setPriority(from.getPriority());
+		record.setWFState(from.getState().getCode());
+		record.setProcessed(from.isProcessed());
+		record.setAD_Table_ID(from.getDocumentRef().getAD_Table_ID());
+		record.setRecord_ID(from.getDocumentRef().getRecord_ID());
+		record.setEndWaitTime(TimeUtil.asTimestamp(from.getEndWaitTime()));
+		record.setTextMsg(from.getTextMsg());
+		record.setAD_Issue_ID(AdIssueId.toRepoId(from.getIssueId()));
+
+		record.setAD_WF_Responsible_ID(from.getWFResponsibleId().getRepoId());
+		record.setAD_User_ID(UserId.toRepoId(from.getUserId()));
 	}
 
 	@Builder(builderMethodName = "queryPendingActivitiesOverPriority", buildMethodName = "execute", builderClassName = "$retrievePendingActivitiesOverPriority")

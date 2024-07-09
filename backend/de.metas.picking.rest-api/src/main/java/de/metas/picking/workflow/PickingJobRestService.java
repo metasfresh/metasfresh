@@ -27,10 +27,12 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.PickingTarget;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.picking.config.MobileUIPickingUserProfile;
@@ -41,6 +43,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -67,9 +70,13 @@ public class PickingJobRestService
 		return pickingJobService.streamPickingJobCandidates(query);
 	}
 
-	public PickingJobFacets getFacets(@NonNull final PickingJobQuery query)
+	@NonNull
+	public PickingJobFacets getFacets(
+			@NonNull final PickingJobQuery query,
+			@NonNull final PickingJobFacets.CollectingParameters collectingParameters)
 	{
-		return pickingJobService.getFacets(query);
+		return pickingJobService.streamPackageable(query)
+				.collect(PickingJobFacets.collectFromPackageables(collectingParameters));
 	}
 
 	public PickingJob createPickingJob(
@@ -97,6 +104,16 @@ public class PickingJobRestService
 			@NonNull final List<PickingJobStepEvent> events)
 	{
 		return pickingJobService.processStepEvents(pickingJob, events);
+	}
+
+	public PickingJob closeLine(@NonNull final PickingJob pickingJob, @NonNull final PickingJobLineId pickingLineId)
+	{
+		return pickingJobService.closeLine(pickingJob, pickingLineId);
+	}
+
+	public PickingJob openLine(final PickingJob pickingJob, final PickingJobLineId pickingLineId)
+	{
+		return pickingJobService.openLine(pickingJob, pickingLineId);
 	}
 
 	public void abort(@NonNull final PickingJob pickingJob)
@@ -133,4 +150,20 @@ public class PickingJobRestService
 	{
 		return pickingJobService.getQtyRejectedReasons();
 	}
+
+	public List<PickingTarget> getAvailableTargets(@NonNull final PickingJob pickingJob)
+	{
+		return pickingJobService.getAvailableTargets(pickingJob);
+	}
+
+	public PickingJob setPickTarget(@NonNull final PickingJob pickingJob, @Nullable final PickingTarget target)
+	{
+		return pickingJobService.setPickTarget(pickingJob, target);
+	}
+
+	public PickingJob closePickTarget(@NonNull final PickingJob pickingJob)
+	{
+		return pickingJobService.closePickTarget(pickingJob);
+	}
+
 }

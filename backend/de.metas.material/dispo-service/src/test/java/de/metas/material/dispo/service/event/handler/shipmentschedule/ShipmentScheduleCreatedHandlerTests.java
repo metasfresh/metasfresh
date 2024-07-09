@@ -178,6 +178,7 @@ public class ShipmentScheduleCreatedHandlerTests
 						.build())
 				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
 												.orderedQuantity(BigDecimal.TEN)
+												.orderedQuantityDelta(BigDecimal.TEN)
 												.reservedQuantity(new BigDecimal("20"))
 												.reservedQuantityDelta(new BigDecimal("20"))
 												.build())

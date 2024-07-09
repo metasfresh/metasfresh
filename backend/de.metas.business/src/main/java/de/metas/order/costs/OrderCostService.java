@@ -6,8 +6,8 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.CurrencyRepository;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.matchinv.listeners.MatchInvListenersRegistry;
 import de.metas.invoice.matchinv.service.MatchInvoiceRepository;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
@@ -201,9 +201,9 @@ public class OrderCostService
 				.build();
 	}
 
-	public Money getInvoiceLineOpenAmt(InvoiceLineId invoiceLineId)
+	public Money getInvoiceLineOpenAmt(InvoiceAndLineId invoiceAndLineId)
 	{
-		final I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(invoiceLineId);
+		final I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(invoiceAndLineId);
 		return getInvoiceLineOpenAmt(invoiceLine);
 	}
 
@@ -213,7 +213,7 @@ public class OrderCostService
 		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
 		Money openAmt = Money.of(invoiceLine.getLineNetAmt(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
 
-		final Money matchedAmt = matchInvoiceService.getCostAmountMatched(InvoiceLineId.ofRepoId(invoiceId, invoiceLine.getC_InvoiceLine_ID())).orElse(null);
+		final Money matchedAmt = matchInvoiceService.getCostAmountMatched(InvoiceAndLineId.ofRepoId(invoiceId, invoiceLine.getC_InvoiceLine_ID())).orElse(null);
 		if (matchedAmt != null)
 		{
 			openAmt = openAmt.subtract(matchedAmt);

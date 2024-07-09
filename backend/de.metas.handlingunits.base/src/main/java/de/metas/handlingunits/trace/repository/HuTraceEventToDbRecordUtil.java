@@ -54,7 +54,7 @@ public class HuTraceEventToDbRecordUtil
 				.eventTime(dbRecord.getEventTime().toInstant()) // EeventTime is a mandatory column, so no NPE
 				.vhuId(HuId.ofRepoId(dbRecord.getVHU_ID()))
 				.productId(ProductId.ofRepoId(dbRecord.getM_Product_ID()))
-				.qty(Quantitys.create(dbRecord.getQty(), UomId.ofRepoId(dbRecord.getC_UOM_ID())))
+				.qty(Quantitys.of(dbRecord.getQty(), UomId.ofRepoId(dbRecord.getC_UOM_ID())))
 				.huTrxLineId(dbRecord.getM_HU_Trx_Line_ID())
 				.vhuStatus(dbRecord.getVHUStatus())
 				.topLevelHuId(HuId.ofRepoId(dbRecord.getM_HU_ID()))

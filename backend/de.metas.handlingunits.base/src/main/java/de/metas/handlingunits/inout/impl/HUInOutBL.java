@@ -35,7 +35,6 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -51,9 +50,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -72,7 +69,6 @@ import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -93,8 +89,6 @@ public class HUInOutBL implements IHUInOutBL
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
-	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -103,15 +97,21 @@ public class HUInOutBL implements IHUInOutBL
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 
 	@Override
-	public I_M_InOut getById(@NonNull final InOutId inoutId)
+	public de.metas.handlingunits.model.I_M_InOut getById(@NonNull final InOutId inoutId)
 	{
-		return inOutDAO.getById(inoutId);
+		return inOutDAO.getById(inoutId, de.metas.handlingunits.model.I_M_InOut.class);
 	}
 
 	@Override
 	public <T extends I_M_InOut> T getById(@NonNull final InOutId inoutId, @NonNull final Class<T> type)
 	{
 		return inOutDAO.getById(inoutId, type);
+	}
+
+	@Override
+	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
+	{
+		return inOutDAO.getLineByIdInTrx(inoutLineId, I_M_InOutLine.class);
 	}
 
 	@Override
@@ -334,15 +334,6 @@ public class HUInOutBL implements IHUInOutBL
 				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
 				.adClientId(inOut.getAD_Client_ID())
 				.adOrgId(inOut.getAD_Org_ID());
-	}
-
-	@Override
-	public void moveHUsToQualityReturnWarehouse(final List<I_M_HU> husToReturn)
-	{
-		final List<I_M_Warehouse> warehouses = huWarehouseDAO.retrieveQualityReturnWarehouses();
-		final WarehouseId qualityReturnWarehouseId = WarehouseId.ofRepoId(warehouses.get(0).getM_Warehouse_ID());
-
-		huMovementBL.moveHUsToWarehouse(husToReturn, qualityReturnWarehouseId);
 	}
 
 	@Override

@@ -9,8 +9,6 @@ import de.metas.handlingunits.report.HUReportExecutorResult;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.process.AdProcessId;
 import de.metas.report.PrintCopies;
-import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstanceParameter;
 import de.metas.ui.web.process.ProcessExecutionContext;
@@ -164,7 +162,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		final DocumentCollection documentsCollection = context.getDocumentsCollection();
 
 		final ViewId viewId = viewRowIdsSelection.getViewId();
-		final HUEditorView view = HUEditorView.cast(viewsRepo.getView(viewId));
+		final HUReportAwareView view = HUReportAwareViews.cast(viewsRepo.getView(viewId));
 		final HUReportExecutorResult reportExecutorResult = HUReportExecutor.newInstance(context.getCtx())
 				.numberOfCopies(numberOfCopies)
 				.adJasperProcessId(getJasperProcess_ID())
@@ -185,10 +183,10 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		return lastExecutionResult = result;
 	}
 
-	private List<HUToReport> extractHUsToReport(final HUEditorView view)
+	private List<HUToReport> extractHUsToReport(final HUReportAwareView view)
 	{
 		final Set<HUToReport> husToCheck = view.streamByIds(viewRowIdsSelection.getRowIds())
-				.map(HUEditorRow::getAsHUToReportOrNull)
+				.map(HUReportAwareViewRowAsHUToReport::ofOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 

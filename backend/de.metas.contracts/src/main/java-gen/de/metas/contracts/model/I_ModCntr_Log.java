@@ -1,28 +1,7 @@
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.contracts.model;
 
 import org.adempiere.model.ModelColumn;
+import org.compiere.model.I_M_InOutLine;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -179,8 +158,7 @@ public interface I_ModCntr_Log
 	 */
 	int getC_Flatrate_Term_ID();
 
-	@Nullable
-	de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
+	@Nullable de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
 
 	void setC_Flatrate_Term(@Nullable de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term);
 
@@ -235,7 +213,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setContractType(java.lang.String ContractType);
+	void setContractType (java.lang.String ContractType);
 
 	/**
 	 * Get Contract Type.
@@ -282,7 +260,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_UOM_ID(int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
 	 * Get UOM.
@@ -326,7 +304,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription(@Nullable java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -366,6 +344,26 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
 
 	/**
+	 * Set Initial Product.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInitial_Product_ID (int Initial_Product_ID);
+
+	/**
+	 * Get Initial Product.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getInitial_Product_ID();
+
+	String COLUMNNAME_Initial_Product_ID = "Initial_Product_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -392,7 +390,7 @@ public interface I_ModCntr_Log
 	 * Set Invoiceable.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setIsBillable (boolean IsBillable);
@@ -401,7 +399,7 @@ public interface I_ModCntr_Log
 	 * Get Invoiceable.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	boolean isBillable();
@@ -450,11 +448,11 @@ public interface I_ModCntr_Log
 	 */
 	int getModCntr_InvoicingGroup_ID();
 
-	@Nullable org.compiere.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup();
+	@Nullable de.metas.contracts.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup();
 
-	void setModCntr_InvoicingGroup(@Nullable org.compiere.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup);
+	void setModCntr_InvoicingGroup(@Nullable de.metas.contracts.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup);
 
-	ModelColumn<I_ModCntr_Log, org.compiere.model.I_ModCntr_InvoicingGroup> COLUMN_ModCntr_InvoicingGroup_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_InvoicingGroup_ID", org.compiere.model.I_ModCntr_InvoicingGroup.class);
+	ModelColumn<I_ModCntr_Log, de.metas.contracts.model.I_ModCntr_InvoicingGroup> COLUMN_ModCntr_InvoicingGroup_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_InvoicingGroup_ID", de.metas.contracts.model.I_ModCntr_InvoicingGroup.class);
 	String COLUMNNAME_ModCntr_InvoicingGroup_ID = "ModCntr_InvoicingGroup_ID";
 
 	/**
@@ -464,7 +462,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setModCntr_Log_DocumentType(java.lang.String ModCntr_Log_DocumentType);
+	void setModCntr_Log_DocumentType (java.lang.String ModCntr_Log_DocumentType);
 
 	/**
 	 * Get Document Type.
@@ -506,7 +504,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setModCntr_Module_ID(int ModCntr_Module_ID);
+	void setModCntr_Module_ID (int ModCntr_Module_ID);
 
 	/**
 	 * Get Modules.
@@ -517,8 +515,7 @@ public interface I_ModCntr_Log
 	 */
 	int getModCntr_Module_ID();
 
-	@Nullable
-	de.metas.contracts.model.I_ModCntr_Module getModCntr_Module();
+	@Nullable de.metas.contracts.model.I_ModCntr_Module getModCntr_Module();
 
 	void setModCntr_Module(@Nullable de.metas.contracts.model.I_ModCntr_Module ModCntr_Module);
 
@@ -526,7 +523,7 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_ModCntr_Module_ID = "ModCntr_Module_ID";
 
 	/**
-	 * Set Contract Module Type.
+	 * Set Computing Method.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -535,7 +532,7 @@ public interface I_ModCntr_Log
 	void setModCntr_Type_ID (int ModCntr_Type_ID);
 
 	/**
-	 * Get Contract Module Type.
+	 * Get Computing Method.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -543,8 +540,7 @@ public interface I_ModCntr_Log
 	 */
 	int getModCntr_Type_ID();
 
-	@Nullable
-	de.metas.contracts.model.I_ModCntr_Type getModCntr_Type();
+	@Nullable de.metas.contracts.model.I_ModCntr_Type getModCntr_Type();
 
 	void setModCntr_Type(@Nullable de.metas.contracts.model.I_ModCntr_Type ModCntr_Type);
 
@@ -559,7 +555,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_ID(int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
 	 * Get Product.
@@ -581,7 +577,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Warehouse_ID(int M_Warehouse_ID);
+	void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
 	 * Get Warehouse.
@@ -602,7 +598,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPP_Cost_Collector_ID(int PP_Cost_Collector_ID);
+	void setPP_Cost_Collector_ID (int PP_Cost_Collector_ID);
 
 	/**
 	 * Get Manufacturing Cost Collector.
@@ -613,8 +609,7 @@ public interface I_ModCntr_Log
 	 */
 	int getPP_Cost_Collector_ID();
 
-	@Nullable
-	org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector();
+	@Nullable org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector();
 
 	void setPP_Cost_Collector(@Nullable org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector);
 
@@ -704,6 +699,29 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_Producer_BPartner_ID = "Producer_BPartner_ID";
 
 	/**
+	 * Set Product Name.
+	 * Name of the Product
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProductName (java.lang.String ProductName);
+
+	/**
+	 * Get Product Name.
+	 * Name of the Product
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getProductName();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_ProductName = new ModelColumn<>(I_ModCntr_Log.class, "ProductName", null);
+	String COLUMNNAME_ProductName = "ProductName";
+
+	/**
 	 * Set Quantity.
 	 * Quantity
 	 *
@@ -750,6 +768,27 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
+	 * Set Storage days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setStorageDays (int StorageDays);
+
+	/**
+	 * Get Storage days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getStorageDays();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_StorageDays = new ModelColumn<>(I_ModCntr_Log.class, "StorageDays", null);
+	String COLUMNNAME_StorageDays = "StorageDays";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
@@ -773,4 +812,47 @@ public interface I_ModCntr_Log
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set UserElementNumber1.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementNumber1 (@Nullable BigDecimal UserElementNumber1);
+
+	/**
+	 * Get UserElementNumber1.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUserElementNumber1();
+
+	ModelColumn<org.compiere.model.I_M_InOutLine, Object> COLUMN_UserElementNumber1 = new ModelColumn<>(org.compiere.model.I_M_InOutLine.class, "UserElementNumber1", null);
+	String COLUMNNAME_UserElementNumber1 = "UserElementNumber1";
+
+	/**
+	 * Set UserElementNumber2.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementNumber2 (@Nullable BigDecimal UserElementNumber2);
+
+	/**
+	 * Get UserElementNumber2.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUserElementNumber2();
+
+	ModelColumn<org.compiere.model.I_M_InOutLine, Object> COLUMN_UserElementNumber2 = new ModelColumn<>(I_M_InOutLine.class, "UserElementNumber2", null);
+	String COLUMNNAME_UserElementNumber2 = "UserElementNumber2";
+
 }

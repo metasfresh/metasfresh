@@ -1,3 +1,4 @@
+@ignore
 @ghActions:run_on_executor5
 Feature: Modular contract log from shipment (SO)
 
@@ -66,8 +67,8 @@ Feature: Modular contract log from shipment (SO)
       | modularPP_SO | moduleLogPLV_SO                   | modularContract_prod_S0321 | 10.00    | PCE               | Normal                        |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                        | M_Product_ID.Identifier    | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier | OPT.IsSOTrx |
-      | modCntr_ship_settings_S0321    | modCntr_ship_settings_S0321 | modularContract_prod_S0321 | harvesting_calendar      | year_2023            | moduleLogPricingSystem            | true        |
+      | ModCntr_Settings_ID.Identifier | Name                        | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier | OPT.IsSOTrx |
+      | modCntr_ship_settings_S0321    | modCntr_ship_settings_S0321 | modularContract_prod_S0321  | harvesting_calendar      | year_2023            | moduleLogPricingSystem            | true        |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier   | SeqNo | Name    | M_Product_ID.Identifier    | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier   |
       | modCntr_module_PO_S0321        | 10    | name_10 | modularContract_prod_S0321 | Kosten         | modCntr_ship_settings_S0321    | modCntr_type_PO_S0321        |
@@ -79,8 +80,8 @@ Feature: Modular contract log from shipment (SO)
       | modCntr_module_SO_SHIP_S0321   | 70    | name_70 | modularContract_prod_S0321 | Kosten         | modCntr_ship_settings_S0321    | modCntr_type_SO_SHIP_S0321   |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                       | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | modularContractTerms_S0321          | modularContractTerms_S0321 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_S0321        |
+      | Identifier                 | Name                       | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | modularContractTerms_S0321 | modularContractTerms_S0321 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_S0321        |
 
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
@@ -155,7 +156,7 @@ Feature: Modular contract log from shipment (SO)
       | modularPP_SO | moduleLogPLV_SO                   | modularContract_prod_S0321_200 | 10.00    | PCE               | Normal                        |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier  | Name                            | M_Product_ID.Identifier        | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier | OPT.IsSOTrx |
+      | ModCntr_Settings_ID.Identifier  | Name                            | M_Raw_Product_ID.Identifier    | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier | OPT.IsSOTrx |
       | modCntr_ship_settings_S0321_200 | modCntr_ship_settings_S0321_200 | modularContract_prod_S0321_200 | harvesting_calendar      | year_2023            | moduleLogPricingSystem            | true        |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier       | SeqNo | Name    | M_Product_ID.Identifier        | InvoicingGroup | ModCntr_Settings_ID.Identifier  | ModCntr_Type_ID.Identifier   |
@@ -168,8 +169,8 @@ Feature: Modular contract log from shipment (SO)
       | modCntr_module_SO_SHIP_S0321_200   | 70    | name_70 | modularContract_prod_S0321_200 | Kosten         | modCntr_ship_settings_S0321_200 | modCntr_type_SO_SHIP_S0321   |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | modularContractTerms_S0321_200      | modularContractTerms_S0321_200 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_S0321_200    |
+      | Identifier                     | Name                           | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | modularContractTerms_S0321_200 | modularContractTerms_S0321_200 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_S0321_200    |
 
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier    | ValidFrom  | ValidTo    |

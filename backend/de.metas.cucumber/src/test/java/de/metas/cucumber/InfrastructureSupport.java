@@ -22,9 +22,11 @@
 
 package de.metas.cucumber;
 
+import com.google.common.base.Stopwatch;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
+import de.metas.util.Loggables;
 import de.metas.util.StringUtils;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -35,7 +37,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.io.File;
 import java.time.Duration;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InfrastructureSupport
 {
@@ -56,6 +58,10 @@ public class InfrastructureSupport
 	 * you can use (with git bash) the three shell scripts from {@code misc/dev-support/docker/infrastructure/scripts}.
 	 */
 	public static final String ENV_DB_PORT_OF_EXTERNALLY_RUNNING_POSTGRESQL = "CUCUMBER_DB_PORT_OF_EXTERNALLY_RUNNING_POSTGRESQL";
+	public static final String ENV_EXTERNALLY_RUNNING_RABBITMQ_HOST = "CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_HOST";
+	public static final String ENV_EXTERNALLY_RUNNING_RABBITMQ_PORT = "CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_PORT";
+	public static final String ENV_EXTERNALLY_RUNNING_RABBITMQ_USER = "CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_USER";
+	public static final String ENV_EXTERNALLY_RUNNING_RABBITMQ_PASSWORD = "CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_PASSWORD";
 
 	/**
 	 * {@code true} means that a database with all required migration-scripts is already running
@@ -90,52 +96,88 @@ public class InfrastructureSupport
 
 	public void start()
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		assertThat(started).isFalse(); // guard
 
-		cucumberIsUsingProvidedInfrastructure = StringUtils.toBoolean(System.getenv("CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE"), false);
+		cucumberIsUsingProvidedInfrastructure = StringUtils.toBoolean(System.getenv("CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE"));
 
+		startRabbitMQ();
+		startDatabase();
+
+		Loggables.setDebuggingLoggable(CucumberLoggable.instance);
+
+		started = true;
+
+		stopwatch.stop();
+		logger.info("Cucumber infrastructure started in {}", stopwatch);
+	}
+
+	private void startRabbitMQ()
+	{
+		if (cucumberIsUsingProvidedInfrastructure)
+		{
+			rabbitHost = StringUtils.trimBlankToOptional(System.getenv(ENV_EXTERNALLY_RUNNING_RABBITMQ_HOST)).orElse("rabbitmq");
+			rabbitPort = StringUtils.trimBlankToOptional(System.getenv(ENV_EXTERNALLY_RUNNING_RABBITMQ_PORT)).map(Integer::parseInt).orElse(5672);
+			rabbitUser = StringUtils.trimBlankToOptional(System.getenv(ENV_EXTERNALLY_RUNNING_RABBITMQ_USER)).orElse("metasfresh");
+			rabbitPassword = StringUtils.trimBlankToOptional(System.getenv(ENV_EXTERNALLY_RUNNING_RABBITMQ_PASSWORD)).orElse("metasfresh");
+			logger.info("Using provided RabbitMQ: host={}, port={} user={}, password={}", rabbitHost, rabbitPort, rabbitUser, rabbitPassword);
+			return;
+		}
+
+		final int externallyRunningRabbitPort = StringUtils.toIntegerOrZero(System.getenv(ENV_EXTERNALLY_RUNNING_RABBITMQ_PORT));
+		if (externallyRunningRabbitPort <= 0)
+		{
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			//noinspection resource
+			final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.7.4");
+			rabbitMQContainer.start();
+
+			rabbitPort = rabbitMQContainer.getAmqpPort();
+			rabbitHost = rabbitMQContainer.getHost();
+			rabbitUser = rabbitMQContainer.getAdminUsername();
+			rabbitPassword = rabbitMQContainer.getAdminPassword();
+
+			stopwatch.stop();
+			logger.info("Started RabbitMQ in {}", stopwatch);
+		}
+		else
+		{
+			rabbitHost = StringUtils.trimBlankToOptional(System.getenv(ENV_EXTERNALLY_RUNNING_RABBITMQ_HOST)).orElse("localhost");
+			rabbitPort = externallyRunningRabbitPort;
+			rabbitUser = StringUtils.trimBlankToOptional(System.getenv(ENV_EXTERNALLY_RUNNING_RABBITMQ_USER)).orElse("metasfresh");
+			rabbitPassword = StringUtils.trimBlankToOptional(System.getenv(ENV_EXTERNALLY_RUNNING_RABBITMQ_PASSWORD)).orElse("metasfresh");
+			logger.info("Using provided RabbitMQ: host={}, port={} user={}, password={}", rabbitHost, rabbitPort, rabbitUser, rabbitPassword);
+		}
+	}
+
+	private void startDatabase()
+	{
 		// note that this will only matter if CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE is false
 		final int dbPortFromEnvVar = StringUtils.toIntegerOrZero(System.getenv(ENV_DB_PORT_OF_EXTERNALLY_RUNNING_POSTGRESQL));
 		runAgainstProvidedDatabase =
 				dbPortFromEnvVar > 0 // if a DB port was provided, it means that we want to run against an externally provided DB
 						|| cucumberIsUsingProvidedInfrastructure;
 
-		dbPort = CoalesceUtil.firstGreaterThanZero(
-				dbPortFromEnvVar,
-				5432);
+		dbPort = CoalesceUtil.firstGreaterThanZero(dbPortFromEnvVar, 5432);
 
 		// TODO replace runAgainstDockerizedDatabase and cucumberIsUsingProvidedInfrastructure with an enum
 		if (cucumberIsUsingProvidedInfrastructure)
 		{
-			logger.info("using provided infrastructure, not starting any containers");
-
 			dbHost = "db";
 			// dbPort = 5432; was already set
-			rabbitHost = "rabbitmq";
-			rabbitPort = 5672;
-			rabbitUser = "metasfresh";
-			rabbitPassword = "metasfresh";
-
-			started = true;
-			return;
+			logger.info("Assume metasfresh-db already runs at {}:{}", dbHost, dbPort);
 		}
-
-		final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.7.4");
-		rabbitMQContainer.start();
-
-		rabbitPort = rabbitMQContainer.getAmqpPort();
-		rabbitHost = rabbitMQContainer.getHost();
-		rabbitUser = rabbitMQContainer.getAdminUsername();
-		rabbitPassword = rabbitMQContainer.getAdminPassword();
-
-		if (!runAgainstProvidedDatabase)
+		else if (!runAgainstProvidedDatabase)
 		{
-			// this image is from release-branch 2021-09-15. it is failrly old, 
-			// such that our local miration-scripts will be applied and no later scripts from other branches are already in this image 
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+
+			// this image is from release-branch 2021-09-15. it is failrly old,
+			// such that our local miration-scripts will be applied and no later scripts from other branches are already in this image
 			final String fullImageName = "metasfresh/metasfresh-db:5.174.2_461_release";
 			logger.info("Start dockerized metasfresh-db {}", fullImageName);
 
 			// the DB needs to be populated
+			//noinspection resource
 			final GenericContainer<?> db = new GenericContainer<>(DockerImageName.parse(fullImageName))
 					//.withImagePullPolicy(PullPolicy.alwaysPull()) // needed then going with e.g. "latest"
 					.withEnv("POSTGRES_PASSWORD", "password")
@@ -145,16 +187,17 @@ public class InfrastructureSupport
 
 			dbHost = db.getHost();
 			dbPort = db.getFirstMappedPort();
-			logger.info("dockerized metasfresh-db {} runs at {}:{}", fullImageName, dbHost, dbPort);
+			logger.info("dockerized metasfresh-db {} runs at {}:{} (took {})", fullImageName, dbHost, dbPort, stopwatch);
 
+			stopwatch.reset();
 			// apply our local migration scripts to get our DB up to date
-			final File workspaceDir = new File(RELATIVE_PATH_TO_METASFRESH_ROOT);
-			final WorkspaceMigrateConfig migrateConfig = WorkspaceMigrateConfig.builder()
-					.workspaceDir(workspaceDir)
-					.onScriptFailure(WorkspaceMigrateConfig.OnScriptFailure.FAIL)
-					.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
-					.build();
-			de.metas.migration.cli.workspace_migrate.Main.main(migrateConfig);
+			de.metas.migration.cli.workspace_migrate.Main.main(
+					WorkspaceMigrateConfig.builder()
+							.workspaceDir(new File(RELATIVE_PATH_TO_METASFRESH_ROOT))
+							.onScriptFailure(WorkspaceMigrateConfig.OnScriptFailure.FAIL)
+							.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
+							.build());
+			logger.info("Applied migration scripts (took {})", stopwatch);
 		}
 		else
 		{
@@ -162,6 +205,5 @@ public class InfrastructureSupport
 			// dbPort = 5432; was already set
 			logger.info("Assume metasfresh-db already runs at {}:{}", dbHost, dbPort);
 		}
-		started = true;
 	}
 }

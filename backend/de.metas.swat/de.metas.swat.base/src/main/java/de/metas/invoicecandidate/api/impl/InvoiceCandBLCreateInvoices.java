@@ -69,6 +69,7 @@ import de.metas.util.collections.IdentityHashSet;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -167,6 +168,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	// Parameters
 	private Properties _ctx;
 	private String _trxName;
+	@Setter
 	private Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass = null;
 	private static final boolean createInvoiceFromOrder = false; // FIXME: 08511 workaround
 	private Boolean _ignoreInvoiceSchedule = null;
@@ -471,6 +473,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			setHarvestingDetails(invoice, invoiceHeader);
 
+			invoice.setIsCreditedInvoiceReinvoicable(invoiceHeader.isCreditedInvoiceReinvoicable());
+
 			invoice.setC_Tax_Departure_Country_ID(CountryId.toRepoId(invoiceHeader.getC_Tax_Departure_Country_ID()));
 			invoice.setC_BP_BankAccount_ID(BankAccountId.toRepoId(invoiceHeader.getBankAccountId()));
 
@@ -545,7 +549,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		if (invoice.getC_DocTypeTarget_ID() <= 0)
 		{
 
-			final I_C_DocType invoiceHeaderDocType = invoiceHeader.getDocTypeInvoiceId().map(docTypeDAO::getById).orElse(null);
+			final I_C_DocType invoiceHeaderDocType = invoiceHeader.getDocTypeInvoiceId().map(docTypeDAO::getRecordById).orElse(null);
 			if (invoiceHeaderDocType != null)
 			{
 				invoiceBL.setDocTypeTargetIdAndUpdateDescription(invoice, invoiceHeaderDocType.getC_DocType_ID());
@@ -566,7 +570,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		// and that document type is not a credit memo.
 		{
 			final boolean invoiceHeader_IsCreditMemo = invoiceHeaderDocBaseType != null && invoiceHeaderDocBaseType.isCreditMemo();
-			final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocTypeTarget_ID());
+			final I_C_DocType invoiceDocType = docTypeDAO.getRecordById(invoice.getC_DocTypeTarget_ID());
 			Check.assumeNotNull(invoiceDocType, "invoiceDocType not null"); // shall not happen
 			final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
 			final boolean invoice_IsCreditMemo = invoiceDocBaseType.isCreditMemo();
@@ -710,6 +714,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceLine.setC_Shipping_Location_ID(cand.getC_Shipping_Location_ID());
 
 				invoiceLine.setC_Flatrate_Term_ID(cand.getC_Flatrate_Term_ID());
+				invoiceLine.setProductName(cand.getProductName());
+				invoiceLine.setInvoicingGroup(cand.getInvoicingGroup());
+				invoiceLine.setUserElementNumber1(cand.getUserElementNumber1());
+				invoiceLine.setUserElementNumber2(cand.getUserElementNumber2());
 				//
 				// Product / Charge
 				if (ilVO.getM_Product_ID() > 0)
@@ -840,11 +848,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		{
 			final I_C_Invoice_Candidate icRecord = invoiceCandDAO.getByIdOutOfTrx(invoiceCandidateId);
 			icRecord.setQtyToInvoice_Override(null);
+			icRecord.setQtyToInvoiceInUOM_Override(null);
 			icRecord.setPriceEntered_Override(null);
 			invoiceCandDAO.save(icRecord);
 		}
 
-		private I_M_AttributeSetInstance createASI(final Set<IInvoiceLineAttribute> invoiceLineAttributes)
+		@Nullable
+		private I_M_AttributeSetInstance createASI(@Nullable final List<IInvoiceLineAttribute> invoiceLineAttributes)
 		{
 			// If there are no attributes, return a null ASI
 			if (Check.isEmpty(invoiceLineAttributes))
@@ -1179,14 +1189,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			}
 		}
 		return candidates;
-	}
-
-	/**
-	 * Set the invoice generator to use in invoicing.
-	 */
-	public void setInvoiceGeneratorClass(final Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass)
-	{
-		this.invoiceGeneratorClass = invoiceGeneratorClass;
 	}
 
 	@Override

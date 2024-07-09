@@ -17,8 +17,17 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
+import de.metas.contracts.modular.ModularContractPriceRepository;
+import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.ComputingMethodService;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.log.status.ModularLogCreateStatusRepository;
+import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
+import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.currency.CurrencyCode;
@@ -29,6 +38,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
+import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -73,6 +83,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -154,9 +165,17 @@ public abstract class AbstractFlatrateTermTest
 
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
-		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL());
+		SpringContextHolder.registerJUnitBean(ProductScalePriceService.newInstanceForUnitTesting());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsService(new ModularContractSettingsRepository()));
+
+		SpringContextHolder.registerJUnitBean(new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository()));
+		SpringContextHolder.registerJUnitBean(new ModularContractService(new ModularContractComputingMethodHandlerRegistry(Collections.emptyList()),
+				new ModularContractSettingsRepository(),
+				new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
+				new ComputingMethodService(new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository())),
+				new ModularContractPriceRepository()));
 
 		contractChangeBL = Services.get(IContractChangeBL.class);
 
@@ -395,8 +414,8 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_BPartner_Location bpLocation = getBpLocation();
 		final I_AD_User user = getUser();
 		final BPartnerLocationAndCaptureId bpartnerLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(bpLocation.getC_BPartner_ID(),
-																											bpLocation.getC_BPartner_Location_ID(),
-																											bpLocation.getC_Location_ID());
+				bpLocation.getC_BPartner_Location_ID(),
+				bpLocation.getC_Location_ID());
 
 		final BPartnerContactId bPartnerContactId = BPartnerContactId.ofRepoIdOrNull(user.getC_BPartner_ID(), user.getAD_User_ID());
 

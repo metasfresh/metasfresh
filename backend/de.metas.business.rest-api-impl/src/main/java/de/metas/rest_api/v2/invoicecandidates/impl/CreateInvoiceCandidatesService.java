@@ -42,8 +42,8 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.NewInvoiceCandidate;
-import de.metas.invoicecandidate.NewInvoiceCandidate.NewInvoiceCandidateBuilder;
+import de.metas.invoicecandidate.InvoiceCandidateUpsertRequest;
+import de.metas.invoicecandidate.InvoiceCandidateUpsertRequest.InvoiceCandidateUpsertRequestBuilder;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidate;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
@@ -151,23 +151,23 @@ public class CreateInvoiceCandidatesService
 				exitingCandidates = invoiceCandidateRepository.getAllBy(lookupKey2Item.keySet());
 		failIfNotEmpty(exitingCandidates);
 
-		final ImmutableList.Builder<NewInvoiceCandidate> candidatesToSave = ImmutableList.builder();
+		final ImmutableList.Builder<InvoiceCandidateUpsertRequest> candidatesToSave = ImmutableList.builder();
 		for (final Entry<InvoiceCandidateLookupKey, JsonCreateInvoiceCandidatesRequestItem> keyWithItem : lookupKey2Item.entrySet())
 		{
 			final JsonCreateInvoiceCandidatesRequestItem item = keyWithItem.getValue();
-			final NewInvoiceCandidate candidate = createCandidate(item);
+			final InvoiceCandidateUpsertRequest candidate = createCandidate(item);
 
 			candidatesToSave.add(candidate);
 		}
 
 		final JsonCreateInvoiceCandidatesResponseBuilder result = JsonCreateInvoiceCandidatesResponse.builder();
 		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateIds = ImmutableSet.builder();
-		for (final NewInvoiceCandidate candidateToSave : candidatesToSave.build())
+		for (final InvoiceCandidateUpsertRequest candidateToSave : candidatesToSave.build())
 		{
 			final JsonExternalId headerId = JsonExternalIds.ofOrNull(candidateToSave.getExternalHeaderId());
 			final JsonExternalId lineId = JsonExternalIds.ofOrNull(candidateToSave.getExternalLineId());
 
-			final InvoiceCandidateId candidateId = invoiceCandidateRepository.save(manualCandidateService.createInvoiceCandidate(candidateToSave));
+			final InvoiceCandidateId candidateId = invoiceCandidateRepository.save(manualCandidateService.upsertInvoiceCandidate(candidateToSave));
 			invoiceCandidateIds.add(candidateId);
 			final JsonInvoiceCandidatesResponseItem responseItem = JsonInvoiceCandidatesResponseItem.builder()
 					.externalHeaderId(headerId)
@@ -189,9 +189,9 @@ public class CreateInvoiceCandidatesService
 		}
 	}
 
-	private NewInvoiceCandidate createCandidate(@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
+	private InvoiceCandidateUpsertRequest createCandidate(@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
-		final NewInvoiceCandidateBuilder candidate = NewInvoiceCandidate.builder();
+		final InvoiceCandidateUpsertRequestBuilder candidate = InvoiceCandidateUpsertRequest.builder();
 
 		final OrgId orgId = syncOrgIdToCandidate(candidate, item);
 		final ProductId productId = syncProductToCandidate(candidate, orgId, item);
@@ -232,7 +232,7 @@ public class CreateInvoiceCandidatesService
 		{
 
 			final StockQtyAndUOMQty qtyOrdered = StockQtyAndUOMQtys.createConvert(
-					Quantitys.create(item.getQtyOrdered(), uomId),
+					Quantitys.of(item.getQtyOrdered(), uomId),
 					productId,
 					uomId);
 			candidate.qtyOrdered(qtyOrdered);
@@ -245,7 +245,7 @@ public class CreateInvoiceCandidatesService
 		// qtyDelivered
 		final BigDecimal qtyDeliveredEff = coalesceNotNull(item.getQtyDelivered(), ZERO);
 		final StockQtyAndUOMQty qtyDelivered = StockQtyAndUOMQtys.createConvert(
-				Quantitys.create(qtyDeliveredEff, uomId),
+				Quantitys.of(qtyDeliveredEff, uomId),
 				productId,
 				uomId);
 		candidate.qtyDelivered(qtyDelivered);
@@ -305,7 +305,7 @@ public class CreateInvoiceCandidatesService
 
 	@Nullable
 	private ProductId syncProductToCandidate(
-			@NonNull final NewInvoiceCandidateBuilder candidate,
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@NonNull final OrgId orgId,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
@@ -327,7 +327,7 @@ public class CreateInvoiceCandidatesService
 	}
 
 	private OrgId syncOrgIdToCandidate(
-			@NonNull final NewInvoiceCandidateBuilder candidate,
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
 		final OrgId orgId;
@@ -368,7 +368,7 @@ public class CreateInvoiceCandidatesService
 	}
 
 	private void syncTargetDocTypeToCandidate(
-			@NonNull final NewInvoiceCandidateBuilder candidate,
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@NonNull final OrgId orgId,
 			@Nullable final JsonDocTypeInfo docType)
 	{
@@ -382,7 +382,7 @@ public class CreateInvoiceCandidatesService
 	}
 
 	private void syncBPartnerToCandidate(
-			@NonNull final NewInvoiceCandidateBuilder candidate,
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@NonNull final OrgId orgId,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
@@ -452,21 +452,21 @@ public class CreateInvoiceCandidatesService
 	}
 
 	private void syncDiscountOverrideToCandidate(
-			@NonNull final NewInvoiceCandidateBuilder candidate,
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@Nullable final BigDecimal discountOverride)
 	{
 		candidate.discountOverride(Percent.ofNullable(discountOverride));
 	}
 
 	private void syncInvoiceRuleOverrideToCandidate(
-			@NonNull final NewInvoiceCandidateBuilder candidate,
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@Nullable final JsonInvoiceRule invoiceRuleOverride)
 	{
 		candidate.invoiceRuleOverride(BPartnerCompositeRestUtils.getInvoiceRule(invoiceRuleOverride));
 	}
 
 	private void syncPriceEnteredOverrideToCandidate(
-			@NonNull final NewInvoiceCandidateBuilder candidate,
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@NonNull final ProductId productId,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{

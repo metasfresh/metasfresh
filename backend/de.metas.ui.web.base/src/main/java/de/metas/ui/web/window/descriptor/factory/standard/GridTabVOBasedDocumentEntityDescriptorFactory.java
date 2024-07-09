@@ -11,6 +11,7 @@ import de.metas.document.sequence.DocSequenceId;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.process.ProcessId;
@@ -30,6 +31,7 @@ import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.NotFoundMessages;
 import de.metas.ui.web.window.descriptor.WidgetTypeStandardNumberPrecision;
 import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -71,6 +73,7 @@ import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
+import org.compiere.model.POInfo;
 import org.compiere.model.X_AD_UI_ElementField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatees;
@@ -280,7 +283,8 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 				.setPrintProcessId(gridTabVO.getPrintProcessId())
 				//
 				.setRefreshViewOnChangeEvents(gridTabVO.isRefreshViewOnChangeEvents())
-				.queryIfNoFilters(gridTabVO.isQueryIfNoFilters());
+				.queryIfNoFilters(gridTabVO.isQueryIfNoFilters())
+				.notFoundMessages(extractNotFoundMessages(gridTabVO));
 
 		// Fields descriptor
 		gridTabVO
@@ -297,6 +301,20 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 				.forEach(labelUIElement -> createAndAddField_Labels(entityDescriptorBuilder, labelUIElement));
 
 		return entityDescriptorBuilder;
+	}
+
+	private static NotFoundMessages extractNotFoundMessages(final GridTabVO gridTabVO) {
+		final ITranslatableString message = gridTabVO.getNotFoundMessage();
+		final ITranslatableString detail = gridTabVO.getNotFoundMessageDetail();
+		if(TranslatableStrings.isBlank(message) && TranslatableStrings.isBlank(detail))
+		{
+			return null;
+		}
+
+		return NotFoundMessages.builder()
+				.message(message)
+				.detail(detail)
+				.build();
 	}
 
 	// keyColumn==true will mean "readOnly" further down the road
@@ -738,7 +756,7 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		{
 			if (IColumnBL.isRecordIdColumnName(fieldName))
 			{
-				final String zoomIntoTableIdFieldName = adColumnBL.getTableIdColumnName(tableName, fieldName).orElse(null);
+				final String zoomIntoTableIdFieldName = POInfo.getPOInfoNotNull(tableName).getTableIdColumnName(fieldName).orElse(null);
 				if (zoomIntoTableIdFieldName != null)
 				{
 					return ButtonFieldActionDescriptor.genericZoomInto(zoomIntoTableIdFieldName);

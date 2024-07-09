@@ -24,6 +24,7 @@ package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.uom.UOMPrecision;
@@ -40,6 +41,9 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -177,6 +181,7 @@ public interface IProductBL extends ISingletonService
 
 	boolean isProductInCategory(ProductId productId, ProductCategoryId expectedProductCategoryId);
 
+	@NonNull
 	String getProductValueAndName(@Nullable ProductId productId);
 
 	@Deprecated
@@ -202,7 +207,16 @@ public interface IProductBL extends ISingletonService
 
 	boolean isHaddexProduct(ProductId productId);
 
+	/**
+	 * @return {@code M_Product.M_AttributeSet_ID}
+	 */
 	I_M_AttributeSet getProductMasterDataSchemaOrNull(ProductId productId);
+
+	/**
+	 * @return {@code M_Product.M_AttributeSet_ID}
+	 */
+	@NonNull
+	AttributeSetId getMasterDataSchemaAttributeSetId(@NonNull ProductId productId);
 
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 
@@ -211,4 +225,13 @@ public interface IProductBL extends ISingletonService
 	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
 
 	@NonNull ITranslatableString getProductNameTrl(@NonNull I_M_Product product);
+
+	@NonNull ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
+
+	Optional<ClearanceStatus> getInitialClearanceStatus(@NonNull ProductId productId);
+
+	/**
+	 * @return true if product is used in orders, invoices or shipments
+	 */
+    boolean isProductUsed(@NonNull ProductId productId);
 }

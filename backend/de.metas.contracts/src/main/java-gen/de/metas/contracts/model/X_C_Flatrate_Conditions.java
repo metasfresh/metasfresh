@@ -722,6 +722,8 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_FLATRATE_NONE = "NONE";
 	/** Corridor_Percent = LIPE */
 	public static final String TYPE_FLATRATE_Corridor_Percent = "LIPE";
+	/** Reported Quantity = RPTD */
+	public static final String TYPE_FLATRATE_ReportedQuantity = "RPTD";
 	@Override
 	public void setType_Flatrate (final java.lang.String Type_Flatrate)
 	{
@@ -733,25 +735,5 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	{
 		return get_ValueAsString(COLUMNNAME_Type_Flatrate);
 	}
-
-	/** 
-	 * UOMType AD_Reference_ID=540262
-	 * Reference name: UOM Type Flatrate
-	 */
-	public static final int UOMTYPE_AD_Reference_ID=540262;
-	/** Gesundheitswesen = HC */
-	public static final String UOMTYPE_Gesundheitswesen = "HC";
-	/** Abrechnungsgenauigkeit = TD */
-	public static final String UOMTYPE_Abrechnungsgenauigkeit = "TD";
-	@Override
-	public void setUOMType (final java.lang.String UOMType)
-	{
-		set_Value (COLUMNNAME_UOMType, UOMType);
-	}
-
-	@Override
-	public java.lang.String getUOMType() 
-	{
-		return get_ValueAsString(COLUMNNAME_UOMType);
-	}
+	
 }

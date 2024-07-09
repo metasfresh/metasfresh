@@ -6,6 +6,7 @@ import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
+import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonAllergen;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonHazardSymbol;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonRawMaterialsIssueLine;
@@ -58,7 +59,7 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	@Override
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
-		final ManufacturingJob job = getManufacturingJob(wfProcess);
+		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(wfProcess);
 
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
@@ -67,12 +68,6 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 						.valueObj("qtyRejectedReasons", getJsonRejectReasonsList(jsonOpts))
 						.build())
 				.build();
-	}
-
-	@NonNull
-	private static ManufacturingJob getManufacturingJob(final @NonNull WFProcess wfProcess)
-	{
-		return wfProcess.getDocumentAs(ManufacturingJob.class);
 	}
 
 	@Nullable

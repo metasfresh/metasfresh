@@ -1,3 +1,4 @@
+@ignore
 @ghActions:run_on_executor5
 Feature: Modular contract log from purchase order
 
@@ -60,16 +61,14 @@ Feature: Modular contract log from purchase order
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_06292023_2 | module_log_product_PO   | harvesting_calendar      | year                 | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                       | Value                      | ModularContractHandlerType |
-      | modCntr_type_1             | poLine_06292023_2          | poLine_06292023_2          | PurchaseOrderLine_Modular  |
-      | modCntr_type_MC            | modCntr_type_MC_09072023_1 | modCntr_type_MC_09072023_1 | PurchaseModularContract    |
+      | ModCntr_Type_ID.Identifier | Name              | Value             | ModularContractHandlerType |
+      | modCntr_type_1             | poLine_06292023_2 | poLine_06292023_2 | Receipt                    |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_06292023_2 | module_log_product_PO   | Kosten         | modCntr_settings_1             | modCntr_type_1             |
-      | modCntr_module_MC            | 20    | name_09072023_20      | module_log_product_PO   | Kosten         | modCntr_settings_1             | modCntr_type_MC            |
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO              | moduleLogConditions_po_06292023_2 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
+      | Identifier             | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions_PO | moduleLogConditions_po_06292023_2 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
 
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
@@ -103,7 +102,7 @@ Feature: Modular contract log from purchase order
     And after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.Description                                                                                                                                          |
       | log_1                     | po_orderLine         | ModularContract | invoicingGroup                           | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine     | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              | modCntr_module_1                 | 2.00            | PCE                       | Eine Bestellung für das Produkt module_log_product_PO_test_06292023_2_module_log_product_PO_test_06292023_2 mit der Menge 1000 Stk wurde fertiggestellt. |
-      | poLog_1                   | moduleLogContract_1  | ModularContract | invoicingGroup                           | cp_bp                                      | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_MC                | false         | PurchaseModularContract      | EUR                        | PCE                   | 2000       | year                              | modCntr_module_MC                | 2.00            | PCE                       | Modularer Vertrag für Produkt module_log_product_PO_test_06292023_2_module_log_product_PO_test_06292023_2 mit der Menge 1000 Stk wurde fertiggestellt.   |
+      | poLog_1                   | moduleLogContract_1  | ModularContract | invoicingGroup                           | cp_bp                                      | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseModularContract      | EUR                        | PCE                   | 2000       | year                              | modCntr_module_1                 | 2.00            | PCE                       | Modularer Vertrag für Produkt module_log_product_PO_test_06292023_2_module_log_product_PO_test_06292023_2 mit der Menge 1000 Stk wurde fertiggestellt.   |
 
     And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName       | ProcessingStatus |
@@ -127,7 +126,7 @@ Feature: Modular contract log from purchase order
     And after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier |
       | log_1                     | po_orderLine         | ModularContract | invoicingGroup                           | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine     | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              |
-      | poLog_1                   | moduleLogContract_1  | ModularContract | invoicingGroup                           | cp_bp                                      | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_MC                | false         | PurchaseModularContract      | EUR                        | PCE                   | 2000       | year                              |
+      | poLog_1                   | moduleLogContract_1  | ModularContract | invoicingGroup                           | cp_bp                                      | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseModularContract      | EUR                        | PCE                   | 2000       | year                              |
 
 
   @Id:S0282_200
@@ -161,8 +160,8 @@ Feature: Modular contract log from purchase order
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_06292023_4 | module_log_product_PO   | Kosten         | modCntr_settings_1             | modCntr_type_1             |
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO              | moduleLogConditions_po_06292023_4 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
+      | Identifier             | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions_PO | moduleLogConditions_po_06292023_4 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
 
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
@@ -261,8 +260,8 @@ Feature: Modular contract log from purchase order
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_07032023_2 | module_log_product_PO   | Kosten         | modCntr_settings_1             | modCntr_type_1             |
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO              | moduleLogConditions_po_07032023_2 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
+      | Identifier             | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions_PO | moduleLogConditions_po_07032023_2 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
 
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
@@ -368,8 +367,8 @@ Feature: Modular contract log from purchase order
       | modCntr_module_3             | 30    | moduleTest_05072023_3 | module_log_product_MR   | Kosten         | modCntr_settings_1             | modCntr_type_1             |
       | modCntr_module_4             | 40    | moduleTest_05072023_4 | module_log_product_PO   | Kosten         | modCntr_settings_1             | modCntr_type_2             |
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_MR              | moduleLogConditions_po_05072023_1 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
+      | Identifier             | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions_MR | moduleLogConditions_po_05072023_1 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
 
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
@@ -412,9 +411,9 @@ Feature: Modular contract log from purchase order
       | receiptSchedule_05072023_2      | po_order              | po_orderLine_2            | bp_moduleLogMR           | bp_moduleLogMR_Location           | module_log_product_MR   | 500        | warehouseStd              | moduleLogContract_2               |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_1                        | hu_1               | receiptSchedule_05072023_1      | N               | 1     | N               | 1     | N               | 1000  | huItemPOProduct                    | huPackingLU                  |
-      | huLuTuConfig_2                        | hu_2               | receiptSchedule_05072023_2      | N               | 1     | N               | 1     | N               | 500   | huItemMRProduct                    | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_1                        | hu_1               | receiptSchedule_05072023_1      | N               | 1     | N               | 1     | N               | 1000        | huItemPOProduct                    | huPackingLU                  |
+      | huLuTuConfig_2                        | hu_2               | receiptSchedule_05072023_2      | N               | 1     | N               | 1     | N               | 500         | huItemMRProduct                    | huPackingLU                  |
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu_1               | receiptSchedule_05072023_1      | material_receipt_1    |

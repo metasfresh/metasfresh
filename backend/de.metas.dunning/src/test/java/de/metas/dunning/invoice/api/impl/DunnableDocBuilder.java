@@ -28,6 +28,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
@@ -51,6 +52,9 @@ public class DunnableDocBuilder
 	private boolean isInDispute;
 	private int M_SectionCode_ID = -1;
 
+	@Nullable
+	private String poReference;
+
 	public DunnableDocBuilder()
 	{
 		super();
@@ -72,7 +76,8 @@ public class DunnableDocBuilder
 							   graceDate,
 							   daysDue,
 							   M_SectionCode_ID,
-							   isInDispute);
+				isInDispute,
+				poReference);
 	}
 
 	public IDunnableDoc createAndAppend(List<IDunnableDoc> list)
@@ -188,6 +193,12 @@ public class DunnableDocBuilder
 	public DunnableDocBuilder setM_SectionCode_ID(int m_SectionCode_ID)
 	{
 		M_SectionCode_ID = m_SectionCode_ID;
+		return this;
+	}
+
+	public DunnableDocBuilder setPoReference(@Nullable final String poReference)
+	{
+		this.poReference = poReference;
 		return this;
 	}
 }

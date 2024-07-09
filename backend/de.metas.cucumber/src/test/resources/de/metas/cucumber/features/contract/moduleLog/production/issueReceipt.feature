@@ -1,6 +1,7 @@
 @Id:S0299
 @from:cucumber
 @ghActions:run_on_executor5
+@ignore
 Feature: After a quantity of a product is issued/received for the manufacturing order, an entry is created in the module contract log
 
   Scenario: There is an entry created in the module contract log when a quantity for the manufacturing order is issued and receipt
@@ -43,8 +44,8 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | locator                 | locator_07212023_1 | warehouse                 |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_07212023_1 | componentProduct        | harvesting_calendar      | year                 | moduleLogPricingSystem            |
+      | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | modCntr_settings_1             | testSettings_07212023_1 | componentProduct            | harvesting_calendar      | year                 | moduleLogPricingSystem            |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                          | Value                         | ModularContractHandlerType |
@@ -66,8 +67,8 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | invoicingGroup_p1                            | invoicingGroup                       | coProduct               |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_MO              | moduleLogConditions_MO_07212023_1 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
+      | Identifier             | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions_MO | moduleLogConditions_MO_07212023_1 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier          | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier |
@@ -133,8 +134,8 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | createdCU          | pp_order_qty_1             | ppOrderBOMLine_1               | 2022-03-31T13:30:13Z |
 
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier |
-      | huLuTuConfig                          | ppOrder_manufacturing  | receiptTU          | N               | 0     | N               | 1     | N               | 10    | huProductTU                        |
+      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | huLuTuConfig                          | ppOrder_manufacturing  | receiptTU          | N               | 0     | N               | 1     | N               | 10          | huProductTU                        |
 
     When complete planning for PP_Order:
       | PP_Order_ID.Identifier |

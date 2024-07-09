@@ -71,6 +71,7 @@ public class InvoiceSource extends AbstractDunnableSource
 		final int sectionCodeId = candidate.getM_SectionCode_ID();
 
 		final String documentNo; // FRESH-504
+		final String poReference;
 
 		final String tableName;
 		final int recordId;
@@ -81,6 +82,7 @@ public class InvoiceSource extends AbstractDunnableSource
 
 			// The table C_InvoicePaySchedule does not have the column DocumentNo. In this case, the documentNo is null
 			documentNo = null;
+			poReference = null;
 		}
 		else
 		// if (C_Invoice_ID > 0)
@@ -100,10 +102,12 @@ public class InvoiceSource extends AbstractDunnableSource
 				// in case of no referenced record the documentNo is null.
 
 				documentNo = null;
+				poReference = null;
 			}
 			else
 			{
 				documentNo = invoice.getDocumentNo();
+				poReference = invoice.getPOReference();
 			}
 		}
 
@@ -130,7 +134,8 @@ public class InvoiceSource extends AbstractDunnableSource
 							   dunningGrace,
 							   daysDue,
 							   sectionCodeId,
-							   isInDispute);
+				isInDispute,
+				poReference);
 	}
 
 	@Override

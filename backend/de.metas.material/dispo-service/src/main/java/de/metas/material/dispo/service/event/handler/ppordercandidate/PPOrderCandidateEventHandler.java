@@ -129,17 +129,51 @@ public abstract class PPOrderCandidateEventHandler
 					.businessCase(CandidateBusinessCase.PRODUCTION)
 					.seqNo(headerCandidate.getSeqNo() + 1)
 					.businessCaseDetail(lineCandidateProductionDetail)
-					.additionalDemandDetail(headerDemandDetail.withTraceId(event.getEventDescriptor().getTraceId()))
 					.materialDescriptor(materialDescriptor)
 					.simulated(simulated)
-					.lotForLot(headerCandidate.getLotForLot());
-
+                    .lotForLot(headerCandidate.getLotForLot());
+			if (headerDemandDetail != null)
+			{
+				candidateBuilder.additionalDemandDetail(headerDemandDetail.withTraceId(event.getEventDescriptor().getTraceId()));
+			}
 			if (groupId != null)
 			{
 				candidateBuilder.groupId(groupId);
 			}
 
 			candidateChangeService.onCandidateNewOrChange(candidateBuilder.build());
+		}
+	}
+
+	@Nullable
+	protected Candidate deleteHeaderCandidate(
+			@NonNull final CandidatesQuery preExistingSupplyQuery)
+	{
+
+		final Candidate existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingSupplyQuery);
+
+		if (existingCandidateOrNull != null)
+		{
+			candidateChangeService.onCandidateDelete(existingCandidateOrNull);
+		}
+		return existingCandidateOrNull;
+	}
+
+	protected void deleteLineCandidates(
+			@NonNull final AbstractPPOrderCandidateEvent event,
+			@NonNull final Candidate headerCandidate)
+	{
+		final List<PPOrderLineCandidate> ppOrderLineCandidates = event.getPpOrderCandidate().getLines();
+		final boolean simulated = headerCandidate.isSimulated();
+
+		for (final PPOrderLineCandidate ppOrderLineCandidate : ppOrderLineCandidates)
+		{
+			final Candidate existingLineCandidate = retrieveExistingLineCandidateOrNull(ppOrderLineCandidate, simulated);
+
+			if (existingLineCandidate != null)
+			{
+				candidateChangeService.onCandidateDelete(existingLineCandidate);
+			}
 		}
 	}
 
@@ -156,6 +190,7 @@ public abstract class PPOrderCandidateEventHandler
 				.advised(Flag.of(event instanceof PPOrderCandidateAdvisedEvent))
 				.qty(ppOrderCandidate.getPpOrderData().getQtyOpen())
 				.plantId(ppOrderCandidate.getPpOrderData().getPlantId())
+				.workstationId(ppOrderCandidate.getPpOrderData().getWorkstationId())
 				.pickDirectlyIfFeasible(Flag.FALSE)
 				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId())
 				.ppOrderCandidateId(ppOrderCandidate.getPpOrderCandidateId())
@@ -215,6 +250,7 @@ public abstract class PPOrderCandidateEventHandler
 				.advised(Flag.FALSE)
 				.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
 				.plantId(ppOrderCandidate.getPpOrderData().getPlantId())
+				.workstationId(ppOrderCandidate.getPpOrderData().getWorkstationId())
 				.qty(ppOrderLineData.getQtyRequired())
 				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId())
 				.productBomLineId(ppOrderLineData.getProductBomLineId())

@@ -9,11 +9,12 @@ import { postScannedBarcode } from '../../../api/scanner';
 import { getActivityById } from '../../../reducers/wfProcesses';
 
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
+import { fireWFActivityCompleted } from '../../../apps';
 
 const ScanScreen = () => {
   const {
     url,
-    params: { workflowId: wfProcessId, activityId },
+    params: { applicationId, workflowId: wfProcessId, activityId },
   } = useRouteMatch();
 
   const { activityCaption, userInstructions } = useSelector((state) => {
@@ -39,7 +40,16 @@ const ScanScreen = () => {
       .then((wfProcess) => {
         //console.log('postScannedBarcode.then', { wfProcess });
         dispatch(updateWFProcess({ wfProcess }));
-        history.goBack();
+
+        dispatch(
+          fireWFActivityCompleted({
+            applicationId,
+            wfProcessId,
+            activityId,
+            history,
+            defaultAction: () => history.goBack(),
+          })
+        );
       })
       .catch((error) => {
         dispatch(setScannedBarcode({ wfProcessId, activityId, scannedBarcode: null }));

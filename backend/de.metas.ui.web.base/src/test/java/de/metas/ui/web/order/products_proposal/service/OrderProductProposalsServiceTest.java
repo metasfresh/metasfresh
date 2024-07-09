@@ -36,7 +36,10 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.pricing.service.impl.PricingTestHelper;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import lombok.NonNull;
@@ -90,7 +93,10 @@ public class OrderProductProposalsServiceTest
 		AdempiereTestHelper.get().init();
 
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
-		orderProductProposalsService = new OrderProductProposalsService(currencyRepository, new MoneyService(currencyRepository));
+		final ProductTaxCategoryRepository productTaxCategoryRepository = new ProductTaxCategoryRepository();
+		final ProductTaxCategoryService productTaxCategoryService= new ProductTaxCategoryService(productTaxCategoryRepository);
+		final ProductPriceRepository productPriceRepository = new ProductPriceRepository(productTaxCategoryService);
+		orderProductProposalsService = new OrderProductProposalsService(currencyRepository, new MoneyService(currencyRepository), productPriceRepository);
 
 		pricingTestHelper = new PricingTestHelper();
 

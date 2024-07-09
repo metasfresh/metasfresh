@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -36,12 +37,13 @@ import java.util.List;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.*;
 
 @Value
 @Schema
 public class JsonRequestProductUpsert
 {
-	@Schema(required = true)
+	@Schema(requiredMode= REQUIRED)
 	List<JsonRequestProductUpsertItem> requestItems;
 
 	@Schema(description = "Default sync-advise that can be overridden by individual items\n" + READ_ONLY_SYNC_ADVISE_DOC)

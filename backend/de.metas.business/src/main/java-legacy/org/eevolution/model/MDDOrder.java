@@ -503,8 +503,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		final MDDOrderLine[] lines = getLines(true, I_DD_OrderLine.COLUMNNAME_M_Product_ID);
 		if (lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 
 		// Bug 1564431

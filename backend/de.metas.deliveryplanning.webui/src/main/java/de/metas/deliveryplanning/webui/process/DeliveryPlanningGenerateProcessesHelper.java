@@ -396,7 +396,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 		}
 
 		final I_M_ReceiptSchedule receiptSchedule = huReceiptScheduleBL.getById(receiptInfo.getReceiptScheduleId());
-		final Quantity qtyToReceive = Quantitys.create(request.getQtyToReceiveBD(), UomId.ofRepoId(receiptSchedule.getC_UOM_ID()));
+		final Quantity qtyToReceive = Quantitys.of(request.getQtyToReceiveBD(), UomId.ofRepoId(receiptSchedule.getC_UOM_ID()));
 
 		final ForexContractRef forexContractRef = request.getForexContractRef();
 

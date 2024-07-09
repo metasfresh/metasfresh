@@ -93,7 +93,9 @@ class HUQRCodesServiceTest
 	void beforeEach()
 	{
 		this.helper = HUTestHelper.newInstanceOutOfTrx();
-		this.huQRCodesService = new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance));
+		this.huQRCodesService = new HUQRCodesService(new HUQRCodesRepository(),
+				new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+				new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
 
 		this.productId = BusinessTestHelper.createProductId("MyProduct", helper.uomEach);
 
@@ -287,7 +289,7 @@ class HUQRCodesServiceTest
 					.hasMessageStartingWith("No QR Code attached to HU");
 
 			final HUQRCode qrCode = huQRCodesService.generateForExistingHU(huId).getSingleQRCode(huId);
-			
+
 			assertThat(huQRCodesService.getQRCodeByHuId(huId))
 					.isEqualTo(qrCode)
 					.isNotSameAs(qrCode);

@@ -89,7 +89,8 @@ public class DashboardRestController
 			@NonNull final UserDashboardRepository dashboardRepo,
 			@NonNull final UserDashboardDataService dashboardDataService,
 			@NonNull final WebSocketProducersRegistry websocketProducersRegistry,
-			@NonNull final WebsocketSender websocketSender, final IViewsRepository viewRepo)
+			@NonNull final WebsocketSender websocketSender,
+			@NonNull final IViewsRepository viewRepo)
 	{
 		this.userSession = userSession;
 		this.dashboardRepo = dashboardRepo;
@@ -113,10 +114,10 @@ public class DashboardRestController
 	}
 
 	@GetMapping("/kpis")
-	public JSONDashboard getKPIsDashboard() { return getJSONDashboard(DashboardWidgetType.KPI); }
+	public JSONDashboard getKPIsDashboard() {return getJSONDashboard(DashboardWidgetType.KPI);}
 
 	@GetMapping("/targetIndicators")
-	public JSONDashboard getTargetIndicatorsDashboard() { return getJSONDashboard(DashboardWidgetType.TargetIndicator); }
+	public JSONDashboard getTargetIndicatorsDashboard() {return getJSONDashboard(DashboardWidgetType.TargetIndicator);}
 
 	private JSONDashboard getJSONDashboard(@NonNull final DashboardWidgetType widgetType)
 	{
@@ -197,28 +198,30 @@ public class DashboardRestController
 
 		final Collection<KPI> kpis = dashboardRepo.getKPIsAvailableToAdd();
 
+		final KPIDataContext kpiDataContext = KPIDataContext.ofUserSession(userSession);
 		final KPIJsonOptions jsonOpts = newKPIJsonOptions();
 		return kpis.stream()
-				.map(kpi -> toJsonKPI(kpi, jsonOpts))
+				.map(kpi -> toJsonKPI(kpi, kpiDataContext, jsonOpts))
 				.sorted(Comparator.comparing(JsonKPI::getCaption))
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : Integer.MAX_VALUE)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private JsonKPI toJsonKPI(@NonNull final KPI kpi, @NonNull final KPIJsonOptions jsonOpts)
+	@Nullable
+	private JsonKPI toJsonKPI(@NonNull final KPI kpi, @NonNull final KPIDataContext kpiDataContext, @NonNull final KPIJsonOptions jsonOpts)
 	{
-		KPIDataResult data = null;
+		KPIDataResult sampleData = null;
 		try
 		{
-			data = dashboardDataService.getKPIData(kpi.getId());
+			sampleData = dashboardDataService.getKPIData(kpi.getId(), kpiDataContext);
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed fetching sample data for {}", kpi, ex);
+			logger.warn("Failed fetching sample data for {}, context={}", kpi, kpiDataContext, ex);
 		}
 
-		return JsonKPI.of(kpi, data, jsonOpts);
+		return JsonKPI.of(kpi, sampleData, jsonOpts);
 	}
 
 	@PostMapping("/kpis/new")
@@ -380,13 +383,13 @@ public class DashboardRestController
 		final WindowId targetWindowId = getTargetWindowId(detailsInfo);
 
 		return viewRepo.createView(CreateViewRequest.builder(targetWindowId)
-				.addStickyFilters(DocumentFilter.builder()
-						.filterId("userDashboardItem")
-						.caption(detailsInfo.getFilterCaption())
-						.addParameter(DocumentFilterParam.ofSqlWhereClause(detailsInfo.getSqlWhereClause()))
+						.addStickyFilters(DocumentFilter.builder()
+								.filterId("userDashboardItem")
+								.caption(detailsInfo.getFilterCaption())
+								.addParameter(DocumentFilterParam.ofSqlWhereClause(detailsInfo.getSqlWhereClause()))
+								.build())
+						.setUseAutoFilters(true)
 						.build())
-				.setUseAutoFilters(true)
-				.build())
 				.getViewId();
 	}
 

@@ -23,7 +23,6 @@
 package de.metas.handlingunits.inout.returns.customer;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -40,7 +39,6 @@ import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.apache.lucene.util.NumericUtils;
 import org.compiere.model.I_M_InOut;
 
 import java.math.BigDecimal;
@@ -122,7 +120,7 @@ public class CustomerReturnLUTUConfigurationHandler
 		lutuConfiguration.setQtyTU(documentLine.getQtyEnteredTU().signum() == 0 ? BigDecimal.ONE: documentLine.getQtyEnteredTU());
 		lutuConfiguration.setIsInfiniteQtyTU(false);
 
-		lutuConfiguration.setQtyCU(documentLine.getMovementQty());
+		lutuConfiguration.setQtyCUsPerTU(documentLine.getMovementQty());
 		lutuConfiguration.setIsInfiniteQtyCU(false);
 	}
 
@@ -130,7 +128,7 @@ public class CustomerReturnLUTUConfigurationHandler
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product(@NonNull final I_M_InOutLine inOutLine)
 	{
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNone(inOutLine.getM_HU_PI_Item_Product_ID());
-		return piItemProductBL.getById(piItemProductId);
+		return piItemProductBL.getRecordById(piItemProductId);
 	}
 
 	@Override

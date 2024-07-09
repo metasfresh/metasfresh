@@ -47,6 +47,8 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	boolean anyMatchByOrderId(@NonNull OrderId orderId);
 
+	boolean anyMatchByOrderIds(@NonNull Collection<OrderId> orderIds);
+
 	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIds(Set<ShipmentScheduleId> ids, Class<T> clazz);
 
 	@Nullable
@@ -120,7 +122,9 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	ImmutableList<I_M_ShipmentSchedule> getByReferences(ImmutableList<TableRecordReference> recordRefs);
 
-	Collection<I_M_ShipmentSchedule> getByOrderIds(@NonNull OrderId orderId);
+	Collection<I_M_ShipmentSchedule> getByOrderId(@NonNull OrderId orderId);
+
+	Collection<I_M_ShipmentSchedule> getByOrderIds(@NonNull Collection<OrderId> orderIds);
 
 	ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(OrderId orderId);
 

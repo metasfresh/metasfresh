@@ -226,7 +226,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		else if (valueType == IssuingToleranceValueType.QUANTITY)
 		{
 			final UomId uomId = UomId.ofRepoId(record.getIssuingTolerance_UOM_ID());
-			final Quantity qty = Quantitys.create(record.getIssuingTolerance_Qty(), uomId);
+			final Quantity qty = Quantitys.of(record.getIssuingTolerance_Qty(), uomId);
 			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
 		}
 		else
@@ -293,7 +293,9 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public Quantity getQtyRequired(@NonNull final ComputeQtyRequiredRequest computeQtyRequiredRequest)
 	{
 		final I_PP_Product_BOMLine productBomLine = bomDAO.getBOMLineById(computeQtyRequiredRequest.getProductBOMLineId().getRepoId());
-		return computeQtyRequiredByQtyOfFinishedGoods(productBomLine, computeQtyRequiredRequest.getFinishedGoodQty());
+		return computeQtyRequiredRequest.getFinishedGoodQty() != null
+				? computeQtyRequiredByQtyOfFinishedGoods(productBomLine, computeQtyRequiredRequest.getFinishedGoodQty())
+				: computeQtyRequiredByQtyOfIssuedProduct(productBomLine, computeQtyRequiredRequest.getIssuedQty());
 	}
 
 	Quantity computeQtyRequiredByQtyOfFinishedGoods(
@@ -310,6 +312,13 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			@NonNull final Quantity qtyFinishedGood)
 	{
 		return toQtyCalculationsBOMLine(productBOMLine).computeQtyRequired(qtyFinishedGood);
+	}
+
+	private Quantity computeQtyRequiredByQtyOfIssuedProduct(
+			@NonNull final I_PP_Product_BOMLine productBOMLine,
+			@NonNull final Quantity qtyFinishedGood)
+	{
+		return toQtyCalculationsBOMLine(productBOMLine).computeQtyOfFinishedGoodsForComponentQty(qtyFinishedGood);
 	}
 
 	@Override
@@ -656,9 +665,9 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@Override
-	public void validateBeforeClose(final I_PP_Order_BOMLine line)
+	public void validateBeforeClose(final I_PP_Order_BOMLine line, @Nullable final Quantity roundToScale)
 	{
-		getQuantities(line).assertQtyToIssueToleranceIsRespected();
+		getQuantities(line).assertQtyToIssueToleranceIsRespected(roundToScale);
 	}
 
 	@Override

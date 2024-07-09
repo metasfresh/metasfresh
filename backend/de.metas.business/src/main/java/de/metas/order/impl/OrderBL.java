@@ -24,6 +24,8 @@ package de.metas.order.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -72,6 +74,7 @@ import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.service.IPriceListBL;
@@ -105,6 +108,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_DocType;
@@ -128,6 +132,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
@@ -552,7 +558,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public I_M_PriceList_Version getPriceListVersion(final I_C_Order order)
+	public PriceListVersionId getPriceListVersion(final I_C_Order order)
 	{
 		if (order == null)
 		{
@@ -570,8 +576,8 @@ public class OrderBL implements IOrderBL
 
 		final PriceListId priceListId = PriceListId.ofRepoId(order.getM_PriceList_ID());
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
-		final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceListId, orderDate, processedPLVFiltering);
-		return plv;
+		final PriceListVersionId plvId = priceListDAO.retrievePriceListVersionIdOrNull(priceListId, orderDate, processedPLVFiltering);
+		return plvId;
 	}
 
 	@Override
@@ -724,9 +730,9 @@ public class OrderBL implements IOrderBL
 	{
 		// TODO figure out what partnerBL.extractShipToLocation(bp); does
 		final I_C_BPartner_Location shipToLocationId = bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
-																									.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
-																									.type(Type.SHIP_TO)
-																									.build());
+				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
+				.type(Type.SHIP_TO)
+				.build());
 		if (shipToLocationId == null)
 		{
 			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
@@ -773,11 +779,11 @@ public class OrderBL implements IOrderBL
 		OrderDocumentLocationAdapterFactory
 				.billLocationAdapter(order)
 				.setFrom(DocumentLocation.builder()
-								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
-								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
-								 .locationId(newBPartnerLocationId.getLocationCaptureId())
-								 .contactId(newContactId)
-								 .build());
+						.bpartnerId(newBPartnerLocationId.getBpartnerId())
+						.bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+						.locationId(newBPartnerLocationId.getLocationCaptureId())
+						.contactId(newContactId)
+						.build());
 
 		return true; // found it
 	}
@@ -1265,6 +1271,13 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public Map<OrderId, String> getDocumentNosByIds(@NonNull final Collection<OrderId> orderIds)
+	{
+		return getByIds(orderIds).stream()
+				.collect(ImmutableMap.toImmutableMap(order -> OrderId.ofRepoId(order.getC_Order_ID()), I_C_Order::getDocumentNo));
+	}
+
+	@Override
 	public DocStatus getDocStatus(@NonNull final OrderId orderId)
 	{
 		return DocStatus.ofNullableCodeOrUnknown(getById(orderId).getDocStatus());
@@ -1407,4 +1420,35 @@ public class OrderBL implements IOrderBL
 		return orderDAO.getPPCostCollectorId(orderLineId);
 	}
 
+	@Override
+	public void setWeightFromLines(@NonNull final I_C_Order order)
+	{
+		final List<I_C_OrderLine> lines = orderDAO.retrieveOrderLines(OrderId.ofRepoId(order.getC_Order_ID()));
+
+		final ImmutableSet<ProductId> productIds = lines
+				.stream()
+				.map(line -> ProductId.ofRepoId(line.getM_Product_ID()))
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Map<ProductId, I_M_Product> productId2Product = productBL.getByIdsInTrx(productIds)
+				.stream()
+				.collect(Collectors.toMap(product -> ProductId.ofRepoId(product.getM_Product_ID()), Function.identity()));
+
+		final BigDecimal weight = lines.stream()
+				.map(line -> {
+					final I_M_Product product = productId2Product.get(ProductId.ofRepoId(line.getM_Product_ID()));
+
+					return product.getWeight().multiply(line.getQtyOrdered());
+				})
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		order.setWeight(weight);
+	}
+
+	@NonNull
+	public List<OrderId> getUnprocessedIdsBy(@NonNull final ProductId productId)
+	{
+		return orderDAO.getUnprocessedIdsBy(productId);
+	}
 }

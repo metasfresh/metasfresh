@@ -22,56 +22,34 @@
 
 package de.metas.printing;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import de.metas.printing.model.X_AD_PrinterHW;
 import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
+import lombok.RequiredArgsConstructor;
 
-import java.util.Arrays;
+import javax.annotation.Nullable;
+import java.util.Objects;
 
+@RequiredArgsConstructor
+@Getter
 public enum OutputType implements ReferenceListAwareEnum
 {
-	Attach(X_AD_PrinterHW.OUTPUTTYPE_Attach), //
-	Queue(X_AD_PrinterHW.OUTPUTTYPE_Queue), //
-	Store(X_AD_PrinterHW.OUTPUTTYPE_Store);
+	Attach(X_AD_PrinterHW.OUTPUTTYPE_Attach),
+	Queue(X_AD_PrinterHW.OUTPUTTYPE_Queue),
+	Store(X_AD_PrinterHW.OUTPUTTYPE_Store),
+	;
 
-	@Getter
-	private final String code;
+	private static final ReferenceListAwareEnums.ValuesIndex<OutputType> index = ReferenceListAwareEnums.index(values());
 
-	private OutputType(@NonNull final String code)
-	{
-		this.code = code;
-	}
+	@NonNull private final String code;
 
-	public static OutputType ofNullableCode(final String code)
-	{
-		return code != null ? ofCode(code) : null;
-	}
+	public static OutputType ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
-	public static OutputType ofCode(@NonNull final String code)
-	{
-		OutputType type = typesByCode.get(code);
-		if (type == null)
-		{
-			throw new AdempiereException("No " + OutputType.class + " found for code: " + code);
-		}
-		return type;
-	}
+	public static OutputType ofCode(@NonNull final String code) {return index.ofCode(code);}
 
-	public static String toCodeOrNull(final OutputType type)
-	{
-		return type != null ? type.getCode() : null;
-	}
+	public static boolean equals(@Nullable final OutputType type1, @Nullable final OutputType type2) {return Objects.equals(type1, type2);}
 
-	public boolean isStore()
-	{
-		return this == Store;
-	}
-
-	private static final ImmutableMap<String, OutputType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), OutputType::getCode);
-
-
+	public boolean isStore() {return this == Store;}
 }

@@ -61,7 +61,7 @@ class GPLRReportLineItem_Mapper
 				.documentNo(record.getDocumentNo())
 				.lineCode(record.getLine())
 				.description(record.getDescription())
-				.qty(uomId != null ? Quantitys.create(record.getQty(), uomId) : null)
+				.qty(uomId != null ? Quantitys.of(record.getQty(), uomId) : null)
 				.priceFC(foreignCurrencyCode != null ? Amount.of(record.getPrice_FC(), foreignCurrencyCode) : null)
 				.amountFC(foreignCurrencyCode != null ? Amount.of(record.getAmount_FC(), foreignCurrencyCode) : null)
 				.amountLC(localCurrencyCode != null ? Amount.of(record.getAmount_LC(), localCurrencyCode) : null)

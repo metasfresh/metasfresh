@@ -182,7 +182,7 @@ public class TestDunning extends DunningTestBase
 		Assert.assertFalse("Candidate4 - WriteOff", candidate4.isWriteOff());
 		writeOffListener.assertNotTriggered(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, candidate4);
 
-		candidate4.setDunningGrace(TimeUtil.getDay(2014, 01, 01));
+		candidate4.setDunningGrace(TimeUtil.getDay(2014, 1, 01));
 		InterfaceWrapperHelper.save(candidate4);
 
 		//
@@ -359,6 +359,7 @@ public class TestDunning extends DunningTestBase
 				.setGraceDate(graceDate)
 				.setDaysDue(daysDue) // daysDue,
 				.setInDispute(false) // isInDispute
+				.setPoReference(invoice.getPOReference())
 				.create();
 	}
 

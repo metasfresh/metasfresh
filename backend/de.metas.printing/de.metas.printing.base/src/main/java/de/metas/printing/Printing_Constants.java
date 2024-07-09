@@ -22,13 +22,12 @@ package de.metas.printing;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.service.ISysConfigBL;
-
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
+
+import java.math.BigDecimal;
 
 public final class Printing_Constants
 {

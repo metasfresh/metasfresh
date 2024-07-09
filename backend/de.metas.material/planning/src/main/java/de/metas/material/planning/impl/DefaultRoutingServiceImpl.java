@@ -31,7 +31,6 @@ import de.metas.material.planning.pporder.PPRoutingActivity;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
-import de.metas.resource.ResourceType;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -110,17 +109,9 @@ public class DefaultRoutingServiceImpl implements RoutingService
 
 		//
 		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-		final ResourceType resourceType = resourceProductService.getResourceTypeByResourceId(plantId);
-		final BigDecimal availableDayTimeInHours = BigDecimal.valueOf(resourceType.getTimeSlotInHours());
-		final int availableDays = resourceType.getAvailableDaysPerWeek();
-
-		// Weekly Factor
-		final BigDecimal weeklyFactor = BigDecimal.valueOf(7).divide(BigDecimal.valueOf(availableDays), 8, RoundingMode.UP);
-
-		return BigDecimal.valueOf(durationTotal.toHours())
-				.multiply(weeklyFactor)
-				.divide(availableDayTimeInHours, 0, RoundingMode.UP)
-				.intValueExact();
+		return resourceProductService.getResourceTypeByResourceId(plantId)
+				.getAvailability()
+				.computeDurationInDays(durationTotal);
 	}
 
 	@Override

@@ -344,27 +344,6 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
 
 	/**
-	 * Set Approval Strategy.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setApprovalStrategy (@Nullable java.lang.String ApprovalStrategy);
-
-	/**
-	 * Get Approval Strategy.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getApprovalStrategy();
-
-	ModelColumn<I_AD_WF_Node, Object> COLUMN_ApprovalStrategy = new ModelColumn<>(I_AD_WF_Node.class, "ApprovalStrategy", null);
-	String COLUMNNAME_ApprovalStrategy = "ApprovalStrategy";
-
-	/**
 	 * Set Attribute Name.
 	 * Name of the Attribute
 	 *
@@ -429,6 +408,31 @@ public interface I_AD_WF_Node
 	int getC_BPartner_ID();
 
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Document Approval Strategy.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Doc_Approval_Strategy_ID (int C_Doc_Approval_Strategy_ID);
+
+	/**
+	 * Get Document Approval Strategy.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Doc_Approval_Strategy_ID();
+
+	@Nullable org.compiere.model.I_C_Doc_Approval_Strategy getC_Doc_Approval_Strategy();
+
+	void setC_Doc_Approval_Strategy(@Nullable org.compiere.model.I_C_Doc_Approval_Strategy C_Doc_Approval_Strategy);
+
+	ModelColumn<I_AD_WF_Node, org.compiere.model.I_C_Doc_Approval_Strategy> COLUMN_C_Doc_Approval_Strategy_ID = new ModelColumn<>(I_AD_WF_Node.class, "C_Doc_Approval_Strategy_ID", org.compiere.model.I_C_Doc_Approval_Strategy.class);
+	String COLUMNNAME_C_Doc_Approval_Strategy_ID = "C_Doc_Approval_Strategy_ID";
 
 	/**
 	 * Set Cost.
@@ -1152,6 +1156,27 @@ public interface I_AD_WF_Node
 
 	ModelColumn<I_AD_WF_Node, Object> COLUMN_SubflowExecution = new ModelColumn<>(I_AD_WF_Node.class, "SubflowExecution", null);
 	String COLUMNNAME_SubflowExecution = "SubflowExecution";
+
+	/**
+	 * Set Target Planning status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTargetPlanningStatus (@Nullable java.lang.String TargetPlanningStatus);
+
+	/**
+	 * Get Target Planning status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTargetPlanningStatus();
+
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_TargetPlanningStatus = new ModelColumn<>(I_AD_WF_Node.class, "TargetPlanningStatus", null);
+	String COLUMNNAME_TargetPlanningStatus = "TargetPlanningStatus";
 
 	/**
 	 * Set Units by Cycles.

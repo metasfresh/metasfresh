@@ -67,7 +67,7 @@ import java.util.Set;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
-	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
+	I_C_Invoice_Candidate getById(@NonNull InvoiceCandidateId invoiceCandId);
 
 	I_C_Invoice_Candidate getByIdOutOfTrx(InvoiceCandidateId invoiceCandidateId);
 
@@ -131,6 +131,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * </ul>
 	 */
 	Iterator<I_C_Invoice_Candidate> retrieveForInvoiceSchedule(I_C_InvoiceSchedule invoiceSchedule);
+
+	@NonNull
+	Collection<InvoiceCandidateId> retrieveInvoiceCandidateIds(@NonNull InvoiceId invoiceId);
 
 	/**
 	 * Returns all ICs that have the given <code>headerAggregationKey</code>.

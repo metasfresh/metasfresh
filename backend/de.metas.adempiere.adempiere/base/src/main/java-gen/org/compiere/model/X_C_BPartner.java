@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner
  *  @author metasfresh (generated)
@@ -13,19 +13,19 @@ import java.util.Properties;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 1865145681L;
+	private static final long serialVersionUID = -80952059L;
 
-	/** Standard Constructor */
-	public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
-	{
-		super (ctx, C_BPartner_ID, trxName);
-	}
+    /** Standard Constructor */
+    public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
+    {
+      super (ctx, C_BPartner_ID, trxName);
+    }
 
-	/** Load Constructor */
-	public X_C_BPartner (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-	{
-		super (ctx, rs, trxName);
-	}
+    /** Load Constructor */
+    public X_C_BPartner (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    {
+      super (ctx, rs, trxName);
+    }
 
 
 	/** Load Meta Data */
@@ -70,17 +70,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public void setAddress1 (final @Nullable java.lang.String Address1)
-	{
-		throw new IllegalArgumentException ("Address1 is virtual column");	}
-
-	@Override
-	public java.lang.String getAddress1()
-	{
-		return get_ValueAsString(COLUMNNAME_Address1);
-	}
-
-	@Override
 	public void setActis_Rating (final @Nullable java.lang.String Actis_Rating)
 	{
 		set_Value (COLUMNNAME_Actis_Rating, Actis_Rating);
@@ -90,6 +79,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getActis_Rating()
 	{
 		return get_ValueAsString(COLUMNNAME_Actis_Rating);
+	}
+
+	@Override
+	public void setAddress1 (final @Nullable java.lang.String Address1)
+	{
+		throw new IllegalArgumentException ("Address1 is virtual column");	}
+
+	@Override
+	public java.lang.String getAddress1()
+	{
+		return get_ValueAsString(COLUMNNAME_Address1);
 	}
 
 	/**
@@ -642,6 +642,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsString(COLUMNNAME_DefaultShipTo_Postal);
 	}
 
+	@Override
+	public void setDeliveryCreditLimitIndicator (final @Nullable java.lang.String DeliveryCreditLimitIndicator)
+	{
+		throw new IllegalArgumentException ("DeliveryCreditLimitIndicator is virtual column");	}
+
+	@Override
+	public java.lang.String getDeliveryCreditLimitIndicator()
+	{
+		return get_ValueAsString(COLUMNNAME_DeliveryCreditLimitIndicator);
+	}
+
 	/**
 	 * DeliveryRule AD_Reference_ID=151
 	 * Reference name: C_Order DeliveryRule
@@ -771,7 +782,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsString(COLUMNNAME_EORI);
 	}
 
-
 	@Override
 	public void setExcludeFromPromotions (final boolean ExcludeFromPromotions)
 	{
@@ -873,6 +883,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setFresh_Urproduzent (final boolean Fresh_Urproduzent)
+	{
+		set_Value (COLUMNNAME_Fresh_Urproduzent, Fresh_Urproduzent);
+	}
+
+	@Override
+	public boolean isFresh_Urproduzent()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Fresh_Urproduzent);
+	}
+
+	@Override
 	public void setGDPCertificateCustomer (final boolean GDPCertificateCustomer)
 	{
 		set_Value (COLUMNNAME_GDPCertificateCustomer, GDPCertificateCustomer);
@@ -943,7 +965,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsString(COLUMNNAME_Industrial_sector);
 	}
 
-
 	@Override
 	public void setInternalName (final @Nullable java.lang.String InternalName)
 	{
@@ -954,6 +975,27 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getInternalName()
 	{
 		return get_ValueAsString(COLUMNNAME_InternalName);
+	}
+
+	/**
+	 * InvoiceDelivery AD_Reference_ID=541874
+	 * Reference name: Invoice Delivery
+	 */
+	public static final int INVOICEDELIVERY_AD_Reference_ID=541874;
+	/** PostFinance = P */
+	public static final String INVOICEDELIVERY_PostFinance = "P";
+	/** Off = O */
+	public static final String INVOICEDELIVERY_Off = "O";
+	@Override
+	public void setInvoiceDelivery (final @Nullable java.lang.String InvoiceDelivery)
+	{
+		set_Value (COLUMNNAME_InvoiceDelivery, InvoiceDelivery);
+	}
+
+	@Override
+	public java.lang.String getInvoiceDelivery()
+	{
+		return get_ValueAsString(COLUMNNAME_InvoiceDelivery);
 	}
 
 	@Override
@@ -1071,6 +1113,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIsBlocked (final boolean IsBlocked)
+	{
+		throw new IllegalArgumentException ("IsBlocked is virtual column");	}
+
+	@Override
+	public boolean isBlocked()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsBlocked);
+	}
+
+	@Override
 	public void setIsCompany (final boolean IsCompany)
 	{
 		set_Value (COLUMNNAME_IsCompany, IsCompany);
@@ -1185,7 +1238,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public boolean isManuallyCreated() 
+	public boolean isManuallyCreated()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManuallyCreated);
 	}
@@ -1226,7 +1279,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsBoolean(COLUMNNAME_IsPOTaxExempt);
 	}
 
-	/** 
+	/**
 	 * IsPrintLocalCurrencyInfo AD_Reference_ID=540528
 	 * Reference name: Yes_No
 	 */
@@ -1242,7 +1295,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public java.lang.String getIsPrintLocalCurrencyInfo() 
+	public java.lang.String getIsPrintLocalCurrencyInfo()
 	{
 		return get_ValueAsString(COLUMNNAME_IsPrintLocalCurrencyInfo);
 	}
@@ -1453,7 +1506,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 
 	/**
 	 * Legal_form AD_Reference_ID=541684
-	 * Reference name: Legal Form Reference List
+	 * Reference name: Legal Form List
 	 */
 	public static final int LEGAL_FORM_AD_Reference_ID=541684;
 	/** Legal Form 1 = LF1 */
@@ -1483,8 +1536,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		return get_ValueAsString(COLUMNNAME_LinkedIn);
 	}
-
-
 
 	@Override
 	public org.compiere.model.I_AD_Image getLogo()
@@ -2668,17 +2719,5 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getXing()
 	{
 		return get_ValueAsString(COLUMNNAME_Xing);
-	}
-
-	@Override
-	public void setFresh_Urproduzent(final boolean Fresh_Urproduzent)
-	{
-		set_Value(COLUMNNAME_Fresh_Urproduzent, Fresh_Urproduzent);
-	}
-
-	@Override
-	public boolean isFresh_Urproduzent()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_Fresh_Urproduzent);
 	}
 }

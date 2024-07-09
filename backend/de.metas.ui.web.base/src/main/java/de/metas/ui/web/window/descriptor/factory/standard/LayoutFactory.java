@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.window.descriptor.factory.standard;
 
 import com.google.common.base.MoreObjects;
@@ -69,28 +91,6 @@ import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Client_ID;
 import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Org_ID;
 import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED;
 import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED;
-
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public class LayoutFactory
 {
@@ -263,6 +263,7 @@ public class LayoutFactory
 		return DocumentLayoutSingleRow.builder()
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
+				.notFoundMessages(entityDescriptor.getNotFoundMessages())
 				.addSections(layoutSectionsList);
 	}
 
@@ -389,21 +390,30 @@ public class LayoutFactory
 	@Nullable
 	private DocumentLayoutElementLineDescriptor.Builder layoutSingleRow_ElementLine(final I_AD_UI_Element uiElement)
 	{
-		logger.trace("Building layout element line for {}", uiElement);
-
-		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = layoutElement(uiElement);
-		if (layoutElementBuilder == null)
+		try
 		{
-			logger.trace("Skip building layout element line because got null layout element: {}", uiElement);
-			return null;
+			logger.trace("Building layout element line for {}", uiElement);
+
+			final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = layoutElement(uiElement);
+			if (layoutElementBuilder == null)
+			{
+				logger.trace("Skip building layout element line because got null layout element: {}", uiElement);
+				return null;
+			}
+
+			final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = DocumentLayoutElementLineDescriptor.builder()
+					.setInternalName(uiElement.toString())
+					.addElement(layoutElementBuilder);
+
+			logger.trace("Built layout element line for {}: {}", uiElement, layoutElementLineBuilder);
+			return layoutElementLineBuilder;
 		}
-
-		final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = DocumentLayoutElementLineDescriptor.builder()
-				.setInternalName(uiElement.toString())
-				.addElement(layoutElementBuilder);
-
-		logger.trace("Built layout element line for {}: {}", uiElement, layoutElementLineBuilder);
-		return layoutElementLineBuilder;
+		catch (Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex)
+					.setParameter("AD_UI_Element", uiElement)
+					.setParameter("AD_Tab_ID", uiElement.getAD_Tab_ID());
+		}
 	}
 
 	@Nullable
@@ -863,10 +873,10 @@ public class LayoutFactory
 	private boolean isSkipField(@NonNull final DocumentFieldDescriptor.Builder field)
 	{
 		return switch (field.getFieldName())
-				{
-					case FIELDNAME_AD_Org_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED, true);
-					case FIELDNAME_AD_Client_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED, true);
-					default -> false;
-				};
+		{
+			case FIELDNAME_AD_Org_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED, true);
+			case FIELDNAME_AD_Client_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED, true);
+			default -> false;
+		};
 	}
 }

@@ -310,6 +310,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		TableRecordCacheLocal.setReferencedValue(icRecord, inOutLineRecord);
 		icRecord.setIsPackagingMaterial(inOutLineRecord.isPackagingMaterial());
+		icRecord.setExternalHeaderId(inOut.getExternalId());
 
 		// order & delivery stuff
 		final boolean callerCanCreateAdditionalICs = true; // our calling code will create further ICs if needed
@@ -358,7 +359,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Pricing Informations
 		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inOutLineRecord.getReturn_Origin_InOutLine_ID() > 0 ? inOutLineRecord.getReturn_Origin_InOutLine() : inOutLineRecord;
-		calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecordToUse);
+		calculatePriceAndTaxAndUpdate(icRecord, inOutLineRecordToUse);
 
 		//
 		// Description
@@ -432,8 +433,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setC_Incoterms_ID(inOut.getC_Incoterms_ID());
 		icRecord.setIncotermLocation(inOut.getIncotermLocation());
-
-		icRecord.setC_Async_Batch_ID(inOut.getC_Async_Batch_ID());
 
 		icRecord.setC_Shipping_Location_ID(inOut.getC_BPartner_Location_Value_ID());
 
@@ -566,8 +565,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 					.map(InvoiceCandidateId::ofRepoId)
 					.collect(ImmutableSet.toImmutableSet());
 
-			invoiceCandidateIds.forEach(invoiceCandidateId -> invoiceCandBL.setAsyncBatch(invoiceCandidateId, asyncBatchId));
-
 			invoiceCandDAO.invalidateCandsFor(invoiceCandidateIds);
 			return;
 		}
@@ -640,7 +637,12 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			icRecord.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
 			icRecord.setPaymentRule(order.getPaymentRule());
 			icRecord.setDateOrdered(order.getDateOrdered());
-
+			
+			if(Check.isBlank(icRecord.getExternalHeaderId()))
+			{ // only set if it wasn't already set from the M_Inout
+				icRecord.setExternalHeaderId(order.getExternalId());
+			}
+			
 			final boolean propagateToCInvoice = orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
 			if (Check.isBlank(icRecord.getEMail()) && propagateToCInvoice)
 			{
@@ -1028,7 +1030,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Nullable
-	public static PriceAndTax calculatePriceAndQuantityAndUpdate(
+	public static PriceAndTax calculatePriceAndTaxAndUpdate(
 			@NonNull final I_C_Invoice_Candidate icRecord,
 			final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{

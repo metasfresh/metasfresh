@@ -170,7 +170,8 @@ import java.util.List;
 			return baseAllocationRequest.getReference();
 		}
 
-		throw new AdempiereException("Referenced Table/Record not set in " + this);
+		// throw AdempiereException.newWithPlainMessage("Referenced Table/Record not set in " + this);
+		return null;
 	}
 
 	@Override

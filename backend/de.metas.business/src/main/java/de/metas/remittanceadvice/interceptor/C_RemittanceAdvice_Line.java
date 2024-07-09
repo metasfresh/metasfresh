@@ -169,7 +169,7 @@ public class C_RemittanceAdvice_Line
 		if (remittanceAdviceLine.getInvoiceId() != null)
 		{
 			final I_C_Invoice lineResolvedInvoice = invoiceDAO.getByIdInTrx(remittanceAdviceLine.getInvoiceId());
-			final I_C_DocType invoiceDocType = docTypeDAO.getById(lineResolvedInvoice.getC_DocTypeTarget_ID());
+			final I_C_DocType invoiceDocType = docTypeDAO.getRecordById(lineResolvedInvoice.getC_DocTypeTarget_ID());
 
 			remittanceAdviceLine.validateInvoiceDocBaseType(invoiceDocType.getDocBaseType());
 

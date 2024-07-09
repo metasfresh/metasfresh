@@ -112,4 +112,23 @@ public class ProductTaxCategoryService
 				.countryId(CountryId.ofRepoIdOrNull(priceListRecord.getC_Country_ID()))
 				.build();
 	}
+
+	@NonNull
+	public Optional<ProductTaxCategory> getProductTaxCategoryByUniqueKey(
+			@NonNull final ProductId productId,
+			@NonNull final CountryId countryId)
+	{
+		return productTaxCategoryRepository.getProductTaxCategoryByUniqueKey(productId, countryId);
+	}
+
+	public void save(@NonNull final ProductTaxCategory request)
+	{
+		productTaxCategoryRepository.save(request);
+	}
+
+	@NonNull
+	public ProductTaxCategory createProductTaxCategory(@NonNull final CreateProductTaxCategoryRequest createProductTaxCategoryRequest)
+	{
+		return productTaxCategoryRepository.createProductTaxCategory(createProductTaxCategoryRequest);
+	}
 }

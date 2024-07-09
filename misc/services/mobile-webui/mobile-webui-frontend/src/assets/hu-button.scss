@@ -1,0 +1,64 @@
+.hu-row-label {
+  display: flex;
+  padding-top: 5px;
+  text-align: left;
+  float: left;
+  width: 33%;
+  font-size: 0.5em;
+
+  span {
+    min-width: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}
+
+.hu-row-value {
+  display: flex;
+  float: left;
+  width: 66%;
+  font-size: 0.5em;
+  font-weight: bold;
+  padding-top: 5px;
+  padding-left: 5px;
+
+  span {
+    min-width: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}
+
+.hu-button {
+  border-radius: 4px;
+  border: 1px solid #e6e6e6;
+  background-color: transparent;
+  margin-top: 0.3rem;
+
+  &:active,
+  &.is-active {
+    border-color: #4A4A4AFF;
+    color: #363636FF;
+  }
+
+  .attribute-container {
+    display: flex;
+    flex-wrap: wrap;
+
+    .hu-row-info {
+      width: 50%;
+      box-sizing: border-box;
+    }
+  }
+
+  .hu-button-title {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}

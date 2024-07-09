@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_Qty, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -655188531L;
+	private static final long serialVersionUID = -1982777405L;
 
     /** Standard Constructor */
     public X_PP_Order_Qty (final Properties ctx, final int PP_Order_Qty_ID, @Nullable final String trxName)
@@ -48,6 +48,18 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setIsReceipt (final boolean IsReceipt)
+	{
+		set_Value (COLUMNNAME_IsReceipt, IsReceipt);
+	}
+
+	@Override
+	public boolean isReceipt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReceipt);
 	}
 
 	@Override

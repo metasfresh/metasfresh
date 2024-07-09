@@ -25,7 +25,6 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -62,9 +61,8 @@ public class AttributePricing implements IPricingRule
 	/**
 	 * Allows to add a matcher that will be applied when this rule looks for a matching product price.
 	 */
-	public static void registerDefaultMatcher(final IProductPriceQueryMatcher matcher)
+	public static void registerDefaultMatcher(@NonNull final IProductPriceQueryMatcher matcher)
 	{
-		Check.assumeNotNull(matcher, "Parameter matcher is not null");
 		_defaultMatchers.addIfAbsent(matcher);
 		logger.info("Registered default matcher: {}", matcher);
 	}
@@ -272,14 +270,14 @@ public class AttributePricing implements IPricingRule
 			return Optional.empty();
 		}
 
-		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
-		if (ctxPriceListVersion == null)
+		final PriceListVersionId ctxPriceListVersionId = pricingCtx.getPriceListVersionId();
+		if (ctxPriceListVersionId == null)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("findMatchingProductPriceAttribute - Return empty because no M_PriceList_Version found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
-		final I_M_ProductPrice productPrice = ProductPrices.newQuery(ctxPriceListVersion)
+		final I_M_ProductPrice productPrice = ProductPrices.newQuery(ctxPriceListVersionId)
 				.setProductId(pricingCtx.getProductId())
 				.onlyValidPrices(true)
 				.matching(_defaultMatchers)

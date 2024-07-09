@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.IOrgDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -43,30 +44,34 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.time.LocalDate;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MD_Cockpit_StepDef
 {
 	private final static Logger logger = LogManager.getLogger(MD_Cockpit_StepDef.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final M_Product_StepDefData productTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
@@ -129,7 +134,8 @@ public class MD_Cockpit_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Cockpit.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final ProductId productId = ProductId.ofRepoId(productTable.get(productIdentifier).getM_Product_ID());
 
-		final LocalDate dateGeneral = DataTableUtil.extractLocalDateForColumnName(tableRow, I_MD_Cockpit.COLUMNNAME_DateGeneral);
+		final ZoneId timeZone = orgDAO.getTimeZone(Env.getOrgId());
+		final Instant dateGeneral = DataTableUtil.extractLocalDateForColumnName(tableRow, I_MD_Cockpit.COLUMNNAME_DateGeneral).atStartOfDay(timeZone).toInstant();
 		final BigDecimal qtyDemandSumAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyDemandSum_AtDate);
 		final BigDecimal qtyDemandSalesOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyDemand_SalesOrder_AtDate);
 		final BigDecimal qtyStockCurrentAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyStockCurrent_AtDate);
@@ -145,6 +151,8 @@ public class MD_Cockpit_StepDef
 		final BigDecimal qtySupplyPPOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtySupply_PP_Order_AtDate);
 		final BigDecimal qtySupplyDDOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtySupply_DD_Order_AtDate);
 		final BigDecimal qtyDemandDDOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyDemand_DD_Order_AtDate);
+		final BigDecimal qtyOrderedPurchaseOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyOrdered_PurchaseOrder_AtDate);
+		final BigDecimal qtyOrderedSalesOrderAtDate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtyOrdered_SalesOrder_AtDate);
 
 		final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_AttributesKey + "." + TABLECOLUMN_IDENTIFIER);
 		final AttributesKey attributeStorageKey = getAttributesKey(asiIdentifier);
@@ -167,7 +175,9 @@ public class MD_Cockpit_StepDef
 				.qtyDemandPPOrderAtDate(qtyDemandPPOrderAtDate)
 				.qtySupplyPPOrderAtDate(qtySupplyPPOrderAtDate)
 				.qtySupplyDDOrderAtDate(qtySupplyDDOrderAtDate)
-				.qtyDemandDDOrderAtDate(qtyDemandDDOrderAtDate);
+				.qtyDemandDDOrderAtDate(qtyDemandDDOrderAtDate)
+				.qtyOrderedPurchaseOrderAtDate(qtyOrderedPurchaseOrderAtDate)
+				.qtyOrderedSalesOrderAtDate(qtyOrderedSalesOrderAtDate);
 
 		final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(warehouseIdentifier))
@@ -313,10 +323,24 @@ public class MD_Cockpit_StepDef
 													qtySupplyDDOrderAtDate, cockpitRecord.getQtySupply_DD_Order_AtDate()));
 		}
 
-		if (errorCollector.size() > 0)
+		final BigDecimal qtyOrderedPurchaseOrderAtDate = expectedResults.getQtyOrderedPurchaseOrderAtDate();
+		if (qtyOrderedPurchaseOrderAtDate != null && !cockpitRecord.getQtyOrdered_PurchaseOrder_AtDate().equals(qtyOrderedPurchaseOrderAtDate))
+		{
+			errorCollector.add(MessageFormat.format("Expecting QtyOrderedPurchaseOrderAtDate={0} but actual is {1}",
+													qtyOrderedPurchaseOrderAtDate, cockpitRecord.getQtyOrdered_PurchaseOrder_AtDate()));
+		}
+
+		final BigDecimal qtyOrderedSalesOrderAtDate = expectedResults.getQtyOrderedSalesOrderAtDate();
+		if (qtyOrderedSalesOrderAtDate != null && !cockpitRecord.getQtyOrdered_SalesOrder_AtDate().equals(qtyOrderedSalesOrderAtDate))
+		{
+			errorCollector.add(MessageFormat.format("Expecting QtyOrderedSalesOrderAtDate={0} but actual is {1}",
+													qtyOrderedSalesOrderAtDate, cockpitRecord.getQtyOrdered_SalesOrder_AtDate()));
+		}
+
+		if (!errorCollector.isEmpty())
 		{
 			final String errorMessages = MessageFormat.format("MD_Cockpit.Identifier={0}, MD_Cockpit_ID={1}:", cockpitIdentifier, cockpitRecord.getMD_Cockpit_ID())
-					+ "\n *" 
+					+ "\n *"
 					+ String.join("\n *", errorCollector);
 
 			return ItemProvider.ProviderResult.resultWasNotFound(errorMessages);
@@ -385,7 +409,7 @@ public class MD_Cockpit_StepDef
 	{
 		final IQueryBuilder<I_MD_Cockpit> queryBuilder = queryBL.createQueryBuilder(I_MD_Cockpit.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Cockpit.COLUMNNAME_DateGeneral, cockpitQuery.getDateGeneral(), DateTruncQueryFilterModifier.DAY)
+				.addEqualsFilter(I_MD_Cockpit.COLUMNNAME_DateGeneral, TimeUtil.asTimestamp(cockpitQuery.getDateGeneral()))
 				.addEqualsFilter(I_MD_Cockpit.COLUMNNAME_M_Product_ID, cockpitQuery.getProductId())
 				.addEqualsFilter(I_MD_Cockpit.COLUMNNAME_AttributesKey, cockpitQuery.getStorageAttributesKey().getAsString());
 
@@ -410,7 +434,7 @@ public class MD_Cockpit_StepDef
 		AttributesKey storageAttributesKey;
 
 		@NonNull
-		LocalDate dateGeneral;
+		Instant dateGeneral;
 
 		@Nullable
 		BigDecimal qtyDemandSumAtDate;
@@ -459,6 +483,13 @@ public class MD_Cockpit_StepDef
 
 		@Nullable
 		WarehouseId warehouseId;
+
+		@Nullable
+		BigDecimal qtyOrderedPurchaseOrderAtDate;
+
+		@Nullable
+		BigDecimal qtyOrderedSalesOrderAtDate;
+
 	}
 
 	@Builder
@@ -472,7 +503,7 @@ public class MD_Cockpit_StepDef
 		AttributesKey storageAttributesKey;
 
 		@NonNull
-		LocalDate dateGeneral;
+		Instant dateGeneral;
 
 		@Nullable
 		WarehouseId warehouseId;

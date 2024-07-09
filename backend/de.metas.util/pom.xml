@@ -34,6 +34,12 @@
             <artifactId>guava</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.threeten</groupId>
+            <artifactId>threeten-extra</artifactId>
+            <version>1.7.2</version>
+        </dependency>
+
         <!-- the next 3 are for task http://dewiki908/mediawiki/index.php/06952_Async_Problems_%28109152162496%29 -->
         <dependency>
             <groupId>org.reflections</groupId>

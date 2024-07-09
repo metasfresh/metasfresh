@@ -63,7 +63,7 @@ public class MetasfreshEventListener
 			final MaterialEvent lightWeightEvent = materialEventConverter.toMaterialEvent(event);
 			try (final MDCCloseable ignored = MDC.putCloseable("MaterialEventClass", lightWeightEvent.getClass().getName()))
 			{
-				logger.info("Received MaterialEvent={}, Timestamp={}, TheadId={}", lightWeightEvent, Instant.now(), Thread.currentThread().getId());
+				logger.debug("Received MaterialEvent={}, Timestamp={}, TheadId={}", lightWeightEvent, Instant.now(), Thread.currentThread().getId());
 
 				// make sure that every record we create has the correct AD_Client_ID and AD_Org_ID
 				final Properties temporaryCtx = Env.copyCtx(Env.getCtx());

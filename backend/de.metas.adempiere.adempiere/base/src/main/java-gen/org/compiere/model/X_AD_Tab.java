@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Tab
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -275252737L;
+	private static final long serialVersionUID = -1494329261L;
 
     /** Standard Constructor */
     public X_AD_Tab (final Properties ctx, final int AD_Tab_ID, @Nullable final String trxName)
@@ -429,6 +429,29 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 		return get_ValueAsString(COLUMNNAME_IncludedTabNewRecordInputMode);
 	}
 
+	/** 
+	 * IncludeFiltersStrategy AD_Reference_ID=541862
+	 * Reference name: IncludeFiltersStrategy
+	 */
+	public static final int INCLUDEFILTERSSTRATEGY_AD_Reference_ID=541862;
+	/** None = N */
+	public static final String INCLUDEFILTERSSTRATEGY_None = "N";
+	/** Explicit = E */
+	public static final String INCLUDEFILTERSSTRATEGY_Explicit = "E";
+	/** Auto = A */
+	public static final String INCLUDEFILTERSSTRATEGY_Auto = "A";
+	@Override
+	public void setIncludeFiltersStrategy (final @Nullable java.lang.String IncludeFiltersStrategy)
+	{
+		set_Value (COLUMNNAME_IncludeFiltersStrategy, IncludeFiltersStrategy);
+	}
+
+	@Override
+	public java.lang.String getIncludeFiltersStrategy() 
+	{
+		return get_ValueAsString(COLUMNNAME_IncludeFiltersStrategy);
+	}
+
 	@Override
 	public void setInternalName (final @Nullable java.lang.String InternalName)
 	{
@@ -658,6 +681,30 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
+	public void setNotFound_Message (final @Nullable java.lang.String NotFound_Message)
+	{
+		set_Value (COLUMNNAME_NotFound_Message, NotFound_Message);
+	}
+
+	@Override
+	public java.lang.String getNotFound_Message() 
+	{
+		return get_ValueAsString(COLUMNNAME_NotFound_Message);
+	}
+
+	@Override
+	public void setNotFound_MessageDetail (final @Nullable java.lang.String NotFound_MessageDetail)
+	{
+		set_Value (COLUMNNAME_NotFound_MessageDetail, NotFound_MessageDetail);
+	}
+
+	@Override
+	public java.lang.String getNotFound_MessageDetail() 
+	{
+		return get_ValueAsString(COLUMNNAME_NotFound_MessageDetail);
+	}
+
+	@Override
 	public void setOrderByClause (final @Nullable java.lang.String OrderByClause)
 	{
 		set_Value (COLUMNNAME_OrderByClause, OrderByClause);
@@ -718,6 +765,18 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	public java.lang.String getQuickInput_CloseButton_Caption() 
 	{
 		return get_ValueAsString(COLUMNNAME_QuickInput_CloseButton_Caption);
+	}
+
+	@Override
+	public void setQuickInputLayout (final @Nullable java.lang.String QuickInputLayout)
+	{
+		set_Value (COLUMNNAME_QuickInputLayout, QuickInputLayout);
+	}
+
+	@Override
+	public java.lang.String getQuickInputLayout() 
+	{
+		return get_ValueAsString(COLUMNNAME_QuickInputLayout);
 	}
 
 	@Override

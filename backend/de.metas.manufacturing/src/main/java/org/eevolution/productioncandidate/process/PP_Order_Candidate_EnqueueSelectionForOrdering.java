@@ -50,7 +50,7 @@ import java.math.BigDecimal;
 
 public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess implements IProcessPrecondition
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	protected final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer = SpringContextHolder.instance.getBean(PPOrderCandidateEnqueuer.class);
 
 	private static final String PARAM_COMPLETE_DOCUMENT = "IsDocComplete";
@@ -60,6 +60,10 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 	private static final String PARAM_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION = "AutoProcessCandidatesAfterProduction";
 	@Param(parameterName = PARAM_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION)
 	private boolean autoProcessCandidatesAfterProduction;
+
+	private static final String PARAM_AUTO_CLOSE_CANDIDATES_AFTER_PRODUCTION = "AutoCloseCandidatesAfterProduction";
+	@Param(parameterName = PARAM_AUTO_CLOSE_CANDIDATES_AFTER_PRODUCTION)
+	private boolean autoCloseCandidatesAfterProduction;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -82,6 +86,7 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 				.ctx(Env.getCtx())
 				.isCompleteDocOverride(isDocComplete)
 				.autoProcessCandidatesAfterProduction(autoProcessCandidatesAfterProduction)
+				.autoCloseCandidatesAfterProduction(autoCloseCandidatesAfterProduction)
 				.build();
 
 		ppOrderCandidateEnqueuer.enqueueSelection(enqueuePPOrderCandidateRequest);
@@ -99,7 +104,7 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 		}
 	}
 
-	private int createSelection()
+	protected int createSelection()
 	{
 		final IQueryBuilder<I_PP_Order_Candidate> queryBuilder = createOCQueryBuilder();
 
@@ -115,7 +120,7 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 				.createSelection(adPInstanceId);
 	}
 
-	private IQueryBuilder<I_PP_Order_Candidate> createOCQueryBuilder()
+	protected IQueryBuilder<I_PP_Order_Candidate> createOCQueryBuilder()
 	{
 		final IQueryFilter<I_PP_Order_Candidate> userSelectionFilter = getProcessInfo().getQueryFilterOrElse(null);
 

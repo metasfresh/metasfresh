@@ -75,7 +75,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 				<subreportExpression><![CDATA["de/metas/docs/sales/inout/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-5" x="56" y="153" width="255" height="127" uuid="a2587194-6faf-4a16-9753-2a9f77935d45">
+				<reportElement key="subreport-5" x="37" y="153" width="255" height="127" uuid="a2587194-6faf-4a16-9753-2a9f77935d45">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>

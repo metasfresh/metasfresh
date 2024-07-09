@@ -57,6 +57,8 @@ public enum AcctSegmentType
 	UserElementString5(AcctSchemaElementType.UserElementString5),
 	UserElementString6(AcctSchemaElementType.UserElementString6),
 	UserElementString7(AcctSchemaElementType.UserElementString7),
+	UserElementNumber1(AcctSchemaElementType.UserElementNumber1),
+	UserElementNumber2(AcctSchemaElementType.UserElementNumber2),
 	SalesOrder(AcctSchemaElementType.SalesOrder),
 	SectionCode(AcctSchemaElementType.SectionCode),
 	UserElementDate1(AcctSchemaElementType.UserElementDate1),

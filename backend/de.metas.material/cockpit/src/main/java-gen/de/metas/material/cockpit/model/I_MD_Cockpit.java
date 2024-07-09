@@ -250,6 +250,27 @@ public interface I_MD_Cockpit
 	String COLUMNNAME_PMM_QtyPromised_OnDate_AtDate = "PMM_QtyPromised_OnDate_AtDate";
 
 	/**
+	 * Set Vendor promised for next day.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPMM_QtyPromised_NextDay(@Nullable BigDecimal PMM_QtyPromised_NextDay);
+
+	/**
+	 * Get Vendor promised for next day.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPMM_QtyPromised_NextDay();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_PMM_QtyPromised_NextDay = new ModelColumn<>(I_MD_Cockpit.class, "PMM_QtyPromised_NextDay", null);
+	String COLUMNNAME_PMM_QtyPromised_NextDay = "PMM_QtyPromised_NextDay";
+
+	/**
 	 * Set Produktname.
 	 * Name des Produktes
 	 *
@@ -501,6 +522,52 @@ public interface I_MD_Cockpit
 
 	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyOnHandCount = new ModelColumn<>(I_MD_Cockpit.class, "QtyOnHandCount", null);
 	String COLUMNNAME_QtyOnHandCount = "QtyOnHandCount";
+
+	/**
+	 * Set 📆 Purchased.
+	 * Quantity from purchase orders for the respective date
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyOrdered_PurchaseOrder_AtDate(@Nullable BigDecimal QtyOrdered_PurchaseOrder_AtDate);
+
+	/**
+	 * Get 📆 Purchased.
+	 * Quantity from purchase orders for the respective date
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyOrdered_PurchaseOrder_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyOrdered_PurchaseOrder_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyOrdered_PurchaseOrder_AtDate", null);
+	String COLUMNNAME_QtyOrdered_PurchaseOrder_AtDate = "QtyOrdered_PurchaseOrder_AtDate";
+
+	/**
+	 * Set 📆 Sold.
+	 * Quantity from sales orders for the respective date
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyOrdered_SalesOrder_AtDate(@Nullable BigDecimal QtyOrdered_SalesOrder_AtDate);
+
+	/**
+	 * Get 📆 Sold.
+	 * Quantity from sales orders for the respective date
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyOrdered_SalesOrder_AtDate();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyOrdered_SalesOrder_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyOrdered_SalesOrder_AtDate", null);
+	String COLUMNNAME_QtyOrdered_SalesOrder_AtDate = "QtyOrdered_SalesOrder_AtDate";
 
 	/**
 	 * Set Bestandsänderung.

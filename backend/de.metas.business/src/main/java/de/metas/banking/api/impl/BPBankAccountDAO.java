@@ -60,6 +60,13 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
 
+	private final CCache<BPartnerId, Optional<BankAccount>> bankAccountByBPartnerId = CCache.<BPartnerId, Optional<BankAccount>>builder()
+			.tableName(I_C_BP_BankAccount.Table_Name)
+			.cacheMapType(CacheMapType.LRU)
+			.initialCapacity(100)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
+
 	@Override
 	public BankAccount getById(@NonNull final BankAccountId bankAccountId)
 	{
@@ -117,6 +124,25 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 	public Optional<BankAccount> getDefaultBankAccount(@NonNull final BPartnerId bPartnerId)
 	{
 		return retrieveDefaultBankAccountInTrx(bPartnerId)
+				.map(BPBankAccountDAO::toBankAccount);
+	}
+
+	@Override
+	public Optional<BankAccount> getDefaultESRBankAccount(@NonNull final BPartnerId bpartnerId)
+	{
+		return bankAccountByBPartnerId.getOrLoad(bpartnerId, this::retrieveDefaultESRBankAccount);
+	}
+
+	private Optional<BankAccount> retrieveDefaultESRBankAccount(@NonNull final BPartnerId bpartnerId)
+	{
+		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, true)
+				.orderByDescending(I_C_BP_BankAccount.COLUMNNAME_IsDefaultESR)
+				.orderByDescending(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID)
+				.create()
+				.firstOptional(I_C_BP_BankAccount.class)
 				.map(BPBankAccountDAO::toBankAccount);
 	}
 

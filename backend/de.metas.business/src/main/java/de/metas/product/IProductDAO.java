@@ -25,7 +25,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.isEmpty;
 
@@ -79,7 +79,6 @@ public interface IProductDAO extends ISingletonService
 	/**
 	 * @return the product of the given <code>org</code> that is mapped to the given <code>product</code> or <code>null</code> if the given product references no mapping, or the mapping is not active
 	 * or if there is no pendant in the given <code>org</code>.
-	 * task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
 	 */
 	@Nullable
 	ProductId retrieveMappedProductIdOrNull(ProductId productId, OrgId orgId);
@@ -156,8 +155,8 @@ public interface IProductDAO extends ISingletonService
 			this.value = value;
 			this.externalId = externalId;
 			this.orgId = orgId;
-			this.includeAnyOrg = coalesce(includeAnyOrg, false);
-			this.outOfTrx = coalesce(outOfTrx, false);
+			this.includeAnyOrg = coalesceNotNull(includeAnyOrg, false);
+			this.outOfTrx = coalesceNotNull(outOfTrx, false);
 		}
 	}
 
@@ -209,9 +208,10 @@ public interface IProductDAO extends ISingletonService
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 
 	/**
-	 *
-	 * @param productId
-	 * @return true if product is used in orders, invoices, shipments,..
+	 * @return {@code true} if product is used in orders, invoices, shipments or cost-details.
 	 */
 	boolean isProductUsed(ProductId productId);
+
+	@NonNull
+	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 }

@@ -140,7 +140,7 @@ public class WebuiHUTransformParametersFiller
 	public Object getParameterDefaultValue(final String parameterName)
 	{
 
-		if (WEBUI_M_HU_Transform.PARAM_QtyCU.equals(parameterName))
+		if (WEBUI_M_HU_Transform.PARAM_QtyCUsPerTU.equals(parameterName))
 		{
 			final I_M_HU cu = getSelectedRow().getM_HU(); // should work, because otherwise the param is not even shown.
 
@@ -149,7 +149,7 @@ public class WebuiHUTransformParametersFiller
 		else if (WEBUI_M_HU_Transform.PARAM_QtyTU.equals(parameterName))
 		{
 			final I_M_HU tu = getSelectedRow().getM_HU(); // should work, because otherwise the param is not even shown.
-			return HUTransformService.newInstance().getMaximumQtyTU(tu);
+			return HUTransformService.newInstance().getMaximumQtyTU(tu).toBigDecimal();
 		}
 		else if (WEBUI_M_HU_Transform.PARAM_HUPlanningReceiptOwnerPM_TU.equals(parameterName))
 		{

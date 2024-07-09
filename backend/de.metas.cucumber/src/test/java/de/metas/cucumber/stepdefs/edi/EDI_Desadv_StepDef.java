@@ -65,7 +65,7 @@ public class EDI_Desadv_StepDef
 	private static final String EDI_EXP_DESADV_PACK_TAGNAME = "EDI_Exp_Desadv_Pack";
 	private static final String IPA_SSCC18_TAGNAME = "IPA_SSCC18";
 	private static final String EDI_EXP_DESADV_PACK_ITEM_TAGNAME = "EDI_Exp_Desadv_Pack_Item";
-	private static final String QTY_CU_TAGNAME = "QtyCU";
+	private static final String QTY_CU_TAGNAME = "QtyCUsPerTU";
 	private static final String QTY_CUS_PER_LU_TAGNAME = "QtyCUsPerLU";
 	private static final String QTY_TU_TAGNAME = "QtyTU";
 
@@ -178,7 +178,7 @@ public class EDI_Desadv_StepDef
 		final Element desadvPackItem = getElement(desadvPackElement, EDI_EXP_DESADV_PACK_ITEM_TAGNAME);
 		assertThat(desadvPackItem).isNotNull();
 
-		final String qtyCuExpected = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.EDI_Exp_Desadv_Pack_Item.QtyCU");
+		final String qtyCuExpected = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerTU");
 		if (Check.isNotBlank(qtyCuExpected))
 		{
 			final Element qtyCu = getElement(desadvPackElement, QTY_CU_TAGNAME);

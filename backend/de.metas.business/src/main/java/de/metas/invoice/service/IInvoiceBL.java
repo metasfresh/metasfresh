@@ -36,6 +36,7 @@ import de.metas.document.IDocLineCopyHandler;
 import de.metas.document.engine.DocStatus;
 import de.metas.forex.ForexContractId;
 import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -72,9 +73,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public interface IInvoiceBL extends ISingletonService
-{
-	I_C_Invoice getById(final InvoiceId invoiceId);
+public interface IInvoiceBL extends ISingletonService {
+    I_C_Invoice getById(final InvoiceId invoiceId);
 
 	/**
 	 * Copies a given invoice
@@ -120,54 +120,58 @@ public interface IInvoiceBL extends ISingletonService
 	int copyLinesFrom(I_C_Invoice fromInvoice, I_C_Invoice toInvoice, boolean counter, boolean setOrderRef, boolean setInvoiceRef,
 					  IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> docLineCopyHandler);
 
-	String getSummary(I_C_Invoice invoice);
+    String getSummary(I_C_Invoice invoice);
 
-	default boolean isVendorInvoice(final String docBaseType)
-	{
-		return X_C_DocType.DOCBASETYPE_APInvoice.equals(docBaseType)
-				|| X_C_DocType.DOCBASETYPE_APCreditMemo.equals(docBaseType);
-	}
-	/**
-	 * @param invoice the invoice to check
-	 * @return true if the given invoice is an Invoice (API or ARI)
-	 */
-	boolean isInvoice(@NonNull I_C_Invoice invoice);
+    default boolean isVendorInvoice(final String docBaseType) {
+        return X_C_DocType.DOCBASETYPE_APInvoice.equals(docBaseType)
+                || X_C_DocType.DOCBASETYPE_APCreditMemo.equals(docBaseType);
+    }
+
+    /**
+     * @param invoice the invoice to check
+     * @return true if the given invoice is an Invoice (API or ARI)
+     */
+    boolean isInvoice(@NonNull I_C_Invoice invoice);
 
 	InvoiceDocBaseType getInvoiceDocBaseType(@NonNull I_C_Invoice invoice);
 
-	/**
-	 * @return true if the given invoice is a CreditMemo (APC or ARC)
-	 */
-	boolean isCreditMemo(I_C_Invoice invoice);
+    /**
+     * @return true if the given invoice is a CreditMemo (APC or ARC)
+     */
+    boolean isCreditMemo(I_C_Invoice invoice);
 
-	/**
-	 * @return true if the given invoice DocBaseType is a CreditMemo (APC or ARC)
-	 */
-	boolean isCreditMemo(String docBaseType);
+    /**
+     * @return true if the given invoice DocBaseType is a CreditMemo (APC or ARC)
+     */
+    boolean isCreditMemo(String docBaseType);
 
 	boolean isReversal(InvoiceId invoiceId);
 
-	/**
-	 * @return <code>true</code> if the given invoice is the reversal of another invoice.
-	 */
-	boolean isReversal(I_C_Invoice invoice);
+    /**
+     * @return <code>true</code> if the given invoice is the reversal of another invoice.
+     */
+    boolean isReversal(I_C_Invoice invoice);
 
-	/**
-	 * Writes off the given openAmt from the given invoice.
-	 *
-	 * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
-	 */
-	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
+    /**
+     * Writes off the given openAmt from the given invoice.
+     *
+     * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
+     */
+    void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
 
 	Optional<I_C_Invoice> getByIdIfExists(@NonNull InvoiceId invoiceId);
 
-	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+    List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	List<? extends I_C_Invoice> getByOrderId(@NonNull OrderId orderId);
 
 	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
 
-	I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
+	I_C_Invoice getByLineId(@NonNull InvoiceLineId invoiceLineId);
+
+	I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
+
+    I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
 
 	List<InvoiceTax> getTaxes(@NonNull InvoiceId invoiceId);
 
@@ -200,10 +204,10 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	de.metas.adempiere.model.I_C_Invoice creditInvoice(de.metas.adempiere.model.I_C_Invoice invoice, InvoiceCreditContext creditCtx);
 
-	/**
-	 * Creates a new invoice line for the given invoice. Note that the new line is not saved.
-	 */
-	I_C_InvoiceLine createLine(I_C_Invoice invoice);
+    /**
+     * Creates a new invoice line for the given invoice. Note that the new line is not saved.
+     */
+    I_C_InvoiceLine createLine(I_C_Invoice invoice);
 
 	void scheduleUpdateIsPaid(@NonNull InvoiceId invoiceId);
 
@@ -232,90 +236,90 @@ public interface IInvoiceBL extends ISingletonService
 			LocalDate dateInvoiced,
 			LocalDate dateAcct);
 
-	void setFromOrder(I_C_Invoice invoice, I_C_Order order);
+    void setFromOrder(I_C_Invoice invoice, I_C_Order order);
 
-	void updateFromBPartner(I_C_Invoice invoice);
+    void updateFromBPartner(I_C_Invoice invoice);
 
-	BPartnerInvoicingInfo getBPartnerInvoicingInfo(
-			@NonNull BPartnerId bpartnerId,
-			@NonNull SOTrx soTrx,
-			@NonNull ZonedDateTime date);
+    BPartnerInvoicingInfo getBPartnerInvoicingInfo(
+            @NonNull BPartnerId bpartnerId,
+            @NonNull SOTrx soTrx,
+            @NonNull ZonedDateTime date);
 
-	/**
-	 * Sets Target Document Type and IsSOTrx.
-	 */
+    /**
+     * Sets Target Document Type and IsSOTrx.
+     */
 	void setDocTypeTargetId(I_C_Invoice invoice, InvoiceDocBaseType docBaseType);
 
-	/**
-	 * Set Target Document Type based on SO flag AP/AP Invoice
-	 */
-	void setDocTypeTargetIdIfNotSet(I_C_Invoice invoice);
+    /**
+     * Set Target Document Type based on SO flag AP/AP Invoice
+     */
+    void setDocTypeTargetIdIfNotSet(I_C_Invoice invoice);
 
-	void setDocTypeTargetIdAndUpdateDescription(I_C_Invoice invoice, int docTypeId);
+    void setDocTypeTargetIdAndUpdateDescription(I_C_Invoice invoice, int docTypeId);
 
-	/**
-	 * Sort and then renumber all invoice lines.
+    /**
+     * Sort and then renumber all invoice lines.
 	 * This method does not touch lines that were flagged using {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
 	 * Also, it will not assign their <code>Line</code> value to any other line.
-	 */
-	void renumberLines(List<I_C_InvoiceLine> lines, int step);
+     */
+    void renumberLines(List<I_C_InvoiceLine> lines, int step);
 
-	/**
-	 * Use {@link org.adempiere.ad.persistence.ModelDynAttributeAccessor ModelDynAttributeAccessor} to flag lines whose <code>C_InvoiceLine.Line</code> value shall not be changed by
-	 * {@link #renumberLines(List, int)}.
-	 */
-	void setHasFixedLineNumber(I_C_InvoiceLine line, boolean value);
+    /**
+     * Use {@link org.adempiere.ad.persistence.ModelDynAttributeAccessor ModelDynAttributeAccessor} to flag lines whose <code>C_InvoiceLine.Line</code> value shall not be changed by
+     * {@link #renumberLines(List, int)}.
+     */
+    void setHasFixedLineNumber(I_C_InvoiceLine line, boolean value);
 
-	/**
-	 * Updates the given invoice line's <code>M_Product_ID</code>, <code>C_UOM_ID</code> and <code>M_AttributeSetInstance_ID</code>.<br>
-	 * Product ID and UOM ID are set to the product and it's respective UOM or to 0 if the given <code>productId</code> is 0. The ASI ID is always set to 0.
-	 * <p>
-	 * Important note: what we do <b>not</b> set there is the price UOM because that one is set only together with the price.
-	 */
-	void setProductAndUOM(I_C_InvoiceLine invoiceLine, ProductId productId);
+    /**
+     * Updates the given invoice line's <code>M_Product_ID</code>, <code>C_UOM_ID</code> and <code>M_AttributeSetInstance_ID</code>.<br>
+     * Product ID and UOM ID are set to the product and it's respective UOM or to 0 if the given <code>productId</code> is 0. The ASI ID is always set to 0.
+     * <p>
+     * Important note: what we do <b>not</b> set there is the price UOM because that one is set only together with the price.
+     */
+    void setProductAndUOM(I_C_InvoiceLine invoiceLine, ProductId productId);
 
-	/**
-	 * Set the given invoiceline's QtyInvoiced, QtyEntered and QtyInvoicedInPriceUOM.
-	 * This method assumes that the given invoice Line has a product (with an UOM) and a C_UOM and Price_UOM set.
-	 */
-	void setQtys(I_C_InvoiceLine invoiceLine, StockQtyAndUOMQty qtyInvoiced);
+    /**
+     * Set the given invoiceline's QtyInvoiced, QtyEntered and QtyInvoicedInPriceUOM.
+     * This method assumes that the given invoice Line has a product (with an UOM) and a C_UOM and Price_UOM set.
+     */
+    void setQtys(I_C_InvoiceLine invoiceLine, StockQtyAndUOMQty qtyInvoiced);
 
-	void setLineNetAmt(I_C_InvoiceLine invoiceLine);
+    void setLineNetAmt(I_C_InvoiceLine invoiceLine);
 
-	/**
-	 * Calculate Tax Amt. Assumes Line Net is calculated
-	 */
-	void setTaxAmt(I_C_InvoiceLine invoiceLine);
+    /**
+     * Calculate Tax Amt. Assumes Line Net is calculated
+     */
+    void setTaxAmt(I_C_InvoiceLine invoiceLine);
 
 	I_C_DocType getC_DocTypeEffectiveOrNull(I_C_Invoice invoice);
 
-	/**
-	 * @return true if invoice's DocStatus is COmpleted, CLosed or REversed.
-	 */
-	boolean isComplete(org.compiere.model.I_C_Invoice invoice);
+    /**
+     * @return true if invoice's DocStatus is COmpleted, CLosed or REversed.
+     */
+    boolean isComplete(org.compiere.model.I_C_Invoice invoice);
 
 	DocStatus getDocStatus(@NonNull InvoiceId invoiceId);
 
-	CurrencyPrecision getPricePrecision(org.compiere.model.I_C_Invoice invoice);
+    CurrencyPrecision getPricePrecision(org.compiere.model.I_C_Invoice invoice);
 
-	CurrencyPrecision getPricePrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
+    CurrencyPrecision getPricePrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
-	CurrencyPrecision getAmountPrecision(org.compiere.model.I_C_Invoice invoice);
+    CurrencyPrecision getAmountPrecision(org.compiere.model.I_C_Invoice invoice);
 
-	CurrencyPrecision getAmountPrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
+    CurrencyPrecision getAmountPrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
-	CurrencyPrecision getTaxPrecision(org.compiere.model.I_C_Invoice invoice);
+    CurrencyPrecision getTaxPrecision(org.compiere.model.I_C_Invoice invoice);
 
-	CurrencyPrecision getTaxPrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
+    CurrencyPrecision getTaxPrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
-	/**
-	 * Creates a copy of given Invoice with C_DocType "Nachbelastung" (Adjustment Charge). The button is active just for 'ARI' docbasetypes. There can be more types of Adjustment Charges, with
-	 * different DocSubTypes. For example we have: "Nachbelastung - Mengendifferenz" which copies the Invoice but sets the product prices readOnly. "Nachbelastung - Preisdifferenz" which copies the
-	 * Invoice but sets the quantity read only.
-	 *
-	 * @return adjustmentCharge {@link de.metas.adempiere.model.I_C_Invoice}
-	 */
-	de.metas.adempiere.model.I_C_Invoice adjustmentCharge(AdjustmentChargeCreateRequest adjustmentChargeCreateRequest);
+    /**
+     * Creates a copy of given Invoice with C_DocType "Nachbelastung" (Adjustment Charge). The button is active just for 'ARI' docbasetypes. There can be more types of Adjustment Charges, with
+     * different DocSubTypes. For example we have: "Nachbelastung - Mengendifferenz" which copies the Invoice but sets the product prices readOnly. "Nachbelastung - Preisdifferenz" which copies the
+     * Invoice but sets the quantity read only.
+     *
+     * @return adjustmentCharge {@link de.metas.adempiere.model.I_C_Invoice}
+     */
+    de.metas.adempiere.model.I_C_Invoice adjustmentCharge(AdjustmentChargeCreateRequest adjustmentChargeCreateRequest);
 
 	/**
 	 * Updates {@link I_C_InvoiceLine}'s {@link I_C_InvoiceLine#COLUMNNAME_IsPriceReadOnly IsPriceReadOnly}, {@link I_C_InvoiceLine#COLUMNNAME_IsQtyReadOnly IsQtyReadOnly} and
@@ -335,98 +339,102 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	void updateInvoiceLineIsReadOnlyFlags(de.metas.adempiere.model.I_C_Invoice invoice, I_C_InvoiceLine... invoiceLines);
 
-	/**
-	 * If the given <code>invoiceLine</code> references a <code>C_Charge</code>, then the method returns that charge's tax category. Otherwise, it uses the pricing APO to get the tax category that is
-	 * referenced from the invoice line's pricing data (i.e. <code>M_ProductPrice</code> record).
-	 */
-	TaxCategoryId getTaxCategoryId(I_C_InvoiceLine invoiceLine);
+    /**
+     * If the given <code>invoiceLine</code> references a <code>C_Charge</code>, then the method returns that charge's tax category. Otherwise, it uses the pricing APO to get the tax category that is
+     * referenced from the invoice line's pricing data (i.e. <code>M_ProductPrice</code> record).
+     */
+    TaxCategoryId getTaxCategoryId(I_C_InvoiceLine invoiceLine);
 
-	/**
-	 * Basically this method delegated to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, ICopyHandler)}, but makes sure that the correct types are used.
-	 */
-	void registerCopyHandler(
-			IQueryFilter<ImmutablePair<I_C_Invoice, I_C_Invoice>> filter,
-			IDocCopyHandler<I_C_Invoice, org.compiere.model.I_C_InvoiceLine> copyHandler);
+    /**
+     * Basically this method delegated to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, ICopyHandler)}, but makes sure that the correct types are used.
+     */
+    void registerCopyHandler(
+            IQueryFilter<ImmutablePair<I_C_Invoice, I_C_Invoice>> filter,
+            IDocCopyHandler<I_C_Invoice, org.compiere.model.I_C_InvoiceLine> copyHandler);
 
-	/**
-	 * Basically this method delegates to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, ICopyHandler)}, but makes sure that the correct types are used.
-	 * If this proves to be usefull, we can add similar methods e.g. to <code>IOrderBL</code>.
-	 */
-	void registerLineCopyHandler(
-			IQueryFilter<ImmutablePair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine>> filter,
-			IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> copyhandler);
+    /**
+     * Basically this method delegates to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, ICopyHandler)}, but makes sure that the correct types are used.
+     * If this proves to be usefull, we can add similar methods e.g. to <code>IOrderBL</code>.
+     */
+    void registerLineCopyHandler(
+            IQueryFilter<ImmutablePair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine>> filter,
+            IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> copyhandler);
 
-	/**
-	 * Calls {@link #isTaxIncluded(I_C_Invoice, Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
-	 */
-	boolean isTaxIncluded(org.compiere.model.I_C_InvoiceLine invoiceLine);
+    /**
+     * Calls {@link #isTaxIncluded(I_C_Invoice, Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
+     */
+    boolean isTaxIncluded(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
-	/**
-	 * Is Tax Included in Amount.
-	 *
-	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, the given invoice's
-	 */
-	boolean isTaxIncluded(I_C_Invoice invoice, Tax tax);
+    /**
+     * Is Tax Included in Amount.
+     *
+     * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, the given invoice's
+     */
+    boolean isTaxIncluded(I_C_Invoice invoice, Tax tax);
 
-	/**
-	 * Supposed to be called if an invoice is reversed. Iterate the given invoice's lines, iterate each line's <code>M_MatchInv</code> and create a reversal M_Matchinv that references the respective
-	 * reversal invoice line.
-	 */
-	void handleReversalForInvoice(I_C_Invoice invoice);
+    /**
+     * Supposed to be called if an invoice is reversed. Iterate the given invoice's lines, iterate each line's <code>M_MatchInv</code> and create a reversal M_Matchinv that references the respective
+     * reversal invoice line.
+     */
+    void handleReversalForInvoice(I_C_Invoice invoice);
 
-	/**
-	 * Allocate parent invoice against it's credit memo
-	 */
-	void allocateCreditMemo(de.metas.adempiere.model.I_C_Invoice invoice, de.metas.adempiere.model.I_C_Invoice creditMemo, BigDecimal openAmt);
+    /**
+     * Allocate parent invoice against it's credit memo
+     */
+    void allocateCreditMemo(de.metas.adempiere.model.I_C_Invoice invoice, de.metas.adempiere.model.I_C_Invoice creditMemo, BigDecimal openAmt);
 
 	boolean isDownPayment(I_C_Invoice invoiceRecord);
+
+	boolean isFinalInvoiceOrFinalCreditMemo(final I_C_Invoice invoiceRecord);
+
+	boolean isDefinitiveInvoiceOrDefinitiveCreditMemo(final I_C_Invoice invoiceRecord);
 
 	/**
 	 * Decide if the given invoice is an Adjustment Charge
 	 */
 	boolean isAdjustmentCharge(I_C_Invoice invoice);
 
-	/**
-	 * Decide if the given doctype is of an Adjustment Charge
-	 */
-	boolean isAdjustmentCharge(I_C_DocType docType);
+    /**
+     * Decide if the given doctype is of an Adjustment Charge
+     */
+    boolean isAdjustmentCharge(I_C_DocType docType);
 
-	/**
-	 * Value set in the system configuration "de.metas.invoice.C_Invoice_PaymentRule".
-	 *
-	 * @return the value if set, {@code X_C_Invoice.PAYMENTRULE_OnCredit} otherwise
-	 */
-	PaymentRule getDefaultPaymentRule();
+    /**
+     * Value set in the system configuration "de.metas.invoice.C_Invoice_PaymentRule".
+     *
+     * @return the value if set, {@code X_C_Invoice.PAYMENTRULE_OnCredit} otherwise
+     */
+    PaymentRule getDefaultPaymentRule();
 
-	void updateDescriptionFromDocTypeTargetId(I_C_Invoice invoice, String defaultDescription, String defaultDocumentNote);
+    void updateDescriptionFromDocTypeTargetId(I_C_Invoice invoice, String defaultDescription, String defaultDocumentNote);
 
-	/**
-	 * If a line has C_UOM_ID or Price_UOM_ID empty:
-	 * <p>
-	 * - set C_UOM_ID to M_Product.C_UOM_ID
-	 * <p>
-	 * - set Price_UOM_ID to C_InvoiceLine.C_UOM_ID
-	 */
-	void ensureUOMsAreNotNull(@NonNull InvoiceId invoiceId);
+    /**
+     * If a line has C_UOM_ID or Price_UOM_ID empty:
+     * <p>
+     * - set C_UOM_ID to M_Product.C_UOM_ID
+     * <p>
+     * - set Price_UOM_ID to C_InvoiceLine.C_UOM_ID
+     */
+    void ensureUOMsAreNotNull(@NonNull InvoiceId invoiceId);
 
-	/**
-	 * @param discountAmt - the value is not AP corrected. The correction is done inside this function
-	 */
-	void discountInvoice(@NonNull I_C_Invoice invoice, @NonNull Amount discountAmt, @NonNull Timestamp date);
+    /**
+     * @param discountAmt - the value is not AP corrected. The correction is done inside this function
+     */
+    void discountInvoice(@NonNull I_C_Invoice invoice, @NonNull Amount discountAmt, @NonNull Timestamp date);
 
-	void setInvoiceLineTaxes(@NonNull de.metas.adempiere.model.I_C_Invoice invoice);
+    void setInvoiceLineTaxes(@NonNull de.metas.adempiere.model.I_C_Invoice invoice);
 
-	CountryId getFromCountryId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
+    CountryId getFromCountryId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 
-	String getLocationEmail(InvoiceId invoiceId);
+    String getLocationEmail(InvoiceId invoiceId);
 
-	CurrencyConversionContext getCurrencyConversionCtx(@NonNull I_C_Invoice invoice);
+    CurrencyConversionContext getCurrencyConversionCtx(@NonNull I_C_Invoice invoice);
 
-	Quantity getQtyInvoicedStockUOM(@NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
+    Quantity getQtyInvoicedStockUOM(@NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 
-	Instant getDateAcct(InvoiceId invoiceId);
+    Instant getDateAcct(InvoiceId invoiceId);
 
-	Optional<CountryId> getBillToCountryId(@NonNull final InvoiceId invoiceId);
+    Optional<CountryId> getBillToCountryId(@NonNull final InvoiceId invoiceId);
 
 	boolean hasInvoicesWithForexContracts(OrderId orderId, Set<ForexContractId> contractIds);
 

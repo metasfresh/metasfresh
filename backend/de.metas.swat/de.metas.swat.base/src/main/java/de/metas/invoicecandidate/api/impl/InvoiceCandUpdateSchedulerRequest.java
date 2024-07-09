@@ -37,35 +37,29 @@ public class InvoiceCandUpdateSchedulerRequest implements IInvoiceCandUpdateSche
 {
 	public static InvoiceCandUpdateSchedulerRequest of(
 			@NonNull final Properties ctx,
-			@Nullable final String trxName,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@Nullable final String trxName)
 	{
-		return new InvoiceCandUpdateSchedulerRequest(ctx, trxName, asyncBatchId);
+		return new InvoiceCandUpdateSchedulerRequest(ctx, trxName);
 	}
 
 	public static InvoiceCandUpdateSchedulerRequest of(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceCandidate);
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceCandidate);
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(invoiceCandidate.getC_Async_Batch_ID());
 
-		return InvoiceCandUpdateSchedulerRequest.of(ctx, trxName, asyncBatchId);
+		return InvoiceCandUpdateSchedulerRequest.of(ctx, trxName);
 	}
 
 	String trxName;
 	Properties ctx;
-	AsyncBatchId asyncBatchId;
 
 	private InvoiceCandUpdateSchedulerRequest(
 			@NonNull final Properties ctx,
-			@Nullable final String trxName,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@Nullable final String trxName)
 	{
 		this.ctx = ctx;
 
 		// transaction name it's OK to be null
 		this.trxName = trxName;
-
-		this.asyncBatchId = asyncBatchId;
 	}
 }

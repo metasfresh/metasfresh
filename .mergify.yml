@@ -16,13 +16,12 @@ pull_request_rules:
       - or: &ALL_BASE_BRANCHES # this rule should apply to both the project-branches from above, and master
           - or: &PROJECT_BRANCHES_UAT # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
               # Please keep in sync with the branches at .testspace.yml
-              - base=adorable_badger_uat
-              - base=anxious_hippos_uat
               - base=arctic_north_uat
+              - base=blue_horizon_uat
               - base=big_coconut_uat
-              - base=blonde_monkey_uat
               - base=clone_wars_uat
               - base=epic_party_uat
+              - base=gray_knight_uat
               - base=hard_encoded_uat
               - base=hostile_tractor_uat
               - base=inner_silence_uat
@@ -30,30 +29,29 @@ pull_request_rules:
               - base=iron_plant_uat
               - base=koala_yawn_uat
               - base=mad_orange_uat
-              - base=magic_oak_uat
+              - base=majestic_kangaroo_uat
               - base=massive_entropy_uat
+              - base=middle_ages_uat
               - base=modified_carbon_uat
+              - base=modus_operandi_uat
               - base=neon_underwear_uat
-              - base=pot_hole_uat
+              - base=pink_rooster_uat
               - base=release
               - base=soft_panda_uat
               - base=science_vessel_uat
               - base=secondary_opinion_uat
               - base=tasty_ham_uat
               - base=tenacious_d_uat
+              - base=vampire_textbook_uat
               - base=yoyo_uat
-              - base=zulu_alpha_uat
           - or: &PROJECT_BRANCHES_HOTFIX
-              - base=big_coconut_hotfix
-              - base=blonde_monkey_hotfix
               - base=hard_encoded_hotfix
               - base=intensive_care_hotfix
               - base=mad_orange_hotfix
               - base=massive_entropy_hotfix
+              - base=pink_rooster_hotfix
               - base=secondary_opinion_hotfix
               - base=soft_panda_hotfix
-              - base=science_vessel_hotfix
-              - base=tenacious_d_hotfix
               - base=tasty_ham_hotfix
               - base=yoyo_hotfix
     actions:

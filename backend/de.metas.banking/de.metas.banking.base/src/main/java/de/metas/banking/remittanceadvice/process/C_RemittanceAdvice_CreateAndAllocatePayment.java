@@ -34,6 +34,8 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResul
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
@@ -80,7 +82,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -147,7 +148,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 
 		return PaymentAllocationCriteria.builder()
 				.payment(payment)
-				.dateTrx(remittanceAdvice.getSendDate() != null ? remittanceAdvice.getSendDate() : Instant.now())
+				.dateTrx(remittanceAdvice.getSendDate() != null ? remittanceAdvice.getSendDate() : SystemTime.asInstant())
 				.paymentAllocationPayableItems(paymentAllocationPayableItems)
 				.allowPartialAllocations(true)
 				.build();
@@ -259,7 +260,8 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 				.orgBankAccountId(BankAccountId.ofRepoId(bPartnerBankAccountId.getRepoId()))
 				.currencyId(remittanceAdvice.getRemittedAmountCurrencyId())
 				.payAmt(remittanceAdvice.getRemittedAmountSum())
-				.dateAcct(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
+				.dateAcct(CoalesceUtil.coalesce(TimeUtil.asLocalDate(remittanceAdvice.getPaymentDate()),
+												TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate())))
 				.dateTrx(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
 				.tenderType(TenderType.DirectDeposit)
 				.createAndProcess();

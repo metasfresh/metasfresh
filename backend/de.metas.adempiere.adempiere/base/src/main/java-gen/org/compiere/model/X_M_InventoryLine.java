@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_InventoryLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1368015240L;
+	private static final long serialVersionUID = 1928952322L;
 
     /** Standard Constructor */
     public X_M_InventoryLine (final Properties ctx, final int M_InventoryLine_ID, @Nullable final String trxName)
@@ -304,6 +304,21 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
+	public void setModular_Flatrate_Term_ID (final int Modular_Flatrate_Term_ID)
+	{
+		if (Modular_Flatrate_Term_ID < 1) 
+			set_Value (COLUMNNAME_Modular_Flatrate_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_Modular_Flatrate_Term_ID, Modular_Flatrate_Term_ID);
+	}
+
+	@Override
+	public int getModular_Flatrate_Term_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Modular_Flatrate_Term_ID);
+	}
+
+	@Override
 	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -343,21 +358,6 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	public int getM_SectionCode_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
-	}
-
-	@Override
-	public void setModular_Flatrate_Term_ID (final int Modular_Flatrate_Term_ID)
-	{
-		if (Modular_Flatrate_Term_ID < 1) 
-			set_Value (COLUMNNAME_Modular_Flatrate_Term_ID, null);
-		else 
-			set_Value (COLUMNNAME_Modular_Flatrate_Term_ID, Modular_Flatrate_Term_ID);
-	}
-
-	@Override
-	public int getModular_Flatrate_Term_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Modular_Flatrate_Term_ID);
 	}
 
 	@Override
@@ -422,6 +422,18 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInternalUse);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setRenderedQRCode (final @Nullable java.lang.String RenderedQRCode)
+	{
+		set_Value (COLUMNNAME_RenderedQRCode, RenderedQRCode);
+	}
+
+	@Override
+	public java.lang.String getRenderedQRCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_RenderedQRCode);
 	}
 
 	@Override

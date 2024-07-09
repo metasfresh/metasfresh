@@ -1,19 +1,34 @@
 package de.metas.handlingunits.picking.job.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.common.util.Check;
 import de.metas.dao.ValueRestriction;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
-import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.PickingTarget;
+import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
@@ -25,13 +40,31 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateReque
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobRequestReviewCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
+import de.metas.handlingunits.report.HUToReportWrapper;
+import de.metas.handlingunits.report.labels.HULabelConfigRepository;
+import de.metas.handlingunits.report.labels.HULabelConfigService;
+import de.metas.handlingunits.report.labels.HULabelPrintRequest;
+import de.metas.handlingunits.report.labels.HULabelService;
+import de.metas.handlingunits.report.labels.HULabelSourceDocType;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
+import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
+import de.metas.handlingunits.trace.HUTraceRepository;
+import de.metas.inoutcandidate.lock.SqlShipmentScheduleLockRepository;
 import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
+import de.metas.picking.api.PickingConfigRepository;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -39,8 +72,11 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
+import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -53,6 +89,7 @@ import java.util.stream.Stream;
 public class PickingJobService
 {
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
@@ -61,7 +98,60 @@ public class PickingJobService
 	@NonNull private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 	@NonNull private final IShipmentService shipmentService;
-	@NonNull private HUQRCodesService huQRCodesService;
+	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final HULabelService huLabelService;
+	@NonNull private final InventoryService inventoryService;
+	@NonNull private final HUReservationService huReservationService;
+
+	public static PickingJobService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+
+		final PickingConfigRepositoryV2 pickingConfigRepo = new PickingConfigRepositoryV2();
+		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
+		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
+		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
+		final PickingCandidateRepository pickingCandidateRepository = new PickingCandidateRepository();
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final HUQRCodesRepository huQRCodesRepository = new HUQRCodesRepository();
+		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
+				new PickingConfigRepository(),
+				pickingCandidateRepository,
+				new HuId2SourceHUsService(new HUTraceRepository()),
+				huReservationService,
+				bpartnerBL,
+				ADReferenceService.newMocked(),
+				InventoryService.newInstanceForUnitTesting()
+		);
+		final HUQRCodesService huQRCodeService = new HUQRCodesService(
+				huQRCodesRepository,
+				new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+				new QRCodeConfigurationService(new QRCodeConfigurationRepository())
+		);
+		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
+				pickingJobSlotService,
+				bpartnerBL,
+				huQRCodeService
+		);
+
+		return new PickingJobService(
+				pickingJobRepository,
+				new PickingJobLockService(new SqlShipmentScheduleLockRepository(ModelCacheInvalidationService.newInstanceForUnitTesting())),
+				pickingJobSlotService,
+				pickingCandidateService,
+				new PickingJobHUReservationService(huReservationService),
+				defaultPickingJobLoaderSupportingServicesFactory,
+				pickingConfigRepo,
+				ShipmentService.getInstance(),
+				huQRCodeService,
+				new HULabelService(
+						new HULabelConfigService(new HULabelConfigRepository()),
+						huQRCodeService
+				),
+				InventoryService.newInstanceForUnitTesting(),
+				huReservationService
+		);
+	}
 
 	public PickingJob getById(final PickingJobId pickingJobId)
 	{
@@ -105,6 +195,7 @@ public class PickingJobService
 	public PickingJobCompleteCommand.PickingJobCompleteCommandBuilder prepareToComplete(final PickingJob pickingJob)
 	{
 		return PickingJobCompleteCommand.builder()
+				.pickingJobService(this)
 				.pickingJobRepository(pickingJobRepository)
 				.pickingJobLockService(pickingJobLockService)
 				.pickingSlotService(pickingSlotService)
@@ -169,6 +260,14 @@ public class PickingJobService
 		return pickingJobRepository.getDraftBySalesOrderId(orderId, loadingSupportingServices);
 	}
 
+	public void abortNotStartedForSalesOrderId(@NonNull final OrderId salesOrderId)
+	{
+		pickingJobRepository
+				.getDraftBySalesOrderId(salesOrderId, pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices())
+				.filter(PickingJob::isNothingPicked)
+				.ifPresent(this::abort);
+	}
+
 	@NonNull
 	public Stream<PickingJobReference> streamDraftPickingJobReferences(@NonNull final PickingJobReferenceQuery query)
 	{
@@ -187,12 +286,15 @@ public class PickingJobService
 	{
 		final PackageableQuery.PackageableQueryBuilder builder = PackageableQuery.builder()
 				.onlyFromSalesOrder(true)
+				.salesOrderDocumentNo(query.getSalesOrderDocumentNo())
 				.lockedBy(query.getUserId())
 				.includeNotLocked(true)
+				.excludeLockedForProcessing(true)
 				.excludeShipmentScheduleIds(query.getExcludeShipmentScheduleIds())
 				.orderBys(ImmutableSet.of(
 						PackageableQuery.OrderBy.PriorityRule,
 						PackageableQuery.OrderBy.PreparationDate,
+						PackageableQuery.OrderBy.SetupPlaceNo_Descending,
 						PackageableQuery.OrderBy.SalesOrderId,
 						PackageableQuery.OrderBy.DeliveryBPLocationId,
 						PackageableQuery.OrderBy.WarehouseTypeId));
@@ -208,8 +310,14 @@ public class PickingJobService
 		{
 			builder.deliveryDays(deliveryDays);
 		}
-		
-		final WarehouseId workplaceWarehouseId = query.getWarehouseId(); 
+
+		final ImmutableSet<BPartnerLocationId> locationIds = query.getOnlyHandoverLocationIds();
+		if (!locationIds.isEmpty())
+		{
+			builder.handoverLocationIds(locationIds);
+		}
+
+		final WarehouseId workplaceWarehouseId = query.getWarehouseId();
 		if (workplaceWarehouseId != null)
 		{
 			builder.warehouseId(workplaceWarehouseId);
@@ -231,9 +339,10 @@ public class PickingJobService
 				.build();
 	}
 
-	public PickingJobFacets getFacets(@NonNull final PickingJobQuery query)
+	@NonNull
+	public Stream<Packageable> streamPackageable(@NonNull final PickingJobQuery query)
 	{
-		return packagingDAO.stream(toPackageableQuery(query)).collect(PickingJobFacets.collectFromPackageables());
+		return packagingDAO.stream(toPackageableQuery(query));
 	}
 
 	private static boolean computePartiallyPickedBefore(final Packageable item)
@@ -292,9 +401,12 @@ public class PickingJobService
 			case PICK:
 			{
 				return PickingJobPickCommand.builder()
+						.pickingJobService(this)
 						.pickingJobRepository(pickingJobRepository)
-						.pickingCandidateService(pickingCandidateService)
 						.huQRCodesService(huQRCodesService)
+						.inventoryService(inventoryService)
+						.huReservationService(huReservationService)
+						.pickingConfigRepo(pickingConfigRepo)
 						//
 						.pickingJob(pickingJob)
 						.pickingJobLineId(event.getPickingLineId())
@@ -302,21 +414,32 @@ public class PickingJobService
 						.pickFromKey(event.getPickFromKey())
 						.pickFromHUQRCode(event.getHuQRCode())
 						.qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
+						.isPickWholeTU(event.isPickWholeTU())
+						.checkIfAlreadyPacked(event.isCheckIfAlreadyPacked())
+						.createInventoryForMissingQty(true)
 						.qtyRejectedBD(event.getQtyRejected())
 						.qtyRejectedReasonCode(event.getQtyRejectedReasonCode())
 						.catchWeightBD(event.getCatchWeight())
+						.isSetBestBeforeDate(event.isSetBestBeforeDate())
+						.bestBeforeDate(event.getBestBeforeDate())
+						.isSetLotNo(event.isSetLotNo())
+						.lotNo(event.getLotNo())
+						.isCloseTarget(event.isCloseTarget())
 						//
-						.build().execute();
+						.build()
+						.execute();
 			}
 			case UNPICK:
 			{
 				return PickingJobUnPickCommand.builder()
 						.pickingJobRepository(pickingJobRepository)
 						.pickingCandidateService(pickingCandidateService)
+						.huQRCodesService(huQRCodesService)
 						//
 						.pickingJob(pickingJob)
 						.onlyPickingJobStepId(event.getPickingStepId())
 						.onlyPickFromKey(event.getPickFromKey())
+						.unpickToHU(event.getUnpickToTargetQRCode())
 						//
 						.build().execute();
 			}
@@ -333,9 +456,56 @@ public class PickingJobService
 		trxManager.runInThreadInheritedTrx(() -> {
 			for (final PickingJob job : getDraftJobsByPickerId(userId))
 			{
-				pickingJobRepository.save(job.withLockedBy(null));
+				unassignPickingJob(job);
+				pickingJobLockService.unlockShipmentSchedules(job);
 			}
 		});
+	}
+
+	/**
+	 * @return true, if all picking jobs have been removed form the slot, false otherwise
+	 */
+	public boolean clearAssignmentsForSlot(@NonNull final PickingSlotId slotId, final boolean abortOngoingPickingJobs)
+	{
+		final List<PickingJob> pickingJobs = pickingJobRepository.getDraftedByPickingSlotId(slotId, pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices());
+		if (pickingJobs.isEmpty())
+		{
+			return true;
+		}
+
+		return pickingJobs.stream().allMatch(job -> removePickingSlotAssignment(job, abortOngoingPickingJobs));
+	}
+
+	private void unassignPickingJob(@NonNull final PickingJob jobParam)
+	{
+		PickingJob job = jobParam;
+		job.assertNotProcessed();
+
+		//
+		// Abort it if nothing picked
+		if (job.isNothingPicked())
+		{
+			job = abort(job);
+		}
+
+		//
+		// Unassign & release picking slot
+		final PickingSlotId pickingSlotId = job.getPickingSlotId().orElse(null);
+		if (pickingSlotId != null)
+		{
+			if (job.isNothingPicked())
+			{
+				job = job.withPickingSlot(null);
+			}
+
+			pickingSlotService.release(pickingSlotId, job.getId());
+		}
+
+		//
+		// Unassign it from current user
+		job = job.withLockedBy(null);
+
+		pickingJobRepository.save(job);
 	}
 
 	public PickingJob assignPickingJob(@NonNull final PickingJobId pickingJobId, @NonNull final UserId newResponsibleId)
@@ -343,6 +513,8 @@ public class PickingJobService
 		PickingJob job = getById(pickingJobId);
 		if (job.getLockedBy() == null)
 		{
+			pickingJobLockService.lockShipmentSchedules(job.getShipmentScheduleIds(), newResponsibleId);
+
 			job = job.withLockedBy(newResponsibleId);
 			pickingJobRepository.save(job);
 		}
@@ -355,6 +527,7 @@ public class PickingJobService
 
 		return job;
 	}
+
 	public boolean hasPickingJobsReadyToReview(@NonNull final ImmutableSet<PickingJobId> pickingJobIds)
 	{
 		return pickingJobRepository.hasReadyToReview(pickingJobIds);
@@ -364,6 +537,114 @@ public class PickingJobService
 	{
 		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
 		return pickingJobRepository.getByIsReadyToReview(pickingJobIds, loadingSupportingServices);
+	}
+
+	private boolean removePickingSlotAssignment(
+			@NonNull final PickingJob pickingJob,
+			final boolean abortOngoingPickingJobs)
+	{
+		if (pickingJob.isNothingPicked())
+		{
+			pickingJobRepository.save(pickingJob.withPickingSlot(null));
+			return true;
+		}
+		else if (abortOngoingPickingJobs)
+		{
+			final PickingJob abortedPickingJob = abort(pickingJob);
+			Check.assume(!abortedPickingJob.getPickingSlotId().isPresent(), "Assuming the aborted picking job is no longer assigned to a picking slot.");
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	public PickingJob closeLine(final PickingJob pickingJob, final PickingJobLineId pickingLineId)
+	{
+		final PickingJob pickingJobChanged = pickingJob.withChangedLine(pickingLineId, line -> line.withManuallyClosed(true));
+		if (Util.equals(pickingJob, pickingJobChanged))
+		{
+			return pickingJob;
+		}
+
+		pickingJobRepository.save(pickingJobChanged);
+		return pickingJobChanged;
+	}
+
+	public PickingJob openLine(final PickingJob pickingJob, final PickingJobLineId pickingLineId)
+	{
+		final PickingJob pickingJobChanged = pickingJob.withChangedLine(pickingLineId, line -> line.withManuallyClosed(false));
+		if (Util.equals(pickingJob, pickingJobChanged))
+		{
+			return pickingJob;
+		}
+
+		pickingJobRepository.save(pickingJobChanged);
+		return pickingJobChanged;
+	}
+
+	public List<PickingTarget> getAvailableTargets(@NonNull final PickingJob pickingJob)
+	{
+		final ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds = getTuPIItemIds(pickingJob);
+
+		return handlingUnitsBL.getLUPIs(tuPIItemIds, pickingJob.getCustomerId())
+				.stream()
+				.map(PickingJobService::toPickingTarget)
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	private static ImmutableSet<HuPackingInstructionsItemId> getTuPIItemIds(final @NonNull PickingJob pickingJob)
+	{
+		return pickingJob.getLines()
+				.stream()
+				.map(line -> line.getPackingInfo().getPiItemId())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static PickingTarget toPickingTarget(@NonNull final HuPackingInstructionsIdAndCaption luPIAndCaption)
+	{
+		return PickingTarget.builder()
+				.caption(luPIAndCaption.getCaption())
+				.luPIId(luPIAndCaption.getId())
+				.build();
+	}
+
+	public PickingJob setPickTarget(@NonNull final PickingJob pickingJob, @Nullable final PickingTarget target)
+	{
+		final PickingJob pickingJobChanged = pickingJob.withPickTarget(target);
+		if (Util.equals(pickingJob, pickingJobChanged))
+		{
+			return pickingJob;
+		}
+
+		pickingJobRepository.save(pickingJobChanged);
+		return pickingJobChanged;
+	}
+
+	public PickingJob closePickTarget(final PickingJob pickingJob)
+	{
+		final PickingTarget pickingTarget = pickingJob.getPickTarget().orElse(null);
+		if (pickingTarget == null)
+		{
+			return pickingJob;
+		}
+
+		PickingJob pickingJobChanged = setPickTarget(pickingJob, null);
+
+		final HuId luId = pickingTarget.getLuId();
+		if (luId != null)
+		{
+			huLabelService.print(HULabelPrintRequest.builder()
+					.sourceDocType(HULabelSourceDocType.Picking)
+					.hu(HUToReportWrapper.of(handlingUnitsBL.getById(luId)))
+					.onlyIfAutoPrint(true)
+					.failOnMissingLabelConfig(false)
+					.build());
+		}
+
+		return pickingJobChanged;
 	}
 
 }

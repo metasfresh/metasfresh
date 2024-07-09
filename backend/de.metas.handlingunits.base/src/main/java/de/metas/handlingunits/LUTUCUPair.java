@@ -23,38 +23,25 @@
 package de.metas.handlingunits;
 
 import com.google.common.base.MoreObjects;
-
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.model.I_M_HU;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
 public final class LUTUCUPair
 {
-	public static LUTUCUPair ofLU(@NonNull I_M_HU luHU)
-	{
-		final I_M_HU tuHU = null;
-		final I_M_HU vhu = null;
-		return new LUTUCUPair(luHU, tuHU, vhu);
-	}
+	@Nullable private final I_M_HU luHU;
+	@Nullable private final I_M_HU tuHU;
+	@Nullable private final I_M_HU vhu;
 
-	public static LUTUCUPair ofTU(@NonNull I_M_HU tuHU, @Nullable final I_M_HU luHU)
-	{
-		final I_M_HU vhu = null;
-		return new LUTUCUPair(luHU, tuHU, vhu);
-	}
+	public static LUTUCUPair ofLU(@NonNull I_M_HU luHU) {return new LUTUCUPair(luHU, null, null);}
 
-	public static LUTUCUPair ofVHU(@NonNull I_M_HU vhu, @Nullable final I_M_HU tuHU, @Nullable final I_M_HU luHU)
-	{
-		return new LUTUCUPair(luHU, tuHU, vhu);
-	}
+	public static LUTUCUPair ofTU(@NonNull I_M_HU tuHU, @Nullable final I_M_HU luHU) {return new LUTUCUPair(luHU, tuHU, null);}
 
-	private final I_M_HU luHU;
-	private final I_M_HU tuHU;
-	private final I_M_HU vhu;
+	public static LUTUCUPair ofVHU(@NonNull I_M_HU vhu, @Nullable final I_M_HU tuHU, @Nullable final I_M_HU luHU) {return new LUTUCUPair(luHU, tuHU, vhu);}
 
-	private LUTUCUPair(final I_M_HU luHU, final I_M_HU tuHU, final I_M_HU vhu)
+	private LUTUCUPair(@Nullable final I_M_HU luHU, @Nullable final I_M_HU tuHU, @Nullable final I_M_HU vhu)
 	{
 		this.luHU = luHU;
 		this.tuHU = tuHU;

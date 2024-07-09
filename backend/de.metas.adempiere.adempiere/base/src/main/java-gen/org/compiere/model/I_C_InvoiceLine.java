@@ -800,6 +800,27 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
 
 	/**
+	 * Set Invoice Line Group.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoicingGroup (@Nullable java.lang.String InvoicingGroup);
+
+	/**
+	 * Get Invoice Line Group.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoicingGroup();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_InvoicingGroup = new ModelColumn<>(I_C_InvoiceLine.class, "InvoicingGroup", null);
+	String COLUMNNAME_InvoicingGroup = "InvoicingGroup";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -1419,6 +1440,29 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_ProductDescription = "ProductDescription";
 
 	/**
+	 * Set Product Name.
+	 * Name of the Product
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductName (@Nullable java.lang.String ProductName);
+
+	/**
+	 * Get Product Name.
+	 * Name of the Product
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProductName();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_ProductName = new ModelColumn<>(I_C_InvoiceLine.class, "ProductName", null);
+	String COLUMNNAME_ProductName = "ProductName";
+
+	/**
 	 * Set Qty.
 	 *
 	 * <br>Type: Quantity
@@ -1771,6 +1815,48 @@ public interface I_C_InvoiceLine
 
 	ModelColumn<I_C_InvoiceLine, Object> COLUMN_UserElementDate2 = new ModelColumn<>(I_C_InvoiceLine.class, "UserElementDate2", null);
 	String COLUMNNAME_UserElementDate2 = "UserElementDate2";
+
+	/**
+	 * Set UserElementNumber1.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementNumber1 (@Nullable BigDecimal UserElementNumber1);
+
+	/**
+	 * Get UserElementNumber1.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUserElementNumber1();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_UserElementNumber1 = new ModelColumn<>(I_C_InvoiceLine.class, "UserElementNumber1", null);
+	String COLUMNNAME_UserElementNumber1 = "UserElementNumber1";
+
+	/**
+	 * Set UserElementNumber2.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementNumber2 (@Nullable BigDecimal UserElementNumber2);
+
+	/**
+	 * Get UserElementNumber2.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUserElementNumber2();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_UserElementNumber2 = new ModelColumn<>(I_C_InvoiceLine.class, "UserElementNumber2", null);
+	String COLUMNNAME_UserElementNumber2 = "UserElementNumber2";
 
 	/**
 	 * Set UserElementString1.

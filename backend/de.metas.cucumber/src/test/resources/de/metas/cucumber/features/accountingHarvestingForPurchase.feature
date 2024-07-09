@@ -96,9 +96,9 @@ Feature: accounting-purchase-harvesting-feature
       | receiptSchedule_06082023_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
       | receiptSchedule_06082023_2      | o_1                   | ol_2                      | endvendor_1              | l_1                               | p_2                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU_1   | receiptSchedule_06082023_1      | N               | 1     | N               | 1     | N               | 10    | huItemPurchaseProduct              | huPackingLU                  |
-      | huLuTuConfig                          | processedTopHU_2   | receiptSchedule_06082023_2      | N               | 1     | N               | 1     | N               | 10    | huItemPurchaseProduct              | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU_1   | receiptSchedule_06082023_1      | N               | 1     | N               | 1     | N               | 10          | huItemPurchaseProduct              | huPackingLU                  |
+      | huLuTuConfig                          | processedTopHU_2   | receiptSchedule_06082023_2      | N               | 1     | N               | 1     | N               | 10          | huItemPurchaseProduct              | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU_1   | receiptSchedule_06082023_1      | inOut_210320222_1     |
@@ -140,7 +140,6 @@ Feature: accounting-purchase-harvesting-feature
     Given metasfresh contains M_Products:
       | Identifier            | Name                  |
       | product_PO_05082023_1 | product_PO_05082023_1 |
-      | product_PO_05082023_2 | product_PO_05082023_2 |
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
@@ -160,9 +159,8 @@ Feature: accounting-purchase-harvesting-feature
       | Identifier | M_PriceList_ID.Identifier | Name                         | ValidFrom  |
       | plv_1      | pl_1                      | purchaseOrder-PLV_06022023_1 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
-      | Identifier   | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | moduleLogPP  | plv_1                             | product_PO_05082023_1   | 2.00     | PCE               | Normal                        |
-      | moduleLogPP2 | plv_1                             | product_PO_05082023_2   | 2.00     | PCE               | Normal                        |
+      | Identifier  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | moduleLogPP | plv_1                             | product_PO_05082023_1   | 2.00     | PCE               | Normal                        |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name            |
@@ -181,7 +179,6 @@ Feature: accounting-purchase-harvesting-feature
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | huItemPOProduct                    | huPiItemTU                 | product_PO_05082023_1   | 10  | 2022-02-01 |
-      | huItemMRProduct                    | huPiItemTU                 | product_PO_05082023_2   | 10  | 2022-02-01 |
     And metasfresh contains C_BPartners:
       | Identifier | Name          | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
       | bp_po      | bp_05082023_1 | Y            | ps_1                          | 1000002                    |
@@ -190,19 +187,18 @@ Feature: accounting-purchase-harvesting-feature
       | bp_moduleLogMR_Location | 5823098505483 | bp_po                    | true                | true                |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_05072023_1 | product_PO_05082023_2   | harvesting_calendar      | y2022                | ps_1                              |
+      | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | modCntr_settings_1             | testSettings_05072023_1 | product_PO_05082023_1       | harvesting_calendar      | y2022                | ps_1                              |
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name              | Value             | ModularContractHandlerType |
-      | modCntr_type_1             | poLine_05072023_1 | poLine_05072023_1 | PurchaseOrderLine_Modular  |
-      | modCntr_type_2             | mrLine_05072023_1 | mrLine_05072023_1 | PurchaseOrderLine_Modular  |
+      | modCntr_type_1             | poLine_05072023_1 | poLine_05072023_1 | Receipt                    |
+      | modCntr_type_2             | mrLine_05072023_1 | mrLine_05072023_1 | Receipt                    |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | modCntr_module_1             | 10    | moduleTest_05072023_1 | product_PO_05082023_1   | Kosten         | modCntr_settings_1             | modCntr_type_1             |
-      | modCntr_module_2             | 20    | moduleTest_05072023_2 | product_PO_05082023_2   | Kosten         | modCntr_settings_1             | modCntr_type_2             |
+      | modCntr_module_1             | 10    | moduleTest_05072023_1 | product_PO_05082023_1   | Costs          | modCntr_settings_1             | modCntr_type_1             |
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions                 | moduleLogConditions_po_05072023_1 | ModularContract | ps_1                              | Ex                       | modCntr_settings_1                 |
+      | Identifier          | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions | moduleLogConditions_po_05072023_1 | ModularContract | ps_1                              | Ex                       | modCntr_settings_1                 |
 
     And load C_AcctSchema:
       | C_AcctSchema_ID.Identifier | OPT.Name              |
@@ -233,33 +229,28 @@ Feature: accounting-purchase-harvesting-feature
     And metasfresh contains C_OrderLines:
       | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
       | po_orderLine_1 | po_order              | product_PO_05082023_1   | 1000       | moduleLogConditions                     |
-      | po_orderLine_2 | po_order              | product_PO_05082023_2   | 500        | moduleLogConditions                     |
 
     When the order identified by po_order is completed
 
     Then retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract_1           | moduleLogConditions                 | product_PO_05082023_1   | po_order                       | po_orderLine_1                     |
-      | moduleLogContract_2           | moduleLogConditions                 | product_PO_05082023_2   | po_order                       | po_orderLine_2                     |
 
     And after not more than 120s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.C_Flatrate_Term_ID.Identifier |
       | receiptSchedule_05072023_1      | po_order              | po_orderLine_1            | bp_po                    | bp_moduleLogMR_Location           | product_PO_05082023_1   | 1000       | warehouseStd              | moduleLogContract_1               |
-      | receiptSchedule_05072023_2      | po_order              | po_orderLine_2            | bp_po                    | bp_moduleLogMR_Location           | product_PO_05082023_2   | 500        | warehouseStd              | moduleLogContract_2               |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_1                        | hu_1               | receiptSchedule_05072023_1      | N               | 1     | N               | 1     | N               | 1000  | huItemPOProduct                    | huPackingLU                  |
-      | huLuTuConfig_2                        | hu_2               | receiptSchedule_05072023_2      | N               | 1     | N               | 1     | N               | 500   | huItemMRProduct                    | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_1                        | hu_1               | receiptSchedule_05072023_1      | N               | 1     | N               | 1     | N               | 1000        | huItemPOProduct                    | huPackingLU                  |
+
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu_1               | receiptSchedule_05072023_1      | material_receipt_1    |
-      | hu_2               | receiptSchedule_05072023_2      | material_receipt_2    |
 
     Then validate the created material receipt lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier | OPT.C_Flatrate_Term_ID.Identifier | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
       | inoutLine_1               | material_receipt_1    | product_PO_05082023_1   | 1000        | true      | po_orderLine_1                | moduleLogContract_1               | harvesting_calendar                     | y2022                             |
-      | inoutLine_2               | material_receipt_2    | product_PO_05082023_2   | 500         | true      | po_orderLine_2                | moduleLogContract_2               | harvesting_calendar                     | y2022                             |
 
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |

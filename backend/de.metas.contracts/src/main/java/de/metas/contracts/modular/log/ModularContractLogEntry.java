@@ -25,14 +25,22 @@ package de.metas.contracts.modular.log;
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.ProductPriceWithFlags;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -41,6 +49,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /**
  * Add further properties as needed.
@@ -52,6 +61,9 @@ public class ModularContractLogEntry
 	ModularContractLogEntryId id;
 
 	@NonNull
+	ClientAndOrgId clientAndOrgId;
+
+	@NonNull
 	LogEntryContractType contractType;
 
 	@Nullable
@@ -59,6 +71,13 @@ public class ModularContractLogEntry
 
 	@Nullable
 	ProductId productId;
+
+	@Nullable
+	ProductId initialProductId;
+	@NonNull
+	String productName;
+	@Nullable
+	ModularContractTypeId modularContractTypeId;
 
 	@NonNull
 	TableRecordReference referencedRecord;
@@ -93,6 +112,9 @@ public class ModularContractLogEntry
 	LocalDateAndOrgId transactionDate;
 
 	@Nullable
+	Integer storageDays;
+
+	@Nullable
 	InvoiceCandidateId invoiceCandidateId;
 
 	@NonNull YearId year;
@@ -107,12 +129,21 @@ public class ModularContractLogEntry
 
 	boolean isBillable;
 
-	@Builder
-	public ModularContractLogEntry(
+	@NonNull ModularContractModuleId modularContractModuleId;
+
+	@Nullable BigDecimal userElementNumber1;
+	@Nullable BigDecimal userElementNumber2;
+
+	@Builder(toBuilder = true)
+	private ModularContractLogEntry(
 			@NonNull final ModularContractLogEntryId id,
+			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final LogEntryContractType contractType,
 			@Nullable final FlatrateTermId contractId,
 			@Nullable final ProductId productId,
+			@Nullable final ProductId initialProductId,
+			@NonNull final String productName,
+			@Nullable final ModularContractTypeId modularContractTypeId,
 			@NonNull final TableRecordReference referencedRecord,
 			@Nullable final BPartnerId collectionPointBPartnerId,
 			@Nullable final BPartnerId producerBPartnerId,
@@ -124,12 +155,17 @@ public class ModularContractLogEntry
 			@Nullable final Quantity quantity,
 			@Nullable final Money amount,
 			@NonNull final LocalDateAndOrgId transactionDate,
+			@Nullable final Integer storageDays,
 			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final YearId year,
 			@Nullable final String description,
 			@Nullable final ProductPrice priceActual,
 			@Nullable final InvoicingGroupId invoicingGroupId,
-			final boolean isBillable)
+			final boolean isBillable,
+			final @NonNull ModularContractModuleId modularContractModuleId,
+			final @Nullable BigDecimal userElementNumber1,
+			final @Nullable BigDecimal userElementNumber2
+			)
 	{
 		if (amount != null && priceActual != null)
 		{
@@ -142,9 +178,13 @@ public class ModularContractLogEntry
 		}
 
 		this.id = id;
+		this.clientAndOrgId = clientAndOrgId;
 		this.contractType = contractType;
 		this.contractId = contractId;
 		this.productId = productId;
+		this.initialProductId = initialProductId;
+		this.productName = productName;
+		this.modularContractTypeId = modularContractTypeId;
 		this.referencedRecord = referencedRecord;
 		this.collectionPointBPartnerId = collectionPointBPartnerId;
 		this.producerBPartnerId = producerBPartnerId;
@@ -156,11 +196,34 @@ public class ModularContractLogEntry
 		this.quantity = quantity;
 		this.amount = amount;
 		this.transactionDate = transactionDate;
+		this.storageDays = storageDays;
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.year = year;
 		this.description = description;
 		this.priceActual = priceActual;
 		this.invoicingGroupId = invoicingGroupId;
 		this.isBillable = isBillable;
+		this.modularContractModuleId = modularContractModuleId;
+		this.userElementNumber1 = userElementNumber1;
+		this.userElementNumber2 = userElementNumber2;
+	}
+
+	@NonNull
+	public Quantity getQuantity(@NonNull final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
+	{
+		Check.assumeNotNull(quantity, "Quantity of billable modular contract log shouldn't be null");
+		return uomConverter.convertQuantityTo(quantity, productId, targetUomId);
+	}
+
+	@NonNull
+	public ModularContractLogEntry withPriceActualAndCalculateAmount(
+			@NonNull final ProductPrice price,
+			@NonNull final QuantityUOMConverter uomConverter,
+			@NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
+	{
+		final IModularContractLogHandler handler = logHandlerRegistry.getApplicableHandlerForOrError(this);
+		final ProductPriceWithFlags productPriceWithFlags = handler.getPriceActualWithFlags(price, this);
+
+		return handler.calculateAmountWithNewPrice(this, productPriceWithFlags, uomConverter);
 	}
 }

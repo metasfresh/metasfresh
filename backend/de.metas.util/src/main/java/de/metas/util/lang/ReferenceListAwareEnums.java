@@ -44,6 +44,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 @UtilityClass
 public class ReferenceListAwareEnums
@@ -349,5 +350,22 @@ public class ReferenceListAwareEnums
 			return type;
 		}
 
+		@Nullable
+		public T ofNullableCodeOrName(@Nullable final String code)
+		{
+			return code != null && Check.isNotBlank(code) ? ofCodeOrName(code) : null;
+		}
+
+		@NonNull
+		public Stream<T> stream()
+		{
+			return typesByCode.values().stream();
+		}
+
+		@NonNull
+		public ImmutableList<T> toList()
+		{
+			return stream().collect(ImmutableList.toImmutableList());
+		}
 	}
 }

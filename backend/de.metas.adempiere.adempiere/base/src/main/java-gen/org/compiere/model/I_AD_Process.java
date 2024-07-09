@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Process
  *  @author metasfresh (generated) 
@@ -18,7 +17,7 @@ public interface I_AD_Process
 
 
 	/**
-	 * Set Berechtigungsstufe.
+	 * Set Data Access Level.
 	 * Access Level required
 	 *
 	 * <br>Type: List
@@ -28,7 +27,7 @@ public interface I_AD_Process
 	void setAccessLevel (java.lang.String AccessLevel);
 
 	/**
-	 * Get Berechtigungsstufe.
+	 * Get Data Access Level.
 	 * Access Level required
 	 *
 	 * <br>Type: List
@@ -152,7 +151,7 @@ public interface I_AD_Process
 	String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
-	 * Set Berichts-View.
+	 * Set Report View.
 	 * View used to generate this report
 	 *
 	 * <br>Type: TableDir
@@ -162,7 +161,7 @@ public interface I_AD_Process
 	void setAD_ReportView_ID (int AD_ReportView_ID);
 
 	/**
-	 * Get Berichts-View.
+	 * Get Report View.
 	 * View used to generate this report
 	 *
 	 * <br>Type: TableDir
@@ -201,7 +200,7 @@ public interface I_AD_Process
 	String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
 
 	/**
-	 * Set Mehrfachausführung erlaubt.
+	 * Set Allow Process Re-Run.
 	 * Allows this process to be executed again. If enabled, the "Back" button will be displayed in process panel.
 	 *
 	 * <br>Type: YesNo
@@ -211,7 +210,7 @@ public interface I_AD_Process
 	void setAllowProcessReRun (boolean AllowProcessReRun);
 
 	/**
-	 * Get Mehrfachausführung erlaubt.
+	 * Get Allow Process Re-Run.
 	 * Allows this process to be executed again. If enabled, the "Back" button will be displayed in process panel.
 	 *
 	 * <br>Type: YesNo
@@ -224,7 +223,7 @@ public interface I_AD_Process
 	String COLUMNNAME_AllowProcessReRun = "AllowProcessReRun";
 
 	/**
-	 * Set Java-Klasse.
+	 * Set Java Class.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -233,7 +232,7 @@ public interface I_AD_Process
 	void setClassname (@Nullable java.lang.String Classname);
 
 	/**
-	 * Get Java-Klasse.
+	 * Get Java Class.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -335,9 +334,31 @@ public interface I_AD_Process
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Set Do Not Quote Rows.
+	 * If this is true the cell values in all rows will not be quoted anymore in the exported file.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDoNotQuoteRows (boolean DoNotQuoteRows);
+
+	/**
+	 * Get Do Not Quote Rows.
+	 * If this is true the cell values in all rows will not be quoted anymore in the exported file.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isDoNotQuoteRows();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_DoNotQuoteRows = new ModelColumn<>(I_AD_Process.class, "DoNotQuoteRows", null);
+	String COLUMNNAME_DoNotQuoteRows = "DoNotQuoteRows";
+
+	/**
+	 * Set Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -346,9 +367,8 @@ public interface I_AD_Process
 	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Get Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -358,6 +378,27 @@ public interface I_AD_Process
 
 	ModelColumn<I_AD_Process, Object> COLUMN_EntityType = new ModelColumn<>(I_AD_Process.class, "EntityType", null);
 	String COLUMNNAME_EntityType = "EntityType";
+
+	/**
+	 * Set Filename Pattern.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFilenamePattern (@Nullable java.lang.String FilenamePattern);
+
+	/**
+	 * Get Filename Pattern.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFilenamePattern();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_FilenamePattern = new ModelColumn<>(I_AD_Process.class, "FilenamePattern", null);
+	String COLUMNNAME_FilenamePattern = "FilenamePattern";
 
 	/**
 	 * Set Help.
@@ -427,7 +468,7 @@ public interface I_AD_Process
 	String COLUMNNAME_IsApplySecuritySettings = "IsApplySecuritySettings";
 
 	/**
-	 * Set Beta-Funktionalität.
+	 * Set Beta Functionality.
 	 * This functionality is considered Beta
 	 *
 	 * <br>Type: YesNo
@@ -437,7 +478,7 @@ public interface I_AD_Process
 	void setIsBetaFunctionality (boolean IsBetaFunctionality);
 
 	/**
-	 * Get Beta-Funktionalität.
+	 * Get Beta Functionality.
 	 * This functionality is considered Beta
 	 *
 	 * <br>Type: YesNo
@@ -473,27 +514,6 @@ public interface I_AD_Process
 	String COLUMNNAME_IsDirectPrint = "IsDirectPrint";
 
 	/**
-	 * Set Update Export Date.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsUpdateExportDate (boolean IsUpdateExportDate);
-
-	/**
-	 * Get Update Export Date.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isUpdateExportDate();
-
-	ModelColumn<I_AD_Process, Object> COLUMN_IsUpdateExportDate = new ModelColumn<>(I_AD_Process.class, "IsUpdateExportDate", null);
-	String COLUMNNAME_IsUpdateExportDate = "IsUpdateExportDate";
-
-	/**
 	 * Set Format Excel File.
 	 * If set the resulting excel report will have the cells formatted (borders, colors, etc). For huge reports, this is not feasible because it seems like it takes a huge amount of time for Excel to open big reports with stylish cells.
 	 *
@@ -518,6 +538,7 @@ public interface I_AD_Process
 
 	/**
 	 * Set Log Warning.
+	 * Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -527,6 +548,7 @@ public interface I_AD_Process
 
 	/**
 	 * Get Log Warning.
+	 * Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -584,7 +606,7 @@ public interface I_AD_Process
 	String COLUMNNAME_IsOneInstanceOnly = "IsOneInstanceOnly";
 
 	/**
-	 * Set Bericht.
+	 * Set Report.
 	 * Indicates a Report record
 	 *
 	 * <br>Type: YesNo
@@ -594,7 +616,7 @@ public interface I_AD_Process
 	void setIsReport (boolean IsReport);
 
 	/**
-	 * Get Bericht.
+	 * Get Report.
 	 * Indicates a Report record
 	 *
 	 * <br>Type: YesNo
@@ -631,7 +653,7 @@ public interface I_AD_Process
 
 	/**
 	 * Set Translate Excel Headers.
-	 * Wenn angehakt, dann wird metasfresh die jeweiligen Spaltenüberschriften durch Übersetzungen ersetzen, sofern welche in Meldung (AD_Message) oder Element (AD_Element) vorhanden sind.
+	 * If checked, then metasfresh will replace the header name with a translation, if one exists in Message (AD_Message) or Element (AD_Element).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -641,7 +663,7 @@ public interface I_AD_Process
 
 	/**
 	 * Get Translate Excel Headers.
-	 * Wenn angehakt, dann wird metasfresh die jeweiligen Spaltenüberschriften durch Übersetzungen ersetzen, sofern welche in Meldung (AD_Message) oder Element (AD_Element) vorhanden sind.
+	 * If checked, then metasfresh will replace the header name with a translation, if one exists in Message (AD_Message) or Element (AD_Element).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -653,7 +675,30 @@ public interface I_AD_Process
 	String COLUMNNAME_IsTranslateExcelHeaders = "IsTranslateExcelHeaders";
 
 	/**
-	 * Set IsUseBPartnerLanguage.
+	 * Set Update Export Date.
+	 * If ticked, the "Export date" field in the "Datev Export v2" window will be updated after a data export.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateExportDate (boolean IsUpdateExportDate);
+
+	/**
+	 * Get Update Export Date.
+	 * If ticked, the "Export date" field in the "Datev Export v2" window will be updated after a data export.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateExportDate();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsUpdateExportDate = new ModelColumn<>(I_AD_Process.class, "IsUpdateExportDate", null);
+	String COLUMNNAME_IsUpdateExportDate = "IsUpdateExportDate";
+
+	/**
+	 * Set Use Business Partner Language.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -662,7 +707,7 @@ public interface I_AD_Process
 	void setIsUseBPartnerLanguage (boolean IsUseBPartnerLanguage);
 
 	/**
-	 * Get IsUseBPartnerLanguage.
+	 * Get Use Business Partner Language.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -915,7 +960,49 @@ public interface I_AD_Process
 	String COLUMNNAME_SQLStatement = "SQLStatement";
 
 	/**
-	 * Set Technical note.
+	 * Set Process Result Storing File Default Path.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setStoreProcessResultFileOn (java.lang.String StoreProcessResultFileOn);
+
+	/**
+	 * Get Process Result Storing File Default Path.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getStoreProcessResultFileOn();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_StoreProcessResultFileOn = new ModelColumn<>(I_AD_Process.class, "StoreProcessResultFileOn", null);
+	String COLUMNNAME_StoreProcessResultFileOn = "StoreProcessResultFileOn";
+
+	/**
+	 * Set Process Result Storing File Path.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setStoreProcessResultFilePath (@Nullable java.lang.String StoreProcessResultFilePath);
+
+	/**
+	 * Get Process Result Storing File Path.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getStoreProcessResultFilePath();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_StoreProcessResultFilePath = new ModelColumn<>(I_AD_Process.class, "StoreProcessResultFilePath", null);
+	String COLUMNNAME_StoreProcessResultFilePath = "StoreProcessResultFilePath";
+
+	/**
+	 * Set TechnicalNote.
 	 * A note that is not indended for the user documentation, but for developers, customizers etc
 	 *
 	 * <br>Type: Text
@@ -925,7 +1012,7 @@ public interface I_AD_Process
 	void setTechnicalNote (@Nullable java.lang.String TechnicalNote);
 
 	/**
-	 * Get Technical note.
+	 * Get TechnicalNote.
 	 * A note that is not indended for the user documentation, but for developers, customizers etc
 	 *
 	 * <br>Type: Text

@@ -27,6 +27,7 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAdjusters;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -320,6 +321,53 @@ public class TimeUtil
 	}    // getDayTime
 
 	/**
+	 * Is the _1 in the Range of _2
+	 *
+	 * <pre>
+	 * 		Time_1         +--x--+
+	 * 		Time_2   +a+      +---b---+   +c+
+	 * </pre>
+	 * <p>
+	 * The function returns true for b and false for a/b.
+	 *
+	 * @param start_1 start (1)
+	 * @param end_1   not included end (1)
+	 * @param start_2 start (2)
+	 * @param end_2   not included (2)
+	 * @return true if in range
+	 */
+	static public boolean inRange(
+			@NonNull final Timestamp start_1,
+			@NonNull final Timestamp end_1,
+			@NonNull final Timestamp start_2,
+			@NonNull final Timestamp end_2)
+	{
+		// validity check
+		if (end_1.before(start_1))
+		{
+			throw new UnsupportedOperationException("TimeUtil.inRange End_1=" + end_1 + " before Start_1=" + start_1);
+		}
+		if (end_2.before(start_2))
+		{
+			throw new UnsupportedOperationException("TimeUtil.inRange End_2=" + end_2 + " before Start_2=" + start_2);
+		}
+		// case a
+		if (!end_2.after(start_1))        // end not including
+		{
+			// log.debug( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
+			return false;
+		}
+		// case c
+		if (!start_2.before(end_1))        // end not including
+		{
+			// log.debug( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
+			return false;
+		}
+		// log.debug( "TimeUtil.InRange - Yes", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
+		return true;
+	}    // inRange
+
+	/**
 	 * Is start..end on one of the days ?
 	 *
 	 * @param start       start day
@@ -544,9 +592,7 @@ public class TimeUtil
 
 	public static int getDaysBetween(@NonNull final LocalDateAndOrgId start, @NonNull final LocalDateAndOrgId end)
 	{
-		final LocalDate d1 = start.toLocalDate();
-		final LocalDate d2 = end.toLocalDate();
-		return Period.between(d1, d2).getDays();
+		return (int)LocalDateAndOrgId.daysBetween(start, end);
 	}
 	
 	/**
@@ -994,93 +1040,6 @@ public class TimeUtil
 	}
 
 	/**
-	 * Max date
-	 *
-	 * @param ts1 p1
-	 * @param ts2 p2
-	 * @return max time
-	 */
-	@Nullable
-	public static <T extends Date> T max(
-			@Nullable final T ts1,
-			@Nullable final T ts2)
-	{
-		if (ts1 == null)
-		{
-			return ts2;
-		}
-		if (ts2 == null)
-		{
-			return ts1;
-		}
-
-		if (ts2.after(ts1))
-		{
-			return ts2;
-		}
-		return ts1;
-	}    // max
-
-	/**
-	 * Gets minimum date.
-	 * <p>
-	 * If one of the dates is null, then the not null one will be returned.
-	 * <p>
-	 * If both dates are null then null will be returned.
-	 *
-	 * @return minimum date or null
-	 */
-	@Nullable
-	public static <T extends Date> T min(
-			@Nullable final T date1,
-			@Nullable final T date2)
-	{
-		if (date1 == date2)
-		{
-			return date1;
-		}
-		else if (date1 == null)
-		{
-			return date2;
-		}
-		else if (date2 == null)
-		{
-			return date1;
-		}
-		else if (date1.compareTo(date2) <= 0)
-		{
-			return date1;
-		}
-		else
-		{
-			return date2;
-		}
-	}
-
-	@Nullable
-	public static ZonedDateTime min(
-			@Nullable final ZonedDateTime date1,
-			@Nullable final ZonedDateTime date2)
-	{
-		if (date1 == date2)
-		{
-			return date1;
-		}
-		else if (date1 == null)
-		{
-			return date2;
-		}
-		else if (date2 == null)
-		{
-			return date1;
-		}
-		else
-		{
-			return date1.compareTo(date2) <= 0 ? date1 : date2;
-		}
-	}
-
-	/**
 	 * Truncate Second - S
 	 */
 	public static final String TRUNC_SECOND = "S";
@@ -1282,6 +1241,10 @@ public class TimeUtil
 		else if (obj instanceof LocalDateTime)
 		{
 			return Timestamp.valueOf((LocalDateTime)obj);
+		}
+		else if (obj instanceof ZonedDateTime)
+		{
+			return Timestamp.from(((ZonedDateTime)obj).toInstant());
 		}
 		else
 		{
@@ -2059,16 +2022,100 @@ public class TimeUtil
 		}
 	}
 
+	/**
+	 * Gets minimum date.
+	 * <p>
+	 * If one of the dates is null, then the not null one will be returned.
+	 * <p>
+	 * If both dates are null then null will be returned.
+	 *
+	 * @return minimum date or null
+	 */
 	@Nullable
-	public static Duration max(
-			@Nullable final Duration duration1,
-			@Nullable final Duration duration2)
+	public static <T extends Date> T min(@Nullable final T date1, @Nullable final T date2)
+	{
+		if (date1 == date2)
+		{
+			return date1;
+		}
+		else if (date1 == null)
+		{
+			return date2;
+		}
+		else if (date2 == null)
+		{
+			return date1;
+		}
+		else if (date1.compareTo(date2) <= 0)
+		{
+			return date1;
+		}
+		else
+		{
+			return date2;
+		}
+	}
+
+	@Nullable
+	public static ZonedDateTime min(@Nullable final ZonedDateTime date1, @Nullable final ZonedDateTime date2) {return minOfNullables(date1, date2);}
+
+	@Nullable
+	@SuppressWarnings("rawtypes")
+	public static <T extends Temporal & Comparable> T minOfNullables(@Nullable final T date1, @Nullable final T date2)
+	{
+		if (date1 == date2)
+		{
+			return date1;
+		}
+		else if (date1 == null)
+		{
+			return date2;
+		}
+		else if (date2 == null)
+		{
+			return date1;
+		}
+		else
+		{
+			return minNotNull(date1, date2);
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static <T extends Temporal & Comparable> T minNotNull(@NonNull final T date1, @NonNull final T date2)
+	{
+		if (date1 == date2)
+		{
+			return date1;
+		}
+		else
+		{
+			//noinspection unchecked
+			return date1.compareTo(date2) <= 0 ? date1 : date2;
+		}
+	}
+
+	@Nullable
+	public static Duration max(@Nullable final Duration duration1, @Nullable final Duration duration2)
 	{
 		if (duration1 == null)
 		{
 			return duration2;
 		}
 		else if (duration2 == null)
+		{
+			return duration1;
+		}
+		else
+		{
+			return maxNotNull(duration1, duration2);
+		}
+	}
+
+	@NonNull
+	public static Duration maxNotNull(@NonNull final Duration duration1, @NonNull final Duration duration2)
+	{
+		if (duration1 == duration2)
 		{
 			return duration1;
 		}
@@ -2082,60 +2129,64 @@ public class TimeUtil
 		}
 	}
 
-	@NonNull
-	public static Instant maxNotNull(@NonNull final Instant instant1, @NonNull final Instant instant2)
+	@Nullable
+	public static <T extends Date> T max(@Nullable final T ts1, @Nullable final T ts2)
 	{
-		return max(instant1, instant2);
+		if (ts1 == null)
+		{
+			return ts2;
+		}
+		if (ts2 == null)
+		{
+			return ts1;
+		}
+
+		if (ts2.after(ts1))
+		{
+			return ts2;
+		}
+		return ts1;
 	}
 
 	@Nullable
-	public static Instant max(
-			@Nullable final Instant instant1,
-			@Nullable final Instant instant2)
+	public static Instant max(@Nullable final Instant instant1, @Nullable final Instant instant2) {return maxOfNullables(instant1, instant2);}
+
+	public static LocalDate max(@NonNull final LocalDate d1, @NonNull final LocalDate d2) {return maxNotNull(d1, d2);}
+
+	@SuppressWarnings("rawtypes")
+	public static <T extends Temporal & Comparable> T maxNotNull(@NonNull final T date1, @NonNull final T date2)
 	{
-		if (instant1 == null)
+		if (date1 == date2)
 		{
-			return instant2;
-		}
-		else if (instant2 == null)
-		{
-			return instant1;
-		}
-		else if (instant1.isAfter(instant2))
-		{
-			return instant1;
+			return date1;
 		}
 		else
 		{
-			return instant2;
+			//noinspection unchecked
+			return date1.compareTo(date2) >= 0 ? date1 : date2;
 		}
 	}
 
 	@Nullable
-	public static LocalDate maxOfNullables(
-			@Nullable final LocalDate d1,
-			@Nullable final LocalDate d2)
+	@SuppressWarnings("rawtypes")
+	public static <T extends Temporal & Comparable> T maxOfNullables(@Nullable final T date1, @Nullable final T date2)
 	{
-		if (d1 == null)
+		if (date1 == date2)
 		{
-			return d2;
+			return date1;
 		}
-		else if (d2 == null)
+		else if (date1 == null)
 		{
-			return d1;
+			return date2;
+		}
+		else if (date2 == null)
+		{
+			return date1;
 		}
 		else
 		{
-			return max(d1, d2);
+			return maxNotNull(date1, date2);
 		}
-	}
-
-	public static LocalDate max(
-			@NonNull final LocalDate d1,
-			@NonNull final LocalDate d2)
-	{
-
-		return d1.isAfter(d2) ? d1 : d2;
 	}
 
 	public static boolean isLastDayOfMonth(@NonNull final LocalDate localDate)

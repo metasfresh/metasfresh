@@ -34,6 +34,8 @@ import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.pricing.service.impl.ProductPriceBuilder;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
@@ -129,9 +131,9 @@ class JsonInsertInvoiceCandidateServiceTest
 		new ProductPriceBuilder(
 				pricingTestHelper.getDefaultPriceListVerion(),
 				productRecord)
-						.setTaxCategoryId(pricingTestHelper.getTaxCategoryId())
-						.setPrice(20)
-						.build();
+				.setTaxCategoryId(pricingTestHelper.getTaxCategoryId())
+				.setPrice(20)
+				.build();
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setM_PricingSystem_ID(pricingTestHelper.getDefaultPricingSystem().getM_PricingSystem_ID());
@@ -176,6 +178,8 @@ class JsonInsertInvoiceCandidateServiceTest
 				new CurrencyService(),
 				new ManualCandidateService(bpartnerCompositeRepository),
 				new InvoiceCandidateRepository());
+
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}

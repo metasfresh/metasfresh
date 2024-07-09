@@ -97,8 +97,7 @@ public class MProduct extends X_M_Product
 			setIsWebStoreFeatured(false);
 			setIsSelfService(true);
 			setIsExcludeAutoDelivery(false);
-			setProcessing(false);    // N
-			setLowLevel(0);
+			setProcessing(false);	// N
 		}
 	}    // MProduct
 

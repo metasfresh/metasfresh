@@ -142,7 +142,7 @@ public class ProductsRestController
 		}
 	}
 
-	@Operation(summary = "Create or update products and corresponding Bpartner-products.")
+	@Operation(summary = "Create or update products, corresponding Bpartner-products and Product Tax Categories.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Successfully created or updated product(s)"),
 			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),

@@ -3,12 +3,24 @@ import PickStepScanScreen from '../containers/activities/picking/PickStepScanScr
 import PickLineScreen from '../containers/activities/picking/PickLineScreen';
 import { getWFProcessScreenLocation } from './workflow_locations';
 import PickLineScanScreen from '../containers/activities/picking/PickLineScanScreen';
+import PickProductsScanScreen from '../containers/activities/picking/PickProductsScanScreen';
+import { toUrl } from '../utils';
+import { SelectPickTargetScreen } from '../containers/activities/picking/SelectPickTargetScreen';
+
+export const selectPickTargetScreenLocation = ({ applicationId, wfProcessId, activityId }) =>
+  getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/selectPickTarget/${activityId}`;
+
+export const pickingScanScreenLocation = ({ applicationId, wfProcessId, activityId }) =>
+  getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/scan`;
 
 export const pickingLineScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
   getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}`;
 
-export const pickingLineScanScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
-  getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}/scanner`;
+export const pickingLineScanScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, qrCode, next }) =>
+  toUrl(getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}/scanner`, {
+    qrCode,
+    next,
+  });
 
 export const pickingStepScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }) =>
   pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }) +
@@ -26,6 +38,22 @@ export const pickingStepScanScreenLocation = ({
 };
 
 export const pickingRoutes = [
+  {
+    path: selectPickTargetScreenLocation({
+      applicationId: ':applicationId',
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+    }),
+    Component: SelectPickTargetScreen,
+  },
+  {
+    path: pickingScanScreenLocation({
+      applicationId: ':applicationId',
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+    }),
+    Component: PickProductsScanScreen,
+  },
   {
     path: pickingLineScreenLocation({
       applicationId: ':applicationId',

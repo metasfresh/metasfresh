@@ -163,7 +163,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	Collection<I_M_ShipmentSchedule> getByOrderId(@NonNull OrderId orderId);
 
+	Collection<I_M_ShipmentSchedule> getByOrderIds(@NonNull Collection<OrderId> orderIds);
+
 	boolean anyMatchByOrderId(OrderId salesOrderId);
+
+	boolean anyMatchByOrderIds(@NonNull Collection<OrderId> orderIds);
 
 	BPartnerId getBPartnerId(I_M_ShipmentSchedule schedule);
 

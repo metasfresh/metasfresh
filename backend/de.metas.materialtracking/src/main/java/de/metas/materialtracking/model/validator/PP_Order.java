@@ -145,7 +145,7 @@ public class PP_Order
 		for (final I_C_Invoice invoice : invoices)
 		{
 			sb
-					.append(docTypeDAO.getById(invoice.getC_DocType_ID()).getName())
+					.append(docTypeDAO.getRecordById(invoice.getC_DocType_ID()).getName())
 					.append(" ")
 					.append(invoice.getDocumentNo());
 		}

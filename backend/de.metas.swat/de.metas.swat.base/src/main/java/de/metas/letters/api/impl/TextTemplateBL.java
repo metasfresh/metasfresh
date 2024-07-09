@@ -104,7 +104,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(letter);
 		final String trxName = InterfaceWrapperHelper.getTrxName(letter);
 
-		final String letterBodyParsed = Services.get(ITextTemplateBL.class).parseText(
+		final String letterBodyParsed = parseText(
 				ctx,
 				letter.getLetterBody(),
 				true, // isEmbeded

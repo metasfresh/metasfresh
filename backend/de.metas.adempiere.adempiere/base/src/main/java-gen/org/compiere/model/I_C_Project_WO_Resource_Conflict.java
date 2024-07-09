@@ -51,6 +51,28 @@ public interface I_C_Project_WO_Resource_Conflict
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Projekt.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project2_ID (int C_Project2_ID);
+
+	/**
+	 * Get Projekt.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project2_ID();
+
+	String COLUMNNAME_C_Project2_ID = "C_Project2_ID";
+
+	/**
 	 * Set Project.
 	 * Financial Project
 	 *
@@ -71,6 +93,31 @@ public interface I_C_Project_WO_Resource_Conflict
 	int getC_Project_ID();
 
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Set Project Resource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_WO_Resource2_ID (int C_Project_WO_Resource2_ID);
+
+	/**
+	 * Get Project Resource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_WO_Resource2_ID();
+
+	org.compiere.model.I_C_Project_WO_Resource getC_Project_WO_Resource2();
+
+	void setC_Project_WO_Resource2(org.compiere.model.I_C_Project_WO_Resource C_Project_WO_Resource2);
+
+	ModelColumn<I_C_Project_WO_Resource_Conflict, org.compiere.model.I_C_Project_WO_Resource> COLUMN_C_Project_WO_Resource2_ID = new ModelColumn<>(I_C_Project_WO_Resource_Conflict.class, "C_Project_WO_Resource2_ID", org.compiere.model.I_C_Project_WO_Resource.class);
+	String COLUMNNAME_C_Project_WO_Resource2_ID = "C_Project_WO_Resource2_ID";
 
 	/**
 	 * Set Work Order Resource Conflict.
@@ -119,51 +166,29 @@ public interface I_C_Project_WO_Resource_Conflict
 	String COLUMNNAME_C_Project_WO_Resource_ID = "C_Project_WO_Resource_ID";
 
 	/**
-	 * Set Project Resource.
+	 * Get Created.
+	 * Date this record was created
 	 *
-	 * <br>Type: Search
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Project_WO_Resource2_ID (int C_Project_WO_Resource2_ID);
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_Project_WO_Resource_Conflict, Object> COLUMN_Created = new ModelColumn<>(I_C_Project_WO_Resource_Conflict.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Project Resource.
+	 * Get Created By.
+	 * User who created this records
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Project_WO_Resource2_ID();
+	int getCreatedBy();
 
-	org.compiere.model.I_C_Project_WO_Resource getC_Project_WO_Resource2();
-
-	void setC_Project_WO_Resource2(org.compiere.model.I_C_Project_WO_Resource C_Project_WO_Resource2);
-
-	ModelColumn<I_C_Project_WO_Resource_Conflict, org.compiere.model.I_C_Project_WO_Resource> COLUMN_C_Project_WO_Resource2_ID = new ModelColumn<>(I_C_Project_WO_Resource_Conflict.class, "C_Project_WO_Resource2_ID", org.compiere.model.I_C_Project_WO_Resource.class);
-	String COLUMNNAME_C_Project_WO_Resource2_ID = "C_Project_WO_Resource2_ID";
-
-	/**
-	 * Set Projekt.
-	 * Financial Project
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_Project2_ID (int C_Project2_ID);
-
-	/**
-	 * Get Projekt.
-	 * Financial Project
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_Project2_ID();
-
-	String COLUMNNAME_C_Project2_ID = "C_Project2_ID";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Simulation Plan.
@@ -189,31 +214,6 @@ public interface I_C_Project_WO_Resource_Conflict
 
 	ModelColumn<I_C_Project_WO_Resource_Conflict, org.compiere.model.I_C_SimulationPlan> COLUMN_C_SimulationPlan_ID = new ModelColumn<>(I_C_Project_WO_Resource_Conflict.class, "C_SimulationPlan_ID", org.compiere.model.I_C_SimulationPlan.class);
 	String COLUMNNAME_C_SimulationPlan_ID = "C_SimulationPlan_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_Project_WO_Resource_Conflict, Object> COLUMN_Created = new ModelColumn<>(I_C_Project_WO_Resource_Conflict.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Active.

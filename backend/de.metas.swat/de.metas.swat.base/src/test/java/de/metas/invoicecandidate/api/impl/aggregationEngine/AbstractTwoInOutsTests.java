@@ -29,6 +29,14 @@ import de.metas.material.MovementType;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import lombok.NonNull;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -103,7 +111,7 @@ public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngin
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines)
+	protected void step_validate_before_aggregation(final @NonNull List<I_C_Invoice_Candidate> invoiceCandidates, final @NonNull List<I_M_InOutLine> inOutLines)
 	{
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 

@@ -17,6 +17,8 @@ public interface I_C_Order
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
+
+
 	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
@@ -1315,6 +1317,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_DescriptionBottom = new ModelColumn<>(I_C_Order.class, "DescriptionBottom", null);
 	String COLUMNNAME_DescriptionBottom = "DescriptionBottom";
+
+	/**
+	 * Set Description Bottom List.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescriptionBottom_BoilerPlate_ID (int DescriptionBottom_BoilerPlate_ID);
+
+	/**
+	 * Get Description Bottom List.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDescriptionBottom_BoilerPlate_ID();
+
+	ModelColumn<I_C_Order, Object> COLUMN_DescriptionBottom_BoilerPlate_ID = new ModelColumn<>(I_C_Order.class, "DescriptionBottom_BoilerPlate_ID", null);
+	String COLUMNNAME_DescriptionBottom_BoilerPlate_ID = "DescriptionBottom_BoilerPlate_ID";
 
 	/**
 	 * Set Process Batch.

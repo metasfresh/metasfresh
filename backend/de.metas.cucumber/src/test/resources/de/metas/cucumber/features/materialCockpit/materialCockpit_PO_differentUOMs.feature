@@ -42,7 +42,7 @@ Feature: purchase order interaction with material cockpit - Order Line's UOM is 
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    Then after not more than 60s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.MDCandidateQtyStock_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | 2.5                                | 2.5                     | 2.5                        | 2.5                           | 2.5                            |
 

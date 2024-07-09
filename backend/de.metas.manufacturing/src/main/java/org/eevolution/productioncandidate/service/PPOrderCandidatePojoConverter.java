@@ -41,7 +41,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
@@ -134,6 +134,7 @@ public class PPOrderCandidatePojoConverter
 									 .qtyRequired(qtyEnteredInStockUOM.toBigDecimal())
 									 .qtyDelivered(qtyProcessedInStockUOM.toBigDecimal())
 									 .plantId(ResourceId.ofRepoId(ppOrderCandidateRecord.getS_Resource_ID()))
+									 .workstationId(ResourceId.ofRepoIdOrNull(ppOrderCandidateRecord.getWorkStation_ID()))
 									 .materialDispoGroupId(getMaterialDispoGroupIdOrNull(ppOrderCandidateRecord))
 									 .packingMaterialId(HUPIItemProductId.ofRepoIdOrNull(ppOrderCandidateRecord.getM_HU_PI_Item_Product_ID()))
 									 .lotForLot(ppOrderCandidateRecord.getIsLotForLot())

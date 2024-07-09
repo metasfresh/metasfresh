@@ -68,6 +68,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
@@ -157,6 +158,17 @@ public class ProductDAO implements IProductDAO
 	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
 	{
 		return loadByRepoIdAwaresOutOfTrx(productIds, I_M_Product.class);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<I_M_Product> getByIdsInTrx(@NonNull final Set<ProductId> productIds)
+	{
+		return queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Product.COLUMNNAME_M_Product_ID, productIds)
+				.create()
+				.listImmutable(I_M_Product.class);
 	}
 
 	@Override
@@ -654,9 +666,9 @@ public class ProductDAO implements IProductDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
 				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
-						.setJoinOr()
-						.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
-						.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
+								.setJoinOr()
+								.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
+								.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
@@ -764,7 +776,7 @@ public class ProductDAO implements IProductDAO
 		else if (valueType == IssuingToleranceValueType.QUANTITY)
 		{
 			final UomId uomId = UomId.ofRepoId(product.getIssuingTolerance_UOM_ID());
-			final Quantity qty = Quantitys.create(product.getIssuingTolerance_Qty(), uomId);
+			final Quantity qty = Quantitys.of(product.getIssuingTolerance_Qty(), uomId);
 			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
 		}
 		else
@@ -793,6 +805,13 @@ public class ProductDAO implements IProductDAO
 				queryBL
 						.createQueryBuilder(I_M_InOutLine.class)
 						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch()
+				||
+				queryBL // Even if a product was not yet ordered/delivered/invoiced, it might be a component and thus end up in a cost-detail..
+						.createQueryBuilder(I_M_CostDetail.class)
+						.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_Product_ID, productId.getRepoId())
 						.addOnlyActiveRecordsFilter()
 						.create()
 						.anyMatch();

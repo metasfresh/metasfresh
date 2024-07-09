@@ -43,6 +43,7 @@ import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
@@ -82,7 +83,18 @@ public class WorkflowRestAPIService
 	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(final UserId loggedUserId)
 	{
 		return applications.stream()
-				.map(application -> application.getApplicationInfo(loggedUserId));
+				.map(application -> {
+					try
+					{
+						return application.getApplicationInfo(loggedUserId);
+					}
+					catch (Exception ex)
+					{
+						logger.warn("Failed getting application info from {}. Skipped", application, ex);
+						return null;
+					}
+				})
+				.filter(Objects::nonNull);
 	}
 
 	public WorkflowLaunchersList getLaunchers(@NonNull final WorkflowLaunchersQuery query)
@@ -91,11 +103,9 @@ public class WorkflowRestAPIService
 				.provideLaunchers(query.withLimitIfNotSet(this::getLaunchersLimit));
 	}
 
-	public WorkflowLaunchersFacetGroupList getFacets(
-			@NonNull final MobileApplicationId applicationId,
-			@NonNull final UserId userId)
+	public WorkflowLaunchersFacetGroupList getFacets(@NonNull WorkflowLaunchersFacetQuery query)
 	{
-		return getWorkflowBasedMobileApplication(applicationId).getFacets(userId);
+		return getWorkflowBasedMobileApplication(query.getApplicationId()).getFacets(query);
 	}
 
 	private WorkflowBasedMobileApplication getWorkflowBasedMobileApplication(@NonNull final MobileApplicationId applicationId)
@@ -129,7 +139,16 @@ public class WorkflowRestAPIService
 	public void logout(@NonNull final UserId userId)
 	{
 		applications.stream()
-				.forEach(application -> application.logout(userId));
+				.forEach(application -> {
+					try
+					{
+						application.logout(userId);
+					}
+					catch (Exception ex)
+					{
+						logger.warn("Application {} failed to loggout. Skipped", application, ex);
+					}
+				});
 	}
 
 	public WFProcess getWFProcessById(@NonNull final WFProcessId wfProcessId)
@@ -182,6 +201,7 @@ public class WorkflowRestAPIService
 		}
 	}
 
+	@NonNull
 	public WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
 	{
 		return getWorkflowBasedMobileApplication(wfProcess.getId().getApplicationId())

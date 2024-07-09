@@ -34,6 +34,8 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
         "locatorId": "1000000_1000000",
         "orgId": 1000000,
         "productId": 40,
+        "qtyBookFixed": "30 Ea",
+        "qtyCountFixed": "3 Ea",
         "storageAttributesKey": "10§&§11§&§12"
       }
     ],

@@ -497,10 +497,11 @@ public class InOutProducer implements IInOutProducer
 			receiptHeader.setDateOrdered(rs.getDateOrdered());
 
 			final Timestamp movementDate = getMovementDate(rs, ctx);
+			final Timestamp dateAcct = getDateAcct(rs,ctx);
 
 			receiptHeader.setDateReceived(getExternalReceivedDate(rs));
 			receiptHeader.setMovementDate(movementDate);
-			receiptHeader.setDateAcct(movementDate);
+			receiptHeader.setDateAcct(dateAcct);
 		}
 
 		//
@@ -553,6 +554,8 @@ public class InOutProducer implements IInOutProducer
 		InOutDAO.updateRecordFromForeignContractRef(receiptHeader, forexContractRef);
 		receiptHeader.setM_Delivery_Planning_ID(DeliveryPlanningId.toRepoId(deliveryPlanningId));
 
+		receiptHeader.setPOReference(rs.getPOReference());
+
 		//
 		// Save & Return
 		InterfaceWrapperHelper.save(receiptHeader);
@@ -565,7 +568,7 @@ public class InOutProducer implements IInOutProducer
 		final I_C_Order order = receiptSchedule.getC_Order();
 		if (order != null && order.getC_Order_ID() > 0)
 		{
-			final I_C_DocType orderDoctype = docTypeDAO.getById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+			final I_C_DocType orderDoctype = docTypeDAO.getRecordById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
 			if (orderDoctype.getC_DocTypeShipment_ID() > 0)
 			{
 				return orderDoctype.getC_DocTypeShipment_ID();
@@ -705,6 +708,21 @@ public class InOutProducer implements IInOutProducer
 		return Env.getDate(context);
 	}
 
+	@NonNull
+	private Timestamp getExternalDateAcct(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
+	{
+		final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID());
+		final ReceiptScheduleExternalInfo externalInfo = externalInfoByReceiptScheduleId.get(receiptScheduleId);
+
+		if (externalInfo != null && externalInfo.getDateAcct() != null)
+		{
+			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(receiptSchedule.getAD_Org_ID()));
+			return TimeUtil.asTimestamp(externalInfo.getDateAcct(), timeZone);
+		}
+
+		return Env.getDate(context);
+	}
+
 	@Nullable
 	private Timestamp getExternalReceivedDate(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
@@ -745,6 +763,25 @@ public class InOutProducer implements IInOutProducer
 
 			@Override
 			public Timestamp externalDateIfAvailable() {return getExternalMovementDate(receiptSchedule, context);}
+
+			// Use Login Date as movement date because some roles will rely on the fact that they can override it (08247)
+			@Override
+			public Timestamp currentDate() {return Env.getDate(context);}
+
+			@Override
+			public Timestamp fixedDate(@NonNull final Instant fixedDate) {return Timestamp.from(fixedDate);}
+		});
+	}
+
+	private Timestamp getDateAcct (@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
+	{
+		return movementDateRule.map(new ReceiptMovementDateRule.CaseMapper<Timestamp>()
+		{
+			@Override
+			public Timestamp orderDatePromised() {return getPromisedDate(receiptSchedule, context);}
+
+			@Override
+			public Timestamp externalDateIfAvailable() {return getExternalDateAcct(receiptSchedule, context);}
 
 			// Use Login Date as movement date because some roles will rely on the fact that they can override it (08247)
 			@Override

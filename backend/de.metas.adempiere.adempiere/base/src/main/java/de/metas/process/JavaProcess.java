@@ -5,6 +5,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.Profiles;
 import de.metas.common.util.time.SystemTime;
 import de.metas.error.LoggableWithThrowableUtil;
 import de.metas.i18n.AdMessageKey;
@@ -13,6 +14,7 @@ import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
+import de.metas.report.ReportResultData;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -39,6 +41,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.DB;
@@ -51,6 +54,7 @@ import org.springframework.context.annotation.Profile;
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
@@ -97,9 +101,11 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	/**
 	 * Process Main transaction
 	 */
-	@Nullable private ITrx m_trx = ITrx.TRX_None;
+	@Nullable
+	private ITrx m_trx = ITrx.TRX_None;
 	private Boolean m_trxIsLocal;
-	@Nullable private ImmutableReference<String> m_trxNameThreadInheritedBackup;
+	@Nullable
+	private ImmutableReference<String> m_trxNameThreadInheritedBackup;
 	private boolean m_dbConstraintsChanged = false;
 	/**
 	 * Transaction name prefix (in case of local transaction)
@@ -313,7 +319,41 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 			// NOTE: we shall check again the result because it might be changed by postProcess()
 			getResult().propagateErrorIfAny();
+
+			forwardReportDataToRecipients(pi);
+
 		}   // startProcess
+	}
+
+	private void forwardReportDataToRecipients(@NonNull final ProcessInfo pi)
+	{
+		ReportResultData reportData = pi.getResult().getReportData();
+		if (reportData == null)
+		{
+			// nothing to forward
+			return;
+		}
+
+		final ReportResultDataTarget reportResultDataTarget = pi.getReportResultDataTarget();
+
+		if (reportResultDataTarget.getTargetFilename() != null)
+		{
+			reportData = reportData.withReportFilename(reportResultDataTarget.getTargetFilename());
+		}
+
+		if (reportResultDataTarget.isSaveToServerDirectory())
+		{
+			final Path targetFile = reportData.writeToDirectory(reportResultDataTarget.getServerTargetDirectoryNotNull());
+			addLog("Saved report file to {}", targetFile);
+		}
+
+		final boolean runningOnWebAPI = SpringContextHolder.instance.isSpringProfileActive(Profiles.PROFILE_Webui);
+		if (runningOnWebAPI && !reportResultDataTarget.isForwardToUserBrowser())
+		{
+			// Unset the report data only if we **know** that we want to unset it, i.e. if running on the web-api.
+			// On app, the data is needed by the archiver, e.g. to facilitate printing.
+			pi.getResult().setReportData((ReportResultData)null);
+		}
 	}
 
 	/**
@@ -850,7 +890,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-
 	protected final <T> Integer getSingleSelectedIncludedRecordIds(final Class<T> modelClass)
 	{
 		final Set<Integer> selectedIncludedRecordIds = getSelectedIncludedRecordIds(modelClass);
@@ -971,7 +1010,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg)
 	{
-		addLog(id, date, number,  msg, null);
+		addLog(id, date, number, msg, null);
 	}
 
 	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg, final @Nullable List<String> warningMessages)

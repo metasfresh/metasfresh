@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -55,7 +55,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
@@ -349,7 +348,7 @@ public class BoardRestController
 	}
 
 	@GetMapping("/{boardId}/newCardsView/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
-	public JSONLookupValuesList getFilterParameterDropdown(
+	public JSONLookupValuesPage getFilterParameterDropdown(
 			@PathVariable("boardId") final int ignoredBoardId,
 			@PathVariable("viewId") final String viewIdStr,
 			@PathVariable("filterId") final String filterId,
@@ -363,7 +362,7 @@ public class BoardRestController
 
 		return viewsRepo.getView(viewId)
 				.getFilterParameterDropdown(filterId, parameterName, ctx)
-				.transform(list -> JSONLookupValuesList.ofLookupValuesList(list, adLanguage));
+				.transform(list -> JSONLookupValuesPage.of(list, adLanguage));
 	}
 
 	private ViewFilterParameterLookupEvaluationCtx createFilterParameterLookupContext(@NonNull final ViewId viewId)

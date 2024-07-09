@@ -32,9 +32,9 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.acct.InvoiceAcct;
 import de.metas.invoice.matchinv.MatchInvId;
@@ -43,12 +43,14 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_MatchInv;
@@ -82,6 +84,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final MatchInvoiceService matchInvoiceService;
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final OrderGroupRepository orderGroupRepo;
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_Invoice.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
@@ -102,9 +105,15 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 	private CurrencyConversionContext _invoiceCurrencyConversionCtx = null;
 
-	public Doc_Invoice(final AcctDocContext ctx)
+	public Doc_Invoice(@NonNull final AcctDocContext ctx)
+	{
+		this(ctx, SpringContextHolder.instance.getBean(OrderGroupRepository.class));
+	}
+
+	public Doc_Invoice(@NonNull final AcctDocContext ctx, @NonNull final OrderGroupRepository orderGroupRepo)
 	{
 		super(ctx);
+		this.orderGroupRepo = orderGroupRepo;
 		this.matchInvoiceService = ctx.getServices().getMatchInvoiceService();
 	}
 
@@ -125,14 +134,14 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		return createInvoiceAccountProviderExtension(null);
 	}
 
-	InvoiceAccountProviderExtension createInvoiceAccountProviderExtension(@Nullable final InvoiceLineId invoiceLineId)
+	InvoiceAccountProviderExtension createInvoiceAccountProviderExtension(@Nullable final InvoiceAndLineId invoiceAndLineId)
 	{
 		return getInvoiceAccounts()
 				.map(invoiceAccounts -> InvoiceAccountProviderExtension.builder()
 						.accountDAO(services.getAccountDAO())
 						.invoiceAccounts(invoiceAccounts)
 						.clientId(getClientId())
-						.invoiceLineId(invoiceLineId)
+						.invoiceAndLineId(invoiceAndLineId)
 						.build())
 				.orElse(null);
 
@@ -193,7 +202,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				continue;
 			}
 
-			final DocLine_Invoice docLine = new DocLine_Invoice(line, this);
+			final DocLine_Invoice docLine = new DocLine_Invoice(orderGroupRepo, line, this);
 
 			//
 			// Collect included tax (if any)
@@ -938,20 +947,20 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			return;
 		}
 
-		final Set<InvoiceLineId> invoiceLineIds = new HashSet<>();
+		final Set<InvoiceAndLineId> invoiceAndLineIds = new HashSet<>();
 		for (final DocLine_Invoice line : getDocLines())
 		{
-			invoiceLineIds.add(line.getInvoiceLineId());
+			invoiceAndLineIds.add(line.getInvoiceAndLineId());
 		}
 
 		// 08643
 		// Do nothing in case there are no invoice lines
-		if (invoiceLineIds.isEmpty())
+		if (invoiceAndLineIds.isEmpty())
 		{
 			return;
 		}
 
-		final Set<MatchInvId> matchInvIds = matchInvoiceService.getIdsProcessedButNotPostedByInvoiceLineIds(invoiceLineIds);
+		final Set<MatchInvId> matchInvIds = matchInvoiceService.getIdsProcessedButNotPostedByInvoiceLineIds(invoiceAndLineIds);
 		postDependingDocuments(I_M_MatchInv.Table_Name, matchInvIds);
 	}
 

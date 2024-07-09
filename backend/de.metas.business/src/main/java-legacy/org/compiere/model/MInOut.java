@@ -1219,8 +1219,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final MInOutLine[] lines = getLines();
 		if (lines == null || lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 		BigDecimal Volume = BigDecimal.ZERO;
 		BigDecimal Weight = BigDecimal.ZERO;

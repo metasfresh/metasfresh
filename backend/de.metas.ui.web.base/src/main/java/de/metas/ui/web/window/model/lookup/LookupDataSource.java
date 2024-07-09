@@ -5,6 +5,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import lombok.NonNull;
 import org.compiere.util.Evaluatee;
 
@@ -38,7 +39,6 @@ import java.util.Optional;
 public interface LookupDataSource extends LookupValueByIdSupplier
 {
 	int FIRST_ROW = 0;
-	int DEFAULT_PageLength = 10;
 
 	LookupValuesPage findEntities(Evaluatee ctx, int pageLength);
 
@@ -46,7 +46,7 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 
 	default LookupValuesPage findEntities(final Evaluatee ctx, final String filter)
 	{
-		return findEntities(ctx, filter, FIRST_ROW, DEFAULT_PageLength);
+		return findEntities(ctx, filter, FIRST_ROW, -1);
 	}
 
 	/**
@@ -59,7 +59,7 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 
 	@Override
 	@Nullable
-	LookupValue findById(Object id);
+	LookupValue findById(@Nullable Object id);
 
 	default Optional<LookupValue> findByIdOptional(Object id) {return Optional.ofNullable(findById(id));}
 

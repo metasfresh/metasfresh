@@ -29,8 +29,9 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface IStatementLineWrapper
@@ -42,7 +43,7 @@ public interface IStatementLineWrapper
 	String getUnstructuredRemittanceInfo();
 
 	@NonNull
-	Optional<Instant> getStatementLineDate(@NonNull ZoneId zoneId);
+	Optional<ZonedDateTime> getStatementLineDate(@NonNull ZoneId zoneId);
 
 	@NonNull
 	Optional<Money> getInterestAmount();
@@ -72,4 +73,8 @@ public interface IStatementLineWrapper
 
 	@Nullable
 	String getLineReference();
+
+	boolean isBatchTransaction();
+
+	List<ITransactionDtlsWrapper> getTransactionDtlsWrapper();
 }

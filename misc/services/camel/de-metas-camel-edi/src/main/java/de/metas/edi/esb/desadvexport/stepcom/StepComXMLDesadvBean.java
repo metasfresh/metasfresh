@@ -544,7 +544,7 @@ public class StepComXMLDesadvBean
 
 			if (settings.isDesadvLineCUTURequired())
 			{
-				final BigDecimal qtyItemCapacity = validateObject(packItem.getQtyCU(),
+				final BigDecimal qtyItemCapacity = validateObject(packItem.getQtyCUsPerTU(),
 																  "@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @QtyCU@");
 				final DQUAN1 cuTuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.CUTU);
 				cuTuQuantity.setQUANTITY(formatNumber(qtyItemCapacity, decimalFormat));
@@ -593,7 +593,7 @@ public class StepComXMLDesadvBean
 		{
 			qtyDelivered = qtyDelivered.add(extractQtyDelivered(singlePack));
 			measurementUnitName = extractMeasurementUnitOrNull(singlePack.getDesadvLine().getCUOMID(), line, settings);
-			qtyCU = singlePack.getPackItem().getQtyCU();
+			qtyCU = singlePack.getPackItem().getQtyCUsPerTU();
 		}
 
 		if (measurementUnitName == null) // case: there were no packs

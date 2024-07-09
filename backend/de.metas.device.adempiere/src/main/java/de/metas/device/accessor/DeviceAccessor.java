@@ -115,6 +115,11 @@ public final class DeviceAccessor
 		}
 	}
 
+	public Optional<String> getConfigValue(@NonNull final String parameterName)
+	{
+		return deviceConfig.getDeviceConfigParamValue(parameterName);
+	}
+
 	@NonNull
 	private Map<String, List<String>> getDeviceConfigParams()
 	{

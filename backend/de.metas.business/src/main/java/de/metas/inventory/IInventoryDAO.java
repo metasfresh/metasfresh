@@ -52,6 +52,8 @@ public interface IInventoryDAO extends ISingletonService
 		return retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class);
 	}
 
+	<T extends I_M_InventoryLine> T getLineById(@NonNull InventoryLineId inventoryLineId, @NonNull Class<T> modelType);
+
 	boolean hasLines(InventoryId inventoryId);
 
 	void setInventoryLinesProcessed(InventoryId inventoryId, boolean processed);
