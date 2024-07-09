@@ -23,6 +23,7 @@ jobs:
         run: |
           touch github_run.txt
           echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
+          echo pipeline ($PIPELINE_VERSION)" >> github_run.txt
           testspace github_run.txt
       - name: sanitize-ref-name
         id: sanitize
