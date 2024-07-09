@@ -219,15 +219,9 @@ public class AttributeDAO implements IAttributeDAO
 
 	@Override
 	@NonNull
-	public ImmutableMap<AttributeId, AttributeCode> getAttributeId2CodeByIds(@NonNull final ImmutableList<AttributeId> attributeIds)
+	public ImmutableList<AttributeCode> getOrderedAttributeCodesByIds(@NonNull final List<AttributeId> orderedAttributeIds)
 	{
-		final AttributesMap attributesMap = getAttributesMap();
-
-		return attributeIds
-				.stream()
-				.map(attributesMap::getAttributeById)
-				.collect(ImmutableMap.toImmutableMap(Attribute::getAttributeId,
-													 Attribute::getAttributeCode));
+		return getAttributesMap().getOrderedAttributeCodesByIds(orderedAttributeIds);
 	}
 
 	@Override
@@ -1033,5 +1027,19 @@ public class AttributeDAO implements IAttributeDAO
 		{
 			return getAttributeIdByCode(AttributeCode.ofString(attributeCode));
 		}
+
+		@NonNull
+		public ImmutableList<AttributeCode> getOrderedAttributeCodesByIds(@NonNull final List<AttributeId> orderedAttributeIds)
+		{
+			if (orderedAttributeIds.isEmpty())
+			{
+				return ImmutableList.of();
+			}
+			
+			return orderedAttributeIds.stream()
+					.map(attributeId -> getAttributeById(attributeId).getAttributeCode())
+					.collect(ImmutableList.toImmutableList());
+		}
+
 	}
 }

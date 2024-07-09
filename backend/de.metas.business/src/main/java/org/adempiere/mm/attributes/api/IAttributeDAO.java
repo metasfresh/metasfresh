@@ -1,7 +1,6 @@
 package org.adempiere.mm.attributes.api;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
@@ -61,7 +60,7 @@ public interface IAttributeDAO extends ISingletonService
 	String getAttributeCodeById(AttributeId attributeId);
 
 	@NonNull
-	ImmutableMap<AttributeId, AttributeCode> getAttributeId2CodeByIds(@NonNull ImmutableList<AttributeId> attributeIds);
+	ImmutableList<AttributeCode> getOrderedAttributeCodesByIds(@NonNull final List<AttributeId> orderedAttributeIds);
 
 	/**
 	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeConstants#M_AttributeSet_ID_None}).

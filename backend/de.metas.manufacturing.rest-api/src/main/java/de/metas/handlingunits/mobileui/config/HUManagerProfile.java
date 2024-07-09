@@ -24,28 +24,16 @@ package de.metas.handlingunits.mobileui.config;
 
 import com.google.common.collect.ImmutableList;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeId;
 
-import java.util.Comparator;
+import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class MobileUIHUManager
+public class HUManagerProfile
 {
-	public static final MobileUIHUManager DEFAULT = builder()
-			.attributes(ImmutableList.of())
-			.build();
+	public static final HUManagerProfile DEFAULT = builder().build();
 
-	@NonNull ImmutableList<MobileUIHUManagerAttribute> attributes;
-	
-	@NonNull
-	public ImmutableList<AttributeId> getSortedAttributeIds()
-	{
-		return attributes.stream()
-				.sorted(Comparator.comparing(MobileUIHUManagerAttribute::getSeqNo))
-				.map(MobileUIHUManagerAttribute::getAttributeId)
-				.collect(ImmutableList.toImmutableList());
-	}
+	@Nullable ImmutableList<AttributeId> displayedAttributeIdsInOrder;
 }

@@ -1,6 +1,7 @@
 package de.metas.common.handlingunits;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -9,7 +10,6 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Value
 @Builder
@@ -34,21 +34,25 @@ public class JsonHUAttributes
 		for (final Map.Entry<String, Object> attributeCodeAndValue : attributeCodeAndValues.getAttributes().entrySet())
 		{
 			list.add(JsonHUAttribute.builder()
-							 .code(attributeCodeAndValue.getKey())
-							 .caption(attributeCodeAndValue.getKey())
-							 .value(attributeCodeAndValue.getValue())
-							 .build());
+					.code(attributeCodeAndValue.getKey())
+					.caption(attributeCodeAndValue.getKey())
+					.value(attributeCodeAndValue.getValue())
+					.build());
 		}
 
 		return JsonHUAttributes.builder().list(list).build();
 	}
 
-	@NonNull
-	@JsonIgnore
-	public Optional<JsonHUAttribute> getAttributeByCode(@NonNull final String code)
+	public JsonHUAttributes retainOnlyAttributesInOrder(@NonNull final List<String> codes)
 	{
-		return list.stream()
-				.filter(attribute -> attribute.getCode().equals(code))
-				.findFirst();
+		final ArrayList<JsonHUAttribute> filteredList = new ArrayList<>();
+		final ImmutableListMultimap<String, JsonHUAttribute> attributesByCode = Multimaps.index(list, JsonHUAttribute::getCode);
+
+		for (String code : codes)
+		{
+			filteredList.addAll(attributesByCode.get(code));
+		}
+
+		return builder().list(filteredList).build();
 	}
 }

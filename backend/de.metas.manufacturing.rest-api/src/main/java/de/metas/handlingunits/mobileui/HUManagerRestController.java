@@ -20,18 +20,26 @@
  * #L%
  */
 
-package de.metas.handlingunits.rest_api;
+package de.metas.handlingunits.mobileui;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.mobileui.config.HUManagerProfileRepository;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.rest_api.HandlingUnitsService;
+import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
 import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -44,26 +52,35 @@ import java.util.Optional;
 
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 
-@RequestMapping(value = { HandlingUnitsManagerRestController.HU_MANAGER_REST_CONTROLLER_PATH })
+@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits/hu-manager")
 @RestController
 @RequiredArgsConstructor
 @Profile(Profiles.PROFILE_App)
-public class HandlingUnitsManagerRestController
+public class HUManagerRestController
 {
-	public static final String HU_MANAGER_REST_CONTROLLER_PATH = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits/hu-manager";
-
-	private final HandlingUnitsManagerRestService handlingUnitsManagerRestService;
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final HUManagerProfileRepository profileRepository;
 	private final HUQRCodesService huQRCodesService;
 	private final HandlingUnitsService handlingUnitsService;
 
 	@PostMapping("/byQRCode")
 	public ResponseEntity<JsonGetSingleHUResponse> retrieveHUManagerConfig(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
-		final OrgId orgId = Env.getOrgId();
+		return handlingUnitsService.getByIdSupplier(
+				() -> getHuId(request.getQrCode()),
+				request.isIncludeAllowedClearanceStatuses(),
+				getDisplayedAttributeCodes()
+		);
+	}
 
-		return handlingUnitsService.getByIdSupplier(() -> getHuId(request.getQrCode()),
-													request.isIncludeAllowedClearanceStatuses(),
-													jsonHU -> handlingUnitsManagerRestService.getHUTailoredByHUManager(jsonHU, orgId));
+	private ImmutableList<AttributeCode> getDisplayedAttributeCodes()
+	{
+		final OrgId orgId = Env.getOrgId();
+		final ImmutableList<AttributeId> displayedAttributeIdsInOrder = profileRepository.getProfile(orgId).getDisplayedAttributeIdsInOrder();
+
+		return displayedAttributeIdsInOrder != null && !displayedAttributeIdsInOrder.isEmpty()
+				? attributeDAO.getOrderedAttributeCodesByIds(displayedAttributeIdsInOrder)
+				: ImmutableList.of();
 	}
 
 	@NonNull

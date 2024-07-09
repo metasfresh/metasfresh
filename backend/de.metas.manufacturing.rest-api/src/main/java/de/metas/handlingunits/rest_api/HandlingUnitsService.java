@@ -92,7 +92,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 
 import static de.metas.handlingunits.rest_api.JsonHUHelper.fromJsonClearanceStatus;
 import static de.metas.handlingunits.rest_api.JsonHUHelper.toJsonClearanceStatus;
@@ -249,7 +248,7 @@ public class HandlingUnitsService
 	public ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(
 			@NonNull final Supplier<HuId> huIdSupplier,
 			final boolean getAllowedClearanceStatuses,
-			@Nullable final UnaryOperator<JsonHU> customizer)
+			@Nullable final List<AttributeCode> orderedAttributeCodes)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
@@ -262,13 +261,12 @@ public class HandlingUnitsService
 			}
 
 			final JsonHU jsonHU = getFullHU(huId, adLanguage, getAllowedClearanceStatuses)
-					.withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId));
-
-			final JsonHU result = customizer != null ? customizer.apply(jsonHU) : jsonHU;
+					.withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId))
+					.withDisplayedAttributesOnly(orderedAttributeCodes != null ? AttributeCode.toStringList(orderedAttributeCodes) : null);
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-											 .result(result)
-											 .build());
+					.result(jsonHU)
+					.build());
 		}
 		catch (final Exception e)
 		{
@@ -339,20 +337,20 @@ public class HandlingUnitsService
 			final Object value = huAttributes.getValue(attributeCode);
 
 			list.add(JsonHUAttribute.builder()
-							 .code(attributeCode.getCode())
-							 .caption(attribute.getName())
-							 .value(value)
-							 .valueDisplay(JsonHUAttributeConverters.toDisplayValue(value, adLanguage))
-							 .build());
+					.code(attributeCode.getCode())
+					.caption(attribute.getName())
+					.value(value)
+					.valueDisplay(JsonHUAttributeConverters.toDisplayValue(value, adLanguage))
+					.build());
 		}
 
 		for (final ExtractCounterAttributesCommand.CounterAttribute counterAttribute : extractCounterAttributes(huAttributes))
 		{
 			list.add(JsonHUAttribute.builder()
-							 .value(counterAttribute.getAttributeCode())
-							 .caption(counterAttribute.getAttributeCode())
-							 .value(counterAttribute.getCounter())
-							 .build());
+					.value(counterAttribute.getAttributeCode())
+					.caption(counterAttribute.getAttributeCode())
+					.value(counterAttribute.getCounter())
+					.build());
 		}
 
 		return JsonHUAttributes.builder().list(ImmutableList.copyOf(list)).build();
@@ -450,9 +448,9 @@ public class HandlingUnitsService
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodeService)
 				.husToMove(ImmutableSet.of(HUIdAndQRCode.builder()
-												   .huQRCode(request.getHuQRCode())
-												   .huId(request.getHuId())
-												   .build()))
+						.huQRCode(request.getHuQRCode())
+						.huId(request.getHuId())
+						.build()))
 				.targetQRCode(request.getTargetQRCode())
 				.build()
 				.execute();
@@ -496,12 +494,12 @@ public class HandlingUnitsService
 				: huId;
 
 		final Inventory inventory = huQtyService.updateQty(UpdateHUQtyRequest.builder()
-																   .huId(huIdToUpdate)
-																   .huQRCode(qrCode)
-																   .locatorId(locatorId)
-																   .qty(qty)
-																   .description(request.getDescription())
-																   .build());
+				.huId(huIdToUpdate)
+				.huQRCode(qrCode)
+				.locatorId(locatorId)
+				.qty(qty)
+				.description(request.getDescription())
+				.build());
 
 		if (inventory != null)
 		{

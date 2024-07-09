@@ -37,38 +37,38 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public class MobileUIHUManagerRepository
+public class HUManagerProfileRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<OrgId, MobileUIHUManager> cache = CCache.<OrgId, MobileUIHUManager>builder()
+	private final CCache<OrgId, HUManagerProfile> cache = CCache.<OrgId, HUManagerProfile>builder()
 			.tableName(I_MobileUI_UserProfile_Picking.Table_Name)
 			.build();
 
 	@NonNull
-	public MobileUIHUManager getHUManagerConfig(@NonNull final OrgId orgId)
+	public HUManagerProfile getProfile(@NonNull final OrgId orgId)
 	{
-		return cache.getOrLoad(orgId, this::retrieveHUManagerConfig);
+		return cache.getOrLoad(orgId, this::retrieveProfile);
 	}
 
 	@NonNull
-	private MobileUIHUManager retrieveHUManagerConfig(@NonNull final OrgId orgId)
+	private HUManagerProfile retrieveProfile(@NonNull final OrgId orgId)
 	{
-		return retrieveHUManagerRecord(orgId)
-				.map(this::buildMobileUIHUManager)
-				.orElse(MobileUIHUManager.DEFAULT);
+		return retrieveProfileRecord(orgId)
+				.map(this::fromRecord)
+				.orElse(HUManagerProfile.DEFAULT);
 	}
 
 	@NonNull
-	private MobileUIHUManager buildMobileUIHUManager(@NonNull final I_MobileUI_HUManager profileRecord)
+	private HUManagerProfile fromRecord(@NonNull final I_MobileUI_HUManager record)
 	{
-		return MobileUIHUManager.builder()
-				.attributes(retrieveAttributes(MobileUIHUManagerId.ofRepoId(profileRecord.getMobileUI_HUManager_ID())))
+		return HUManagerProfile.builder()
+				.displayedAttributeIdsInOrder(retrieveDisplayedAttributeIdsInOrder(record.getMobileUI_HUManager_ID()))
 				.build();
 	}
 
 	@NonNull
-	private Optional<I_MobileUI_HUManager> retrieveHUManagerRecord(@NonNull final OrgId orgId)
+	private Optional<I_MobileUI_HUManager> retrieveProfileRecord(@NonNull final OrgId orgId)
 	{
 		return queryBL.createQueryBuilder(I_MobileUI_HUManager.class)
 				.addOnlyActiveRecordsFilter()
@@ -78,23 +78,16 @@ public class MobileUIHUManagerRepository
 	}
 
 	@NonNull
-	private ImmutableList<MobileUIHUManagerAttribute> retrieveAttributes(@NonNull final MobileUIHUManagerId mobileUIHUManagerId)
+	private ImmutableList<AttributeId> retrieveDisplayedAttributeIdsInOrder(final int mobileUI_HUManager_ID)
 	{
 		return queryBL.createQueryBuilder(I_MobileUI_HUManager_Attribute.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MobileUI_HUManager_Attribute.COLUMNNAME_MobileUI_HUManager_ID, mobileUIHUManagerId)
+				.addEqualsFilter(I_MobileUI_HUManager_Attribute.COLUMNNAME_MobileUI_HUManager_ID, mobileUI_HUManager_ID)
+				.orderBy(I_MobileUI_HUManager_Attribute.COLUMNNAME_SeqNo)
+				.orderBy(I_MobileUI_HUManager_Attribute.COLUMNNAME_MobileUI_HUManager_Attribute_ID)
 				.create()
 				.stream()
-				.map(MobileUIHUManagerRepository::toHUManagerAttribute)
+				.map(record -> AttributeId.ofRepoId(record.getM_Attribute_ID()))
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	private static MobileUIHUManagerAttribute toHUManagerAttribute(@NonNull final I_MobileUI_HUManager_Attribute attribute)
-	{
-		return MobileUIHUManagerAttribute.builder()
-				.seqNo(attribute.getSeqNo())
-				.attributeId(AttributeId.ofRepoId(attribute.getM_Attribute_ID()))
-				.build();
 	}
 }
