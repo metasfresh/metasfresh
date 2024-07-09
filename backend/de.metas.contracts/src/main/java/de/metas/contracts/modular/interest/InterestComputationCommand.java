@@ -141,6 +141,44 @@ public class InterestComputationCommand
 		return InitialInterestAllocationResult.of(totalInterestScore);
 	}
 
+	private void createBonusRecords(@NonNull final InterestComputationRequest request)
+	{
+		for (final FlatrateTermId contractId : getModularContractIds(request))
+		{
+			createBonusRecords(request, contractId);
+		}
+	}
+
+	private void createBonusRecords(
+			@NonNull final InterestComputationRequest request,
+			@NonNull final FlatrateTermId contractId)
+	{
+
+		final Iterator<ModularContractLogEntry> shippingNotificationIterator = streamShippingNotificationLogEntries(request, contractId).iterator();
+		final boolean interimInvoiceExists = interimInvoiceLogExists(contractId, request);
+		InterimContractAllocations.AllocationItem currentShippingNotification;
+		final ModularContractSettings settings = modularContractService.getModularSettingsForContract(contractId);
+		if (interimInvoiceExists)
+		{
+			return;
+		}
+		while (shippingNotificationIterator.hasNext())
+		{
+			currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
+															 shippingNotificationIterator.next());
+
+			{
+				final SaveSubtractedValueRequest saveSubtractedValueRequest = SaveSubtractedValueRequest.builder()
+						.request(request)
+						.bonusInterestRate(settings.getBonusInterestRate())
+						.shippingNotification(currentShippingNotification)
+						.build();
+				saveSubtractValueInterestRecord(saveSubtractedValueRequest);
+			}
+		}
+
+	}
+
 	@NonNull
 	private InitialInterestAllocationResult createInterestRecords(
 			@NonNull final InterestComputationRequest request,
@@ -151,7 +189,6 @@ public class InterestComputationCommand
 		final ModularContractSettings settings = modularContractService.getModularSettingsForContract(contractId);
 
 		BigDecimal totalInterestScore = BigDecimal.ZERO;
-		final boolean interimInvoiceExists = interimInvoiceLogExists(contractId, request);
 
 		InterimContractAllocations.AllocationItem currentShippingNotification = null;
 		while (interimContractIterator.hasNext())
@@ -164,16 +201,6 @@ public class InterestComputationCommand
 			{
 				while (!currentInterimContractAllocations.canAllocate(currentShippingNotification) && shippingNotificationIterator.hasNext())
 				{
-					if (!interimInvoiceExists && currentShippingNotification != null)
-					{
-						final SaveSubtractedValueRequest saveSubtractedValueRequest = SaveSubtractedValueRequest.builder()
-								.request(request)
-								.bonusInterestRate(settings.getBonusInterestRate())
-								.shippingNotification(currentShippingNotification)
-								.build();
-						saveSubtractValueInterestRecord(saveSubtractedValueRequest);
-					}
-
 					currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
 																	 shippingNotificationIterator.next());
 				}
@@ -193,37 +220,7 @@ public class InterestComputationCommand
 			totalInterestScore = totalInterestScore.add(currentInterimContractAllocations.getAllocatedInterestScore());
 		}
 
-		if (!interimInvoiceExists && currentShippingNotification != null)
-		{
-			final SaveSubtractedValueRequest saveSubtractedValueRequest = SaveSubtractedValueRequest.builder()
-					.request(request)
-					.bonusInterestRate(settings.getBonusInterestRate())
-					.shippingNotification(currentShippingNotification)
-					.build();
-			saveSubtractedValueInterestRecords(saveSubtractedValueRequest, shippingNotificationIterator
-			);
-		}
 		return InitialInterestAllocationResult.of(totalInterestScore);
-	}
-
-	private void saveSubtractedValueInterestRecords(
-			@NonNull final SaveSubtractedValueRequest saveSubtractedValueRequest,
-			@NonNull final Iterator<ModularContractLogEntry> shippingNotificationIterator)
-	{
-		final InterestComputationRequest interestComputationRequest = saveSubtractedValueRequest.getRequest();
-		final InterimContractAllocations.AllocationItem currentShippingNotification = saveSubtractedValueRequest.getShippingNotification();
-
-		if ( currentShippingNotification.openAmountSignum() > 0)
-		{
-			saveSubtractValueInterestRecord(saveSubtractedValueRequest);
-		}
-
-		while (shippingNotificationIterator.hasNext())
-		{
-			final InterimContractAllocations.AllocationItem nextShippingNotification = initAllocationItem(interestComputationRequest.getInterestToDistribute().getCurrencyId(),
-																										  shippingNotificationIterator.next());
-			saveSubtractValueInterestRecord(saveSubtractedValueRequest.withShippingNotification(nextShippingNotification));
-		}
 	}
 
 	@NonNull
@@ -445,7 +442,7 @@ public class InterestComputationCommand
 	{
 		Check.assume(request.getComputingMethodType() == ComputingMethodType.SubtractValueOnInterim,
 					 "Bonus can only be distributed for" + ComputingMethodType.SubtractValueOnInterim);
-		createInterestRecords(request);
+		createBonusRecords(request);
 	}
 
 	@NonNull

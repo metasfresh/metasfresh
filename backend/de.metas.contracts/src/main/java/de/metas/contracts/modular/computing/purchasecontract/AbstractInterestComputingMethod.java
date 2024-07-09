@@ -87,7 +87,7 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 
 		if (recordRef.tableNameEqualsTo(I_C_Flatrate_Term.Table_Name))
 		{
-			return Stream.of(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
+			return contractProvider.streamModularPurchaseContractsForContract(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
 		}
 
 		return Stream.empty();
@@ -105,7 +105,7 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 	public ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		final ImmutableSet.Builder<ModularContractLogEntryId> logEntryIdsCollector = ImmutableSet.builder();
-		final Money reconciledAmount = Money.zero(request.getCurrencyId());
+		final AtomicReference<Money> reconciledAmount = new AtomicReference<>(Money.zero(request.getCurrencyId()));
 		final AtomicReference<ModularContractLogEntryId> initialInterimContractId = new AtomicReference<>();
 		final Money amount = streamInterestRecords(request)
 				.peek(interestLog -> {
@@ -115,7 +115,7 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 					{
 						logEntryIdsCollector.add(interimContractLogId);
 						initialInterimContractId.set(interimContractLogId);
-						reconciledAmount.add(interestLog.getAllocatedAmt());
+						reconciledAmount.set(reconciledAmount.get().add(interestLog.getAllocatedAmt()));
 					}
 
 				})
@@ -132,7 +132,7 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 
 		final ModularContractLogEntriesList logs = logEntryIds.isEmpty() ? ModularContractLogEntriesList.EMPTY : getModularContractLogEntries(request, logEntryIds);
 
-		splitLogsIfNeeded(reconciledAmount, initialInterimContractId);
+		splitLogsIfNeeded(reconciledAmount.get(), initialInterimContractId);
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
 				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())

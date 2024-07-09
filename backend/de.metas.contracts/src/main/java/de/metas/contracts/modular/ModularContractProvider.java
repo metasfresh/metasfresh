@@ -282,4 +282,19 @@ public class ModularContractProvider
 
 		return flatrateBL.streamModularFlatrateTermIdsByQuery(query);
 	}
+
+
+	public Stream<FlatrateTermId> streamModularPurchaseContractsForContract(final FlatrateTermId flatrateTermId)
+	{
+		if(flatrateBL.isModularContract(flatrateTermId))
+		{
+			return Stream.of(flatrateTermId);
+		}
+		if(flatrateBL.isInterimContract(flatrateTermId))
+		{
+			final I_C_Flatrate_Term interimContract = flatrateBL.getById(flatrateTermId);
+			return Stream.of(FlatrateTermId.ofRepoId(interimContract.getModular_Flatrate_Term_ID()));
+		}
+			return Stream.empty();
+	}
 }

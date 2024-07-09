@@ -45,18 +45,17 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.shippingnotification.ShippingNotificationLineId;
 import de.metas.shippingnotification.ShippingNotificationRepository;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.util.Services;
-import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -132,10 +131,15 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 	@Override
 	protected void splitLogsIfNeeded(final Money reconciledAmount, final AtomicReference<ModularContractLogEntryId> initialInterimContractId)
 	{
+		if (initialInterimContractId == null || initialInterimContractId.get() == null)
+		{
+			// no log split is needed
+			return;
+		}
 		final ModularContractLogEntry interimContractEntry = modularContractLogService.getById(initialInterimContractId.get());
 
 		final Money interimLogAmount = interimContractEntry.getAmount();
-		if(interimLogAmount == null  || interimLogAmount.isZero())
+		if (interimLogAmount == null || interimLogAmount.isZero())
 		{
 			// no log split is needed
 			return;
@@ -152,12 +156,14 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 			return;
 		}
 
-		final Percent reconciledAmountPercent = reconciledInInterimContractCurrency.percentageOf(interimLogAmount.abs());
-		final Quantity reconciledAmountQty = Optional.ofNullable(interimContractEntry.getQuantity())
-				.map(qty -> {
-					final BigDecimal openQty = reconciledAmountPercent.computePercentageOf(qty.toBigDecimal(), qty.getUOM().getStdPrecision());
-					return Quantity.of(openQty, qty.getUOM());
-				}).orElse(null);
+		final ProductPrice priceActual = interimContractEntry.getPriceActual();
+
+		if(priceActual == null)
+		{
+			// no log split is needed
+			return;
+		}
+		final Quantity reconciledAmountQty = priceActual.computeQtyInTotalAmt(reconciledInInterimContractCurrency, moneyService.getStdPrecision(reconciledInInterimContractCurrency.getCurrencyId()));
 
 		final Money reconciledAmountInInterimContractCurrencyWithSignApplied = reconciledInInterimContractCurrency.negateIf(interimLogAmount.isNegative());
 

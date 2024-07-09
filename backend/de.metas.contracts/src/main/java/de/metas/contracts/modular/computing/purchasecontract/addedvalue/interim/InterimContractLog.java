@@ -93,6 +93,14 @@ public class InterimContractLog extends AbstractPurchaseContractHandler
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
 		this.modularContractLogService = modularContractLogService;
 	}
+	@Override
+	/*
+	  Do not update the price for this log since it is the price from the interim contract itself
+	 */
+	public boolean isSuitableForPriceUpdate()
+	{
+		return false;
+	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest request)
@@ -137,10 +145,8 @@ public class InterimContractLog extends AbstractPurchaseContractHandler
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(contractProductId, yearAndCalendarId)
 				.orElse(null);
 
-		final ProductId addValueOnInterimProductId = request.getProductId();
-
 		final ProductPrice productPrice = ProductPrice.builder()
-				.productId(addValueOnInterimProductId)
+				.productId(contractProductId)
 				.money(priceActual.toMoney())
 				.uomId(priceActual.getUomId())
 				.build();
@@ -153,7 +159,7 @@ public class InterimContractLog extends AbstractPurchaseContractHandler
 																							.build());
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(modularContractId)
-											.productId(addValueOnInterimProductId)
+											.productId(contractProductId)
 											.initialProductId(contractProductId)
 											.productName(request.getProductName())
 											.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, interimContractId))
