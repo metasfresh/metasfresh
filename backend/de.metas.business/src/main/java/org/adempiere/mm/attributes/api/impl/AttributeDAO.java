@@ -999,17 +999,20 @@ public class AttributeDAO implements IAttributeDAO
 		}
 
 		@NonNull
-		public Attribute getAttributeById(@NonNull final AttributeId id)
+		public AttributeCode getAttributeCodeById(@NonNull final AttributeId id)
 		{
-			return Optional.ofNullable(attributesById.get(id))
-					.orElseThrow(() -> new AdempiereException("No Attribute found for ID: " + id));
-
+			return getAttributeById(id).getAttributeCode();
 		}
 
-		@Nullable
-		public AttributeId getAttributeIdByCodeOrNull(@NonNull final String attributeCode)
+		@NonNull
+		public Attribute getAttributeById(@NonNull final AttributeId id)
 		{
-			return getAttributeIdByCodeOrNull(AttributeCode.ofString(attributeCode));
+			final Attribute attribute = attributesById.get(id);
+			if (attribute == null)
+			{
+				throw new AdempiereException("No Attribute found for ID: " + id);
+			}
+			return attribute;
 		}
 
 		@NonNull
@@ -1023,11 +1026,6 @@ public class AttributeDAO implements IAttributeDAO
 			return attributeId;
 		}
 
-		public AttributeId getAttributeIdByCode(@NonNull final String attributeCode)
-		{
-			return getAttributeIdByCode(AttributeCode.ofString(attributeCode));
-		}
-
 		@NonNull
 		public ImmutableList<AttributeCode> getOrderedAttributeCodesByIds(@NonNull final List<AttributeId> orderedAttributeIds)
 		{
@@ -1035,9 +1033,9 @@ public class AttributeDAO implements IAttributeDAO
 			{
 				return ImmutableList.of();
 			}
-			
+
 			return orderedAttributeIds.stream()
-					.map(attributeId -> getAttributeById(attributeId).getAttributeCode())
+					.map(this::getAttributeCodeById)
 					.collect(ImmutableList.toImmutableList());
 		}
 
