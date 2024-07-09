@@ -23,49 +23,67 @@
 package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
+import com.google.common.collect.ImmutableMap;
+import de.metas.common.handlingunits.JsonHU;
+import de.metas.common.handlingunits.JsonHUAttribute;
+import de.metas.common.handlingunits.JsonHUAttributes;
 import de.metas.handlingunits.mobileui.config.MobileUIHUManager;
-import de.metas.handlingunits.mobileui.config.MobileUIHUManagerAttribute;
 import de.metas.handlingunits.mobileui.config.MobileUIHUManagerRepository;
 import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class HandlingUnitsManagerRestService
 {
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
 	private final MobileUIHUManagerRepository mobileUIHUManagerRepository;
 
-	public HandlingUnitsManagerRestService(@NonNull final MobileUIHUManagerRepository mobileUIHUManagerRepository)
-	{
-		this.mobileUIHUManagerRepository = mobileUIHUManagerRepository;
-	}
-
 	@NonNull
-	public JsonResponseHUManager getHUManagerConfig(@NonNull final OrgId orgId)
+	public JsonHU getHUTailoredByHUManager(
+			@NonNull final JsonHU fullJsonHU,
+			@NonNull final OrgId orgId)
 	{
 		final MobileUIHUManager mobileUIHUManager = mobileUIHUManagerRepository.getHUManagerConfig(orgId);
 
-		final ImmutableList<JsonResponseHUManagerAttribute> attributes = mobileUIHUManager.getAttributes()
-				.stream()
-				.sorted(Comparator.comparing(MobileUIHUManagerAttribute::getSeqNo))
-				.map(HandlingUnitsManagerRestService::toJsonResponseHUManagerAttribute)
-				.collect(ImmutableList.toImmutableList());
-
-		return JsonResponseHUManager.builder()
-				.attributes(attributes)
+		return fullJsonHU.toBuilder()
+				.attributes2(applyConfig(fullJsonHU.getAttributes2(), mobileUIHUManager))
 				.build();
 	}
 
 	@NonNull
-	private static JsonResponseHUManagerAttribute toJsonResponseHUManagerAttribute(@NonNull final MobileUIHUManagerAttribute attribute)
+	private JsonHUAttributes applyConfig(
+			@NonNull final JsonHUAttributes attributes,
+			@NonNull final MobileUIHUManager config)
 	{
-		return JsonResponseHUManagerAttribute.builder()
-				.id(JsonMetasfreshId.of(AttributeId.toRepoId(attribute.getAttributeId())))
-				.isDisplayed(true)
+		final ImmutableList<AttributeId> huManagerAttributeIds = config.getSortedAttributeIds();
+
+		if (huManagerAttributeIds.isEmpty())
+		{
+			return attributes;
+		}
+
+		final ImmutableMap<AttributeId, AttributeCode> attributeId2Code = attributeDAO.getAttributeId2CodeByIds(huManagerAttributeIds);
+
+		final ImmutableList<JsonHUAttribute> list = huManagerAttributeIds.stream()
+				.map(attributeId2Code::get)
+				.map(AttributeCode::getCode)
+				.map(attributes::getAttributeByCode)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonHUAttributes.builder()
+				.list(list)
 				.build();
 	}
 }

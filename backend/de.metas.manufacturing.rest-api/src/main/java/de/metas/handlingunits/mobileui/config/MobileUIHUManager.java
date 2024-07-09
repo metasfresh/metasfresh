@@ -26,6 +26,9 @@ import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeId;
+
+import java.util.Comparator;
 
 @Value
 @Builder
@@ -36,4 +39,13 @@ public class MobileUIHUManager
 			.build();
 
 	@NonNull ImmutableList<MobileUIHUManagerAttribute> attributes;
+	
+	@NonNull
+	public ImmutableList<AttributeId> getSortedAttributeIds()
+	{
+		return attributes.stream()
+				.sorted(Comparator.comparing(MobileUIHUManagerAttribute::getSeqNo))
+				.map(MobileUIHUManagerAttribute::getAttributeId)
+				.collect(ImmutableList.toImmutableList());
+	}
 }

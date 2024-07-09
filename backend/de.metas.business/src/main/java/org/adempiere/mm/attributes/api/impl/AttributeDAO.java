@@ -218,6 +218,19 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	@NonNull
+	public ImmutableMap<AttributeId, AttributeCode> getAttributeId2CodeByIds(@NonNull final ImmutableList<AttributeId> attributeIds)
+	{
+		final AttributesMap attributesMap = getAttributesMap();
+
+		return attributeIds
+				.stream()
+				.map(attributesMap::getAttributeById)
+				.collect(ImmutableMap.toImmutableMap(Attribute::getAttributeId,
+													 Attribute::getAttributeCode));
+	}
+
+	@Override
 	public <T extends I_M_Attribute> T retrieveAttributeByValue(@NonNull final AttributeCode attributeCode, @NonNull final Class<T> clazz)
 	{
 		final AttributeId attributeId = getAttributesMap().getAttributeIdByCode(attributeCode);
@@ -989,6 +1002,14 @@ public class AttributeDAO implements IAttributeDAO
 		{
 			final Attribute attribute = getAttributeByCodeOrNull(attributeCode);
 			return attribute != null ? attribute.getAttributeId() : null;
+		}
+
+		@NonNull
+		public Attribute getAttributeById(@NonNull final AttributeId id)
+		{
+			return Optional.ofNullable(attributesById.get(id))
+					.orElseThrow(() -> new AdempiereException("No Attribute found for ID: " + id));
+
 		}
 
 		@Nullable

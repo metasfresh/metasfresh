@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Jacksonized
 public class JsonHU
 {

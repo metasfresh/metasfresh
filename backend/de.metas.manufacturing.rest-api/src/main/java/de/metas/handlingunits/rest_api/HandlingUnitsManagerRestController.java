@@ -23,45 +23,57 @@
 package de.metas.handlingunits.rest_api;
 
 import de.metas.Profiles;
-import de.metas.RestUtils;
+import de.metas.common.handlingunits.JsonGetSingleHUResponse;
+import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.organization.OrgId;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 
-import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.ORG_CODE_PARAMETER_DOC;
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 
 @RequestMapping(value = { HandlingUnitsManagerRestController.HU_MANAGER_REST_CONTROLLER_PATH })
 @RestController
+@RequiredArgsConstructor
 @Profile(Profiles.PROFILE_App)
 public class HandlingUnitsManagerRestController
 {
-	public static final String HU_MANAGER_REST_CONTROLLER_PATH = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits/manager-config";
+	public static final String HU_MANAGER_REST_CONTROLLER_PATH = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits/hu-manager";
 
 	private final HandlingUnitsManagerRestService handlingUnitsManagerRestService;
+	private final HUQRCodesService huQRCodesService;
+	private final HandlingUnitsService handlingUnitsService;
 
-	public HandlingUnitsManagerRestController(@NonNull final HandlingUnitsManagerRestService handlingUnitsManagerRestService)
+	@PostMapping("/byQRCode")
+	public ResponseEntity<JsonGetSingleHUResponse> retrieveHUManagerConfig(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
-		this.handlingUnitsManagerRestService = handlingUnitsManagerRestService;
+		final OrgId orgId = Env.getOrgId();
+
+		return handlingUnitsService.getByIdSupplier(() -> getHuId(request.getQrCode()),
+													request.isIncludeAllowedClearanceStatuses(),
+													jsonHU -> handlingUnitsManagerRestService.getHUTailoredByHUManager(jsonHU, orgId));
 	}
 
-	@GetMapping("{orgCode}")
-	public ResponseEntity<JsonResponseHUManager> retrieveHUManagerConfig(
-			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
-			@PathVariable("orgCode") //
-			@Nullable final String orgCode) // may be null if called from other metasfresh-code
+	@NonNull
+	private HuId getHuId(@NonNull final String qrCode)
 	{
-		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
+		final GlobalQRCode globalQRCode = GlobalQRCode.parse(qrCode).orNullIfError();
 
-		return ResponseEntity.ok(handlingUnitsManagerRestService.getHUManagerConfig(orgId));
+		return Optional.ofNullable(globalQRCode)
+				.map(HUQRCode::fromGlobalQRCode)
+				.flatMap(huQRCodesService::getHuIdByQRCodeIfExists)
+				.orElseGet(() -> HuId.ofHUValue(qrCode));
 	}
 }

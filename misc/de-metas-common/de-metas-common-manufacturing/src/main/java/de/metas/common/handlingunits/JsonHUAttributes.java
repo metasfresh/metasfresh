@@ -1,5 +1,6 @@
 package de.metas.common.handlingunits;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -8,6 +9,7 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Value
 @Builder
@@ -32,13 +34,21 @@ public class JsonHUAttributes
 		for (final Map.Entry<String, Object> attributeCodeAndValue : attributeCodeAndValues.getAttributes().entrySet())
 		{
 			list.add(JsonHUAttribute.builder()
-					.code(attributeCodeAndValue.getKey())
-					.caption(attributeCodeAndValue.getKey())
-					.value(attributeCodeAndValue.getValue())
-					.build());
+							 .code(attributeCodeAndValue.getKey())
+							 .caption(attributeCodeAndValue.getKey())
+							 .value(attributeCodeAndValue.getValue())
+							 .build());
 		}
 
 		return JsonHUAttributes.builder().list(list).build();
 	}
 
+	@NonNull
+	@JsonIgnore
+	public Optional<JsonHUAttribute> getAttributeByCode(@NonNull final String code)
+	{
+		return list.stream()
+				.filter(attribute -> attribute.getCode().equals(code))
+				.findFirst();
+	}
 }

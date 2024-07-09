@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonClearanceStatus;
 import de.metas.common.handlingunits.JsonClearanceStatusInfo;
+import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUAttribute;
 import de.metas.common.handlingunits.JsonHUAttributeCodeAndValues;
@@ -58,9 +59,11 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.inventory.InventoryCandidateService;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -79,6 +82,7 @@ import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -87,6 +91,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import static de.metas.handlingunits.rest_api.JsonHUHelper.fromJsonClearanceStatus;
 import static de.metas.handlingunits.rest_api.JsonHUHelper.toJsonClearanceStatus;
@@ -105,16 +111,19 @@ public class HandlingUnitsService
 	private final HUQRCodesService huQRCodeService;
 	private final HUQtyService huQtyService;
 	private final HUTransformService huTransformService;
+	private final InventoryCandidateService inventoryCandidateService;
 
 	public HandlingUnitsService(
 			@NonNull final HUQRCodesService huQRCodeService,
-			@NonNull final HUQtyService huQtyService)
+			@NonNull final HUQtyService huQtyService,
+			@NonNull final InventoryCandidateService inventoryCandidateService)
 	{
 		this.huQRCodeService = huQRCodeService;
 		this.huQtyService = huQtyService;
 		this.huTransformService = HUTransformService.builder()
 				.huQRCodesService(huQRCodeService)
 				.build();
+		this.inventoryCandidateService = inventoryCandidateService;
 	}
 
 	@NonNull
@@ -231,6 +240,43 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
+	public ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier, final boolean getAllowedClearanceStatuses)
+	{
+		return getByIdSupplier(huIdSupplier, getAllowedClearanceStatuses, null);
+	}
+
+	@NonNull
+	public ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(
+			@NonNull final Supplier<HuId> huIdSupplier,
+			final boolean getAllowedClearanceStatuses,
+			@Nullable final UnaryOperator<JsonHU> customizer)
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
+		try
+		{
+			final HuId huId = huIdSupplier.get();
+			if (huId == null)
+			{
+				return ResponseEntity.notFound().build();
+			}
+
+			final JsonHU jsonHU = getFullHU(huId, adLanguage, getAllowedClearanceStatuses)
+					.withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId));
+
+			final JsonHU result = customizer != null ? customizer.apply(jsonHU) : jsonHU;
+
+			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
+											 .result(result)
+											 .build());
+		}
+		catch (final Exception e)
+		{
+			return toBadRequestResponseEntity(e);
+		}
+	}
+
+	@NonNull
 	private JsonAllowedHUClearanceStatuses getAllowedClearanceStatuses(@NonNull final I_M_HU hu)
 	{
 		final ClearanceStatus currentClearanceStatus = ClearanceStatus.ofNullableCode(hu.getClearanceStatus());
@@ -293,20 +339,20 @@ public class HandlingUnitsService
 			final Object value = huAttributes.getValue(attributeCode);
 
 			list.add(JsonHUAttribute.builder()
-					.code(attributeCode.getCode())
-					.caption(attribute.getName())
-					.value(value)
-					.valueDisplay(JsonHUAttributeConverters.toDisplayValue(value, adLanguage))
-					.build());
+							 .code(attributeCode.getCode())
+							 .caption(attribute.getName())
+							 .value(value)
+							 .valueDisplay(JsonHUAttributeConverters.toDisplayValue(value, adLanguage))
+							 .build());
 		}
 
 		for (final ExtractCounterAttributesCommand.CounterAttribute counterAttribute : extractCounterAttributes(huAttributes))
 		{
 			list.add(JsonHUAttribute.builder()
-					.value(counterAttribute.getAttributeCode())
-					.caption(counterAttribute.getAttributeCode())
-					.value(counterAttribute.getCounter())
-					.build());
+							 .value(counterAttribute.getAttributeCode())
+							 .caption(counterAttribute.getAttributeCode())
+							 .value(counterAttribute.getCounter())
+							 .build());
 		}
 
 		return JsonHUAttributes.builder().list(ImmutableList.copyOf(list)).build();
@@ -404,9 +450,9 @@ public class HandlingUnitsService
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodeService)
 				.husToMove(ImmutableSet.of(HUIdAndQRCode.builder()
-						.huQRCode(request.getHuQRCode())
-						.huId(request.getHuId())
-						.build()))
+												   .huQRCode(request.getHuQRCode())
+												   .huId(request.getHuId())
+												   .build()))
 				.targetQRCode(request.getTargetQRCode())
 				.build()
 				.execute();
@@ -450,12 +496,12 @@ public class HandlingUnitsService
 				: huId;
 
 		final Inventory inventory = huQtyService.updateQty(UpdateHUQtyRequest.builder()
-				.huId(huIdToUpdate)
-				.huQRCode(qrCode)
-				.locatorId(locatorId)
-				.qty(qty)
-				.description(request.getDescription())
-				.build());
+																   .huId(huIdToUpdate)
+																   .huQRCode(qrCode)
+																   .locatorId(locatorId)
+																   .qty(qty)
+																   .description(request.getDescription())
+																   .build());
 
 		if (inventory != null)
 		{
@@ -530,5 +576,11 @@ public class HandlingUnitsService
 		throw new AdempiereException("MetasfreshId or QRCode must be provided!")
 				.appendParametersToMessage()
 				.setParameter("huIdentifier", jsonHuIdentifier);
+	}
+
+	private static @NonNull ResponseEntity<JsonGetSingleHUResponse> toBadRequestResponseEntity(final Exception e)
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.ofError(JsonErrors.ofThrowable(e, adLanguage)));
 	}
 }
