@@ -55,6 +55,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_UOM;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -132,7 +133,7 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 
 		final ModularContractLogEntriesList logs = logEntryIds.isEmpty() ? ModularContractLogEntriesList.EMPTY : getModularContractLogEntries(request, logEntryIds);
 
-		splitLogsIfNeeded(reconciledAmount.get(), initialInterimContractId);
+		splitLogsIfNeeded(reconciledAmount.get(), initialInterimContractId.get());
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
 				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
@@ -145,7 +146,7 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 				.build();
 	}
 
-	protected void splitLogsIfNeeded(final Money reconciledAmount, final AtomicReference<ModularContractLogEntryId> initialInterimContractId)
+	protected void splitLogsIfNeeded(final @NonNull Money reconciledAmount, final @Nullable ModularContractLogEntryId initialInterimContractId)
 	{
 
 	}

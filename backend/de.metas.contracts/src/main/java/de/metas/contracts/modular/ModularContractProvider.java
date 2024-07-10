@@ -284,7 +284,7 @@ public class ModularContractProvider
 	}
 
 
-	public Stream<FlatrateTermId> streamModularPurchaseContractsForContract(final FlatrateTermId flatrateTermId)
+	public @NonNull Stream<FlatrateTermId> streamModularPurchaseContractsForContract(final FlatrateTermId flatrateTermId)
 	{
 		if(flatrateBL.isModularContract(flatrateTermId))
 		{

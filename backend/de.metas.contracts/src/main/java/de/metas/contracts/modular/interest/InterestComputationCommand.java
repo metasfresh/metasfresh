@@ -68,7 +68,7 @@ public class InterestComputationCommand
 	 * we consider a fiscal year as having 12 months of 30 days
 	 */
 	public static final int TOTAL_DAYS_OF_FISCAL_YEAR = 360;
-	public static final long NO_INTEREST_DAYS = 0;
+	public static final long SUBTRACT_VALUE_NO_INTEREST_DAYS = 0;
 
 	@NonNull private final ModularLogInterestRepository interestRepository;
 	@NonNull private final ModularContractLogService modularContractLogService;
@@ -253,7 +253,7 @@ public class InterestComputationCommand
 					.interestRunId(interestComputationRequest.getInterestRunId())
 					.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
 					.allocatedAmt(shippingNotification.getOpenAmount())
-					.interestDays(NO_INTEREST_DAYS)
+					.interestDays(SUBTRACT_VALUE_NO_INTEREST_DAYS)
 					.finalInterest(Money.zero(interestComputationRequest.getInterestToDistribute().getCurrencyId()))
 					.build();
 

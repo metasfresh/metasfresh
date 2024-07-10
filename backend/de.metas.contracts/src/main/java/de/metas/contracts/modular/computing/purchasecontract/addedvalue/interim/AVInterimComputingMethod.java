@@ -56,8 +56,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class AVInterimComputingMethod extends AbstractInterestComputingMethod
@@ -129,14 +129,14 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 	}
 
 	@Override
-	protected void splitLogsIfNeeded(final Money reconciledAmount, final AtomicReference<ModularContractLogEntryId> initialInterimContractId)
+	protected void splitLogsIfNeeded(final @NonNull Money reconciledAmount, final @Nullable ModularContractLogEntryId initialInterimContractId)
 	{
-		if (initialInterimContractId == null || initialInterimContractId.get() == null)
+		if (initialInterimContractId == null || reconciledAmount.isZero())
 		{
 			// no log split is needed
 			return;
 		}
-		final ModularContractLogEntry interimContractEntry = modularContractLogService.getById(initialInterimContractId.get());
+		final ModularContractLogEntry interimContractEntry = modularContractLogService.getById(initialInterimContractId);
 
 		final Money interimLogAmount = interimContractEntry.getAmount();
 		if (interimLogAmount == null || interimLogAmount.isZero())
