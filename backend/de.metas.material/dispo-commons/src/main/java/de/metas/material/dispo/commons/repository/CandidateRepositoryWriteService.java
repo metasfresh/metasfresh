@@ -44,7 +44,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
@@ -529,7 +528,7 @@ public class CandidateRepositoryWriteService
 		}
 
 		final I_MD_Candidate_Prod_Detail productionDetailRecordToUpdate;
-		final I_MD_Candidate_Prod_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Prod_Detail.class);
+		final I_MD_Candidate_Prod_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(candidate.getId(), I_MD_Candidate_Prod_Detail.class);
 		if (existingDetail == null)
 		{
 			productionDetailRecordToUpdate = newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
@@ -577,7 +576,7 @@ public class CandidateRepositoryWriteService
 		}
 
 		final I_MD_Candidate_Dist_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Dist_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Dist_Detail.class);
+		final I_MD_Candidate_Dist_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(candidate.getId(), I_MD_Candidate_Dist_Detail.class);
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Dist_Detail.class, synchedRecord);
@@ -616,7 +615,7 @@ public class CandidateRepositoryWriteService
 		}
 
 		final I_MD_Candidate_Demand_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Demand_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Demand_Detail.class);
+		final I_MD_Candidate_Demand_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(candidate.getId(), I_MD_Candidate_Demand_Detail.class);
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Demand_Detail.class, synchedRecord);
@@ -718,7 +717,7 @@ public class CandidateRepositoryWriteService
 	@NonNull
 	public DeleteResult deleteCandidateById(@NonNull final CandidateId candidateId)
 	{
-		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
+		final I_MD_Candidate candidateRecord = retrieveRecordById(candidateId);
 		final DeleteResult deleteResult = new DeleteResult(candidateId,
 				DateAndSeqNo.builder()
 						.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
@@ -729,6 +728,11 @@ public class CandidateRepositoryWriteService
 
 		deleteRecord(candidateRecord);
 		return deleteResult;
+	}
+
+	private I_MD_Candidate retrieveRecordById(final @NonNull CandidateId candidateId)
+	{
+		return load(candidateId, I_MD_Candidate.class);
 	}
 
 	private void deleteRelatedRecordsForCandidate(final I_MD_Candidate candidateRecord)
@@ -759,7 +763,7 @@ public class CandidateRepositoryWriteService
 	{
 		alreadySeenIds.add(candidateId);
 
-		final I_MD_Candidate candidateRecord = InterfaceWrapperHelper.load(candidateId, I_MD_Candidate.class);
+		final I_MD_Candidate candidateRecord = retrieveRecordById(candidateId);
 
 		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 

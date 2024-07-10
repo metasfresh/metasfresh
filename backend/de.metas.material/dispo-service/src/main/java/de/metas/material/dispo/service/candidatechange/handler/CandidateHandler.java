@@ -2,7 +2,6 @@ package de.metas.material.dispo.service.candidatechange.handler;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -39,18 +38,14 @@ public interface CandidateHandler
 	void onCandidateDelete(Candidate candidate);
 
 	@Value
-	@Builder
 	class OnNewOrChangeAdvise
 	{
-		public static final OnNewOrChangeAdvise DEFAULT = OnNewOrChangeAdvise.builder().build();
-		public static final OnNewOrChangeAdvise DONT_UPDATE = OnNewOrChangeAdvise.builder().attemptUpdate(false).build();
+		public static final OnNewOrChangeAdvise DONT_UPDATE = new OnNewOrChangeAdvise(false);
+		public static final OnNewOrChangeAdvise UPDATE = new OnNewOrChangeAdvise(true);
+		public static final OnNewOrChangeAdvise DEFAULT = UPDATE;
 
-		public static OnNewOrChangeAdvise attemptUpdate(final boolean attemptUpdate)
-		{
-			return OnNewOrChangeAdvise.builder().attemptUpdate(attemptUpdate).build();
-		}
+		public static OnNewOrChangeAdvise attemptUpdate(final boolean attemptUpdate) {return attemptUpdate ? UPDATE : DONT_UPDATE;}
 
-		@Builder.Default
-		boolean attemptUpdate = true;
+		boolean attemptUpdate;
 	}
 }

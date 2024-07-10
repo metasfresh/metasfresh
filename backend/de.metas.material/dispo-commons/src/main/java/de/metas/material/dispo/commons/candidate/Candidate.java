@@ -127,10 +127,10 @@ public class Candidate
 		this.type = type;
 		this.businessCase = businessCase;
 
-		this.id = CoalesceUtil.coalesce(id, CandidateId.NULL);
+		this.id = CoalesceUtil.coalesceNotNull(id, CandidateId.NULL);
 		Check.errorIf(this.id.isUnspecified(), "The given id may be null or CandidateId.NULL, but not unspecified");
 
-		this.parentId = CoalesceUtil.coalesce(parentId, CandidateId.NULL);
+		this.parentId = CoalesceUtil.coalesceNotNull(parentId, CandidateId.NULL);
 		Check.errorIf(this.parentId.isUnspecified(), "The given parentId may be null or CandidateId.NULL, but not unspecified");
 
 		this.groupId = groupId;

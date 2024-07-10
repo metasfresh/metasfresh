@@ -9,9 +9,9 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.Value;
-import org.compiere.util.Util;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -70,16 +70,12 @@ public class CandidateId implements RepoIdAware
 
 	public static boolean isNull(@Nullable final CandidateId id)
 	{
-		if (id == null)
-		{
-			return true;
-		}
-		return id.isNull();
+		return id == null || id.isNull();
 	}
 
 	private CandidateId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "MD_Candidate_ID");
 	}
 
 	@Override
@@ -88,14 +84,16 @@ public class CandidateId implements RepoIdAware
 	{
 		if (isUnspecified())
 		{
-			Check.fail("Illegal call of getRepoId() on the unspecified CandidateId instance-");
+			throw Check.mkEx("Illegal call of getRepoId() on the unspecified CandidateId instance");
 		}
 		else if (isNull())
 		{
 			return -1;
 		}
-
-		return repoId;
+		else
+		{
+			return repoId;
+		}
 	}
 
 	public boolean isNull()
@@ -115,5 +113,5 @@ public class CandidateId implements RepoIdAware
 				&& !candidateId.isNull();
 	}
 
-	public static boolean equals(@Nullable CandidateId id1, @Nullable CandidateId id2) {return Util.equals(id1, id2);}
+	public static boolean equals(@Nullable CandidateId id1, @Nullable CandidateId id2) {return Objects.equals(id1, id2);}
 }

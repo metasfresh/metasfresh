@@ -154,10 +154,11 @@ public class CandidateRepositoryRetrieval
 		final CandidateBusinessCase businessCase = getBusinesCaseOrNull(candidateRecordOrNull);
 		builder.businessCase(businessCase);
 
-		final ProductionDetail productionDetailOrNull = createProductionDetailOrNull(candidateRecordOrNull);
-		final DistributionDetail distributionDetailOrNull = createDistributionDetailOrNull(candidateRecordOrNull);
-		final PurchaseDetail purchaseDetailOrNull = PurchaseDetailRepoHelper.getSingleForCandidateRecordOrNull(candidateRecordOrNull);
-		final StockChangeDetail stockChangeDetailOrNull = stockChangeDetailRepo.getSingleForCandidateRecordOrNull(candidateRecordOrNull);
+		final CandidateId candidateId = CandidateId.ofRepoId(candidateRecordOrNull.getMD_Candidate_ID());
+		final ProductionDetail productionDetailOrNull = createProductionDetailOrNull(candidateId);
+		final DistributionDetail distributionDetailOrNull = createDistributionDetailOrNull(candidateId);
+		final PurchaseDetail purchaseDetailOrNull = PurchaseDetailRepoHelper.getSingleForCandidateRecordOrNull(candidateId);
+		final StockChangeDetail stockChangeDetailOrNull = stockChangeDetailRepo.getSingleForCandidateRecordOrNull(candidateId);
 
 		final int hasProductionDetail = productionDetailOrNull == null ? 0 : 1;
 		final int hasDistributionDetail = distributionDetailOrNull == null ? 0 : 1;
@@ -167,7 +168,7 @@ public class CandidateRepositoryRetrieval
 		Check.errorIf(hasProductionDetail + hasDistributionDetail + hasPurchaseDetail + hasStockChangeDetail > 1,
 					  "A candidate may not have both a distribution, production, production detail and a hasStockChangeDetail; candidateRecord={}", candidateRecordOrNull);
 
-		final DemandDetail demandDetailOrNull = createDemandDetailOrNull(candidateRecordOrNull);
+		final DemandDetail demandDetailOrNull = createDemandDetailOrNull(candidateId);
 
 		final BusinessCaseDetail businessCaseDetail = CoalesceUtil.coalesce(productionDetailOrNull, distributionDetailOrNull, purchaseDetailOrNull,
 																			demandDetailOrNull, stockChangeDetailOrNull);
@@ -178,15 +179,13 @@ public class CandidateRepositoryRetrieval
 		}
 
 		builder.transactionDetails(getTransactionDetails(candidateRecordOrNull));
-
-		final Dimension candidateDimension = dimensionService.getFromRecord(candidateRecordOrNull);
-		builder.dimension(candidateDimension);
+		builder.dimension(dimensionService.getFromRecord(candidateRecordOrNull));
 
 		return Optional.of(builder.build());
 	}
 
 	@Nullable
-	private CandidateBusinessCase getBusinesCaseOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private static CandidateBusinessCase getBusinesCaseOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		CandidateBusinessCase subType = null;
 		if (!Check.isEmpty(candidateRecord.getMD_Candidate_BusinessCase()))
@@ -196,7 +195,7 @@ public class CandidateRepositoryRetrieval
 		return subType;
 	}
 
-	private CandidateBuilder createAndInitializeBuilder(@NonNull final I_MD_Candidate candidateRecord)
+	private static CandidateBuilder createAndInitializeBuilder(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final Timestamp dateProjected = Preconditions.checkNotNull(candidateRecord.getDateProjected(),
 																   "Given parameter candidateRecord needs to have a not-null dateProjected; candidateRecord=%s",
@@ -260,10 +259,10 @@ public class CandidateRepositoryRetrieval
 	}
 
 	@Nullable
-	private static ProductionDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private static ProductionDetail createProductionDetailOrNull(@NonNull final CandidateId candidateId)
 	{
 		final I_MD_Candidate_Prod_Detail //
-				productionDetailRecord = RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
+				productionDetailRecord = RepositoryCommons.retrieveSingleCandidateDetail(candidateId, I_MD_Candidate_Prod_Detail.class);
 		if (productionDetailRecord == null)
 		{
 			return null;
@@ -286,10 +285,10 @@ public class CandidateRepositoryRetrieval
 	}
 
 	@Nullable
-	private static DistributionDetail createDistributionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private static DistributionDetail createDistributionDetailOrNull(@NonNull final CandidateId candidateId)
 	{
 		final I_MD_Candidate_Dist_Detail distributionDetail = //
-				RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Dist_Detail.class);
+				RepositoryCommons.retrieveSingleCandidateDetail(candidateId, I_MD_Candidate_Dist_Detail.class);
 		if (distributionDetail == null)
 		{
 			return null;
@@ -299,10 +298,10 @@ public class CandidateRepositoryRetrieval
 	}
 
 	@Nullable
-	private static DemandDetail createDemandDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private static DemandDetail createDemandDetailOrNull(@NonNull final CandidateId candidateId)
 	{
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = //
-				RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Demand_Detail.class);
+				RepositoryCommons.retrieveSingleCandidateDetail(candidateId, I_MD_Candidate_Demand_Detail.class);
 		if (demandDetailRecord == null)
 		{
 			return null;
@@ -417,10 +416,11 @@ public class CandidateRepositoryRetrieval
 	}
 
 	@NonNull
-	private List<TransactionDetail> getTransactionDetails(@NonNull final I_MD_Candidate candidateRecord)
+	private static List<TransactionDetail> getTransactionDetails(@NonNull final I_MD_Candidate candidateRecord)
 	{
+		final CandidateId candidateId = CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID());
 		final List<I_MD_Candidate_Transaction_Detail> transactionDetailRecords = RepositoryCommons
-				.createCandidateDetailQueryBuilder(candidateRecord, I_MD_Candidate_Transaction_Detail.class)
+				.createCandidateDetailQueryBuilder(candidateId, I_MD_Candidate_Transaction_Detail.class)
 				.list();
 
 		return createTransactionDetails(candidateRecord, transactionDetailRecords);
