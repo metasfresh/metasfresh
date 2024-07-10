@@ -241,7 +241,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public static final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 
@@ -2454,7 +2454,8 @@ public class FlatrateBL implements IFlatrateBL
 
 	private boolean isModularContractFullyShipped(@NonNull final FlatrateTermId flatrateTermId)
 	{
-		final ModularContractLogEntriesList logs = modularContractLogDAO.getModularContractLogEntries(ModularContractLogQuery
+		// don't make it a field; the SpringApplicationContext might not be configured yet
+		final ModularContractLogEntriesList logs = SpringContextHolder.instance.getBean(ModularContractLogDAO.class).getModularContractLogEntries(ModularContractLogQuery
 				.builder()
 				.flatrateTermId(flatrateTermId)
 				.computingMethodTypes(ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS)
