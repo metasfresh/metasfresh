@@ -27,6 +27,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.util.HUTopLevel;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -51,6 +52,7 @@ import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -80,7 +82,6 @@ import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
  * Aggregates given {@link ShipmentScheduleWithHU}s (see {@link #add(ShipmentScheduleWithHU)}) and creates the shipment line (see {@link #createShipmentLine()}).
@@ -90,13 +91,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 	private static final Logger logger = LogManager.getLogger(ShipmentLineBuilder.class);
 
 	// Services
-	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final transient IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-	private final transient IProductBL productBL = Services.get(IProductBL.class);
-	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 
 	/**
 	 * Shipment on which the new shipment line will be created
@@ -414,7 +417,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 		shipmentLine.setM_Product_ID(productId.getRepoId());
 
 		final I_M_AttributeSetInstance newASI;
-		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 		if (attributeValues.isEmpty())
 		{
 			newASI = Services.get(IAttributeDAO.class).retrieveNoAttributeSetInstance();
@@ -514,7 +516,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 				.ifPresent(shipmentLine::setC_Flatrate_Term_ID);
 
 		// Save Shipment Line
-		save(shipmentLine);
+		inoutDAO.save(shipmentLine);
 
 		try (final MDCCloseable shipmentLineMDC = TableRecordMDC.putTableRecordReference(shipmentLine))
 		{
@@ -529,9 +531,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 			createShipmentLineHUAssignments(shipmentLine);
 			transferAttributesToShipmentLine(shipmentLine);
+			inoutDAO.save(shipmentLine);
 
 			return shipmentLine;
 		}
+
 	}
 
 	private void optimisticallySetLineNo(@NonNull final I_M_InOutLine shipmentLineRecord)
@@ -590,11 +594,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
 			final IAttributeStorageFactory attributeStorageFactory = trxAttributesBuilder.getAttributeStorageFactory();
 
-			// attributeStorageFactory.getAttributeStorage() would have given us an instance that would have
-			// included also the packagingItemTemplate's attributes.
-			// However, we only want the attributes that are declared in our iolcand-handler's attribute config.
-			final IAttributeStorage shipmentLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(shipmentLine.getM_AttributeSetInstance());
-			//ASIAttributeStorage.createNew(attributeStorageFactory, shipmentLine.getM_AttributeSetInstance());
+			final I_M_AttributeSetInstance asi;
+			if (AttributeSetInstanceId.ofRepoIdOrNone(shipmentLine.getM_AttributeSetInstance_ID()).isNone())
+			{
+				asi = attributeSetInstanceBL.createASI(productId);
+				shipmentLine.setM_AttributeSetInstance(asi);
+			}
+			else
+			{
+				asi = shipmentLine.getM_AttributeSetInstance();
+			}
+			final IAttributeStorage shipmentLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(asi);
 
 			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes();
 			final ImmutableAttributeSet fromAttributes = extractAttributeValuesToTransfer(attributes, attributeStorageFactory);
