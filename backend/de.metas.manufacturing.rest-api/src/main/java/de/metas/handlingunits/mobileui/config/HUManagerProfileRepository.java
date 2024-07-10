@@ -36,7 +36,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeId;
 import org.compiere.model.I_MobileUI_HUManager;
 import org.compiere.model.I_MobileUI_HUManager_Attribute;
-import org.compiere.model.I_MobileUI_UserProfile_Picking;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -48,7 +47,8 @@ public class HUManagerProfileRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final CCache<Integer, HUManagerProfilesMap> cache = CCache.<Integer, HUManagerProfilesMap>builder()
-			.tableName(I_MobileUI_UserProfile_Picking.Table_Name)
+			.tableName(I_MobileUI_HUManager.Table_Name)
+			.additionalTableNamesToResetFor(ImmutableList.of(I_MobileUI_HUManager_Attribute.Table_Name))
 			.build();
 
 	@NonNull
