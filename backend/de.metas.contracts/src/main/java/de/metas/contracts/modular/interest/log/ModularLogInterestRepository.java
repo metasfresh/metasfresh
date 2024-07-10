@@ -53,13 +53,13 @@ public class ModularLogInterestRepository
 
 		record.setModCntr_Interest_Run_ID(request.getInterestRunId().getRepoId());
 		record.setShippingNotification_ModCntr_Log_ID(request.getShippingNotificationLogId().getRepoId());
-		record.setInterimInvoice_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getInterimInvoiceLogId()));
+		record.setInterimContract_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getInterimContractLogId()));
 
 		final Money allocatedAmt = request.getAllocatedAmt();
 		record.setMatchedAmt(allocatedAmt.toBigDecimal());
 		record.setC_Currency_ID(allocatedAmt.getCurrencyId().getRepoId());
 
-		record.setInterestDays(request.getInterestDays());
+		record.setInterestDays(request.getInterestDays().intValue());
 		record.setInterestScore(request.getInterestScore().getScore());
 		record.setFinalInterest(Money.toBigDecimalOrZero(request.getFinalInterest()));
 
@@ -75,13 +75,13 @@ public class ModularLogInterestRepository
 
 		record.setModCntr_Interest_Run_ID(request.getInterestRunId().getRepoId());
 		record.setShippingNotification_ModCntr_Log_ID(request.getShippingNotificationLogId().getRepoId());
-		record.setInterimInvoice_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getInterimInvoiceLogId()));
+		record.setInterimContract_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getInterimContractLogId()));
 
 		final Money allocatedAmt = request.getAllocatedAmt();
 		record.setMatchedAmt(allocatedAmt.toBigDecimal());
 		record.setC_Currency_ID(allocatedAmt.getCurrencyId().getRepoId());
 
-		record.setInterestDays(request.getInterestDays());
+		record.setInterestDays(request.getInterestDays().intValue());
 		record.setInterestScore(request.getInterestScore().getScore());
 		record.setFinalInterest(Money.toBigDecimalOrZero(request.getFinalInterest()));
 
@@ -95,12 +95,12 @@ public class ModularLogInterestRepository
 		getQueryBuilder(query).create().delete();
 	}
 
-	public int deleteByModularContractLogEntryId(@NonNull final ModularContractLogEntryId logId)
+	public void deleteByModularContractLogEntryId(@NonNull final ModularContractLogEntryId logId)
 	{
-		return queryBL.createQueryBuilder(I_ModCntr_Interest.class)
+		queryBL.createQueryBuilder(I_ModCntr_Interest.class)
 				.setJoinOr()
 				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_ShippingNotification_ModCntr_Log_ID, logId)
-				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_InterimInvoice_ModCntr_Log_ID, logId)
+				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_InterimContract_ModCntr_Log_ID, logId)
 				.create()
 				.delete();
 	}
@@ -127,11 +127,11 @@ public class ModularLogInterestRepository
 				.interestLogId(ModularInterestLogId.ofRepoId(interest.getModCntr_Interest_ID()))
 				.interestRunId(InterestRunId.ofRepoId(interest.getModCntr_Interest_Run_ID()))
 				.shippingNotificationLogId(ModularContractLogEntryId.ofRepoId(interest.getShippingNotification_ModCntr_Log_ID()))
-				.interimInvoiceLogId(ModularContractLogEntryId.ofRepoIdOrNull(interest.getInterimInvoice_ModCntr_Log_ID()))
+				.interimContractLogId(ModularContractLogEntryId.ofRepoIdOrNull(interest.getInterimContract_ModCntr_Log_ID()))
 
 				.allocatedAmt(Money.of(interest.getMatchedAmt(), currencyId))
 
-				.interestDays(interest.getInterestDays())
+				.interestDays((long)interest.getInterestDays())
 				.finalInterest(Money.ofOrNull(interest.getFinalInterest(), currencyId))
 				.build();
 	}

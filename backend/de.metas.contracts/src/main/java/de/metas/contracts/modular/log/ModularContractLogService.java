@@ -30,6 +30,8 @@
  import de.metas.contracts.model.I_ModCntr_Log;
  import de.metas.contracts.modular.ComputingMethodType;
  import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
+ import de.metas.currency.CurrencyConversionContext;
+ import de.metas.currency.ICurrencyBL;
  import de.metas.document.DocTypeId;
  import de.metas.document.IDocTypeBL;
  import de.metas.i18n.AdMessageKey;
@@ -43,6 +45,7 @@
  import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  import de.metas.lock.api.LockOwner;
  import de.metas.order.OrderLineId;
+ import de.metas.organization.IOrgDAO;
  import de.metas.organization.OrgId;
  import de.metas.process.PInstanceId;
  import de.metas.product.IProductBL;
@@ -66,6 +69,7 @@
  import org.springframework.stereotype.Service;
 
  import javax.annotation.Nullable;
+ import java.time.Instant;
  import java.util.Collection;
  import java.util.List;
  import java.util.Optional;
@@ -89,6 +93,8 @@
 	 @NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	 @NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	 @NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	 @NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	 @NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	 @NonNull private final ModularContractLogDAO modularContractLogDAO;
 	 @NonNull private final InvoiceCandidateWithDetailsRepository invoiceCandidateWithDetailsRepository;
@@ -180,11 +186,16 @@
 		 return modularContractLogDAO.streamModularContractLogEntries(query);
 	 }
 
-	 @NonNull
-	 public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final ModularContractLogQuery query)
-	 {
-		 return modularContractLogDAO.getModularContractIds(query);
-	 }
+	public boolean anyMatch(@NonNull final ModularContractLogQuery query)
+	{
+		return modularContractLogDAO.anyMatch(query);
+	}
+
+	@NonNull
+	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final ModularContractLogQuery query)
+	{
+		return modularContractLogDAO.getModularContractIds(query);
+	}
 
 	 @Nullable
 	 public PInstanceId getSelection(@NonNull final LockOwner lockOwner)
@@ -331,4 +342,17 @@
 		 throw new AdempiereException("Unexpected document type: " + docTypeId);
 	 }
 
+	 public ModularContractLogEntry getById(final ModularContractLogEntryId modularContractLogEntryId)
+	 {
+		 return modularContractLogDAO.getById(modularContractLogEntryId);
+	 }
+
+	 @NonNull
+	 public CurrencyConversionContext getCurrencyConversionContext(@NonNull final ModularContractLogEntry logEntry)
+	 {
+		 final Instant conversionDate = logEntry.getTransactionDate().toInstant(orgDAO::getTimeZone);
+		 return currencyBL.createCurrencyConversionContext(conversionDate,
+														   logEntry.getClientAndOrgId().getClientId(),
+														   logEntry.getClientAndOrgId().getOrgId());
+	 }
  }
