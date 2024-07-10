@@ -425,12 +425,14 @@ public class LUTUProducerDestination
 	@Override
 	public I_M_HU_PI_Item getLUItemPI()
 	{
-		if (_luPIItem == null && _luPI != null)
+		if (_luPIItem == null && _luPI != null && tuPI != null)
 		{
 			final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoId(_luPI.getM_HU_PI_ID());
+			final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID());
 			final BPartnerId bpartnerId = getBPartnerId();
-			_luPIItem = handlingUnitsDAO.retrieveFirstPIItem(luPIId, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId)
-					.orElseThrow(() -> new AdempiereException("No LU PI Item found for " + _luPI + " and " + bpartnerId));
+
+			_luPIItem = handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId)
+					.orElseThrow(() -> new AdempiereException("No LU Item found for " + tuPIId + " and " + bpartnerId));
 		}
 		return _luPIItem;
 	}
