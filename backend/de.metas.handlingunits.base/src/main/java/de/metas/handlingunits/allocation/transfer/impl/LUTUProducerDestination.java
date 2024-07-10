@@ -38,7 +38,6 @@ import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionBL;
-import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -563,9 +562,11 @@ public class LUTUProducerDestination
 		final IMutableAllocationResult result = AllocationUtils.createMutableAllocationResult(request);
 
 		// 06647: create and add a HU-trx just so that HULoader.load0() will later on transfer the source's attributes also to the LU and not just to the TUs
-		final I_M_HU_PI_Item luItemPI = getLUItemPI();
-		final IHUTransactionCandidate luTrx = huTransactionBL.createLUTransactionForAttributeTransfer(luHU, luItemPI, request);
-		result.addTransaction(luTrx);
+		// do this only if we created the LU, else we would override the attributes of already existing TUs
+		if (!isExistingLU(luHU))
+		{
+			result.addTransaction(huTransactionBL.createLUTransactionForAttributeTransfer(luHU, getLUItemPI(), request));
+		}
 
 		final TUProducerDestination tuProducer = getOrCreateTUProducer(luHU);
 
