@@ -28,7 +28,6 @@ import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonClearanceStatus;
 import de.metas.common.handlingunits.JsonClearanceStatusInfo;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
-import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUAttribute;
 import de.metas.common.handlingunits.JsonHUAttributeCodeAndValues;
@@ -96,7 +95,6 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -107,8 +105,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static de.metas.handlingunits.rest_api.JsonHUHelper.fromJsonClearanceStatus;
 import static de.metas.handlingunits.rest_api.JsonHUHelper.toJsonClearanceStatus;
@@ -164,11 +162,11 @@ public class HandlingUnitsService
 		}
 
 		return toJson(LoadJsonHURequest.builder()
-				.hu(hu)
-				.expectedQRCode(expectedQRCode)
-				.adLanguage(adLanguage)
-				.includeAllowedClearanceStatuses(includeAllowedClearanceStatuses)
-				.build());
+							  .hu(hu)
+							  .expectedQRCode(expectedQRCode)
+							  .adLanguage(adLanguage)
+							  .includeAllowedClearanceStatuses(includeAllowedClearanceStatuses)
+							  .build());
 	}
 
 	@NonNull
@@ -276,15 +274,7 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<GetByIdRequest> requestSupplier)
-	{
-		return getByIdSupplier(requestSupplier, null);
-	}
-	
-	@NonNull
-	public ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(
-			@NonNull final Supplier<GetByIdRequest> requestSupplier,
-			@Nullable final List<AttributeCode> orderedAttributeCodes)
+	public ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<GetByIdRequest> requestSupplier)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
@@ -299,9 +289,9 @@ public class HandlingUnitsService
 			final HuId huId = request.getHuId();
 			final HUQRCode expectedQRCode = request.getExpectedQRCode();
 			final boolean includeAllowedClearanceStatuses = request.isIncludeAllowedClearanceStatuses();
+			final List<AttributeCode> orderedAttributeCodes = request.getOrderedAttributeCodes();
 
-			final JsonHU jsonHU = handlingUnitsService
-					.getFullHU(huId, expectedQRCode, adLanguage, includeAllowedClearanceStatuses)
+			final JsonHU jsonHU = getFullHU(huId, expectedQRCode, adLanguage, includeAllowedClearanceStatuses)
 					.withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId))
 					.withDisplayedAttributesOnly(orderedAttributeCodes != null ? AttributeCode.toStringList(orderedAttributeCodes) : null);
 
@@ -312,7 +302,7 @@ public class HandlingUnitsService
 			return toBadRequestResponseEntity(e);
 		}
 	}
-	
+
 	public void printHULabels(@NonNull final JsonPrintHULabelRequest request)
 	{
 		final AdProcessId printFormatProcessId = AdProcessId.ofRepoId(request.getHuLabelProcessId().getValue());
@@ -456,21 +446,21 @@ public class HandlingUnitsService
 			}
 
 			list.add(JsonHUAttribute.builder()
-					.code(attributeCode.getCode())
-					.caption(attribute.getName())
-					.value(value)
-					.valueDisplay(JsonHUAttributeConverters.toDisplayValue(value, adLanguage))
-					.build());
+							 .code(attributeCode.getCode())
+							 .caption(attribute.getName())
+							 .value(value)
+							 .valueDisplay(JsonHUAttributeConverters.toDisplayValue(value, adLanguage))
+							 .build());
 		}
 
 		// count attributes that end with ".._<digit>" and create additional attribute(s) for those counters.
 		for (final ExtractCounterAttributesCommand.CounterAttribute counterAttribute : extractCounterAttributes(huAttributes))
 		{
 			list.add(JsonHUAttribute.builder()
-					.code(counterAttribute.getAttributeCode())
-					.caption(counterAttribute.getAttributeCode())
-					.value(counterAttribute.getCounter())
-					.build());
+							 .code(counterAttribute.getAttributeCode())
+							 .caption(counterAttribute.getAttributeCode())
+							 .value(counterAttribute.getCounter())
+							 .build());
 		}
 
 		return JsonHUAttributes.builder().list(ImmutableList.copyOf(list)).build();
@@ -576,9 +566,9 @@ public class HandlingUnitsService
 	{
 		final MoveHURequestItem moveHURequestItem = MoveHURequestItem.builder()
 				.huIdAndQRCode(HUIdAndQRCode.builder()
-						.huId(request.getHuId())
-						.huQRCode(request.getHuQRCode())
-						.build())
+									   .huId(request.getHuId())
+									   .huQRCode(request.getHuQRCode())
+									   .build())
 				.numberOfTUs(request.getNumberOfTUs())
 				.build();
 
@@ -649,12 +639,12 @@ public class HandlingUnitsService
 				: huId;
 
 		final Inventory inventory = huQtyService.updateQty(UpdateHUQtyRequest.builder()
-				.huId(huIdToUpdate)
-				.huQRCode(qrCode)
-				.locatorId(locatorId)
-				.qty(qty)
-				.description(request.getDescription())
-				.build());
+																   .huId(huIdToUpdate)
+																   .huQRCode(qrCode)
+																   .locatorId(locatorId)
+																   .qty(qty)
+																   .description(request.getDescription())
+																   .build());
 
 		if (inventory != null)
 		{
