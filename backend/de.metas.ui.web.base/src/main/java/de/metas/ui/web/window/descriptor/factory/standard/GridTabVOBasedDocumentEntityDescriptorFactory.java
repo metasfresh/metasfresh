@@ -112,7 +112,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 {
 	// Services
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
-	private final IColumnBL adColumnBL = Services.get(IColumnBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
@@ -234,7 +233,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setChildToParentLinkColumnNames(extractChildParentLinkColumnNames(gridTabVO, parentTabVO))
 				.setSqlWhereClause(gridTabVO.getWhereClause());
 
-		final ILogicExpression allowInsert = ConstantLogicExpression.of(gridTabVO.isInsertRecord());
+		final ILogicExpression allowInsert = extractTabInsertLogic(gridTabVO);
 		final ILogicExpression allowDelete = ConstantLogicExpression.of(gridTabVO.isDeleteable());
 		final ILogicExpression readonlyLogic = extractTabReadonlyLogic(gridTabVO);
 		final ILogicExpression allowCreateNewLogic = allowInsert.andNot(readonlyLogic);
@@ -292,6 +291,27 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.forEach(labelUIElement -> createAndAddField_Labels(entityDescriptorBuilder, labelUIElement));
 
 		return entityDescriptorBuilder;
+	}
+
+	private static ILogicExpression extractTabInsertLogic(final @NonNull GridTabVO gridTabVO)
+	{
+		//
+		// Check if insert is always enabled
+		if (gridTabVO.isInsertRecord())
+		{
+			return ConstantLogicExpression.TRUE;
+		}
+
+		//
+		// Check if tab's insertLogic expression is constant
+		final ILogicExpression tabInsertLogic = gridTabVO.getInsertLogicExpr();
+		if (tabInsertLogic.isConstantTrue())
+		{
+			return ConstantLogicExpression.TRUE;
+		}
+
+		return tabInsertLogic;
+
 	}
 
 	// keyColumn==true will mean "readOnly" further down the road
