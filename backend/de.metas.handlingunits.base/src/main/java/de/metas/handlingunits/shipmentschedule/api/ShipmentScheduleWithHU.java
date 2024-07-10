@@ -43,6 +43,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.inout.ShipmentScheduleId;
@@ -91,7 +92,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-/** Note that contrary to the class name, this might as well be a shipment schedule *without* HU. See {@link #ofShipmentScheduleWithoutHu(IHUContext, I_M_ShipmentSchedule, StockQtyAndUOMQty, M_ShipmentSchedule_QuantityTypeToUse)}. */
+/**
+ * Note that contrary to the class name, this might as well be a shipment schedule *without* HU. See {@link #ofShipmentScheduleWithoutHu(IHUContext, I_M_ShipmentSchedule, StockQtyAndUOMQty, M_ShipmentSchedule_QuantityTypeToUse)}.
+ */
 public class ShipmentScheduleWithHU
 {
 	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
@@ -519,42 +522,50 @@ public class ShipmentScheduleWithHU
 			return IHandlingUnitsBL.extractPIItemProductOrNull(tuOrVhu);
 		}
 
-		final ImmutableList<I_M_HU_Item> huMaterialItems = Services.get(IHandlingUnitsDAO.class).retrieveItems(tuOrVhu).stream()
-				.filter(item -> X_M_HU_Item.ITEMTYPE_Material.equals(item.getItemType()))
-				.collect(ImmutableList.toImmutableList());
-		if (huMaterialItems.isEmpty())
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final I_M_HU_PI_Item materialPIItem;
+		if (handlingUnitsBL.isAggregateHU(tuOrVhu))
 		{
-			return retrievePiipForReferencedRecord();
+			final I_M_HU_PI_Version tuPIVersion = handlingUnitsBL.getEffectivePIVersion(tuOrVhu);
+			materialPIItem = handlingUnitsDAO.retrievePIItemMaterial(tuPIVersion);
+		}
+		else
+		{
+			final ImmutableList<I_M_HU_Item> huMaterialItems = handlingUnitsDAO.retrieveItems(tuOrVhu).stream()
+					.filter(item -> X_M_HU_Item.ITEMTYPE_Material.equals(item.getItemType()))
+					.collect(ImmutableList.toImmutableList());
+			if (huMaterialItems.isEmpty())
+			{
+				return retrievePiipForReferencedRecord();
+			}
+
+			Check.assume(huMaterialItems.size() == 1, "Each hu has just one M_HU_Item with type={}; hu={}; huMaterialItems={}", X_M_HU_Item.ITEMTYPE_Material, tuOrVhu, huMaterialItems);
+			final I_M_HU_Item huMaterialItem = huMaterialItems.get(0);
+			materialPIItem = handlingUnitsBL.getPIItem(huMaterialItem);
 		}
 
-		Check.assume(huMaterialItems.size() == 1, "Each hu has just one M_HU_Item with type={}; hu={}; huMaterialItems={}", X_M_HU_Item.ITEMTYPE_Material, tuOrVhu, huMaterialItems);
-		final I_M_HU_Item huMaterialItem = huMaterialItems.get(0);
-
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-
-		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
-		final ZonedDateTime preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
-
-		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-
-		final I_M_HU_PI_Item huPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(huMaterialItem);
-		if (huPIItem == null)
+		final IHUPIItemProductDAO piItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+		if (materialPIItem != null)
 		{
-			return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
-		}
-
-		final I_M_HU_PI_Item_Product matchingPiip = hupiItemProductDAO.retrievePIMaterialItemProduct(
-				huPIItem,
-				bpartnerId,
-				getProductId(),
-				preparationDate);
-		if (matchingPiip != null)
-		{
-			return matchingPiip;
+			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+			
+			final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
+			final ZonedDateTime preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
+			final I_M_HU_PI_Item_Product matchingPiip = piItemProductDAO.retrievePIMaterialItemProduct(
+					materialPIItem,
+					bpartnerId,
+					getProductId(),
+					preparationDate);
+			if (matchingPiip != null)
+			{
+				return matchingPiip;
+			}
 		}
 
 		// could not find a packing instruction; return "No Packing Item"
-		return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
+		return piItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
 	}
 
 	private I_M_HU_PI_Item_Product retrievePiipForReferencedRecord()
