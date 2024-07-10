@@ -33,25 +33,15 @@ public class LUTUResult
 	@NonNull @Singular("lu") ImmutableList<LU> lus;
 	@NonNull @Builder.Default TUsList topLevelTUs = TUsList.EMPTY;
 
-	public static LUTUResult ofLU(@NonNull final I_M_HU lu, @NonNull final TU... tus)
-	{
-		return builder().lu(LU.of(lu, tus)).build();
-	}
+	public static LUTUResult ofLU(@NonNull final I_M_HU lu, @NonNull final TU... tus) {return ofLU(LU.of(lu, tus));}
 
-	public static LUTUResult ofLU(@NonNull final I_M_HU lu, @NonNull final TUsList tus)
-	{
-		return builder().lu(LU.of(lu, tus)).build();
-	}
+	public static LUTUResult ofLU(@NonNull final I_M_HU lu, @NonNull final TUsList tus) {return ofLU(LU.of(lu, tus));}
 
-	public static LUTUResult ofSingleTopLevelTU(final I_M_HU tu)
-	{
-		return ofTopLevelTUs(TUsList.ofSingleTU(tu));
-	}
+	public static LUTUResult ofLU(@NonNull final LU lu) {return builder().lu(lu).build();}
 
-	public static LUTUResult ofTopLevelTUs(final Collection<I_M_HU> tus)
-	{
-		return ofTopLevelTUs(TUsList.ofSingleTUsList(tus));
-	}
+	public static LUTUResult ofSingleTopLevelTU(final I_M_HU tu) {return ofTopLevelTUs(TUsList.ofSingleTU(tu));}
+
+	public static LUTUResult ofTopLevelTUs(final Collection<I_M_HU> tus) {return ofTopLevelTUs(TUsList.ofSingleTUsList(tus));}
 
 	public static LUTUResult ofTopLevelTUs(@NonNull final TUsList tus)
 	{
@@ -140,6 +130,11 @@ public class LUTUResult
 				lus.stream().flatMap(LU::streamAllLUAndTURecords),
 				topLevelTUs.streamHURecords()
 		);
+	}
+
+	public LUTUResult mergeWith(final LU lu)
+	{
+		return mergeWith(ofLU(lu));
 	}
 
 	public LUTUResult mergeWith(final LUTUResult other)
@@ -345,7 +340,7 @@ public class LUTUResult
 			{
 				throw new AdempiereException("Cannot merge " + this + " with " + other + " because they don't have the same HU");
 			}
-			
+
 			return builder()
 					.hu(this.hu)
 					.isPreExistingLU(this.isPreExistingLU && other.isPreExistingLU)
