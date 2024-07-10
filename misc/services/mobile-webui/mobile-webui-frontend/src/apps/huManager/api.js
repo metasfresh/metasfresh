@@ -8,7 +8,7 @@ const huAPIBasePath = `${apiBasePath}/material/handlingunits`;
 
 export const getHUByQRCode = (qrCode) => {
   return axios
-    .post(`${huAPIBasePath}/byQRCode`, { qrCode })
+    .post(`${huAPIBasePath}/hu-manager/byQRCode`, { qrCode })
     .then(unboxAxiosResponse)
     .then((response) => response.result);
 };
