@@ -172,7 +172,7 @@ public class HandlingUnitsRestController
 	@PostMapping("/byQRCode")
 	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
-		final ResponseEntity<JsonGetSingleHUResponse> responseEntity = getByIdSupplier(() -> {
+		final ResponseEntity<JsonGetSingleHUResponse> responseEntity = handlingUnitsService.getByIdSupplier(() -> {
 			final GlobalQRCode globalQRCode = GlobalQRCode.parse(request.getQrCode()).orNullIfError();
 			if (globalQRCode != null)
 			{
@@ -230,7 +230,7 @@ public class HandlingUnitsRestController
 			@Parameter(required = true, description = HU_IDENTIFIER_DOC) //
 			@PathVariable("M_HU_ID") final int huRepoId)
 	{
-		return getByIdSupplier(() -> GetByIdRequest.builder()
+		return handlingUnitsService.getByIdSupplier(() -> GetByIdRequest.builder()
 				.huId(HuId.ofRepoId(huRepoId))
 				.build());
 	}
@@ -441,39 +441,10 @@ public class HandlingUnitsRestController
 	{
 		final HuId huId = handlingUnitsService.updateQty(request);
 
-		return getByIdSupplier(() -> GetByIdRequest.builder()
+		return handlingUnitsService.getByIdSupplier(() -> GetByIdRequest.builder()
 				.huId(huId)
 				.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
 				.build());
-	}
-
-	@NonNull
-	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<GetByIdRequest> requestSupplier)
-	{
-		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-
-		try
-		{
-			final GetByIdRequest request = requestSupplier.get();
-			if (request == null)
-			{
-				return ResponseEntity.notFound().build();
-			}
-
-			final HuId huId = request.getHuId();
-			final HUQRCode expectedQRCode = request.getExpectedQRCode();
-			final boolean includeAllowedClearanceStatuses = request.isIncludeAllowedClearanceStatuses();
-
-			final JsonHU jsonHU = handlingUnitsService
-					.getFullHU(huId, expectedQRCode, adLanguage, includeAllowedClearanceStatuses)
-					.withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId));
-
-			return ResponseEntity.ok(JsonGetSingleHUResponse.builder().result(jsonHU).build());
-		}
-		catch (final Exception e)
-		{
-			return toBadRequestResponseEntity(e);
-		}
 	}
 
 	private JsonHU toNewJsonHU(final @NonNull HUQRCode huQRCode)
