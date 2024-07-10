@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for AD_Tab
  *  @author metasfresh (generated) 
@@ -583,25 +584,27 @@ public interface I_AD_Tab
 	String COLUMNNAME_IncludedTabNewRecordInputMode = "IncludedTabNewRecordInputMode";
 
 	/**
-	 * Set Include filters.
+	 * Set Insert Logic.
+	 * Logic to determine if tab allows creation of new records or not.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIncludeFiltersStrategy (@Nullable java.lang.String IncludeFiltersStrategy);
+	void setInsertLogic (@Nullable java.lang.String InsertLogic);
 
 	/**
-	 * Get Include filters.
+	 * Get Insert Logic.
+	 * Logic to determine if tab allows creation of new records or not.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getIncludeFiltersStrategy();
+	@Nullable java.lang.String getInsertLogic();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IncludeFiltersStrategy = new ModelColumn<>(I_AD_Tab.class, "IncludeFiltersStrategy", null);
-	String COLUMNNAME_IncludeFiltersStrategy = "IncludeFiltersStrategy";
+	ModelColumn<I_AD_Tab, Object> COLUMN_InsertLogic = new ModelColumn<>(I_AD_Tab.class, "InsertLogic", null);
+	String COLUMNNAME_InsertLogic = "InsertLogic";
 
 	/**
 	 * Set Internal Name.
@@ -1052,48 +1055,6 @@ public interface I_AD_Tab
 
 	ModelColumn<I_AD_Tab, Object> COLUMN_Name = new ModelColumn<>(I_AD_Tab.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
-
-	/**
-	 * Set Not Found Message.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setNotFound_Message (@Nullable java.lang.String NotFound_Message);
-
-	/**
-	 * Get Not Found Message.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getNotFound_Message();
-
-	ModelColumn<I_AD_Tab, Object> COLUMN_NotFound_Message = new ModelColumn<>(I_AD_Tab.class, "NotFound_Message", null);
-	String COLUMNNAME_NotFound_Message = "NotFound_Message";
-
-	/**
-	 * Set Not Found Message Detail.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setNotFound_MessageDetail (@Nullable java.lang.String NotFound_MessageDetail);
-
-	/**
-	 * Get Not Found Message Detail.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getNotFound_MessageDetail();
-
-	ModelColumn<I_AD_Tab, Object> COLUMN_NotFound_MessageDetail = new ModelColumn<>(I_AD_Tab.class, "NotFound_MessageDetail", null);
-	String COLUMNNAME_NotFound_MessageDetail = "NotFound_MessageDetail";
 
 	/**
 	 * Set SQL ORDER BY.

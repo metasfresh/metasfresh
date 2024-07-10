@@ -11,7 +11,6 @@ import de.metas.document.sequence.DocSequenceId;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.process.ProcessId;
@@ -31,7 +30,6 @@ import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
-import de.metas.ui.web.window.descriptor.NotFoundMessages;
 import de.metas.ui.web.window.descriptor.WidgetTypeStandardNumberPrecision;
 import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -51,7 +49,6 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.element.api.AdFieldId;
-import org.adempiere.ad.element.api.AdUIElementId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -88,10 +85,6 @@ import java.util.OptionalInt;
 import java.util.Set;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Client_ID;
-import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Org_ID;
-import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED;
-import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED;
 
 /*
  * #%L
@@ -119,7 +112,6 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 {
 	// Services
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
-	private final IColumnBL adColumnBL = Services.get(IColumnBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
@@ -137,7 +129,6 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 	private final DocumentEntityDescriptor.Builder _documentEntityBuilder;
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IESSystem esSystem = Services.get(IESSystem.class);
-	private final LabelFieldNameFactory labelFieldNameFactory = new LabelFieldNameFactory();
 
 	private WidgetTypeStandardNumberPrecision _standardNumberPrecision;
 
@@ -242,7 +233,7 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 				.setChildToParentLinkColumnNames(extractChildParentLinkColumnNames(gridTabVO, parentTabVO))
 				.setSqlWhereClause(gridTabVO.getWhereClause());
 
-		final ILogicExpression allowInsert = ConstantLogicExpression.of(gridTabVO.isInsertRecord());
+		final ILogicExpression allowInsert = extractTabInsertLogic(gridTabVO);
 		final ILogicExpression allowDelete = ConstantLogicExpression.of(gridTabVO.isDeleteable());
 		final ILogicExpression readonlyLogic = extractTabReadonlyLogic(gridTabVO);
 		final ILogicExpression allowCreateNewLogic = allowInsert.andNot(readonlyLogic);
@@ -250,8 +241,8 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		//
 		final ILogicExpression displayLogic = gridTabVO.getDisplayLogic()
 				.evaluatePartial(Evaluatees.mapBuilder()
-										 .put(WebRestApiContextProvider.CTXNAME_IsWebUI, DisplayType.toBooleanString(true))
-										 .build());
+						.put(WebRestApiContextProvider.CTXNAME_IsWebUI, DisplayType.toBooleanString(true))
+						.build());
 
 		//
 		// Entity descriptor
@@ -283,8 +274,7 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 				.setPrintProcessId(gridTabVO.getPrintProcessId())
 				//
 				.setRefreshViewOnChangeEvents(gridTabVO.isRefreshViewOnChangeEvents())
-				.queryIfNoFilters(gridTabVO.isQueryIfNoFilters())
-				.notFoundMessages(extractNotFoundMessages(gridTabVO));
+				.queryIfNoFilters(gridTabVO.isQueryIfNoFilters());
 
 		// Fields descriptor
 		gridTabVO
@@ -303,18 +293,25 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		return entityDescriptorBuilder;
 	}
 
-	private static NotFoundMessages extractNotFoundMessages(final GridTabVO gridTabVO) {
-		final ITranslatableString message = gridTabVO.getNotFoundMessage();
-		final ITranslatableString detail = gridTabVO.getNotFoundMessageDetail();
-		if(TranslatableStrings.isBlank(message) && TranslatableStrings.isBlank(detail))
+	private static ILogicExpression extractTabInsertLogic(final @NonNull GridTabVO gridTabVO)
+	{
+		//
+		// Check if insert is always enabled
+		if (gridTabVO.isInsertRecord())
 		{
-			return null;
+			return ConstantLogicExpression.TRUE;
 		}
 
-		return NotFoundMessages.builder()
-				.message(message)
-				.detail(detail)
-				.build();
+		//
+		// Check if tab's insertLogic expression is constant
+		final ILogicExpression tabInsertLogic = gridTabVO.getInsertLogicExpr();
+		if (tabInsertLogic.isConstantTrue())
+		{
+			return ConstantLogicExpression.TRUE;
+		}
+
+		return tabInsertLogic;
+
 	}
 
 	// keyColumn==true will mean "readOnly" further down the road
@@ -346,7 +343,7 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		if (X_AD_UI_ElementField.TYPE_Tooltip.equals(elementFieldRecord.getType()))
 		{
 			final String tooltipIconName = Check.assumeNotEmpty(elementFieldRecord.getTooltipIconName(),
-																"An elementFieldRecord with type=tooltip needs to have a tooltipIcon; elementFieldRecord={}", elementFieldRecord);
+					"An elementFieldRecord with type=tooltip needs to have a tooltipIcon; elementFieldRecord={}", elementFieldRecord);
 			builder.setTooltipIconName(tooltipIconName);
 		}
 		return builder;
@@ -676,7 +673,7 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 			@NonNull final Class<?> valueClass,
 			@Nullable final LookupDescriptor lookupDescriptor)
 	{
-		if (gridFieldDefaultFilterInfo == null || isSkipField(fieldName))
+		if (gridFieldDefaultFilterInfo == null)
 		{
 			return null;
 		}
@@ -791,7 +788,7 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(labelsUIElement);
 
 		final ITranslatableString caption = coalesce(getLabelFieldCaptionByName(labelsUIElement),
-													 trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Name, labelsUIElement.getName())
+				trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Name, labelsUIElement.getName())
 		);
 
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(lookupDescriptor.getFieldName())
@@ -814,11 +811,6 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		//
 		// Collect special field
 		collectSpecialField(fieldBuilder);
-	}
-
-	public String getLabelsFieldName(@NonNull final AdUIElementId uiElementId)
-	{
-		return labelFieldNameFactory.getFieldName(uiElementId);
 	}
 
 	@Nullable
@@ -913,10 +905,8 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 
 		final LookupDescriptor labelsValuesLookupDescriptor = labelsValuesLookupDescriptorBuilder.buildForDefaultScope();
 
-		final String fieldName = labelFieldNameFactory.createFieldName(AdUIElementId.ofRepoId(labelsUIElement.getAD_UI_Element_ID()), labelsTableName);
-
 		return LabelsLookup.builder()
-				.fieldName(fieldName)
+				.fieldName(extractLabelsFieldName(labelsUIElement))
 				.labelsTableName(labelsTableName)
 				.labelsValueColumnName(labelsValueColumnName)
 				.labelsValuesUseNumericKey(labelsValuesLookupDescriptor.isNumericKey())
@@ -926,6 +916,12 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 				.tableName(tableName)
 				.linkColumnName(linkColumnName)
 				.build();
+	}
+
+	@NonNull
+	public static String extractLabelsFieldName(final @NonNull I_AD_UI_Element labelsUIElement)
+	{
+		return "Labels_" + labelsUIElement.getAD_UI_Element_ID();
 	}
 
 	@Nullable
@@ -1109,13 +1105,4 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		return precision > 0 ? OptionalInt.of(precision) : OptionalInt.empty();
 	}
 
-	private boolean isSkipField(@NonNull final String fieldName)
-	{
-		return switch (fieldName)
-				{
-					case FIELDNAME_AD_Org_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED, true);
-					case FIELDNAME_AD_Client_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED, true);
-					default -> false;
-				};
-	}
 }

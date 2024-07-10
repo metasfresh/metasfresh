@@ -22,23 +22,17 @@
 
 package de.metas.contracts.modular.interest;
 
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.util.TimeUtil;
-
-import java.sql.Date;
-import java.time.Instant;
+import lombok.With;
 
 @Value
 @Builder
-public class BonusComputationDetails
+public class SaveSubtractedValueRequest
 {
-	@NonNull Instant interimDate;
-	@NonNull Instant billingDate;
-
-	public int getBonusInterestDays()
-	{
-		return TimeUtil.getDaysBetween(Date.from(interimDate), Date.from(billingDate));
-	}
+	@NonNull InterestComputationRequest request;
+	@NonNull Percent bonusInterestRate;
+	@With @NonNull InterimContractAllocations.AllocationItem shippingNotification;
 }

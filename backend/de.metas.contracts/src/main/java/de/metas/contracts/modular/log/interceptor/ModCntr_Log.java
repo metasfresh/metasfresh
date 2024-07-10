@@ -36,6 +36,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import static de.metas.contracts.modular.log.LogEntryDocumentType.CONTRACT_PREFINANCING;
 import static de.metas.contracts.modular.log.LogEntryDocumentType.INTERIM_INVOICE;
 import static de.metas.contracts.modular.log.LogEntryDocumentType.SHIPMENT_DISPOSITION;
 
@@ -52,7 +53,7 @@ public class ModCntr_Log
 	{
 		final ModularContractLogEntryId id = ModularContractLogEntryId.ofRepoId(log.getModCntr_Log_ID());
 		final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.ofCode(log.getModCntr_Log_DocumentType());
-		if (SHIPMENT_DISPOSITION.equals(logEntryDocumentType) || INTERIM_INVOICE.equals(logEntryDocumentType))
+		if (SHIPMENT_DISPOSITION.equals(logEntryDocumentType) || INTERIM_INVOICE.equals(logEntryDocumentType) || CONTRACT_PREFINANCING.equals((logEntryDocumentType)))
 		{
 			final ModularContractModuleId modularContractModuleId = ModularContractModuleId.ofRepoId(log.getModCntr_Module_ID());
 			final ComputingMethodType computingMethodType = contractSettingsRepo.getByModuleId(modularContractModuleId).getComputingMethodType();

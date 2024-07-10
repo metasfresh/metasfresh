@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.migration-sql
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 DROP VIEW IF EXISTS ad_tab_vt
 ;
 
@@ -66,11 +88,6 @@ SELECT trl.ad_language
      , t.IsRefreshViewOnChangeEvents
      , t.IsAutodetectDefaultDateFilter
      , t.QuickInputLayout
-     , trl.NotFound_Message
-     , t.NotFound_Message AS NotFound_Message_BaseLang
-     , trl.NotFound_MessageDetail
-     , t.NotFound_MessageDetail AS NotFound_MessageDetail_BaseLang
-     , t.IncludeFiltersStrategy
 FROM ad_tab t
          JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
          JOIN ad_tab_trl trl ON t.ad_tab_id = trl.ad_tab_id
