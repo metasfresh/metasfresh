@@ -576,7 +576,8 @@ public class HUTransformService
 		}
 		else
 		{
-			if (handlingUnitsBL.isAggregateHU(sourceTuHU))
+			if (handlingUnitsBL.isAggregateHU(sourceTuHU)
+					&& !handlingUnitsBL.isTUIncludedInLU(sourceTuHU, luHU))
 			{
 				final Capacity tuCapacity = extractTUCapacity(sourceTuHU);
 				final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
