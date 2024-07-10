@@ -12,7 +12,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.Env;
 
@@ -51,20 +50,6 @@ public class FactAcctDAO implements IFactAcctDAO
 				.deleteDirectly();
 
 		Services.get(IFactAcctListenersService.class).fireAfterUnpost(documentObj);
-
-		return countDeleted;
-	}
-
-	@Override
-	public int deleteForRecordRef(@NonNull final TableRecordReference recordRef)
-	{
-		final int adTableId = recordRef.getAD_Table_ID();
-		final int recordId = recordRef.getRecord_ID();
-		final int countDeleted = retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
-				.create()
-				.deleteDirectly();
-
-		Services.get(IFactAcctListenersService.class).fireAfterUnpost(recordRef);
 
 		return countDeleted;
 	}
