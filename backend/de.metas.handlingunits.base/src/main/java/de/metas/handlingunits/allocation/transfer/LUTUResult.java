@@ -341,7 +341,13 @@ public class LUTUResult
 
 		public LU mergeWith(@NonNull final LU other)
 		{
+			if (this.hu.getM_HU_ID() != other.hu.getM_HU_ID())
+			{
+				throw new AdempiereException("Cannot merge " + this + " with " + other + " because they don't have the same HU");
+			}
+			
 			return builder()
+					.hu(this.hu)
 					.isPreExistingLU(this.isPreExistingLU && other.isPreExistingLU)
 					.tus(this.tus.mergeWith(other.tus))
 					.build();
