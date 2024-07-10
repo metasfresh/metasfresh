@@ -448,8 +448,13 @@ public class LUTUProducerDestination
 	public void setLU(@NonNull final HuId luId)
 	{
 		assertConfigurable();
+		setLU(handlingUnitsBL.getById(luId));
+	}
 
-		final I_M_HU lu = handlingUnitsBL.getById(luId);
+	public void setLU(@NonNull final I_M_HU lu)
+	{
+		assertConfigurable();
+
 		final I_M_HU_PI luPI = handlingUnitsBL.getPI(lu);
 
 		this._existingLU = lu;
