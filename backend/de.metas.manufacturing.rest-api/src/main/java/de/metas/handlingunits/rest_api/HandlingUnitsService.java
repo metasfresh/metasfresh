@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonClearanceStatus;
 import de.metas.common.handlingunits.JsonClearanceStatusInfo;
+import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUAttribute;
 import de.metas.common.handlingunits.JsonHUAttributeCodeAndValues;
@@ -58,9 +59,11 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.inventory.InventoryCandidateService;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -79,6 +82,7 @@ import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -87,6 +91,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static de.metas.handlingunits.rest_api.JsonHUHelper.fromJsonClearanceStatus;
 import static de.metas.handlingunits.rest_api.JsonHUHelper.toJsonClearanceStatus;
@@ -105,16 +110,19 @@ public class HandlingUnitsService
 	private final HUQRCodesService huQRCodeService;
 	private final HUQtyService huQtyService;
 	private final HUTransformService huTransformService;
+	private final InventoryCandidateService inventoryCandidateService;
 
 	public HandlingUnitsService(
 			@NonNull final HUQRCodesService huQRCodeService,
-			@NonNull final HUQtyService huQtyService)
+			@NonNull final HUQtyService huQtyService,
+			@NonNull final InventoryCandidateService inventoryCandidateService)
 	{
 		this.huQRCodeService = huQRCodeService;
 		this.huQtyService = huQtyService;
 		this.huTransformService = HUTransformService.builder()
 				.huQRCodesService(huQRCodeService)
 				.build();
+		this.inventoryCandidateService = inventoryCandidateService;
 	}
 
 	@NonNull
@@ -228,6 +236,42 @@ public class HandlingUnitsService
 		}
 
 		return getAllowedClearanceStatuses(hu);
+	}
+
+	@NonNull
+	public ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier, final boolean getAllowedClearanceStatuses)
+	{
+		return getByIdSupplier(huIdSupplier, getAllowedClearanceStatuses, null);
+	}
+
+	@NonNull
+	public ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(
+			@NonNull final Supplier<HuId> huIdSupplier,
+			final boolean getAllowedClearanceStatuses,
+			@Nullable final List<AttributeCode> orderedAttributeCodes)
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
+		try
+		{
+			final HuId huId = huIdSupplier.get();
+			if (huId == null)
+			{
+				return ResponseEntity.notFound().build();
+			}
+
+			final JsonHU jsonHU = getFullHU(huId, adLanguage, getAllowedClearanceStatuses)
+					.withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId))
+					.withDisplayedAttributesOnly(orderedAttributeCodes != null ? AttributeCode.toStringList(orderedAttributeCodes) : null);
+
+			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
+					.result(jsonHU)
+					.build());
+		}
+		catch (final Exception e)
+		{
+			return toBadRequestResponseEntity(e);
+		}
 	}
 
 	@NonNull
@@ -530,5 +574,11 @@ public class HandlingUnitsService
 		throw new AdempiereException("MetasfreshId or QRCode must be provided!")
 				.appendParametersToMessage()
 				.setParameter("huIdentifier", jsonHuIdentifier);
+	}
+
+	private static @NonNull ResponseEntity<JsonGetSingleHUResponse> toBadRequestResponseEntity(final Exception e)
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.ofError(JsonErrors.ofThrowable(e, adLanguage)));
 	}
 }

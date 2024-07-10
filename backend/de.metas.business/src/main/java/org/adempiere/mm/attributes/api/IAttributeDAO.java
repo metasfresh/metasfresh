@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
@@ -44,15 +45,22 @@ public interface IAttributeDAO extends ISingletonService
 
 	List<I_M_Attribute> getAttributesByIds(Collection<AttributeId> attributeIds);
 
-	/** @return attributeIds ordered by M_AttributeUse.SeqNo */
+	/**
+	 * @return attributeIds ordered by M_AttributeUse.SeqNo
+	 */
 	Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(AttributeSetInstanceId attributeSetInstanceId);
 
-	/** @return attributes, ordered by M_AttributeUse.SeqNo */
+	/**
+	 * @return attributes, ordered by M_AttributeUse.SeqNo
+	 */
 	List<I_M_Attribute> getAttributesByAttributeSetId(AttributeSetId attributeSetId);
 
 	List<I_M_Attribute> getAllAttributes();
 
 	String getAttributeCodeById(AttributeId attributeId);
+
+	@NonNull
+	ImmutableList<AttributeCode> getOrderedAttributeCodesByIds(@NonNull final List<AttributeId> orderedAttributeIds);
 
 	/**
 	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeConstants#M_AttributeSet_ID_None}).
@@ -82,7 +90,6 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * @param attributeSetInstanceId may be {@code null} or "none". In that case, always {@code null} is returned.
-	 *
 	 * @return the attribute instance with the given {@code attributeSetInstanceId} and {@code attributeId}, or {@code null}.
 	 */
 	I_M_AttributeInstance retrieveAttributeInstance(AttributeSetInstanceId attributeSetInstanceId, AttributeId attributeId);
