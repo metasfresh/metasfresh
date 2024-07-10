@@ -36,34 +36,38 @@ import de.metas.postfinance.document.export.PostFinanceYbInvoiceRequest;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceResponse;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceService;
 import de.metas.postfinance.jaxb.Invoice;
-import de.metas.postfinance.ybinvoice.v2.BillHeaderType;
 import de.metas.postfinance.ybinvoice.v2.Envelope;
-import de.metas.postfinance.ybinvoice.v2.FixedReference;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
-import java.util.GregorianCalendar;
 import java.util.Optional;
-
-import static de.metas.postfinance.document.export.PostFinanceDocumentType.CREDITADVICE;
-import static de.metas.postfinance.document.export.PostFinanceYbInvoiceService.YB_INVOICE_OBJECT_FACTORY;
 
 @Component
 @RequiredArgsConstructor
-public class CreditMemoPostFinanceYbInvoiceHandler implements IPostFinanceYbInvoiceHandler
+public class PurchaseCreditMemoPostFinanceYbInvoiceHandler implements IPostFinanceYbInvoiceHandler
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	@NonNull private final InvoiceToExportFactory invoiceToExportFactory;
 	@NonNull private final PostFinanceYbInvoiceService postFinanceYbInvoiceService;
+
+	private static final String IS_ACTIVE = "de.metas.postfinance.document.export.impl.PurchaseCreditMemoPostFinanceYbInvoiceHandler.isActive";
 
 	@Override
 	public boolean applies(@NonNull final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest)
 	{
+		if(sysConfigBL.getBooleanValue(IS_ACTIVE, false))
+		{
+			return false;
+		}
+
 		final TableRecordReference tableRecordReference = postFinanceYbInvoiceRequest.getDocumentReference();
 		if(!tableRecordReference.getTableName().equals(I_C_Invoice.Table_Name))
 		{
@@ -72,7 +76,7 @@ public class CreditMemoPostFinanceYbInvoiceHandler implements IPostFinanceYbInvo
 
 		final I_C_Invoice invoiceRecord = invoiceBL.getById(InvoiceId.ofRepoId(tableRecordReference.getRecord_ID()));
 		final DocBaseAndSubType docBaseAndSubType = docTypeDAO.getDocBaseAndSubTypeById(DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID()));
-		return DocStatus.ofCode(invoiceRecord.getDocStatus()).isCompleted() && docBaseAndSubType.getDocBaseType().isARCreditMemo();
+		return DocStatus.ofCode(invoiceRecord.getDocStatus()).isCompleted() && docBaseAndSubType.getDocBaseType().isAPCreditMemo();
 	}
 
 	@Override
@@ -86,41 +90,7 @@ public class CreditMemoPostFinanceYbInvoiceHandler implements IPostFinanceYbInvo
 			throw new PostFinanceExportException("Failed to create invoiceToExport");
 		}
 
-		final InvoiceToExport invoiceToExport = invoiceToExportOptional.get();
-		final Envelope envelope = postFinanceYbInvoiceService.prepareExportData(postFinanceYbInvoiceRequest, invoiceToExport);
-
-		envelope.getBody().getBill().getHeader().setDocumentType(CREDITADVICE.toString());
-
-		final I_C_Invoice creditMemoRecord = invoiceBL.getById(invoiceId);
-		final InvoiceId refInvoiceId = InvoiceId.ofRepoIdOrNull(creditMemoRecord.getRef_Invoice_ID());
-		if(refInvoiceId != null)
-		{
-			final Optional<InvoiceToExport> refInvoiceToExportOptional = invoiceToExportFactory.getCreateForId(invoiceId);
-
-			if(refInvoiceToExportOptional.isEmpty())
-			{
-				throw new PostFinanceExportException("Failed to create refInvoiceToExport");
-			}
-
-			final InvoiceToExport refInvoiceToExport = invoiceToExportOptional.get();
-			final FixedReference billNumberReference = YB_INVOICE_OBJECT_FACTORY.createFixedReference();
-			billNumberReference.setReferenceType("BillNumber");
-			billNumberReference.setReferencePosition("0");
-			billNumberReference.setReferenceValue(postFinanceYbInvoiceService.getTransactionId(refInvoiceToExport));
-			envelope.getBody().getBill().getHeader().getFixedReference().add(billNumberReference);
-		}
-
-		final BillHeaderType.PaymentInformation paymentInformation = YB_INVOICE_OBJECT_FACTORY.createBillHeaderTypePaymentInformation();
-		paymentInformation.setPaymentType("CREDIT");
-		paymentInformation.setFixAmount(creditMemoRecord.isFixedInvoice() ? "Yes" : "No");
-		if(creditMemoRecord.getDueDate() != null)
-		{
-			final GregorianCalendar dueDate = new GregorianCalendar();
-			dueDate.setTime(creditMemoRecord.getDueDate());
-			paymentInformation.setPaymentDueDate(postFinanceYbInvoiceService.toXMLCalendar(dueDate));
-		}
-		envelope.getBody().getBill().getHeader().setPaymentInformation(paymentInformation);
-
+		final Envelope envelope = postFinanceYbInvoiceService.prepareExportData(postFinanceYbInvoiceRequest, invoiceToExportOptional.get());
 		final Invoice invoice = postFinanceYbInvoiceService.createInvoiceAndAttachments(envelope, postFinanceYbInvoiceRequest);
 
 		return PostFinanceYbInvoiceResponse.builder()
