@@ -1,7 +1,6 @@
 package de.metas.material.dispo.service.event.handler;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
@@ -29,6 +28,7 @@ import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.order.OrderLineRepository;
 import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
@@ -42,7 +42,6 @@ import org.mockito.Mockito;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,7 +52,7 @@ import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptorWithProductId;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -98,10 +97,6 @@ public class DDOrderAdvisedHandlerTests
 	public static final WarehouseId intermediateWarehouseId = WarehouseId.ofRepoId(20);
 	public static final WarehouseId toWarehouseId = WarehouseId.ofRepoId(30);
 
-	public static final int rawProduct1Id = 50;
-
-	public static final int rawProduct2Id = 55;
-
 	public static final int productPlanningId = 65;
 
 	public static final int plantId = 75;
@@ -112,17 +107,14 @@ public class DDOrderAdvisedHandlerTests
 
 	private DDOrderAdvisedHandler ddOrderAdvisedHandler;
 
-	private DimensionService dimensionService;
-
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-
-		dimensionService = new DimensionService(dimensionFactories);
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(
+				new MDCandidateDimensionFactory()
+		));
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
@@ -138,7 +130,7 @@ public class DDOrderAdvisedHandlerTests
 				candidateRepository,
 				candidateRepositoryCommands);
 
-		final SupplyCandidateHandler supplyCandiateHandler = new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService);
+		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService);
 
 		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(
 				candidateRepository,
@@ -146,10 +138,10 @@ public class DDOrderAdvisedHandlerTests
 				postMaterialEventService,
 				availableToPromiseRepository,
 				stockCandidateService,
-				supplyCandiateHandler);
+				supplyCandidateHandler);
 		final CandidateChangeService candidateChangeService = new CandidateChangeService(ImmutableList.of(
 				demandCandiateHandler,
-				supplyCandiateHandler));
+				supplyCandidateHandler));
 
 		ddOrderAdvisedHandler = new DDOrderAdvisedHandler(
 				candidateRepository,
@@ -171,45 +163,41 @@ public class DDOrderAdvisedHandlerTests
 	@Test
 	public void handleDistributionAdvisedEvent_with_one_event()
 	{
-		final int demandCandidateId = 50;
-		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptor(demandCandidateId);
-
 		final DDOrderAdvisedEvent event = DDOrderAdvisedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
-				.supplyRequiredDescriptor(supplyRequiredDescriptor)
+				.supplyRequiredDescriptor(createSupplyRequiredDescriptor(50))
 				.ddOrder(DDOrder.builder()
-								 .orgId(ORG_ID)
-								 .datePromised(t2)
-								 .plantId(plantId)
-								 .productPlanningId(productPlanningId)
-								 .shipperId(shipperId)
-								 .line(DDOrderLine.builder()
-											   .productDescriptor(createProductDescriptor())
-											   .bPartnerId(BPARTNER_ID.getRepoId())
-											   .qty(BigDecimal.TEN)
-											   .durationDays(1)
-											   .networkDistributionLineId(networkDistributionLineId)
-											   .build())
-								 .build())
+						.orgId(ORG_ID)
+						.datePromised(t2)
+						.plantId(plantId)
+						.productPlanningId(productPlanningId)
+						.shipperId(shipperId)
+						.line(DDOrderLine.builder()
+								.productDescriptor(createProductDescriptor())
+								.bPartnerId(BPARTNER_ID.getRepoId())
+								.qty(BigDecimal.TEN)
+								.durationDays(1)
+								.networkDistributionLineId(networkDistributionLineId)
+								.build())
+						.build())
 				.build();
 		event.validate();
 		ddOrderAdvisedHandler.handleEvent(event);
 
 		final List<I_MD_Candidate> allNonStockRecords = DispoTestUtils.filterExclStock();
 		final int groupIdOfFirstRecord = allNonStockRecords.get(0).getMD_Candidate_GroupId();
-
 		assertThat(allNonStockRecords).allSatisfy(r -> {
 			assertThat(r.getMD_Candidate_GroupId()).as("all four records shall have the same groupId").isEqualTo(groupIdOfFirstRecord);
 		});
 
-		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
-		assertThat(allRecords).hasSize(4);
-		assertThat(allRecords).allSatisfy(r -> {
-			assertThat(r.getAD_Org_ID()).as("all four records shall have the same org").isEqualTo(ORG_ID.getRepoId());
-			assertThat(r.getM_Product_ID()).as("all four records shall have the same product").isEqualTo(PRODUCT_ID);
-		});
+		assertThat(DispoTestUtils.retrieveAllRecords())
+				.hasSize(4)
+				.allSatisfy(r -> {
+					assertThat(r.getAD_Org_ID()).as("all four records shall have the same org").isEqualTo(ORG_ID.getRepoId());
+					assertThat(r.getM_Product_ID()).as("all four records shall have the same product").isEqualTo(PRODUCT_ID);
+				});
 
 		// one parent of the supply in toWarehouseId and one child of the demand in fromWarehouseId
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(2);
@@ -229,7 +217,7 @@ public class DDOrderAdvisedHandlerTests
 		assertThat(supplyRecord.getDateProjected()).isEqualTo(TimeUtil.asTimestamp(t2));
 		assertThat(supplyRecord.getM_Warehouse_ID()).isEqualTo(toWarehouseId.getRepoId());
 		assertThat(supplyRecord.getQty()).isEqualByComparingTo(BigDecimal.TEN);
-		assertThat(supplyRecord.getMD_Candidate_Parent_ID() > 0).isEqualTo(true); // supplyRecord shall have supplyStockRecord as its parent
+		assertThat(supplyRecord.getMD_Candidate_Parent_ID()).isGreaterThan(0); // supplyRecord shall have supplyStockRecord as its parent
 
 		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
 		assertThat(demandRecord.getDateProjected()).isEqualTo(TimeUtil.asTimestamp(t1));
@@ -246,14 +234,9 @@ public class DDOrderAdvisedHandlerTests
 
 		// For display reasons we expect the MD_Candidate_IDs to have a strict order.
 		final List<I_MD_Candidate> allRecordsBySeqNo = DispoTestUtils.sortBySeqNo(DispoTestUtils.retrieveAllRecords());
-		assertThat(allRecordsBySeqNo).containsSubsequence(
-				supplyRecord,
-				demandRecord);
-		assertThat(allRecordsBySeqNo).containsOnly(
-				supplyStockRecord,
-				supplyRecord,
-				demandRecord,
-				demandStockRecord);
+		assertThat(allRecordsBySeqNo)
+				.containsSubsequence(supplyRecord, demandRecord)
+				.containsOnly(supplyStockRecord, supplyRecord, demandRecord, demandStockRecord);
 	}
 
 	/**
@@ -274,9 +257,9 @@ public class DDOrderAdvisedHandlerTests
 	{
 		final int durationTwoDays = 2; // => t3 minus 2days = t2 (expected date of the demand candidate)
 		adviseDistributionFromToStartDuration(ddOrderAdvisedHandler, intermediateWarehouseId, toWarehouseId,
-											  t3, // => expected date of the supply candidate
-											  durationTwoDays,
-											  50);
+				t3, // => expected date of the supply candidate
+				durationTwoDays,
+				50);
 		{ // guards
 			assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1);
 			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
@@ -293,9 +276,9 @@ public class DDOrderAdvisedHandlerTests
 
 		final int durationOneDay = 1; // => t2 minus 1day = t1 (expected date of the demand candidate)
 		adviseDistributionFromToStartDuration(ddOrderAdvisedHandler, fromWarehouseId, intermediateWarehouseId,
-											  t2, // => expected date of the supply candidate
-											  durationOneDay,
-											  demandCandidateId);
+				t2, // => expected date of the supply candidate
+				durationOneDay,
+				demandCandidateId);
 
 		assertStateAfterTwoDistributionAdvisedEvents();
 	}
@@ -380,19 +363,19 @@ public class DDOrderAdvisedHandlerTests
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
 				.ddOrder(DDOrder.builder()
-								 .orgId(ORG_ID)
-								 .datePromised(start)
-								 .plantId(plantId)
-								 .productPlanningId(productPlanningId)
-								 .shipperId(shipperId)
-								 .line(DDOrderLine.builder()
-											   .salesOrderLineId(supplyRequiredDescriptor.getOrderLineId())
-											   .productDescriptor(createProductDescriptor())
-											   .qty(BigDecimal.TEN)
-											   .networkDistributionLineId(networkDistributionLineId)
-											   .durationDays(durationDays)
-											   .build())
-								 .build())
+						.orgId(ORG_ID)
+						.datePromised(start)
+						.plantId(plantId)
+						.productPlanningId(productPlanningId)
+						.shipperId(shipperId)
+						.line(DDOrderLine.builder()
+								.salesOrderLineId(supplyRequiredDescriptor.getOrderLineId())
+								.productDescriptor(createProductDescriptor())
+								.qty(BigDecimal.TEN)
+								.networkDistributionLineId(networkDistributionLineId)
+								.durationDays(durationDays)
+								.build())
+						.build())
 				.build();
 		event.validate();
 		ddOrderAdvisedHandler.handleEvent(event);
@@ -400,13 +383,12 @@ public class DDOrderAdvisedHandlerTests
 
 	private static SupplyRequiredDescriptor createSupplyRequiredDescriptor(final int demandCandidateId)
 	{
-		final SupplyRequiredDescriptor supplyRequiredDescriptor = SupplyRequiredDescriptor.builder()
+		return SupplyRequiredDescriptor.builder()
 				.demandCandidateId(demandCandidateId)
 				.shipmentScheduleId(EventTestHelper.SHIPMENT_SCHEDULE_ID) // in order to avoid cycles, we need a demand info this info
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.materialDescriptor(createMaterialDescriptorWithProductId(PRODUCT_ID))
 				.build();
-		return supplyRequiredDescriptor;
 	}
 
 }
