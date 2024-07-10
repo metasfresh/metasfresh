@@ -18,7 +18,6 @@ jobs:
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
-          config-args: --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       - name: sanitize-ref-name
         id: sanitize
         env:
