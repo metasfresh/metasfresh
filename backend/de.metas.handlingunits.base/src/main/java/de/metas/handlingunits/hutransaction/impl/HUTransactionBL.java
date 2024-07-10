@@ -23,17 +23,22 @@ public class HUTransactionBL implements IHUTransactionBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public IHUTransactionCandidate createLUTransactionForAttributeTransfer(final I_M_HU luHU, final I_M_HU_PI_Item luItemPI, final IAllocationRequest request)
+	public IHUTransactionCandidate createLUTransactionForAttributeTransfer(
+			@NonNull final I_M_HU luHU,
+			@NonNull final I_M_HU_PI_Item luItemPI,
+			@NonNull final IAllocationRequest request)
 	{
-		final I_M_HU_Item luItem = Services.get(IHandlingUnitsDAO.class).retrieveItemIfExists(luHU, luItemPI).orElse(null);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final I_M_HU_Item luItem = handlingUnitsDAO.retrieveItemIfExists(luHU, luItemPI).orElse(null);
 
-		return new HUTransactionCandidate(AllocationUtils.getReferencedModel(request), // receipt schedule
-				luItem, // huItem,
-				null, // vhuItem (note: at this level we're not talking about VHUs but actual LU-HUs)
-				request.getProductId(),
-				request.getQuantity().toZero(),
-				request.getDate()
-		);
+		return HUTransactionCandidate.builder()
+				.model(AllocationUtils.getReferencedModel(request))
+				.huItem(luItem)
+				.vhuItem(null)
+				.productId(request.getProductId())
+				.quantity(request.getQuantity().toZero())
+				.date(request.getDate())
+				.build();
 	}
 
 	@Override
