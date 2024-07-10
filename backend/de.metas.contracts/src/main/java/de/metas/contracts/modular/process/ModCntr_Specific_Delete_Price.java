@@ -46,8 +46,15 @@ public class ModCntr_Specific_Delete_Price extends JavaProcess implements IProce
 		}
 
 		final ModCntrSpecificPriceId contractPriceId = context.getSingleSelectedRecordId(ModCntrSpecificPriceId.class);
+
 		final ModCntrSpecificPrice contractPrice = modularContractPriceService.getById(contractPriceId);
 		if (!contractPrice.isScalePrice() && NumberUtils.isZeroOrNull(contractPrice.minValue()))
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+
+		// do not allow scale price deletion if there is no fallback scale price
+		if (!modularContractPriceService.existsSimilarContractSpecificScalePrice(contractPriceId))
 		{
 			return ProcessPreconditionsResolution.reject();
 		}
