@@ -1439,4 +1439,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		return handlingUnitsRepo.retrieveParentLUPIs(tuPIItemIds, bpartnerId);
 	}
+
+	@Override
+	public boolean isTUIncludedInLU(@NonNull final I_M_HU tu, @NonNull final I_M_HU expectedLU)
+	{
+		final I_M_HU actualLU = getLoadingUnitHU(tu);
+		return actualLU != null && actualLU.getM_HU_ID() == expectedLU.getM_HU_ID();
+	}
 }
