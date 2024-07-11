@@ -105,6 +105,11 @@ public interface IModularContractLogHandler
 				.build();
 	}
 
+	default boolean isSuitableForPriceUpdate()
+	{
+		return true;
+	}
+
 	@NonNull
 	ProductPriceWithFlags getPriceActualWithFlags(final @NonNull ProductPrice productPrice, final @NonNull ModularContractLogEntry logEntry);
 
