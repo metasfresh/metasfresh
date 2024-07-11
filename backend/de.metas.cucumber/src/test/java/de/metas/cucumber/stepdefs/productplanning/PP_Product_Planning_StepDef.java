@@ -186,7 +186,7 @@ public class PP_Product_Planning_StepDef
 
 		final ProductPlanning productPlanning = productPlanningDAO.save(builder.build());
 
-		tableRow.getAsIdentifier().put(productPlanningTable, productPlanning);
+		tableRow.getAsOptionalIdentifier().ifPresent(identifier -> productPlanningTable.put(identifier, productPlanning));
 	}
 
 	@NonNull

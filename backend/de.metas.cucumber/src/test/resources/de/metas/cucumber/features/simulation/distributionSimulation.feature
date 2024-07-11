@@ -41,12 +41,12 @@ Feature: create distribution simulation
     And metasfresh contains M_Locator:
       | M_Locator_ID.Identifier | Value    | M_Warehouse_ID.Identifier |
       | locator_1               | Standard | warehouse_2               |
-    And load M_Shipper
-      | M_Shipper_ID.Identifier | M_Shipper_ID |
-      | shipper_1               | 540006       |
+    And contains M_Shippers
+      | Identifier |
+      | shipper_1  |
     And metasfresh contains DD_NetworkDistribution
-      | DD_NetworkDistribution_ID.Identifier | Name          | Value          | DocumentNo |
-      | ddNetwork_1                          | DDNetworkName | DDNetworkValue | docNo1     |
+      | DD_NetworkDistribution_ID.Identifier |
+      | ddNetwork_1                          |
     And metasfresh contains DD_NetworkDistributionLine
       | DD_NetworkDistributionLine_ID.Identifier | DD_NetworkDistribution_ID.Identifier | M_Warehouse_ID.Identifier | M_WarehouseSource_ID.Identifier | M_Shipper_ID.Identifier |
       | ddNetworkLine_1                          | ddNetwork_1                          | warehouseStd              | warehouse_2                     | shipper_1               |

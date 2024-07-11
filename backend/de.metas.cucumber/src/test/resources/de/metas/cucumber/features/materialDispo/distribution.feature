@@ -31,35 +31,33 @@ Feature: create distribution to balance demand
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN          | C_BPartner_ID.Identifier |
       | location_1 | bPLocation_1 | bpartner_1               |
-    And load M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value        |
-      | warehouseStd              | StdWarehouse |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Name             | Value            | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.IsInTransit |
-      | warehouse_1               | WarehouseTransit | WarehouseTransit | bpartner_1               | location_1                        | true            |
-      | warehouse_2               | WarehouseSource  | WarehouseSource  | bpartner_1               | location_1                        | false           |
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsInTransit |
+      | warehouse_1    | bpartner_1    | location_1             | true        |
+      | warehouse_2    | bpartner_1    | location_1             | false       |
+      | warehouseStd   | bpartner_1    | location_1             | false       |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value    | M_Warehouse_ID.Identifier |
-      | locator_1               | Standard | warehouse_2               |
-    And load M_Shipper
-      | M_Shipper_ID.Identifier | M_Shipper_ID |
-      | shipper_1               | 540006       |
+      | M_Locator_ID.Identifier | M_Warehouse_ID |
+      | locator_1               | warehouse_2    |
+    And contains M_Shippers
+      | Identifier |
+      | shipper    |
     And metasfresh contains DD_NetworkDistribution
-      | DD_NetworkDistribution_ID.Identifier | Name          | Value          | DocumentNo |
-      | ddNetwork_1                          | DDNetworkName | DDNetworkValue | docNo1     |
+      | DD_NetworkDistribution_ID |
+      | ddNetwork_1               |
     And metasfresh contains DD_NetworkDistributionLine
-      | DD_NetworkDistributionLine_ID.Identifier | DD_NetworkDistribution_ID.Identifier | M_Warehouse_ID.Identifier | M_WarehouseSource_ID.Identifier | M_Shipper_ID.Identifier |
-      | ddNetworkLine_1                          | ddNetwork_1                          | warehouseStd              | warehouse_2                     | shipper_1               |
+      | DD_NetworkDistributionLine_ID | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
+      | ddNetworkLine_1               | ddNetwork_1               | warehouseStd   | warehouse_2          | shipper      |
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | IsCreatePlan | OPT.DD_NetworkDistribution_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
-      | ppln_1     | p_1                     | true         | ddNetwork_1                              | warehouseStd                  |
+      | M_Product_ID | IsCreatePlan | DD_NetworkDistribution_ID | M_Warehouse_ID |
+      | p_1          | true         | ddNetwork_1               | warehouseStd   |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
-      | SO         | true    | bpartner_1               | 2022-07-04  | 2022-07-04T00:00:00Z |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  | OPT.M_Warehouse_ID.Identifier |
+      | SO         | true    | bpartner_1               | 2022-07-04  | 2022-07-04T00:00:00Z | warehouseStd                  |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Warehouse_ID.Identifier |
-      | ol_1       | SO                    | p_1                     | 14         | warehouseStd                  |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | SO                    | p_1                     | 14         |
     And the order identified by SO is completed
 
     And after not more than 60s, the MD_Candidate table has only the following records

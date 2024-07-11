@@ -87,7 +87,7 @@ public class M_Locator_StepDef
 	public void create_M_Locator_Simple(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((row) -> {
-			final String value = row.getAsString(I_M_Locator.COLUMNNAME_Value);
+			final String value = row.suggestValueAndName().getValue();
 
 			final StepDefDataIdentifier warehouseIdentifier = row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID);
 			final WarehouseId warehouseId = warehouseTable.getIdOptional(warehouseIdentifier)
