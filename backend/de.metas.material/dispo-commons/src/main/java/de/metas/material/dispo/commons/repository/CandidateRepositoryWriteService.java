@@ -18,6 +18,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DeleteCandidatesQuery;
 import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
@@ -25,6 +26,8 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
@@ -41,6 +44,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
@@ -49,7 +53,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import static de.metas.common.util.IdConstants.toRepoId;
 import static java.math.BigDecimal.ZERO;
@@ -58,6 +65,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -649,8 +657,6 @@ public class CandidateRepositoryWriteService
 		{
 			final I_MD_Candidate_Transaction_Detail detailRecordToUpdate;
 
-			final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 			final ICompositeQueryFilter<I_MD_Candidate_Transaction_Detail> //
 					transactionOrPInstanceId = queryBL
 					.createCompositeQueryFilter(I_MD_Candidate_Transaction_Detail.class)
@@ -709,18 +715,152 @@ public class CandidateRepositoryWriteService
 				.withSeqNo(candidateRecord.getSeqNo());
 	}
 
-	public DeleteResult deleteCandidatebyId(@NonNull final CandidateId candidateId)
+	@NonNull
+	public DeleteResult deleteCandidateById(@NonNull final CandidateId candidateId)
 	{
 		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
-		final DeleteResult deleteResult = new DeleteResult(candidateId, DateAndSeqNo
-				.builder()
-				.date(TimeUtil.asInstant(candidateRecord.getDateProjected()))
-				.seqNo(candidateRecord.getSeqNo())
-				.build(),
+		final DeleteResult deleteResult = new DeleteResult(candidateId,
+				DateAndSeqNo.builder()
+						.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
+						.seqNo(candidateRecord.getSeqNo())
+						.build(),
 				candidateRecord.getQty());
+		deleteRelatedRecordsForCandidate(candidateRecord);
 
 		deleteRecord(candidateRecord);
 		return deleteResult;
+	}
+
+	private void deleteRelatedRecordsForCandidate(final I_MD_Candidate candidateRecord)
+	{
+		final HashSet<CandidateId> alreadySeenIds = new HashSet<>(Collections.singleton(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID())));
+		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
+	}
+
+	@NonNull
+	public Set<CandidateId> deleteCandidatesAndDetailsByQuery(@NonNull final DeleteCandidatesQuery deleteCandidatesQuery)
+	{
+		final Set<CandidateId> alreadyDeletedIds = new HashSet<>();
+
+		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, deleteCandidatesQuery.getStatus())
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_IsActive, deleteCandidatesQuery.getIsActive())
+				.orderByDescending(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID)
+				.create()
+				.iterateAndStreamIds(CandidateId::ofRepoId)
+				.filter(candidateId -> !alreadyDeletedIds.contains(candidateId))
+				.forEach(candidateId -> deleteCandidateById(candidateId, alreadyDeletedIds));
+
+		return alreadyDeletedIds;
+	}
+
+	@NonNull
+	private DeleteResult deleteCandidateById(@NonNull final CandidateId candidateId, @NonNull final Set<CandidateId> alreadySeenIds)
+	{
+		alreadySeenIds.add(candidateId);
+
+		final I_MD_Candidate candidateRecord = InterfaceWrapperHelper.load(candidateId, I_MD_Candidate.class);
+
+		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
+
+		final DeleteResult deleteResult = new DeleteResult(candidateId,
+				DateAndSeqNo
+						.builder()
+						.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
+						.seqNo(candidateRecord.getSeqNo())
+						.build(),
+				candidateRecord.getQty());
+
+		deleteRecord(candidateRecord);
+
+		return deleteResult;
+	}
+
+	private void deleteRelatedRecordsForId(
+			@NonNull final I_MD_Candidate candidate,
+			@NonNull final Set<CandidateId> alreadySeenIds)
+	{
+		final CandidateId parentCandidateId = CandidateId.ofRepoIdOrNull(candidate.getMD_Candidate_Parent_ID());
+
+		if (parentCandidateId != null
+				&& parentCandidateId.getRepoId() != candidate.getMD_Candidate_ID()
+				&& !alreadySeenIds.contains(parentCandidateId))
+		{
+			// remove parent link
+			candidate.setMD_Candidate_Parent_ID(-1);
+			saveRecord(candidate);
+
+			deleteCandidateById(parentCandidateId, alreadySeenIds);
+		}
+
+		final CandidateId candidateId = CandidateId.ofRepoId(candidate.getMD_Candidate_ID());
+
+		deleteChildCandidates(candidateId, alreadySeenIds);
+
+		deleteDemandDetailsRecords(candidateId);
+		deleteDistDetailsRecords(candidateId);
+		deleteProdDetailsRecords(candidateId);
+		deletePurchaseDetailsRecords(candidateId);
+		deleteStockChangeDetailsRecords(candidateId);
+		deleteTransactionDetailsRecords(candidateId);
+	}
+
+	private void deleteDemandDetailsRecords(@NonNull final CandidateId candidateId)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate_Demand_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.delete();
+	}
+
+	private void deleteDistDetailsRecords(@NonNull final CandidateId candidateId)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, candidateId)
+				.create()
+				.delete();
+	}
+
+	private void deleteProdDetailsRecords(@NonNull final CandidateId candidateId)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.delete();
+	}
+
+	private void deletePurchaseDetailsRecords(@NonNull final CandidateId candidateId)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate_Purchase_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Purchase_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.delete();
+	}
+
+	private void deleteStockChangeDetailsRecords(@NonNull final CandidateId candidateId)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate_StockChange_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_StockChange_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.delete();
+	}
+
+	private void deleteTransactionDetailsRecords(@NonNull final CandidateId candidateId)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.delete();
+	}
+
+	private void deleteChildCandidates(@NonNull final CandidateId candidateId, @NonNull final Set<CandidateId> alreadySeenIds)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidateId.getRepoId())
+				.create()
+				.iterateAndStreamIds(CandidateId::ofRepoId)
+				.filter(childCandidateId -> !alreadySeenIds.contains(childCandidateId))
+				.forEach(childCandidateId -> deleteCandidateById(childCandidateId, alreadySeenIds));
 	}
 
 	public void deactivateSimulatedCandidates()

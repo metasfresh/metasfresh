@@ -1,15 +1,14 @@
 package de.metas.user.api;
 
-import de.metas.util.Check;
-import org.compiere.model.I_AD_User;
-
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.ISingletonService;
 import de.metas.util.hash.HashableString;
 import lombok.NonNull;
+import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;
 

@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -258,6 +259,13 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	{
 		return getHelperThatCanHandle(model)
 				.setDynAttribute(model, attributeName, value);
+	}
+
+	@Nullable
+	@Override
+	public <T> T computeDynAttributeIfAbsent(@NonNull final Object model, @NonNull final String attributeName, @NonNull final Supplier<T> supplier)
+	{
+		return getHelperThatCanHandle(model).computeDynAttributeIfAbsent(model, attributeName, supplier);
 	}
 
 	@Override

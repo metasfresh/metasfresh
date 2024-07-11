@@ -113,12 +113,9 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		}
 		else
 		{
-			luProducerDestination.setLUItemPI(null);
-			luProducerDestination.setLUPI(null);
-			luProducerDestination.setMaxLUs(0);
+			luProducerDestination.setNoLU();
 
 			// TU configuration
-			// luProducerDestination.setMaxTUsPerLU(0); // no need to set
 			luProducerDestination.setCreateTUsForRemainingQty(true); // we will create only TUs
 
 			if (qtyTUInfinite)
@@ -139,7 +136,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		final ProductId cuProductId = ProductId.ofRepoId(lutuConfiguration.getM_Product_ID());
 		final I_C_UOM cuUOM = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 		final boolean qtyCUInfinite = lutuConfiguration.isInfiniteQtyCU();
-		final BigDecimal qtyCUPerTU = qtyCUInfinite ? Quantity.QTY_INFINITE : lutuConfiguration.getQtyCU();
+		final BigDecimal qtyCUPerTU = qtyCUInfinite ? Quantity.QTY_INFINITE : lutuConfiguration.getQtyCUsPerTU();
 		luProducerDestination.addCUPerTU(cuProductId, qtyCUPerTU, cuUOM);
 
 		//
@@ -203,12 +200,12 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		if (tuCapacity.isInfiniteCapacity())
 		{
 			lutuConfiguration.setIsInfiniteQtyCU(true);
-			lutuConfiguration.setQtyCU(BigDecimal.ZERO);
+			lutuConfiguration.setQtyCUsPerTU(BigDecimal.ZERO);
 		}
 		else
 		{
 			lutuConfiguration.setIsInfiniteQtyCU(false);
-			lutuConfiguration.setQtyCU(tuCapacity.toBigDecimal());
+			lutuConfiguration.setQtyCUsPerTU(tuCapacity.toBigDecimal());
 		}
 
 		//
@@ -340,7 +337,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		}
 		else
 		{
-			final BigDecimal qtyCU = NumberUtils.stripTrailingDecimalZeros(lutuConfiguration.getQtyCU());
+			final BigDecimal qtyCU = NumberUtils.stripTrailingDecimalZeros(lutuConfiguration.getQtyCUsPerTU());
 			keyItems.add(false); // IsInfiniteQtyCU
 			keyItems.add(qtyCU); // Qty CU
 		}
@@ -365,8 +362,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	{
 		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration not null");
 		final I_M_HU_LUTU_Configuration lutuConfigurationNew = InterfaceWrapperHelper.newInstance(I_M_HU_LUTU_Configuration.class, lutuConfiguration);
-		final boolean honorIsCalculated = true;
-		InterfaceWrapperHelper.copyValues(lutuConfiguration, lutuConfigurationNew, honorIsCalculated);
+		InterfaceWrapperHelper.copyValues(lutuConfiguration, lutuConfigurationNew, true);
 
 		return lutuConfigurationNew;
 	}
@@ -483,7 +479,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// Calculate how many CUs we need for an LU
-		final BigDecimal qtyCUsPerLU = lutuConfiguration.getQtyCU().multiply(lutuConfiguration.getQtyTU());
+		final BigDecimal qtyCUsPerLU = lutuConfiguration.getQtyCUsPerTU().multiply(lutuConfiguration.getQtyTU());
 		if (qtyCUsPerLU.signum() <= 0)
 		{
 			return 0;
@@ -511,7 +507,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			return Quantity.infinite(uom);
 		}
 
-		final BigDecimal qtyCU = lutuConfiguration.getQtyCU();
+		final BigDecimal qtyCU = lutuConfiguration.getQtyCUsPerTU();
 		if (qtyCU.signum() <= 0)
 		{
 			return Quantity.zero(uom);
@@ -577,7 +573,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		if (lutuConfiguration.isInfiniteQtyCU())
 		{
 			lutuConfiguration.setIsInfiniteQtyCU(false);
-			lutuConfiguration.setQtyCU(qtyCUsTotal);
+			lutuConfiguration.setQtyCUsPerTU(qtyCUsTotal);
 
 			lutuConfiguration.setIsInfiniteQtyTU(false);
 			lutuConfiguration.setQtyTU(BigDecimal.ONE);
@@ -597,7 +593,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		}
 
 		Check.assume(!lutuConfiguration.isInfiniteQtyCU(), "Infinite QtyCU not allowed for {}", lutuConfiguration);
-		final BigDecimal qtyCUsPerTU = lutuConfiguration.getQtyCU();
+		final BigDecimal qtyCUsPerTU = lutuConfiguration.getQtyCUsPerTU();
 
 		//
 		// Case: QtyTUs/LU is finite
@@ -629,7 +625,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			lutuConfiguration.setQtyTU(qtyTUs_Effective);
 
 			lutuConfiguration.setIsInfiniteQtyCU(false); // since we calculated it, we're not considering it infinite any longer
-			lutuConfiguration.setQtyCU(qtyCUs_Effective);
+			lutuConfiguration.setQtyCUsPerTU(qtyCUs_Effective);
 		}
 		//
 		// Case: QtyTUs/LU is infinite
@@ -644,7 +640,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			lutuConfiguration.setQtyTU(qtyTUs_Effective);
 
 			lutuConfiguration.setIsInfiniteQtyCU(false); // since we calculated it, we're not considering it infinite any longer
-			lutuConfiguration.setQtyCU(qtyCUs_Effective);
+			lutuConfiguration.setQtyCUsPerTU(qtyCUs_Effective);
 		}
 	}
 
@@ -656,7 +652,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 				.copyToNew(I_M_HU_LUTU_Configuration.class);
 		//
 		// CU
-		lutuConfigurationNew.setQtyCU(lutuConfigRequest.getQtyCU());
+		lutuConfigurationNew.setQtyCUsPerTU(lutuConfigRequest.getQtyCUsPerTU());
 		lutuConfigurationNew.setIsInfiniteQtyCU(false);
 
 		//

@@ -14,8 +14,10 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderRoutingActivityId;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
@@ -26,7 +28,7 @@ public class ManufacturingJob
 	@NonNull PPOrderId ppOrderId;
 	@NonNull String documentNo;
 	@Nullable BPartnerId customerId;
-	@NonNull ZonedDateTime datePromised;
+	@NonNull ZonedDateTime dateStartSchedule;
 	@Nullable UserId responsibleId;
 	boolean allowUserReporting;
 
@@ -40,7 +42,7 @@ public class ManufacturingJob
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final String documentNo,
 			@Nullable final BPartnerId customerId,
-			@NonNull final ZonedDateTime datePromised,
+			@NonNull final ZonedDateTime dateStartSchedule,
 			@Nullable final UserId responsibleId,
 			final boolean allowUserReporting,
 			//
@@ -56,10 +58,15 @@ public class ManufacturingJob
 		this.ppOrderId = ppOrderId;
 		this.documentNo = documentNo;
 		this.customerId = customerId;
-		this.datePromised = datePromised;
+		this.dateStartSchedule = dateStartSchedule;
 		this.responsibleId = responsibleId;
 		this.allowUserReporting = allowUserReporting;
 		this.activities = activities;
+	}
+
+	public static boolean equals(@Nullable ManufacturingJob job1, @Nullable ManufacturingJob job2)
+	{
+		return Objects.equals(job1, job2);
 	}
 
 	public void assertUserReporting()
@@ -90,6 +97,7 @@ public class ManufacturingJob
 	}
 
 	public ManufacturingJob withChangedRawMaterialsIssueStep(
+			@NonNull final PPOrderRoutingActivityId activityId,
 			@NonNull final PPOrderIssueScheduleId issueScheduleId,
 			@NonNull UnaryOperator<RawMaterialsIssueStep> mapper)
 	{
@@ -98,7 +106,11 @@ public class ManufacturingJob
 			throw new AdempiereException("Cannot find issue step");
 		}
 
-		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(activities, activity -> activity.withChangedRawMaterialsIssueStep(issueScheduleId, mapper));
+		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(
+				activities,
+				activity -> PPOrderRoutingActivityId.equals(activity.getOrderRoutingActivityId(), activityId)
+						? activity.withChangedRawMaterialsIssueStep(issueScheduleId, mapper)
+						: activity);
 		return withActivities(activitiesNew);
 	}
 
@@ -138,5 +150,12 @@ public class ManufacturingJob
 		return !DeviceId.equals(this.currentScaleDeviceId, currentScaleDeviceId)
 				? toBuilder().currentScaleDeviceId(currentScaleDeviceId).build()
 				: this;
+	}
+
+
+	@NonNull
+	public LocalDate getDateStartScheduleAsLocalDate()
+	{
+		return dateStartSchedule.toLocalDate();
 	}
 }

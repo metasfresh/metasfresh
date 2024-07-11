@@ -24,6 +24,7 @@ import {
 
 import MasterWindow from '../components/app/MasterWindow';
 import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
+import { fetchTopActions } from '../actions/Actions';
 
 /**
  * @file Class based component.
@@ -175,6 +176,7 @@ class MasterWindowContainer extends PureComponent {
       params: { windowId, docId },
       updateTabTableData,
       updateTabLayout,
+      fetchTopActions,
     } = this.props;
 
     const activeTabId = master.layout.activeTab;
@@ -198,6 +200,8 @@ class MasterWindowContainer extends PureComponent {
         );
       })
       .catch((error) => error);
+
+    fetchTopActions({ windowId, tabId: activeTabId, docId });
   };
 
   deleteTabsTables = () => {
@@ -311,6 +315,7 @@ MasterWindowContainer.propTypes = {
   updateTabTableData: PropTypes.func.isRequired,
   updateTabLayout: PropTypes.func.isRequired,
   updateLastBackPage: PropTypes.func.isRequired,
+  fetchTopActions: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -339,4 +344,5 @@ export default connect(mapStateToProps, {
   deleteTable,
   updateTabLayout,
   updateLastBackPage,
+  fetchTopActions,
 })(MasterWindowContainer);

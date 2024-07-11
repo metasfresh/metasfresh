@@ -41,12 +41,14 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 @Component
 public class PPOrderCandidateEnqueuer
 {
 	public static final String WP_PINSTANCE_ID_PARAM = "pInstanceId";
+	public static final String WP_COMPLETE_DOC_PARAM = "completeDoc";
+	public static final String WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION = "autoProcessCandidatesAfterProduction";
+	public static final String WP_AUTO_CLOSE_CANDIDATES_AFTER_PRODUCTION = "autoCloseCandidatesAfterProduction";
 
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -61,14 +63,14 @@ public class PPOrderCandidateEnqueuer
 				.create()
 				.createSelection();
 
-		return enqueueSelection(pInstanceId, Env.getCtx());
+		return enqueueSelection(EnqueuePPOrderCandidateRequest.of(pInstanceId, Env.getCtx()));
 	}
 
 	@NonNull
-	public Result enqueueSelection(
-			@NonNull final PInstanceId adPInstanceId,
-			@NonNull final Properties ctx)
+	public Result enqueueSelection(@NonNull final EnqueuePPOrderCandidateRequest enqueuePPOrderCandidateRequest)
 	{
+		final PInstanceId adPInstanceId = enqueuePPOrderCandidateRequest.getAdPInstanceId();
+
 		final LockOwner lockOwner = LockOwner.newOwner(PPOrderCandidateEnqueuer.class.getSimpleName(), adPInstanceId.getRepoId());
 
 		final ILockCommand elementsLocker = lockManager
@@ -78,11 +80,14 @@ public class PPOrderCandidateEnqueuer
 				.setFailIfAlreadyLocked(true)
 				.setRecordsBySelection(I_PP_Order_Candidate.class, adPInstanceId);
 
-		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, GeneratePPOrderFromPPOrderCandidate.class);
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(enqueuePPOrderCandidateRequest.getCtx(), GeneratePPOrderFromPPOrderCandidate.class);
 
 		final I_C_Queue_WorkPackage workPackage = queue
 				.newWorkPackage()
 				.parameter(WP_PINSTANCE_ID_PARAM, adPInstanceId)
+				.parameter(WP_COMPLETE_DOC_PARAM, enqueuePPOrderCandidateRequest.getIsCompleteDocOverride())
+				.parameter(WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION, enqueuePPOrderCandidateRequest.isAutoProcessCandidatesAfterProduction())
+				.parameter(WP_AUTO_CLOSE_CANDIDATES_AFTER_PRODUCTION, enqueuePPOrderCandidateRequest.isAutoCloseCandidatesAfterProduction())
 				.setElementsLocker(elementsLocker)
 				.buildAndEnqueue();
 

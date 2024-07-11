@@ -16,6 +16,7 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.order.OrderLineRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +64,8 @@ public class CandidateServiceTests
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 		requestMaterialOrderService = new RequestMaterialOrderService(
 				new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo),
-				postMaterialEventService);
+				postMaterialEventService,
+				new OrderLineRepository());
 	}
 
 	@Test

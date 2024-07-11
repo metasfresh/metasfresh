@@ -7,13 +7,13 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -71,7 +71,7 @@ public class DDOrderAdvisedEventCreator
 				.supplyPojos(
 						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext));
 
-		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
+		final ProductPlanning productPlanningData = mrpContext.getProductPlanning();
 		for (final DDOrder ddOrder : ddOrders)
 		{
 			for (final DDOrderLine ddOrderLine : ddOrder.getLines())

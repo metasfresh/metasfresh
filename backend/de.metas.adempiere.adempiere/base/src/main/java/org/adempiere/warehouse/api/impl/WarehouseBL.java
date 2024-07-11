@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -68,21 +69,21 @@ public class WarehouseBL implements IWarehouseBL
 	}
 
 	@Override
-	public I_M_Locator getDefaultLocator(@NonNull final I_M_Warehouse warehouse)
+	public I_M_Locator getOrCreateDefaultLocator(@NonNull final I_M_Warehouse warehouse)
 	{
-		return getDefaultLocator(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+		return getOrCreateDefaultLocator(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
 	}
 
 	@Override
-	public I_M_Locator getDefaultLocator(@NonNull final WarehouseId warehouseId)
+	public I_M_Locator getOrCreateDefaultLocator(@NonNull final WarehouseId warehouseId)
 	{
-		final LocatorId defaultLocatorId = getDefaultLocatorId(warehouseId);
+		final LocatorId defaultLocatorId = getOrCreateDefaultLocatorId(warehouseId);
 		return warehouseDAO.getLocatorById(defaultLocatorId);
 	}
 
 	@Override
 	@NonNull
-	public LocatorId getDefaultLocatorId(@NonNull final WarehouseId warehouseId)
+	public LocatorId getOrCreateDefaultLocatorId(@NonNull final WarehouseId warehouseId)
 	{
 		final List<I_M_Locator> locators = warehouseDAO.getLocators(warehouseId);
 		int activeLocatorsCount = 0;
@@ -266,5 +267,13 @@ public class WarehouseBL implements IWarehouseBL
 		final I_M_Locator locator = getLocatorByRepoId(locatorId);
 
 		return WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull final WarehouseId warehouseId)
+	{
+		final Set<WarehouseId> pickFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
+		return warehouseDAO.getLocatorIdsByWarehouseIds(pickFromWarehouseIds);
 	}
 }

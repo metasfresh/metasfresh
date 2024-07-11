@@ -37,9 +37,9 @@
         <jackson.version>2.11.4</jackson.version>
         <amqp-client.version>5.10.0</amqp-client.version>
         
-        <jasperreports.version>6.21.2</jasperreports.version>
+        <jasperreports.version>6.7.0</jasperreports.version>
 
-        <itextpdf.version>5.5.13.3</itextpdf.version>
+        <itext.version>2.1.7.js6</itext.version>
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
         <spring-boot-admin.version>2.3.1</spring-boot-admin.version>
@@ -68,7 +68,7 @@
         <!-- please keep junit jupiter and platform versions synched up -->
         <junit-jupiter.version>5.9.3</junit-jupiter.version>
         <junit-platform.version>1.9.3</junit-platform.version>
-
+        
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <guava.version>30.1.1-jre</guava.version>
@@ -225,9 +225,9 @@
             </dependency>
 
             <dependency>
-                <groupId>com.itextpdf</groupId>
-                <artifactId>itextpdf</artifactId>
-                <version>${itextpdf.version}</version>
+                <groupId>com.lowagie</groupId>
+                <artifactId>itext</artifactId>
+                <version>${itext.version}</version>
             </dependency>
 
             <!-- this also contains the javax.annotations -->

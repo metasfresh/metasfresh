@@ -1,30 +1,24 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
+ *****************************************************************************/
 package org.compiere.util;
 
 import com.google.common.io.BaseEncoding;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.reflect.ClassInstanceProvider;
 import org.adempiere.util.reflect.IClassInstanceProvider;
@@ -43,18 +37,20 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * General Utilities
  *
  * @author Jorg Janke
- * @version $Id: Util.java,v 1.3 2006/07/30 00:52:23 jjanke Exp $
- *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL - BF [ 1748346 ]
+ * @version $Id: Util.java,v 1.3 2006/07/30 00:52:23 jjanke Exp $
  */
 public class Util
 {
-	/** Logger */
+	/**
+	 * Logger
+	 */
 	private static Logger log = LogManager.getLogger(Util.class.getName());
 
 	/**
@@ -80,12 +76,12 @@ public class Util
 			in = in.substring(0, pos) + in.substring(pos + 1);
 		}
 		return in;
-	}	// cleanAmp
+	}    // cleanAmp
 
 	/**
 	 * Trim to max byte size
 	 *
-	 * @param str string
+	 * @param str  string
 	 * @param size max size in bytes
 	 * @return string
 	 */
@@ -122,7 +118,7 @@ public class Util
 			log.error(str, e);
 		}
 		return str;
-	}	// trimSize
+	}    // trimSize
 
 	private static IClassInstanceProvider classInstanceProvider = ClassInstanceProvider.instance; // default/production implementation.
 
@@ -143,7 +139,6 @@ public class Util
 	 * @param interfaceClazz
 	 * @param classname
 	 * @return loaded class
-	 *
 	 * @see #setClassInstanceProvider(IClassInstanceProvider)
 	 */
 	public static final <T> Class<? extends T> loadClass(final Class<T> interfaceClazz, final String classname)
@@ -155,8 +150,7 @@ public class Util
 
 			Check.errorUnless(interfaceClazz.isAssignableFrom(instanceClazz), "Class {} doesn't implement {}", instanceClazz, interfaceClazz);
 
-			@SuppressWarnings("unchecked")
-			final Class<? extends T> instanceClassCasted = (Class<? extends T>)instanceClazz;
+			@SuppressWarnings("unchecked") final Class<? extends T> instanceClassCasted = (Class<? extends T>)instanceClazz;
 			return instanceClassCasted;
 		}
 		catch (final Exception e)
@@ -182,46 +176,8 @@ public class Util
 		}
 		catch (final ReflectiveOperationException e)
 		{
-			final Throwable cause = AdempiereException.extractCause(e);
-			throw cause instanceof AdempiereException
-					? (AdempiereException)cause
-					: new AdempiereException("Unable to instantiate '" + instanceClazz + "' implementing " + interfaceClazz, cause);
+			throw new AdempiereException("Unable to instantiate '" + instanceClazz + "' implementing " + interfaceClazz, e);
 		}
-	}
-
-	public static Class<?> validateJavaClassname(
-			@NonNull final String classname,
-			@Nullable final Class<?> parentClass)
-	{
-		if (Check.isBlank(classname))
-		{
-			throw Check.mkEx("Given classname is blank");
-		}
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		if (cl == null)
-		{
-			cl = Util.class.getClassLoader();
-		}
-
-		final Class<?> clazz;
-		try
-		{
-			clazz = cl.loadClass(classname);
-		}
-		catch (final ClassNotFoundException e)
-		{
-			throw Check.mkEx("Classname not found: " + classname, e);
-		}
-
-		if (parentClass != null)
-		{
-			if (!parentClass.isAssignableFrom(clazz))
-			{
-				throw Check.mkEx("Class " + clazz + " is not assignable from " + parentClass);
-			}
-		}
-
-		return clazz;
 	}
 
 	/**
@@ -232,8 +188,8 @@ public class Util
 	 * For unit testing, see {@link org.adempiere.util.reflect.TestingClassInstanceProvider#throwExceptionForClassName(String, RuntimeException)}.
 	 *
 	 * @param interfaceClazz interface class or super class that needs to be implemented by class. May be <code>NULL</code>. If set, then the method will check if the given class name extends this
-	 *            param value.
-	 * @param className class name
+	 *                       param value.
+	 * @param className      class name
 	 * @return instance
 	 * @throws AdempiereException if class does not implement given interface or if there is an error on instantiation or if class was not found
 	 */
@@ -251,8 +207,7 @@ public class Util
 			else
 			{
 				final Object instanceObj = clazz.newInstance();
-				@SuppressWarnings("unchecked")
-				final T instance = (T)instanceObj;
+				@SuppressWarnings("unchecked") final T instance = (T)instanceObj;
 				return instance;
 			}
 		}
@@ -268,7 +223,7 @@ public class Util
 	 * For unit testing, see {@link org.adempiere.util.reflect.TestingClassInstanceProvider#throwExceptionForClassName(String, RuntimeException)}.
 	 *
 	 * @param interfaceClazz interface class that needs to be implemented by class
-	 * @param className class name
+	 * @param className      class name
 	 * @return instance or null if class was not found
 	 * @throws AdempiereException if class does not implement given interface or if there is an error on instantiation
 	 */
@@ -313,11 +268,10 @@ public class Util
 	/**
 	 * Immutable wrapper for arrays that uses {@link Arrays#hashCode(Object[])} and {@link Arrays#equals(Object)}. Instances of this class are obtained by {@link Util#mkKey(Object...)} and can be
 	 * used as keys in hashmaps and hash sets.
-	 *
+	 * <p>
 	 * Thanks to http://stackoverflow.com/questions/1595588/java-how-to-be-sure-to-store-unique-arrays-based-on -its-values-on-a-list
 	 *
 	 * @author ts
-	 *
 	 */
 	@Immutable
 	public static class ArrayKey implements Comparable<ArrayKey>
@@ -433,15 +387,20 @@ public class Util
 
 	/**
 	 * Tests whether two objects refer to the same object.
-	 *
+	 * <p>
 	 * It's advisable to use this method instead of directly comparing those 2 objects by o1 == o2, because in this way you are telling to static analyzer tool that comparing by reference was your
 	 * intention.
 	 *
 	 * @return true if objects are the same (i.e. o1 == o2)
 	 */
-	public static boolean same(Object o1, Object o2)
+	public static <T> boolean same(@Nullable final T o1, @Nullable final T o2)
 	{
 		return o1 == o2;
+	}
+
+	public static <T> boolean equals(@Nullable final T o1, @Nullable final T o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 
 	/**

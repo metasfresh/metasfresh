@@ -1,23 +1,10 @@
 package de.metas.currency;
 
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
-
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -26,6 +13,16 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /*
  * #%L

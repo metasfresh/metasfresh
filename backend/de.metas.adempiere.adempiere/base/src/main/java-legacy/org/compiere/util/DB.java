@@ -42,6 +42,7 @@ import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
@@ -55,6 +56,7 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
+import org.compiere.Adempiere;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.db.Database;
@@ -83,6 +85,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -501,7 +504,7 @@ public class DB
 	 */
 	@Deprecated
 	public CPreparedStatement prepareStatement(final String sql,
-			final int resultSetType, final int resultSetConcurrency)
+											   final int resultSetType, final int resultSetConcurrency)
 	{
 		return prepareStatement(sql, resultSetType, resultSetConcurrency, null);
 	}    // prepareStatement
@@ -516,9 +519,9 @@ public class DB
 	 * @return Prepared Statement r/o or r/w depending on concur
 	 */
 	public CPreparedStatement prepareStatement(final String sql,
-			final int resultSetType,
-			final int resultSetConcurrency,
-			final String trxName)
+											   final int resultSetType,
+											   final int resultSetConcurrency,
+											   final String trxName)
 	{
 		if (sql == null || sql.length() == 0)
 		{
@@ -683,7 +686,7 @@ public class DB
 		{
 			pstmt.setString(index, ((ReferenceListAwareEnum)param).getCode());
 		}
-		else if(param instanceof byte[])
+		else if (param instanceof byte[])
 		{
 			pstmt.setBytes(index, (byte[])param);
 		}
@@ -773,11 +776,11 @@ public class DB
 	 */
 	@Deprecated
 	public int executeUpdate(final String sql,
-			final Object[] params,
-			@NonNull final OnFail onFail,
-			final String trxName,
-			final int timeOut,
-			final ISqlUpdateReturnProcessor updateReturnProcessor)
+							 final Object[] params,
+							 @NonNull final OnFail onFail,
+							 final String trxName,
+							 final int timeOut,
+							 final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
 		if (Check.isEmpty(sql, true))
 		{
@@ -966,10 +969,10 @@ public class DB
 	}    // executeUpdateEx
 
 	public int executeUpdateEx(final String sql,
-			final Object[] params,
-			final String trxName,
-			final int timeOut,
-			final ISqlUpdateReturnProcessor updateReturnProcessor)
+							   final Object[] params,
+							   final String trxName,
+							   final int timeOut,
+							   final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
 		return executeUpdate(sql, params, OnFail.ThrowException, trxName, timeOut, updateReturnProcessor);
 	}
@@ -1467,8 +1470,7 @@ public class DB
 
 			if (rs.next())
 			{
-				@SuppressWarnings("unchecked")
-				final T[] arr = (T[])rs.getArray(1).getArray();
+				@SuppressWarnings("unchecked") final T[] arr = (T[])rs.getArray(1).getArray();
 				return arr;
 			}
 			else
@@ -1697,6 +1699,11 @@ public class DB
 	 */
 	public int getNextID(final int AD_Client_ID, final String TableName, final String trxName)
 	{
+		if (Adempiere.isUnitTestMode())
+		{
+			return POJOLookupMap.get().nextId(TableName);
+		}
+
 		final boolean useNativeSequences = DB.isUseNativeSequences(AD_Client_ID, TableName);
 		if (useNativeSequences)
 		{
@@ -1766,7 +1773,7 @@ public class DB
 		{
 			return String.valueOf(((RepoIdAware)param).getRepoId());
 		}
-		else if(param instanceof ReferenceListAwareEnum)
+		else if (param instanceof ReferenceListAwareEnum)
 		{
 			return TO_STRING(((ReferenceListAwareEnum)param).getCode());
 		}
@@ -2164,7 +2171,7 @@ public class DB
 	}
 
 	public void createT_Selection(
-			@NonNull final PInstanceId selectionId, 
+			@NonNull final PInstanceId selectionId,
 			@NonNull final Collection<? extends RepoIdAware> selection,
 			@Nullable final String trxName)
 	{
@@ -2288,7 +2295,7 @@ public class DB
 	/**
 	 * Build an SQL list (e.g. ColumnName IN (?, ?) OR ColumnName IS NULL)<br>
 	 *
-	 * @param paramsOut  if null, the parameters will be embedded in returned SQL
+	 * @param paramsOut if null, the parameters will be embedded in returned SQL
 	 * @return sql
 	 * @see InArrayQueryFilter
 	 */
@@ -2619,10 +2626,9 @@ public class DB
 		{
 			value = (AT)rs.getString(columnIndex);
 		}
-		else if(RepoIdAware.class.isAssignableFrom(returnType))
+		else if (RepoIdAware.class.isAssignableFrom(returnType))
 		{
-			@SuppressWarnings("unchecked")
-			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)returnType;
+			@SuppressWarnings("unchecked") final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)returnType;
 			value = (AT)RepoIdAwares.ofRepoIdOrNull(rs.getInt(columnIndex), repoIdAwareType);
 		}
 		else
@@ -2701,6 +2707,17 @@ public class DB
 	{
 		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader);
 	}
+
+	@NonNull
+	public static <T> ImmutableList<T> retrieveRows(
+			@NonNull final CharSequence sql,
+			@Nullable final Object[] sqlParams,
+			@NonNull final ResultSetRowLoader<T> loader)
+	{
+		final List<Object> sqlParamsList = sqlParams != null && sqlParams.length > 0 ? Arrays.asList(sqlParams) : null;
+		return retrieveRows(sql, sqlParamsList, ITrx.TRXNAME_ThreadInherited, loader);
+	}
+
 
 	@NonNull
 	private static <T> ImmutableList<T> retrieveRows(

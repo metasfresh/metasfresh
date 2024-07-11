@@ -1,17 +1,17 @@
 package de.metas.requisition.callout;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_RequisitionLine;
 import org.compiere.model.MProductPricing;
 
-import de.metas.product.IProductBL;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -70,7 +70,13 @@ public class M_RequisitionLine
 		final int C_BPartner_ID = line.getC_BPartner_ID();
 		final BigDecimal Qty = line.getQty();
 		final boolean isSOTrx = false;
-		final MProductPricing pp = new MProductPricing(line.getM_Product_ID(), C_BPartner_ID, Qty, isSOTrx);
+		final MProductPricing pp = new MProductPricing(
+				OrgId.ofRepoId(line.getAD_Org_ID()),
+				line.getM_Product_ID(),
+				C_BPartner_ID,
+				null,
+				Qty,
+				isSOTrx);
 
 		//
 		final I_M_Requisition req = line.getM_Requisition();
