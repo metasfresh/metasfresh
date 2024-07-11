@@ -84,9 +84,7 @@ public class ModCntr_Specific_Delete_Price extends JavaProcess implements IProce
 						.modularContractModuleId(contractPrice.modularContractModuleId())
 						.build(),
 				logHandlerRegistry);
-
-
-		modularContractPriceService.deleteById(contractPriceId);
+		
 		return MSG_OK;
 	}
 

@@ -41,7 +41,6 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_Invoice;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 

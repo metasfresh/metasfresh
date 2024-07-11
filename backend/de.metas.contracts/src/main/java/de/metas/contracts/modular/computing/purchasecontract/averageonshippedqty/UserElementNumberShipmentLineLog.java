@@ -271,7 +271,6 @@ public class UserElementNumberShipmentLineLog extends AbstractModularContractLog
 
 		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificScalePrice(contractSpecificScalePriceRequest);
 
-		// request.getProductId()
 		return Optional.ofNullable(contractSpecificPrice)
 				.map(price -> ProductPriceWithFlags.builder()
 						.price(price)
