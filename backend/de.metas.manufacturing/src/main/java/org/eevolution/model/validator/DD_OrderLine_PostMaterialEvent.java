@@ -37,6 +37,7 @@ import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -54,21 +55,14 @@ import static de.metas.distribution.ddorder.lowlevel.interceptor.DD_Order_PostMa
 
 @Interceptor(I_DD_OrderLine.class)
 @Component
+@RequiredArgsConstructor
 public class DD_OrderLine_PostMaterialEvent
 {
-	private final ReplenishInfoRepository replenishInfoRepository;
-	private final PostMaterialEventService postMaterialEventService;
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
-
-	public DD_OrderLine_PostMaterialEvent(
-			@NonNull final ReplenishInfoRepository replenishInfoRepository,
-			@NonNull final PostMaterialEventService postMaterialEventService)
-	{
-		this.replenishInfoRepository = replenishInfoRepository;
-		this.postMaterialEventService = postMaterialEventService;
-	}
+	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
+	@NonNull private final PostMaterialEventService postMaterialEventService;
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
 
 	@ModelChange(
 			timings = { ModelValidator.TYPE_AFTER_CHANGE },

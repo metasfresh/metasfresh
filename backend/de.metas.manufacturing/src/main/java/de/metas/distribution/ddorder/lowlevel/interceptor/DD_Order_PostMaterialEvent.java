@@ -28,11 +28,11 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
@@ -53,21 +53,15 @@ import java.util.List;
  */
 @Interceptor(I_DD_Order.class)
 @Component
+@RequiredArgsConstructor
 public class DD_Order_PostMaterialEvent
 {
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
-	private final DDOrderLowLevelService ddOrderLowLevelService;
-	private final ReplenishInfoRepository replenishInfoRepository;
-
-	public DD_Order_PostMaterialEvent(
-			@NonNull final DDOrderLowLevelService ddOrderLowLevelService,
-			@NonNull final ReplenishInfoRepository replenishInfoRepository)
-	{
-		this.ddOrderLowLevelService = ddOrderLowLevelService;
-		this.replenishInfoRepository = replenishInfoRepository;
-	}
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
+	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
+	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
+	@NonNull private final PostMaterialEventService materialEventService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void fireMaterialEvent(@NonNull final I_DD_Order ddOrder)
@@ -179,7 +173,6 @@ public class DD_Order_PostMaterialEvent
 				.newDocStatus(ddOrder.getDocStatus())
 				.build();
 
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
 		materialEventService.postEventAfterNextCommit(event);
 	}
 

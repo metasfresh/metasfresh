@@ -4,7 +4,6 @@ import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.util.ISingletonService;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 
@@ -44,7 +43,6 @@ public interface IHUEmptiesService extends ISingletonService
 	/**
 	 * Generate movements for the empties (Leergut) inOut. If the given <code>inout</code> is a receipt, the movement will be from inOut's warehouse to the empties-warehouse (Gebindelager). If the
 	 * inOut is a shipment, the movement will be in the opposite direction.
-	 *
 	 * task 08070
 	 */
 	void generateMovementFromEmptiesInout(I_M_InOut emptiesInOut);
