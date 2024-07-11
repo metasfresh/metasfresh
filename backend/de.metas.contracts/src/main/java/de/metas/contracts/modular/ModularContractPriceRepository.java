@@ -238,6 +238,23 @@ public class ModularContractPriceRepository
 		deleteRecord(record);
 	}
 
+	public boolean existsSimilarContractSpecificScalePrice(@NonNull final ModCntrSpecificPriceId id)
+	{
+		final ModCntrSpecificPrice specificPrice = getById(id);
+
+		return queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, specificPrice.flatrateTermId())
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_IsScalePrice, specificPrice.isScalePrice())
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_M_Product_ID, specificPrice.productId())
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_UOM_ID, specificPrice.uomId())
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Currency_ID, specificPrice.amount().getCurrencyId())
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, specificPrice.modularContractModuleId())
+				.addCompareFilter(I_ModCntr_Specific_Price.COLUMNNAME_MinValue, CompareQueryFilter.Operator.LESS_OR_EQUAL, specificPrice.minValue())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+	}
+
 	public Optional<TaxCategoryId> retrieveOptionalContractSpecificTaxCategory(final ContractSpecificPriceRequest contractSpecificPriceRequest)
 	{
 		final Set<TaxCategoryId> distinctTaxCategories = getSpecificPriceQuery(contractSpecificPriceRequest)
