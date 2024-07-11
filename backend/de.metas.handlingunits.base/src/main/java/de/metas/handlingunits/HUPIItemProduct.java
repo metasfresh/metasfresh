@@ -105,8 +105,8 @@ public class HUPIItemProduct
 		{
 			throw new AdempiereException("Cannot calculate qty of CUs for infinite capacity");
 		}
-
-		return qtyCUsPerTU.multiply(qtyTU.toInt());
+		
+		return qtyTU.computeTotalQtyCUsUsingQtyCUsPerTU(qtyCUsPerTU);
 	}
 
 	public Capacity toCapacity()

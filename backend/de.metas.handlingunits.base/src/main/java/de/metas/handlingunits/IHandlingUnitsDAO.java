@@ -199,6 +199,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version version, final BPartnerId bpartnerId);
 
+	I_M_HU_PI_Item retrievePIItemMaterial(@NonNull I_M_HU_PI_Version version);
+
 	/**
 	 * Retrieve all {@link I_M_HU_PI_Item}s (active or inactive) for given M_HU_PI_Version.
 	 */

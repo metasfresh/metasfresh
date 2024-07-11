@@ -66,6 +66,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -84,6 +85,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
@@ -570,17 +572,15 @@ public class PickingJobPickCommand
 			return;
 		}
 
-		for (final LU lu : result.getLus())
-		{
-			if (!lu.isPreExistingLU())
-			{
-				updateOtherHUAttributes(lu.toHU());
-			}
-
-			lu.getTus().forEach(this::updateOtherHUAttributes);
-		}
-
+		result.getLus().forEach(this::updateOtherAttributes);
 		result.getTopLevelTUs().forEach(this::updateOtherHUAttributes);
+	}
+
+	private void updateOtherAttributes(final LU lu)
+	{
+		lu.getTus().forEach(this::updateOtherHUAttributes);
+
+		updateOtherHUAttributes(lu.toHU(), lu.isPreExistingLU());
 	}
 
 	private void updateOtherHUAttributes(final TU tu)
@@ -590,10 +590,10 @@ public class PickingJobPickCommand
 			return;
 		}
 
-		updateOtherHUAttributes(tu.toHU());
+		updateOtherHUAttributes(tu.toHU(), false);
 	}
 
-	private void updateOtherHUAttributes(final I_M_HU hu)
+	private void updateOtherHUAttributes(final I_M_HU hu, final boolean updateFromChildren)
 	{
 		if (!isUpdateAttributes())
 		{
@@ -605,12 +605,56 @@ public class PickingJobPickCommand
 
 		if (isSetBestBeforeDate)
 		{
-			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+			if (updateFromChildren)
+			{
+				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_BestBeforeDate, computeBestBeforeDateFromChildren(huAttributes));
+			}
+			else
+			{
+				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+			}
 		}
 		if (isSetLotNo)
 		{
-			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNo);
+			if (updateFromChildren)
+			{
+				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_LotNumber, computeLotNoFromChildren(huAttributes));
+			}
+			else
+			{
+				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNo);
+			}
 		}
+	}
+
+	@Nullable
+	private static LocalDate computeBestBeforeDateFromChildren(final IAttributeStorage huAttributes)
+	{
+		final HashSet<LocalDate> childValues = new HashSet<>();
+		for (final IAttributeStorage childAttributes : huAttributes.getChildAttributeStorages(true))
+		{
+			if (childAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
+			{
+				childValues.add(childAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate));
+			}
+		}
+
+		return childValues.size() == 1 ? childValues.iterator().next() : null;
+	}
+
+	@Nullable
+	private static String computeLotNoFromChildren(final IAttributeStorage huAttributes)
+	{
+		final HashSet<String> childValues = new HashSet<>();
+		for (final IAttributeStorage childAttributes : huAttributes.getChildAttributeStorages(true))
+		{
+			if (childAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
+			{
+				childValues.add(StringUtils.trimBlankToNull(childAttributes.getValueAsString(AttributeConstants.ATTR_LotNumber)));
+			}
+		}
+
+		return childValues.size() == 1 ? childValues.iterator().next() : null;
 	}
 
 	private boolean isUpdateAttributes()
