@@ -54,7 +54,7 @@ import static de.metas.postfinance.document.export.PostFinanceYbInvoiceService.Y
 
 @Component
 @RequiredArgsConstructor
-public class CreditMemoPostFinanceYbInvoiceHandler implements IPostFinanceYbInvoiceHandler
+public class SalesCreditMemoPostFinanceYbInvoiceHandler implements IPostFinanceYbInvoiceHandler
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
