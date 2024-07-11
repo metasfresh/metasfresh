@@ -44,7 +44,7 @@ import java.util.Optional;
  */
 public final class QualityInspectionWarehouseDestProvider implements IReceiptScheduleWarehouseDestProvider
 {
-	public static final transient QualityInspectionWarehouseDestProvider instance = new QualityInspectionWarehouseDestProvider();
+	public static final QualityInspectionWarehouseDestProvider instance = new QualityInspectionWarehouseDestProvider();
 
 	private static final String SYSCONFIG_QualityInspectionWarehouseDest_Prefix = "QualityInspectionWarehouseDest";
 

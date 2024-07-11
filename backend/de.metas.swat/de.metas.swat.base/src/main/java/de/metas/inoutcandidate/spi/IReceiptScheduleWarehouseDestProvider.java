@@ -38,7 +38,7 @@ public interface IReceiptScheduleWarehouseDestProvider
 	/**
 	 * Context used for evaluating if the destination warehouse
 	 */
-	public interface IContext
+	interface IContext
 	{
 		Properties getCtx();
 

@@ -115,8 +115,6 @@ import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit.COL
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class M_ShipmentSchedule_StepDef
 {
@@ -252,7 +250,7 @@ public class M_ShipmentSchedule_StepDef
 				.map(I_M_ShipmentSchedule::getM_ShipmentSchedule_ID)
 				.collect(ImmutableList.toImmutableList());
 
-		assertThat(shipmentScheduleIds.size()).isGreaterThan(0);
+		assertThat(shipmentScheduleIds).isNotEmpty();
 
 		final Supplier<Boolean> noRecords = () -> {
 			final List<I_M_ShipmentSchedule_Recompute> records = queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
@@ -260,7 +258,7 @@ public class M_ShipmentSchedule_StepDef
 					.create()
 					.list();
 
-			return records.size() == 0;
+			return records.isEmpty();
 		};
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, noRecords);
@@ -352,7 +350,7 @@ public class M_ShipmentSchedule_StepDef
 		assertThat(jsonResponseShipmentCandidates).isNotNull();
 
 		final List<JsonResponseShipmentCandidate> items = jsonResponseShipmentCandidates.getItems();
-		assertThat(items.size()).isEqualTo(1);
+		assertThat(items).hasSize(1);
 
 		final JsonResponseShipmentCandidate item = items.get(0);
 
@@ -378,7 +376,7 @@ public class M_ShipmentSchedule_StepDef
 		assertThat(jsonResponseShipmentCandidates).isNotNull();
 
 		final List<JsonResponseShipmentCandidate> items = jsonResponseShipmentCandidates.getItems();
-		assertThat(items.size()).isEqualTo(1);
+		assertThat(items).hasSize(1);
 
 		final JsonResponseShipmentCandidate item = items.get(0);
 		final Map<String, String> row = dataTable.asMaps().get(0);
@@ -558,8 +556,8 @@ public class M_ShipmentSchedule_StepDef
 				.create()
 				.firstOnlyNotNull(I_M_ShipmentSchedule.class);
 
-		assertNotNull(shipmentSchedule);
-		assertEquals(Boolean.TRUE, refreshedSchedule.isClosed());
+		assertThat(shipmentSchedule).isNotNull();
+		assertThat(refreshedSchedule.isClosed()).isEqualTo(Boolean.TRUE);
 	}
 
 	private void generateShipmentForSchedule(@NonNull final Map<String, String> tableRow)
@@ -584,7 +582,7 @@ public class M_ShipmentSchedule_StepDef
 
 		final Set<InOutId> inOutIds = shipmentService.generateShipmentsForScheduleIds(generateShipmentsForSchedulesRequest);
 
-		assertThat(inOutIds.size()).isEqualTo(shipmentIdentifiers.size());
+		assertThat(inOutIds).hasSameSizeAs(shipmentIdentifiers);
 
 		final List<InOutId> oldestFirstInOutIds = inOutIds.stream()
 				.sorted()

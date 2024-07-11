@@ -58,7 +58,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * See http://dewiki908/mediawiki/index.php/08118_Wie_geht_das_zur%C3%BCck%2C_was_noch_bei_der_Linie_steht_%28Prozess%29_%28107566315908%29
+ * See <a href="http://dewiki908/mediawiki/index.php/08118_Wie_geht_das_zur%C3%BCck%2C_was_noch_bei_der_Linie_steht_%28Prozess%29_%28107566315908%29">task</a>
  */
 /* package */final class RawMaterialsReturnDDOrderLineCandidate
 {

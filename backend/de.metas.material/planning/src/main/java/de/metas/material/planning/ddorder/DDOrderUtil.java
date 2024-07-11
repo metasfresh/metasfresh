@@ -54,7 +54,6 @@ public class DDOrderUtil
 	/**
 	 * @param productPlanningData may be {@code null} as of gh #1635
 	 * @param networkLine         may also be {@code null} as of gh #1635
-	 * @return
 	 */
 	public int calculateDurationDays(
 			@Nullable final ProductPlanning productPlanningData,
@@ -99,7 +98,6 @@ public class DDOrderUtil
 			transferTime = 0;
 		}
 
-		final int durationTotalDays = leadtimeDays + transferTime;
-		return durationTotalDays;
+		return leadtimeDays + transferTime;
 	}
 }
