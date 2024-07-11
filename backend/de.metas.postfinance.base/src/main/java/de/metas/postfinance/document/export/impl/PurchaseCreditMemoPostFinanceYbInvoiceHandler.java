@@ -63,7 +63,7 @@ public class PurchaseCreditMemoPostFinanceYbInvoiceHandler implements IPostFinan
 	@Override
 	public boolean applies(@NonNull final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest)
 	{
-		if(sysConfigBL.getBooleanValue(IS_ACTIVE, false))
+		if(!sysConfigBL.getBooleanValue(IS_ACTIVE, false))
 		{
 			return false;
 		}
