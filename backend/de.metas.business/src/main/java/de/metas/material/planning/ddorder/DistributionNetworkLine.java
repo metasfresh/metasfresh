@@ -16,6 +16,7 @@ public class DistributionNetworkLine
 	@NonNull DistributionNetworkLineId id;
 	@NonNull WarehouseId sourceWarehouseId;
 	@NonNull WarehouseId targetWarehouseId;
+	int priorityNo;
 	@NonNull ShipperId shipperId;
 	
 	@NonNull @Builder.Default Percent transferPercent = Percent.ONE_HUNDRED;

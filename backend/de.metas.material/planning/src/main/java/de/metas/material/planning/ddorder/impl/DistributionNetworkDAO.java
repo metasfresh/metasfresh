@@ -123,6 +123,7 @@ public class DistributionNetworkDAO implements IDistributionNetworkDAO
 				.id(DistributionNetworkLineId.ofRepoId(lineRecord.getDD_NetworkDistributionLine_ID()))
 				.sourceWarehouseId(WarehouseId.ofRepoId(lineRecord.getM_WarehouseSource_ID()))
 				.targetWarehouseId(WarehouseId.ofRepoId(lineRecord.getM_Warehouse_ID()))
+				.priorityNo(lineRecord.getPriorityNo())
 				.shipperId(ShipperId.ofRepoId(lineRecord.getM_Shipper_ID()))
 				.transferPercent(Percent.of(lineRecord.getPercent()))
 				.transferDuration(Duration.ofDays(lineRecord.getTransfertTime().intValueExact()))
