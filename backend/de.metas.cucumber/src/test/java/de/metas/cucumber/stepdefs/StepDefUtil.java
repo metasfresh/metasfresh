@@ -351,38 +351,4 @@ public class StepDefUtil
 	{
 		return Arrays.asList(s.split(":"));
 	}
-
-	/**
-	 * Waits for the given {@code worker} to supply an optional that is present.
-	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
-	 *
-	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
-	 */
-	public <T> T tryAndWaitForItem(
-			final long maxWaitSeconds,
-			final long checkingIntervalMs,
-			@NonNull final ItemProvider<T> worker,
-			@Nullable final Supplier<String> logContext) throws InterruptedException
-	{
-		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
-
-		ItemProvider.ProviderResult<T> lastWorkerResult = null;
-		while (deadLineMillis > System.currentTimeMillis())
-		{
-			Thread.sleep(checkingIntervalMs);
-
-			lastWorkerResult = worker.execute();
-			if (lastWorkerResult.isResultFound())
-			{
-				return lastWorkerResult.getResult();
-			}
-		}
-
-		final String context = Optional.ofNullable(logContext).map(Supplier::get).orElse("Context not provided!");
-
-		Assertions.fail("the given supplier didn't succeed within the " + maxWaitSeconds + "second timeout. "
-								+ "The logging output of the last try is:\n" + (lastWorkerResult == null ? "<null>" : lastWorkerResult.getLog())
-								+ "\n Context: " + context);
-		return null;
-	}
 }
