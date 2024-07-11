@@ -11,23 +11,23 @@ Feature: create distribution simulation
   @Id:S0171.300
   Scenario: create distribution simulation
     Given metasfresh contains M_Products:
-      | Identifier | Name                            |
-      | p_1        | product_Distribution_@Date@     |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                | Value                | OPT.Description            | OPT.IsActive |
-      | ps_1       | pricing_system_name | pricing_system_value | pricing_system_description | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                 | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_S0171_300 | null            | true  | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_1       | ps_1               | DE                    | EUR                 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name        | ValidFrom  |
-      | plv_1      | pl_1                      | plv_product | 2022-07-01 |
+      | Identifier | M_PriceList_ID | ValidFrom  |
+      | plv_1      | pl_1           | 2022-07-01 |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                  | p_1          | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | bpartner_1 | BPartnerName_Dist_06-07_2022 | N            | Y              | ps_1                          |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | bpartner_1 | N        | Y          | ps_1               |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN          | C_BPartner_ID.Identifier |
       | location_1 | bPLocation_1 | bpartner_1               |
