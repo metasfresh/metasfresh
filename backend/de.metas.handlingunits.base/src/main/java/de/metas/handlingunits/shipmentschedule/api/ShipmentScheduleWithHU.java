@@ -471,14 +471,11 @@ public class ShipmentScheduleWithHU
 			return IHandlingUnitsBL.extractPIItemProductOrNull(tuOrVhu);
 		}
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 		final I_M_HU_PI_Item materialPIItem;
-		if (handlingUnitsBL.isAggregateHU(tuOrVhu))
+		if (services.isAggregateHU(tuOrVhu))
 		{
-			final I_M_HU_PI_Version tuPIVersion = handlingUnitsBL.getEffectivePIVersion(tuOrVhu);
-			materialPIItem = handlingUnitsDAO.retrievePIItemMaterial(tuPIVersion);
+			final I_M_HU_PI_Version tuPIVersion = services.getEffectivePIVersion(tuOrVhu);
+			materialPIItem = services.getPIItemMaterial(tuPIVersion);
 		}
 		else
 		{
@@ -490,7 +487,7 @@ public class ShipmentScheduleWithHU
 
 			Check.assume(huMaterialItems.size() == 1, "Each hu has just one M_HU_Item with type={}; hu={}; huMaterialItems={}", X_M_HU_Item.ITEMTYPE_Material, tuOrVhu, huMaterialItems);
 			final I_M_HU_Item huMaterialItem = huMaterialItems.get(0);
-			materialPIItem = handlingUnitsBL.getPIItem(huMaterialItem);
+			materialPIItem = services.getPIItem(huMaterialItem);
 		}
 
 		if (materialPIItem != null)
