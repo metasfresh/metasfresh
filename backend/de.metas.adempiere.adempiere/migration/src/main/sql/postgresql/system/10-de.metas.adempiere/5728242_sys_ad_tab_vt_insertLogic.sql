@@ -88,6 +88,11 @@ SELECT trl.ad_language
      , t.IsRefreshViewOnChangeEvents
      , t.IsAutodetectDefaultDateFilter
      , t.QuickInputLayout
+     , trl.NotFound_Message
+     , t.NotFound_Message AS NotFound_Message_BaseLang
+     , trl.NotFound_MessageDetail
+     , t.NotFound_MessageDetail AS NotFound_MessageDetail_BaseLang
+     , t.IncludeFiltersStrategy
 FROM ad_tab t
          JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
          JOIN ad_tab_trl trl ON t.ad_tab_id = trl.ad_tab_id
