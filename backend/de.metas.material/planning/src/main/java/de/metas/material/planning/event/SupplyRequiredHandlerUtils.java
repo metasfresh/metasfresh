@@ -3,17 +3,15 @@ package de.metas.material.planning.event;
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -42,29 +40,31 @@ public class SupplyRequiredHandlerUtils
 {
 
 	@NonNull
-	public MaterialRequest mkRequest(
+	public static MaterialRequest mkRequest(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMaterialPlanningContext mrpContext)
 	{
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-		final BPartnerId descriptorBPartnerId = supplyRequiredDescriptor.getMaterialDescriptor().getCustomerId();
-
-		final int productId = supplyRequiredDescriptor.getMaterialDescriptor().getProductId();
-		final I_M_Product product = load(productId, I_M_Product.class);
-
-		final BigDecimal qtyToSupply = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
-
-		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+		final BPartnerId customerId = supplyRequiredDescriptor.getMaterialDescriptor().getCustomerId();
 
 		return MaterialRequest.builder()
-				.qtyToSupply(Quantity.of(qtyToSupply, uom))
+				.qtyToSupply(getQuantity(supplyRequiredDescriptor))
 				.mrpContext(mrpContext)
-				.mrpDemandBPartnerId(BPartnerId.toRepoIdOr(descriptorBPartnerId, -1))
+				.mrpDemandBPartnerId(BPartnerId.toRepoIdOr(customerId, -1))
 				.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())
 				.mrpDemandShipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
 				.demandDate(supplyRequiredDescriptor.getMaterialDescriptor().getDate())
 				.isSimulated(supplyRequiredDescriptor.isSimulated())
 				.build();
+	}
+
+	private static @NonNull Quantity getQuantity(final @NonNull SupplyRequiredDescriptor supplyRequiredDescriptor)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+
+		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getMaterialDescriptor().getProductId());
+		final BigDecimal qtyToSupplyBD = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+		final I_C_UOM uom = productBL.getStockUOM(productId);
+		return Quantity.of(qtyToSupplyBD, uom);
 	}
 }

@@ -65,6 +65,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DDOrderPojoSupplier
 {
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
 	@NonNull private final ModelProductDescriptorExtractor productDescriptorFactory;
 
 	public List<DDOrder> supplyPojos(@NonNull final IMaterialRequest request)
@@ -83,7 +85,6 @@ public class DDOrderPojoSupplier
 
 	public List<DDOrder> supplyPojos0(@NonNull final IMaterialRequest request)
 	{
-		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 		final List<DDOrder.DDOrderBuilder> builders = new ArrayList<>();
 
@@ -111,7 +112,6 @@ public class DDOrderPojoSupplier
 			return ImmutableList.of();
 		}
 
-		final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
 		final I_DD_NetworkDistribution network = distributionNetworkDAO.getById(productPlanningData.getDistributionNetworkId());
 		final List<I_DD_NetworkDistributionLine> networkLines = distributionNetworkDAO
 				.retrieveNetworkLinesByTargetWarehouse(network, productPlanningData.getWarehouseId());
