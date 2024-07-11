@@ -1,0 +1,18 @@
+{
+  "orgCode": "orgCode",
+  "externalSystemName": "RabbitMQRESTAPI",
+  "externalSystemChildConfigValue": "childValue",
+  "command": "exportExternalReference",
+  "adPInstanceId": 4,
+  "externalSystemConfigId": 1,
+  "traceId": "traceId",
+  "parameters": {
+    "RemoteURL": "https://test",
+    "RoutingKey": "routingKey",
+    "RabbitMQAuthToken": "authToken",
+    "JsonExternalReferenceLookupRequest": "{\"systemName\":\"ALBERTA\",\"items\":[{\"externalReference\":\"externalRef_bpartner\",\"type\":\"BPartner\"},{\"externalReference\":\"externalRef_bpLocation\",\"type\":\"BPartnerLocation\"},{\"externalReference\":\"externalRef_user\",\"type\":\"UserID\"}]}"
+  }
+}
+
+
+

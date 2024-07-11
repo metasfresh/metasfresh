@@ -10,6 +10,7 @@ de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase
     "manufacturerId" : null,
     "manufacturerName" : null,
     "manufacturerNumber" : null,
+    "discontinuedFrom" : null,
     "bpartners" : [ {
       "bPartnerId" : 1,
       "productNo" : "productNo1-vendor1",
@@ -20,7 +21,9 @@ de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase
       "vendor" : true,
       "currentVendor" : true,
       "customer" : false,
-      "leadTimeInDays" : 13
+      "leadTimeInDays" : 13,
+      "excludedFromSale" : false,
+      "excludedFromPurchase" : false
     }, {
       "bPartnerId" : 2,
       "productNo" : "productNo1-customer2",
@@ -31,7 +34,9 @@ de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase
       "vendor" : false,
       "currentVendor" : false,
       "customer" : true,
-      "leadTimeInDays" : 32
+      "leadTimeInDays" : 32,
+      "excludedFromSale" : false,
+      "excludedFromPurchase" : false
     } ]
   }, {
     "id" : 100006,
@@ -44,6 +49,7 @@ de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase
     "manufacturerId" : null,
     "manufacturerName" : null,
     "manufacturerNumber" : null,
+    "discontinuedFrom" : null,
     "bpartners" : [ ]
   } ]
 } ]

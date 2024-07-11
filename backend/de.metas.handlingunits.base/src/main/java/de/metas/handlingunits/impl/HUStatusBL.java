@@ -174,7 +174,7 @@ public class HUStatusBL implements IHUStatusBL
 		}
 
 		final String huStatus = huRecord.getHUStatus();
-		if (Check.isEmpty(huStatus, true))
+		if (Check.isBlank(huStatus))
 		{
 			return false; // can be the case with a new/unsaved HU
 		}

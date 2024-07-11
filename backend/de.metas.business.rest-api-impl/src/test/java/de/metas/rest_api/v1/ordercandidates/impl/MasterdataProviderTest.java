@@ -15,7 +15,7 @@ import de.metas.common.rest_api.v1.SyncAdvise;
 import de.metas.common.rest_api.v1.SyncAdvise.IfExists;
 import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;
 import de.metas.currency.CurrencyRepository;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;

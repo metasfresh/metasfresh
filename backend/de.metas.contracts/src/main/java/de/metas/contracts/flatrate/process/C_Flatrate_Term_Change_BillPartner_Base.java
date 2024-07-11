@@ -89,44 +89,26 @@ public abstract class C_Flatrate_Term_Change_BillPartner_Base extends JavaProces
 	{
 		final ImmutableList<I_C_Flatrate_Term> nextTerms = flatrateBL.retrieveNextFlatrateTerms(term);
 
-		final ImmutableList<I_C_Flatrate_Term> nextTermWithoutInvoices = nextTerms.stream()
-				.filter(nextTerm -> !C_Flatrate_Term_Change_ProcessHelper.termHasInvoices(nextTerm))
-				.collect(ImmutableList.toImmutableList());
-
-		final boolean currentTermHasNoInvoice = !C_Flatrate_Term_Change_ProcessHelper.termHasInvoices(term);
-		final boolean existNextTermsWithNoInvoices = !nextTermWithoutInvoices.isEmpty();
-
-		boolean foundTermsWithoutInvoices = currentTermHasNoInvoice || existNextTermsWithNoInvoices;
-
-		if (!foundTermsWithoutInvoices)
-		{
-			// the term and all its successors are already invoiced.
-			C_Flatrate_Term_Change_ProcessHelper.throwHasInvoicesException();
-		}
-
 		updateFlatrateTermBillBPartner(term);
 
-		nextTermWithoutInvoices.forEach(this::updateFlatrateTermBillBPartner);
+		nextTerms.forEach(this::updateFlatrateTermBillBPartner);
 	}
 
 	private void updateFlatrateTermBillBPartner(final I_C_Flatrate_Term term)
 	{
-
-		if (C_Flatrate_Term_Change_ProcessHelper.termHasInvoices(term))
-		{
-			// nothing to do;
-			return;
-		}
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(p_billBPartnerId);
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(p_billBPartnerId, p_billLocationId);
 
 		final BPartnerContactId bPartnerContactId = BPartnerContactId.ofRepoIdOrNull(p_billBPartnerId, p_billUserId);
+
+		final boolean termHasInvoices = C_Flatrate_Term_Change_ProcessHelper.termHasInvoices(term);
 
 		final FlatrateTermBillPartnerRequest request = FlatrateTermBillPartnerRequest.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
 				.billBPartnerId(bPartnerId)
 				.billLocationId(bPartnerLocationId)
 				.billUserId(bPartnerContactId)
+				.termHasInvoices(termHasInvoices)
 				.build();
 
 		flatrateBL.updateFlatrateTermBillBPartner(request);

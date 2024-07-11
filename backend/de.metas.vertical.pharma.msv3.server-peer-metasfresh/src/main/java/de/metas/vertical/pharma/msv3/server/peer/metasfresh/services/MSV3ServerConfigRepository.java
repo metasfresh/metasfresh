@@ -1,7 +1,7 @@
 package de.metas.vertical.pharma.msv3.server.peer.metasfresh.services;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.warehouse.WarehousePickingGroupId;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.springframework.stereotype.Repository;
 

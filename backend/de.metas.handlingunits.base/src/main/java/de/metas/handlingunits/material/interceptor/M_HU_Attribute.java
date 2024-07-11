@@ -2,6 +2,7 @@ package de.metas.handlingunits.material.interceptor;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.util.Check;
@@ -54,8 +55,9 @@ public class M_HU_Attribute
 {
 	private final IAttributesBL attributesService = Services.get(IAttributesBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUTrxBL huTrxBL=Services.get(IHUTrxBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	
+
 	private final PostMaterialEventService materialEventService;
 
 	public M_HU_Attribute(@NonNull final PostMaterialEventService materialEventService)
@@ -77,9 +79,9 @@ public class M_HU_Attribute
 			// don't fire attribute change events from within the HU loader, because there we don't have *real* HU-attribute-changes.
 			// It's rather e.g. HUs are split and then HU-attributes are updated from the split source.
 			// this MI on the other hand is explicitly about existing HUs where attributes such as the time-until-expiry are changed
-			return; 
+			return;
 		}
-		
+
 		final AttributeId attributeId = AttributeId.ofRepoId(record.getM_Attribute_ID());
 		final I_M_Attribute attribute = attributesService.getAttributeById(attributeId);
 		if (!attribute.isStorageRelevant())

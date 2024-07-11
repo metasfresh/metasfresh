@@ -22,17 +22,21 @@
 
 package de.metas.picking.workflow.handlers;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.common.util.time.SystemTime;
-import de.metas.handlingunits.HUBarcode;
+import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
@@ -51,7 +55,7 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
-import de.metas.workflow.rest_api.service.MobileApplication;
+import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -65,9 +69,10 @@ import java.util.function.UnaryOperator;
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
 
 @Component
-public class PickingMobileApplication implements MobileApplication
+public class PickingMobileApplication implements WorkflowBasedMobileApplication
 {
-	static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("picking");
+	@VisibleForTesting
+	public static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("picking");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
@@ -193,18 +198,25 @@ public class PickingMobileApplication implements MobileApplication
 				.activities(ImmutableList.of(
 						WFActivity.builder()
 								.id(WFActivityId.ofString("A1"))
-								.caption(TranslatableStrings.anyLanguage("Scan picking slot"))
+								.caption(ImmutableTranslatableString.builder()
+										.trl("de_DE", "Kommissionierplatz scannen")
+										.trl("de_CH", "Kommissionierplatz scannen")
+										.defaultValue("Scan picking slot")
+										.build())
 								.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+								.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
 								.build(),
 						WFActivity.builder()
 								.id(WFActivityId.ofString("A2"))
 								.caption(TranslatableStrings.anyLanguage("Pick"))
 								.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+								.status(ActualPickingWFActivityHandler.computeActivityState(pickingJob))
 								.build(),
 						WFActivity.builder()
 								.id(WFActivityId.ofString("A3"))
-								.caption(TranslatableStrings.anyLanguage("Complete picking"))
+								.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
 								.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+								.status(CompletePickingWFActivityHandler.computeActivityState(pickingJob))
 								.build()))
 				.build();
 	}
@@ -223,18 +235,6 @@ public class PickingMobileApplication implements MobileApplication
 		eventsByWFProcessId
 				.asMap()
 				.forEach((wfProcessId, events) -> processStepEvents(wfProcessId, callerId, events));
-	}
-
-	private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json)
-	{
-		return PickingJobStepEvent.builder()
-				.timestamp(SystemTime.asInstant())
-				.pickingStepId(PickingJobStepId.ofString(json.getPickingStepId()))
-				.eventType(fromJson(json.getType()))
-				.huBarcode(HUBarcode.ofBarcodeString(json.getHuBarcode()))
-				.qtyPicked(json.getQtyPicked())
-				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
-				.build();
 	}
 
 	public static PickingJobStepEventType fromJson(JsonPickingStepEvent.EventType json)
@@ -261,14 +261,37 @@ public class PickingMobileApplication implements MobileApplication
 					wfProcess.assertHasAccess(callerId);
 					assertPickingActivityType(jsonEvents, wfProcess);
 
-					final ImmutableList<PickingJobStepEvent> events = jsonEvents.stream()
-							.map(PickingMobileApplication::fromJson)
-							.collect(ImmutableList.toImmutableList());
-
 					return wfProcess.<PickingJob>mapDocument(
-							pickingJob -> pickingJobRestService.processStepEvents(pickingJob, events)
+							pickingJob -> processStepEvents(pickingJob, jsonEvents)
 					);
 				});
+	}
+
+	private PickingJob processStepEvents(@NonNull final PickingJob pickingJob, @NonNull final Collection<JsonPickingStepEvent> jsonEvents)
+	{
+		final ImmutableList<PickingJobStepEvent> events = jsonEvents.stream()
+				.map(json -> fromJson(json, pickingJob))
+				.collect(ImmutableList.toImmutableList());
+
+		return pickingJobRestService.processStepEvents(pickingJob, events);
+	}
+
+	private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json, @NonNull final PickingJob pickingJob)
+	{
+		final PickingJobStepId pickingStepId = PickingJobStepId.ofString(json.getPickingStepId());
+		final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(json.getHuQRCode());
+		final PickingJobStepPickFromKey pickFromKey = pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode(qrCode).getPickFromKey();
+
+		return PickingJobStepEvent.builder()
+				.timestamp(SystemTime.asInstant())
+				.pickingStepId(pickingStepId)
+				.pickFromKey(pickFromKey)
+				.eventType(fromJson(json.getType()))
+				.huQRCode(qrCode)
+				.qtyPicked(json.getQtyPicked())
+				.qtyRejected(json.getQtyRejected())
+				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
+				.build();
 	}
 
 	private static void assertPickingActivityType(

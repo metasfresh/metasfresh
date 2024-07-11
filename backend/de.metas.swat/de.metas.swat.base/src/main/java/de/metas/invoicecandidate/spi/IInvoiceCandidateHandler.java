@@ -16,12 +16,15 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
+
+import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES;
 
 /*
  * #%L
@@ -51,9 +54,9 @@ import java.util.List;
  * <b>IMPORTANT:</b> They need be registered in the {@link I_C_ILCandHandler} table. Only then the system will create model interceptors to make sure they are invoked at the right times.
  * <p>
  * To get an instance of this interface, use {@link IInvoiceCandidateHandlerBL} methods.
- *
- * Registered implementations will instantiated their methods be called by API.
- *
+ * <p>
+ * Registered implementations will instantiated and their methods will be called by metasfresh.
+ * <p>
  * NOTE: because the API will create a new instance each time a handler is needed, it's safe to have status/field variables.
  * NOTE to future devs: It might be tempting to try and add a generic type parameter; i just failed miserably when it came to {@link #expandRequest(InvoiceCandidateGenerateRequest)} and to extending adjacent classes and services.
  *
@@ -61,7 +64,9 @@ import java.util.List;
  */
 public interface IInvoiceCandidateHandler
 {
-	/** Which action shall be performed when an invoice candidate invalidation was requested */
+	/**
+	 * Which action shall be performed when an invoice candidate invalidation was requested
+	 */
 	enum OnInvalidateForModelAction
 	{
 		REVALIDATE,
@@ -73,10 +78,25 @@ public interface IInvoiceCandidateHandler
 		RECREATE_ASYNC
 	}
 
+	enum CandidatesAutoCreateMode
+	{
+		DONT,
+
+		/** Enqueues the respective model (e.g. order or contract) for invoice creation. */
+		CREATE_CANDIDATES,
+
+		/** Like {@link #CREATE_CANDIDATES}, but waits for the candidates to be created and then directly enqueues them for invoice creation. */
+		CREATE_CANDIDATES_AND_INVOICES;
+
+		public boolean isDoSomething()
+		{
+			return this != DONT;
+		}
+	}
+	
 	/**
-	 *
 	 * @return which action shall be performed when an invoice candidate invalidation was requested.
-	 *         default: {@link OnInvalidateForModelAction#REVALIDATE}.
+	 * default: {@link OnInvalidateForModelAction#REVALIDATE}.
 	 */
 	default OnInvalidateForModelAction getOnInvalidateForModelAction()
 	{
@@ -84,27 +104,30 @@ public interface IInvoiceCandidateHandler
 	}
 
 	/**
-	 * Checks if this handler, in general, can create invoice candidates automatically. Returns {@code true} by default.
+	 * Checks if this handler, <b>in general</b>, can create invoice candidates automatically. Returns {@link CandidatesAutoCreateMode#CREATE_CANDIDATES} by default.
+	 * <p>
+	 * <b>The handler gives a "general" response on startup-time!</b> 
+	 * When the business logic has to create individual invoice candidates, it will call {@link #getSpecificCandidatesAutoCreateMode(Object)}.
 	 *
-	 * This is a preliminary condition. When the business logic has to create invoice candidates automatically, it will also call {@link #isCreateMissingCandidatesAutomatically(Object)}.
-	 *
-	 * @return true if the invoice candidates shall be automatically generated for {@link #getSourceTable()}.
+	 * @return what shall be done for {@link #getSourceTable()}. This default impl returns {@link CandidatesAutoCreateMode#CREATE_CANDIDATES}.
 	 */
-	default boolean isCreateMissingCandidatesAutomatically()
+	default CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
-		return true;
+		return CREATE_CANDIDATES;
 	}
 
 	/**
+	 * Checks if this handler, <b>in particular</b>, can create invoice candidates for the given {@code model}. 
+	 * 
 	 * Invoice candidate handlers usually need to implement this method,
 	 * because they need to make sure that the given {@code model} does not have an invoice candidate yet, before they can return {@code true}.
 	 * <p>
-	 * Note that this method only matters if {@link #isCreateMissingCandidatesAutomatically()} returned {@code true} when the system started.
+	 * Note that this method only matters if {@link #getGeneralCandidatesAutoCreateMode()} did not return {@link CandidatesAutoCreateMode#DONT} when the system started.
 	 *
-	 * @return {@code true} if the invoice candidates shall be automatically generated for the given particular model.
+	 * @return whether the invoice candidates shall be automatically generated for the given particular model.
 	 */
-	boolean isCreateMissingCandidatesAutomatically(Object model);
-
+	CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(Object model);
+	
 	/**
 	 * Returns {@code AFTER_COMPLETE} by default.
 	 *
@@ -120,16 +143,14 @@ public interface IInvoiceCandidateHandler
 	 *
 	 * @param limit advises how many models shall be retrieved. Note that this is an advise which could be respected or not by current implementations.
 	 */
-	Iterator<?> retrieveAllModelsWithMissingCandidates(int limit);
-
-	boolean isMissingInvoiceCandidate(Object model);
-
+	Iterator<?> retrieveAllModelsWithMissingCandidates(@NonNull QueryLimit limit);
+	
 	/**
 	 * Called by API to expand an initial invoice candidate generate request.
-	 *
+	 * <p>
 	 * Usually this method will return exactly the request which was provided as parameter, but there are some cases when an handler cannot generate missing candidates for a given model but the
 	 * handler can advice which handlers can do that and which models shall be used.
-	 *
+	 * <p>
 	 * An example would be the M_InOut handler which will expand the initial request to M_InOutLine requests.
 	 *
 	 * @param request initial request
@@ -142,12 +163,11 @@ public interface IInvoiceCandidateHandler
 
 	/**
 	 * Gets the model to be used when invoice candidate generation is scheduled.
-	 *
+	 * <p>
 	 * E.g. for an a {@code M_InOutLine} model, this will probably be the model's {@code M_InOut} record.
 	 *
 	 * @param model (of {@link #getSourceTable()} type)
 	 * @return model to be used for IC generation scheduling.
-	 *
 	 */
 	default Object getModelForInvoiceCandidateGenerateScheduling(final Object model)
 	{
@@ -161,7 +181,7 @@ public interface IInvoiceCandidateHandler
 	 * <ul>
 	 * <li>can be handled by {@link InterfaceWrapperHelper} and
 	 * <li>belong to the table that is returned by {@link #getSourceTable()}
-	 *
+	 * <p>
 	 * Note: usually this method should be called from {@link IInvoiceCandidateHandlerBL} only, because SPI-implementors are not expected to set the new candidates' <code>C_ILCandGenerator_ID</code>
 	 * columns.
 	 *
@@ -171,7 +191,7 @@ public interface IInvoiceCandidateHandler
 
 	/**
 	 * Invalidates invoice candidates for the given model.
-	 *
+	 * <p>
 	 * SPI-implementors can assume that this method is only called with objects that
 	 * <ul>
 	 * <li>can be handled by {@link InterfaceWrapperHelper} and
@@ -264,7 +284,7 @@ public interface IInvoiceCandidateHandler
 
 	/**
 	 * Price and tax info calculation result.
-	 *
+	 * <p>
 	 * All fields are optional and only those filled will be set back to invoice candidate.
 	 */
 	@lombok.Value

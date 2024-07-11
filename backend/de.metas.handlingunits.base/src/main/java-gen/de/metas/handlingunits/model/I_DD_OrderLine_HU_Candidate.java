@@ -124,6 +124,31 @@ public interface I_DD_OrderLine_HU_Candidate
 	String COLUMNNAME_DD_Order_ID = "DD_Order_ID";
 
 	/**
+	 * Set Distribution Order Move Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDD_Order_MoveSchedule_ID (int DD_Order_MoveSchedule_ID);
+
+	/**
+	 * Get Distribution Order Move Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDD_Order_MoveSchedule_ID();
+
+	@Nullable de.metas.handlingunits.model.I_DD_Order_MoveSchedule getDD_Order_MoveSchedule();
+
+	void setDD_Order_MoveSchedule(@Nullable de.metas.handlingunits.model.I_DD_Order_MoveSchedule DD_Order_MoveSchedule);
+
+	ModelColumn<I_DD_OrderLine_HU_Candidate, de.metas.handlingunits.model.I_DD_Order_MoveSchedule> COLUMN_DD_Order_MoveSchedule_ID = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "DD_Order_MoveSchedule_ID", de.metas.handlingunits.model.I_DD_Order_MoveSchedule.class);
+	String COLUMNNAME_DD_Order_MoveSchedule_ID = "DD_Order_MoveSchedule_ID";
+
+	/**
 	 * Set Distribution Order Line HU Candidate.
 	 *
 	 * <br>Type: ID

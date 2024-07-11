@@ -34,6 +34,7 @@ import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
+import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.table.api.AdTableId;
@@ -415,5 +416,18 @@ public class ADTableDAO implements IADTableDAO
 	public @NonNull TooltipType getTooltipTypeByTableName(@NonNull final String tableName)
 	{
 		return TableIdsCache.instance.getTooltipType(tableName);
+	}
+
+	@Override
+	public void updateColumnNameByAdElementId(
+			@NonNull final AdElementId adElementId,
+			@Nullable final String newColumnName)
+	{
+
+		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Column which is using given AD_Element_ID
+		DB.executeUpdateEx(
+				// Inline parameters because this sql will be logged into the migration script.
+				"UPDATE " + I_AD_Column.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
+				ITrx.TRXNAME_ThreadInherited);
 	}
 }

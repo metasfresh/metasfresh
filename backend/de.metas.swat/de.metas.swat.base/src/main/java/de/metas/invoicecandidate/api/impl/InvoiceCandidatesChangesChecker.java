@@ -22,18 +22,18 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.text.TokenizedStringBuilder;
-
 import de.metas.invoicecandidate.api.IInvoiceCandidatesChangesChecker;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.text.TokenizedStringBuilder;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChangesChecker
 {
@@ -41,27 +41,27 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 	private BigDecimal totalNetAmtToInvoiceChecksum = null;
 
 	@Override
-	public InvoiceCandidatesChangesChecker setTotalNetAmtToInvoiceChecksum(BigDecimal totalNetAmtToInvoiceChecksum)
+	public InvoiceCandidatesChangesChecker setTotalNetAmtToInvoiceChecksum(@Nullable final BigDecimal totalNetAmtToInvoiceChecksum)
 	{
 		this.totalNetAmtToInvoiceChecksum = totalNetAmtToInvoiceChecksum;
 		return this;
 	}
 
 	@Override
-	public InvoiceCandidatesChangesChecker setBeforeChanges(final Iterable<I_C_Invoice_Candidate> candidates)
+	public InvoiceCandidatesChangesChecker setBeforeChanges(@NonNull final Iterable<I_C_Invoice_Candidate> candidates)
 	{
 		_infosBeforeChanges = createCheckInfo(candidates);
 		return this;
 	}
 
-	private final Map<Integer, InvoiceCandidateInfo> getInfosBeforeChanges()
+	private Map<Integer, InvoiceCandidateInfo> getInfosBeforeChanges()
 	{
 		Check.assumeNotNull(_infosBeforeChanges, "infosBeforeChanges shall be set");
 		return new HashMap<>(_infosBeforeChanges);
 	}
 
 	@Override
-	public void assertNoChanges(final Iterable<I_C_Invoice_Candidate> candidates)
+	public void assertNoChanges(@NonNull final Iterable<I_C_Invoice_Candidate> candidates)
 	{
 		final Map<Integer, InvoiceCandidateInfo> infosAfterChanges = createCheckInfo(candidates);
 		final Map<Integer, InvoiceCandidateInfo> infosBeforeChanges = getInfosBeforeChanges();
@@ -94,8 +94,6 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 	/**
 	 * Checks if there are changes between initial version or current version of an invoice candidate.
 	 *
-	 * @param infoAfterChange
-	 * @param infoBeforeChange
 	 * @return true if changes found
 	 */
 	private boolean checkHasChanges(final InvoiceCandidateInfo infoAfterChange, final InvoiceCandidateInfo infoBeforeChange)
@@ -121,18 +119,17 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 		//
 		// Case: we have the old version and the new version
 		// => check if they are equal
-		final boolean hasChanges = !infoBeforeChange.checkEquals(infoAfterChange);
-		return hasChanges;
+		return !infoBeforeChange.checkEquals(infoAfterChange);
 	}
 
 	/**
 	 * Extract relevant informations from candidates.
-	 *
+	 * <p>
 	 * Only those informations that were extracted are relevant for checking if an invoice candidate has changed
 	 *
 	 * @return map of C_Invoice_Candidate_ID to "invoice candidate relevant infos POJO"
 	 */
-	private final Map<Integer, InvoiceCandidateInfo> createCheckInfo(@NonNull final Iterable<I_C_Invoice_Candidate> candidates)
+	private Map<Integer, InvoiceCandidateInfo> createCheckInfo(@NonNull final Iterable<I_C_Invoice_Candidate> candidates)
 	{
 		final ICNetAmtToInvoiceChecker totalNetAmtToInvoiceChecker = new ICNetAmtToInvoiceChecker()
 				.setNetAmtToInvoiceExpected(totalNetAmtToInvoiceChecksum);
@@ -178,8 +175,6 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 		/**
 		 * Compares this invoice candidate info (old version) object with given info (new version) and logs if there are any differences.
 		 *
-		 * @param infoAfterChange
-		 * @param logger
 		 * @return <code>true</code> if the objects are equal.
 		 */
 		public boolean checkEquals(final InvoiceCandidateInfo infoAfterChange)

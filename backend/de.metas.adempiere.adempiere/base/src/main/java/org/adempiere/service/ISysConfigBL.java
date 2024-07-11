@@ -24,6 +24,8 @@ public interface ISysConfigBL extends ISingletonService
 	 */
 	boolean getBooleanValue(String name, boolean defaultValue);
 
+	String getValue(@NonNull String name, @Nullable String defaultValue, @NonNull ClientAndOrgId clientAndOrgId);
+
 	<T extends ReferenceListAwareEnum> T getReferenceListAware(final String name, final T defaultValue, final Class<T> type);
 
 	/**

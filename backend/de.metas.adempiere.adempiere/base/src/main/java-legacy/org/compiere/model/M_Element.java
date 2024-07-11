@@ -16,34 +16,29 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.ILanguageDAO;
+import de.metas.process.IADProcessDAO;
+import de.metas.translation.api.IElementTranslationBL;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import org.adempiere.ad.element.api.AdElementId;
-import org.adempiere.ad.element.api.ElementChangedEvent;
-import org.adempiere.ad.element.api.ElementChangedEvent.ChangedField;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.DB;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.i18n.ILanguageDAO;
-import de.metas.translation.api.IElementTranslationBL;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.util.Properties;
 
 /**
  * System Element Model
  *
  * @author Jorg Janke
  * @version $Id: M_Element.java,v 1.3 2006/07/30 00:58:37 jjanke Exp $
- *          FR: [ 2214883 ] Remove SQL code and Replace for Query - red1, teo_sarca
+ * FR: [ 2214883 ] Remove SQL code and Replace for Query - red1, teo_sarca
  */
 @SuppressWarnings("serial")
 public class M_Element extends X_AD_Element
@@ -51,7 +46,7 @@ public class M_Element extends X_AD_Element
 	/**
 	 * Get Element
 	 *
-	 * @param ctx context
+	 * @param ctx        context
 	 * @param columnName case insensitive column name
 	 * @return case sensitive column name
 	 */
@@ -69,7 +64,7 @@ public class M_Element extends X_AD_Element
 				.setParameters(new Object[] { columnName.toUpperCase() })
 				.firstOnly();
 		return retValue;
-	}	// get
+	}    // get
 
 	public M_Element(Properties ctx, int AD_Element_ID, String trxName)
 	{
@@ -91,7 +86,7 @@ public class M_Element extends X_AD_Element
 		setName(columnName);
 		setPrintName(columnName);
 		//
-		setEntityType(EntityType);	// U
+		setEntityType(EntityType);    // U
 	}
 
 	@Override
@@ -170,34 +165,18 @@ public class M_Element extends X_AD_Element
 
 	private void updateDependentADEntries()
 	{
-		final String baseLanguage = Services.get(ILanguageDAO.class).retrieveBaseLanguage();
+		final AdElementId adElementId = AdElementId.ofRepoId(getAD_Element_ID());
+		if (is_ValueChanged(COLUMNNAME_ColumnName))
+		{
+			final String columnName = getColumnName();
+			Services.get(IADTableDAO.class).updateColumnNameByAdElementId(adElementId, columnName);
+			Services.get(IADProcessDAO.class).updateColumnNameByAdElementId(adElementId, columnName);
+		}
 
-		final ImmutableSet<ChangedField> columnsChanged = ElementChangedEvent.ChangedField.streamAll()
-				.filter(columnName -> isValueChanged(columnName))
-				.collect(ImmutableSet.toImmutableSet());
+		final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
+		final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
+		final String baseADLanguage = languageDAO.retrieveBaseLanguage();
 
-		Services.get(IElementTranslationBL.class).updateDependentADEntries(ElementChangedEvent.builder()
-				.adElementId(AdElementId.ofRepoId(getAD_Element_ID()))
-				.adLanguage(baseLanguage)
-				.updatedColumns(columnsChanged)
-				.columnName(getColumnName())
-				.name(getName())
-				.printName(getPrintName())
-				.description(getDescription())
-				.help(getHelp())
-				.commitWarning(getCommitWarning())
-				.poDescription(getPO_Description())
-				.poHelp(getPO_Help())
-				.poName(getPO_Name())
-				.poPrintName(getPO_PrintName())
-				.webuiNameBrowse(getWEBUI_NameBrowse())
-				.webuiNameNew(getWEBUI_NameNew())
-				.webuiNameNewBreadcrumb(getWEBUI_NameNewBreadcrumb())
-				.build());
-	}
-
-	private boolean isValueChanged(@NonNull final ChangedField field)
-	{
-		return is_ValueChanged(field.getColumnName());
+		elementTranslationBL.propagateElementTrls(adElementId, baseADLanguage);
 	}
 }

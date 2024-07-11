@@ -2,6 +2,8 @@ package de.metas.ui.web.material.cockpit;
 
 import java.util.List;
 
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
@@ -67,9 +69,9 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 			@Singular final List<RelatedProcessDescriptor> relatedProcessDescriptors)
 	{
 		super(viewId,
-				description,
-				rowsData,
-				filterDescriptors);
+			  description,
+			  rowsData,
+			  filterDescriptors);
 
 		this.filters = filters;
 		this.relatedProcessDescriptors = ImmutableList.copyOf(relatedProcessDescriptors);
@@ -88,6 +90,16 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 	public DocumentFilterList getFilters()
 	{
 		return filters;
+	}
+
+	@Override
+	public DocumentQueryOrderByList getDefaultOrderBys()
+	{
+		return DocumentQueryOrderByList.ofList(
+				ImmutableList.of(
+						DocumentQueryOrderBy.byFieldName(I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo),
+						DocumentQueryOrderBy.byFieldName(I_MD_Cockpit.COLUMNNAME_ProductValue))
+		);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package org.adempiere.ad.window.api.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
@@ -36,12 +37,12 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
+import org.compiere.model.X_AD_UI_Element;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -638,10 +639,27 @@ public class ADWindowDAO implements IADWindowDAO
 
 		for (final I_AD_UI_Element sourceUIElement : sourceUIElements)
 		{
-			final I_AD_UI_Element existingTargetElement = existingTargetUIElements.get(sourceUIElement.getName());
-			copyUIElement(copyCtx, targetUIElementGroup, existingTargetElement, sourceUIElement);
+			if(isValidSourceUIElement(sourceUIElement))
+			{
+				final I_AD_UI_Element existingTargetElement = existingTargetUIElements.get(sourceUIElement.getName());
+				copyUIElement(copyCtx, targetUIElementGroup, existingTargetElement, sourceUIElement);
+			}
+		}
+	}
+
+	private boolean isValidSourceUIElement(final I_AD_UI_Element sourceUIElements)
+	{
+		if(sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels))
+		{
+			return sourceUIElements.getLabels_Tab_ID() > 0 && sourceUIElements.getLabels_Tab().isActive();
 		}
 
+		if(sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab))
+		{
+			return sourceUIElements.getInline_Tab_ID() > 0 && sourceUIElements.getInline_Tab().isActive();
+		}
+
+		return true;
 	}
 
 	private void copyUIElement(
@@ -1219,5 +1237,24 @@ public class ADWindowDAO implements IADWindowDAO
 			default:
 				throw new AdempiereException("Param 'soTrx' has an unspupported value; soTrx=" + soTrx);
 		}
+	}
+
+	@Override
+	public ImmutableSet<AdWindowId> retrieveAllAdWindowIdsByTableId(final AdTableId adTableId)
+	{
+		final List<AdWindowId> adWindowIds = queryBL.createQueryBuilder(I_AD_Tab.class)
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Table_ID, adTableId)
+				.create()
+				.listDistinct(I_AD_Tab.COLUMNNAME_AD_Window_ID, AdWindowId.class);
+		return ImmutableSet.copyOf(adWindowIds);
+	}
+
+	@Override
+	public ImmutableSet<AdWindowId> retrieveAllActiveAdWindowIds()
+	{
+		return queryBL.createQueryBuilder(I_AD_Window.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(AdWindowId::ofRepoId);
 	}
 }

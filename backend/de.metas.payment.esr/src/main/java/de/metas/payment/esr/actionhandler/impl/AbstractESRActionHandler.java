@@ -73,9 +73,6 @@ public class AbstractESRActionHandler implements IESRActionHandler
 
 				InterfaceWrapperHelper.save(payment);
 				Services.get(IESRImportBL.class).linkInvoiceToPayment(line);
-
-				final boolean ignoreProcessed = false;
-				Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
 			}
 		}
 		return true;

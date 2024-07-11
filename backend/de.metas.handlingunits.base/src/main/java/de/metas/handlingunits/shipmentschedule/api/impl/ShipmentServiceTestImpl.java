@@ -64,7 +64,11 @@ public class ShipmentServiceTestImpl implements IShipmentService
 	{
 		final List<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedules = InterfaceWrapperHelper.loadByRepoIdAwares(request.getScheduleIds(), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
 
-		final List<ShipmentScheduleWithHU> shipmentScheduleWithHUS = shipmentScheduleWithHUService.createShipmentSchedulesWithHU(shipmentSchedules, request.getQuantityTypeToUse(), ImmutableMap.of());
+		final List<ShipmentScheduleWithHU> shipmentScheduleWithHUS = shipmentScheduleWithHUService
+				.createShipmentSchedulesWithHU(shipmentSchedules,
+											   request.getQuantityTypeToUse(),
+											   request.isOnTheFlyPickToPackingInstructions(),
+											   ImmutableMap.of());
 
 		final CalculateShippingDateRule calculateShippingDateRule = computeShippingDateRule(request.getIsShipDateToday());
 

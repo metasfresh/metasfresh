@@ -45,4 +45,6 @@ import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRf
 })
 public abstract class RequestToProcurementWeb
 {
+	public abstract String getEventId();
+	public abstract String getRelatedEventId();
 }

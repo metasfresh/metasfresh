@@ -95,7 +95,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		final List<I_C_Doc_Outbound_Log_Line> logLines = queueDAO.retrieveItems(workpackage, I_C_Doc_Outbound_Log_Line.class, localTrxName);
+		final List<I_C_Doc_Outbound_Log_Line> logLines = queueDAO.retrieveAllItems(workpackage, I_C_Doc_Outbound_Log_Line.class);
 		for (final I_C_Doc_Outbound_Log_Line logLine : logLines)
 		{
 			final I_AD_Archive archive = logLine.getAD_Archive();

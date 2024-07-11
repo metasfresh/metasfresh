@@ -1,26 +1,4 @@
 /*
- * #%L
- * alberta-article-api
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-/*
  * Artikel - Warenwirtschaft (Basis)
  * Synchronisation der Artikel mit Kumavision
  *
@@ -34,11 +12,17 @@
 
 package io.swagger.client.api;
 
-import io.swagger.client.ApiException;
 import io.swagger.client.model.DeviceMapping;
 import io.swagger.client.model.DeviceToCreate;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.Ignore;
+
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 
 /**
  * API tests for DeviceApi
@@ -53,11 +37,11 @@ public class DeviceApiTest {
      *
      * legt Geräte in Alberta an
      *
-     * @throws ApiException
+     * @throws Exception
      *          if the Api call fails
      */
     @Test
-    public void postDeviceTest() throws ApiException {
+    public void postDeviceTest() throws Exception {
         String albertaApiKey = null;
         DeviceToCreate body = null;
         DeviceMapping response = api.postDevice(albertaApiKey, body);
@@ -69,11 +53,11 @@ public class DeviceApiTest {
      *
      * ändert Geräte in Alberta
      *
-     * @throws ApiException
+     * @throws Exception
      *          if the Api call fails
      */
     @Test
-    public void putDeviceTest() throws ApiException {
+    public void putDeviceTest() throws Exception {
         String albertaApiKey = null;
         String _id = null;
         DeviceToCreate body = null;

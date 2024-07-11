@@ -55,34 +55,7 @@ import java.util.stream.Collectors;
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.MutableInt;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Order_CompensationGroup;
-import org.eevolution.api.ProductBOMId;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -128,14 +101,14 @@ public class OrderGroupRepository implements GroupRepository
 	}
 
 	@Nullable
-	public static GroupId extractGroupId(final I_C_OrderLine orderLine)
+	public static GroupId extractGroupId(@NonNull final I_C_OrderLine orderLine)
 	{
 		OrderGroupCompensationUtils.assertInGroup(orderLine);
 		return extractGroupIdOrNull(orderLine);
 	}
 
 	@Nullable
-	public static GroupId extractGroupIdOrNull(final I_C_OrderLine orderLine)
+	public static GroupId extractGroupIdOrNull(@NonNull final I_C_OrderLine orderLine)
 	{
 		if (OrderGroupCompensationUtils.isInGroup(orderLine))
 		{
@@ -175,7 +148,7 @@ public class OrderGroupRepository implements GroupRepository
 				.create()
 				.listDistinct(I_C_OrderLine.COLUMNNAME_C_Order_ID, I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID)
 				.stream()
-				.map(map -> extractGroupIdOrNull(map))
+				.map(OrderGroupRepository::extractGroupIdOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
@@ -336,7 +309,7 @@ public class OrderGroupRepository implements GroupRepository
 				.build();
 	}
 
-	public final OrderLinesStorage createNotSaveableSingleOrderLineStorage(final I_C_OrderLine compensationLinePO)
+	public final OrderLinesStorage createNotSaveableSingleOrderLineStorage(@NonNull final I_C_OrderLine compensationLinePO)
 	{
 		return OrderLinesStorage.builder()
 				.groupId(extractGroupId(compensationLinePO))
@@ -372,6 +345,7 @@ public class OrderGroupRepository implements GroupRepository
 				.baseAmt(groupOrderLine.getGroupCompensationBaseAmt())
 				.price(groupOrderLine.getPriceEntered())
 				.lineNetAmt(groupOrderLine.getLineNetAmt())
+				.manualCompensationLinePosition(ManualCompensationLinePosition.ofNullableCode(groupOrderLine.getManualCompensationLinePosition()))
 				.build();
 	}
 
@@ -383,7 +357,7 @@ public class OrderGroupRepository implements GroupRepository
 		saveGroup(group, orderLinesStorage);
 	}
 
-	public void saveGroup(@NonNull final Group group, final OrderLinesStorage orderLinesStorage)
+	void saveGroup(@NonNull final Group group, final OrderLinesStorage orderLinesStorage)
 	{
 		final GroupId groupId = group.getGroupId();
 		final OrderId orderId = extractOrderIdFromGroupId(groupId);
@@ -437,6 +411,7 @@ public class OrderGroupRepository implements GroupRepository
 		compensationLinePO.setGroupCompensationAmtType(compensationLine.getAmtType().getAdRefListValue());
 		compensationLinePO.setGroupCompensationPercentage(compensationLine.getPercentage() != null ? compensationLine.getPercentage().toBigDecimal() : null);
 		compensationLinePO.setGroupCompensationBaseAmt(compensationLine.getBaseAmt());
+		compensationLinePO.setManualCompensationLinePosition(ManualCompensationLinePosition.toCode(compensationLine.getManualCompensationLinePosition()));
 
 		compensationLinePO.setM_Product_ID(compensationLine.getProductId().getRepoId());
 
@@ -587,7 +562,7 @@ public class OrderGroupRepository implements GroupRepository
 	public static OrderId extractOrderIdFromGroups(final List<Group> groups)
 	{
 		return groups.stream()
-				.map(group -> extractOrderIdFromGroup(group))
+				.map(OrderGroupRepository::extractOrderIdFromGroup)
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("All groups shall be from same order")));
 	}
@@ -638,10 +613,13 @@ public class OrderGroupRepository implements GroupRepository
 	}
 
 	private static void setGroupIdToLines(
-			@NonNull final List<I_C_OrderLine> regularOrderLines,
+			@NonNull final List<I_C_OrderLine> orderLines,
 			@Nullable final GroupId groupId)
 	{
-		for (final I_C_OrderLine regularLinePO : regularOrderLines)
+		final List<I_C_OrderLine> sortedOrderLines = orderLines.stream()
+				.sorted(Comparator.comparing(I_C_OrderLine::isGroupCompensationLine))
+				.collect(Collectors.toList());
+		for (final I_C_OrderLine regularLinePO : sortedOrderLines)
 		{
 			if (groupId != null)
 			{
@@ -651,7 +629,7 @@ public class OrderGroupRepository implements GroupRepository
 			{
 				regularLinePO.setC_Order_CompensationGroup_ID(-1);
 			}
-			saveRecord(regularLinePO);
+			save(regularLinePO);
 		}
 	}
 
@@ -745,8 +723,7 @@ public class OrderGroupRepository implements GroupRepository
 		};
 
 		final Consumer<Collection<I_C_OrderLine>> orderLinesSequenceUpdater = orderLines -> orderLines.stream()
-				.sorted(Comparator.<I_C_OrderLine, Integer>comparing(orderLine -> !orderLine.isGroupCompensationLine() ? 0 : 1)
-						.thenComparing(orderLine -> OrderGroupCompensationUtils.isGeneratedLine(orderLine) ? 0 : 1)
+				.sorted(Comparator.comparing(OrderGroupRepository::extractCompensationLineOrderBy)
 						.thenComparing(I_C_OrderLine::getLine)
 						.thenComparing(I_C_OrderLine::getC_OrderLine_ID))
 				.forEach(orderLineSequenceUpdater);
@@ -761,6 +738,32 @@ public class OrderGroupRepository implements GroupRepository
 		//
 		// Remaining ungrouped order lines
 		notGroupedOrderLines.forEach(orderLineSequenceUpdater);
+	}
+
+	private static int extractCompensationLineOrderBy(@NonNull final I_C_OrderLine orderLine)
+	{
+		final boolean isGroupCompensationLine = orderLine.isGroupCompensationLine();
+		if (!isGroupCompensationLine)
+		{
+			return 0;
+		}
+		else if (OrderGroupCompensationUtils.isManualLine(orderLine))
+		{
+			final ManualCompensationLinePosition manualCompensationLinePosition = ManualCompensationLinePosition.ofNullableCodeOrDefault(orderLine.getManualCompensationLinePosition());
+			switch (manualCompensationLinePosition)
+			{
+				case BEFORE_GENERATED_COMPENSATION_LINES:
+					return 10;
+				case LAST:
+					return 999;
+				default:
+					throw new AdempiereException("Unknown: " + manualCompensationLinePosition);
+			}
+		}
+		else // generated compensation line
+		{
+			return 100;
+		}
 	}
 
 	public OrderGroupInfo getGroupInfoById(@NonNull final GroupId groupId)

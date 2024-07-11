@@ -22,11 +22,6 @@ package de.metas.handlingunits.receiptschedule.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
@@ -38,6 +33,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -46,6 +42,11 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /**
  *
@@ -181,6 +182,7 @@ public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 		loadTrx.setReferencedModel(referencedModel);
 	}
 
+	@Nullable
 	private I_M_ReceiptSchedule findReceiptScheduleFromSplitTransactions(final IHUContext huContext, final IHUTransactionCandidate unloadTrx, final IHUTransactionCandidate loadTrx)
 	{
 		//
@@ -202,8 +204,14 @@ public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 		//
 		// Find the receipt schedule of the VHU from where we split
 		final I_M_HU fromVHU = unloadTrx.getVHU();
-		final I_M_ReceiptSchedule receiptSchedule = Services.get(IHUReceiptScheduleDAO.class).retrieveReceiptScheduleForVHU(fromVHU);
-		return receiptSchedule;
+		if(X_M_HU.HUSTATUS_Planning.equals(fromVHU.getHUStatus()))
+		{
+			final IHUReceiptScheduleDAO huReceiptScheduleDAO = Services.get(IHUReceiptScheduleDAO.class);
+			return huReceiptScheduleDAO.retrieveReceiptScheduleForVHU(fromVHU);
+		}
+
+		// Fallback
+		return null;
 	}
 
 }

@@ -42,7 +42,7 @@ public class JsonOutOfStockNoticeRequest
 			value = "Identifier of the product in question. Can be\n"
 					+ "* a plain `<M_Product_ID>`,\n"
 					+ "* the M_Product.Value as `<val-M_Product.Value>`\n"
-					+ "* or something like `ext-<ExternalSystemName>-<M_Product_ID.ExternalId>")
+					+ "* or something like `ext-<ExternalSystemName>-<M_Product_ID.ExternalId>`")
 	@NonNull
 	@JsonProperty("productIdentifier")
 	String productIdentifier;

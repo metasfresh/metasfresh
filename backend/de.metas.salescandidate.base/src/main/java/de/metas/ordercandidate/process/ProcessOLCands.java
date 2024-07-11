@@ -1,8 +1,12 @@
 package de.metas.ordercandidate.process;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.QueueWorkPackageId;
 import de.metas.ordercandidate.api.IOLCandBL;
+import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
 import de.metas.ordercandidate.api.async.C_OLCandToOrderEnqueuer;
+import de.metas.ordercandidate.api.async.OlCandEnqueueResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.process.JavaProcess;
@@ -14,7 +18,7 @@ import org.compiere.SpringContextHolder;
 /**
  * Processes {@link I_C_OLCand}s into {@link I_C_Order}s. Currently, this process is mostly run from <code>AD_Scheduler</code>.
  * <p>
- * The actual work is done by {@link IOLCandBL#process(java.util.Properties, I_C_OLCandProcessor, org.adempiere.util.ILoggable, String)}
+ * The actual work is done by {@link IOLCandBL#process(OLCandProcessorDescriptor, AsyncBatchId)}
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -44,6 +48,7 @@ public class ProcessOLCands extends JavaProcess
 		Check.assume(olCandProcessorId > 0, "olCandProcessorId > 0");
 
 		olCandToOrderEnqueuer.enqueue(olCandProcessorId, null);
+		addLog("Created workpackage");
 
 		return MSG_OK;
 	}

@@ -1,19 +1,7 @@
 package de.metas.event.log;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.PlainContextAware;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.async.QueueWorkPackageId;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.model.I_AD_EventLog;
@@ -21,6 +9,17 @@ import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.event.remote.JacksonJsonEventSerializer;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.PlainContextAware;
+import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -99,6 +98,11 @@ public class EventLogService
 		eventLogRecord.setEventData(eventString);
 		eventLogRecord.setEventTopicName(eventBus.getTopicName());
 		eventLogRecord.setEventTypeName(eventBus.getType().toString());
+		final QueueWorkPackageId workpackageQueueRepoId = event.getQueueWorkPackageId();
+		if (workpackageQueueRepoId != null)
+		{
+			eventLogRecord.setC_Queue_WorkPackage_ID(workpackageQueueRepoId.getRepoId());
+		}
 
 		save(eventLogRecord);
 

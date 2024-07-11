@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1681125709L;
+	private static final long serialVersionUID = -1093045251L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_InputDataSource_ID (final int AD_InputDataSource_ID)
+	{
+		if (AD_InputDataSource_ID < 1) 
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, AD_InputDataSource_ID);
+	}
+
+	@Override
+	public int getAD_InputDataSource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_InputDataSource_ID);
 	}
 
 	@Override
@@ -222,6 +237,46 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	@Override
+	public BigDecimal getChargeAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public org.compiere.model.I_C_Incoterms getC_Incoterms()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class);
+	}
+
+	@Override
+	public void setC_Incoterms(final org.compiere.model.I_C_Incoterms C_Incoterms)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class, C_Incoterms);
+	}
+
+	@Override
+	public void setC_Incoterms_ID (final int C_Incoterms_ID)
+	{
+		if (C_Incoterms_ID < 1) 
+			set_Value (COLUMNNAME_C_Incoterms_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Incoterms_ID, C_Incoterms_ID);
+	}
+
+	@Override
+	public int getC_Incoterms_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
@@ -288,19 +343,6 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
-	}
-
-	@Override
-	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	@Override
-	public BigDecimal getChargeAmt() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -653,6 +695,18 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public void setEMail (final @Nullable java.lang.String EMail)
+	{
+		set_Value (COLUMNNAME_EMail, EMail);
+	}
+
+	@Override
+	public java.lang.String getEMail() 
+	{
+		return get_ValueAsString(COLUMNNAME_EMail);
+	}
+
+	@Override
 	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
@@ -726,53 +780,6 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public java.lang.String getGenerateTo() 
 	{
 		return get_ValueAsString(COLUMNNAME_GenerateTo);
-	}
-
-	/** 
-	 * Incoterm AD_Reference_ID=501599
-	 * Reference name: Incoterms
-	 */
-	public static final int INCOTERM_AD_Reference_ID=501599;
-	/** EXW_AbWerk = EXW */
-	public static final String INCOTERM_EXW_AbWerk = "EXW";
-	/** FCA_FreiSpediteur = FCA */
-	public static final String INCOTERM_FCA_FreiSpediteur = "FCA";
-	/** FAS_FreiLaengsseitsSchiff = FAS */
-	public static final String INCOTERM_FAS_FreiLaengsseitsSchiff = "FAS";
-	/** FOB_FreiAnBord = FOB */
-	public static final String INCOTERM_FOB_FreiAnBord = "FOB";
-	/** CFR_KostenUndFracht = CFR */
-	public static final String INCOTERM_CFR_KostenUndFracht = "CFR";
-	/** CIF_KostenVersicherungUndFracht = CIF */
-	public static final String INCOTERM_CIF_KostenVersicherungUndFracht = "CIF";
-	/** CPT_FrachtPortoBezahltBis = CPT */
-	public static final String INCOTERM_CPT_FrachtPortoBezahltBis = "CPT";
-	/** CIP_FrachtPortoUndVersicherungBezahltBis = CIP */
-	public static final String INCOTERM_CIP_FrachtPortoUndVersicherungBezahltBis = "CIP";
-	/** DAF_FreiGrenze = DAF */
-	public static final String INCOTERM_DAF_FreiGrenze = "DAF";
-	/** DES_FreiAbSchiff = DES */
-	public static final String INCOTERM_DES_FreiAbSchiff = "DES";
-	/** DEQ_FreiAbKai = DEQ */
-	public static final String INCOTERM_DEQ_FreiAbKai = "DEQ";
-	/** DDU_FreiUnverzollt = DDU */
-	public static final String INCOTERM_DDU_FreiUnverzollt = "DDU";
-	/** DDP_Verzollt = DDP */
-	public static final String INCOTERM_DDP_Verzollt = "DDP";
-	/** DAP - Delivered at Place = DAP */
-	public static final String INCOTERM_DAP_DeliveredAtPlace = "DAP";
-	/** DPU_geliefertBenannterOrtEntladen = DPU */
-	public static final String INCOTERM_DPU_geliefertBenannterOrtEntladen = "DPU";
-	@Override
-	public void setIncoterm (final @Nullable java.lang.String Incoterm)
-	{
-		set_Value (COLUMNNAME_Incoterm, Incoterm);
-	}
-
-	@Override
-	public java.lang.String getIncoterm() 
-	{
-		return get_ValueAsString(COLUMNNAME_Incoterm);
 	}
 
 	@Override
@@ -935,6 +942,59 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public void setMovementDate (final java.sql.Timestamp MovementDate)
+	{
+		set_Value (COLUMNNAME_MovementDate, MovementDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getMovementDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
+	}
+
+	/** 
+	 * MovementType AD_Reference_ID=189
+	 * Reference name: M_Transaction Movement Type
+	 */
+	public static final int MOVEMENTTYPE_AD_Reference_ID=189;
+	/** CustomerShipment = C- */
+	public static final String MOVEMENTTYPE_CustomerShipment = "C-";
+	/** CustomerReturns = C+ */
+	public static final String MOVEMENTTYPE_CustomerReturns = "C+";
+	/** VendorReceipts = V+ */
+	public static final String MOVEMENTTYPE_VendorReceipts = "V+";
+	/** VendorReturns = V- */
+	public static final String MOVEMENTTYPE_VendorReturns = "V-";
+	/** InventoryOut = I- */
+	public static final String MOVEMENTTYPE_InventoryOut = "I-";
+	/** InventoryIn = I+ */
+	public static final String MOVEMENTTYPE_InventoryIn = "I+";
+	/** MovementFrom = M- */
+	public static final String MOVEMENTTYPE_MovementFrom = "M-";
+	/** MovementTo = M+ */
+	public static final String MOVEMENTTYPE_MovementTo = "M+";
+	/** ProductionPlus = P+ */
+	public static final String MOVEMENTTYPE_ProductionPlus = "P+";
+	/** ProductionMinus = P- */
+	public static final String MOVEMENTTYPE_ProductionMinus = "P-";
+	/** WorkOrderPlus = W+ */
+	public static final String MOVEMENTTYPE_WorkOrderPlus = "W+";
+	/** WorkOrderMinus = W- */
+	public static final String MOVEMENTTYPE_WorkOrderMinus = "W-";
+	@Override
+	public void setMovementType (final java.lang.String MovementType)
+	{
+		set_ValueNoCheck (COLUMNNAME_MovementType, MovementType);
+	}
+
+	@Override
+	public java.lang.String getMovementType() 
+	{
+		return get_ValueAsString(COLUMNNAME_MovementType);
+	}
+
+	@Override
 	public org.compiere.model.I_M_RMA getM_RMA()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_RMA_ID, org.compiere.model.I_M_RMA.class);
@@ -1016,59 +1076,6 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public int getM_Warehouse_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
-	}
-
-	@Override
-	public void setMovementDate (final java.sql.Timestamp MovementDate)
-	{
-		set_Value (COLUMNNAME_MovementDate, MovementDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getMovementDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
-	}
-
-	/** 
-	 * MovementType AD_Reference_ID=189
-	 * Reference name: M_Transaction Movement Type
-	 */
-	public static final int MOVEMENTTYPE_AD_Reference_ID=189;
-	/** CustomerShipment = C- */
-	public static final String MOVEMENTTYPE_CustomerShipment = "C-";
-	/** CustomerReturns = C+ */
-	public static final String MOVEMENTTYPE_CustomerReturns = "C+";
-	/** VendorReceipts = V+ */
-	public static final String MOVEMENTTYPE_VendorReceipts = "V+";
-	/** VendorReturns = V- */
-	public static final String MOVEMENTTYPE_VendorReturns = "V-";
-	/** InventoryOut = I- */
-	public static final String MOVEMENTTYPE_InventoryOut = "I-";
-	/** InventoryIn = I+ */
-	public static final String MOVEMENTTYPE_InventoryIn = "I+";
-	/** MovementFrom = M- */
-	public static final String MOVEMENTTYPE_MovementFrom = "M-";
-	/** MovementTo = M+ */
-	public static final String MOVEMENTTYPE_MovementTo = "M+";
-	/** ProductionPlus = P+ */
-	public static final String MOVEMENTTYPE_ProductionPlus = "P+";
-	/** ProductionMinus = P- */
-	public static final String MOVEMENTTYPE_ProductionMinus = "P-";
-	/** WorkOrderPlus = W+ */
-	public static final String MOVEMENTTYPE_WorkOrderPlus = "W+";
-	/** WorkOrderMinus = W- */
-	public static final String MOVEMENTTYPE_WorkOrderMinus = "W-";
-	@Override
-	public void setMovementType (final java.lang.String MovementType)
-	{
-		set_ValueNoCheck (COLUMNNAME_MovementType, MovementType);
-	}
-
-	@Override
-	public java.lang.String getMovementType() 
-	{
-		return get_ValueAsString(COLUMNNAME_MovementType);
 	}
 
 	@Override

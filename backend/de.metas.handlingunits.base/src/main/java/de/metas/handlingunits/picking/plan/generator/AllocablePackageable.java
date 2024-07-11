@@ -25,12 +25,10 @@ package de.metas.handlingunits.picking.plan.generator;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.handlingunits.picking.plan.model.IssueToBOMLine;
+import de.metas.handlingunits.picking.plan.model.SourceDocumentInfo;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -47,14 +45,13 @@ import java.util.Optional;
 @ToString
 public final class AllocablePackageable
 {
+	@NonNull private final SourceDocumentInfo sourceDocumentInfo;
+
 	@NonNull private final BPartnerId customerId;
 	@NonNull private final ProductId productId;
 	@NonNull private final AttributeSetInstanceId asiId;
-	@NonNull private final ShipmentScheduleId shipmentScheduleId;
 	@NonNull private final Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy;
 	@NonNull private final WarehouseId warehouseId;
-	@Nullable private final OrderAndLineId salesOrderLineIdOrNull;
-	@Nullable private final ShipperId shipperId;
 
 	@Nullable private final PPOrderId pickFromOrderId;
 	@Nullable private final IssueToBOMLine issueToBOMLine;
@@ -64,26 +61,23 @@ public final class AllocablePackageable
 
 	@Builder(toBuilder = true)
 	private AllocablePackageable(
+			@NonNull final SourceDocumentInfo sourceDocumentInfo,
 			@NonNull final BPartnerId customerId,
 			@NonNull final ProductId productId,
 			@Nullable final AttributeSetInstanceId asiId,
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy,
 			@NonNull final WarehouseId warehouseId,
-			@Nullable final OrderAndLineId salesOrderLineIdOrNull,
-			@Nullable final ShipperId shipperId,
 			@Nullable final PPOrderId pickFromOrderId,
 			@Nullable final IssueToBOMLine issueToBOMLine,
 			@NonNull final Quantity qtyToAllocateTarget)
 	{
+		this.sourceDocumentInfo = sourceDocumentInfo;
+
 		this.customerId = customerId;
 		this.productId = productId;
 		this.asiId = asiId != null ? asiId : AttributeSetInstanceId.NONE;
-		this.shipmentScheduleId = shipmentScheduleId;
 		this.bestBeforePolicy = bestBeforePolicy != null ? bestBeforePolicy : Optional.empty();
 		this.warehouseId = warehouseId;
-		this.salesOrderLineIdOrNull = salesOrderLineIdOrNull;
-		this.shipperId = shipperId;
 		this.pickFromOrderId = pickFromOrderId;
 		this.issueToBOMLine = issueToBOMLine;
 
@@ -103,6 +97,6 @@ public final class AllocablePackageable
 
 	public Optional<HUReservationDocRef> getReservationRef()
 	{
-		return Optional.ofNullable(salesOrderLineIdOrNull).map(HUReservationDocRef::ofSalesOrderLineId);
+		return Optional.ofNullable(sourceDocumentInfo.getSalesOrderLineId()).map(HUReservationDocRef::ofSalesOrderLineId);
 	}
 }

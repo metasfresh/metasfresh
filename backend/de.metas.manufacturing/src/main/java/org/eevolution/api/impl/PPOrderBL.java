@@ -34,18 +34,22 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;
-import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
@@ -73,6 +77,7 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
@@ -98,6 +103,7 @@ import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 public class PPOrderBL implements IPPOrderBL
 {
@@ -125,12 +131,24 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
+	public void save(final I_PP_Order ppOrder)
+	{
+		ppOrdersRepo.save(ppOrder);
+	}
+
+	@Override
 	public I_PP_Order createOrder(@NonNull final PPOrderCreateRequest request)
 	{
 		return CreateOrderCommand.builder()
 				.request(request)
 				.build()
 				.execute();
+	}
+
+	@Override
+	public Stream<I_PP_Order> streamManufacturingOrders(final ManufacturingOrderQuery query)
+	{
+		return ppOrdersRepo.streamManufacturingOrders(query);
 	}
 
 	@Override
@@ -348,7 +366,7 @@ public class PPOrderBL implements IPPOrderBL
 		final PPOrderRouting orderRouting = CreateOrderRoutingCommand.builder()
 				.routingId(PPRoutingId.ofRepoId(ppOrderRecord.getAD_Workflow_ID()))
 				.ppOrderId(PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID()))
-				.dateStartSchedule(TimeUtil.asLocalDateTime(ppOrderRecord.getDateStartSchedule()))
+				.dateStartSchedule(ppOrderRecord.getDateStartSchedule().toInstant())
 				.qtyOrdered(getQuantities(ppOrderRecord).getQtyRequiredToProduce())
 				.build()
 				.execute();
@@ -584,5 +602,22 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setC_OrderLine(ol);
 
 		ppOrdersRepo.save(ppOrder);
+	}
+
+	@Override
+	public void postPPOrderCreatedEvent(final @NonNull I_PP_Order ppOrder)
+	{
+		final PPOrderPojoConverter ppOrderConverter = SpringContextHolder.instance.getBean(PPOrderPojoConverter.class);
+		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
+
+		final PPOrder ppOrderPojo = ppOrderConverter.toPPOrder(ppOrder);
+
+		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrder.getAD_Client_ID(), ppOrder.getAD_Org_ID()))
+				.ppOrder(ppOrderPojo)
+				.directlyPickIfFeasible(PPOrderUtil.pickIfFeasible(ppOrderPojo.getPpOrderData()))
+				.build();
+
+		materialEventService.postEventAfterNextCommit(ppOrderCreatedEvent);
 	}
 }

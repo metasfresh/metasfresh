@@ -104,4 +104,22 @@ public interface IAddressModel
 	boolean isPOBoxNum();
 	//@formatter:on
 
+	//@formatter:off
+	String COLUMNNAME_Street = "Street";
+	void setStreet (String Street);
+    String getStreet();
+	//@formatter:on
+
+
+	//@formatter:off
+	String COLUMNNAME_DHL_PostId = "DHL_PostId";
+	void setDHL_PostId (String DHL_PostId);
+	String getDHL_PostId();
+	//@formatter:on
+
+	//@formatter:off
+	String COLUMNNAME_HouseNumber = "HouseNumber";
+	void setHouseNumber (String HouseNumber);
+	String getHouseNumber();
+	//@formatter:on
 }

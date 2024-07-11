@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Location
  *  @author metasfresh (generated) 
@@ -343,6 +342,27 @@ public interface I_C_Location
 	String COLUMNNAME_C_Region_ID = "C_Region_ID";
 
 	/**
+	 * Set DHL Post ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDHL_PostId (@Nullable java.lang.String DHL_PostId);
+
+	/**
+	 * Get DHL Post ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDHL_PostId();
+
+	ModelColumn<I_C_Location, Object> COLUMN_DHL_PostId = new ModelColumn<>(I_C_Location.class, "DHL_PostId", null);
+	String COLUMNNAME_DHL_PostId = "DHL_PostId";
+
+	/**
 	 * Set Geocoding Error.
 	 *
 	 * <br>Type: Search
@@ -384,6 +404,27 @@ public interface I_C_Location
 	String COLUMNNAME_GeocodingStatus = "GeocodingStatus";
 
 	/**
+	 * Set Hausnummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHouseNumber (@Nullable java.lang.String HouseNumber);
+
+	/**
+	 * Get Hausnummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHouseNumber();
+
+	ModelColumn<I_C_Location, Object> COLUMN_HouseNumber = new ModelColumn<>(I_C_Location.class, "HouseNumber", null);
+	String COLUMNNAME_HouseNumber = "HouseNumber";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -407,7 +448,7 @@ public interface I_C_Location
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Is P.O. Box.
+	 * Set Is P.O. box.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -416,7 +457,7 @@ public interface I_C_Location
 	void setIsPOBoxNum (boolean IsPOBoxNum);
 
 	/**
-	 * Get Is P.O. Box.
+	 * Get Is P.O. box.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -497,7 +538,7 @@ public interface I_C_Location
 	String COLUMNNAME_Longitude = "Longitude";
 
 	/**
-	 * Set Postfach.
+	 * Set P.O. box number.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -506,7 +547,7 @@ public interface I_C_Location
 	void setPOBox (@Nullable java.lang.String POBox);
 
 	/**
-	 * Get Postfach.
+	 * Get P.O. box number.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -583,6 +624,27 @@ public interface I_C_Location
 
 	ModelColumn<I_C_Location, Object> COLUMN_RegionName = new ModelColumn<>(I_C_Location.class, "RegionName", null);
 	String COLUMNNAME_RegionName = "RegionName";
+
+	/**
+	 * Set Straße.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setStreet (@Nullable java.lang.String Street);
+
+	/**
+	 * Get Straße.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getStreet();
+
+	ModelColumn<I_C_Location, Object> COLUMN_Street = new ModelColumn<>(I_C_Location.class, "Street", null);
+	String COLUMNNAME_Street = "Street";
 
 	/**
 	 * Get Updated.

@@ -1,12 +1,18 @@
 package de.metas.ui.web.process;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessClassInfo;
+import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessMDC;
+import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -34,15 +40,21 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JsonProcessHealthResponse;
+import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAwares;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
@@ -61,6 +73,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
@@ -405,5 +418,77 @@ public class ProcessRestController
 		WebuiProcessClassInfo.resetCache();
 
 		getAllRepositories().forEach(IProcessInstancesRepository::cacheReset);
+	}
+
+	@GetMapping("/health")
+	public JsonProcessHealthResponse healthCheck(
+			@RequestParam(name = "adProcessIds", required = false) final String onlyAdProcesIdsCommaSeparated
+	)
+	{
+		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+
+		final ImmutableSet<AdProcessId> onlyAdProcessIds = RepoIdAwares.ofCommaSeparatedSet(onlyAdProcesIdsCommaSeparated, AdProcessId.class);
+		final ImmutableSet<AdProcessId> allAdProcessIds = adProcessDAO.retrieveAllActiveAdProcesIds();
+		final ImmutableSet<AdProcessId> adProcesIds = !onlyAdProcessIds.isEmpty() ? onlyAdProcessIds : allAdProcessIds;
+
+		final ArrayList<JsonProcessHealthResponse.Entry> errors = new ArrayList<>();
+		final int countTotal = adProcesIds.size();
+		int countCurrent = 0;
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		for (final AdProcessId adProcessId : adProcesIds)
+		{
+			countCurrent++;
+
+			final ProcessId processId = ProcessId.ofAD_Process_ID(adProcessId);
+			try
+			{
+				if (!allAdProcessIds.contains(adProcessId))
+				{
+					throw new AdempiereException("Not an existing/active process");
+				}
+
+				final IProcessInstancesRepository repository = getRepository(processId);
+				repository.cacheReset();
+
+				final ProcessDescriptor processDescriptor = repository.getProcessDescriptor(processId);
+
+				// Try loading & instantiating the process class if any
+				if (processDescriptor.getProcessClassname() != null)
+				{
+					ProcessInfo.newProcessClassInstance(processDescriptor.getProcessClassname());
+				}
+
+				repository.cacheReset();
+
+				logger.info("healthCheck [{}/{}] Process {} is OK", countCurrent, countTotal, processId);
+			}
+			catch (final Exception ex)
+			{
+				final String adLanguage = Env.getADLanguageOrBaseLanguage();
+				final I_AD_Process adProcess = adProcessDAO.getById(adProcessId);
+				final String processValue = adProcess != null ? adProcess.getValue() : "?";
+				final String processName = adProcess != null ? adProcess.getName() : "?";
+				final String processClassname = adProcess != null ? adProcess.getClassname() : "?";
+				logger.info("healthCheck [{}/{}] Process {}_{} ({}) is NOK: {}", countCurrent, countTotal, processValue, processName, processId, ex.getLocalizedMessage());
+
+				final Throwable cause = DocumentLayoutBuildException.extractCause(ex);
+				errors.add(JsonProcessHealthResponse.Entry.builder()
+						.processId(processId)
+						.value(processValue)
+						.name(processName)
+						.classname(processClassname)
+						.error(JsonErrors.ofThrowable(cause, adLanguage))
+						.build());
+			}
+		}
+
+		stopwatch.stop();
+
+		return JsonProcessHealthResponse.builder()
+				.countTotal(countTotal)
+				.countErrors(errors.size())
+				.took(stopwatch.toString())
+				.errors(errors)
+				.build();
 	}
 }

@@ -163,17 +163,29 @@ public class C_OLCand
 	{
 		try (final MDC.MDCCloseable ignore = TableRecordMDC.putTableRecordReference(olCand))
 		{
-			if (timing.isChange() && InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID))
+			// if only an override-bpartner was changed, but not the respective override-location,
+			// then make sure to update the override-location as well
+			
+			final boolean onlyBPartnerOverrideChanged = timing.isChange() 
+					&& InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID) 
+					&& !InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID);
+			if (onlyBPartnerOverrideChanged)
 			{
 				olCandLocationsUpdaterService.updateBPartnerLocationOverride(olCand);
 			}
 
-			if (timing.isChange() && InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_DropShip_BPartner_Override_ID))
+			final boolean onlyDropshipPartnerOverrideChanged = timing.isChange() 
+					&& InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_DropShip_BPartner_Override_ID) 
+					&& !InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_DropShip_Location_Override_ID);
+			if (onlyDropshipPartnerOverrideChanged)
 			{
 				olCandLocationsUpdaterService.updateDropShipLocationOverride(olCand);
 			}
 
-			if (timing.isChange() && InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_HandOver_Partner_Override_ID))
+			final boolean onlyHandoverBPartnerOverrideChanged = timing.isChange() 
+					&& InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_HandOver_Partner_Override_ID)
+					&& !InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_HandOver_Location_Override_ID);
+			if (onlyHandoverBPartnerOverrideChanged)
 			{
 				// NOTE: It is not wanted for the handoverLocationOverride to be changed if it was manually set to another value
 				final boolean handoverLocationOverrideChanged = InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_HandOver_Location_Override_ID);

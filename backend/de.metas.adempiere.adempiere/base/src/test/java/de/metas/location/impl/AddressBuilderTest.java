@@ -935,6 +935,65 @@ public class AddressBuilderTest
 			assertThrows(AdempiereException.class, () -> bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user));
 		}
 
+		/**
+		 * check if the tokens BP_Name and BP can BE used together
+		 */
+		@Test
+		public void test_buildBPartnerAddressStringBPartnerBlock_0140()
+		{
+
+			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
+														  prepareCountry("Germany", "@BP_GR@ @BP_Name@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
+
+			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
+			final GreetingId greetingId = prepareGreeting("Frau");
+
+			final I_C_BPartner bPartner = BPartnerBuilder()
+					.name("Name1")
+					.name2("Name2")
+					.isCompany(true)
+					.build();
+
+			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "someTitle", greetingId);
+
+			final String actual = bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user);
+
+			assertEquals(
+					"LOCAL:  \nName1\nName2\nFrau someTitle UserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
+					actual);
+		}
+
+
+		/**
+		 * check if the token CON can be used in case on non company users
+		 */
+		@Test
+		public void test_buildBPartnerAddressStringBPartnerBlock_0150()
+		{
+
+			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
+														  prepareCountry("Germany", "@BP_GR@ @BP_Name@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
+
+			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
+			final GreetingId greetingId = prepareGreeting("Frau");
+
+			final I_C_BPartner bPartner = BPartnerBuilder()
+					.name("Name1")
+					.name2("Name2")
+					.isCompany(false)
+					.build();
+
+			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "someTitle", greetingId);
+
+			final String actual = bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user);
+
+			assertEquals(
+					"LOCAL:   \nFrau\nsomeTitle UserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
+					actual);
+		}
+
+
+
 		// prepraring methods
 		private I_C_Country prepareCountry(final String countryName, final String displaySequence)
 		{

@@ -84,7 +84,7 @@ public interface ILockCommand
 	/**
 	 * Sets owner/new owner of the lock which will be acquired.
 	 * <p>
-	 * <b>IMPORTANT: </b> the lock owner's name is part of the <code>T_Lock</code> record, so don't use {@link LockOwner#ANY} or {@link LockOwner#NONE} if you are going to invoke {@link ILockManager#getLockedByFilter(Class, ILock)}, {@link ILockManager#getLockedRecordsQueryBuilder(Class, Object)} or {@link ILockManager#getLockedWhereClause(Class, String, ILock)}.
+	 * <b>IMPORTANT: </b> the lock owner's name is part of the <code>T_Lock</code> record, so don't use {@link LockOwner#ANY} or {@link LockOwner#NONE} if you are going to invoke {@link ILockManager#getLockedByFilter(Class, ILock)} or {@link ILockManager#getLockedRecordsQueryBuilder(Class, Object)}.
 	 */
 	ILockCommand setOwner(LockOwner owner);
 
@@ -107,8 +107,6 @@ public interface ILockCommand
 
 	/**
 	 * See {@link #setAllowAdditionalLocks(AllowAdditionalLocks)}.
-	 *
-	 * @return
 	 */
 	AllowAdditionalLocks getAllowAdditionalLocks();
 

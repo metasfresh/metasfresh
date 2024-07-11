@@ -4,15 +4,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.material.event.commons.MinMaxDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.Instant;
 
 /*
  * #%L
@@ -45,87 +39,25 @@ import java.time.Instant;
  * </ul>
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class PPOrderLine
 {
-	String description;
-
-	int productBomLineId;
-
 	/**
 	 * Can contain the {@code PP_Order_BOMLine_ID} of the production order document line this is all about, but also note that there might not yet exist one.
 	 */
 	int ppOrderLineId;
 
-	/**
-	 * Specifies whether this line is about a receipt (co-product or by-product) or about an issue.
-	 */
-	boolean receipt;
-
-	Instant issueOrReceiveDate;
-
-	ProductDescriptor productDescriptor;
-
-	@Nullable
-	MinMaxDescriptor minMaxDescriptor;
-
-	/** qty in stocking UOM */
-	BigDecimal qtyRequired;
-
-	/** qty in stocking UOM */
-	BigDecimal qtyDelivered;
+	PPOrderLineData ppOrderLineData;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrderLine(
-			@JsonProperty("description") final String description,
-			@JsonProperty("productBomLineId") final int productBomLineId,
 			@JsonProperty("ppOrderLineId") final int ppOrderLineId,
-			@JsonProperty("receipt") @NonNull final Boolean receipt,
-			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
-			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
-			@JsonProperty("issueOrReceiveDate") @NonNull final Instant issueOrReceiveDate,
-			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
-			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered)
+			@JsonProperty("ppOrderLineData") @NonNull final PPOrderLineData ppOrderLineData)
 	{
-		this.description = description;
-
-		// don't assert that the ID is greater that zero, because this might not be the case with "handmade" PPOrders
-		this.productBomLineId = productBomLineId;
-
 		this.ppOrderLineId = ppOrderLineId;
-		this.receipt = receipt;
-		this.productDescriptor = productDescriptor;
-		this.minMaxDescriptor = minMaxDescriptor;
-
-		this.qtyRequired = qtyRequired;
-		this.qtyDelivered = qtyDelivered;
-
-		this.issueOrReceiveDate = issueOrReceiveDate;
-	}
-
-	public PPOrderLine withQtyRequired(final BigDecimal qtyRequired)
-	{
-		return toBuilder().qtyRequired(qtyRequired).build();
-	}
-
-	public BigDecimal getQtyOpen()
-	{
-		return getQtyRequired().subtract(getQtyDelivered());
-	}
-
-	public BigDecimal getQtyOpenNegateIfReceipt()
-	{
-		if (isReceipt())
-		{
-			return getQtyOpen().negate();
-		}
-		else
-		{
-			return getQtyOpen();
-		}
+		this.ppOrderLineData = ppOrderLineData;
 	}
 }

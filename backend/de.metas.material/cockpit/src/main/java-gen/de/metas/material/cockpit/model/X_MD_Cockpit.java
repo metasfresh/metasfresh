@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.material.cockpit.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for MD_Cockpit
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1566855554L;
+	private static final long serialVersionUID = -307032135L;
 
     /** Standard Constructor */
     public X_MD_Cockpit (final Properties ctx, final int MD_Cockpit_ID, @Nullable final String trxName)
@@ -36,13 +36,13 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public void setAttributesKey (final @Nullable String AttributesKey)
+	public void setAttributesKey (final @Nullable java.lang.String AttributesKey)
 	{
 		set_Value (COLUMNNAME_AttributesKey, AttributesKey);
 	}
 
 	@Override
-	public String getAttributesKey()
+	public java.lang.String getAttributesKey() 
 	{
 		return get_ValueAsString(COLUMNNAME_AttributesKey);
 	}
@@ -57,6 +57,34 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	public java.sql.Timestamp getDateGeneral() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateGeneral);
+	}
+
+	@Override
+	public void setMDCandidateQtyStock (final @Nullable BigDecimal MDCandidateQtyStock)
+	{
+		set_Value (COLUMNNAME_MDCandidateQtyStock, MDCandidateQtyStock);
+	}
+
+	@Override
+	public BigDecimal getMDCandidateQtyStock() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MDCandidateQtyStock);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setMD_Cockpit_ID (final int MD_Cockpit_ID)
+	{
+		if (MD_Cockpit_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, MD_Cockpit_ID);
+	}
+
+	@Override
+	public int getMD_Cockpit_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MD_Cockpit_ID);
 	}
 
 	@Override
@@ -90,34 +118,6 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public void setMD_Cockpit_ID (final int MD_Cockpit_ID)
-	{
-		if (MD_Cockpit_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, MD_Cockpit_ID);
-	}
-
-	@Override
-	public int getMD_Cockpit_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_MD_Cockpit_ID);
-	}
-
-	@Override
-	public void setMDCandidateQtyStock (final @Nullable BigDecimal MDCandidateQtyStock)
-	{
-		set_Value (COLUMNNAME_MDCandidateQtyStock, MDCandidateQtyStock);
-	}
-
-	@Override
-	public BigDecimal getMDCandidateQtyStock() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MDCandidateQtyStock);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setPMM_QtyPromised_OnDate (final @Nullable BigDecimal PMM_QtyPromised_OnDate)
 	{
 		set_Value (COLUMNNAME_PMM_QtyPromised_OnDate, PMM_QtyPromised_OnDate);
@@ -131,25 +131,25 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public void setProductName (final @Nullable String ProductName)
+	public void setProductName (final @Nullable java.lang.String ProductName)
 	{
 		set_Value (COLUMNNAME_ProductName, ProductName);
 	}
 
 	@Override
-	public String getProductName()
+	public java.lang.String getProductName() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductName);
 	}
 
 	@Override
-	public void setProductValue (final @Nullable String ProductValue)
+	public void setProductValue (final @Nullable java.lang.String ProductValue)
 	{
 		set_Value (COLUMNNAME_ProductValue, ProductValue);
 	}
 
 	@Override
-	public String getProductValue()
+	public java.lang.String getProductValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductValue);
 	}
@@ -307,6 +307,18 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyStockEstimateCount);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyStockEstimateSeqNo (final int QtyStockEstimateSeqNo)
+	{
+		set_Value (COLUMNNAME_QtyStockEstimateSeqNo, QtyStockEstimateSeqNo);
+	}
+
+	@Override
+	public int getQtyStockEstimateSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_QtyStockEstimateSeqNo);
 	}
 
 	@Override

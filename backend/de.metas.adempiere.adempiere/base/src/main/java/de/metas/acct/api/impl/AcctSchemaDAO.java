@@ -62,7 +62,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 {
 	private static final Logger logger = LogManager.getLogger(AcctSchemaDAO.class);
 
-	private final CCache<Integer, AcctSchemasMap> acctSchemasCache = CCache.<Integer, AcctSchemasMap> builder()
+	private final CCache<Integer, AcctSchemasMap> acctSchemasCache = CCache.<Integer, AcctSchemasMap>builder()
 			.initialCapacity(1)
 			.tableName(I_C_AcctSchema.Table_Name)
 			.additionalTableNameToResetFor(I_C_AcctSchema_Default.Table_Name)
@@ -87,6 +87,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 
 	@Override
+	@NonNull
 	public final AcctSchema getByClientAndOrg(final ClientId clientId, final OrgId orgId)
 	{
 		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrg(clientId, orgId);
@@ -103,7 +104,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		}
 		return getById(acctSchemaId);
 	}
-	
+
 	@Override
 	public AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
@@ -140,6 +141,12 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		final IClientDAO clientDAO = Services.get(IClientDAO.class);
 		final I_AD_ClientInfo clientInfo = clientDAO.retrieveClientInfo(Env.getCtx(), clientId.getRepoId());
 		return AcctSchemaId.ofRepoIdOrNull(clientInfo.getC_AcctSchema1_ID());
+	}
+
+	@Override
+	public List<AcctSchema> getByChartOfAccountsId(@NonNull final ChartOfAccountsId chartOfAccountsId)
+	{
+		return getAcctSchemasMap().getByChartOfAccountsId(chartOfAccountsId);
 	}
 
 	private AcctSchemasMap getAcctSchemasMap()
@@ -355,7 +362,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.build();
 		if (element.isMandatory() && element.getDefaultValue() <= 0)
 		{
-			logger.error("No default value for " + element);
+			logger.error("No default value for {}", element);
 		}
 		return element;
 	}
@@ -525,6 +532,14 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 			}
 
 			return result.build();
+		}
+
+		public List<AcctSchema> getByChartOfAccountsId(@NonNull final ChartOfAccountsId chartOfAccountsId)
+		{
+			return acctSchemas.values()
+					.stream()
+					.filter(acctSchema -> ChartOfAccountsId.equals(acctSchema.getChartOfAccountsId(), chartOfAccountsId))
+					.collect(ImmutableList.toImmutableList());
 		}
 	}
 }

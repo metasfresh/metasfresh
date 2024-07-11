@@ -1,24 +1,22 @@
 package de.metas.translation.interceptor;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-
+import de.metas.translation.api.IElementTranslationBL;
+import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdElementId;
-import org.adempiere.ad.element.api.ElementChangedEvent;
-import org.adempiere.ad.element.api.ElementChangedEvent.ChangedField;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Element_Trl;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.translation.api.IElementTranslationBL;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.Set;
 
 /*
  * #%L
@@ -55,11 +53,15 @@ public class AD_Element_Trl
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
 	public void afterElementTrlChanged(final I_AD_Element_Trl adElementTrl)
 	{
-		final ElementChangedEvent event = extractElementChangedEvent(adElementTrl);
-		Services.get(IElementTranslationBL.class).updateTranslations(event);
+		final AdElementId adElementId = AdElementId.ofRepoId(adElementTrl.getAD_Element_ID());
+		final String adLanguage = adElementTrl.getAD_Language();
+
+		final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
+		elementTranslationBL.updateElementFromElementTrlIfBaseLanguage(adElementId, adLanguage);
+		elementTranslationBL.propagateElementTrls(adElementId, adLanguage);
 	}
 
-	private void assertNotChangingRegularAndCustomizationFields(final I_AD_Element_Trl adElementTrl)
+	private static void assertNotChangingRegularAndCustomizationFields(final I_AD_Element_Trl adElementTrl)
 	{
 		final Set<String> changedRegularFields = new HashSet<>();
 		final Set<String> changedCustomizationFields = new HashSet<>();
@@ -70,7 +72,7 @@ public class AD_Element_Trl
 		}
 
 		//
-		for (final ChangedField field : ChangedField.values())
+		for (final ADElementTranslatedColumn field : ADElementTranslatedColumn.values())
 		{
 			if (field.hasCustomizedField() && isValueChanged(adElementTrl, field.getCustomizationColumnName()))
 			{
@@ -89,90 +91,54 @@ public class AD_Element_Trl
 			throw new AdempiereException("Changing regular fields and customization fields is not allowed."
 					+ "\n Regular fields changed: " + changedRegularFields
 					+ "\n Customization fields changed: " + changedCustomizationFields)
-							.markAsUserValidationError();
+					.markAsUserValidationError();
 		}
 	}
 
-	private ElementChangedEvent extractElementChangedEvent(final I_AD_Element_Trl adElementTrl)
-	{
-		// assertNotChangingRegularAndCustomizationFields();
-
-		final AdElementId adElementId = AdElementId.ofRepoId(adElementTrl.getAD_Element_ID());
-		final String adLanguage = adElementTrl.getAD_Language();
-
-		final Set<ChangedField> changedFields = ElementChangedEvent.ChangedField.streamAll()
-				.filter(columnField -> isValueChanged(adElementTrl, columnField))
-				.collect(ImmutableSet.toImmutableSet());
-
-		final String columnName = extractStringValue(adElementTrl, ChangedField.ColumnName);
-		//
-		final String name = extractStringValue(adElementTrl, ChangedField.Name);
-		final String description = extractStringValue(adElementTrl, ChangedField.Description);
-		final String help = extractStringValue(adElementTrl, ChangedField.Help);
-		final String printName = extractStringValue(adElementTrl, ChangedField.PrintName);
-		final String commitWarning = extractStringValue(adElementTrl, ChangedField.CommitWarning);
-		final String poName = extractStringValue(adElementTrl, ChangedField.PO_Name);
-		final String poPrintName = extractStringValue(adElementTrl, ChangedField.PO_PrintName);
-		final String poDescription = extractStringValue(adElementTrl, ChangedField.PO_Description);
-		final String poHelp = extractStringValue(adElementTrl, ChangedField.PO_Help);
-		final String webuiNameBrowse = extractStringValue(adElementTrl, ChangedField.WebuiNameBrowse);
-		final String webuiNameNew = extractStringValue(adElementTrl, ChangedField.WebuiNameNew);
-		final String webuiNameNewBreadcrumb = extractStringValue(adElementTrl, ChangedField.WebuiNameNewBreadcrumb);
-
-		return ElementChangedEvent.builder()
-				.adElementId(adElementId)
-				.adLanguage(adLanguage)
-				.updatedColumns(changedFields)
-				.name(name)
-				.columnName(columnName)
-				.description(description)
-				.help(help)
-				.printName(printName)
-				.commitWarning(commitWarning)
-				.poName(poName)
-				.poPrintName(poPrintName)
-				.poDescription(poDescription)
-				.poHelp(poHelp)
-				.webuiNameBrowse(webuiNameBrowse)
-				.webuiNameNew(webuiNameNew)
-				.webuiNameNewBreadcrumb(webuiNameNewBreadcrumb)
-				.build();
-	}
-
-	private boolean isValueChanged(final I_AD_Element_Trl adElementTrl, final String columnName)
+	private static boolean isValueChanged(final I_AD_Element_Trl adElementTrl, final String columnName)
 	{
 		return InterfaceWrapperHelper.isValueChanged(adElementTrl, columnName);
 	}
 
-	private boolean isValueChanged(final I_AD_Element_Trl adElementTrl, final ChangedField columnField)
+	private enum ADElementTranslatedColumn
 	{
-		String valueNew = extractStringValue(adElementTrl, columnField);
-		String valueOld = extractStringValueOld(adElementTrl, columnField);
+		Name(I_AD_Element_Trl.COLUMNNAME_Name, I_AD_Element_Trl.COLUMNNAME_Name_Customized), //
+		Description(I_AD_Element_Trl.COLUMNNAME_Description, I_AD_Element_Trl.COLUMNNAME_Description_Customized), //
+		Help(I_AD_Element_Trl.COLUMNNAME_Help, I_AD_Element_Trl.COLUMNNAME_Help_Customized), //
+		PrintName(I_AD_Element.COLUMNNAME_PrintName), //
+		PO_Description(I_AD_Element.COLUMNNAME_PO_Description), //
+		PO_Help(I_AD_Element.COLUMNNAME_PO_Help), //
+		PO_Name(I_AD_Element.COLUMNNAME_PO_Name), //
+		PO_PrintName(I_AD_Element.COLUMNNAME_PO_PrintName), //
+		CommitWarning(I_AD_Element.COLUMNNAME_CommitWarning), //
+		WebuiNameBrowse(I_AD_Element.COLUMNNAME_WEBUI_NameBrowse), //
+		WebuiNameNew(I_AD_Element.COLUMNNAME_WEBUI_NameNew), //
+		WebuiNameNewBreadcrumb(I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb) //
+		;
 
-		return !Objects.equals(valueOld, valueNew);
-	}
+		@Getter
+		private final String columnName;
+		@Getter
+		private final String customizationColumnName;
 
-	private String extractStringValueOld(final I_AD_Element_Trl adElementTrl, final ChangedField columnField)
-	{
-		final I_AD_Element_Trl adElementTrlOld = InterfaceWrapperHelper.createOld(adElementTrl, I_AD_Element_Trl.class);
-		return extractStringValue(adElementTrlOld, columnField);
-	}
-
-	private String extractStringValue(final I_AD_Element_Trl adElementTrl, final ChangedField columnField)
-	{
-		if (columnField.hasCustomizedField() && adElementTrl.isUseCustomization())
+		ADElementTranslatedColumn(@NonNull final String columnName)
 		{
-			return extractStringValue(adElementTrl, columnField.getCustomizationColumnName());
+			this.columnName = columnName;
+			this.customizationColumnName = null;
 		}
 
-		return extractStringValue(adElementTrl, columnField.getColumnName());
-	}
+		ADElementTranslatedColumn(
+				@NonNull final String columnName,
+				@Nullable final String customizationColumnName)
+		{
+			this.columnName = columnName;
+			this.customizationColumnName = customizationColumnName;
+		}
 
-	private String extractStringValue(final I_AD_Element_Trl adElementTrl, final String columnName)
-	{
-		return InterfaceWrapperHelper.getValue(adElementTrl, columnName)
-				.map(Object::toString)
-				.orElse(null);
+		public boolean hasCustomizedField()
+		{
+			return getCustomizationColumnName() != null;
+		}
 	}
 
 }

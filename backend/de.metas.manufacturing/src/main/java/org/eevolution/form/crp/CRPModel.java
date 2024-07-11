@@ -16,14 +16,12 @@
 
 package org.eevolution.form.crp;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-
-import javax.swing.JTree;
-
+import de.metas.product.ResourceId;
 import org.jfree.data.category.CategoryDataset;
 
-import de.metas.product.ResourceId;
+import javax.swing.*;
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany
@@ -33,6 +31,6 @@ public interface CRPModel
 {
 	public JTree getTree();	
 	public CategoryDataset getDataset();
-	public Duration calculateLoad(LocalDateTime dateTime, ResourceId resourceId);
+	public Duration calculateLoad(Instant dateTime, ResourceId resourceId);
 	
 }

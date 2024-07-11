@@ -30,6 +30,7 @@ import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutIn
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQCloseEventsRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQsRequest;
+import de.metas.procurement.webui.service.RabbitMQAuditService;
 import de.metas.procurement.webui.sync.ReceiverFromMetasfreshHandler;
 import de.metas.procurement.webui.sync.exception.ReceiveSyncException;
 import lombok.NonNull;
@@ -45,10 +46,14 @@ import java.io.IOException;
 public class ReceiverFromMetasfresh
 {
 	private final ReceiverFromMetasfreshHandler handler;
+	private final RabbitMQAuditService auditService;
 
-	public ReceiverFromMetasfresh(@NonNull final ReceiverFromMetasfreshHandler handler)
+	public ReceiverFromMetasfresh(
+			@NonNull final ReceiverFromMetasfreshHandler handler,
+			final RabbitMQAuditService auditService)
 	{
 		this.handler = handler;
+		this.auditService = auditService;
 	}
 
 	/**
@@ -56,12 +61,12 @@ public class ReceiverFromMetasfresh
 	 * Also, it might all be different with a later spring version, so, i'm now downing it hardcoded in here.
 	 */
 	@RabbitListener(queues = Constants.QUEUE_NAME_MF_TO_PW)
-	public void receiveMessage(@NonNull @Payload final byte[] bytes)
+	public void receiveMessage(@Payload final byte[] bytes)
 	{
 		receiveMessage(toRequestToProcurementWeb(bytes));
 	}
 
-	private static RequestToProcurementWeb toRequestToProcurementWeb(@NonNull final byte[] bytes)
+	private static RequestToProcurementWeb toRequestToProcurementWeb(final byte[] bytes)
 	{
 		try
 		{
@@ -75,6 +80,8 @@ public class ReceiverFromMetasfresh
 
 	private void receiveMessage(@NonNull final RequestToProcurementWeb event)
 	{
+		auditService.logReceivedFromMetasfresh(Constants.QUEUE_NAME_MF_TO_PW, event);
+
 		if (event instanceof PutBPartnersRequest)
 		{
 			handler.handlePutBPartnersRequest((PutBPartnersRequest)event);

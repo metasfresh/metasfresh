@@ -1,5 +1,6 @@
 package de.metas.fresh.ordercheckup;
 
+import de.metas.document.archive.model.I_AD_Archive;
 import org.compiere.model.I_C_Order;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
@@ -34,5 +35,7 @@ public interface IOrderCheckupBL extends ISingletonService
 	/**
 	 * Return the number of copies (2 will result in two printouts in sum) that shall be set to the given <code>C_Printing_Queue</code>.
 	 */
-	int getNumberOfCopies(I_C_Printing_Queue queueItem);
+	int getNumberOfCopies(I_C_Printing_Queue queueItem, I_AD_Archive printOut);
+
+	I_C_Order_MFGWarehouse_Report getReportOrNull(I_AD_Archive printOut);
 }

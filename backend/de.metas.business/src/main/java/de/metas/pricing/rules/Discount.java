@@ -22,17 +22,6 @@ package de.metas.pricing.rules;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.compiere.model.I_C_BPartner;
-import org.slf4j.Logger;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -52,17 +41,25 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_C_BPartner;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /**
  * Discount Calculations
  *
  * @author Jorg Janke
  * @author tobi42 metas us1064
- *         <li>calculateDiscount only calculates (retrieves) the discount, but does not alter priceStd.
- *         <li>Therefore, <code>m_PriceStd</code> is not changed from its
- *         respective productPrice.
+ * <li>calculateDiscount only calculates (retrieves) the discount, but does not alter priceStd.
+ * <li>Therefore, <code>m_PriceStd</code> is not changed from its
+ * respective productPrice.
  * @author Teo Sarca - refactory
- *
  * @version $Id: MProductPricing.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
 public class Discount implements IPricingRule
@@ -83,17 +80,18 @@ public class Discount implements IPricingRule
 			return false;
 		}
 
+		if (result.isDontOverrideDiscountAdvice())
+		{
+			log.debug("Discount should not be modified - {}", result);
+			return false;
+		}
+
 		if (pricingCtx.getBPartnerId() == null)
 		{
 			return false;
 		}
 
-		if (pricingCtx.getProductId() == null)
-		{
-			return false;
-		}
-
-		return true;
+		return pricingCtx.getProductId() != null;
 	}
 
 	@Override
@@ -189,7 +187,6 @@ public class Discount implements IPricingRule
 		{
 			return;
 		}
-
 		pricingResult.setDiscount(pricingConditionsResult.getDiscount());
 
 		final BigDecimal priceStdOverride = pricingConditionsResult.getPriceStdOverride();

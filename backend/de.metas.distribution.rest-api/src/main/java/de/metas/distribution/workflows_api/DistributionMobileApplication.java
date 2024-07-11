@@ -1,9 +1,12 @@
 package de.metas.distribution.workflows_api;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
+import de.metas.distribution.workflows_api.activity_handlers.CompleteDistributionWFActivityHandler;
 import de.metas.distribution.workflows_api.activity_handlers.MoveWFActivityHandler;
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
@@ -16,7 +19,7 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
-import de.metas.workflow.rest_api.service.MobileApplication;
+import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -27,9 +30,10 @@ import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 @Component
-public class DistributionMobileApplication implements MobileApplication
+public class DistributionMobileApplication implements WorkflowBasedMobileApplication
 {
-	static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("distribution");
+	@VisibleForTesting
+	public static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("distribution");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.distribution.appName");
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
@@ -55,7 +59,7 @@ public class DistributionMobileApplication implements MobileApplication
 	@Override
 	public WorkflowLaunchersList provideLaunchers(final @NonNull UserId userId, final @NonNull QueryLimit suggestedLimit, final @NonNull Duration maxStaleAccepted)
 	{
-		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
+		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit);
 	}
 
 	@Override
@@ -74,21 +78,30 @@ public class DistributionMobileApplication implements MobileApplication
 		return WFProcess.builder()
 				.id(WFProcessId.ofIdPart(HANDLER_ID, job.getDdOrderId()))
 				.invokerId(Objects.requireNonNull(job.getResponsibleId()))
-				.caption(TranslatableStrings.anyLanguage("" + job.getDdOrderId().getRepoId())) // TODO
+				.caption(TranslatableStrings.anyLanguage("" + job.getDdOrderId().getRepoId()))
 				.document(job)
 				.activities(ImmutableList.of(
 						WFActivity.builder()
 								.id(WFActivityId.ofString("A1"))
 								.caption(TranslatableStrings.anyLanguage("Move"))
 								.wfActivityType(MoveWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-								.build()))
+								.status(job.getStatus())
+								.build(),
+						WFActivity.builder()
+								.id(WFActivityId.ofString("A2"))
+								.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
+								.wfActivityType(CompleteDistributionWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+								.status(CompleteDistributionWFActivityHandler.computeActivityState(job))
+								.build()
+				))
 				.build();
 	}
 
 	@Override
 	public void abort(final WFProcessId wfProcessId, final UserId callerId)
 	{
-		throw new UnsupportedOperationException(); // TODO impl
+		final WFProcess wfProcess = getWFProcessById(wfProcessId);
+		distributionRestService.abort(wfProcess.getDocumentAs(DistributionJob.class));
 	}
 
 	@Override

@@ -1,0 +1,16 @@
+{
+  "traceId": "traceId",
+  "orgCode": "orgCode",
+  "externalSystemName": "RabbitMQRESTAPI",
+  "command": "exportBPartner",
+  "adPInstanceId": 3,
+  "externalSystemConfigId": 1,
+  "externalSystemChildConfigValue": "value",
+  "writeAuditEndpoint": "auditFileFolder",
+  "parameters": {
+    "RoutingKey": "routingKey",
+    "BPartnerId": "1000000",
+    "RemoteURL": "remoteURL",
+    "RabbitMQAuthToken": "authToken"
+  }
+}

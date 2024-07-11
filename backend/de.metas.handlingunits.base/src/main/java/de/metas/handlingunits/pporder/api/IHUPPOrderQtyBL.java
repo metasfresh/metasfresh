@@ -1,13 +1,12 @@
 package de.metas.handlingunits.pporder.api;
 
-import de.metas.material.planning.pporder.DraftPPOrderQuantities;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderId;
 
 /*
@@ -43,4 +42,8 @@ public interface IHUPPOrderQtyBL extends ISingletonService
 	}
 
 	DraftPPOrderQuantities getDraftPPOrderQuantities(@NonNull PPOrderId ppOrderId);
+
+	void updateDraftReceiptCandidate(@NonNull UpdateDraftReceiptCandidateRequest request);
+
+	boolean isReceipt(@NonNull final I_PP_Order_Qty ppOrderQty);
 }

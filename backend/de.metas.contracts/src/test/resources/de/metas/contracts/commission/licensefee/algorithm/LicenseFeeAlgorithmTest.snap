@@ -1,0 +1,38 @@
+de.metas.contracts.commission.licensefee.algorithm.LicenseFeeAlgorithmTest.givenValidRequest_whenCreateCommissionShares_thenReturnOneShare=[
+  {
+    "config" : {
+      "@type" : "LicenseFeeConfig",
+      "licenseFeeContract" : {
+        "@type" : "LicenseFeeContract",
+        "id" : 1001,
+        "contractOwnerBPartnerId" : 1,
+        "simulation" : false
+      },
+      "commissionProductId" : 2,
+      "commissionPercent" : 10,
+      "pointsPrecision" : 2,
+      "licenseFeeSettingsLineId" : 2
+    },
+    "level" : 0,
+    "beneficiary" : {
+      "bPartnerId" : 2
+    },
+    "facts" : [
+      {
+        "timestamp" : {
+          "seconds" : 19898989898,
+          "nanos" : 0
+        },
+        "state" : "FORECASTED",
+        "points" : 10.00
+      }
+    ],
+    "payer" : {
+      "bPartnerId" : 1
+    },
+    "soTrx" : "SALES",
+    "forecastedPointsSum" : 10.00,
+    "invoiceablePointsSum" : 0,
+    "invoicedPointsSum" : 0
+  }
+]

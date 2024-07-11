@@ -170,8 +170,6 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		{
 			setDeliveryViaRule(ss);
 		}
-		// Default Invoice/Payment Rule
-		ss = bp.getInvoiceRule();
 
 		if (getSalesRep_ID() == 0)
 		{

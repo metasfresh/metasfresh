@@ -30,9 +30,6 @@
 	<field name="attributes" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
 	</field>
-	<field name="prodvalue" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="prodvalue"/>
-	</field>
 	<field name="value" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="value"/>
 	</field>
@@ -318,7 +315,7 @@
 				<textElement>
 					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{prodvalue}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 			</textField>
 			<image scaleImage="FillFrame" hAlign="Left">
 				<reportElement x="29" y="0" width="116" height="26" uuid="b006b7b5-6b44-4977-8b8f-050ab9eedcea">

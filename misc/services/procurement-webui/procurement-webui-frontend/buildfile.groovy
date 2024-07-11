@@ -26,6 +26,11 @@ Map build(final Map scmVars,
         return resultsMap
     }
 
+    if(true)
+    {
+        resultsMap.buildDescription = """${resultsMap.buildDescription}<b>SKIPPING DUES TO BUILD ERROR - WE ARE ON IT</b>"""
+        return resultsMap
+    }
     final String dockerLatestTag = "${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST"
 
     if (forceSkip || (!misc.isAnyFileChanged(scmVars) && !forceBuild)) {

@@ -3,7 +3,7 @@
   "jsonRequestBPartnerUpsert": {
     "requestItems": [
       {
-        "bpartnerIdentifier": "ext-Shopware6-customerId",
+        "bpartnerIdentifier": "customerId1",
         "bpartnerComposite": {
           "orgCode": "orgCode",
           "bpartner": {
@@ -11,6 +11,9 @@
             "name": "firstName lastName",
             "companyName": "company",
             "customer": true,
+            "priceListId": 121,
+            "group":"test_group",
+            "groupSet":true,
             "syncAdvise": {
               "ifNotExists": "CREATE",
               "ifExists": "DONT_UPDATE"
@@ -19,7 +22,7 @@
           "locations": {
             "requestItems": [
               {
-                "locationIdentifier": "ext-Shopware6-customerId-billTo",
+                "locationIdentifier": "ext-Shopware6-customerId1-billTo",
                 "location": {
                   "address1": "billingAddressStreet",
                   "address2": "additionalAddressLine1",
@@ -28,11 +31,14 @@
                   "city": "Billing City",
                   "countryCode": "DE",
                   "shipTo": false,
-                  "billTo": true
+                  "billTo": true,
+                  "bpartnerName": "company, firstName lastName",
+                  "phone": "phoneNumber",
+                  "email": "billingEmailAddress@example.com"
                 }
               },
               {
-                "locationIdentifier": "ext-Shopware6-customerId-shipTo",
+                "locationIdentifier": "ext-Shopware6-customerId1-shipTo",
                 "location": {
                   "address1": "ShippingAddressStreet",
                   "address2": "additionalAddressLine1",
@@ -41,7 +47,10 @@
                   "city": "Test City",
                   "countryCode": "DE",
                   "shipTo": true,
-                  "billTo": false
+                  "billTo": false,
+                  "bpartnerName": "company, firstName lastName",
+                  "phone": "phoneNumber",
+                  "email": "shippingOrderAddress@example.com"
                 }
               }
             ],
@@ -53,32 +62,19 @@
           "contacts": {
             "requestItems": [
               {
-                "contactIdentifier": "ext-Shopware6-customerId-billTo",
+                "contactIdentifier": "ext-Shopware6-userId1",
                 "contact": {
                   "firstName": "firstName",
                   "lastName": "lastName",
-                  "email": "someEamil@web.de",
+                  "email": "orderCustomerEmail@example.com",
                   "invoiceEmailEnabled": true,
-                  "phone": "phoneNumber",
-                  "shipToDefault": false,
-                  "billToDefault": true
-                }
-              },
-              {
-                "contactIdentifier": "ext-Shopware6-customerId-shipTo",
-                "contact": {
-                  "firstName": "firstName",
-                  "lastName": "lastName",
-                  "email": "someEamil@web.de",
-                  "invoiceEmailEnabled": true,
-                  "phone": "phoneNumber",
                   "shipToDefault": true,
-                  "billToDefault": false
+                  "billToDefault": true
                 }
               }
             ],
             "syncAdvise": {
-              "ifNotExists": "FAIL",
+              "ifNotExists": "CREATE",
               "ifExists": "DONT_UPDATE"
             }
           }

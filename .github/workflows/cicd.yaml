@@ -225,7 +225,7 @@ jobs:
       - name: assert success
         run: |
           if [ $(cat jest/frontend/jest.exit-code) != 0 ]; then tail -1000 jest/frontend/jest.log && exit 1; fi     # print frontend log and exit if frontend failed
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: jest-logs
@@ -575,7 +575,7 @@ jobs:
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
           if [ $(cat junit/backend/junit.exit-code) != 0 ] || [ $(cat junit/backend/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/backend/junit.log && exit 1; fi      # print backend log and exit if backend failed
           if [ $(cat junit/camel/junit.exit-code) != 0 ] || [ $(cat junit/camel/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/camel/junit.log && exit 1; fi            # print camel log and exit if camel failed
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: junit-logs
@@ -619,17 +619,29 @@ jobs:
     runs-on: ubuntu-latest
     needs: [init, backend, frontend, cucumber-build]
     strategy:
-      max-parallel: 4
+      max-parallel: 10
       fail-fast: false
       matrix:
         profile: [profile1, profile2, catchall]
         include:
           - profile: profile1
-            params: -Dcucumber.filter.tags="@tag1 and not @ignore"
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor1 and not @flaky and not @ignore"
           - profile: profile2
-            params: -Dcucumber.filter.tags="@tag2 and not @ignore"
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor2 and not @flaky and not @ignore"
+          - profile: profile3
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor3 and not @flaky and not @ignore"
+          - profile: profile4
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor4 and not @flaky and not @ignore"
+          - profile: profile5
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor5 and not @flaky and not @ignore"
+          - profile: profile6
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor6 and not @flaky and not @ignore"
+          - profile: profile7
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor7 and not @flaky and not @ignore"
+          - profile: flaky
+            params: -Dcucumber.filter.tags="@ghActions:flaky and not @ignore"
           - profile: catchall
-            params: -Dcucumber.filter.tags="not @tag1 and not @tag2 and not @ignore"
+            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ignore"
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -673,7 +685,7 @@ jobs:
       - name: assert success
         run: |
           if [ $(cat cucumber.exit-code) != 0 ] || [ $(cat cucumber.mvn.exit-code) != 0 ]; then tail -1000 cucumber.log && exit 1; fi                                     # print cucumber log and exit if cucumber failed
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cucumber-logs
@@ -735,16 +747,16 @@ jobs:
         if: success() || failure()
         run: |
           ./containerHealthCheck.sh webui
-#      - name: mobile health check
-#        working-directory: docker-builds/health/
-#        if: success() || failure()
-#        run: |
-#          ./containerHealthCheck.sh mobile
-#      - name: run api health checks
-#        working-directory: docker-builds/health/
-#        if: success() || failure()
-#        run: |
-#          ./apiHealthChecks.sh
+      - name: mobile health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh mobile
+      - name: run api health checks
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./apiHealthChecks.sh
       - name: create docker-compose summary
         working-directory: docker-builds/compose/
         if: success() || failure()
@@ -757,7 +769,7 @@ jobs:
           docker inspect --format "{{json .State.Health }}" compose_search_1 | jq
           docker inspect --format "{{json .State.Health }}" compose_webui_1 | jq
           docker inspect --format "{{json .State.Health }}" compose_external_1 | jq
-#          docker inspect --format "{{json .State.Health }}" compose_mobile_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_mobile_1 | jq
       - name: stop docker-compose
         working-directory: docker-builds/compose/
         env:

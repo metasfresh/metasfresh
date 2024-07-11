@@ -54,10 +54,12 @@ FROM
 	WHERE bpp.IsActive='Y' AND NOT EXISTS (SELECT 1 FROM M_HU_PI_Item_Product piip WHERE piip.UPC=bpp.UPC)
 	
 ) lookup
-LEFT JOIN C_BPartner_Location bpl ON bpl.C_BPartner_ID=lookup.C_BPartner_ID AND bpl.GLN IS NOT NULL AND TRIM(BOTH ' ' FROM bpl.GLN)!=''
+    JOIN m_product p ON p.m_product_id = lookup.m_product_id
+    LEFT JOIN C_BPartner_Location bpl ON bpl.C_BPartner_ID=lookup.C_BPartner_ID AND bpl.GLN IS NOT NULL AND TRIM(BOTH ' ' FROM bpl.GLN)!=''
 WHERE lookup.UPC IS NOT NULL AND TRIM(BOTH ' ' FROM lookup.UPC)!=''
+    AND p.isactive='Y' AND p.discontinued='N'
 ;
 COMMENT ON VIEW EDI_M_Product_Lookup_UPC_v IS
-'Lookup of M_Product_ID via a M_HU_PI_Item_Product''s GTIN, TU-EAN (column EAN_TU), UPC (UPC) or C_BPartner_Product''s EAN_CU or UPC.';
+'Lookup of M_Product_ID via a M_HU_PI_Item_Product''s GTIN, TU-EAN (column EAN_TU), UPC (UPC) or C_BPartner_Product''s EAN_CU or UPC. Ignores inactive or discontinued products.';
 
 

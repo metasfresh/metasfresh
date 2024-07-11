@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model.order;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -87,5 +88,17 @@ public class JsonOrderLine
 	@JsonPOJOBuilder(withPrefix = "")
 	static class JsonOrderLineBuilder
 	{
+	}
+
+	@NonNull
+	@JsonIgnore
+	public String getProductIdNotNull()
+	{
+		if (productId == null)
+		{
+			throw new RuntimeException("JsonOrderLines with productId null should've been ignored!");
+		}
+
+		return productId;
 	}
 }

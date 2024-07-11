@@ -84,8 +84,6 @@ public class AcctSchema
 	@NonNull
 	AcctSchemaElementsMap schemaElements;
 
-
-
 	public boolean isPostOnlyForSomeOrgs()
 	{
 		return !postOnlyForOrgIds.isEmpty();
@@ -116,5 +114,10 @@ public class AcctSchema
 	public ImmutableSet<AcctSchemaElementType> getSchemaElementTypes()
 	{
 		return getSchemaElements().getElementTypes();
+	}
+
+	public ChartOfAccountsId getChartOfAccountsId()
+	{
+		return getSchemaElements().getChartOfAccountsId();
 	}
 }

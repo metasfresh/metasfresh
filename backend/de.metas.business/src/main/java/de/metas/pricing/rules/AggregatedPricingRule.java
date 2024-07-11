@@ -92,7 +92,7 @@ public final class AggregatedPricingRule implements IPricingRule
 				// As a side effect on some pricing results you will get a list of applied rules like: ProductScalePrice, PriceListVersionVB, PriceListVersion, Discount,
 				// which means that ProductScalePrice and PriceListVersionVB were not actually applied because they found out that while doing the "calculate()".
 				result.addPricingRuleApplied(rule);
-				Loggables.withLogger(logger, Level.DEBUG).addLog("Applied rule {}, result: {}", rule, result);
+				Loggables.withLogger(logger, Level.DEBUG).addLog("Applied rule {}; calculated={}, result: {}", rule, result.isCalculated(), result);
 			}
 		}
 	}

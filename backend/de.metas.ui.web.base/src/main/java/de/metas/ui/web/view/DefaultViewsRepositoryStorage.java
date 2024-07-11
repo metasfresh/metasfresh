@@ -99,7 +99,7 @@ public final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
 	private void onViewRemoved(final RemovalNotification<Object, Object> notification)
 	{
 		final IView view = (IView)notification.getValue();
-		logger.debug("View <" + view.getViewId() + "> removed from cache. Cause: " + notification.getCause());
+		logger.debug("View `{}` removed from cache. Cause: {}", view.getViewId(), notification.getCause());
 		view.afterDestroy();
 	}
 

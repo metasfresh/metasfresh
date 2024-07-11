@@ -67,18 +67,21 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
 public class HUMovementBL implements IHUMovementBL
 {
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IWarehouseDAO warehousesDAO = Services.get(IWarehouseDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	@Override
 	public void createPackingMaterialMovementLines(final I_M_Movement movement)
@@ -128,6 +131,12 @@ public class HUMovementBL implements IHUMovementBL
 	{
 		final LocatorId locatorToId = warehouseBL.getDefaultLocatorId(warehouseToId);
 		return moveHUsToLocator(hus, locatorToId);
+	}
+
+	@Override
+	public HUMovementGeneratorResult moveHUs(@NonNull final HUMovementGenerateRequest request)
+	{
+		return new HUMovementGenerator(request).createMovement();
 	}
 
 	@Override
@@ -206,7 +215,6 @@ public class HUMovementBL implements IHUMovementBL
 			locatorTo = movementLine.getM_Locator();
 		}
 
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(movementLine);
 		for (final I_M_HU hu : hus)
 		{
@@ -222,7 +230,6 @@ public class HUMovementBL implements IHUMovementBL
 	private void moveHandlingUnit(final I_M_HU hu, final LocatorId locatorToId)
 	{
 		final SourceHUsService sourceHuService = SourceHUsService.get();
-		final IWarehouseDAO warehousesDAO = Services.get(IWarehouseDAO.class);
 
 		//
 		// Make sure hu's current locator is the locator from which we need to move
@@ -257,10 +264,6 @@ public class HUMovementBL implements IHUMovementBL
 		// trigger a movement to/from empties warehouse. In this case a movement is
 		// already created from a lager to another.
 		// So no HU leftovers.
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(hu);
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContext(contextProvider);
 

@@ -1,5 +1,6 @@
 package de.metas.material.cockpit.stock;
 
+import de.metas.util.Check;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -49,8 +50,9 @@ public class StockDataRecordIdentifier
 			@NonNull final ProductId productId,
 			@NonNull final AttributesKey storageAttributesKey)
 	{
-		storageAttributesKey.assertNotAllOrOther();
+		Check.errorUnless(orgId.isRegular(), "The given orgId may not be 'any' (*)."); // we are talking stock here. those always belong to an org
 
+		storageAttributesKey.assertNotAllOrOther();
 		this.clientId = clientId;
 		this.orgId = orgId;
 		this.warehouseId = warehouseId;

@@ -1,11 +1,12 @@
 import * as networkTypes from '../constants/NetworkActionTypes';
 import * as tokenTypes from '../constants/TokenActionTypes';
-import { SET_ACTIVE_APPLICATION, CLEAR_ACTIVE_APPLICATION } from '../constants/ApplicationsActionTypes';
+
+export const getTokenFromState = (state) => state.appHandler.token;
+export const getIsLoggedInFromState = (state) => !!getTokenFromState(state);
 
 export const initialState = {
   network: true,
   token: null,
-  activeApplication: null,
 };
 
 export default function appHandler(state = initialState, action) {
@@ -31,16 +32,6 @@ export default function appHandler(state = initialState, action) {
       return {
         ...state,
         token: null,
-      };
-    case SET_ACTIVE_APPLICATION:
-      return {
-        ...state,
-        activeApplication: payload.applicationName,
-      };
-    case CLEAR_ACTIVE_APPLICATION:
-      return {
-        ...state,
-        activeApplication: null,
       };
     default:
       return state;

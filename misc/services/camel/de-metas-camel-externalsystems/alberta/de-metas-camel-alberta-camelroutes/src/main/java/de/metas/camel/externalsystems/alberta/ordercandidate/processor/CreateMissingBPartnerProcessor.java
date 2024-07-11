@@ -22,16 +22,16 @@
 
 package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.common.DataMapper;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
-import de.metas.common.externalreference.JsonExternalReferenceItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.v1.JsonExternalReferenceItem;
+import de.metas.common.externalreference.v1.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v1.JsonExternalReferenceLookupResponse;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.DoctorApi;
@@ -46,6 +46,9 @@ import org.springframework.util.CollectionUtils;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Upserts a doctor or pharmacy if required.
+ */
 public class CreateMissingBPartnerProcessor implements Processor
 {
 	@Override
@@ -133,7 +136,7 @@ public class CreateMissingBPartnerProcessor implements Processor
 	{
 		try
 		{
-			final Doctor doctor = doctorApi.getDoctor(connectionDetails.getApiKey(), connectionDetails.getTenant(), doctorId);
+			final Doctor doctor = doctorApi.getDoctor(connectionDetails.getApiKey(), doctorId);
 
 			return DataMapper.mapDoctorToUpsertRequest(doctor, orgCode);
 		}
@@ -152,7 +155,7 @@ public class CreateMissingBPartnerProcessor implements Processor
 	{
 		try
 		{
-			final Pharmacy pharmacy = pharmacyApi.getPharmacy(connectionDetails.getApiKey(), connectionDetails.getTenant(), pharmacyId);
+			final Pharmacy pharmacy = pharmacyApi.getPharmacy(connectionDetails.getApiKey(), pharmacyId);
 
 			return DataMapper.mapPharmacyToUpsertRequest(pharmacy, orgCode);
 		}

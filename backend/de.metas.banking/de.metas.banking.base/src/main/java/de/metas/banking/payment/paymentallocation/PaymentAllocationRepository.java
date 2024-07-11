@@ -22,11 +22,13 @@
 
 package de.metas.banking.payment.paymentallocation;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.document.DocTypeId;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
@@ -36,6 +38,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
@@ -97,7 +100,7 @@ public class PaymentAllocationRepository
 		final ArrayList<Object> sqlParams = new ArrayList<>();
 		final String sql = toSql(query, sqlParams);
 		return DB.retrieveRows(sql, sqlParams, PaymentAllocationRepository::retrieveInvoiceToAllocateOrNull);
-		}
+	}
 
 	private static String toSql(
 			@NonNull final InvoiceToAllocateQuery query,
@@ -111,19 +114,19 @@ public class PaymentAllocationRepository
 
 		final StringBuilder sql = new StringBuilder();
 		sql.append("SELECT * FROM GetOpenInvoices("
-				+ " c_bpartner_id := ?,"
-				+ " c_currency_id := ?,"
-				+ " ad_client_id := ?, "
-				+ " ad_org_id := ?,"
-				+ " date := ?,"
-				+ " onlyInvoicesSelectionId := ?"
-				+ ")");
-			sqlParams.addAll(Arrays.asList(
-					query.getBpartnerId(),
-					convertToCurrencyId,
+						   + " c_bpartner_id := ?,"
+						   + " c_currency_id := ?,"
+						   + " ad_client_id := ?, "
+						   + " ad_org_id := ?,"
+						   + " date := ?,"
+						   + " onlyInvoicesSelectionId := ?"
+						   + ")");
+		sqlParams.addAll(Arrays.asList(
+				query.getBpartnerId(),
+				convertToCurrencyId,
 				clientId,
-					orgId,
-					query.getEvaluationDate(),
+				orgId,
+				query.getEvaluationDate(),
 				onlyInvoicesSelectionId));
 
 		sql.append("\n WHERE TRUE ");
@@ -197,6 +200,8 @@ public class PaymentAllocationRepository
 			return null;
 		}
 
+		final InvoiceDocBaseType docBaseType = InvoiceDocBaseType.ofSOTrxAndCreditMemo(soTrx, isCreditMemo);
+
 		return InvoiceToAllocate.builder()
 				.invoiceId(invoiceId)
 				.prepayOrderId(prepayOrderId)
@@ -208,14 +213,27 @@ public class PaymentAllocationRepository
 				.dateAcct(TimeUtil.asLocalDate(rs.getTimestamp("dateacct"))) // task 09643
 				.documentCurrencyCode(documentCurrencyCode)
 				.evaluationDate(TimeUtil.asZonedDateTime(rs.getTimestamp("evaluation_date")))
+				.multiplier(toInvoiceAmtMultiplier(docBaseType))
 				.grandTotal(grandTotal)
 				.openAmountConverted(openAmtConv)
 				.discountAmountConverted(discountAmountConv)
 				.docTypeId(docTypeId)
-				.docBaseType(InvoiceDocBaseType.ofSOTrxAndCreditMemo(soTrx, isCreditMemo))
+				.docBaseType(docBaseType)
 				.poReference(rs.getString("POReference"))
 				.currencyConversionTypeId(currencyConversionTypeId)
 				.build();
+	}
+
+	@VisibleForTesting
+	public static InvoiceAmtMultiplier toInvoiceAmtMultiplier(@NonNull final InvoiceDocBaseType docBaseType)
+	{
+		return InvoiceAmtMultiplier.builder()
+				.soTrx(docBaseType.getSoTrx())
+				.isCreditMemo(docBaseType.isCreditMemo())
+				.isSOTrxAdjusted(false)
+				.isCreditMemoAdjusted(true) // because the function is based on C_Invoice_v view which returns CreditMemo adjusted amounts
+				.build()
+				.intern();
 	}
 
 	private static Amount retrieveAmount(
@@ -283,11 +301,11 @@ public class PaymentAllocationRepository
 		final CurrencyCode documentCurrencyCode = CurrencyCode.ofThreeLetterCode(rs.getString("currency_code"));
 
 		final BigDecimal multiplierAP = rs.getBigDecimal("MultiplierAP"); // +1=Inbound Payment, -1=Outbound Payment
-		final boolean inboundPayment = multiplierAP.signum() > 0;
+		final PaymentDirection paymentDirection = PaymentDirection.ofInboundPaymentFlag(multiplierAP.signum() > 0);
 
 		// NOTE: we assume the amounts were already AP adjusted, so we are converting them back to relative values (i.e. not AP adjusted)
-		final Amount payAmt = retrieveAmount(rs, "PayAmt", documentCurrencyCode).negateIf(!inboundPayment);
-		final Amount openAmt = retrieveAmount(rs, "OpenAmt", documentCurrencyCode).negateIf(!inboundPayment);
+		final Amount payAmt = retrieveAmount(rs, "PayAmt", documentCurrencyCode).negateIf(paymentDirection.isOutboundPayment());
+		final Amount openAmt = retrieveAmount(rs, "OpenAmt", documentCurrencyCode).negateIf(paymentDirection.isOutboundPayment());
 
 		return PaymentToAllocate.builder()
 				.paymentId(retrievePaymentId(rs))
@@ -296,9 +314,10 @@ public class PaymentAllocationRepository
 				.bpartnerId(BPartnerId.ofRepoId(rs.getInt("C_BPartner_ID")))
 				.dateTrx(TimeUtil.asLocalDate(rs.getTimestamp("PaymentDate")))
 				.dateAcct(TimeUtil.asLocalDate(rs.getTimestamp("DateAcct"))) // task 09643
+				.paymentAmtMultiplier(PaymentAmtMultiplier.builder().paymentDirection(paymentDirection).isOutboundAdjusted(false).build().intern())
 				.payAmt(payAmt)
 				.openAmt(openAmt)
-				.paymentDirection(PaymentDirection.ofInboundPaymentFlag(inboundPayment))
+				.paymentDirection(paymentDirection)
 				.paymentCurrencyContext(extractPaymentCurrencyContext(rs))
 				.build();
 	}

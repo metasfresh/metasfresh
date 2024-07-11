@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.DBException;
+import org.compiere.model.IQuery;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -46,7 +47,7 @@ import lombok.NonNull;
  */
 /* package */final class POBufferedIterator<T, ET extends T> implements Iterator<ET>
 {
-	private static final transient Logger logger = LogManager.getLogger(POBufferedIterator.class);
+	private static final Logger logger = LogManager.getLogger(POBufferedIterator.class);
 
 	private final TypedSqlQuery<T> query;
 	private final Class<ET> clazz;
@@ -67,7 +68,7 @@ import lombok.NonNull;
 	 * @param rowNumberColumn optional, may be <code>null</code>.
 	 *            If a column is given, then this iterator will not use offset, but assume that the column contains a row number that starts at 1,
 	 *            as created by the <code>row_nbumber()</code> window function. This class will then use this column by not paging with offset, but with in the where-clause "rowNumberColumn > offset".
-	 *            Thanks to http://use-the-index-luke.com/no-offset.
+	 *            Thanks to <a href="http://use-the-index-luke.com/no-offset">http://use-the-index-luke.com/no-offset</a>.
 	 */
 	/* package */ POBufferedIterator(
 			@NonNull final TypedSqlQuery<T> query,
@@ -80,9 +81,9 @@ import lombok.NonNull;
 		}
 
 		this.query = query.copy();
-		if (Check.isEmpty(this.query.getOrderBy(), true))
+		if (Check.isBlank(this.query.getOrderBy()))
 		{
-			final String orderBy = buildOrderBy(this.query.getTableName());
+			final String orderBy = buildOrderByKeyColumns(this.query.getTableName());
 			if (Check.isEmpty(orderBy))
 			{
 				throw new DBException("Query does not have ORDER BY and we could not build one for given table because there are no key columns: " + query);
@@ -99,15 +100,16 @@ import lombok.NonNull;
 	/**
 	 * Build standard ORDER BY clause (by Key Columns).
 	 *
-	 * @param tableName
 	 * @return ORDER BY clause or ""
 	 */
-	private static String buildOrderBy(final String tableName)
+	private static String buildOrderByKeyColumns(@NonNull final String tableName)
 	{
-		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		final POInfo poInfo = Check.assumeNotNull(
+				POInfo.getPOInfo(tableName),
+				"POInfo for tableName={} may not be null", tableName);
 
 		final StringBuilder orderBy = new StringBuilder();
-		for (String keyColumnName : poInfo.getKeyColumnNames())
+		for (final String keyColumnName : poInfo.getKeyColumnNames())
 		{
 			if (orderBy.length() > 0)
 			{
@@ -130,8 +132,7 @@ import lombok.NonNull;
 	public ET next()
 	{
 		final Iterator<ET> it = getBufferIterator();
-		final ET value = it.next();
-		return value;
+		return it.next();
 	}
 
 	@Override
@@ -191,10 +192,9 @@ import lombok.NonNull;
 	/**
 	 * Sets buffer/page size, i.e. the number of rows to be loaded by this iterator at a time.
 	 *
-	 * @param bufferSize
-	 * @see Query#OPTION_IteratorBufferSize
+	 * @see IQuery#OPTION_GuaranteedIteratorRequired
 	 */
-	public void setBufferSize(int bufferSize)
+	public void setBufferSize(final int bufferSize)
 	{
 		Check.assume(bufferSize > 0, "bufferSize > 0");
 		this.bufferSize = bufferSize;

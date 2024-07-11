@@ -1,0 +1,15 @@
+{
+  "orgCode": "001",
+  "externalSystemName": "Shopware6",
+  "externalSystemChildConfigValue": "childValue",
+  "command": "exportStock",
+  "adPInstanceId": 2,
+  "externalSystemConfigId": 1,
+  "traceId": "traceId",
+  "parameters": {
+    "ClientSecret": "ClientSecret",
+    "ClientId": "ClientId",
+    "BasePath": "BasePath",
+    "JsonAvailableForSales": "{\"productIdentifier\": {\"metasfreshId\":1,\"externalReference\":\"externalReference\"},\"stock\":10}"
+  }
+}

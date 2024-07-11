@@ -1,5 +1,6 @@
 package de.metas.handlingunits;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -79,7 +80,10 @@ import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.handlingunits.test.HUListAssertsBuilder;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
+import de.metas.inoutcandidate.api.impl.ReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
@@ -118,6 +122,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
+import org.assertj.core.api.Assertions;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
@@ -135,7 +140,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.ProductBOMBuilder;
-import org.junit.Assert;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -149,6 +153,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -444,7 +449,6 @@ public class HUTestHelper
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
 		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DocumentLocationBL(bpartnerBL));
 
-
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
@@ -453,6 +457,9 @@ public class HUTestHelper
 
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
+		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
+		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
+		
 		ctx = Env.getCtx();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxName = createAndStartTransaction();
@@ -475,7 +482,7 @@ public class HUTestHelper
 		// Setup context: #Date
 		today = LocalDate.of(2013, Month.NOVEMBER, 1).atStartOfDay(SystemTime.zoneId());
 		Env.setContext(ctx, Env.CTXNAME_Date, TimeUtil.asDate(today));
-
+		
 		//
 		// Setup module interceptors
 		setupModuleInterceptors_HU();
@@ -600,7 +607,7 @@ public class HUTestHelper
 
 	protected IMutableHUContext createInitialHUContext(final IContextAware contextProvider)
 	{
-		return Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
+		return handlingUnitsBL().createMutableHUContext(contextProvider);
 	}
 
 	public final void commitThreadInheritedTrx(final IHUContext huContext)
@@ -737,6 +744,10 @@ public class HUTestHelper
 	{
 		// nothing
 	}
+
+	public IHandlingUnitsBL handlingUnitsBL() {return Services.get(IHandlingUnitsBL.class);}
+
+	public IHUPIItemProductBL huPIItemProductBL() {return Services.get(IHUPIItemProductBL.class);}
 
 	private I_M_HU_PI createTemplatePI()
 	{
@@ -1031,7 +1042,7 @@ public class HUTestHelper
 	public IMutableHUContext createMutableHUContextForProcessing(@Nullable final String trxName)
 	{
 		final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
-		return Services.get(IHandlingUnitsBL.class).createMutableHUContextForProcessing(contextProvider);
+		return handlingUnitsBL().createMutableHUContextForProcessing(contextProvider);
 	}
 
 	/**
@@ -1039,18 +1050,18 @@ public class HUTestHelper
 	 */
 	public IMutableHUContext createMutableHUContext()
 	{
-		return Services.get(IHandlingUnitsBL.class).createMutableHUContext(getContextProvider());
+		return handlingUnitsBL().createMutableHUContext(getContextProvider());
 	}
 
 	public IMutableHUContext createMutableHUContextOutOfTransaction()
 	{
-		return Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctx, ITrx.TRXNAME_ThreadInherited);
+		return handlingUnitsBL().createMutableHUContext(ctx, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public IMutableHUContext createMutableHUContextInNewTransaction()
 	{
 		final String trxName = createAndStartTransaction("HUTestHelper_createMutableHUContextInNewTransaction");
-		return Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctx, trxName);
+		return handlingUnitsBL().createMutableHUContext(ctx, trxName);
 	}
 
 	public ZonedDateTime getTodayZonedDateTime()
@@ -1415,6 +1426,30 @@ public class HUTestHelper
 		return createHUs(huContext, huPI, productIdToLoad, Quantity.of(qtyToLoad, qtyToLoadUOM));
 	}
 
+	public Optional<I_M_HU> createSingleHU(
+			final I_M_HU_PI huPI,
+			final ProductId productIdToLoad,
+			final Quantity qtyToLoad)
+	{
+		final HUProducerDestination destination;
+		HULoader.builder()
+				.source(createDummySourceDestination(productIdToLoad,
+						new BigDecimal("100000000"),  // qtyCapacity
+						qtyToLoad.getUOM(),  // UOM
+						true)) // fullyLoaded => empty
+				.destination(destination = HUProducerDestination.of(huPI))
+				.load(AllocationUtils.builder()
+						.setHUContext(huContext)
+						.setProduct(productIdToLoad)
+						.setQuantity(qtyToLoad)
+						.setDate(getTodayZonedDateTime())
+						.setFromReferencedModel(null)
+						.setForceQtyAllocation(true)
+						.create());
+
+		return destination.getSingleCreatedHU();
+	}
+
 	/**
 	 * Create HUs using {@link HUProducerDestination}.<br>
 	 * <b>Important:</b> If you expect e.g. an LU with multiple included TUs, then don't use this method; see the javadoc of {@link HUProducerDestination}.
@@ -1480,7 +1515,7 @@ public class HUTestHelper
 		// Execute transfer => HUs will be generated
 		final HULoader loader = HULoader.of(allocationSource, allocationDestination);
 		final IAllocationResult result = loader.load(request);
-		Assert.assertTrue("Result shall be completed: " + result, result.isCompleted());
+		Assertions.assertThat(result.isCompleted()).as("Result shall be completed: " + result).isTrue();
 
 		//
 		// Get generated HUs and set them to HUContext's transaction
@@ -1558,7 +1593,7 @@ public class HUTestHelper
 
 		final BPartnerId bpartnerId = null;
 		final int bpartnerLocationId = -1;
-		final ProductId cuProductId = ProductId.ofRepoIdOrNull(tuPIItemProduct.getM_Product_ID());
+		final ProductId cuProductId = ProductId.ofRepoId(tuPIItemProduct.getM_Product_ID());
 		final I_C_UOM cuUOM = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
 
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
@@ -1645,7 +1680,7 @@ public class HUTestHelper
 
 	public List<I_M_HU> retrieveAllHandlingUnitsOfType(final I_M_HU_PI huPI)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHandlingUnitsBL handlingUnitsBL = handlingUnitsBL();
 
 		final List<I_M_HU> result = new ArrayList<>();
 
@@ -1743,7 +1778,7 @@ public class HUTestHelper
 				"mtrx shall be inbound transaction: {}", mtrx);
 
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(mtrx);
-		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
+		final IMutableHUContext huContext = handlingUnitsBL().createMutableHUContext(contextProvider);
 
 		final IAllocationSource source = new MTransactionAllocationSourceDestination(mtrx);
 
@@ -1762,7 +1797,7 @@ public class HUTestHelper
 
 		final HULoader loader = HULoader.of(source, lutuProducer);
 
-		final I_C_UOM uom = Services.get(IHandlingUnitsBL.class).getC_UOM(mtrx);
+		final I_C_UOM uom = handlingUnitsBL().getC_UOM(mtrx);
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
 				mtrx.getM_Product(),
@@ -1835,7 +1870,7 @@ public class HUTestHelper
 		final HUProducerDestination destination = HUProducerDestination.of(destinationHuPI);
 		final HULoader loader = HULoader.of(source, destination);
 
-		final I_C_UOM uom = Services.get(IHandlingUnitsBL.class).getHandlingUOM(product);
+		final I_C_UOM uom = handlingUnitsBL().getHandlingUOM(product);
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, product, qty, uom, date);
 
 		loader.load(request); // use context date for now
@@ -1858,7 +1893,7 @@ public class HUTestHelper
 		final HULoader loader = HULoader.of(source, destination);
 
 		final I_M_Product product = outgoingTrx.getM_Product();
-		final I_C_UOM uom = Services.get(IHandlingUnitsBL.class).getC_UOM(outgoingTrx);
+		final I_C_UOM uom = handlingUnitsBL().getC_UOM(outgoingTrx);
 		final BigDecimal qtyAbs = outgoingTrx.getMovementQty();
 		final BigDecimal qty = qtyAbs.negate();
 
@@ -1888,7 +1923,7 @@ public class HUTestHelper
 		//
 		// Create allocation request
 		final IMutableHUContext huContext = getHUContext();
-		final I_C_UOM uom = Services.get(IHandlingUnitsBL.class).getC_UOM(mtrx);
+		final I_C_UOM uom = handlingUnitsBL().getC_UOM(mtrx);
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
 				mtrx.getM_Product(),

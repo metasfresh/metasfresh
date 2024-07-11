@@ -22,30 +22,19 @@ package org.adempiere.acct.api.impl;
  * #L%
  */
 
-import java.util.Map;
-import java.util.Properties;
-
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.impl.AcctSegmentType;
+import de.metas.util.Check;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MAccount;
-import org.compiere.report.core.RColumn;
-import org.compiere.report.core.RModel;
-import org.compiere.util.DisplayType;
 
-import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.impl.AcctSegmentType;
-import de.metas.util.Check;
+import java.util.Properties;
 
 public class FactAcctBL implements IFactAcctBL
 {
-	@Override
-	public RColumn createEndingBalanceRColumn(final Properties ctx, final Map<String, String> columnName2whereClause)
-	{
-		return new RColumn(ctx, "EndingBalance", DisplayType.Amount, IFactAcctDAO.DB_FUNC_Fact_Acct_EndingBalance + "(" + RModel.TABLE_ALIAS + ")");
-	}
 
 	@Override
 	public MAccount getAccount(final I_Fact_Acct factAcct)
@@ -54,8 +43,7 @@ public class FactAcctBL implements IFactAcctBL
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(factAcct);
 		final AccountDimension accountDimension = createAccountDimension(factAcct);
-		final MAccount acct = MAccount.get(ctx, accountDimension);
-		return acct;
+		return MAccount.get(ctx, accountDimension);
 	}
 
 	@Override

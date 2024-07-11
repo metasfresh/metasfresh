@@ -37,11 +37,17 @@ public class ExternalSystemConstants
 	public static final String PARAM_CLIENT_ID = "ClientId";
 	public static final String PARAM_CLIENT_SECRET = "ClientSecret";
 	public static final String PARAM_CHILD_CONFIG_VALUE = "ChildConfigValue";
+
+	public static final String PARAM_JSON_PATH_CONSTANT_METASFRESH_ID = "JSONPathConstantMetasfreshID";
+	public static final String PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID = "JSONPathConstantShopwareID";
 	public static final String PARAM_JSON_PATH_CONSTANT_BPARTNER_ID = "JSONPathConstantBPartnerID";
 	public static final String PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID = "JSONPathConstantBPartnerLocationID";
 	public static final String PARAM_JSON_PATH_SALES_REP_ID = "JSONPathConstantSalesRepID";
+	public static final String PARAM_JSON_PATH_EMAIL = "JSONPathEmail";
+	public static final String PARAM_PRODUCT_LOOKUP = "ProductLookup";
 	public static final String PARAM_CONFIG_MAPPINGS = "ConfigMappings";
 	public static final String PARAM_UOM_MAPPINGS = "UOMMappings";
+	public static final String PARAM_JSON_EXPORT_DIRECTORY_SETTINGS = "JsonExportDirectorySettings";
 
 	public static final String PARAM_NORMAL_VAT_RATES = "NormalVAT_Rates";
 	public static final String PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID = "M_FreightCost_NormalVAT_Product_ID";
@@ -65,11 +71,30 @@ public class ExternalSystemConstants
 
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 
+	public static final String QUEUE_NAME_ES_TO_MF_CUSTOM = "Custom_ExternalSystem_To_Metasfresh";
+
+	public static final String QUEUE_NAME_MF_TO_ES_CUSTOM = "Custom_Metasfresh_To_ExternalSystem";
+
 	public static final String PARAM_RABBITMQ_HTTP_URL = "RemoteURL";
 	public static final String PARAM_RABBITMQ_HTTP_ROUTING_KEY = "RoutingKey";
+	public static final String PARAM_EXTERNAL_SYSTEM_HTTP_URL = "RemoteURL";
+	public static final String PARAM_EXTERNAL_SYSTEM_AUTH_TOKEN = "AuthToken";
 	public static final String PARAM_BPARTNER_ID = "BPartnerId";
+	public static final String PARAM_HU_ID = "HUId";
+	public static final String PARAM_TENANT_ID = "TenantId";
 	public static final String PARAM_RABBIT_MQ_AUTH_TOKEN = "RabbitMQAuthToken";
+	public static final String PARAM_JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST = "JsonExternalReferenceLookupRequest";
 
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
+	public static final String PARAM_JSON_AVAILABLE_FOR_SALES = "JsonAvailableForSales";
+
+	public static final int DEFAULT_SW6_ORDER_PAGE_SIZE = 100;
+
+	public static final String API_REQUEST_AUDIT_TABLE_NAME = "API_Request_Audit";
+
+	public static final String PARAM_JSON_AVAILABLE_STOCK = "JsonAvailableStock";
+
+	public static final String PARAM_FEEDBACK_RESOURCE_URL = "FeedbackResourceURL";
+	public static final String PARAM_FEEDBACK_RESOURCE_AUTH_TOKEN = "FeedbackResourceAuthToken";
 }

@@ -70,6 +70,7 @@ import java.math.BigInteger;
 import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Disabled("makes ACTUAL calls to dhl api and needs auth")
@@ -147,6 +148,7 @@ class CreateShipmentRequestFromDeliveryOrderDEtoCHTest
 			shipmentDetailsTypeType.setShipmentDate(pickupDate.getDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
 			// (2.2.1.8)
 			final PackageDimensions packageDimensions = deliveryPosition.getPackageDimensions();
+			assertNotNull(packageDimensions);
 			final ShipmentItemType shipmentItemType = objectFactory.createShipmentItemType();
 			shipmentItemType.setHeightInCM(BigInteger.valueOf(packageDimensions.getHeightInCM()));
 			shipmentItemType.setLengthInCM(BigInteger.valueOf(packageDimensions.getLengthInCM()));
@@ -315,6 +317,7 @@ class CreateShipmentRequestFromDeliveryOrderDEtoCHTest
 				final SoapMessage soapMessage = (SoapMessage)message;
 				final SoapHeader header = soapMessage.getSoapHeader();
 
+				soapMessage.setSoapAction("urn:createShipmentOrder");
 				final JAXBContext context = JAXBContext.newInstance(AuthentificationType.class);
 				final Marshaller marshaller = context.createMarshaller();
 				marshaller.marshal(authentification, header.getResult());

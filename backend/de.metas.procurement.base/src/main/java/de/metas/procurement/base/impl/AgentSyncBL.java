@@ -75,7 +75,9 @@ public class AgentSyncBL implements IAgentSyncBL
 	@Override
 	public void syncRfQs(@NonNull final List<SyncRfQ> syncRfqs)
 	{
-		senderToProcurementWebUI.send(PutRfQsRequest.of(syncRfqs));
+		senderToProcurementWebUI.send(PutRfQsRequest.builder()
+											  .syncRfqs(syncRfqs)
+											  .build());
 	}
 
 	@Override
