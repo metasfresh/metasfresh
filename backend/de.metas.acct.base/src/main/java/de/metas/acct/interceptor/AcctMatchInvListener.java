@@ -9,6 +9,7 @@ import de.metas.document.DocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.matchinv.MatchInv;
 import de.metas.invoice.matchinv.listeners.MatchInvListener;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -30,11 +31,14 @@ public class AcctMatchInvListener implements MatchInvListener
 	private final ICostingService costDetailService;
 	private final IPostingService postingService;
 	private final IFactAcctDAO factAcctDAO;
+	private final MatchInvoiceService matchInvoiceService;
 
 	public AcctMatchInvListener(
-			@NonNull final ICostingService costDetailService)
+			@NonNull final ICostingService costDetailService,
+			@NonNull final MatchInvoiceService matchInvoiceService)
 	{
 		this.costDetailService = costDetailService;
+		this.matchInvoiceService = matchInvoiceService;
 		this.postingService = Services.get(IPostingService.class);
 		this.factAcctDAO = Services.get(IFactAcctDAO.class);
 	}
@@ -77,7 +81,9 @@ public class AcctMatchInvListener implements MatchInvListener
 			if (matchInv.isPosted())
 			{
 				MPeriod.testPeriodOpen(Env.getCtx(), Timestamp.from(matchInv.getDateAcct()), DocBaseType.MatchInvoice, matchInv.getOrgId().getRepoId());
-				factAcctDAO.deleteForRecordRef(toTableRecordReference(matchInv));
+
+				final I_M_MatchInv matchInvoiceRecord = matchInvoiceService.getRecordByIdOurOfTrx(matchInv.getId());
+				factAcctDAO.deleteForDocumentModel(matchInvoiceRecord);
 			}
 		}
 	}
