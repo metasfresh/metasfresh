@@ -49,6 +49,16 @@ public class MatchInvoiceRepository
 		return fromRecord(record);
 	}
 
+	public I_M_MatchInv getRecordByIdOutOfTrx(@NonNull final MatchInvId matchInvId)
+		{
+			final I_M_MatchInv record = InterfaceWrapperHelper.loadOutOfTrx(matchInvId, I_M_MatchInv.class);
+			if (record == null)
+			{
+				throw new AdempiereException("No Match Invoice found for " + matchInvId);
+			}
+
+			return record;
+	}
 	public static MatchInv fromRecord(@NonNull final I_M_MatchInv record)
 	{
 		final MatchInvType type = MatchInvType.ofCode(record.getType());
