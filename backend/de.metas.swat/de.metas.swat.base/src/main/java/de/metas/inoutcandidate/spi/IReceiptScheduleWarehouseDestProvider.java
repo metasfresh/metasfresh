@@ -1,11 +1,10 @@
 package de.metas.inoutcandidate.spi;
 
-import java.util.Properties;
-
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Warehouse;
 
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import java.util.Optional;
+import java.util.Properties;
 
 /*
  * #%L
@@ -30,14 +29,15 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
  */
 
 /**
- * Implementations of this interface are responsible for providing the warehouse destination to be used for {@link I_M_ReceiptSchedule#setM_Warehouse_Dest(I_M_Warehouse)}.
+ * Implementations of this interface are responsible for providing the warehouse destination to be used for receipt schedule destination warehouse.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface IReceiptScheduleWarehouseDestProvider
 {
-	/** Context used for evaluating if the destination warehouse */
+	/**
+	 * Context used for evaluating if the destination warehouse
+	 */
 	public interface IContext
 	{
 		Properties getCtx();
@@ -54,9 +54,7 @@ public interface IReceiptScheduleWarehouseDestProvider
 	}
 
 	/**
-	 * @param context
-	 * @return destination warehouse for given order line or <code>null</code>
+	 * @return destination warehouse for given order line
 	 */
-	I_M_Warehouse getWarehouseDest(IContext context);
-
+	Optional<WarehouseId> getWarehouseDest(IContext context);
 }

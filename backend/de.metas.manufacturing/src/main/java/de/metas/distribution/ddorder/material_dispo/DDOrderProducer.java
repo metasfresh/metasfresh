@@ -14,6 +14,9 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DDOrderUtil;
+import de.metas.material.planning.ddorder.DistributionNetworkLine;
+import de.metas.material.planning.ddorder.DistributionNetworkLineId;
+import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
@@ -31,7 +34,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
@@ -71,6 +73,7 @@ public class DDOrderProducer
 {
 	private final DDOrderLowLevelService ddOrderLowLevelService;
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
+	private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
@@ -89,24 +92,24 @@ public class DDOrderProducer
 			@Nullable final String traceId)
 	{
 		final Map<FromToWarehouse, I_DD_Order> warehouses2ddOrder = new HashMap<>();
-		
+
 		for (final DDOrderLine linePojo : ddOrder.getLines())
 		{
-			final I_DD_NetworkDistributionLine networkDistributionLineRecord = load(linePojo.getNetworkDistributionLineId(), I_DD_NetworkDistributionLine.class);
-			final FromToWarehouse fromToWarehouseKey = FromToWarehouse.create(linePojo);
+			final DistributionNetworkLine distributionNetworkLine = distributionNetworkDAO.getLineById(DistributionNetworkLineId.ofRepoId(linePojo.getNetworkDistributionLineId()));
+			final FromToWarehouse fromToWarehouseKey = toFromToWarehouse(linePojo);
 
 			final I_DD_Order ddOrderRecord = warehouses2ddOrder.computeIfAbsent(
-					fromToWarehouseKey, 
+					fromToWarehouseKey,
 					key -> createDDOrderRecord(key, ddOrder, dateOrdered, traceId));
 
-			createDDOrderLine(ddOrder, linePojo, networkDistributionLineRecord, fromToWarehouseKey, ddOrderRecord);
+			createDDOrderLine(ddOrder, linePojo, distributionNetworkLine, fromToWarehouseKey, ddOrderRecord);
 		}
 
 		return ImmutableList.copyOf(warehouses2ddOrder.values());
 	}
-	
+
 	private I_DD_Order createDDOrderRecord(
-			@NonNull final FromToWarehouse fromToWarehouse, 
+			@NonNull final FromToWarehouse fromToWarehouse,
 			@NonNull final DDOrder ddOrder,
 			@NonNull final Date dateOrdered,
 			@Nullable final String ddOrderRequestedEventTrace)
@@ -115,7 +118,7 @@ public class DDOrderProducer
 		final ProductPlanning productPlanning = productPlanningsRepo.getById(productPlanningId);
 
 		final BPartnerLocationId orgBPartnerLocationId = DDOrderUtil.retrieveOrgBPartnerLocationId(ddOrder.getOrgId());
-		
+
 		final I_DD_Order ddOrderRecord = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
 		ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.setValue(ddOrderRecord, ddOrder.getMaterialDispoGroupId());
 		ATTR_DDORDER_REQUESTED_EVENT_TRACE_ID.setValue(ddOrderRecord, ddOrderRequestedEventTrace);
@@ -154,22 +157,13 @@ public class DDOrderProducer
 		ddOrderRecord.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(productPlanning.getId()));
 
 		ddOrderLowLevelService.save(ddOrderRecord);
-		
+
 		return ddOrderRecord;
 	}
 
 	@Value
 	private static class FromToWarehouse
 	{
-		public static FromToWarehouse create(@NonNull final DDOrderLine linePojo)
-		{
-			final I_DD_NetworkDistributionLine networkDistributionLine = InterfaceWrapperHelper.load(linePojo.getNetworkDistributionLineId(), I_DD_NetworkDistributionLine.class);
-			final WarehouseId warehouseFromId = WarehouseId.ofRepoId(networkDistributionLine.getM_WarehouseSource_ID());
-			final WarehouseId warehouseToId = WarehouseId.ofRepoId(networkDistributionLine.getM_Warehouse_ID());
-			
-			return new FromToWarehouse(warehouseFromId, warehouseToId);
-		}
-		
 		@NonNull
 		WarehouseId warehouseFromId;
 
@@ -177,10 +171,16 @@ public class DDOrderProducer
 		WarehouseId warehouseToId;
 	}
 
+	private FromToWarehouse toFromToWarehouse(@NonNull final DDOrderLine linePojo)
+	{
+		final DistributionNetworkLine distributionNetworkLine = distributionNetworkDAO.getLineById(DistributionNetworkLineId.ofRepoId(linePojo.getNetworkDistributionLineId()));
+		return new FromToWarehouse(distributionNetworkLine.getSourceWarehouseId(), distributionNetworkLine.getTargetWarehouseId());
+	}
+
 	private void createDDOrderLine(
 			@NonNull final DDOrder ddOrder,
 			@NonNull final DDOrderLine linePojo,
-			@NonNull final I_DD_NetworkDistributionLine networkDistributionLineRecord,
+			@NonNull final DistributionNetworkLine distributionNetworkLine,
 			@NonNull final DDOrderProducer.FromToWarehouse fromToWarehouse,
 			@NonNull final I_DD_Order ddOrderRecord)
 	{
@@ -196,7 +196,7 @@ public class DDOrderProducer
 			ddOrderline.setC_BPartner_ID(ddOrderline.getC_OrderLineSO().getC_BPartner_ID());
 		}
 
-		ddOrderline.setDD_NetworkDistributionLine_ID(networkDistributionLineRecord.getDD_NetworkDistributionLine_ID());
+		ddOrderline.setDD_NetworkDistributionLine_ID(distributionNetworkLine.getId().getRepoId());
 
 		// get supply source warehouse and locator
 		final LocatorId locatorFromId = warehouseBL.getOrCreateDefaultLocatorId(fromToWarehouse.getWarehouseFromId());
@@ -208,7 +208,7 @@ public class DDOrderProducer
 		// Locator From/To
 		ddOrderline.setM_Locator_ID(locatorFromId.getRepoId());
 		ddOrderline.setM_LocatorTo_ID(locatorToId.getRepoId());
-		
+
 		//
 		// Product, UOM, Qty
 		// NOTE: we assume qtyToMove is in "mrpContext.getC_UOM()" which shall be the Product's stocking UOM
@@ -234,14 +234,14 @@ public class DDOrderProducer
 		//
 		// Other flags
 		ddOrderline.setIsInvoiced(false);
-		ddOrderline.setDD_AllowPush(networkDistributionLineRecord.isDD_AllowPush());
-		ddOrderline.setIsKeepTargetPlant(networkDistributionLineRecord.isKeepTargetPlant());
+		ddOrderline.setDD_AllowPush(distributionNetworkLine.isAllowPush());
+		ddOrderline.setIsKeepTargetPlant(distributionNetworkLine.isKeepTargetPlant());
 
 		//
 		// Save DD Order Line
-			ddOrderLowLevelService.save(ddOrderline);
+		ddOrderLowLevelService.save(ddOrderline);
 	}
-	
+
 	private DocTypeId getDocTypeId(final OrgId orgId)
 	{
 		final ClientId clientId = orgDAO.getClientIdByOrgId(orgId);

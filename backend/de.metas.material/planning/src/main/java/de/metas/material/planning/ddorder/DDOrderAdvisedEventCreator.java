@@ -9,11 +9,10 @@ import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
-import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -42,25 +41,18 @@ import java.util.List;
  */
 
 @Service
+@RequiredArgsConstructor
 public class DDOrderAdvisedEventCreator
 {
-	private final DDOrderDemandMatcher ddOrderDemandMatcher;
-
-	private final DDOrderPojoSupplier ddOrderPojoSupplier;
-
-	public DDOrderAdvisedEventCreator(
-			@NonNull final DDOrderDemandMatcher ddOrderDemandMatcher,
-			@NonNull final DDOrderPojoSupplier ddOrderPojoSupplier)
-	{
-		this.ddOrderDemandMatcher = ddOrderDemandMatcher;
-		this.ddOrderPojoSupplier = ddOrderPojoSupplier;
-	}
+	@NonNull private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
+	@NonNull private final DDOrderDemandMatcher ddOrderDemandMatcher;
+	@NonNull private final DDOrderPojoSupplier ddOrderPojoSupplier;
 
 	public List<DDOrderAdvisedEvent> createDDOrderAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			final IMutableMRPContext mrpContext)
 	{
-		if(!ddOrderDemandMatcher.matches(mrpContext))
+		if (!ddOrderDemandMatcher.matches(mrpContext))
 		{
 			return ImmutableList.of();
 		}
@@ -76,21 +68,15 @@ public class DDOrderAdvisedEventCreator
 		{
 			for (final DDOrderLine ddOrderLine : ddOrder.getLines())
 			{
-				Check.errorIf(ddOrderLine.getNetworkDistributionLineId() <= 0,
-						"Every DDOrderLine pojo created by this planner needs to have networkDistributionLineId > 0, but this one hasn't; ddOrderLine={}",
-						ddOrderLine);
-
-				final I_DD_NetworkDistributionLine networkLine = InterfaceWrapperHelper.create(
-						mrpContext.getCtx(),
-						ddOrderLine.getNetworkDistributionLineId(),
-						I_DD_NetworkDistributionLine.class,
-						mrpContext.getTrxName());
+				final DistributionNetworkLine distributionNetworkLine = DistributionNetworkLineId.optionalOfRepoId(ddOrderLine.getNetworkDistributionLineId())
+						.map(distributionNetworkDAO::getLineById)
+						.orElseThrow(() -> new AdempiereException("Every DDOrderLine pojo created by this planner needs to have networkDistributionLineId > 0, but this one hasn't; ddOrderLine=" + ddOrderLine));
 
 				final DDOrderAdvisedEvent distributionAdvisedEvent = DDOrderAdvisedEvent.builder()
 						.supplyRequiredDescriptor(supplyRequiredDescriptor)
 						.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
-						.fromWarehouseId(WarehouseId.ofRepoId(networkLine.getM_WarehouseSource_ID()))
-						.toWarehouseId(WarehouseId.ofRepoId(networkLine.getM_Warehouse_ID()))
+						.fromWarehouseId(distributionNetworkLine.getSourceWarehouseId())
+						.toWarehouseId(distributionNetworkLine.getTargetWarehouseId())
 						.ddOrder(ddOrder)
 						.advisedToCreateDDrder(productPlanningData.isCreatePlan())
 						.pickIfFeasible(productPlanningData.isPickDirectlyIfFeasible())

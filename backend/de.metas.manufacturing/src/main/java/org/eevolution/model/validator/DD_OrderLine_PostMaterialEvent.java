@@ -31,6 +31,9 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DDOrderUtil;
+import de.metas.material.planning.ddorder.DistributionNetworkLine;
+import de.metas.material.planning.ddorder.DistributionNetworkLineId;
+import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -57,6 +60,7 @@ public class DD_OrderLine_PostMaterialEvent
 	private final PostMaterialEventService postMaterialEventService;
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
 
 	public DD_OrderLine_PostMaterialEvent(
 			@NonNull final ReplenishInfoRepository replenishInfoRepository,
@@ -85,15 +89,18 @@ public class DD_OrderLine_PostMaterialEvent
 		final I_DD_Order ddOrder = ddOrderLineRecord.getDD_Order();
 		final DDOrder.DDOrderBuilder ddOrderBuilder = createAndInitPPOrderPojoBuilder(ddOrder);
 
+		final DistributionNetworkLine distributionNetworkLine = DistributionNetworkLineId.optionalOfRepoId(oldDDOrderLine.getDD_NetworkDistributionLine_ID())
+				.map(distributionNetworkDAO::getLineById)
+				.orElse(null);
+
 		final ProductPlanning productPlanning = getProductPlanning(ddOrder);
-		final int durationDays = DDOrderUtil.calculateDurationDays(
-				productPlanning, oldDDOrderLine.getDD_NetworkDistributionLine());
+		final int durationDays = DDOrderUtil.calculateDurationDays(productPlanning, distributionNetworkLine);
 
 		ddOrderBuilder.lines(ImmutableList.of(createDDOrderLinePojo(replenishInfoRepository, oldDDOrderLine, ddOrder, durationDays)));
 
 		final WarehouseId warehouseId = warehouseDAO.getWarehouseIdByLocatorRepoId(oldDDOrderLine.getM_Locator_ID());
 		final WarehouseId warehouseToId = warehouseDAO.getWarehouseIdByLocatorRepoId(oldDDOrderLine.getM_LocatorTo_ID());
-		
+
 		final DDOrderDeletedEvent event = DDOrderDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrder.getAD_Client_ID(), ddOrder.getAD_Org_ID()))
 				.ddOrder(ddOrderBuilder.build())

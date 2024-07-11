@@ -15,9 +15,11 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -26,14 +28,8 @@ import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.util.Env;
-import org.eevolution.model.I_DD_NetworkDistribution;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -112,15 +108,14 @@ public class DDOrderPojoSupplier
 			return ImmutableList.of();
 		}
 
-		final I_DD_NetworkDistribution network = distributionNetworkDAO.getById(productPlanningData.getDistributionNetworkId());
-		final List<I_DD_NetworkDistributionLine> networkLines = distributionNetworkDAO
-				.retrieveNetworkLinesByTargetWarehouse(network, productPlanningData.getWarehouseId());
+		final DistributionNetwork network = distributionNetworkDAO.getById(productPlanningData.getDistributionNetworkId());
+		final List<DistributionNetworkLine> networkLines = network.getLinesByTargetWarehouse(productPlanningData.getWarehouseId());
 		if (networkLines.isEmpty())
 		{
 			// No network lines were found for our target warehouse
 			final WarehouseId warehouseToId = productPlanningData.getWarehouseId();
 			Loggables.addLog(
-					"DD_NetworkDistribution has no lines for target M_Warehouse_ID={}; {} returns entpy list; "
+					"DD_NetworkDistribution has no lines for target M_Warehouse_ID={}; {} returns empty list; "
 							+ "networkDistribution={}"
 							+ "warehouseToId={}",
 					productPlanningData.getWarehouseId(), this.getClass(), network, warehouseToId);
@@ -129,12 +124,12 @@ public class DDOrderPojoSupplier
 
 		final Instant supplyDateFinishSchedule = request.getDemandDate();
 
-		int M_Shipper_ID = -1;
+		ShipperId M_Shipper_ID = null;
 		// I_DD_Order order = null;
 		DDOrder.DDOrderBuilder ddOrderBuilder = null;
 
 		Quantity qtyToSupplyRemaining = request.getQtyToSupply();
-		for (final I_DD_NetworkDistributionLine networkLine : networkLines)
+		for (final DistributionNetworkLine networkLine : networkLines)
 		{
 			// Check: if we created DD Orders for all qty that needed to be supplied, stop here
 			if (qtyToSupplyRemaining.signum() <= 0)
@@ -143,10 +138,10 @@ public class DDOrderPojoSupplier
 			}
 
 			// get supply source warehouse and locator
-			final WarehouseId warehouseFromId = WarehouseId.ofRepoId(networkLine.getM_WarehouseSource_ID());
+			final WarehouseId warehouseFromId = networkLine.getSourceWarehouseId();
 
 			// get supply target warehouse and locator
-			final WarehouseId warehouseToId = WarehouseId.ofRepoId(networkLine.getM_Warehouse_ID());
+			final WarehouseId warehouseToId = networkLine.getTargetWarehouseId();
 			final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(warehouseToId);
 
 			// Get the warehouse in transit
@@ -164,18 +159,7 @@ public class DDOrderPojoSupplier
 				continue;
 			}
 
-			// DRP-030: Do not exist Shipper for Create Distribution Order
-			if (networkLine.getM_Shipper_ID() <= 0)
-			{
-				Loggables.addLog(
-						"DD_NetworkDistributionLine has no M_Shipper_ID; {} returns entpy list; "
-								+ "networkDistribution={}"
-								+ "networkLine={}",
-						this.getClass(), network, networkLine);
-				continue;
-			}
-
-			if (M_Shipper_ID != networkLine.getM_Shipper_ID()) // this is also the case on our first iteration since we initialized M_Shipper_ID := -1
+			if (!ShipperId.equals(M_Shipper_ID, networkLine.getShipperId())) // this is also the case on our first iteration since we initialized M_Shipper_ID=null
 			{
 				final OrgId warehouseToOrgId = warehouseBL.getWarehouseOrgId(warehouseToId);
 				// Org Must be linked to BPartner
@@ -202,19 +186,17 @@ public class DDOrderPojoSupplier
 						.plantId(plantId.getRepoId())
 						.productPlanningId(ProductPlanningId.toRepoId(productPlanningData.getId()))
 						.datePromised(supplyDateFinishSchedule)
-						.shipperId(networkLine.getM_Shipper_ID())
+						.shipperId(networkLine.getShipperId().getRepoId())
 						.simulated(request.isSimulated());
 
 				builders.add(ddOrderBuilder);
 
-				M_Shipper_ID = networkLine.getM_Shipper_ID();
+				M_Shipper_ID = networkLine.getShipperId();
 			}
 
 			//
 			// Crate DD order line
-			final Quantity qtyToMove = Quantity.of(
-					calculateQtyToMove(qtyToSupplyRemaining.toBigDecimal(), networkLine.getPercent()),
-					qtyToSupplyRemaining.getUOM());
+			final Quantity qtyToMove = calculateQtyToMove(qtyToSupplyRemaining, networkLine.getTransferPercent());
 
 			final DDOrderLine ddOrderLine = createDD_OrderLine(networkLine, qtyToMove, request);
 			ddOrderBuilder.line(ddOrderLine);
@@ -241,31 +223,22 @@ public class DDOrderPojoSupplier
 	}
 
 	@VisibleForTesting
-	/* package */ final BigDecimal calculateQtyToMove(
-			@NonNull final BigDecimal qtyToMoveRequested,
-			@NonNull final BigDecimal networkLineTransferPercent)
+	/* package */ final Quantity calculateQtyToMove(
+			@NonNull final Quantity qtyToMoveRequested,
+			@NonNull final Percent networkLineTransferPercent)
 	{
-		if (networkLineTransferPercent.signum() == 0)
-		{
-			return BigDecimal.ZERO;
-		}
-		else if (networkLineTransferPercent.signum() < 0)
+		if (networkLineTransferPercent.signum() < 0)
 		{
 			throw new MrpException("NetworkLine's TransferPercent shall not be negative")
 					.setParameter("QtyToMove", qtyToMoveRequested)
 					.setParameter("Transfer Percent", networkLineTransferPercent);
 		}
-		else if (networkLineTransferPercent.compareTo(Env.ONEHUNDRED) == 0)
-		{
-			return qtyToMoveRequested;
-		}
-		final BigDecimal networkLineTransferPercentMultiplier = networkLineTransferPercent.divide(Env.ONEHUNDRED, 4, RoundingMode.HALF_UP);
 
-		return qtyToMoveRequested.multiply(networkLineTransferPercentMultiplier);
+		return qtyToMoveRequested.multiply(networkLineTransferPercent);
 	}
 
 	private DDOrderLine createDD_OrderLine(
-			@Nullable final I_DD_NetworkDistributionLine networkLine,
+			@NonNull final DistributionNetworkLine networkLine,
 			@NonNull final Quantity qtyToMove,
 			@NonNull final IMaterialRequest request)
 	{
@@ -287,7 +260,7 @@ public class DDOrderPojoSupplier
 				.bPartnerId(request.getMrpDemandBPartnerId())
 				.productDescriptor(productDescriptor)
 				.qty(qtyToMoveInProductUOM.toBigDecimal())
-				.networkDistributionLineId(networkLine.getDD_NetworkDistributionLine_ID())
+				.networkDistributionLineId(networkLine.getId().getRepoId())
 				.durationDays(durationDays)
 				.build();
 	}

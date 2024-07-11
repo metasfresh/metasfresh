@@ -15,7 +15,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -53,14 +52,13 @@ public class DDOrderUtil
 	}
 
 	/**
-	 *
 	 * @param productPlanningData may be {@code null} as of gh #1635
-	 * @param networkLine may also be {@code null} as of gh #1635
+	 * @param networkLine         may also be {@code null} as of gh #1635
 	 * @return
 	 */
 	public int calculateDurationDays(
 			@Nullable final ProductPlanning productPlanningData,
-			@Nullable final I_DD_NetworkDistributionLine networkLine)
+			@Nullable final DistributionNetworkLine networkLine)
 	{
 		//
 		// Leadtime
@@ -80,7 +78,7 @@ public class DDOrderUtil
 		final int transferTimeFromNetworkLine;
 		if (networkLine != null)
 		{
-			transferTimeFromNetworkLine = networkLine.getTransfertTime().intValueExact();
+			transferTimeFromNetworkLine = (int)networkLine.getTransferDuration().toDays();
 		}
 		else
 		{

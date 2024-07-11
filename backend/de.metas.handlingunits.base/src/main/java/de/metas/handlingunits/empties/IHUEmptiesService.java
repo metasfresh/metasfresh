@@ -35,22 +35,9 @@ import java.util.Properties;
 public interface IHUEmptiesService extends ISingletonService
 {
 	/**
-	 * Gets the warehouse to be used for empties (Gebinde).
-	 * 
-	 * The empties warehouse is taken from a special distribution network that has isHUDestroyed = true, from the (first) line that has the warehouse source the one given as parameter
-	 *
-	 * @param warehouse counter part warehouse, i.e. on which warehouse the empties are currently on
-	 *
-	 * @return the empties warehouse which shall be used for given counterpart warehouse
-	 * @throws AdempiereException if empties warehouse was not found
-	 */
-	I_M_Warehouse getEmptiesWarehouse(I_M_Warehouse warehouse);
-
-	/**
 	 * Gets the warehouse locator to be used for empties.
 	 * 
 	 * @return empties locator
-	 * @see #getEmptiesWarehouse(I_M_Warehouse)
 	 */
 	I_M_Locator getEmptiesLocator(I_M_Warehouse warehouse);
 

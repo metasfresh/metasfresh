@@ -22,172 +22,181 @@ package de.metas.material.planning.ddorder.impl;
  * #L%
  */
 
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.cache.CCache;
+import de.metas.material.planning.ddorder.DistributionNetwork;
 import de.metas.material.planning.ddorder.DistributionNetworkId;
+import de.metas.material.planning.ddorder.DistributionNetworkLine;
+import de.metas.material.planning.ddorder.DistributionNetworkLineId;
 import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.shipping.ShipperId;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
+import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.time.Duration;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.stream.Collector;
 
 public class DistributionNetworkDAO implements IDistributionNetworkDAO
 {
-	@Override
-	public I_DD_NetworkDistribution getById(@NonNull final DistributionNetworkId id)
-	{
-		return InterfaceWrapperHelper.load(id, I_DD_NetworkDistribution.class);
-	}
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final CCache<Integer, DistributionNetworksMap> cache = CCache.<Integer, DistributionNetworksMap>builder()
+			.tableName(I_DD_NetworkDistribution.Table_Name)
+			.additionalTableNameToResetFor(I_DD_NetworkDistributionLine.Table_Name)
+			.build();
 
 	@Override
-	public List<I_DD_NetworkDistributionLine> retrieveAllNetworkLines(@NonNull final I_DD_NetworkDistribution distributionNetwork)
+	public DistributionNetwork getById(@NonNull final DistributionNetworkId id)
 	{
-		final DistributionNetworkId distributionNetworkId = DistributionNetworkId.ofRepoId(distributionNetwork.getDD_NetworkDistribution_ID());
-		final Properties ctx = InterfaceWrapperHelper.getCtx(distributionNetwork);
-		final String trxName = InterfaceWrapperHelper.getTrxName(distributionNetwork);
-
-		return retrieveAllNetworkLines(ctx, distributionNetworkId, trxName);
-	}
-
-	@Cached(cacheName = I_DD_NetworkDistributionLine.Table_Name + "#by#" + I_DD_NetworkDistributionLine.COLUMNNAME_DD_NetworkDistribution_ID)
-		/* package */List<I_DD_NetworkDistributionLine> retrieveAllNetworkLines(
-			@CacheCtx final Properties ctx,
-			@NonNull final DistributionNetworkId distributionNetworkId,
-			@CacheTrx final String trxName)
-	{
-		final IQueryBuilder<I_DD_NetworkDistributionLine> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_DD_NetworkDistributionLine.class, ctx, trxName);
-
-		final ICompositeQueryFilter<I_DD_NetworkDistributionLine> filters = queryBuilder.getCompositeFilter();
-		filters.addEqualsFilter(I_DD_NetworkDistributionLine.COLUMNNAME_DD_NetworkDistribution_ID, distributionNetworkId);
-
-		queryBuilder.orderBy()
-				.addColumn(I_DD_NetworkDistributionLine.COLUMNNAME_PriorityNo)
-				.addColumn(I_DD_NetworkDistributionLine.COLUMNNAME_M_Shipper_ID);
-
-		return queryBuilder.create()
-				.list();
+		return getMap().getById(id);
 	}
 
 	@Override
-	public List<I_DD_NetworkDistributionLine> retrieveNetworkLinesByTargetWarehouse(final I_DD_NetworkDistribution distributionNetwork, final WarehouseId targetWarehouseId)
+	public DistributionNetworkLine getLineById(@NonNull final DistributionNetworkLineId lineId)
 	{
-		final List<I_DD_NetworkDistributionLine> result = new ArrayList<>();
-		for (final I_DD_NetworkDistributionLine line : retrieveAllNetworkLines(distributionNetwork))
-		{
-			// Skip inactive lines
-			if (!line.isActive())
-			{
-				continue;
-			}
-
-			final WarehouseId lineTargetWarehouseId = WarehouseId.ofRepoId(line.getM_Warehouse_ID());
-			if (WarehouseId.equals(lineTargetWarehouseId, targetWarehouseId))
-			{
-				result.add(line);
-			}
-		}
-		return result;
+		return getMap().getLineById(lineId);
 	}
 
 	@Override
-	public List<I_DD_NetworkDistributionLine> retrieveNetworkLinesBySourceWarehouse(final I_DD_NetworkDistribution distributionNetwork, final int sourceWarehouseId)
+	public DistributionNetwork getEmptiesDistributionNetwork()
 	{
-		final List<I_DD_NetworkDistributionLine> result = new ArrayList<>();
-		for (final I_DD_NetworkDistributionLine line : retrieveAllNetworkLines(distributionNetwork))
-		{
-			// Skip inactive lines
-			if (!line.isActive())
-			{
-				continue;
-			}
-
-			if (line.getM_WarehouseSource_ID() == sourceWarehouseId)
-			{
-				result.add(line);
-			}
-		}
-		return result;
+		return getMap().getEmptiesDistributionNetwork();
 	}
 
-	@Override
-	public List<I_M_Warehouse> retrieveWarehousesInSamePlantAs(final Properties ctx, final int targetWarehouseId)
+	private DistributionNetworksMap getMap()
 	{
-		final Map<Integer, List<I_M_Warehouse>> targetWarehouseId2sourceWarehouses = retriveTargetWarehouse2SourceWarehousesWithKeepTargetPlant(ctx);
-		final List<I_M_Warehouse> sourceWarehouses = targetWarehouseId2sourceWarehouses.get(targetWarehouseId);
-		if (sourceWarehouses == null || sourceWarehouses.isEmpty())
-		{
-			return Collections.emptyList();
-		}
-		return new ArrayList<>(sourceWarehouses);
+		return cache.getOrLoad(0, this::retrieveMap);
 	}
 
-	/**
-	 * @param ctx
-	 * @return target M_Warehouse_ID to source warehouses (from network lines which have IsKeepTargetPlant set)
-	 */
-	@Cached(cacheName = I_DD_NetworkDistributionLine.Table_Name + "#targetWarehouseId2SourceWarehouses")
-	Map<Integer, List<I_M_Warehouse>> retriveTargetWarehouse2SourceWarehousesWithKeepTargetPlant(@CacheCtx final Properties ctx)
+	private DistributionNetworksMap retrieveMap()
 	{
-		// services
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final Set<ArrayKey> target2sourceWarehouseIdLinks = new HashSet<>();
-		final Map<Integer, List<I_M_Warehouse>> targetWarehouseId2sourceWarehouses = new HashMap<>();
-
-		//
-		// Retrieve Source warehouses from distribution network, which:
-		// * has our Plant and Org warehouses as target
-		// * are configured to keep the target warehouse's Plant
-		final List<I_DD_NetworkDistributionLine> networkLinesWithKeepTargetPlant = queryBL
-				.createQueryBuilder(I_DD_NetworkDistributionLine.class, ctx, ITrx.TRXNAME_None)
+		final ImmutableListMultimap<DistributionNetworkId, I_DD_NetworkDistributionLine> lineRecords = queryBL.createQueryBuilder(I_DD_NetworkDistributionLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_DD_NetworkDistributionLine.COLUMNNAME_IsKeepTargetPlant, true)
-				//
 				.create()
-				.list();
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						record -> DistributionNetworkId.ofRepoId(record.getDD_NetworkDistribution_ID()),
+						record -> record
+				));
 
-		for (final I_DD_NetworkDistributionLine networkLine : networkLinesWithKeepTargetPlant)
+		return queryBL.createQueryBuilder(I_DD_NetworkDistribution.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_NetworkDistribution.COLUMNNAME_DD_NetworkDistribution_ID)
+				.create()
+				.stream()
+				.map(headerRecord -> fromRecord(headerRecord, lineRecords.get(DistributionNetworkId.ofRepoId(headerRecord.getDD_NetworkDistribution_ID()))))
+				.collect(DistributionNetworksMap.collect());
+
+	}
+
+	private static DistributionNetwork fromRecord(
+			final I_DD_NetworkDistribution headerRecord,
+			final List<I_DD_NetworkDistributionLine> lineRecords)
+	{
+		return DistributionNetwork.builder()
+				.id(DistributionNetworkId.ofRepoId(headerRecord.getDD_NetworkDistribution_ID()))
+				.name(headerRecord.getName())
+				.lines(lineRecords.stream()
+						.map(DistributionNetworkDAO::fromRecord)
+						.collect(ImmutableList.toImmutableList()))
+				.isEmptiesDistributionNetwork(headerRecord.isHUDestroyed())
+				.build();
+	}
+
+	private static DistributionNetworkLine fromRecord(@NonNull final I_DD_NetworkDistributionLine lineRecord)
+	{
+		return DistributionNetworkLine.builder()
+				.id(DistributionNetworkLineId.ofRepoId(lineRecord.getDD_NetworkDistributionLine_ID()))
+				.sourceWarehouseId(WarehouseId.ofRepoId(lineRecord.getM_WarehouseSource_ID()))
+				.targetWarehouseId(WarehouseId.ofRepoId(lineRecord.getM_Warehouse_ID()))
+				.shipperId(ShipperId.ofRepoId(lineRecord.getM_Shipper_ID()))
+				.transferPercent(Percent.of(lineRecord.getPercent()))
+				.transferDuration(Duration.ofDays(lineRecord.getTransfertTime().intValueExact()))
+				.isAllowPush(lineRecord.isDD_AllowPush())
+				.isKeepTargetPlant(lineRecord.isKeepTargetPlant())
+				.build();
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	@EqualsAndHashCode
+	@ToString
+	private static class DistributionNetworksMap
+	{
+		private final ImmutableMap<DistributionNetworkId, DistributionNetwork> byId;
+		private final ImmutableList<DistributionNetwork> emptiesDistributionNetworks;
+		private final ImmutableMap<DistributionNetworkLineId, ImmutablePair<DistributionNetwork, DistributionNetworkLine>> byLineId;
+
+		private DistributionNetworksMap(final List<DistributionNetwork> list)
 		{
-			final int targetWarehouseId = networkLine.getM_Warehouse_ID();
-			final int sourceWarehouseId = networkLine.getM_WarehouseSource_ID();
-
-			// Make sure we are not adding the same link more then once
-			if (!target2sourceWarehouseIdLinks.add(Util.mkKey(targetWarehouseId, sourceWarehouseId)))
-			{
-				continue;
-			}
-
-			List<I_M_Warehouse> sourceWarehouses = targetWarehouseId2sourceWarehouses.get(targetWarehouseId);
-			if (sourceWarehouses == null)
-			{
-				sourceWarehouses = new ArrayList<>();
-				targetWarehouseId2sourceWarehouses.put(targetWarehouseId, sourceWarehouses);
-			}
-
-			final I_M_Warehouse sourceWarehouse = networkLine.getM_WarehouseSource();
-			sourceWarehouses.add(sourceWarehouse);
+			this.byId = Maps.uniqueIndex(list, DistributionNetwork::getId);
+			this.byLineId = list.stream()
+					.flatMap(network -> network.getLines().stream().map(line -> ImmutablePair.of(network, line)))
+					.collect(ImmutableMap.toImmutableMap(
+							pair -> pair.getRight().getId(),
+							pair -> pair));
+			this.emptiesDistributionNetworks = list.stream()
+					.filter(DistributionNetwork::isEmptiesDistributionNetwork)
+					.collect(ImmutableList.toImmutableList());
 		}
 
-		return new HashMap<>(targetWarehouseId2sourceWarehouses);
+		public static Collector<DistributionNetwork, ?, DistributionNetworksMap> collect()
+		{
+			return GuavaCollectors.collectUsingListAccumulator(DistributionNetworksMap::new);
+		}
+
+		public DistributionNetwork getById(@NonNull DistributionNetworkId id)
+		{
+			final DistributionNetwork distributionNetwork = byId.get(id);
+			if (distributionNetwork == null)
+			{
+				throw new AdempiereException("No distribution network found with id " + id);
+			}
+			return distributionNetwork;
+		}
+
+		public DistributionNetwork getEmptiesDistributionNetwork()
+		{
+			if (emptiesDistributionNetworks.isEmpty())
+			{
+				throw new AdempiereException("No empties distribution network found");
+			}
+			else if (emptiesDistributionNetworks.size() > 1)
+			{
+				throw new AdempiereException("Multiple empties distribution networks found");
+			}
+			else
+			{
+				return emptiesDistributionNetworks.get(0);
+			}
+		}
+
+		public DistributionNetworkLine getLineById(@NonNull final DistributionNetworkLineId lineId)
+		{
+			final ImmutablePair<DistributionNetwork, DistributionNetworkLine> pair = byLineId.get(lineId);
+			if (pair == null)
+			{
+				throw new AdempiereException("No line found with id " + lineId);
+			}
+			return pair.getRight();
+		}
 	}
 }

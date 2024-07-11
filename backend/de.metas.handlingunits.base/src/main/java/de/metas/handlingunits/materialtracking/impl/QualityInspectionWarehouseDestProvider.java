@@ -1,19 +1,18 @@
 package de.metas.handlingunits.materialtracking.impl;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Warehouse;
-
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
 import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -55,32 +54,32 @@ public final class QualityInspectionWarehouseDestProvider implements IReceiptSch
 	}
 
 	@Override
-	public I_M_Warehouse getWarehouseDest(final IContext context)
+	public Optional<WarehouseId> getWarehouseDest(final IContext context)
 	{
 		final I_M_AttributeSetInstance asi = context.getM_AttributeSetInstance();
 		if (asi == null || asi.getM_AttributeSetInstance_ID() <= 0)
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 		final AttributeId qualityInspectionCycleAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(IHUMaterialTrackingBL.ATTRIBUTENAME_QualityInspectionCycle);
 		if(qualityInspectionCycleAttributeId == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 		final I_M_AttributeInstance qualityInspectionCycleAttributeInstance = attributeDAO.retrieveAttributeInstance(asiId, qualityInspectionCycleAttributeId);
 		if (qualityInspectionCycleAttributeInstance == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		final String qualityInspectionCycleValue = qualityInspectionCycleAttributeInstance.getValue();
 		if (Check.isEmpty(qualityInspectionCycleValue, true))
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		final String sysconfigName = SYSCONFIG_QualityInspectionWarehouseDest_Prefix
@@ -88,13 +87,7 @@ public final class QualityInspectionWarehouseDestProvider implements IReceiptSch
 				+ "." + qualityInspectionCycleValue;
 
 		final int warehouseDestId = Services.get(ISysConfigBL.class).getIntValue(sysconfigName, -1, context.getAD_Client_ID(), context.getAD_Org_ID());
-		if (warehouseDestId <= 0)
-		{
-			return null;
-		}
-
-		final I_M_Warehouse warehouseDest = InterfaceWrapperHelper.create(context.getCtx(), warehouseDestId, I_M_Warehouse.class, ITrx.TRXNAME_None);
-		return warehouseDest;
+		return WarehouseId.optionalOfRepoId(warehouseDestId);
 	}
 
 }

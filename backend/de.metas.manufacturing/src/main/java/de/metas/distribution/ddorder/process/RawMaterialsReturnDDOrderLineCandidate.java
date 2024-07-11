@@ -28,6 +28,8 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ddorder.DistributionNetwork;
+import de.metas.material.planning.ddorder.DistributionNetworkLine;
 import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.organization.OrgId;
@@ -48,8 +50,6 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.eevolution.model.I_DD_NetworkDistribution;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -85,7 +85,7 @@ import java.util.Set;
 	private boolean loaded = false;
 	private final Set<String> notValidReasons = new LinkedHashSet<>();
 	private ProductPlanning productPlanning;
-	private I_DD_NetworkDistributionLine networkLine;
+	private DistributionNetworkLine networkLine;
 	// Raw Materials Warehouse / Locator
 	private ResourceId rawMaterialsPlantId;
 	private I_M_Warehouse rawMaterialsWarehouse;
@@ -168,9 +168,9 @@ import java.util.Set;
 			notValidReasons.add("@NotFound@ @DD_NetworkDistribution_ID@");
 			return;
 		}
-		final I_DD_NetworkDistribution network = distributionNetworkDAO.getById(productPlanning.getDistributionNetworkId());
-		final List<I_DD_NetworkDistributionLine> networkLines = distributionNetworkDAO.retrieveNetworkLinesByTargetWarehouse(network, WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
-		if (Check.isEmpty(networkLines))
+		final DistributionNetwork network = distributionNetworkDAO.getById(productPlanning.getDistributionNetworkId());
+		final List<DistributionNetworkLine> networkLines = network.getLinesByTargetWarehouse(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+		if (networkLines.isEmpty())
 		{
 			notValidReasons.add("@NotFound@ @DD_NetworkDistributionLine_ID@ ("
 					+ "@DD_NetworkDistribution_ID@=" + network.getName()
@@ -183,7 +183,7 @@ import java.util.Set;
 
 		//
 		// Retrieve Raw materials Warehouse (where we will send our quantitites back)
-		rawMaterialsWarehouse = networkLine.getM_WarehouseSource();
+		rawMaterialsWarehouse = warehouseDAO.getById(networkLine.getSourceWarehouseId());
 		if (rawMaterialsWarehouse == null)
 		{
 			notValidReasons.add("@NotFound@ @M_Warehouse_ID@");
@@ -280,7 +280,7 @@ import java.util.Set;
 		return locator;
 	}
 
-	public I_DD_NetworkDistributionLine getDD_NetworkDistributionLine()
+	public DistributionNetworkLine getDD_NetworkDistributionLine()
 	{
 		loadIfNeeded();
 		return networkLine;

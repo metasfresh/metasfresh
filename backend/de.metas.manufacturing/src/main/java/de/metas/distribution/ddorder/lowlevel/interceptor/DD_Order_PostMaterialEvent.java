@@ -18,6 +18,9 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DDOrderUtil;
+import de.metas.material.planning.ddorder.DistributionNetworkLine;
+import de.metas.material.planning.ddorder.DistributionNetworkLineId;
+import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.material.replenish.ReplenishInfo;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.ClientAndOrgId;
@@ -54,6 +57,7 @@ public class DD_Order_PostMaterialEvent
 {
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
 	private final DDOrderLowLevelService ddOrderLowLevelService;
 	private final ReplenishInfoRepository replenishInfoRepository;
 
@@ -105,9 +109,12 @@ public class DD_Order_PostMaterialEvent
 		final List<I_DD_OrderLine> ddOrderLines = ddOrderLowLevelService.retrieveLines(ddOrderRecord);
 		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
 		{
+			final DistributionNetworkLine distributionNetworkLine = DistributionNetworkLineId.optionalOfRepoId(ddOrderLine.getDD_NetworkDistributionLine_ID())
+					.map(distributionNetworkDAO::getLineById)
+					.orElse(null);
+
 			final ProductPlanning productPlanning = getProductPlanning(ddOrderRecord);
-			final int durationDays = DDOrderUtil.calculateDurationDays(
-					productPlanning, ddOrderLine.getDD_NetworkDistributionLine());
+			final int durationDays = DDOrderUtil.calculateDurationDays(productPlanning, distributionNetworkLine);
 
 			ddOrderPojoBuilder.lines(ImmutableList.of(createDDOrderLinePojo(replenishInfoRepository, ddOrderLine, ddOrderRecord, durationDays)));
 

@@ -28,12 +28,14 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.material.planning.ddorder.DistributionNetworkLine;
 import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -59,7 +61,6 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
@@ -70,7 +71,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @implSpec Task http://dewiki908/mediawiki/index.php/08118_Wie_geht_das_zur%C3%BCck%2C_was_noch_bei_der_Linie_steht_%28Prozess%29_%28107566315908%29
+ * @implSpec <a href="http://dewiki908/mediawiki/index.php/08118_Wie_geht_das_zur%C3%BCck%2C_was_noch_bei_der_Linie_steht_%28Prozess%29_%28107566315908%29">task</a>
  */
 public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 {
@@ -229,7 +230,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 
 		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(getCtx());
 		final Timestamp dateOrdered = candidate.getDateOrdered();
-		final int shipperId = candidate.getDD_NetworkDistributionLine().getM_Shipper_ID();
+		final ShipperId shipperId = candidate.getDD_NetworkDistributionLine().getShipperId();
 		final OrgId orgId = candidate.getOrgId();
 		final BPartnerLocationId orgBPLocationId = candidate.getOrgBPLocationId();
 		final UserId salesRepId = candidate.getPlannerId();
@@ -255,7 +256,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		ddOrder.setDocAction(X_DD_Order.DOCACTION_Complete);
 		ddOrder.setDateOrdered(dateOrdered);
 		ddOrder.setDatePromised(dateOrdered);
-		ddOrder.setM_Shipper_ID(shipperId);
+		ddOrder.setM_Shipper_ID(shipperId.getRepoId());
 		ddOrder.setIsInDispute(false);
 		ddOrder.setIsInTransit(false);
 
@@ -269,7 +270,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 
 		final IAttributeSetInstanceAware attributeSetInstanceAware = candidate.getM_Product();
 		final Quantity qtyToMove = Quantity.of(candidate.getQty(), candidate.getC_UOM());
-		final I_DD_NetworkDistributionLine networkLine = candidate.getDD_NetworkDistributionLine();
+		final DistributionNetworkLine networkLine = candidate.getDD_NetworkDistributionLine();
 		final I_M_Locator locatorFrom = candidate.getM_Locator();
 		final I_M_Locator locatorTo = candidate.getRawMaterialsLocator();
 
@@ -306,7 +307,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		//
 		// Other flags
 		ddOrderline.setIsInvoiced(false);
-		ddOrderline.setDD_AllowPush(networkLine.isDD_AllowPush());
+		ddOrderline.setDD_AllowPush(networkLine.isAllowPush());
 		ddOrderline.setIsKeepTargetPlant(networkLine.isKeepTargetPlant());
 
 		ddOrderLowLevelService.save(ddOrderline);
