@@ -526,6 +526,24 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return retrievePIItems(version, null, bpartnerId, null);
 	}
 
+	@Override
+	public I_M_HU_PI_Item retrievePIItemMaterial(@NonNull final I_M_HU_PI_Version version)
+	{
+		final List<I_M_HU_PI_Item> materialItems = retrievePIItems(version, X_M_HU_PI_Item.ITEMTYPE_Material, null, null);
+		if (materialItems.isEmpty())
+		{
+			throw new AdempiereException("No material items found for " + version);
+		}
+		else if (materialItems.size() == 1)
+		{
+			return materialItems.get(0);
+		}
+		else
+		{
+			throw new AdempiereException("More than one material item found for " + version + ": " + materialItems);
+		}
+	}
+
 	private List<I_M_HU_PI_Item> retrievePIItems(
 			@NonNull final I_M_HU_PI_Version version,
 			@Nullable String expectedItemType,

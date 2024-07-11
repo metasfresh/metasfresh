@@ -15,11 +15,8 @@ import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
-import de.metas.handlingunits.attribute.storage.ASIAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
-import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
-import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
@@ -32,9 +29,8 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
-import de.metas.handlingunits.storage.IHUStorage;
-import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.util.HUTopLevel;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -54,10 +50,12 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -66,14 +64,17 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -84,7 +85,6 @@ import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
  * Aggregates given {@link ShipmentScheduleWithHU}s (see {@link #add(ShipmentScheduleWithHU)}) and creates the shipment line (see {@link #createShipmentLine()}).
@@ -94,13 +94,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 	private static final Logger logger = LogManager.getLogger(ShipmentLineBuilder.class);
 
 	// Services
-	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final transient IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-	private final transient IProductBL productBL = Services.get(IProductBL.class);
-	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	private final InOutLineDimensionFactory inOutLineDimensionFactory = new InOutLineDimensionFactory();
 
 	/**
@@ -420,7 +422,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 		shipmentLine.setM_Product_ID(productId.getRepoId());
 
 		final I_M_AttributeSetInstance newASI;
-		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 		if (attributeValues.isEmpty())
 		{
 			newASI = Services.get(IAttributeDAO.class).retrieveNoAttributeSetInstance();
@@ -523,7 +524,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 		updateDimensionFromCandidates(shipmentLine);
 
 		// Save Shipment Line
-		save(shipmentLine);
+		inoutDAO.save(shipmentLine);
 
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(shipmentLine))
 		{
@@ -536,12 +537,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 				candidate.setM_InOutLine(shipmentLine);
 			}
 
-			//
-			// Create HU Assignments
 			createShipmentLineHUAssignments(shipmentLine);
+			transferAttributesToShipmentLine(shipmentLine);
+			inoutDAO.save(shipmentLine);
 
 			return shipmentLine;
 		}
+
 	}
 
 	private void optimisticallySetLineNo(@NonNull final I_M_InOutLine shipmentLineRecord)
@@ -581,7 +583,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 			final boolean isTransferPackingMaterials = alreadyAssignedTUIds.add(huToAssign.getTuHUId());
 
 			huShipmentAssignmentBL.assignHU(shipmentLine, huToAssign, isTransferPackingMaterials);
-			transferAttributesToShipmentLine(shipmentLine, huToAssign.getM_HU_TopLevel());
 			haveHUAssigments = true;
 		}
 
@@ -594,37 +595,37 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 		}
 	}
 
-	private void transferAttributesToShipmentLine(
-			@NonNull final I_M_InOutLine shipmentLine,
-			@NonNull final I_M_HU hu)
+	private void transferAttributesToShipmentLine(@NonNull final I_M_InOutLine shipmentLine)
 	{
-		// Transfer attributes from HU to receipt line's ASI
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor(huContext);
 		executor.run(huContext -> {
-
 			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
 			final IAttributeStorageFactory attributeStorageFactory = trxAttributesBuilder.getAttributeStorageFactory();
-			final IAttributeStorage huAttributeStorageFrom = attributeStorageFactory.getAttributeStorage(hu);
-			// attributeStorageFactory.getAttributeStorage() would have given us an instance that would have
-			// included also the packagingItemTemplate's attributes.
-			// However, we only want the attributes that are declared in our iolcand-handler's attribute config.
-			final IAttributeStorage shipmentLineAttributeStorageTo = //
-					ASIAttributeStorage.createNew(attributeStorageFactory, shipmentLine.getM_AttributeSetInstance());
 
-			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
-			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
+			final I_M_AttributeSetInstance asi;
+			if (AttributeSetInstanceId.ofRepoIdOrNone(shipmentLine.getM_AttributeSetInstance_ID()).isNone())
+			{
+				asi = attributeSetInstanceBL.createASI(productId);
+				shipmentLine.setM_AttributeSetInstance(asi);
+			}
+			else
+			{
+				asi = shipmentLine.getM_AttributeSetInstance();
+			}
+			final IAttributeStorage shipmentLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(asi);
 
-			final I_C_UOM productUOM = productBL.getStockUOM(productId);
-			final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
-					.setProductId(productId)
-					.setQty(shipmentLine.getMovementQty())
-					.setUOM(productUOM)
-					.setAttributeStorageFrom(huAttributeStorageFrom)
-					.setAttributeStorageTo(shipmentLineAttributeStorageTo)
-					.setHUStorageFrom(huStorageFrom);
+			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes();
+			final ImmutableAttributeSet fromAttributes = extractAttributeValuesToTransfer(attributes, attributeStorageFactory);
 
-			final IHUAttributeTransferRequest request = requestBuilder.create();
-			trxAttributesBuilder.transferAttributes(request);
+			trxAttributesBuilder.transferAttributes(
+					new HUAttributeTransferRequestBuilder(huContext)
+							.setProductId(productId)
+							.setQty(shipmentLine.getMovementQty())
+							.setUOM(productBL.getStockUOM(productId))
+							.setAttributeStorageFrom(fromAttributes)
+							.setAttributeStorageTo(shipmentLineAttributeStorageTo)
+							.create()
+			);
 
 			return IHUContextProcessor.NULL_RESULT;
 		});
@@ -641,6 +642,61 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 		final Dimension dimension = Dimension.extractCommonDimension(candidatesDimensions);
 
 		inOutLineDimensionFactory.updateRecord(shipmentLine, dimension);
+	}
+
+	private ImmutableAttributeSet extractAttributeValuesToTransfer(final Collection<I_M_Attribute> attributes, final IAttributeStorageFactory attributeStorageFactory)
+	{
+		final ImmutableAttributeSet.Builder result = ImmutableAttributeSet.builder();
+		for (final I_M_Attribute attribute : attributes)
+		{
+			extractAttributeValueToTransfer(attribute, attributeStorageFactory)
+					.ifPresent(value -> result.attributeValue(attribute, value));
+		}
+		return result.build();
+	}
+
+	private Optional<Object> extractAttributeValueToTransfer(final I_M_Attribute attribute, final IAttributeStorageFactory attributeStorageFactory)
+	{
+		final HashSet<Optional<Object>> values = new HashSet<>();
+		for (final HUTopLevel hu : husToAssign)
+		{
+			final Optional<Object> value = extractAttributeValueToTransfer(hu, attribute, attributeStorageFactory);
+			values.add(value);
+
+			if (values.size() > 1)
+			{
+				break;
+			}
+		}
+
+		return values.size() == 1 ? values.iterator().next() : Optional.empty();
+	}
+
+	private Optional<Object> extractAttributeValueToTransfer(final HUTopLevel hu, final I_M_Attribute attribute, final IAttributeStorageFactory attributeStorageFactory)
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> extractAttributeValueToTransfer(hu.getVHU(), attribute, attributeStorageFactory),
+				() -> extractAttributeValueToTransfer(hu.getM_TU_HU(), attribute, attributeStorageFactory),
+				() -> extractAttributeValueToTransfer(hu.getM_LU_HU(), attribute, attributeStorageFactory)
+		);
+	}
+
+	private Optional<Object> extractAttributeValueToTransfer(final I_M_HU hu, final I_M_Attribute attribute, final IAttributeStorageFactory attributeStorageFactory)
+	{
+		if (hu != null)
+		{
+			final IAttributeStorage vhuStorage = attributeStorageFactory.getAttributeStorage(hu);
+			if (vhuStorage.hasAttribute(attribute))
+			{
+				final Object value = vhuStorage.getValue(attribute);
+				if (value != null)
+				{
+					return Optional.of(value);
+				}
+			}
+		}
+
+		return Optional.empty();
 	}
 
 	public List<ShipmentScheduleWithHU> getCandidates()

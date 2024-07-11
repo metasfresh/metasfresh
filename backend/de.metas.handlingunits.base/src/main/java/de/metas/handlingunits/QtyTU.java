@@ -26,11 +26,13 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -192,5 +194,26 @@ public final class QtyTU implements Comparable<QtyTU>
 	public QtyTU min(@NonNull final QtyTU other)
 	{
 		return this.intValue <= other.intValue ? this : other;
+	}
+
+	public Quantity computeQtyCUsPerTUUsingTotalQty(@NonNull final Quantity qtyCUsTotal)
+	{
+		if (isZero())
+		{
+			throw new AdempiereException("Cannot determine Qty CUs/TU when QtyTU is zero of total CUs " + qtyCUsTotal);
+		}
+		else if (isOne())
+		{
+			return qtyCUsTotal;
+		}
+		else
+		{
+			return qtyCUsTotal.divide(toInt());
+		}
+	}
+
+	public Quantity computeTotalQtyCUsUsingQtyCUsPerTU(@NonNull final Quantity qtyCUsPerTU)
+	{
+		return qtyCUsPerTU.multiply(toInt());
 	}
 }
