@@ -21,7 +21,6 @@ import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Language;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -199,44 +198,6 @@ public class POTrlRepository
 		final String keyColumn = trlInfo.getKeyColumnName();
 
 		final StringBuilder sqlSet = new StringBuilder();
-<<<<<<< HEAD
-=======
-		for (final String columnName : trlInfo.getTranslatedColumnNames())
-		{
-			if (!InterfaceWrapperHelper.isValueChanged(trlRecord, columnName))
-			{
-				continue;
-			}
-
-			final String sqlValue = convertValueToSql(trlRecord.get_Value(columnName));
-			if (sqlSet.length() > 0)
-			{
-				sqlSet.append(", ");
-			}
-			sqlSet.append(columnName).append("=").append(sqlValue);
-		}
-
-		if (sqlSet.length() == 0)
-		{
-			return;
-		}
-
-		final boolean isUpdatedColumnPresent = Optional.ofNullable(POInfo.getPOInfo(baseTableName))
-				.map(poInfo -> poInfo.getColumnIndex("Updated") > -1)
-				.orElse(false);
-
-		if (isUpdatedColumnPresent)
-		{
-			sqlSet.append(", Updated").append("=").append(DB.TO_DATE(SystemTime.asTimestamp(), DisplayType.DateTime));
-		}
-
-		final String keyColumnName = trlInfo.getKeyColumnName();
-		final Object keyColumnValue = trlRecord.get_Value(keyColumnName);
-
-		final String sql = "UPDATE " + baseTableName + " SET " + sqlSet + " WHERE " + keyColumnName + "=" + convertValueToSql(keyColumnValue);
-		final int updatedCount = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Updated {} base records for {}", updatedCount, trlRecord);
->>>>>>> 2fcd87f1b61 (Fix bugs related to usage of Timestamp as logic local date (#17752))
 
 		//
 		// If AutoUpdateTrl then copy the changed fields from record to each translation.

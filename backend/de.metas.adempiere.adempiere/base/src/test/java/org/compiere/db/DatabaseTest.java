@@ -10,24 +10,18 @@ package org.compiere.db;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-<<<<<<< HEAD
-
-import org.junit.Assert;
-import org.junit.Test;
-
-=======
 import de.metas.common.util.time.SystemTime;
 import org.assertj.core.api.AbstractStringAssert;
 import org.compiere.util.DisplayType;
@@ -47,7 +41,6 @@ import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
->>>>>>> 2fcd87f1b61 (Fix bugs related to usage of Timestamp as logic local date (#17752))
 public class DatabaseTest
 {
 	@BeforeEach

@@ -15,11 +15,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
-<<<<<<< HEAD
-=======
 import java.time.LocalTime;
 import java.time.ZoneOffset;
->>>>>>> 2fcd87f1b61 (Fix bugs related to usage of Timestamp as logic local date (#17752))
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -30,12 +27,9 @@ import java.time.format.DateTimeFormatter;
  */
 public class Database
 {
-<<<<<<< HEAD
-=======
 	private final static DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSS");
 	private final static DateTimeFormatter DATE_TIME_UTC_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").withZone(ZoneOffset.UTC);
 
->>>>>>> 2fcd87f1b61 (Fix bugs related to usage of Timestamp as logic local date (#17752))
 	/**
 	 * PostgreSQL ID
 	 */
@@ -62,9 +56,11 @@ public class Database
 
 	public static String TO_DATE(@NonNull final ZonedDateTime zdt)
 	{
+		final long microseconds = zdt.getNano() / 1000;
+
 		return "'"
 				+ zdt.getYear() + "-" + zdt.getMonthValue() + "-" + zdt.getDayOfMonth()
-				+ " " + zdt.getHour() + ":" + zdt.getMinute() + ":" + zdt.getSecond()
+				+ " " + zdt.getHour() + ":" + zdt.getMinute() + ":" + zdt.getSecond() + "." + microseconds
 				+ " " + zdt.getZone().getId()
 				+ "'::timestamptz";
 	}
@@ -73,7 +69,6 @@ public class Database
 	{
 		return TO_DATE(instant.atZone(SystemTime.zoneId()));
 	}
-
 
 	/**
 	 * Create SQL TO Date String from LocalDate (without time zone)
@@ -105,20 +100,6 @@ public class Database
 			return "current_date()";
 		}
 
-<<<<<<< HEAD
-		final StringBuilder dateString = new StringBuilder("TO_TIMESTAMP('");
-		// YYYY-MM-DD HH24:MI:SS.mmmm JDBC Timestamp format
-		final String myDate = time.toString();
-		if (dayOnly)
-		{
-			dateString.append(myDate.substring(0, 10));
-			dateString.append("','YYYY-MM-DD')");
-		}
-		else
-		{
-			dateString.append(myDate.substring(0, myDate.indexOf('.')));    // cut off miliseconds
-			dateString.append("','YYYY-MM-DD HH24:MI:SS')");
-=======
 		if (displayType == DisplayType.Date)
 		{
 			final LocalDate localDate = timestamp.toLocalDateTime().toLocalDate();
@@ -138,7 +119,6 @@ public class Database
 		else
 		{
 			throw new AdempiereException("Invalid displayType=" + displayType);
->>>>>>> 2fcd87f1b61 (Fix bugs related to usage of Timestamp as logic local date (#17752))
 		}
 	}   // TO_DATE
 
@@ -195,7 +175,7 @@ public class Database
 
 	/**
 	 * Convert {@link DecimalFormat} pattern to PostgreSQL's number formatting pattern
-	 *
+	 * <p>
 	 * See http://www.postgresql.org/docs/9.1/static/functions-formatting.html#FUNCTIONS-FORMATTING-NUMERIC-TABLE.
 	 *
 	 * @param formatPattern
