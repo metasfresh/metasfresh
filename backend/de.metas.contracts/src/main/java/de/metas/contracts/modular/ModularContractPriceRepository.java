@@ -41,6 +41,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_Invoice;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
@@ -249,11 +250,11 @@ public class ModularContractPriceRepository
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_UOM_ID, specificPrice.uomId())
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Currency_ID, specificPrice.amount().getCurrencyId())
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, specificPrice.modularContractModuleId())
+				.addCompareFilter(I_ModCntr_Specific_Price.COLUMNNAME_MinValue, CompareQueryFilter.Operator.LESS_OR_EQUAL, specificPrice.minValue())
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.anyMatch();
 	}
-
 
 	public Optional<TaxCategoryId> retrieveOptionalContractSpecificTaxCategory(final ContractSpecificPriceRequest contractSpecificPriceRequest)
 	{

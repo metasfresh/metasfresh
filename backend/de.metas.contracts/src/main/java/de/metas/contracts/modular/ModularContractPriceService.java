@@ -99,7 +99,7 @@ public class ModularContractPriceService
 
 	public boolean existsSimilarContractSpecificScalePrice(@NonNull final ModCntrSpecificPriceId id)
 	{
-		modularContractPriceRepository.existsSimilarContractSpecificScalePrice(id);
+		return modularContractPriceRepository.existsSimilarContractSpecificScalePrice(id);
 	}
 
 	public void createModularContractSpecificPricesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord)

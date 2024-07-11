@@ -25,6 +25,9 @@ package de.metas.contracts.modular.process;
 import de.metas.contracts.modular.ModCntrSpecificPrice;
 import de.metas.contracts.modular.ModCntrSpecificPriceId;
 import de.metas.contracts.modular.ModularContractPriceService;
+import de.metas.contracts.modular.log.ModCntrLogPriceUpdateRequest;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -36,6 +39,8 @@ import org.compiere.SpringContextHolder;
 public class ModCntr_Specific_Delete_Price extends JavaProcess implements IProcessPrecondition
 {
 	@NonNull private final ModularContractPriceService modularContractPriceService = SpringContextHolder.instance.getBean(ModularContractPriceService.class);
+	@NonNull private final ModularContractLogService contractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
+	@NonNull private final ModularContractLogHandlerRegistry logHandlerRegistry = SpringContextHolder.instance.getBean(ModularContractLogHandlerRegistry.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -66,6 +71,21 @@ public class ModCntr_Specific_Delete_Price extends JavaProcess implements IProce
 	protected String doIt()
 	{
 		final ModCntrSpecificPriceId contractPriceId = ModCntrSpecificPriceId.ofRepoId(getRecord_ID());
+		final ModCntrSpecificPrice contractPrice = modularContractPriceService.getById(contractPriceId);
+
+		// delete price
+		modularContractPriceService.deleteById(contractPriceId);
+
+		// the update price by recomputing the price for logs
+		// the given price is ingonred in UserElementNumberShipmentLineLog
+		contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()
+						.unitPrice(contractPrice.getProductPrice())
+						.flatrateTermId(contractPrice.flatrateTermId())
+						.modularContractModuleId(contractPrice.modularContractModuleId())
+						.build(),
+				logHandlerRegistry);
+
+
 		modularContractPriceService.deleteById(contractPriceId);
 		return MSG_OK;
 	}
