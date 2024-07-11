@@ -222,6 +222,12 @@ public class ModularContractLogEntry
 			@NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
 	{
 		final IModularContractLogHandler handler = logHandlerRegistry.getApplicableHandlerForOrError(this);
+
+		if(!handler.isSuitableForPriceUpdate())
+		{
+			return this;
+		}
+
 		final ProductPriceWithFlags productPriceWithFlags = handler.getPriceActualWithFlags(price, this);
 
 		return handler.calculateAmountWithNewPrice(this, productPriceWithFlags, uomConverter);

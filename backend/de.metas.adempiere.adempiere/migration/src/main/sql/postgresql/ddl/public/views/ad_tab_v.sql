@@ -37,6 +37,7 @@ SELECT
      , t.ad_process_id
      , t.issorttab
      , t.isinsertrecord
+     , t.insertlogic
      , t.isadvancedtab
      , t.ad_columnsortorder_id
      , t.ad_columnsortyesno_id

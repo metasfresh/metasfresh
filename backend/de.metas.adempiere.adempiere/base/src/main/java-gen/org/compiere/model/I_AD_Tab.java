@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for AD_Tab
  *  @author metasfresh (generated) 
@@ -583,6 +584,29 @@ public interface I_AD_Tab
 	String COLUMNNAME_IncludedTabNewRecordInputMode = "IncludedTabNewRecordInputMode";
 
 	/**
+	 * Set Insert Logic.
+	 * Logic to determine if tab allows creation of new records or not.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInsertLogic (@Nullable java.lang.String InsertLogic);
+
+	/**
+	 * Get Insert Logic.
+	 * Logic to determine if tab allows creation of new records or not.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInsertLogic();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_InsertLogic = new ModelColumn<>(I_AD_Tab.class, "InsertLogic", null);
+	String COLUMNNAME_InsertLogic = "InsertLogic";
+
+	/**
 	 * Set Internal Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
@@ -1125,27 +1149,6 @@ public interface I_AD_Tab
 	String COLUMNNAME_QuickInput_CloseButton_Caption = "QuickInput_CloseButton_Caption";
 
 	/**
-	 * Set Quick Input Open Button Caption.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQuickInput_OpenButton_Caption (@Nullable java.lang.String QuickInput_OpenButton_Caption);
-
-	/**
-	 * Get Quick Input Open Button Caption.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getQuickInput_OpenButton_Caption();
-
-	ModelColumn<I_AD_Tab, Object> COLUMN_QuickInput_OpenButton_Caption = new ModelColumn<>(I_AD_Tab.class, "QuickInput_OpenButton_Caption", null);
-	String COLUMNNAME_QuickInput_OpenButton_Caption = "QuickInput_OpenButton_Caption";
-
-	/**
 	 * Set Quick Input Layout.
 	 *
 	 * <br>Type: String
@@ -1165,6 +1168,27 @@ public interface I_AD_Tab
 
 	ModelColumn<I_AD_Tab, Object> COLUMN_QuickInputLayout = new ModelColumn<>(I_AD_Tab.class, "QuickInputLayout", null);
 	String COLUMNNAME_QuickInputLayout = "QuickInputLayout";
+
+	/**
+	 * Set Quick Input Open Button Caption.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQuickInput_OpenButton_Caption (@Nullable java.lang.String QuickInput_OpenButton_Caption);
+
+	/**
+	 * Get Quick Input Open Button Caption.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getQuickInput_OpenButton_Caption();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_QuickInput_OpenButton_Caption = new ModelColumn<>(I_AD_Tab.class, "QuickInput_OpenButton_Caption", null);
+	String COLUMNNAME_QuickInput_OpenButton_Caption = "QuickInput_OpenButton_Caption";
 
 	/**
 	 * Set Read Only Logic.
