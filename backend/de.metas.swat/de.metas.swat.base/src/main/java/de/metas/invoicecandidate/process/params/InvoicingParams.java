@@ -53,7 +53,7 @@ public class InvoicingParams
 	boolean ignoreInvoiceSchedule;
 	boolean storeInvoicesInResult;
 	boolean assumeOneInvoice;
-	boolean supplementMissingPaymentTermIds;
+	@Builder.Default boolean supplementMissingPaymentTermIds = true; // default true because is legacy code which no longer exists in master
 	@Nullable LocalDate dateInvoiced;
 	@Nullable LocalDate dateAcct;
 	@Nullable String poReference;
