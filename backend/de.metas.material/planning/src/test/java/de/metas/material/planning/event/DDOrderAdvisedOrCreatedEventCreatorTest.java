@@ -15,8 +15,10 @@ import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
 import de.metas.organization.OrgId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -100,10 +102,17 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 
 	private DDOrder createDummyDDOrder()
 	{
-		final I_DD_NetworkDistributionLine networkDistributionLine = newInstance(I_DD_NetworkDistributionLine.class);
-		networkDistributionLine.setM_WarehouseSource_ID(1);
-		networkDistributionLine.setM_Warehouse_ID(2);
-		saveRecord(networkDistributionLine);
+		final I_DD_NetworkDistribution distributionNetwork = InterfaceWrapperHelper.newInstance(I_DD_NetworkDistribution.class);
+		distributionNetwork.setName("dummy");
+		InterfaceWrapperHelper.save(distributionNetwork);
+
+		final I_DD_NetworkDistributionLine distributionNetworkLine = newInstance(I_DD_NetworkDistributionLine.class);
+		distributionNetworkLine.setDD_NetworkDistribution_ID(distributionNetwork.getDD_NetworkDistribution_ID());
+		distributionNetworkLine.setM_WarehouseSource_ID(1);
+		distributionNetworkLine.setM_Warehouse_ID(2);
+		distributionNetworkLine.setM_Shipper_ID(3);
+		distributionNetworkLine.setPercent(BigDecimal.valueOf(100));
+		saveRecord(distributionNetworkLine);
 
 		return DDOrder.builder()
 				.orgId(OrgId.ofRepoId(1))
@@ -111,7 +120,7 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 				.line(DDOrderLine.builder()
 						.productDescriptor(ProductDescriptor.forProductAndAttributes(1, AttributesKey.ofString("1")))
 						.qty(new BigDecimal("100"))
-						.networkDistributionLineId(networkDistributionLine.getDD_NetworkDistributionLine_ID())
+						.networkDistributionLineId(distributionNetworkLine.getDD_NetworkDistributionLine_ID())
 						.build())
 				.build();
 	}

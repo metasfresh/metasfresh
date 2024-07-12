@@ -4,6 +4,7 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.quantity.Quantity;
+import de.metas.uom.X12DE355;
 import de.metas.util.lang.Percent;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
@@ -26,13 +27,13 @@ public class DDOrderPojoSupplierTest
 	{
 		AdempiereTestHelper.get().init();
 		modelProductDescriptorExtractor = Mockito.mock(ModelProductDescriptorExtractor.class);
-
-		uom = BusinessTestHelper.createUomPCE();
 	}
 
 	@Test
 	public void test_calculateQtyToMove_ZeroQty()
 	{
+		uom = BusinessTestHelper.createUOM("uom", 0, X12DE355.KILOGRAM);
+
 		test_calculateQtyToMove(
 				new BigDecimal("0"), // qtyToMoveExpected
 				new BigDecimal("0"), // qtyToMoveRequested
@@ -43,6 +44,8 @@ public class DDOrderPojoSupplierTest
 	@Test
 	public void test_calculateQtyToMove_HighPrecision_Transfer100()
 	{
+		uom = BusinessTestHelper.createUOM("uom", 7, X12DE355.KILOGRAM);
+
 		test_calculateQtyToMove(
 				new BigDecimal("12.3456789"), // qtyToMoveExpected
 				new BigDecimal("12.3456789"), // qtyToMoveRequested
@@ -53,6 +56,8 @@ public class DDOrderPojoSupplierTest
 	@Test
 	public void test_calculateQtyToMove_HighPrecision_Transfer50()
 	{
+		uom = BusinessTestHelper.createUOM("uom", 8, X12DE355.KILOGRAM);
+
 		test_calculateQtyToMove(
 				new BigDecimal("15.22222222"), // qtyToMoveExpected
 				new BigDecimal("30.44444444"), // qtyToMoveRequested
@@ -63,6 +68,8 @@ public class DDOrderPojoSupplierTest
 	@Test
 	public void test_calculateQtyToMove_HighPrecision_Transfer10()
 	{
+		uom = BusinessTestHelper.createUOM("uom", 16, X12DE355.KILOGRAM);
+
 		test_calculateQtyToMove(
 				new BigDecimal("03.0123713812937129"), // qtyToMoveExpected
 				new BigDecimal("30.123713812937129"), // qtyToMoveRequested
@@ -73,6 +80,8 @@ public class DDOrderPojoSupplierTest
 	@Test
 	public void test_calculateQtyToMove_AnyQty_Transfer0()
 	{
+		uom = BusinessTestHelper.createUOM("uom", 16, X12DE355.KILOGRAM);
+
 		test_calculateQtyToMove(
 				new BigDecimal("0"), // qtyToMoveExpected
 				new BigDecimal("30.123713812937129"), // qtyToMoveRequested
@@ -83,6 +92,8 @@ public class DDOrderPojoSupplierTest
 	@Test
 	public void test_calculateQtyToMove_AnyQty_TransferNegative()
 	{
+		uom = BusinessTestHelper.createUOM("uom", 16, X12DE355.KILOGRAM);
+
 		assertThatThrownBy(() -> test_calculateQtyToMove(
 				new BigDecimal("99999999999999999"), // qtyToMoveExpected - does not matter
 				new BigDecimal("30.123713812937129"), // qtyToMoveRequested
