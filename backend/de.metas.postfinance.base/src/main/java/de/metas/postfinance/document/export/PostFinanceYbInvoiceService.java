@@ -574,6 +574,7 @@ public class PostFinanceYbInvoiceService
 		{
 			partyType.setTaxID(partnerRecord.getTaxID());
 		}
+		partyType.setCustomerID(partnerRecord.getValue());
 
 		final BillHeaderType.ReceiverParty receiverParty = YB_INVOICE_OBJECT_FACTORY.createBillHeaderTypeReceiverParty();
 
@@ -582,7 +583,8 @@ public class PostFinanceYbInvoiceService
 		final Optional<PostFinanceBPartnerConfig> postFinanceBPartnerConfigOptional = postFinanceBPartnerConfigRepository.getByBPartnerId(invoiceToExport.getRecipient().getId());
 		if(postFinanceBPartnerConfigOptional.isEmpty() && postFinanceOrgConfig.isUsePaperBill())
 		{
-			paperBillReferencesRepository.retrievePaperBillReferences(orgId)
+			paperBillReferencesRepository.getPaperBillReferences(orgId)
+					.stream()
 					.map(this::toReference)
 					.forEach(reference -> partyType.getAdditionalReference().add(reference));
 		}
