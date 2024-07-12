@@ -1,7 +1,7 @@
 name: cicd
 on: [push, workflow_dispatch]
 env:
-  PIPELINE_VERSION: '0.3.7'
+  PIPELINE_VERSION: '0.3.8'
 jobs:
 
   init:
@@ -14,6 +14,10 @@ jobs:
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+      - uses: testspace-com/setup-testspace@v1
+        with:
+          domain: metasfresh
+          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: sanitize-ref-name
         id: sanitize
         env:
@@ -62,7 +66,15 @@ jobs:
           echo "#### pipeline ($PIPELINE_VERSION)" >> $GITHUB_STEP_SUMMARY
           echo '* find more information at https://github.com/metasfresh/metasfresh/tree/${{ github.ref_name }}/docker-builds/README.md' >> $GITHUB_STEP_SUMMARY
           echo '* artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
+          echo '* BASE_VERSION for instances **without** customisations will be `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}-compat`' >> $GITHUB_STEP_SUMMARY
           echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
+      - name: testspace push build infos
+        run: |
+          touch github_run.txt
+          echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
+          echo pipeline $PIPELINE_VERSION >> github_run.txt
+          echo ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }} >> github_run.txt
+          testspace github_run.txt
 
   java:
     runs-on: ubuntu-latest
@@ -481,6 +493,10 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           .
+      - name: retag db-image
+        run: |
+          docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
+          docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-images
         uses: nick-fields/retry@v3
         with:
@@ -502,6 +518,7 @@ jobs:
             docker push metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
       - name: produce-summary
         run: |
           echo 'compatibility images are available under the following tag: `${{ needs.init.outputs.tag-fixed }}-compat`' >> $GITHUB_STEP_SUMMARY
@@ -510,6 +527,7 @@ jobs:
           echo '* metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
 
   junit:
     name: test (java)
