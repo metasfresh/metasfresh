@@ -47,6 +47,7 @@ public class InvoicingParams
 	public static String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
 	public static String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
 	public static String PARA_SupplementMissingPaymentTermIds = "SupplementMissingPaymentTermIds";
+	public static final String PARA_IsCompleteInvoices = "IsCompleteInvoices";
 
 	boolean onlyApprovedForInvoicing;
 	boolean consolidateApprovedICs;
@@ -59,6 +60,7 @@ public class InvoicingParams
 	@Nullable String poReference;
 	@Nullable BigDecimal check_NetAmtToInvoice;
 	boolean updateLocationAndContactForInvoice;
+	@Builder.Default boolean completeInvoices = true; // default=true for backwards-compatibility
 
 	public static InvoicingParams ofParams(@NonNull final IParams params)
 	{
@@ -71,6 +73,7 @@ public class InvoicingParams
 				.poReference(params.getParameterAsString(PARA_POReference))
 				.check_NetAmtToInvoice(params.getParameterAsBigDecimal(PARA_Check_NetAmtToInvoice))
 				.updateLocationAndContactForInvoice(params.getParameterAsBool(PARA_IsUpdateLocationAndContactForInvoice))
+				.completeInvoices(params.getParameterAsBoolean(PARA_IsCompleteInvoices, true /*true for backwards-compatibility*/))
 				.supplementMissingPaymentTermIds(params.getParameterAsBool(PARA_SupplementMissingPaymentTermIds))
 				.build();
 	}
@@ -101,6 +104,7 @@ public class InvoicingParams
 		map.put(PARA_IsUpdateLocationAndContactForInvoice, isUpdateLocationAndContactForInvoice());
 		map.put(PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
 		map.put(PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
+		map.put(PARA_IsCompleteInvoices, isCompleteInvoices());
 
 		return map;
 	}
