@@ -3,10 +3,10 @@ package de.metas.rest_api.invoicecandidates.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import org.compiere.util.Env;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidateReference;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
@@ -65,16 +65,16 @@ final class InvoiceJsonConverters
 		return headerAndLineIds;
 	}
 
-	public static PlainInvoicingParams createInvoicingParams(@NonNull final JsonEnqueueForInvoicingRequest request)
+	public static InvoicingParams createInvoicingParams(@NonNull final JsonEnqueueForInvoicingRequest request)
 	{
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setDateAcct(request.getDateAcct());
-		invoicingParams.setDateInvoiced(request.getDateInvoiced());
-		invoicingParams.setIgnoreInvoiceSchedule(request.getIgnoreInvoiceSchedule());
-		invoicingParams.setPOReference(request.getPoReference());
-		invoicingParams.setSupplementMissingPaymentTermIds(request.getSupplementMissingPaymentTermIds());
-		invoicingParams.setUpdateLocationAndContactForInvoice(request.getUpdateLocationAndContactForInvoice());
-		return invoicingParams;
+		return InvoicingParams.builder()
+				.dateAcct(request.getDateAcct())
+				.dateInvoiced(request.getDateInvoiced())
+				.ignoreInvoiceSchedule(request.getIgnoreInvoiceSchedule())
+				.poReference(request.getPoReference())
+				.updateLocationAndContactForInvoice(request.getUpdateLocationAndContactForInvoice())
+				.supplementMissingPaymentTermIds(request.getSupplementMissingPaymentTermIds())
+				.build();
 	}
 
 }
