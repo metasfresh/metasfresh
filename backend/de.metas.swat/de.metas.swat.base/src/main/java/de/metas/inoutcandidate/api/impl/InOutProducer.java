@@ -522,23 +522,27 @@ public class InOutProducer implements IInOutProducer
 		// DropShip informations (08402)
 		final I_C_Order order = rs.getC_Order();
 
-		final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(receiptHeader.getAD_Client_ID(), receiptHeader.getAD_Org_ID()));
-		if (propagateToMInOut)
+		if(order != null)
 		{
-			receiptHeader.setEMail(order.getEMail());
 			receiptHeader.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
 			receiptHeader.setPOReference(order.getPOReference());
-		}
-		if (order != null && order.isDropShip())
-		{
-			receiptHeader.setIsDropShip(true);
-			InOutDocumentLocationAdapterFactory
-					.deliveryLocationAdapter(receiptHeader)
-					.setFrom(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).toDocumentLocation());
-		}
-		else
-		{
-			receiptHeader.setIsDropShip(false);
+
+			final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(receiptHeader.getAD_Client_ID(), receiptHeader.getAD_Org_ID()));
+			if (propagateToMInOut)
+			{
+				receiptHeader.setEMail(order.getEMail());
+			}
+			if (order.isDropShip())
+			{
+				receiptHeader.setIsDropShip(true);
+				InOutDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(receiptHeader)
+						.setFrom(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).toDocumentLocation());
+			}
+			else
+			{
+				receiptHeader.setIsDropShip(false);
+			}
 		}
 
 		//external id

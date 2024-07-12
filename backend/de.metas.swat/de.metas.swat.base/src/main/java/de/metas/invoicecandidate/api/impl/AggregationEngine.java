@@ -504,9 +504,11 @@ public final class AggregationEngine
 
 				if (docTypeInvoicingPool.isPresent())
 				{
-					invoiceHeader.setDocTypeInvoicingPoolId(docTypeInvoicingPool.get().getId());
+					final DocTypeInvoicingPool invoicingPool = docTypeInvoicingPool.get();
+					invoiceHeader.setDocTypeInvoicingPoolId(invoicingPool.getId());
+					invoiceHeader.setCreditedInvoiceReinvoicable(invoicingPool.isCreditedInvoiceReinvoicable());
 
-					final boolean onDistinctICTypes = docTypeInvoicingPool.get().isOnDistinctICTypes();
+					final boolean onDistinctICTypes = invoicingPool.isOnDistinctICTypes();
 
 					if (onDistinctICTypes)
 					{
@@ -826,6 +828,7 @@ public final class AggregationEngine
 		if (totalAmt.signum() < 0)
 		{
 			invoiceHeader.negateAllLineAmounts();
+			invoiceHeader.setCreditedInvoiceReinvoicable(true);
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);

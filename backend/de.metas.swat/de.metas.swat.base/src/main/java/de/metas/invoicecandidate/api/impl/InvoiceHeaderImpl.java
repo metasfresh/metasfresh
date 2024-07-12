@@ -94,6 +94,8 @@ import java.util.Optional;
 	private boolean isSOTrx;
 
 	private boolean isTakeDocTypeFromPool;
+	@Getter @Setter
+	private boolean isCreditedInvoiceReinvoicable = false;
 
 	// 06630
 	private int M_InOut_ID = -1;

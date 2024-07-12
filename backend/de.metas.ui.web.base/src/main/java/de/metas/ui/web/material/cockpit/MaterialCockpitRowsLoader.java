@@ -22,18 +22,19 @@
 
 package de.metas.ui.web.material.cockpit;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
+import de.metas.material.cockpit.ProductWithDemandSupply;
+import de.metas.material.cockpit.QtyDemandSupplyRepository;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.filters.ProductFilterUtil;
 import de.metas.ui.web.material.cockpit.filters.ProductFilterVO;
-import de.metas.ui.web.material.cockpit.filters.QtyDemandSupplyFilters;
 import de.metas.ui.web.material.cockpit.filters.StockFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.util.Services;
@@ -50,26 +51,32 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 @Repository
 public class MaterialCockpitRowsLoader
 {
 	private static final String SYSCONFIG_EMPTY_PRODUCTS_LIMIT = "de.metas.ui.web.material.cockpit.MaterialCockpitRowRepository.EmptyProducts.Limit";
 	private static final int DEFAULT_EMPTY_PRODUCTS_LIMIT = 2000;
-	
+
 	private static final String SYSCONFIG_EMPTY_PRODUCTS_CACHESIZE = "de.metas.ui.web.material.cockpit.MaterialCockpitRowRepository.EmptyProducts.CacheSize";
 	private static final int DEFAULT_EMPTY_PRODUCTS_CACHESIZE = 10;
 
 	private final transient CCache<CacheKey, ImmutableSet<ProductId>> productFilterVOToProducts;
 	private final MaterialCockpitFilters materialCockpitFilters;
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
+	private final QtyDemandSupplyRepository qtyDemandSupplyRepository;
 
 	public MaterialCockpitRowsLoader(
 			@NonNull final MaterialCockpitFilters materialCockpitFilters,
-			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory)
+			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory,
+			@NonNull final QtyDemandSupplyRepository qtyDemandSupplyRepository)
 	{
 		this.materialCockpitFilters = materialCockpitFilters;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
+		this.qtyDemandSupplyRepository = qtyDemandSupplyRepository;
 
 		// setup caching
 		final int cacheSize = Services
@@ -83,7 +90,7 @@ public class MaterialCockpitRowsLoader
 				.initialCapacity(cacheSize)
 				.build();
 	}
-	
+
 	public List<MaterialCockpitRow> getMaterialCockpitRows(
 			@NonNull final DocumentFilterList filters,
 			@NonNull final LocalDate date,
@@ -97,9 +104,15 @@ public class MaterialCockpitRowsLoader
 				.createStockQueryFor(filters)
 				.list();
 
-		final List<I_QtyDemand_QtySupply_V> quantitiesRecords = QtyDemandSupplyFilters
-				.createQuantitiesQueryFor(filters)
-				.list();
+		final List<ProductWithDemandSupply> quantitiesRecords;
+		if (MaterialCockpitUtil.isI_QtyDemand_QtySupply_VActive())
+		{
+			quantitiesRecords = getQtyRecords(cockpitRecords, stockRecords);
+		}
+		else
+		{
+			quantitiesRecords = ImmutableList.of();
+		}
 
 		final MaterialCockpitRowFactory.CreateRowsRequest request = MaterialCockpitRowFactory.CreateRowsRequest
 				.builder()
@@ -128,6 +141,21 @@ public class MaterialCockpitRowsLoader
 
 		return productFilterVOToProducts
 				.getOrLoad(cacheKey, () -> retrieveProductsFor(cacheKey));
+	}
+
+	@NonNull
+	private List<ProductWithDemandSupply> getQtyRecords(
+			@NonNull final List<I_MD_Cockpit> cockpitRecords,
+			@NonNull final List<I_MD_Stock> stockRecords)
+	{
+		final Set<ProductId> productIds = Stream.concat(
+				cockpitRecords.stream().map(I_MD_Cockpit::getM_Product_ID),
+				stockRecords.stream().map(I_MD_Stock::getM_Product_ID))
+				.map(ProductId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return qtyDemandSupplyRepository.getByProductIds(productIds).getAll();
 	}
 
 	private static ImmutableSet<ProductId> retrieveProductsFor(@NonNull final CacheKey cacheKey)

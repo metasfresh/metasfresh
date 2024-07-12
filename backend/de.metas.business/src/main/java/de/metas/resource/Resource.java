@@ -47,6 +47,8 @@ public class Resource
 	@Nullable ManufacturingResourceType manufacturingResourceType;
 
 	@Nullable UserId responsibleId;
-	
+
 	@Nullable String internalName;
+
+	public boolean isPlant() {return manufacturingResourceType != null && manufacturingResourceType.isPlant();}
 }

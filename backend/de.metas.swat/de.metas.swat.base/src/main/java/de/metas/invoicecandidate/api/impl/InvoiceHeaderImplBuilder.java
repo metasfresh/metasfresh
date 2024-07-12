@@ -22,7 +22,9 @@ import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,6 +52,8 @@ public class InvoiceHeaderImplBuilder
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
 
 	private boolean isTakeDocTypeFromPool = false;
+	@Getter @Setter
+	private boolean isCreditedInvoiceReinvoicable = false;
 
 	private DocTypeId docTypeInvoiceId = null;
 
@@ -188,6 +192,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setYearId(YearId.ofRepoIdOrNull(getHarvesting_Year_ID()));
 		invoiceHeader.setWarehouseId(WarehouseId.ofRepoIdOrNull(getM_Warehouse_ID()));
 		invoiceHeader.setAuctionId(AuctionId.ofRepoIdOrNull(auctionId));
+		invoiceHeader.setCreditedInvoiceReinvoicable(isCreditedInvoiceReinvoicable());
 
 		return invoiceHeader;
 	}

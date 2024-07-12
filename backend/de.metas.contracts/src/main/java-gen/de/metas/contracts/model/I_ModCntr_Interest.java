@@ -163,6 +163,31 @@ public interface I_ModCntr_Interest
 	String COLUMNNAME_InterestScore = "InterestScore";
 
 	/**
+	 * Set Interim Contract Log.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInterimContract_ModCntr_Log_ID (int InterimContract_ModCntr_Log_ID);
+
+	/**
+	 * Get Interim Contract Log.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getInterimContract_ModCntr_Log_ID();
+
+	@Nullable de.metas.contracts.model.I_ModCntr_Log getInterimContract_ModCntr_Log();
+
+	void setInterimContract_ModCntr_Log(@Nullable de.metas.contracts.model.I_ModCntr_Log InterimContract_ModCntr_Log);
+
+	ModelColumn<I_ModCntr_Interest, de.metas.contracts.model.I_ModCntr_Log> COLUMN_InterimContract_ModCntr_Log_ID = new ModelColumn<>(I_ModCntr_Interest.class, "InterimContract_ModCntr_Log_ID", de.metas.contracts.model.I_ModCntr_Log.class);
+	String COLUMNNAME_InterimContract_ModCntr_Log_ID = "InterimContract_ModCntr_Log_ID";
+
+	/**
 	 * Set Interim Invoice Log.
 	 *
 	 * <br>Type: Search

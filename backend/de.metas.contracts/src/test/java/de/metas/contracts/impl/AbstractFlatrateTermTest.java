@@ -25,8 +25,8 @@ import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusRepository;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
@@ -164,13 +164,13 @@ public abstract class AbstractFlatrateTermTest
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		SpringContextHolder.registerJUnitBean(ProductScalePriceService.newInstanceForUnitTesting());
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL(new ModularContractSettingsDAO()));
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsService(new ModularContractSettingsRepository()));
 
 		SpringContextHolder.registerJUnitBean(new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository()));
 		SpringContextHolder.registerJUnitBean(new ModularContractService(new ModularContractComputingMethodHandlerRegistry(Collections.emptyList()),
-				new ModularContractSettingsDAO(),
+				new ModularContractSettingsRepository(),
 				new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
 				new ComputingMethodService(new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository())),
 				new ModularContractPriceRepository()));

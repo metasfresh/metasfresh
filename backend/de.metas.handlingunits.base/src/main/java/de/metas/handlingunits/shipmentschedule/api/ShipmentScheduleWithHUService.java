@@ -32,8 +32,6 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -126,6 +124,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_UOM;
@@ -195,7 +194,7 @@ public class ShipmentScheduleWithHUService
 						ADReferenceService.newMocked()),
 				new PickingConfigRepositoryV2(),
 				new InventoryService(new InventoryRepository(), new SourceHUsService()),
-				new ModularContractProvider(new ModularContractSettingsBL(new ModularContractSettingsDAO()))
+				new ModularContractProvider()
 		);
 	}
 
@@ -1095,6 +1094,7 @@ public class ShipmentScheduleWithHUService
 				.movementDate(SystemTime.asZonedDateTime())
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(schedule.getM_AttributeSetInstance_ID()))
 				.modularContractId(contractId)
+				.forRecordRef(TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, schedule.getM_ShipmentSchedule_ID()))
 				.build();
 
 		final HuId createdHuId = inventoryService.createInventoryForMissingQty(req);

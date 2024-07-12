@@ -46,7 +46,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-public abstract class AbstractRawComputingMethod implements IComputingMethodHandler
+public abstract class AbstractRawComputingMethod extends AbstractComputingMethodHandler
 {
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
@@ -100,6 +100,7 @@ public abstract class AbstractRawComputingMethod implements IComputingMethodHand
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.price(pricePerStockUOM)
 				.qty(qtyInStockUOM)
 				.build();

@@ -72,6 +72,9 @@ public class ModularContractSettings
 	@Builder.Default @Getter
 	@NonNull Percent interestPercent = Percent.ZERO;
 
+	@Builder.Default @Getter
+	@NonNull Percent interimPricePercent = Percent.ZERO;
+
 	private static final AdMessageKey MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Flatrate_Conditions.INVALID_MODULAR_CONTRACT_SETTINGS");
 
 	public CalendarId getCalendarId() {return getYearAndCalendarId().calendarId();}
@@ -157,4 +160,5 @@ public class ModularContractSettings
 	{
 		return interestPercent;
 	}
+
 }

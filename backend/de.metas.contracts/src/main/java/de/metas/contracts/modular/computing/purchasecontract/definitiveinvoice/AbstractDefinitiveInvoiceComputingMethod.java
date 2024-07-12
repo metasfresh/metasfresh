@@ -24,10 +24,10 @@ package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
@@ -55,7 +55,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-public abstract class AbstractDefinitiveInvoiceComputingMethod implements IComputingMethodHandler
+public abstract class AbstractDefinitiveInvoiceComputingMethod extends AbstractComputingMethodHandler
 {
 
 	@NonNull private final ModularContractProvider contractProvider;
@@ -138,19 +138,32 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 		final Quantity shippedQty = shipmentLogs.getQtySum(uomId, uomConversionBL);
 
 		final Quantity qtyDifference = shippedQty.subtract(producedQty);
+		final ComputingResponse.ComputingResponseBuilder responseBuilder = ComputingResponse.builder()
+				.ids(logs.getIds())
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull());
 		if (qtyDifference.isZero())
 		{
-			return ComputingResponse.builder()
-					.ids(logs.getIds())
+			return responseBuilder
 					.price(productPrice.toZero())
 					.qty(qtyDifference.toOne())
 					.build();
 		}
-		return ComputingResponse.builder()
-				.ids(logs.getIds())
-				.price(productPrice)
-				.qty(qtyDifference)
-				.build();
+		if (!qtyDifference.isPositive())
+		{
+			// always ensure the qty is positive and unit price is negative
+			// because the price and amt will later be negated in de.metas.invoicecandidate.api.impl.InvoiceLineImpl.negateAmounts
+			return responseBuilder
+					.price(productPrice.negate())
+					.qty(qtyDifference.negate())
+					.build();
+		}
+		else
+		{
+			return responseBuilder
+					.price(productPrice)
+					.qty(qtyDifference)
+					.build();
+		}
 	}
 
 	protected @NonNull LogEntryDocumentType getSourceLogEntryDocumentType()

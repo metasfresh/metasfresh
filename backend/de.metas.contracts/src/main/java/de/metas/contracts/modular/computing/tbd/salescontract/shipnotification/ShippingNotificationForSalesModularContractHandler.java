@@ -25,9 +25,7 @@ package de.metas.contracts.modular.computing.tbd.salescontract.shipnotification;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.computing.ComputingRequest;
-import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.order.OrderAndLineId;
 import de.metas.shippingnotification.ShippingNotificationLineId;
@@ -48,7 +46,7 @@ import static de.metas.contracts.modular.ComputingMethodType.SHIPPING_NOTIFICATI
 @Deprecated
 @Component
 @RequiredArgsConstructor
-public class ShippingNotificationForSalesModularContractHandler implements IComputingMethodHandler
+public class ShippingNotificationForSalesModularContractHandler extends AbstractComputingMethodHandler
 {
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ShippingNotificationService notificationService;
@@ -70,12 +68,6 @@ public class ShippingNotificationForSalesModularContractHandler implements IComp
 			return contractProvider.streamSalesContractsForSalesOrderLine(orderAndLineId);
 		}
 		return Stream.empty();
-	}
-
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
 	}
 
 	@Override

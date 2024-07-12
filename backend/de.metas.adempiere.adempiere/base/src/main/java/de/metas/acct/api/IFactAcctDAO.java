@@ -22,16 +22,13 @@ package de.metas.acct.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_Fact_Acct;
-
 import de.metas.document.engine.IDocument;
 import de.metas.util.ISingletonService;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.I_Fact_Acct;
+
+import java.util.List;
+import java.util.Properties;
 
 public interface IFactAcctDAO extends ISingletonService
 {
@@ -51,8 +48,6 @@ public interface IFactAcctDAO extends ISingletonService
 	int deleteForDocument(IDocument document);
 
 	int deleteForDocumentModel(final Object documentObj);
-
-	int deleteForRecordRef(@NonNull TableRecordReference recordRef);
 
 	/**
 	 * Retries all accounting records for given document.

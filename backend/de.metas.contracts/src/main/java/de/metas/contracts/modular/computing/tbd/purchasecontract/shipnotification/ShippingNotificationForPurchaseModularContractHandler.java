@@ -26,9 +26,7 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.ComputingRequest;
-import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
@@ -53,7 +51,7 @@ import static de.metas.contracts.modular.ComputingMethodType.SHIPPING_NOTIFICATI
 @Deprecated
 @Component
 @RequiredArgsConstructor
-public class ShippingNotificationForPurchaseModularContractHandler implements IComputingMethodHandler
+public class ShippingNotificationForPurchaseModularContractHandler extends AbstractComputingMethodHandler
 {
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ShippingNotificationService notificationService;
@@ -86,12 +84,6 @@ public class ShippingNotificationForPurchaseModularContractHandler implements IC
 			return contractProvider.streamPurchaseContractsForSalesOrderLine(orderAndLineId);
 		}
 		return Stream.empty();
-	}
-
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
 	}
 
 	@Override

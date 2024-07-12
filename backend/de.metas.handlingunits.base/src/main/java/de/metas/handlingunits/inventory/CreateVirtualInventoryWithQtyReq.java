@@ -31,6 +31,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -40,26 +41,13 @@ import java.time.ZonedDateTime;
 @Builder
 public class CreateVirtualInventoryWithQtyReq
 {
-	@NonNull
-	WarehouseId warehouseId;
-
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	ClientId clientId;
-
-	@NonNull
-	ProductId productId;
-
-	@NonNull
-	Quantity qty;
-
-	@NonNull
-	ZonedDateTime movementDate;
-
+	@NonNull WarehouseId warehouseId;
+	@NonNull OrgId orgId;
+	@NonNull ClientId clientId;
+	@NonNull ProductId productId;
+	@NonNull Quantity qty;
+	@NonNull ZonedDateTime movementDate;
 	@Nullable FlatrateTermId modularContractId;
-
-	@Nullable
-	AttributeSetInstanceId attributeSetInstanceId;
+	@Nullable AttributeSetInstanceId attributeSetInstanceId;
+	@Nullable TableRecordReference forRecordRef;
 }

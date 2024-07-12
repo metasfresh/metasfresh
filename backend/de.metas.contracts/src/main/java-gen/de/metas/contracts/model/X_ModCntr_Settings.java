@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ModCntr_Settings
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCntr_Settings, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -569725144L;
+	private static final long serialVersionUID = -2138970437L;
 
     /** Standard Constructor */
     public X_ModCntr_Settings (final Properties ctx, final int ModCntr_Settings_ID, @Nullable final String trxName)
@@ -111,6 +111,19 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	public BigDecimal getInterestRate() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InterestRate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setInterimPricePercent (final BigDecimal InterimPricePercent)
+	{
+		set_Value (COLUMNNAME_InterimPricePercent, InterimPricePercent);
+	}
+
+	@Override
+	public BigDecimal getInterimPricePercent() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InterimPricePercent);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

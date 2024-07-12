@@ -75,9 +75,9 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -212,8 +212,6 @@ public class FlatrateBL implements IFlatrateBL
 
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
 
-	public final static AdMessageKey MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED = AdMessageKey.of("MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED");
-
 	public final static String MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS = "@MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS@";
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -234,7 +232,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
+	private final ModularContractSettingsRepository modularContractSettingsRepository = SpringContextHolder.instance.getBean(ModularContractSettingsRepository.class);
 	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
 
 	public static final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
@@ -1182,7 +1180,10 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		if (!isExtendableContract(request.getContract()))
 		{
-			throw new AdempiereException(MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED, request.getContract());
+			// avoid ad_issue if extension is simply not allowed in scheduled process
+			// throw new AdempiereException(MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED, request.getContract());
+			logger.debug("Skipping contract No {}, because of extension not allowed transition", request.getContract().getDocumentNo());
+			return;
 		}
 
 		final Map<Integer, String> seenFlatrateCondition = new LinkedHashMap<>();
@@ -2445,7 +2446,7 @@ public class FlatrateBL implements IFlatrateBL
 				.builder()
 				.flatrateTermId(flatrateTermId)
 				.computingMethodTypes(ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS)
-				.isComputingMethodTypeActive(false)
+				.isOnlyActiveComputingMethodTypes(false)
 				.billable(true)
 				.processed(false)
 				.build());
@@ -2516,7 +2517,7 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(year.getC_Year_ID(), year.getC_Calendar_ID());
 		final ProductId productId = ProductId.ofRepoId(settings.getM_Raw_Product_ID());
-		if (modularContractSettingsDAO.isSettingsExist(ModularContractSettingsQuery.builder()
+		if (modularContractSettingsRepository.isSettingsExist(ModularContractSettingsQuery.builder()
 				.yearAndCalendarId(yearAndCalendarId)
 				.rawProductId(productId)
 				.soTrx(SOTrx.ofBooleanNotNull(settings.isSOTrx()))
@@ -2666,5 +2667,11 @@ public class FlatrateBL implements IFlatrateBL
 	public void prepareForDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
 	{
 		flatrateDAO.prepareForDefinitiveInvoice(contractIds);
+	}
+
+	@Override
+	public void reverseDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
+	{
+		flatrateDAO.reverseDefinitiveInvoice(contractIds);
 	}
 }

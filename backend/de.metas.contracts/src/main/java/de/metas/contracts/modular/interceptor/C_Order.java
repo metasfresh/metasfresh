@@ -32,8 +32,9 @@ import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.i18n.AdMessageKey;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -76,7 +77,7 @@ public class C_Order
 
 	@NonNull private final ModularContractService contractService;
 	@NonNull private final ModularContractLogDAO contractLogDAO;
-	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
+	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(@NonNull final I_C_Order orderRecord)
@@ -145,11 +146,17 @@ public class C_Order
 	private void createModularContractIfRequired(final @NonNull I_C_Order orderRecord)
 	{
 		orderDAO.retrieveOrderLines(orderRecord)
-				.forEach(this::createModularContractIfRequiredForEachLine);
+				.forEach(line -> createModularContractIfRequiredForEachLine(line, SOTrx.ofBoolean(orderRecord.isSOTrx())));
 	}
 
-	private void createModularContractIfRequiredForEachLine(final @NonNull I_C_OrderLine orderLine)
+	private void createModularContractIfRequiredForEachLine(final @NonNull I_C_OrderLine orderLine, @NonNull final SOTrx soTrx)
 	{
+		//Sales modular contracts aren't supported atm
+		if(soTrx.isSales())
+		{
+			return;
+		}
+
 		if (!isModularContractLine(orderLine))
 		{
 			return;
@@ -161,8 +168,8 @@ public class C_Order
 		}
 
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(orderLine.getC_Flatrate_Conditions_ID());
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateConditionsIdOrNull(conditionsId);
-		if (settings == null)
+		final ModularContractSettings settings = modularContractSettingsRepository.getByFlatrateConditionsIdOrNull(conditionsId);
+		if (settings == null || soTrx != settings.getSoTrx())
 		{
 			return;
 		}

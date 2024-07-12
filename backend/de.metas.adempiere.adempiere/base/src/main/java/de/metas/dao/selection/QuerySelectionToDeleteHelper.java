@@ -46,6 +46,9 @@ public class QuerySelectionToDeleteHelper
 {
 	private static final Logger logger = LogManager.getLogger(QuerySelectionToDeleteHelper.class);
 
+	/**
+	 * Only UUIDs that have rows in either {@link I_T_Query_Selection#Table_Name} or {@link I_T_Query_Selection_Pagination#Table_Name} are scheduled.
+	 */
 	public static void scheduleDeleteSelectionNoFail(@NonNull final String uuid, final String trxName)
 	{
 		try
@@ -58,11 +61,17 @@ public class QuerySelectionToDeleteHelper
 		}
 	}
 
+	/**
+	 * Only UUIDs that have rows in either {@link I_T_Query_Selection#Table_Name} or {@link I_T_Query_Selection_Pagination#Table_Name} are scheduled.
+	 */
 	public static void scheduleDeleteSelection(@NonNull final String uuid, final String trxName)
 	{
 		scheduleDeleteSelections(ImmutableSet.of(uuid), trxName);
 	}
 
+	/**
+	 * Only UUIDs that have rows in either {@link I_T_Query_Selection#Table_Name} or {@link I_T_Query_Selection_Pagination#Table_Name} are scheduled.
+	 */
 	public static void scheduleDeleteSelections(final Set<String> uuids, final String trxName)
 	{
 		if (uuids.isEmpty())
@@ -77,7 +86,8 @@ public class QuerySelectionToDeleteHelper
 	}
 
 	/**
-	 * Inserts the uuids in a hardcoded way, with one DB statement per 1000 uuids
+	 * Inserts the uuids in a hardcoded way, with one DB statement per 1000 uuids.
+	 * Only UUIDs that have rows in either {@link I_T_Query_Selection#Table_Name} or {@link I_T_Query_Selection_Pagination#Table_Name} are inserted.
 	 */
 	private static void scheduleDeleteSelectionsNow(@NonNull final Set<String> uuids)
 	{
@@ -100,8 +110,16 @@ public class QuerySelectionToDeleteHelper
 			{
 				sql.append(" UNION ");
 			}
-			sql.append("SELECT ");
-			sql.append(DB.TO_STRING(uuid));
+
+			// Insert the given uuid into T_Query_Selection_ToDelete,
+			// but only if
+			// 1. there are corresponding records in either T_Query_Selection or T_Query_Selection_Pagination
+			// 2. there is no delete-schedule record yet
+			sql.append("SELECT " + DB.TO_STRING(uuid));
+			sql.append(" FROM " + I_T_Query_Selection.Table_Name + " s");
+			sql.append(" FULL OUTER JOIN " + I_T_Query_Selection_Pagination.Table_Name + " p ON s.uuid=p.uuid");
+			sql.append(" WHERE " + DB.TO_STRING(uuid) + " IN (s.UUID, p.UUID)");
+			sql.append(" AND NOT EXISTS (select 1 from " + I_T_Query_Selection_ToDelete.Table_Name + " e where e.uuid=" + DB.TO_STRING(uuid) + ")");
 
 			if (counter >= 1000)
 			{

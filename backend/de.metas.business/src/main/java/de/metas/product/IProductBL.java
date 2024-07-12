@@ -205,4 +205,10 @@ public interface IProductBL extends ISingletonService
 	boolean isDiscontinuedAt(I_M_Product productRecord, LocalDate targetDate);
 
 	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
+
+	/**
+	 *
+	 * @return true if product is used in orders, invoices or shipments
+	 */
+    boolean isProductUsed(@NonNull ProductId productId);
 }

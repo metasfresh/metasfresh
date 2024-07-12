@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for AD_Tab
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1686882839L;
+	private static final long serialVersionUID = 428834701L;
 
     /** Standard Constructor */
     public X_AD_Tab (final Properties ctx, final int AD_Tab_ID, @Nullable final String trxName)
@@ -430,6 +430,18 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
+	public void setInsertLogic (final @Nullable java.lang.String InsertLogic)
+	{
+		set_Value (COLUMNNAME_InsertLogic, InsertLogic);
+	}
+
+	@Override
+	public java.lang.String getInsertLogic() 
+	{
+		return get_ValueAsString(COLUMNNAME_InsertLogic);
+	}
+
+	@Override
 	public void setInternalName (final @Nullable java.lang.String InternalName)
 	{
 		set_Value (COLUMNNAME_InternalName, InternalName);
@@ -721,18 +733,6 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
-	public void setQuickInput_OpenButton_Caption (final @Nullable java.lang.String QuickInput_OpenButton_Caption)
-	{
-		set_Value (COLUMNNAME_QuickInput_OpenButton_Caption, QuickInput_OpenButton_Caption);
-	}
-
-	@Override
-	public java.lang.String getQuickInput_OpenButton_Caption() 
-	{
-		return get_ValueAsString(COLUMNNAME_QuickInput_OpenButton_Caption);
-	}
-
-	@Override
 	public void setQuickInputLayout (final @Nullable java.lang.String QuickInputLayout)
 	{
 		set_Value (COLUMNNAME_QuickInputLayout, QuickInputLayout);
@@ -742,6 +742,18 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	public java.lang.String getQuickInputLayout() 
 	{
 		return get_ValueAsString(COLUMNNAME_QuickInputLayout);
+	}
+
+	@Override
+	public void setQuickInput_OpenButton_Caption (final @Nullable java.lang.String QuickInput_OpenButton_Caption)
+	{
+		set_Value (COLUMNNAME_QuickInput_OpenButton_Caption, QuickInput_OpenButton_Caption);
+	}
+
+	@Override
+	public java.lang.String getQuickInput_OpenButton_Caption() 
+	{
+		return get_ValueAsString(COLUMNNAME_QuickInput_OpenButton_Caption);
 	}
 
 	@Override

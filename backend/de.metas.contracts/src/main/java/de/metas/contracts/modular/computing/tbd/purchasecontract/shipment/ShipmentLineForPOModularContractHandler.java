@@ -30,9 +30,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.computing.ComputingRequest;
-import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -62,7 +60,7 @@ import static de.metas.contracts.modular.ComputingMethodType.SHIPMENT_LINE_FOR_P
 @Deprecated
 @Component
 @RequiredArgsConstructor
-public class ShipmentLineForPOModularContractHandler implements IComputingMethodHandler
+public class ShipmentLineForPOModularContractHandler extends AbstractComputingMethodHandler
 {
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
@@ -125,11 +123,5 @@ public class ShipmentLineForPOModularContractHandler implements IComputingMethod
 					.map(FlatrateTermId::ofRepoId);
 		}
 		return Stream.empty();
-	}
-
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
 	}
 }

@@ -30,13 +30,18 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * @author Teo Sarca
  */
 public class TimeUtilTest
 {
+	private static Timestamp createTimestamp(final int year, int month, int day)
+	{
+		return TimeUtil.getDay(year, month, day);
+	}
+
 	@BeforeEach
 	public void beforeEach()
 	{
@@ -47,11 +52,6 @@ public class TimeUtilTest
 	public void afterEach()
 	{
 		SystemTime.resetTimeSource();
-	}
-
-	private static Timestamp createTimestamp(final int year, int month, int day)
-	{
-		return TimeUtil.getDay(year, month, day);
 	}
 
 	@Test
@@ -350,6 +350,46 @@ public class TimeUtilTest
 				.isEqualTo(LocalDate.parse("2021-02-10"));
 		assertThat(TimeUtil.max(LocalDate.parse("2021-02-10"), LocalDate.parse("2021-02-11")))
 				.isEqualTo(LocalDate.parse("2021-02-11"));
+	}
+
+	@Test
+	public void daysBetween360()
+	{
+		final ZonedDateTime December5_2018 = ZonedDateTime.parse("2018-12-05T00:15:00+01:00");
+		final ZonedDateTime December5_2017 = ZonedDateTime.parse("2017-12-05T00:15:00+01:00");
+		final ZonedDateTime June28_2024 = ZonedDateTime.parse("2024-06-28T00:15:00+01:00");
+		final ZonedDateTime November5_2024 = ZonedDateTime.parse("2024-11-05T00:15:00+01:00");
+		final ZonedDateTime February28_2019 = ZonedDateTime.parse("2019-02-28T00:15:00+01:00");
+		final ZonedDateTime February28_2020 = ZonedDateTime.parse("2020-02-28T00:15:00+01:00");
+		final ZonedDateTime February29_2020 = ZonedDateTime.parse("2020-02-29T00:15:00+01:00");
+		final ZonedDateTime February28_2021 = ZonedDateTime.parse("2021-02-28T00:15:00+01:00");
+		final ZonedDateTime March1_2020 = ZonedDateTime.parse("2020-03-01T00:15:00+01:00");
+		final ZonedDateTime March31_2021 = ZonedDateTime.parse("2021-03-31T00:15:00+01:00");
+		final ZonedDateTime March31_2020 = ZonedDateTime.parse("2020-03-31T00:15:00+01:00");
+
+
+		assertThatExceptionOfType(IllegalArgumentException.class)
+				.isThrownBy(() -> TimeUtil.getDaysBetween360(December5_2018, December5_2017));
+
+		assertThat(TimeUtil.getDaysBetween360(December5_2018, June28_2024)).isEqualTo(2003);
+
+		assertThat(TimeUtil.getDaysBetween360(December5_2017, December5_2018)).isEqualTo(360);
+
+		assertThat(TimeUtil.getDaysBetween360(February28_2019, February28_2020)).isEqualTo(360);
+
+		assertThat(TimeUtil.getDaysBetween360(February28_2019, February29_2020)).isEqualTo(361);
+
+		assertThat(TimeUtil.getDaysBetween360(February28_2020, February28_2021)).isEqualTo(360);
+
+		assertThat(TimeUtil.getDaysBetween360(February29_2020, February28_2021)).isEqualTo(359);
+
+		assertThat(TimeUtil.getDaysBetween360(June28_2024, November5_2024)).isEqualTo(127);
+
+		assertThat(TimeUtil.getDaysBetween360(February28_2019, March1_2020)).isEqualTo(363);
+
+		assertThat(TimeUtil.getDaysBetween360(February28_2020, March31_2021)).isEqualTo(392);
+
+		assertThat(TimeUtil.getDaysBetween360(February28_2020, March31_2020)).isEqualTo(32);
 	}
 
 	@Nested

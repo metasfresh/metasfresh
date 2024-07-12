@@ -516,10 +516,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void set_QtyInvoiced_NetAmtInvoiced_Aggregation(final Properties ctx, final I_C_Invoice_Candidate ic)
+	public void set_QtyInvoiced_NetAmtInvoiced_Aggregation(final I_C_Invoice_Candidate ic)
 	{
 		Check.assume(ic.isManual(), ic + " has IsManual='Y'");
-		set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, ic);
+		set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ic);
 	}
 
 	/**
@@ -527,7 +527,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * <p>
 	 * <b>Also invokes {@link #updateProcessedFlag(I_C_Invoice_Candidate)}</b>
 	 */
-	void set_QtyInvoiced_NetAmtInvoiced_Aggregation0(final Properties ctx, @NonNull final I_C_Invoice_Candidate ic)
+	void set_QtyInvoiced_NetAmtInvoiced_Aggregation0(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		if (ic.isToClear())
 		{
@@ -1522,7 +1522,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 				final I_C_Invoice_Candidate invoiceCandidate = ilaToReverse.getC_Invoice_Candidate();
 				invoiceCandidate.setProcessed_Override(null); // reset processed_override, because now that the invoice was reversed, the users might want to do something new with the IC.
-
 				invoiceCandidate.setApprovalForInvoicing(false);
 
 				// #870

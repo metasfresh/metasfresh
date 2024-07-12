@@ -1,8 +1,7 @@
 package de.metas.contracts.model;
 
-import org.adempiere.model.ModelColumn;
-
 import java.math.BigDecimal;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ModCntr_Settings
  *  @author metasfresh (generated) 
@@ -171,6 +170,29 @@ public interface I_ModCntr_Settings
 
 	ModelColumn<I_ModCntr_Settings, Object> COLUMN_InterestRate = new ModelColumn<>(I_ModCntr_Settings.class, "InterestRate", null);
 	String COLUMNNAME_InterestRate = "InterestRate";
+
+	/**
+	 * Set Interim price %.
+	 * Set the interim contract specific price to given percentage of modular price for the raw product.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setInterimPricePercent (BigDecimal InterimPricePercent);
+
+	/**
+	 * Get Interim price %.
+	 * Set the interim contract specific price to given percentage of modular price for the raw product.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getInterimPricePercent();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_InterimPricePercent = new ModelColumn<>(I_ModCntr_Settings.class, "InterimPricePercent", null);
+	String COLUMNNAME_InterimPricePercent = "InterimPricePercent";
 
 	/**
 	 * Set Active.
