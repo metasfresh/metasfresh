@@ -2,8 +2,12 @@ package de.metas.inoutcandidate.split;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.Dimension;
+import de.metas.document.engine.DocStatus;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
+import org.compiere.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Split;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -25,6 +29,7 @@ import java.util.function.Consumer;
 public class ShipmentScheduleSplitRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	public List<ShipmentScheduleSplit> getByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
@@ -34,6 +39,7 @@ public class ShipmentScheduleSplitRepository
 				.orderBy(I_M_ShipmentSchedule_Split.COLUMNNAME_M_ShipmentSchedule_Split_ID)
 				.create()
 				.stream()
+				.filter(this::isRelatedInOutValid)
 				.map(ShipmentScheduleSplitRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -131,5 +137,18 @@ public class ShipmentScheduleSplitRepository
 				.addInArrayFilter(I_M_ShipmentSchedule_Split.COLUMNNAME_M_ShipmentSchedule_Split_ID, ids)
 				.create()
 				.delete(true);
+	}
+
+	public boolean isRelatedInOutValid(@NonNull final I_M_ShipmentSchedule_Split record)
+	{
+		if (record.getM_InOut_ID() <= 0)
+		{
+			return true;
+		}
+		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(record.getM_InOut_ID()));
+
+		final DocStatus docStatus = DocStatus.ofCode(inOutRecord.getDocStatus());
+
+		return !docStatus.isClosedReversedOrVoided();
 	}
 }
