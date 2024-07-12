@@ -198,7 +198,9 @@ DocumentNo]]>
 					<textFieldExpression><![CDATA[$V{open_currency_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
-					<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="cc34f4d5-0be4-4894-8cee-bbce7aa6c644"/>
+					<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="cc34f4d5-0be4-4894-8cee-bbce7aa6c644">
+						<printWhenExpression><![CDATA[$V{open_currency_convert} !=null || $V{total_currency_convert} != null]]></printWhenExpression>
+					</reportElement>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -208,7 +210,7 @@ DocumentNo]]>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[" "+$F{main_currency}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -339,7 +341,9 @@ DocumentNo]]>
 					<textFieldExpression><![CDATA[$V{open_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
-					<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="89d6466f-a28d-4f8b-b14d-00faeaf614f3"/>
+					<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="89d6466f-a28d-4f8b-b14d-00faeaf614f3">
+						<printWhenExpression><![CDATA[$V{open_bpartner_convert}  != null || $V{total_bpartner_convert} != null]]></printWhenExpression>
+					</reportElement>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -349,7 +353,7 @@ DocumentNo]]>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[" "+$F{main_currency}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -896,7 +900,9 @@ DocumentNo]]>
 				<textFieldExpression><![CDATA[$F{openamtconvert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
-				<reportElement key="textField-109" x="456" y="11" width="35" height="12" isRemoveLineWhenBlank="true" uuid="4626be61-8636-4249-a721-ca806e825d33"/>
+				<reportElement key="textField-109" x="456" y="11" width="35" height="12" isRemoveLineWhenBlank="true" uuid="4626be61-8636-4249-a721-ca806e825d33">
+					<printWhenExpression><![CDATA[$F{grandtotalconvert} != null || $F{openamtconvert} != null]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -906,7 +912,7 @@ DocumentNo]]>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[" "+$F{main_currency}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -1007,7 +1013,9 @@ DocumentNo]]>
 				<textFieldExpression><![CDATA[$V{open_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
-				<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="f2d8c3af-2cd1-4256-8c91-c77b3669b5b2"/>
+				<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="f2d8c3af-2cd1-4256-8c91-c77b3669b5b2">
+					<printWhenExpression><![CDATA[$V{open_bpartner_convert}  != null || $V{total_bpartner_convert} != null]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1017,7 +1025,7 @@ DocumentNo]]>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[" "+$F{main_currency}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>

@@ -15,10 +15,13 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.OrgId;
+import de.metas.product.OnMaterialReceiptWithDestWarehouse;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -37,8 +40,6 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.model.X_PP_Product_Planning;
 
 import java.sql.Timestamp;
 import java.util.Collections;
@@ -73,7 +74,7 @@ import java.util.Properties;
 public class OrderLineReceiptScheduleProducer extends AbstractReceiptScheduleProducer
 {
 
-	private final static String DEFAULT_OnMaterialReceiptWithDestWarehouse = X_PP_Product_Planning.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateMovement;
+	private final static OnMaterialReceiptWithDestWarehouse DEFAULT_OnMaterialReceiptWithDestWarehouse = OnMaterialReceiptWithDestWarehouse.CREATE_MOVEMENT;
 
 	@Override
 	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
@@ -158,7 +159,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		receiptSchedule.setC_BPartner_Location_ID(line.getC_BPartner_Location_ID());
 		final I_C_Order order = line.getC_Order();
 		receiptSchedule.setAD_User_ID(order.getAD_User_ID());
-
+		receiptSchedule.setPOReference(order.getPOReference());
 		//
 		// Delivery rule, Priority rule
 		{
@@ -241,7 +242,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		receiptSchedule.setHeaderAggregationKey(headerAggregationKey);
 
 		// #3549
-		receiptSchedule.setOnMaterialReceiptWithDestWarehouse(getOnMaterialReceiptWithDestWarehouse(line));
+		receiptSchedule.setOnMaterialReceiptWithDestWarehouse(getOnMaterialReceiptWithDestWarehouse(line).getCode());
 
 		final Dimension orderLineDimension = dimensionService.getFromRecord(line);
 		dimensionService.updateRecord(receiptSchedule, orderLineDimension);
@@ -252,7 +253,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		return receiptSchedule;
 	}
 
-	private String getOnMaterialReceiptWithDestWarehouse(final I_C_OrderLine orderLine)
+	@NonNull
+	private OnMaterialReceiptWithDestWarehouse getOnMaterialReceiptWithDestWarehouse(final I_C_OrderLine orderLine)
 	{
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
@@ -267,17 +269,16 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 				.attributeSetInstanceId(asiId)
 				// no warehouse, no plant
 				.build();
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query).orElse(null);
+		final ProductPlanning productPlanning = productPlanningDAO.find(query).orElse(null);
 		if (productPlanning == null)
 		{
 			// fallback to old behavior -> a movement is created instead of dd_Order
 			return DEFAULT_OnMaterialReceiptWithDestWarehouse;
 		}
 
-		final String onMaterialReceiptWithDestWarehouse = productPlanning.getOnMaterialReceiptWithDestWarehouse();
+		final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse = productPlanning.getOnMaterialReceiptWithDestWarehouse();
 
-		return Check.isEmpty(onMaterialReceiptWithDestWarehouse) ? DEFAULT_OnMaterialReceiptWithDestWarehouse : onMaterialReceiptWithDestWarehouse;
-
+		return onMaterialReceiptWithDestWarehouse != null ? onMaterialReceiptWithDestWarehouse : DEFAULT_OnMaterialReceiptWithDestWarehouse;
 	}
 
 	/**

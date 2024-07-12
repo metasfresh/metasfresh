@@ -42,6 +42,8 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+
 @UtilityClass
 public class DataTableUtil
 {
@@ -50,7 +52,7 @@ public class DataTableUtil
 	 */
 	private static int recordIdentifierFallback = 0;
 
-	private static final String NULL_STRING = "null";
+	public static final String NULL_STRING = "null";
 
 	/**
 	 * @param fallbackPrefix if the given dataTableRow has no {@value StepDefConstants#TABLECOLUMN_IDENTIFIER} column,
@@ -61,8 +63,8 @@ public class DataTableUtil
 			@NonNull final String fallbackPrefix)
 	{
 		return CoalesceUtil.coalesceSuppliersNotNull(
-				() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER),
-				() -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
+				() -> dataTableRow.get(TABLECOLUMN_IDENTIFIER),
+				() -> createFallbackRecordIdentifier(fallbackPrefix));
 	}
 
 	public String extractRecordIdentifier(
@@ -71,9 +73,9 @@ public class DataTableUtil
 			@NonNull final String fallbackPrefix)
 	{
 		return CoalesceUtil.coalesceSuppliersNotNull(
-				() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER),
-				() -> dataTableRow.get(columnNamePrefix + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER),
-				() -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
+				() -> dataTableRow.get(TABLECOLUMN_IDENTIFIER),
+				() -> dataTableRow.get(columnNamePrefix + "." + TABLECOLUMN_IDENTIFIER),
+				() -> createFallbackRecordIdentifier(fallbackPrefix));
 	}
 
 	private String createFallbackRecordIdentifier(@NonNull final String prefix)
@@ -177,7 +179,7 @@ public class DataTableUtil
 	public String extractStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
 		final String string = dataTableRow.get(columnName);
-		if (Check.isBlank(string))
+		if (string == null || Check.isBlank(string))
 		{
 			throw new AdempiereException("Missing value for columnName=" + columnName).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
@@ -366,6 +368,19 @@ public class DataTableUtil
 	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
 		return StringUtils.toBoolean(string, defaultValue);
+	}
+
+	public static Boolean extractBooleanForColumnNameOrNull(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+		if (Check.isBlank(string))
+		{
+			return null;
+		}
+
+		return StringUtils.toBoolean(string);
 	}
 
 	public String extractStringForIndex(final List<String> dataTableRow, final int index)

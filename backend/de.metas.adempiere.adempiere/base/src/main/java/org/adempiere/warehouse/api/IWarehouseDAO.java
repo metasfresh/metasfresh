@@ -3,6 +3,7 @@ package org.adempiere.warehouse.api;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.location.LocationId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
@@ -12,11 +13,11 @@ import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
@@ -161,6 +162,8 @@ public interface IWarehouseDAO extends ISingletonService
 	BPartnerLocationAndCaptureId getWarehouseLocationById(WarehouseId warehouseId);
 
 	ImmutableSet<WarehouseId> retrieveWarehouseWithLocation(@NonNull LocationId locationId);
+
+	ClientAndOrgId getClientAndOrgIdByLocatorId(@NonNull LocatorId locatorId);
 
 	@Value
 	class WarehouseQuery

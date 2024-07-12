@@ -2,10 +2,11 @@ package de.metas.inout;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -43,7 +44,7 @@ public class InOutLineId implements RepoIdAware
 		return repoId > 0 ? new InOutLineId(repoId) : null;
 	}
 
-	public static int toRepoId(final InOutLineId id)
+	public static int toRepoId(@Nullable final InOutLineId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

@@ -98,7 +98,6 @@ public class TaxAcctBL implements ITaxAcctBL
 				.addEqualsFilter(I_C_Tax_Acct.COLUMNNAME_C_Tax_ID, key.getTaxId())
 				.addEqualsFilter(I_C_Tax_Acct.COLUMNNAME_C_AcctSchema_ID, key.getAcctSchemaId())
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
 				.create()
 				.firstOnlyNotNull(I_C_Tax_Acct.class);
 	}

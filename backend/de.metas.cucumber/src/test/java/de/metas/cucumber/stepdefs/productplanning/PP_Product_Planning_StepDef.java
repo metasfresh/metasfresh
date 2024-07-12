@@ -22,139 +22,193 @@
 
 package de.metas.cucumber.stepdefs.productplanning;
 
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMVersions_StepDefData;
+import de.metas.cucumber.stepdefs.distribution.DD_NetworkDistribution_StepDefData;
+import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_Line_StepDefData;
+import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.cucumber.stepdefs.workflow.AD_Workflow_StepDefData;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.util.Check;
+import de.metas.material.maturing.MaturingConfigId;
+import de.metas.material.maturing.MaturingConfigLineId;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ProductPlanning.ProductPlanningBuilder;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Workflow;
-import org.compiere.model.I_M_AttributeSetInstance;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Maturing_Configuration;
+import org.compiere.model.I_M_Maturing_Configuration_Line;
 import org.compiere.model.I_M_Product;
-import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.model.X_PP_Product_Planning;
 
-import java.util.List;
-import java.util.Map;
+import javax.annotation.Nullable;
 import java.util.Optional;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TEST_PLANT_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.WORKFLOW_ID;
-import static org.assertj.core.api.Assertions.*;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_AD_Workflow_ID;
-import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Product_Planning_StepDef
 {
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+
 	private final M_Product_StepDefData productTable;
 	private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
 	private final PP_Product_Planning_StepDefData productPlanningTable;
+	private final PP_Product_BOMVersions_StepDefData bomVersionsTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final DD_NetworkDistribution_StepDefData ddNetworkTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 	private final AD_Workflow_StepDefData workflowTable;
+	private final M_Maturing_Configuration_StepDefData maturingConfigurationTable;
+	private final M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable;
 
 	public PP_Product_Planning_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final PP_Product_BOMVersions_StepDefData productBomVersionsTable,
 			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
+			@NonNull final PP_Product_BOMVersions_StepDefData bomVersionsTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final AD_Workflow_StepDefData workflowTable)
+			@NonNull final DD_NetworkDistribution_StepDefData ddNetworkTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
+			@NonNull final AD_Workflow_StepDefData workflowTable,
+			@NonNull final M_Maturing_Configuration_StepDefData maturingConfigurationTable,
+			@NonNull final M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable)
 	{
 		this.productTable = productTable;
 		this.productBomVersionsTable = productBomVersionsTable;
 		this.productPlanningTable = productPlanningTable;
+		this.bomVersionsTable = bomVersionsTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
+		this.ddNetworkTable = ddNetworkTable;
+		this.warehouseTable = warehouseTable;
 		this.workflowTable = workflowTable;
+		this.maturingConfigurationTable = maturingConfigurationTable;
+		this.maturingConfigurationLineTable = maturingConfigurationLineTable;
 	}
 
 	@Given("metasfresh contains PP_Product_Plannings")
 	public void add_PP_Product_Planning(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps();
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createPP_Product_Planning(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::createPP_Product_Planning);
 	}
 
-	private void createPP_Product_Planning(@NonNull final Map<String, String> tableRow)
+	private void createPP_Product_Planning(@NonNull final DataTableRow tableRow)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
+		final I_M_Product productRecord = tableRow.getAsIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Product_ID).lookupIn(productTable);
+		final OrgId orgId = OrgId.ofRepoIdOrAny(productRecord.getAD_Org_ID());
+		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
+		final WarehouseId warehouseId = tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID).map(warehouseTable::getId).orElse(null);
 
-		final String bomVersionsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final ProductPlanning existingProductPlanning = getExistingProductPlanning(orgId, warehouseId, productId).orElse(null);
 
-		final boolean isCreatePlan = DataTableUtil.extractBooleanForColumnName(tableRow, I_PP_Product_Planning.COLUMNNAME_IsCreatePlan);
+		final ProductPlanningBuilder builder = existingProductPlanning != null ? existingProductPlanning.toBuilder() : ProductPlanning.builder();
 
-		final boolean isAttributeDependant = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant, false);
+		builder.productId(productId);
+		builder.orgId(orgId);
+		builder.plantId(TEST_PLANT_ID);
+		builder.workflowId(tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_Workflow_ID).map(workflowTable::getId).orElse(WORKFLOW_ID));
+		tableRow.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan).ifPresent(builder::isCreatePlan);
+		builder.isAttributeDependant(tableRow.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).orElse(false));
+		builder.isManufactured(true);
 
-		final int workflowId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_Workflow_ID + "." + TABLECOLUMN_IDENTIFIER))
-				.map(workflowTable::get)
-				.map(I_AD_Workflow::getAD_Workflow_ID)
-				.orElse(WORKFLOW_ID.getRepoId());
+		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
+				.map(productBomVersionsTable::getId)
+				.ifPresent(builder::bomVersionsId);
 
-		final I_PP_Product_Planning productPlanningRecord = InterfaceWrapperHelper.newInstance(I_PP_Product_Planning.class);
-		productPlanningRecord.setM_Product_ID(productRecord.getM_Product_ID());
-		productPlanningRecord.setAD_Org_ID(productRecord.getAD_Org_ID());
-		productPlanningRecord.setS_Resource_ID(TEST_PLANT_ID.getRepoId());
-		productPlanningRecord.setAD_Workflow_ID(workflowId);
-		productPlanningRecord.setIsCreatePlan(isCreatePlan);
-		productPlanningRecord.setIsAttributeDependant(isAttributeDependant);
-
-		if (bomVersionsIdentifier != null)
-		{
-			final I_PP_Product_BOMVersions bomVersions = productBomVersionsTable.get(bomVersionsIdentifier);
-
-			assertThat(bomVersions).isNotNull();
-
-			productPlanningRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
-		}
-
-		final boolean isPurchased = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_IsPurchased, false);
-
+		final boolean isPurchased = tableRow.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsPurchased).orElse(false);
 		if (isPurchased)
 		{
-			productPlanningRecord.setIsPurchased(X_PP_Product_Planning.ISPURCHASED_Yes);
+			builder.isPurchased(true);
+			builder.isManufactured(false);
 		}
-		else
+
+		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID)
+				.map(attributeSetInstanceTable::getId)
+				.ifPresent(asiId -> {
+					final AttributesKey storageAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
+					builder.attributeSetInstanceId(asiId);
+					builder.storageAttributesKey(storageAttributesKey.getAsString());
+				});
+
+		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_DD_NetworkDistribution_ID)
+				.map(ddNetworkTable::getId)
+				.ifPresent(distributionNetworkId -> {
+					builder.distributionNetworkId(distributionNetworkId);
+					builder.isManufactured(false);
+				});
+
+		if (warehouseId != null)
 		{
-			productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_Yes);
+			builder.warehouseId(warehouseId);
 		}
 
-		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(attributeSetInstanceIdentifier))
-		{
-			final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
-			assertThat(attributeSetInstance).isNotNull();
+		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
+				.map(bomVersionsTable::getId)
+				.ifPresent(builder::bomVersionsId);
+		tableRow.getAsOptionalQuantity(
+						I_PP_Product_Planning.COLUMNNAME_MaxManufacturedQtyPerOrderDispo,
+						I_PP_Product_Planning.COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID,
+						uomString -> uomDAO.getByX12DE355(X12DE355.ofCode(uomString))
+				)
+				.ifPresent(builder::maxManufacturedQtyPerOrderDispo);
 
-			final AttributesKey ppAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(attributeSetInstance.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
+		tableRow.getAsOptionalInt(I_PP_Product_Planning.COLUMNNAME_SeqNo)
+				.ifPresent(builder::seqNo);
+		tableRow.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsMatured)
+				.ifPresent(builder::isMatured);
+		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_ID)
+				.map(maturingConfigurationTable::get)
+				.map(I_M_Maturing_Configuration::getM_Maturing_Configuration_ID)
+				.map(MaturingConfigId::ofRepoId)
+				.ifPresent(builder::maturingConfigId);
+		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_Line_ID)
+				.map(maturingConfigurationLineTable::get)
+				.map(I_M_Maturing_Configuration_Line::getM_Maturing_Configuration_Line_ID)
+				.map(MaturingConfigLineId::ofRepoId)
+				.ifPresent(builder::maturingConfigLineId);
 
-			productPlanningRecord.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());
-			productPlanningRecord.setStorageAttributesKey(ppAttributesKeys.getAsString());
-		}
+		final ProductPlanning productPlanning = productPlanningDAO.save(builder.build());
 
-		if (bomVersionsIdentifier != null)
-		{
-			final I_PP_Product_BOMVersions bomVersions = productBomVersionsTable.get(bomVersionsIdentifier);
+		tableRow.getAsIdentifier().put(productPlanningTable, productPlanning);
+	}
 
-			assertThat(bomVersions).isNotNull();
+	@NonNull
+	private Optional<ProductPlanning> getExistingProductPlanning(
+			@NonNull final OrgId orgId,
+			@Nullable final WarehouseId warehouseId,
+			@NonNull final ProductId productId)
+	{
+		final ResourceId plantId = TEST_PLANT_ID;
 
-			productPlanningRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
-		}
-
-		InterfaceWrapperHelper.save(productPlanningRecord);
-
-		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_PP_Product_Planning.Table_Name);
-		productPlanningTable.putOrReplace(recordIdentifier, productPlanningRecord);
+		return productPlanningDAO.find(ProductPlanningQuery.builder()
+						.orgId(orgId)
+						.warehouseId(warehouseId)
+						.plantId(plantId)
+						.productId(productId)
+						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+						.build())
+				// Because find method could fall back to more generic product planning,
+				// let's make sure we have one product planning exactly for our org/warehouse/product/plant
+				.filter(productPlanning -> OrgId.equals(productPlanning.getOrgId(), orgId)
+						&& WarehouseId.equals(productPlanning.getWarehouseId(), warehouseId)
+						&& ResourceId.equals(productPlanning.getPlantId(), plantId)
+						&& ProductId.equals(productPlanning.getProductId(), productId));
 	}
 }

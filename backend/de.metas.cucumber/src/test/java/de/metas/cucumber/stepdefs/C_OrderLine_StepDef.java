@@ -30,10 +30,12 @@ import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -47,17 +49,19 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -68,14 +72,15 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
-import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
+import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class C_OrderLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final M_Product_StepDefData productTable;
@@ -88,6 +93,8 @@ public class C_OrderLine_StepDef
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final M_Attribute_StepDefData attributeTable;
 	private final C_Tax_StepDefData taxTable;
+	private final M_Warehouse_StepDefData warehouseTable;
+	private final IdentifierIds_StepDefData identifierIdsTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -99,7 +106,9 @@ public class C_OrderLine_StepDef
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
 			@NonNull final M_Attribute_StepDefData attributeTable,
-			@NonNull final C_Tax_StepDefData taxTable)
+			@NonNull final C_Tax_StepDefData taxTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
+			@NonNull final IdentifierIds_StepDefData identifierIdsTable)
 	{
 		this.productTable = productTable;
 		this.partnerTable = partnerTable;
@@ -111,6 +120,8 @@ public class C_OrderLine_StepDef
 		this.huPiItemProductTable = huPiItemProductTable;
 		this.attributeTable = attributeTable;
 		this.taxTable = taxTable;
+		this.warehouseTable = warehouseTable;
+		this.identifierIdsTable = identifierIdsTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
@@ -158,7 +169,7 @@ public class C_OrderLine_StepDef
 			}
 
 			final String itemProductIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (de.metas.util.Check.isNotBlank(itemProductIdentifier))
+			if (Check.isNotBlank(itemProductIdentifier))
 			{
 				final String itemProductIdentifierValue = DataTableUtil.nullToken2Null(itemProductIdentifier);
 				if (itemProductIdentifierValue == null)
@@ -179,6 +190,33 @@ public class C_OrderLine_StepDef
 			if (qtyEnteredTU != null)
 			{
 				orderLine.setQtyEnteredTU(qtyEnteredTU);
+			}
+
+			final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_QtyItemCapacity);
+			if (qtyItemCapacity != null)
+			{
+				orderLine.setQtyItemCapacity(qtyItemCapacity);
+			}
+
+			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(warehouseIdentifier))
+			{
+				final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+				assertThat(warehouse).isNotNull();
+
+				orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+			}
+
+			final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + I_C_UOM.COLUMNNAME_X12DE355);
+			if (Check.isNotBlank(uomX12DE355))
+			{
+				final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)
+						.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, uomX12DE355)
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.firstIdOnly(UomId::ofRepoIdOrNull);
+				assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
+				orderLine.setC_UOM_ID(UomId.toRepoId(uomId));
 			}
 
 			saveRecord(orderLine);
@@ -347,7 +385,15 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	@And("^delete C_OrderLine identified by (.*), but keep its id into identifierIds table$")
+	public void delete_orderLine(@NonNull final String orderLineIdentifier)
+	{
+		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+		assertThat(orderLine).isNotNull();
 
+		identifierIdsTable.put(orderLineIdentifier, orderLine.getC_OrderLine_ID());
+		InterfaceWrapperHelper.delete(orderLine);
+	}
 
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
 	{
@@ -405,7 +451,7 @@ public class C_OrderLine_StepDef
 		}
 
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		if (de.metas.util.Check.isNotBlank(attributeSetInstanceIdentifier))
+		if (Check.isNotBlank(attributeSetInstanceIdentifier))
 		{
 			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
 			assertThat(expectedASI).isNotNull();
@@ -422,7 +468,7 @@ public class C_OrderLine_StepDef
 		}
 
 		final String huPiItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (de.metas.util.Check.isNotBlank(huPiItemProductIdentifier))
+		if (Check.isNotBlank(huPiItemProductIdentifier))
 		{
 			final I_M_HU_PI_Item_Product huPiItemProduct = huPiItemProductTable.get(huPiItemProductIdentifier);
 			final de.metas.handlingunits.model.I_C_OrderLine orderLineHU = InterfaceWrapperHelper.load(orderLine.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
@@ -430,7 +476,7 @@ public class C_OrderLine_StepDef
 		}
 
 		final String asiValues = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID + ":" + I_M_AttributeInstance.Table_Name + "." + I_M_AttributeInstance.COLUMNNAME_Value);
-		if (de.metas.util.Check.isNotBlank(asiValues))
+		if (Check.isNotBlank(asiValues))
 		{
 			StepDefUtil.splitIdentifiers(asiValues)
 					.forEach(value -> validateAttributeValue(orderLine, value));

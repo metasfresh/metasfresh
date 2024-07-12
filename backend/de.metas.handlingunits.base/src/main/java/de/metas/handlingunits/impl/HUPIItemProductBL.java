@@ -22,15 +22,9 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -45,13 +39,25 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Product;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class HUPIItemProductBL implements IHUPIItemProductBL
 {
+	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 	@Override
-	public I_M_HU_PI_Item_Product getById(@NonNull final HUPIItemProductId id)
+	public HUPIItemProduct getById(@NonNull final HUPIItemProductId id) {return huPIItemProductDAO.getById(id);}
+
+	@Override
+	public I_M_HU_PI_Item_Product getRecordById(@NonNull final HUPIItemProductId id)
 	{
-		return Services.get(IHUPIItemProductDAO.class).getById(id);
+		return huPIItemProductDAO.getRecordById(id);
 	}
 
 	@Override
@@ -59,7 +65,6 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 			@NonNull final I_M_HU_PI_Version version,
 			@NonNull final I_M_Product product)
 	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final List<I_M_HU_PI_Item_Product> result = new ArrayList<>();
 
 		final BPartnerId bpartnerId = null;
@@ -70,7 +75,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 		{
 			Check.assume(X_M_HU_PI_Item.ITEMTYPE_Material.equals(itemDef.getItemType()), "{} item type is Material", itemDef);
 
-			final I_M_HU_PI_Item_Product itemProduct = Services.get(IHUPIItemProductDAO.class)
+			final I_M_HU_PI_Item_Product itemProduct = huPIItemProductDAO
 					.retrievePIMaterialItemProduct(itemDef, product, SystemTime.asZonedDateTime());
 			if (itemProduct != null && itemProduct.getM_HU_PI_Item_Product_ID() > 0)
 			{
@@ -99,7 +104,6 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 			else if (X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
 			{
 				// get nested items for included HU PI
-				final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 				final I_M_HU_PI includedPI = handlingUnitsDAO.getIncludedPI(itemDef);
 				final List<I_M_HU_PI_Item> nestedItems = handlingUnitsDAO.retrievePIItems(includedPI, null);
 
@@ -136,7 +140,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 			return true;
 		}
 
-		final I_M_HU_PI_Item_Product piip = getById(id);
+		final I_M_HU_PI_Item_Product piip = getRecordById(id);
 		if (piip == null)
 		{
 			return true;
@@ -148,7 +152,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	@Override
 	public void deleteForItem(final I_M_HU_PI_Item packingInstructionsItem)
 	{
-		final List<I_M_HU_PI_Item_Product> products = Services.get(IHUPIItemProductDAO.class).retrievePIMaterialItemProducts(packingInstructionsItem);
+		final List<I_M_HU_PI_Item_Product> products = huPIItemProductDAO.retrievePIMaterialItemProducts(packingInstructionsItem);
 
 		for (final I_M_HU_PI_Item_Product product : products)
 		{
@@ -179,10 +183,6 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	@Override
 	public ITranslatableString getDisplayName(@NonNull final HUPIItemProductId piItemProductId)
 	{
-		final I_M_HU_PI_Item_Product piItemProduct = Services.get(IHUPIItemProductDAO.class)
-				.getById(piItemProductId);
-
-		return InterfaceWrapperHelper.getModelTranslationMap(piItemProduct)
-				.getColumnTrl(I_M_HU_PI_Item_Product.COLUMNNAME_Name, piItemProduct.getName());
+		return huPIItemProductDAO.getById(piItemProductId).getName();
 	}
 }

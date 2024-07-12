@@ -84,13 +84,14 @@ public final class ProcessExecutor
 	private static final ThreadLocal<OrgId> s_currentOrg_ID = new ThreadLocal<>(); // metas: c.ghita@metas.ro
 
 	// services
-	private static final transient Logger logger = LogManager.getLogger(ProcessExecutor.class);
+	private static final Logger logger = LogManager.getLogger(ProcessExecutor.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
 
+	private final Consumer<ProcessInfo> beforeCallback;
 	private final IProcessExecutionListener listener;
 	private final ProcessInfo pi;
 	private final boolean switchContextWhenRunning;
@@ -105,6 +106,7 @@ public final class ProcessExecutor
 		// gh #2092 verify that we have an AD_Role_ID; otherwise, the assertPermissions() call we are going to do will fail
 		Check.errorIf(pi.getRoleId() == null, "Process info has AD_Role_ID={}; builder={}", pi.getRoleId(), builder);
 
+		beforeCallback = builder.beforeCallback;
 		listener = builder.getListener();
 		switchContextWhenRunning = builder.switchContextWhenRunning;
 		onErrorThrowException = builder.onErrorThrowException;
@@ -122,7 +124,7 @@ public final class ProcessExecutor
 	{
 		Check.assumeNull(m_thread, "not already started");
 
-		final Thread thread = new Thread(() -> executeSync());
+		final Thread thread = new Thread(this::executeSync);
 		thread.setName(buildThreadName());
 
 		thread.start();
@@ -142,7 +144,10 @@ public final class ProcessExecutor
 		if (pi.getProcessClassInfo().isRunOutOfTransaction()
 				&& trxManager.hasThreadInheritedTrx())
 		{
-			final Thread thread = new Thread(() -> executeNow());
+			// IMPORTANT: take a snapshot of current context to make sure important properties like AD_User_ID,AD_Role_ID,etc. are preserved
+			pi.snapshotCtx();
+			
+			final Thread thread = new Thread(this::executeNow);
 			thread.setName(buildThreadName());
 			logger.debug("Starting thread with name={}", thread.getName());
 			thread.start();
@@ -185,6 +190,13 @@ public final class ProcessExecutor
 			public void run(final String localTrxName) throws Exception
 			{
 				//
+				// Execute before call callback
+				if (beforeCallback != null)
+				{
+					beforeCallback.accept(pi);
+				}
+
+				//
 				// Execute the process (workflow/java/db process)
 				if (pi.getWorkflowId() != null)
 				{
@@ -207,6 +219,7 @@ public final class ProcessExecutor
 				if (isReport && hasProcessClass)
 				{
 					// nothing to do, the Jasper process class implementation is responsible for triggering the report preview if any
+					//noinspection UnnecessaryReturnStatement
 					return;
 				}
 				else if (isReport)
@@ -234,8 +247,8 @@ public final class ProcessExecutor
 		final AdProcessId previousProcessId = s_currentProcess_ID.get();
 		final OrgId previousOrgId = s_currentOrg_ID.get();
 		Stopwatch duration = null;
-		try (final IAutoCloseable contextRestorer = switchContextIfNeeded();
-				final IAutoCloseable mdcCloseable = ProcessMDC.putProcessAndInstanceId(pi.getAdProcessId(), pi.getPinstanceId()))
+		try (final IAutoCloseable ignored = switchContextIfNeeded();
+				final IAutoCloseable ignored1 = ProcessMDC.putProcessAndInstanceId(pi.getAdProcessId(), pi.getPinstanceId()))
 		{
 			s_currentProcess_ID.set(pi.getAdProcessId());
 			s_currentOrg_ID.set(pi.getOrgId());
@@ -292,7 +305,7 @@ public final class ProcessExecutor
 		return DocumentReportRequest.builder()
 				.flavor(DocumentReportFlavor.PRINT)
 				.reportProcessId(processInfo.getAdProcessId())
-				.documentRef(processInfo.getRecordRefOrNull())
+				.documentRef(processInfo.getRecordRefNotNull())
 				.clientId(processInfo.getClientId())
 				.orgId(processInfo.getOrgId())
 				.userId(processInfo.getUserId())
@@ -328,7 +341,7 @@ public final class ProcessExecutor
 		{
 			final AdProcessId adProcessId = pi.getAdProcessId();
 			final Boolean access = permissions.getProcessAccess(adProcessId.getRepoId());
-			if (access == null || !access.booleanValue())
+			if (access == null || !access)
 			{
 				// get the process value, such that an admin can directly insert the right process
 				final I_AD_Process processRecord = adProcessDAO.getById(adProcessId);
@@ -414,8 +427,7 @@ public final class ProcessExecutor
 
 	private void startWorkflow()
 	{
-		final WorkflowId workflowId = pi.getWorkflowId();
-		Check.assumeNotNull(workflowId, "workflowId");
+		final WorkflowId workflowId = Check.assumeNotNull(pi.getWorkflowId(), "workflowId");
 		logger.debug("startWorkflow: {} ({})", workflowId, pi);
 
 		final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
@@ -425,7 +437,7 @@ public final class ProcessExecutor
 				.workflow(workflow)
 				.clientId(pi.getClientId())
 				.adLanguage(Env.getADLanguageOrBaseLanguage())
-				.documentRef(pi.getRecordRefOrNull())
+				.documentRef(pi.getRecordRefNotNull())
 				.userId(pi.getUserId())
 				.build()
 				.start();
@@ -444,12 +456,6 @@ public final class ProcessExecutor
 		}
 	}   // startWorkflow
 
-	/**
-	 * Start Java/Script process.
-	 *
-	 * @return true if success
-	 * @throws Exception
-	 */
 	private void startJavaOrScriptProcess() throws Exception
 	{
 		logger.debug("startProcess: {}", pi);
@@ -551,7 +557,7 @@ public final class ProcessExecutor
 		result.setSummary(msgBL.parseTranslation(ctx, msg)); // Parse Variables
 	}
 
-	private void startJavaProcess() throws Exception
+	private void startJavaProcess()
 	{
 		final ProcessInfo pi = this.pi;
 
@@ -563,7 +569,7 @@ public final class ProcessExecutor
 
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 
-		try (final IAutoCloseable currentInstanceRestorer = JavaProcess.temporaryChangeCurrentInstanceOverriding(process))
+		try (final IAutoCloseable ignored = JavaProcess.temporaryChangeCurrentInstanceOverriding(process))
 		{
 			process.startProcess(pi, trx);
 
@@ -587,7 +593,6 @@ public final class ProcessExecutor
 	/**
 	 * Start Database Process
 	 *
-	 * @return true if success
 	 */
 	private void startDBProcess()
 	{
@@ -700,13 +705,6 @@ public final class ProcessExecutor
 			//
 			// Save process info to database, including parameters.
 			adPInstanceDAO.saveProcessInfo(pi);
-
-			//
-			// Execute before call callback
-			if (beforeCallback != null)
-			{
-				beforeCallback.accept(pi);
-			}
 		}
 
 		private ProcessInfo getProcessInfo()

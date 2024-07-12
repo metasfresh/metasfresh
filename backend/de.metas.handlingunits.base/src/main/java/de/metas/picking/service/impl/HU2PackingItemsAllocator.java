@@ -85,7 +85,6 @@ public class HU2PackingItemsAllocator
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-	private final PickingCandidateRepository pickingCandidateRepository = SpringContextHolder.instance.getBean(PickingCandidateRepository.class);
 	private final ShipmentSchedulesSupplier shipmentSchedulesSupplier;
 	/**
 	 * Cannot fully load:

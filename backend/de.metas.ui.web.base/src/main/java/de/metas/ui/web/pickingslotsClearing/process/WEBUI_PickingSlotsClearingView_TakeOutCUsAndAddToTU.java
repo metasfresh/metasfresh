@@ -1,16 +1,6 @@
 package de.metas.ui.web.pickingslotsClearing.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.exceptions.FillMandatoryException;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
@@ -30,6 +20,14 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -61,9 +59,9 @@ public class WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU extends Picking
 
 	//
 	// parameters
-	private static final String PARAM_QtyCU = "QtyCU";
-	@Param(parameterName = PARAM_QtyCU)
-	private BigDecimal qtyCU;
+	private static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
+	@Param(parameterName = PARAM_QtyCUsPerTU)
+	private BigDecimal qtyCUsPerTU;
 
 	private static final String PARAM_IsAllQty = "IsAllQty";
 	@Param(parameterName = PARAM_IsAllQty)
@@ -112,7 +110,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU extends Picking
 		{
 			return getSelectedPickingSlotRows().size() > 1;
 		}
-		else if (PARAM_QtyCU.equals(parameter.getColumnName()))
+		else if (PARAM_QtyCUsPerTU.equals(parameter.getColumnName()))
 		{
 			final List<PickingSlotRow> pickingSlotRows = getSelectedPickingSlotRows();
 			if (pickingSlotRows.size() != 1)
@@ -146,7 +144,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU extends Picking
 		final List<Integer> huIdsDestroyedCollector = new ArrayList<>();
 		if (fromCUs.size() == 1)
 		{
-			huLoader.load(prepareUnloadRequest(fromCUs.get(0), getQtyCU())
+			huLoader.load(prepareUnloadRequest(fromCUs.get(0), getQtyCUsPerTU())
 					.setForceQtyAllocation(true)
 					.addEmptyHUListener(EmptyHUListener.doBeforeDestroyed(hu -> huIdsDestroyedCollector.add(hu.getM_HU_ID())))
 					.create());
@@ -179,7 +177,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU extends Picking
 		getPackingHUsView().invalidateAll();
 	}
 
-	private BigDecimal getQtyCU()
+	private BigDecimal getQtyCUsPerTU()
 	{
 		if (isAllQty)
 		{
@@ -187,10 +185,10 @@ public class WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU extends Picking
 		}
 		else
 		{
-			final BigDecimal qtyCU = this.qtyCU;
+			final BigDecimal qtyCU = this.qtyCUsPerTU;
 			if (qtyCU == null || qtyCU.signum() <= 0)
 			{
-				throw new FillMandatoryException(PARAM_QtyCU);
+				throw new FillMandatoryException(PARAM_QtyCUsPerTU);
 			}
 			return qtyCU;
 		}

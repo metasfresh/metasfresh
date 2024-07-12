@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Cleared HU can be picked on the fly and manually picked
 
   Background:
@@ -36,12 +37,12 @@ Feature: Cleared HU can be picked on the fly and manually picked
       | M_HU_PI_ID.Identifier | Name            |
       | huPackingVirtualPI    | No Packing Item |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
-      | packingVersionCU              | huPackingVirtualPI    | No Packing Item  | V           | Y         |
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name            | HU_UnitType | IsCurrent |
+      | packingVersionCU              | huPackingVirtualPI    | No Packing Item | V           | Y         |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo     |
-      | huProduct_inventory       | 2022-03-20T00:00:00Z | inventoryDocNo |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo     |
+      | huProduct_inventory       | 2022-03-20   | inventoryDocNo |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 10       |

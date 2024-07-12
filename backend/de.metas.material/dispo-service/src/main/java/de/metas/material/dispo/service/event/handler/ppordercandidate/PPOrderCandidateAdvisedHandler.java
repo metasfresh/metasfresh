@@ -47,6 +47,7 @@ import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateRequestedEvent;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ProductPlanningService;
 import de.metas.util.Check;
@@ -55,7 +56,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -401,7 +401,7 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 
 		Check.assumeNotNull(productPlanningId, "There should be a ProductPlanningId on event at this stage!");
 
-		final I_PP_Product_Planning productPlanningRecord = productPlanningDAO.getById(productPlanningId);
+		final ProductPlanning productPlanningRecord = productPlanningDAO.getById(productPlanningId);
 
 		final int durationDays = productPlanningService.calculateDurationDays(productPlanningRecord, recomputedQtyBasedOnDemand);
 

@@ -1023,16 +1023,15 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		return po.is_Changed();
 	}
 
-	public static final boolean isOldValues(final Object model)
+	public static boolean isOldValues(final Object model)
 	{
 		final POWrapper wrapper = getPOWrapperOrNull(model);
-		return wrapper == null ? false : wrapper.useOldValues;
+		return wrapper != null && wrapper.useOldValues;
 	}
 
-	public static IModelInternalAccessor getModelInternalAccessor(final Object model)
+	@Nullable
+	public static IModelInternalAccessor getModelInternalAccessor(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
-
 		if (model instanceof PO)
 		{
 			final PO po = (PO)model;

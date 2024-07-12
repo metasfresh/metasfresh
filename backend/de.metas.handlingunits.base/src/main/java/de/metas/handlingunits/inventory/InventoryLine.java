@@ -86,6 +86,9 @@ public class InventoryLine
 
 	boolean counted;
 
+	@Nullable Quantity qtyBookFixed;
+	@Nullable Quantity qtyCountFixed;
+
 	@NonNull
 	ImmutableList<InventoryLineHU> inventoryLineHUs;
 
@@ -99,6 +102,8 @@ public class InventoryLine
 			@NonNull final LocatorId locatorId,
 			@Nullable final HUAggregationType huAggregationType,
 			final boolean counted,
+			@Nullable final Quantity qtyBookFixed,
+			@Nullable final Quantity qtyCountFixed,
 			@Singular("inventoryLineHU") @NonNull final ImmutableList<InventoryLineHU> inventoryLineHUs)
 	{
 		Check.assumeNotEmpty(inventoryLineHUs, "inventoryLineHUs is not empty");
@@ -113,6 +118,9 @@ public class InventoryLine
 
 		inventoryType = extractInventoryType(inventoryLineHUs, InventoryType.PHYSICAL);
 		this.counted = counted;
+		this.qtyBookFixed = qtyBookFixed;
+		this.qtyCountFixed = qtyCountFixed;
+
 		this.inventoryLineHUs = inventoryLineHUs;
 
 		if (HUAggregationType.SINGLE_HU.equals(huAggregationType) && inventoryLineHUs.size() > 1)
@@ -158,6 +166,26 @@ public class InventoryLine
 			final Quantity qtyBook = getQtyBook();
 			return qtyCount.subtract(qtyBook);
 		}
+	}
+
+	public Quantity getQtyBookFixed()
+	{
+		if (qtyBookFixed == null)
+		{
+			return Quantity.zero(getQtyBook().getUOM());
+		}
+
+		return qtyBookFixed;
+	}
+
+	public Quantity getQtyCountFixed()
+	{
+		if (qtyCountFixed == null)
+		{
+			return Quantity.zero(getQtyCount().getUOM());
+		}
+
+		return qtyCountFixed;
 	}
 
 	public Quantity getQtyCountMinusBooked()

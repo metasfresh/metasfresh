@@ -186,7 +186,7 @@ public class ShipmentScheduleEnqueuer
 				if (invalidSchedulesService.isFlaggedForRecompute(shipmentScheduleId))
 				{
 					// we can't just not enqueue those workpackages and only write a debug log message about it
-					// => enqueue them, log if and collect experience about what what the practical impact is.
+					// => enqueue them, log if and collect experience about what the practical impact is.
 					// 	doEnqueueCurrentPackage = false;
 					Loggables.withLogger(logger, Level.INFO).addLog("shipmentScheduleId is flagged for recompute; -> still enqueue the workpackage!");
 				}
@@ -219,6 +219,7 @@ public class ShipmentScheduleEnqueuer
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.getQuantityType())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions, workPackageParameters.isOnTheFlyPickToPackingInstructions())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules, workPackageParameters.isCloseShipmentSchedules())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday());
 
 					// Create a new locker which will grab the locked invoice candidates from 'mainLock'
@@ -374,6 +375,7 @@ public class ShipmentScheduleEnqueuer
 		public static final String PARAM_QuantityType = "QuantityType";
 		public static final String PARAM_IsOnTheFlyPickToPackingInstructions = "IsOnTheFlyPickToPackingInstructions";
 		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
+		public static final String PARAM_IsCloseShipmentSchedules = "IsCloseShipmentSchedules";
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
 		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
 		public static final String PARAM_PREFIX_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID_"; // 
@@ -397,6 +399,7 @@ public class ShipmentScheduleEnqueuer
 		boolean onTheFlyPickToPackingInstructions = false;
 		
 		boolean completeShipments;
+		boolean isCloseShipmentSchedules;
 		boolean isShipmentDateToday;
 
 		/**

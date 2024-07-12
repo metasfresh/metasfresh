@@ -22,6 +22,7 @@
 
 package org.adempiere.warehouse.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.location.DocumentLocation;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
@@ -42,12 +43,12 @@ public interface IWarehouseBL extends ISingletonService
 	I_M_Warehouse getById(WarehouseId warehouseId);
 
 	/**
-	 * @deprecated please use {@link #getDefaultLocatorId(WarehouseId)} instead.
+	 * @deprecated please use {@link #getOrCreateDefaultLocatorId(WarehouseId)} instead.
 	 */
 	@Deprecated
-	I_M_Locator getDefaultLocator(I_M_Warehouse warehouse);
+	I_M_Locator getOrCreateDefaultLocator(I_M_Warehouse warehouse);
 
-	I_M_Locator getDefaultLocator(WarehouseId warehouseId);
+	I_M_Locator getOrCreateDefaultLocator(WarehouseId warehouseId);
 
 	/**
 	 * Get the first default locatorId.
@@ -58,7 +59,7 @@ public interface IWarehouseBL extends ISingletonService
 	 *
 	 * @return default locator's Id; never return null
 	 */
-	LocatorId getDefaultLocatorId(WarehouseId warehouse);
+	LocatorId getOrCreateDefaultLocatorId(WarehouseId warehouse);
 
 	@Nullable
 	CountryId getCountryId(WarehouseId warehouseId);
@@ -84,4 +85,7 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	WarehouseId getIdByLocatorRepoId(int locatorId);
+
+	@NonNull
+	ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull WarehouseId warehouseId);
 }

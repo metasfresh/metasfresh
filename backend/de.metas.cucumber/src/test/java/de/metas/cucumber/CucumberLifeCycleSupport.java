@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,10 +22,18 @@
 
 package de.metas.cucumber;
 
+import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_EXP_Processor;
+import org.compiere.model.I_IMP_Processor;
 import org.compiere.util.Env;
 import org.springframework.util.SocketUtils;
+
+import java.io.File;
 
 import static de.metas.async.model.validator.Main.SYSCONFIG_ASYNC_INIT_DELAY_MILLIS;
 import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS;
@@ -39,6 +47,9 @@ import static org.adempiere.ad.housekeeping.HouseKeepingService.SYSCONFIG_SKIP_H
  */
 public class CucumberLifeCycleSupport
 {
+	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
+	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
+
 	private static boolean beforeAllMethodDone;
 
 	public static void beforeAll()
@@ -82,8 +93,71 @@ public class CucumberLifeCycleSupport
 
 			Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 
+			update_ReplicationProcessors();
+
 			beforeAllMethodDone = true;
 		}
+	}
+
+	/**
+	 * Make sure to avoid irrelevant but still distracting errors like
+	 * <pre>
+	 * Cause: java.net.UnknownHostException: No such host is known (rabbitmq)"
+	 * [...]
+	 * </pre>
+	 */
+	private static void update_ReplicationProcessors()
+	{
+		final ServerBoot serverBoot = SpringContextHolder.instance.getBean(ServerBoot.class);
+		final CommandLineParser.CommandLineOptions commandLineOptions = serverBoot.getCommandLineOptions();
+
+		final String rabbitPassword = commandLineOptions.getRabbitPassword();
+		final String rabbitUser = commandLineOptions.getRabbitUser();
+		final Integer rabbitPort = commandLineOptions.getRabbitPort();
+		final String rabbitHost = commandLineOptions.getRabbitHost();
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		queryBL.createQueryBuilder(I_IMP_Processor.class).addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_IMP_Processor.COLUMNNAME_Host, rabbitHost)
+				.create()
+				.updateDirectly().addSetColumnValue(I_IMP_Processor.COLUMNNAME_Host, rabbitHost)
+				.execute();
+		queryBL.createQueryBuilder(I_IMP_Processor.class).addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_IMP_Processor.COLUMNNAME_Port, rabbitPort)
+				.create()
+				.updateDirectly().addSetColumnValue(I_IMP_Processor.COLUMNNAME_Port, rabbitPort)
+				.execute();
+		queryBL.createQueryBuilder(I_IMP_Processor.class).addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_IMP_Processor.COLUMNNAME_Account, rabbitUser)
+				.create()
+				.updateDirectly().addSetColumnValue(I_IMP_Processor.COLUMNNAME_Account, rabbitUser)
+				.execute();
+		queryBL.createQueryBuilder(I_IMP_Processor.class).addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_IMP_Processor.COLUMNNAME_PasswordInfo, rabbitPassword)
+				.create()
+				.updateDirectly().addSetColumnValue(I_IMP_Processor.COLUMNNAME_PasswordInfo, rabbitPassword)
+				.execute();
+
+		queryBL.createQueryBuilder(I_EXP_Processor.class).addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_EXP_Processor.COLUMNNAME_Host, rabbitHost)
+				.create()
+				.updateDirectly().addSetColumnValue(I_EXP_Processor.COLUMNNAME_Host, rabbitHost)
+				.execute();
+		queryBL.createQueryBuilder(I_EXP_Processor.class).addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_EXP_Processor.COLUMNNAME_Port, rabbitPort)
+				.create()
+				.updateDirectly().addSetColumnValue(I_EXP_Processor.COLUMNNAME_Port, rabbitPort)
+				.execute();
+		queryBL.createQueryBuilder(I_EXP_Processor.class).addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_EXP_Processor.COLUMNNAME_Account, rabbitUser)
+				.create()
+				.updateDirectly().addSetColumnValue(I_EXP_Processor.COLUMNNAME_Account, rabbitUser)
+				.execute();
+		queryBL.createQueryBuilder(I_EXP_Processor.class).addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_EXP_Processor.COLUMNNAME_PasswordInfo, rabbitPassword)
+				.create()
+				.updateDirectly().addSetColumnValue(I_EXP_Processor.COLUMNNAME_PasswordInfo, rabbitPassword)
+				.execute();
 	}
 
 	public void afterAll()

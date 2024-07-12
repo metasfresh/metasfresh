@@ -9,8 +9,9 @@ import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryTestHelper;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine.HuForInventoryLineBuilder;
-import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory.MultipleHUInventoryLineAggregator;
-import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory.SingleHUInventoryLineAggregator;
+import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregator;
+import de.metas.handlingunits.inventory.draftlinescreator.aggregator.MultipleHUInventoryLineAggregator;
+import de.metas.handlingunits.inventory.draftlinescreator.aggregator.SingleHUInventoryLineAggregator;
 import de.metas.inventory.AggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.material.event.commons.AttributesKey;
@@ -18,6 +19,8 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
@@ -102,6 +105,7 @@ class DraftInventoryLinesCreatorTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 
 		orgId = AdempiereTestHelper.createOrgWithTimeZone(orgTimeZone);
 

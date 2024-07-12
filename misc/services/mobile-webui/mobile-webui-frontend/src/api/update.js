@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { apiBasePath } from '../constants';
+import { unboxAxiosResponse } from '../utils';
 
 /**
  * @return {Promise<string>} latest server version
@@ -11,5 +12,5 @@ export function getServerVersion() {
         'Cache-Control': 'no-cache',
       },
     })
-    .then((response) => response.data);
+    .then((response) => unboxAxiosResponse(response));
 }

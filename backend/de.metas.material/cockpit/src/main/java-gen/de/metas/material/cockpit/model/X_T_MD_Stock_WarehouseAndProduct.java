@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.material.cockpit.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for T_MD_Stock_WarehouseAndProduct
  *  @author metasfresh (generated) 

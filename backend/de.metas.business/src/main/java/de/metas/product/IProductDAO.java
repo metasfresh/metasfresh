@@ -116,6 +116,8 @@ public interface IProductDAO extends ISingletonService
 
 	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
 
+	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
+
 	@Value
 	class ProductQuery
 	{
@@ -197,10 +199,6 @@ public interface IProductDAO extends ISingletonService
 
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 
-	/**
-	 *
-	 * @param productId
-	 * @return true if product is used in orders, invoices, shipments,..
-	 */
-	boolean isProductUsed(ProductId productId);
+	@NonNull
+	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 }

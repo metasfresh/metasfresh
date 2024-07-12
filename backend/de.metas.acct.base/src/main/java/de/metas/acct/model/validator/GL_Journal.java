@@ -4,7 +4,7 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
+import de.metas.copy_with_details.CopyRecordFactory;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.I_I_GLJournal;

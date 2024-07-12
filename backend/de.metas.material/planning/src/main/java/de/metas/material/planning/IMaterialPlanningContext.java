@@ -2,6 +2,7 @@ package de.metas.material.planning;
 
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
@@ -11,7 +12,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_PP_MRP;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -55,8 +55,7 @@ public interface IMaterialPlanningContext extends IContextAware
 	//@formatter:off
 	ClientId getClientId();
 
-	int getPlant_ID();
-	I_S_Resource getPlant();
+	ResourceId getPlantId();
 
 	OrgId getOrgId();
 	I_AD_Org getAD_Org();
@@ -75,7 +74,7 @@ public interface IMaterialPlanningContext extends IContextAware
 
 	Timestamp getDateAsTimestamp();
 
-	I_PP_Product_Planning getProductPlanning();
+	ProductPlanning getProductPlanning();
 
 	/**
 	 *

@@ -266,7 +266,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
-		final Quantity olCandQuantity = Quantity.of(olc.getQtyEntered(), olCandEffectiveValuesBL.getC_UOM_Effective(olc));
+		final Quantity olCandQuantity = Quantity.of(olCandEffectiveValuesBL.getEffectiveQtyEntered(olc), olCandEffectiveValuesBL.getC_UOM_Effective(olc));
 		ic.setQtyEntered(olCandQuantity.toBigDecimal());
 		ic.setC_UOM_ID(UomId.toRepoId(olCandQuantity.getUomId()));
 

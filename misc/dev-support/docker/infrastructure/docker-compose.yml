@@ -15,7 +15,6 @@ services:
       - POSTGRES_PASSWORD=ip2LmNzXX8p8iXg9lZTWEJ9524kQDbXFudB7LR03T-xK9fLweX3TLMkA2AYcEiaS
     ports:
       - "${DB_PORT}:5432"
-
   rabbitmq:
     build: rabbitmq
     image: rabbitmq
@@ -31,7 +30,6 @@ services:
     ports:
       - "${RABBITMQ_PORT}:5672"
       - "${RABBITMQ_MGMT_PORT}:15672"
-
   search:
     build: search
     image: docker-search
@@ -46,7 +44,7 @@ services:
     cap_add:
       - IPC_LOCK
     ports:
-      - "${SEARCH_PORT}:9200"
+    - "${SEARCH_PORT}:9200"
     volumes:
       - metasfresh_elasticsearch:/usr/share/elasticsearch/data
     environment:
@@ -65,7 +63,6 @@ services:
       - "${POSTGREST_PORT}:3000"
     depends_on:
       - db
-
   papercut-smtp:
     build: papercut-smtp
     image: docker-papercut-smtp

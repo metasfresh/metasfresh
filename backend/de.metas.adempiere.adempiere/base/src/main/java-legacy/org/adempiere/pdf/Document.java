@@ -13,12 +13,12 @@
  *****************************************************************************/
 package org.adempiere.pdf;
 
-import com.itextpdf.text.Image;
-import com.itextpdf.awt.DefaultFontMapper;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfTemplate;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.Image;
+import com.lowagie.text.pdf.DefaultFontMapper;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfTemplate;
+import com.lowagie.text.pdf.PdfWriter;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pdf.viewer.PDFViewerBean;
@@ -55,8 +55,8 @@ public class Document
 		{
 			final PageFormat pf = pageable.getPageFormat(0);
 
-			final com.itextpdf.text.Document document =
-					new com.itextpdf.text.Document(new com.itextpdf.text.Rectangle((int)pf.getWidth(), (int)pf.getHeight()));
+			final com.lowagie.text.Document document =
+					new com.lowagie.text.Document(new com.lowagie.text.Rectangle((int)pf.getWidth(), (int)pf.getHeight()));
 			final PdfWriter writer = PdfWriter.getInstance(
 					document, output);
 			writer.setPdfVersion(PdfWriter.VERSION_1_2);
@@ -166,12 +166,12 @@ public class Document
 
 			//
 			// PDF page size: image size + margins
-			final com.itextpdf.text.Rectangle pageSize = new com.itextpdf.text.Rectangle(0, 0,
+			final com.lowagie.text.Rectangle pageSize = new com.lowagie.text.Rectangle(0, 0,
 																						 (int)(pdfImage.getWidth() + 100),
 																						 (int)(pdfImage.getHeight() + 100));
 
 			// PDF document
-			final com.itextpdf.text.Document document = new com.itextpdf.text.Document(pageSize, 50, 50, 50, 50);
+			final com.lowagie.text.Document document = new com.lowagie.text.Document(pageSize, 50, 50, 50, 50);
 
 			//
 			// Add image to document

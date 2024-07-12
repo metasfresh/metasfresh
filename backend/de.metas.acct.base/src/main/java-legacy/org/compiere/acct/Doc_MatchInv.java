@@ -296,25 +296,25 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// Case: the not invoiced receipts line is null (i.e. ZERO costs)
 		if (dr_NotInvoicedReceipts == null)
 		{
-			ipvAmount = cr_InventoryClearing.getSourceBalance();
+			ipvAmount = cr_InventoryClearing.getSourceBalance().toBigDecimal();
 			ipvCurrencyId = cr_InventoryClearing.getCurrencyId();
 		}
 		// Case: the inventory clearing line is null (i.e. ZERO invoiced amount)
 		else if (cr_InventoryClearing == null)
 		{
-			ipvAmount = dr_NotInvoicedReceipts.getSourceBalance().negate();
+			ipvAmount = dr_NotInvoicedReceipts.getSourceBalance().toBigDecimal().negate();
 			ipvCurrencyId = dr_NotInvoicedReceipts.getCurrencyId();
 		}
 		// Case: both lines are not null and same currency
 		else if (CurrencyId.equals(dr_NotInvoicedReceipts.getCurrencyId(), cr_InventoryClearing.getCurrencyId()))
 		{
-			ipvAmount = cr_InventoryClearing.getSourceBalance().add(dr_NotInvoicedReceipts.getSourceBalance()).negate();
+			ipvAmount = cr_InventoryClearing.getSourceBalance().add(dr_NotInvoicedReceipts.getSourceBalance()).toBigDecimal().negate();
 			ipvCurrencyId = cr_InventoryClearing.getCurrencyId();
 		}
 		// Case: both lines are not null but different currency
 		else
 		{
-			ipvAmount = cr_InventoryClearing.getAcctBalance().add(dr_NotInvoicedReceipts.getAcctBalance()).negate();
+			ipvAmount = cr_InventoryClearing.getAcctBalance().add(dr_NotInvoicedReceipts.getAcctBalance()).toBigDecimal().negate();
 			ipvCurrencyId = as.getCurrencyId();
 		}
 

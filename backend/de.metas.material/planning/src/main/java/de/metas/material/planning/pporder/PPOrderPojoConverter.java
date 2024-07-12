@@ -3,6 +3,7 @@ package de.metas.material.planning.pporder;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
@@ -105,6 +106,7 @@ public class PPOrderPojoConverter
 									 .orderLineId(ppOrderRecord.getC_OrderLine_ID())
 									 .shipmentScheduleId(ppOrderRecord.getM_ShipmentSchedule_ID())
 									 .materialDispoGroupId(getMaterialDispoGroupIdOrNull(ppOrderRecord))
+									 .packingMaterialId(HUPIItemProductId.ofRepoIdOrNull(ppOrderRecord.getM_HU_PI_Item_Product_ID()))
 									 .build())
 				.lines(toPPOrderLinesList(ppOrderRecord))
 				.docStatus(DocStatus.ofCode(ppOrderRecord.getDocStatus()))
