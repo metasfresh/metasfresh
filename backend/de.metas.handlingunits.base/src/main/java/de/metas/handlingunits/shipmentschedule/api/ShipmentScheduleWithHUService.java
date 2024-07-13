@@ -764,7 +764,7 @@ public class ShipmentScheduleWithHUService
 			@NonNull final ShipmentScheduleWithHUFactory factory)
 	{
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
-		final List<ShipmentScheduleSplit> shipmentScheduleSplits = shipmentScheduleSplitService.getByShipmentScheduleId(shipmentScheduleId);
+		final List<ShipmentScheduleSplit> shipmentScheduleSplits = shipmentScheduleSplitService.getRecordToProcessByShipmentScheduleId(shipmentScheduleId);
 		if (shipmentScheduleSplits.isEmpty())
 		{
 			throw new AdempiereException("No shipment schedule split records defined");

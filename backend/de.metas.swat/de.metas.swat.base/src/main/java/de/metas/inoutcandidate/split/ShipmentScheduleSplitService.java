@@ -18,6 +18,8 @@ public class ShipmentScheduleSplitService
 
 	public List<ShipmentScheduleSplit> getByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId) {return repository.getByShipmentScheduleId(shipmentScheduleId);}
 
+	public List<ShipmentScheduleSplit> getRecordToProcessByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId) {return repository.getRecordToProcessByShipmentScheduleId(shipmentScheduleId);}
+
 	public ShipmentScheduleSplit changeById(@Nullable final ShipmentScheduleSplitId id, @NonNull final Consumer<ShipmentScheduleSplit> updater) {return repository.changeById(id, updater);}
 
 	public void save(@NonNull final ShipmentScheduleSplit split) {repository.save(split);}
