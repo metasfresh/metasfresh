@@ -249,7 +249,7 @@ public class ModularContractPriceRepository
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_UOM_ID, specificPrice.uomId())
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Currency_ID, specificPrice.amount().getCurrencyId())
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, specificPrice.modularContractModuleId())
-				.addCompareFilter(I_ModCntr_Specific_Price.COLUMNNAME_MinValue, CompareQueryFilter.Operator.LESS_OR_EQUAL, specificPrice.minValue())
+				.addNotEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Specific_Price_ID, id)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.anyMatch();
