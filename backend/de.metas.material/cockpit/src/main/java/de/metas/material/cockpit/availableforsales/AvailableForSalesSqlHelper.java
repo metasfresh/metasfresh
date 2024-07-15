@@ -11,6 +11,7 @@ import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.compiere.Adempiere;
 import org.compiere.db.Database;
 import org.compiere.model.IQuery;
+import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
 import java.util.List;
@@ -80,7 +81,7 @@ public class AvailableForSalesSqlHelper
 
 		final TypedSqlQuery<I_MD_Available_For_Sales_QueryResult> sqlDbQuery = (TypedSqlQuery<I_MD_Available_For_Sales_QueryResult>)dbQuery;
 
-		final String dateString = Database.TO_DATE(TimeUtil.asTimestamp(availableForSalesQuery.getDateOfInterest()), false/* dayOnly */);
+		final String dateString = Database.TO_DATE(TimeUtil.asTimestamp(availableForSalesQuery.getDateOfInterest()), DisplayType.DateTime);
 
 		final AttributesKeyPattern storageAttributesKey = availableForSalesQuery.getStorageAttributesKeyPattern();
 

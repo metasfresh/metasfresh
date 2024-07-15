@@ -41,6 +41,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
+import org.compiere.util.DisplayType;
 
 /**
  * 	Invoice Not realized Gain & Loss.
@@ -154,7 +155,7 @@ public class InvoiceNGL extends JavaProcess
 		}
 		
 		//	Insert Trx
-		String dateStr = DB.TO_DATE(p_DateReval, true);
+		String dateStr = DB.TO_DATE(p_DateReval, DisplayType.Date);
 		sql = "INSERT INTO T_InvoiceGL (AD_Client_ID, AD_Org_ID, IsActive, Created,CreatedBy, Updated,UpdatedBy,"
 			+ " AD_PInstance_ID, C_Invoice_ID, GrandTotal, OpenAmt, "
 			+ " Fact_Acct_ID, AmtSourceBalance, AmtAcctBalance, "
