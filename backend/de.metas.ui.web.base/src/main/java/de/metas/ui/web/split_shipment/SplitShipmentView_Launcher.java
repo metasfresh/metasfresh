@@ -1,5 +1,6 @@
 package de.metas.ui.web.split_shipment;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessPrecondition;
@@ -16,6 +17,7 @@ import org.compiere.SpringContextHolder;
 public class SplitShipmentView_Launcher extends JavaProcess implements IProcessPrecondition
 {
 	private final IViewsRepository viewsFactory = SpringContextHolder.instance.getBean(IViewsRepository.class);
+	private static final AdMessageKey PRECONDITION_MSG_ONLY_OPEN_STATUS = AdMessageKey.of("de.metas.ui.web.split_shipment.SplitShipmentView_Launcher.OnlyOpenedStatusSelection");
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -23,6 +25,13 @@ public class SplitShipmentView_Launcher extends JavaProcess implements IProcessP
 		if (!context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
+		}
+
+		final I_M_ShipmentSchedule shipmentScheduleRecord = context.getSelectedModel(I_M_ShipmentSchedule.class);
+
+		if(shipmentScheduleRecord.isClosed())
+		{
+			return ProcessPreconditionsResolution.reject(PRECONDITION_MSG_ONLY_OPEN_STATUS);
 		}
 
 		return ProcessPreconditionsResolution.accept();
