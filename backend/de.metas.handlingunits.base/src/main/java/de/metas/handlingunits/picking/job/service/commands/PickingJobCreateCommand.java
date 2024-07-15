@@ -136,7 +136,7 @@ public class PickingJobCreateCommand
 				pickingJobHUReservationService.reservePickFromHUs(pickingJob);
 			}
 
-			return allocatePickingSlotIfPossible(pickingJob);;
+			return allocatePickingSlotIfPossible(pickingJob);
 		}
 		catch (final Exception createJobException)
 		{
