@@ -58,7 +58,7 @@ public class PickingJobAllocatePickingSlotCommand
 		// Make sure that provided picking slot exist in our system
 		final PickingSlotIdAndCaption newPickingSlot = Optional.ofNullable(pickingSlotQRCode)
 				.map(pickingSlotService::getPickingSlotIdAndCaption)
-				.orElse(pickingSlotService.getPickingSlotIdAndCaption(pickingSlotId));
+				.orElseGet(() -> pickingSlotService.getPickingSlotIdAndCaption(pickingSlotId));
 
 		// No picking slot change
 		final PickingSlotId oldPickingSlotId = initialPickingJob.getPickingSlotId().orElse(null);

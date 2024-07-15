@@ -68,7 +68,7 @@ public class C_Workplace
 
 		if (pickingSlot.getM_Warehouse_ID() != workplace.getM_Warehouse_ID())
 		{
-			throw new AdempiereException("Different Warehouses on Picking Slot: " + pickingSlot + " and on Workplace: " 
+			throw new AdempiereException("Different Warehouses on Picking Slot: " + pickingSlot.getM_PickingSlot_ID() + " and on Workplace: " 
 												 + workplace.getC_Workplace_ID());
 		}
 	}
