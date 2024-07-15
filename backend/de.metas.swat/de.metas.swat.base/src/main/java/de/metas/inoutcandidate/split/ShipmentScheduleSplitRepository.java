@@ -153,17 +153,15 @@ public class ShipmentScheduleSplitRepository
 				.delete(true);
 	}
 
-	public boolean isRelatedInOutValid(@NonNull final I_M_ShipmentSchedule_Split record)
+	private boolean isRelatedInOutValid(@NonNull final I_M_ShipmentSchedule_Split record)
 	{
-		if (record.getM_InOut_ID() <= 0)
+		final InOutId inOutId = InOutId.ofRepoIdOrNull(record.getM_InOut_ID());
+		if (inOutId == null)
 		{
 			return true;
 		}
-		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(record.getM_InOut_ID()));
 
-		final DocStatus docStatus = DocStatus.ofCode(inOutRecord.getDocStatus());
-
-		return !docStatus.isClosedReversedOrVoided();
+		return !inOutBL.getDocStatus(inOutId).isClosedReversedOrVoided();
 	}
 
 	public boolean isNotProcessed(@NonNull final I_M_ShipmentSchedule_Split record)
