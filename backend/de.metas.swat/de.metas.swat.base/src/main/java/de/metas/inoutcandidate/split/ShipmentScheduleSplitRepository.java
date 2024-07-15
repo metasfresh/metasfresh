@@ -58,6 +58,11 @@ public class ShipmentScheduleSplitRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	private boolean isNotProcessed(@NonNull final I_M_ShipmentSchedule_Split record)
+	{
+		return !record.isProcessed();
+	}
+
 	private static ShipmentScheduleSplit fromRecord(final I_M_ShipmentSchedule_Split record)
 	{
 		return ShipmentScheduleSplit.builder()
@@ -162,10 +167,5 @@ public class ShipmentScheduleSplitRepository
 		}
 
 		return !inOutBL.getDocStatus(inOutId).isClosedReversedOrVoided();
-	}
-
-	public boolean isNotProcessed(@NonNull final I_M_ShipmentSchedule_Split record)
-	{
-		return !record.isProcessed();
 	}
 }
