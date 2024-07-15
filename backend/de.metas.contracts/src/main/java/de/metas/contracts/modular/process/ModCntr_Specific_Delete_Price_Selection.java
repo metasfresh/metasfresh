@@ -31,15 +31,21 @@ import de.metas.contracts.modular.ModCntrSpecificPriceId;
 import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.log.ModCntrLogPriceUpdateRequest;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.i18n.AdMessageKey;
+import de.metas.money.CurrencyId;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 public class ModCntr_Specific_Delete_Price_Selection extends JavaProcess
@@ -50,6 +56,23 @@ public class ModCntr_Specific_Delete_Price_Selection extends JavaProcess
 	@NonNull private final ModularContractLogHandlerRegistry logHandlerRegistry = SpringContextHolder.instance.getBean(ModularContractLogHandlerRegistry.class);
 
 	private static final AdMessageKey ERROR_MSG_NO_FALLBACK_PRICE = AdMessageKey.of("Msg_No_Fallback_Price");
+
+
+
+	@Param(parameterName = "M_Product_ID", mandatory = true)
+	private ProductId p_M_Product_ID;
+
+	@Param(parameterName = "Price", mandatory = true)
+	private BigDecimal p_price;
+
+	@Param(parameterName = "MinValue", mandatory = true)
+	private BigDecimal p_minValue;
+
+	@Param(parameterName = "C_UOM_ID", mandatory = true)
+	private UomId p_C_UOM_ID;
+
+	@Param(parameterName = "C_Currency_ID", mandatory = true)
+	private CurrencyId p_C_Currency_ID;
 
 	@Override
 	protected String doIt()
@@ -83,7 +106,13 @@ public class ModCntr_Specific_Delete_Price_Selection extends JavaProcess
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_M_Product_ID, p_M_Product_ID)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_UOM_ID, p_C_UOM_ID)
 				.addInArrayFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, getSelectedContracts())
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Currency_ID, p_C_Currency_ID)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_MinValue, p_minValue)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_Price, p_price)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_IsScalePrice, true)
 				.create()
 				.listIds(ModCntrSpecificPriceId::ofRepoId);
 	}
