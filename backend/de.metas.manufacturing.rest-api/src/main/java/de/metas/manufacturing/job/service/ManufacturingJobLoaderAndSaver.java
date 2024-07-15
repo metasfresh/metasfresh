@@ -22,7 +22,6 @@ import de.metas.manufacturing.job.model.RawMaterialsIssue;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ReceivingTarget;
-import de.metas.manufacturing.job.model.ValidateLocatorInfo;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.organization.InstantAndOrgId;
@@ -49,6 +48,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class ManufacturingJobLoaderAndSaver
@@ -89,10 +89,11 @@ public class ManufacturingJobLoaderAndSaver
 				.currentScaleDeviceId(DeviceId.ofNullableString(ppOrder.getCurrentScaleDeviceId()))
 				//
 				.activities(routing.getActivities()
-						.stream()
-						.sorted(Comparator.comparing(activity -> activity.getCode().getAsString()))
-						.map(this::toJobActivity)
-						.collect(ImmutableList.toImmutableList()))
+									.stream()
+									.sorted(Comparator.comparing(activity -> activity.getCode().getAsString()))
+									.map(this::toJobActivity)
+									.filter(Objects::nonNull)
+									.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -134,6 +135,7 @@ public class ManufacturingJobLoaderAndSaver
 		return issueSchedules.computeIfAbsent(ppOrderId, supportingServices::getIssueSchedules);
 	}
 
+	@Nullable
 	private ManufacturingJobActivity toJobActivity(@NonNull final PPOrderRoutingActivity from)
 	{
 		switch (from.getType())
@@ -147,9 +149,8 @@ public class ManufacturingJobLoaderAndSaver
 						.finishedGoodsReceive(toFinishedGoodsReceive(from))
 						.build();
 			case ValidateLocator:
-				return prepareJobActivity(from)
-						.sourceLocatorValidate(toValidateLocatorInfo(from))
-						.build();
+				return toValidateLocatorInfoActivity(from)
+						.orElse(null);
 			case WorkReport:
 			case ActivityConfirmation:
 			case GenerateHUQRCodes:
@@ -395,8 +396,10 @@ public class ManufacturingJobLoaderAndSaver
 	}
 
 	@NonNull
-	private ValidateLocatorInfo toValidateLocatorInfo(final @NonNull PPOrderRoutingActivity from)
+	private Optional<ManufacturingJobActivity> toValidateLocatorInfoActivity(final @NonNull PPOrderRoutingActivity from)
 	{
-		return supportingServices.getValidateSourceLocatorInfo(from.getOrderId());
+		return Optional.of(supportingServices.getValidateSourceLocatorInfo(from.getOrderId()))
+				.filter(sourceLocatorInfo -> !sourceLocatorInfo.getSourceLocatorList().isEmpty())
+				.map(sourceLocatorInfo -> prepareJobActivity(from).sourceLocatorValidate(sourceLocatorInfo).build());
 	}
 }

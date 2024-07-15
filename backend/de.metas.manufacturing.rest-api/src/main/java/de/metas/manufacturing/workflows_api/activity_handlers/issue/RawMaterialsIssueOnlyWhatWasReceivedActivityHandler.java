@@ -15,7 +15,7 @@ import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
-import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaver;
+import de.metas.manufacturing.job.service.ManufacturingJobService;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.manufacturing.workflows_api.ManufacturingRestService;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
@@ -63,7 +63,7 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
 	private final PPOrderIssueScheduleRepository issueScheduleRepository;
-	private final ManufacturingJobLoaderAndSaver loaderAndSaver;
+	private final ManufacturingJobService jobService;
 
 	@Override
 	public WFActivityType getHandledActivityType()
@@ -111,7 +111,7 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 				.flatMap(rawMaterialsIssue -> rawMaterialsIssue.getLines().stream())
 				.forEach(issueLine -> issueWhatWasReceived(job.getPpOrderId(), issueFromWarehouseIds, draftQtys, issueLine));
 
-		final ManufacturingJob updatedJob = loaderAndSaver.load(job.getPpOrderId());
+		final ManufacturingJob updatedJob = jobService.getJobById(job.getPpOrderId());
 
 		return ManufacturingRestService.toWFProcess(updatedJob);
 	}
