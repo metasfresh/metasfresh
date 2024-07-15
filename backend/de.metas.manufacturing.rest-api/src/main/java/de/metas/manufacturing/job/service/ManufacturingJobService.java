@@ -115,6 +115,7 @@ public class ManufacturingJobService
 				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
 				.huQRCodeService(huQRCodeService)
+				.sourceHUService(ppOrderSourceHUService)
 				.build();
 	}
 

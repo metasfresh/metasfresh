@@ -68,4 +68,9 @@ public class ExternalSystemConfigQRCodeJsonConverter
 			throw new AdempiereException("Invalid QR Code version: " + version);
 		}
 	}
+
+	public static boolean isTypeMatching(final @NonNull GlobalQRCode globalQRCode)
+	{
+		return GlobalQRCodeType.equals(GLOBAL_QRCODE_TYPE, globalQRCode.getType());
+	}
 }

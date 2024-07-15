@@ -22,6 +22,7 @@ import de.metas.manufacturing.job.model.RawMaterialsIssue;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ReceivingTarget;
+import de.metas.manufacturing.job.model.ValidateLocatorInfo;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.organization.InstantAndOrgId;
@@ -145,12 +146,17 @@ public class ManufacturingJobLoaderAndSaver
 				return prepareJobActivity(from)
 						.finishedGoodsReceive(toFinishedGoodsReceive(from))
 						.build();
+			case ValidateLocator:
+				return prepareJobActivity(from)
+						.sourceLocatorValidate(toValidateLocatorInfo(from))
+						.build();
 			case WorkReport:
 			case ActivityConfirmation:
 			case GenerateHUQRCodes:
 			case ScanScaleDevice:
 			case CallExternalSystem:
 			case RawMaterialsIssueAdjustment:
+			case IssueOnlyWhatWasReceived:
 				return prepareJobActivity(from)
 						.build();
 			default:
@@ -386,5 +392,11 @@ public class ManufacturingJobLoaderAndSaver
 		final I_PP_Order ppOrder = getPPOrderRecordById(job.getPpOrderId());
 		ppOrder.setCurrentScaleDeviceId(job.getCurrentScaleDeviceId() != null ? job.getCurrentScaleDeviceId().getAsString() : null);
 		InterfaceWrapperHelper.saveRecord(ppOrder);
+	}
+
+	@NonNull
+	private ValidateLocatorInfo toValidateLocatorInfo(final @NonNull PPOrderRoutingActivity from)
+	{
+		return supportingServices.getValidateSourceLocatorInfo(from.getOrderId());
 	}
 }

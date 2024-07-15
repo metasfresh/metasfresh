@@ -38,6 +38,8 @@ public class ManufacturingJobActivity
 	@NonNull PPAlwaysAvailableToUser alwaysAvailableToUser;
 	@Nullable UserInstructions userInstructions;
 
+	@Nullable ValidateLocatorInfo sourceLocatorValidate;
+
 	@Builder(toBuilder = true)
 	private ManufacturingJobActivity(
 			@NonNull final ManufacturingJobActivityId id,
@@ -49,7 +51,8 @@ public class ManufacturingJobActivity
 			@NonNull final PPOrderRoutingActivityId orderRoutingActivityId,
 			@NonNull final PPOrderRoutingActivityStatus routingActivityStatus,
 			@NonNull final PPAlwaysAvailableToUser alwaysAvailableToUser,
-			@Nullable final UserInstructions userInstructions)
+			@Nullable final UserInstructions userInstructions,
+			@Nullable final ValidateLocatorInfo sourceLocatorValidate)
 	{
 		if (CoalesceUtil.countNotNulls(rawMaterialsIssue, finishedGoodsReceive) > 1)
 		{
@@ -69,6 +72,8 @@ public class ManufacturingJobActivity
 
 		this.alwaysAvailableToUser = alwaysAvailableToUser;
 		this.userInstructions = userInstructions;
+
+		this.sourceLocatorValidate = sourceLocatorValidate;
 	}
 
 	private static WFActivityStatus computeStatus(

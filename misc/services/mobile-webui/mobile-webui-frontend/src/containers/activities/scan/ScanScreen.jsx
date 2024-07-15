@@ -17,11 +17,15 @@ const ScanScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId },
   } = useRouteMatch();
 
-  const { activityCaption, userInstructions } = useSelector((state) => {
+  const queryParameters = new URLSearchParams(window.location.search);
+  const useTheAlreadyScannedQrCode = queryParameters.get('resendQr');
+
+  const { activityCaption, userInstructions, currentValue } = useSelector((state) => {
     const activity = getActivityById(state, wfProcessId, activityId);
     return {
       activityCaption: activity?.caption,
       userInstructions: activity?.userInstructions,
+      currentValue: activity?.dataStored.currentValue,
     };
   });
 
@@ -29,6 +33,12 @@ const ScanScreen = () => {
   useEffect(() => {
     dispatch(pushHeaderEntry({ location: url, caption: activityCaption, userInstructions }));
   }, [url, activityCaption, userInstructions]);
+
+  useEffect(() => {
+    if (useTheAlreadyScannedQrCode === 'true' && currentValue?.qrCode !== undefined) {
+      onBarcodeScanned({ scannedBarcode: currentValue?.qrCode });
+    }
+  }, [useTheAlreadyScannedQrCode]);
 
   const history = useHistory();
   const onBarcodeScanned = ({ scannedBarcode }) => {

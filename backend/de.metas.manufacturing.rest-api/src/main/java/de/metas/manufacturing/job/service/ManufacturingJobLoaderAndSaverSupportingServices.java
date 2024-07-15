@@ -2,6 +2,7 @@ package de.metas.manufacturing.job.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -9,9 +10,12 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.ITranslatableString;
+import de.metas.manufacturing.job.model.LocatorInfo;
+import de.metas.manufacturing.job.model.ValidateLocatorInfo;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
@@ -53,6 +57,7 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	@NonNull IPPOrderRoutingRepository ppOrderRoutingRepository;
 	@NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	@NonNull HUQRCodesService huQRCodeService;
+	@NonNull PPOrderSourceHUService sourceHUService;
 
 	public ZoneId getTimeZone(final OrgId orgId) {return orgDAO.getTimeZone(orgId);}
 
@@ -116,5 +121,32 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 				.getStorageFactory()
 				.getStorage(hu)
 				.getQuantity(productId, uom);
+	}
+
+	@NonNull
+	public ValidateLocatorInfo getValidateSourceLocatorInfo(final @NonNull PPOrderId ppOrderId)
+	{
+		final ImmutableList<LocatorInfo> sourceLocatorList = getSourceLocatorIds(ppOrderId)
+				.stream()
+				.map(locatorId -> LocatorInfo.builder()
+						.id(locatorId)
+						.caption(getLocatorName(locatorId))
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
+		return ValidateLocatorInfo.ofSourceLocatorList(sourceLocatorList);
+	}
+
+	@NonNull
+	private ImmutableSet<LocatorId> getSourceLocatorIds(@NonNull final PPOrderId ppOrderId)
+	{
+		final ImmutableSet<HuId> huIds = sourceHUService.getSourceHUIds(ppOrderId);
+		final ImmutableSet<Integer> locatorIds = handlingUnitsBL.getByIds(huIds)
+				.stream()
+				.map(I_M_HU::getM_Locator_ID)
+				.filter(locatorId -> locatorId > 0)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return warehouseBL.getLocatorIdsByRepoId(locatorIds);
 	}
 }

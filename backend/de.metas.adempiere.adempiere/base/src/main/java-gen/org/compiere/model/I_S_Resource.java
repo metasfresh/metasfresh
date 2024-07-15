@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for S_Resource
  *  @author metasfresh (generated) 
@@ -72,6 +73,31 @@ public interface I_S_Resource
 	int getAD_User_ID();
 
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
+	 * Set Workplace.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Workplace_ID (int C_Workplace_ID);
+
+	/**
+	 * Get Workplace.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Workplace_ID();
+
+	@Nullable org.compiere.model.I_C_Workplace getC_Workplace();
+
+	void setC_Workplace(@Nullable org.compiere.model.I_C_Workplace C_Workplace);
+
+	ModelColumn<I_S_Resource, org.compiere.model.I_C_Workplace> COLUMN_C_Workplace_ID = new ModelColumn<>(I_S_Resource.class, "C_Workplace_ID", org.compiere.model.I_C_Workplace.class);
+	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
 
 	/**
 	 * Set Capacity Per Production Cycle.
@@ -161,31 +187,6 @@ public interface I_S_Resource
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Workplace.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Workplace_ID (int C_Workplace_ID);
-
-	/**
-	 * Get Workplace.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Workplace_ID();
-
-	@Nullable org.compiere.model.I_C_Workplace getC_Workplace();
-
-	void setC_Workplace(@Nullable org.compiere.model.I_C_Workplace C_Workplace);
-
-	ModelColumn<I_S_Resource, org.compiere.model.I_C_Workplace> COLUMN_C_Workplace_ID = new ModelColumn<>(I_S_Resource.class, "C_Workplace_ID", org.compiere.model.I_C_Workplace.class);
-	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
-
-	/**
 	 * Set Daily Capacity.
 	 *
 	 * <br>Type: Quantity
@@ -226,6 +227,27 @@ public interface I_S_Resource
 
 	ModelColumn<I_S_Resource, Object> COLUMN_Description = new ModelColumn<>(I_S_Resource.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set External System Config.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_Config_ID (int ExternalSystem_Config_ID);
+
+	/**
+	 * Get External System Config.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_Config_ID();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_S_Resource.class, "ExternalSystem_Config_ID", null);
+	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
 	 * Set Active.

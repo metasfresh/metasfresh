@@ -161,6 +161,11 @@ const translations = {
         target: 'To receive',
         picked: 'Received',
       },
+      validateSourceLocator: {
+        noValidOption: 'No valid option available',
+        qrMatches: `OK!`,
+        qrDoesNotMatch: `Scanned QR doesn't match the source Locator!`,
+      },
     },
   },
 };
