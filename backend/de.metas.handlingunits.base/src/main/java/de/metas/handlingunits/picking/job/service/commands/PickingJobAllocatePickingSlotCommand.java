@@ -19,7 +19,7 @@ public class PickingJobAllocatePickingSlotCommand
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull
-	final PickingJobRepository pickingJobRepository;
+	private final PickingJobRepository pickingJobRepository;
 	@NonNull
 	private final PickingJobSlotService pickingSlotService;
 

@@ -22,7 +22,6 @@
 
 package de.metas.workplace.interceptor;
 
-import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
@@ -69,12 +68,8 @@ public class C_Workplace
 
 		if (pickingSlot.getM_Warehouse_ID() != workplace.getM_Warehouse_ID())
 		{
-			throw new AdempiereException(TranslatableStrings.builder()
-												 .append("Different Warehouses on Picking Slot: ")
-												 .append(pickingSlot.toString())
-												 .append(" and on Workplace: ")
-												 .append(workplace.getC_Workplace_ID())
-												 .build());
+			throw new AdempiereException("Different Warehouses on Picking Slot: " + pickingSlot + " and on Workplace: " 
+												 + workplace.getC_Workplace_ID());
 		}
 	}
 }
