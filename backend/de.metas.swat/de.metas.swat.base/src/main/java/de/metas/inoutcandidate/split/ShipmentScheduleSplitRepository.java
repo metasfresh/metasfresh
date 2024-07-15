@@ -2,12 +2,10 @@ package de.metas.inoutcandidate.split;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.Dimension;
-import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
-import org.compiere.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Split;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
