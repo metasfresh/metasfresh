@@ -19,6 +19,8 @@ import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductId;
+import de.metas.user.UserId;
+import de.metas.workplace.Workplace;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
@@ -28,6 +30,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Set;
 
 public class MockedPickingJobLoaderSupportingServices implements PickingJobLoaderSupportingServices
@@ -78,6 +81,13 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
+	@NonNull
+	public Optional<Workplace> getWorkplaceByUserId(@NonNull final UserId userId)
+	{
+		return Optional.empty();
+	}
+
+	@Override
 	public String getProductNo(@NonNull final ProductId productId)
 	{
 		return "productNo-" + productId.getRepoId();
@@ -123,7 +133,10 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
-	public SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(final Collection<ShipmentScheduleId> shipmentScheduleIds) {return ImmutableSetMultimap.of();}
+	public SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return ImmutableSetMultimap.of();
+	}
 
 	public void mockQRCode(@NonNull final HuId huId, @NonNull final HUQRCode qrCode)
 	{

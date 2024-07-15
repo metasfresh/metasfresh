@@ -1,19 +1,8 @@
-package de.metas.picking.api;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.util.Objects;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,6 +19,17 @@ import java.util.Objects;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.picking.api;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class PickingSlotId implements RepoIdAware
