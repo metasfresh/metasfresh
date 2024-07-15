@@ -105,6 +105,7 @@ public class PickingJobService
 	@NonNull private final HULabelService huLabelService;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUReservationService huReservationService;
+	@NonNull private final PickingJobSlotService pickingJobSlotService;
 
 	public static PickingJobService newInstanceForUnitTesting()
 	{
@@ -154,7 +155,8 @@ public class PickingJobService
 						huQRCodeService
 				),
 				InventoryService.newInstanceForUnitTesting(),
-				huReservationService
+				huReservationService,
+				pickingJobSlotService
 		);
 	}
 
@@ -179,6 +181,7 @@ public class PickingJobService
 				.pickingJobHUReservationService(pickingJobHUReservationService)
 				.pickingConfigRepo(pickingConfigRepo)
 				.loadingSupportServices(pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices())
+				.pickingJobSlotService(pickingJobSlotService)
 				//
 				.request(request)
 				//
