@@ -67,6 +67,9 @@ import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -114,6 +117,7 @@ public class PickingJobService
 		final PickingCandidateRepository pickingCandidateRepository = new PickingCandidateRepository();
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final HUQRCodesRepository huQRCodesRepository = new HUQRCodesRepository();
+		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
 		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
 				new PickingConfigRepository(),
 				pickingCandidateRepository,
@@ -131,7 +135,8 @@ public class PickingJobService
 		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
 				pickingJobSlotService,
 				bpartnerBL,
-				huQRCodeService
+				huQRCodeService,
+				workplaceService
 		);
 
 		return new PickingJobService(
