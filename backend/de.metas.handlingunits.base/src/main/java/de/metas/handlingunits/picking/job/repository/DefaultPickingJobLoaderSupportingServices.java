@@ -27,8 +27,11 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.workplace.Workplace;
+import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -42,6 +45,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -55,6 +59,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPartnerBL bpartnerBL;
 	private final PickingJobSlotService pickingSlotService;
+	private final WorkplaceService workplaceService;
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
@@ -71,11 +76,13 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	public DefaultPickingJobLoaderSupportingServices(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final PickingJobSlotService pickingSlotService,
-			@NonNull final HUQRCodesService huQRCodeService)
+			@NonNull final HUQRCodesService huQRCodeService,
+			@NonNull final WorkplaceService workplaceService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.pickingSlotService = pickingSlotService;
 		this.huQRCodeService = huQRCodeService;
+		this.workplaceService = workplaceService;
 	}
 
 	@Override
@@ -127,6 +134,13 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull final PickingSlotId pickingSlotId)
 	{
 		return pickingSlotIdAndCaptionsCache.computeIfAbsent(pickingSlotId, pickingSlotService::getPickingSlotIdAndCaption);
+	}
+
+	@Override
+	@NonNull
+	public Optional<Workplace> getWorkplaceByUserId(@NonNull final UserId userId)
+	{
+		return workplaceService.getWorkplaceByUserId(userId);
 	}
 
 	@Override
