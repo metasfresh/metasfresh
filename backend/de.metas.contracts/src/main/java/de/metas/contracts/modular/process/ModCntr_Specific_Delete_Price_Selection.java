@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.process;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Specific_Price;
@@ -44,6 +45,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
@@ -77,7 +79,7 @@ public class ModCntr_Specific_Delete_Price_Selection extends JavaProcess impleme
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		if (!existsAtLeastOneScalePrice())
+		if (!existsAtLeastOneScalePrice(context))
 		{
 			return ProcessPreconditionsResolution.reject();
 		}
@@ -118,7 +120,7 @@ public class ModCntr_Specific_Delete_Price_Selection extends JavaProcess impleme
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_M_Product_ID, p_M_Product_ID)
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_UOM_ID, p_C_UOM_ID)
-				.addInArrayFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, getSelectedContracts())
+				.addInArrayFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, getSelectedContracts(getProcessInfo().getQueryFilterOrElseFalse()))
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Currency_ID, p_C_Currency_ID)
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_MinValue, p_minValue)
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_Price, p_price)
@@ -127,19 +129,21 @@ public class ModCntr_Specific_Delete_Price_Selection extends JavaProcess impleme
 				.listIds(ModCntrSpecificPriceId::ofRepoId);
 	}
 
-	private Set<FlatrateTermId> getSelectedContracts()
+	private Set<FlatrateTermId> getSelectedContracts(final IQueryFilter<I_C_Flatrate_Term> processFilter)
 	{
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
+				.addFilter(processFilter)
 				.create()
 				.listIds(FlatrateTermId::ofRepoId);
 	}
 
-	private boolean existsAtLeastOneScalePrice()
+	private boolean existsAtLeastOneScalePrice(final @NonNull IProcessPreconditionsContext context)
 	{
+		// context.getQueryFilter()
+
 		return queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, getSelectedContracts())
+				.addInArrayFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, getSelectedContracts(context.getQueryFilter(I_C_Flatrate_Term.class)))
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_IsScalePrice, true)
 				.create()
 				.count() > 0;
