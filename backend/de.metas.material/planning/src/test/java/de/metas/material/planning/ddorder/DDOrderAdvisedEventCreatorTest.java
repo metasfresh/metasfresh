@@ -1,4 +1,4 @@
-package de.metas.material.planning.event;
+package de.metas.material.planning.ddorder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
@@ -10,10 +10,6 @@ import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
-import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
-import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
-import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
-import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -60,7 +56,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-public class DDOrderAdvisedOrCreatedEventCreatorTest
+public class DDOrderAdvisedEventCreatorTest
 {
 	DistributionNetworkRepository distributionNetworkRepository;
 	DDOrderDemandMatcher ddOrderDemandMatcher;
