@@ -21,6 +21,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
@@ -97,77 +98,76 @@ public class DunningDocOutboundLogMailRecipientProvider
 		final List<I_C_Invoice> dunnedInvoices = dunningService.retrieveDunnedInvoices(dunningDocId);
 		final int singleCommonInvoiceContactId = CollectionUtils.extractSingleElementOrDefault(dunnedInvoices, I_C_Invoice::getAD_User_ID, -1);
 
-		final boolean propagateToDocOutboundLog = orderEmailPropagationSysConfigRepository.isPropagateToDocOutboundLog(ClientAndOrgId.ofClientAndOrg(request.getClientId(), request.getOrgId()));
+		final I_AD_User dunningContact =  dunningRecord.getC_Dunning_Contact();
+		DocOutBoundRecipient docOutBoundRecipient = null;
 
-		final String invoiceEmail = propagateToDocOutboundLog ? CollectionUtils.extractSingleElementOrDefault(dunnedInvoices,
-																											  invoice -> CoalesceUtil.coalesce(invoice.getEMail(), ""),
-																											  "") : null;
-
-		final String locationEmail = dunningService.getLocationEmail(dunningDocId);
-
-		if (singleCommonInvoiceContactId > 0)
+		if (dunningContact!= null  && dunningContact.isDunningContact())
 		{
-			final DocOutBoundRecipient invoiceUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(singleCommonInvoiceContactId));
+			docOutBoundRecipient = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(dunningContact.getAD_User_ID()));
+		}
+		else if (singleCommonInvoiceContactId > 0)
+		{
+			docOutBoundRecipient = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(singleCommonInvoiceContactId));
+		}
+		else
+		{
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(dunningRecord.getC_BPartner_ID());
+			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, dunningRecord.getC_BPartner_Location_ID());
+			final User billContact = bpartnerBL.retrieveContactOrNull(
+					RetrieveContactRequest
+							.builder()
+							.bpartnerId(bpartnerId)
+							.bPartnerLocationId(bPartnerLocationId)
+							.contactType(ContactType.BILL_TO_DEFAULT)
+							.build());
 
-			if (Check.isNotBlank(invoiceEmail))
+			if (billContact != null)
 			{
-				Loggables.addLog("The dunned invoices all have invoiceUser={} and the invoice has the email {} so we take that user as the dunning mail's participant, with this email address", invoiceUser, invoiceEmail);
-				return Optional.of(invoiceUser.withEmailAddress(invoiceEmail));
+				Loggables.addLog("Found billContact={} with a mail address for bpartnerId={} and bPartnerLocationId={}", billContact, bpartnerId, bPartnerLocationId);
+
+				final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
+				docOutBoundRecipient = recipientRepository.getById(recipientId);
 			}
-
-			if (Check.isNotBlank(invoiceUser.getEmailAddress()))
-			{
-				Loggables.addLog("The dunned invoices all have invoiceUser={}, so we take that user as the dunning mail's participant", invoiceUser);
-				return Optional.of(invoiceUser);
-			}
-
-			if (Check.isNotBlank(locationEmail))
-			{
-				Loggables.addLog("The dunned invoices all have invoiceUser={} and the location has the email {} so we take that user as the dunning mail's participant, with this email address", invoiceUser, locationEmail);
-				return Optional.of(invoiceUser.withEmailAddress(invoiceEmail));
-			}
-
-			Loggables.addLog("The dunned invoices' common invoiceUser={} has not mail address", invoiceUser);
-
 		}
 
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(dunningRecord.getC_BPartner_ID());
-		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, dunningRecord.getC_BPartner_Location_ID());
-		final User billContact = bpartnerBL.retrieveContactOrNull(
-				RetrieveContactRequest
-						.builder()
-						.bpartnerId(bpartnerId)
-						.bPartnerLocationId(bPartnerLocationId)
-						.contactType(ContactType.BILL_TO_DEFAULT)
-						.build());
 
-		if (billContact != null)
+		if (docOutBoundRecipient == null)
 		{
-			Loggables.addLog("Found billContact={} with a mail address for bpartnerId={} and bPartnerLocationId={}", billContact, bpartnerId, bPartnerLocationId);
+			Loggables.addLog("Found no dunning contact/bill contact with a mail address for bpartnerId={} ", dunningRecord.getC_BPartner_ID());
+			return Optional.empty();
+		}
+		else
+		{
+			final boolean propagateToDocOutboundLog = orderEmailPropagationSysConfigRepository.isPropagateToDocOutboundLog(ClientAndOrgId.ofClientAndOrg(request.getClientId(), request.getOrgId()));
 
-			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
-			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
+			final String invoiceEmail = propagateToDocOutboundLog ? CollectionUtils.extractSingleElementOrDefault(dunnedInvoices,
+																												  invoice -> CoalesceUtil.coalesce(invoice.getEMail(), ""),
+																												  "") : null;
+			final String locationEmail = dunningService.getLocationEmail(dunningDocId);
+
+			if (Check.isNotBlank(docOutBoundRecipient.getEmailAddress()))
+			{
+				Loggables.addLog("The dunned invoices all have invoiceUser={}, so we take that user as the dunning mail's participant", docOutBoundRecipient);
+				return Optional.of(docOutBoundRecipient);
+			}
 
 			if (Check.isNotBlank(invoiceEmail))
 			{
-				Loggables.addLog("Use billContact={} as recipient and the invoice email {} as address}", billContact, invoiceEmail);
+				Loggables.addLog("The dunned invoices all have invoiceUser={} and the invoice has the email {} so we take that user as the dunning mail's participant, with this email address", docOutBoundRecipient, invoiceEmail);
 				return Optional.of(docOutBoundRecipient.withEmailAddress(invoiceEmail));
 			}
 
 			if (Check.isNotBlank(locationEmail))
 			{
-				Loggables.addLog("Use billContact={} as recipient and the location email {} as address}", billContact, locationEmail);
-				return Optional.of(docOutBoundRecipient.withEmailAddress(locationEmail));
+				Loggables.addLog("The dunned invoices all have invoiceUser={} and the location has the email {} so we take that user as the dunning mail's participant, with this email address", docOutBoundRecipient, locationEmail);
+				return Optional.of(docOutBoundRecipient.withEmailAddress(invoiceEmail));
 			}
 
-			if (Check.isNotBlank(docOutBoundRecipient.getEmailAddress()))
-			{
-				return Optional.of(docOutBoundRecipient);
-			}
+			Loggables.addLog("The dunned invoices' common invoiceUser={} has not mail address", docOutBoundRecipient);
+			return Optional.empty();
+
 		}
 
-		Loggables.addLog("Found no billContact with a mail address for bpartnerId={} and bPartnerLocationId={}", bpartnerId, bPartnerLocationId);
-		return Optional.empty();
 	}
 
 }
