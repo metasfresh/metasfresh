@@ -51,4 +51,7 @@ public interface IHUPPOrderQtyBL extends ISingletonService
 	boolean isReceipt(@NonNull final I_PP_Order_Qty ppOrderQty);
 
 	Set<HuId> getFinishedGoodsReceivedHUIds(@NonNull PPOrderId ppOrderId);
+
+	@NonNull
+	DraftPPOrderQuantities getPPOrderQuantities(@NonNull PPOrderId ppOrderId, boolean includeProcessed);
 }

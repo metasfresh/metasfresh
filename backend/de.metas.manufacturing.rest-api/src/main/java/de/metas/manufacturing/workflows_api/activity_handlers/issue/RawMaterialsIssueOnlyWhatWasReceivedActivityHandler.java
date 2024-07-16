@@ -2,13 +2,16 @@ package de.metas.manufacturing.workflows_api.activity_handlers.issue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleCreateRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.EmptyHUListener;
@@ -23,8 +26,11 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupportUtil;
@@ -39,7 +45,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Component;
@@ -61,6 +69,7 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	private final PPOrderIssueScheduleRepository issueScheduleRepository;
 	private final ManufacturingJobService jobService;
@@ -94,7 +103,8 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 	{
 		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(request.getWfProcess());
 
-		final DraftPPOrderQuantities draftQtys = huPPOrderQtyBL.getDraftPPOrderQuantities(job.getPpOrderId());
+		final boolean includeProcessed = true;
+		final DraftPPOrderQuantities draftQtys = huPPOrderQtyBL.getPPOrderQuantities(job.getPpOrderId(), includeProcessed);
 
 		if (draftQtys.getQtyReceived().map(Quantity::signum).orElse(-1) <= 0)
 		{
@@ -190,6 +200,23 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 		huPPOrderBL
 				.createIssueProducer(ppOrderId)
 				.considerIssueMethodForQtyToIssueCalculation(false) // issue exactly the CUs we split
-				.createIssues(extractedCUs);
+				.processCandidates(HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy.ALWAYS)
+				.createIssues(extractedCUs)
+				.stream()
+				.map(ppOrderQty -> {
+					final Quantity qtyIssued = Quantitys.create(ppOrderQty.getQty(), UomId.ofRepoId(ppOrderQty.getC_UOM_ID()));
+					return PPOrderIssueScheduleCreateRequest.builder()
+							.ppOrderId(ppOrderId)
+							.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoId(ppOrderQty.getPP_Order_BOMLine_ID()))
+							.seqNo(SeqNo.ofInt(0))
+							.productId(productId)
+							.qtyToIssue(qtyIssued)
+							.issueFromHUId(HuId.ofRepoId(ppOrderQty.getM_HU_ID()))
+							.issueFromLocatorId(warehouseDAO.getLocatorIdByRepoId(ppOrderQty.getM_Locator_ID()))
+							.isAlternativeIssue(true)
+							.qtyIssued(qtyIssued)
+							.build();
+				})
+				.forEach(issueScheduleRepository::createSchedule);
 	}
 }

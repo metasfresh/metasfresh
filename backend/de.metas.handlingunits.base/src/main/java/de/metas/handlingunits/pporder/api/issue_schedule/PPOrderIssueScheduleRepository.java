@@ -50,7 +50,15 @@ public class PPOrderIssueScheduleRepository
 		record.setIsAlternativeHU(request.isAlternativeIssue());
 
 		// Issued:
-		record.setQtyIssued(BigDecimal.ZERO);
+		if (request.getQtyIssued() != null)
+		{
+			record.setQtyIssued(request.getQtyIssued().toBigDecimal());
+			record.setProcessed(true);
+		}
+		else
+		{
+			record.setQtyIssued(BigDecimal.ZERO);
+		}
 		// record.setQtyReject(null);
 		// record.setRejectReason(null);
 
