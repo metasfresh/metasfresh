@@ -154,6 +154,7 @@ public class ManufacturingJobLoaderAndSaver
 			case WorkReport:
 			case ActivityConfirmation:
 			case GenerateHUQRCodes:
+			case PrintReceivedHUQRCodes:
 			case ScanScaleDevice:
 			case CallExternalSystem:
 			case RawMaterialsIssueAdjustment:

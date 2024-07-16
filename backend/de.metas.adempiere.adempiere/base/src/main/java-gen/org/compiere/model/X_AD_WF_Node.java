@@ -681,6 +681,8 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public static final String PP_ACTIVITY_TYPE_ScanScaleDevice = "ScanScaleDevice";
 	/** RawMaterialsIssueAdjustment = MIA */
 	public static final String PP_ACTIVITY_TYPE_RawMaterialsIssueAdjustment = "MIA";
+	/** PrintReceivedHUQRCodes = PrintReceivedHUQRCodes */
+	public static final String PP_ACTIVITY_TYPE_PrintReceivedHUQRCodes = "PrintReceivedHUQRCodes";
 	/** CallExternalSystem = CallExternalSystem */
 	public static final String PP_ACTIVITY_TYPE_CallExternalSystem = "CallExternalSystem";
 	/** Validate Locator = ValidateLocator */

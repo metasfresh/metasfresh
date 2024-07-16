@@ -420,7 +420,7 @@ public class ManufacturingJobService
 		trxManager.runInThreadInheritedTrx(() -> streamAlreadyAssignedManufacturingOrders(responsibleId).forEach(this::unassignFromResponsible));
 	}
 
-	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId)
+	public ManufacturingJob withActivityCompleted(final ManufacturingJob job, final ManufacturingJobActivityId jobActivityId)
 	{
 		final PPOrderId ppOrderId = job.getPpOrderId();
 		final ManufacturingJobActivity jobActivity = job.getActivityById(jobActivityId);
