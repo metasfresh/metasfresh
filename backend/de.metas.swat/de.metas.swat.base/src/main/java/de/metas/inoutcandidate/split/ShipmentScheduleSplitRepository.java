@@ -103,7 +103,7 @@ public class ShipmentScheduleSplitRepository
 		return fromRecord(record);
 	}
 
-	public I_M_ShipmentSchedule_Split getRecordById(final @NotNull ShipmentScheduleSplitId id)
+	private I_M_ShipmentSchedule_Split getRecordById(final @NotNull ShipmentScheduleSplitId id)
 	{
 		final I_M_ShipmentSchedule_Split record = InterfaceWrapperHelper.load(id, I_M_ShipmentSchedule_Split.class);
 		return Check.assumeNotNull(record, "record shall exist for {}", id);
