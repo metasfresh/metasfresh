@@ -189,7 +189,8 @@ public class PickingJobTestHelper
 				),
 				inventoryService,
 				huReservationService,
-				pickingJobSlotService);
+				pickingJobSlotService,
+				workplaceService);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)
