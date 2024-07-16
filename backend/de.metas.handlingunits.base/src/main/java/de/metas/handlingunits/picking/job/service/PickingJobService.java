@@ -106,6 +106,7 @@ public class PickingJobService
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final PickingJobSlotService pickingJobSlotService;
+	@NonNull private final WorkplaceService workplaceService;
 
 	public static PickingJobService newInstanceForUnitTesting()
 	{
@@ -156,7 +157,8 @@ public class PickingJobService
 				),
 				InventoryService.newInstanceForUnitTesting(),
 				huReservationService,
-				pickingJobSlotService
+				pickingJobSlotService,
+				workplaceService
 		);
 	}
 
@@ -182,6 +184,7 @@ public class PickingJobService
 				.pickingConfigRepo(pickingConfigRepo)
 				.loadingSupportServices(pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices())
 				.pickingJobSlotService(pickingJobSlotService)
+				.workplaceService(workplaceService)
 				//
 				.request(request)
 				//
@@ -645,11 +648,11 @@ public class PickingJobService
 		if (luId != null)
 		{
 			huLabelService.print(HULabelPrintRequest.builder()
-					.sourceDocType(HULabelSourceDocType.Picking)
-					.hu(HUToReportWrapper.of(handlingUnitsBL.getById(luId)))
-					.onlyIfAutoPrint(true)
-					.failOnMissingLabelConfig(false)
-					.build());
+										 .sourceDocType(HULabelSourceDocType.Picking)
+										 .hu(HUToReportWrapper.of(handlingUnitsBL.getById(luId)))
+										 .onlyIfAutoPrint(true)
+										 .failOnMissingLabelConfig(false)
+										 .build());
 		}
 
 		return pickingJobChanged;

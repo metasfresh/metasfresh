@@ -39,6 +39,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.workplace.Workplace;
+import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -62,6 +63,7 @@ public class PickingJobCreateCommand
 	private final PickingJobHUReservationService pickingJobHUReservationService;
 	private final PickingConfigRepositoryV2 pickingConfigRepo;
 	private final PickingJobSlotService pickingJobSlotService;
+	private final WorkplaceService workplaceService;
 
 	private final PickingJobCreateRequest request;
 
@@ -80,6 +82,7 @@ public class PickingJobCreateCommand
 			@NonNull final PickingJobHUReservationService pickingJobHUReservationService,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
 			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
+			@NonNull final WorkplaceService workplaceService,
 			//
 			@NonNull final PickingJobCreateRequest request)
 	{
@@ -90,6 +93,7 @@ public class PickingJobCreateCommand
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
 		this.loadingSupportServices = loadingSupportServices;
 		this.pickingConfigRepo = pickingConfigRepo;
+		this.workplaceService = workplaceService;
 
 		this.request = request;
 	}
@@ -156,7 +160,7 @@ public class PickingJobCreateCommand
 	@NonNull
 	private PickingJob allocatePickingSlotIfPossible(@NonNull final PickingJob pickingJob)
 	{
-		final PickingSlotId pickingSlotId = loadingSupportServices.getWorkplaceByUserId(request.getPickerId())
+		final PickingSlotId pickingSlotId = workplaceService.getWorkplaceByUserId(request.getPickerId())
 				.map(Workplace::getPickingSlotId)
 				.orElse(null);
 
@@ -165,22 +169,15 @@ public class PickingJobCreateCommand
 			return pickingJob;
 		}
 
-		try
-		{
-			return PickingJobAllocatePickingSlotCommand.builder()
-					.pickingJobRepository(pickingJobRepository)
-					.pickingSlotService(pickingJobSlotService)
-					//
-					.pickingJob(pickingJob)
-					.pickingSlotId(pickingSlotId)
-					//
-					.build().execute();
-		}
-		catch (final Exception allocatePickingSlotException)
-		{
-			logger.warn("Failed to allocate Picking Slot: {}", pickingSlotId, allocatePickingSlotException);
-			return pickingJob;
-		}
+		return PickingJobAllocatePickingSlotCommand.builder()
+				.pickingJobRepository(pickingJobRepository)
+				.pickingSlotService(pickingJobSlotService)
+				//
+				.pickingJob(pickingJob)
+				.pickingSlotId(pickingSlotId)
+				.failIfNotAllocated(false)
+				//
+				.build().execute();
 	}
 	
 	private PickingConfigV2 getPickingConfig()
