@@ -35,6 +35,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.BOMIssueMethod;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
@@ -151,6 +152,9 @@ public class ManufacturingJobLoaderAndSaver
 			case ValidateLocator:
 				return toValidateLocatorInfoActivity(from)
 						.orElse(null);
+			case IssueOnlyWhatWasReceived:
+				return toIssueOnlyWhatWasReceivedActivity(from)
+						.orElse(null);
 			case WorkReport:
 			case ActivityConfirmation:
 			case GenerateHUQRCodes:
@@ -158,7 +162,6 @@ public class ManufacturingJobLoaderAndSaver
 			case ScanScaleDevice:
 			case CallExternalSystem:
 			case RawMaterialsIssueAdjustment:
-			case IssueOnlyWhatWasReceived:
 				return prepareJobActivity(from)
 						.build();
 			default:
@@ -189,11 +192,11 @@ public class ManufacturingJobLoaderAndSaver
 
 		return RawMaterialsIssue.builder()
 				.lines(getBOMLines(ppOrderId)
-						.stream()
-						.filter(bomLine -> onlyProductIds.isEmpty() || onlyProductIds.contains(ProductId.ofRepoId(bomLine.getM_Product_ID())))
-						.map(this::toRawMaterialsIssueLine)
-						.filter(Objects::nonNull)
-						.collect(ImmutableList.toImmutableList()))
+							   .stream()
+							   .filter(bomLine -> onlyProductIds.isEmpty() || onlyProductIds.contains(ProductId.ofRepoId(bomLine.getM_Product_ID())))
+							   .map(this::toRawMaterialsIssueLine)
+							   .filter(Objects::nonNull)
+							   .collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -221,11 +224,11 @@ public class ManufacturingJobLoaderAndSaver
 				.qtyToIssue(qtyToIssue)
 				.issuingToleranceSpec(quantities.getIssuingToleranceSpec())
 				.steps(getIssueSchedules(ppOrderId)
-						.get(ppOrderBOMLineId)
-						.stream()
-						.sorted(Comparator.comparing(PPOrderIssueSchedule::getSeqNo))
-						.map(this::toRawMaterialsIssueStep)
-						.collect(ImmutableList.toImmutableList()))
+							   .get(ppOrderBOMLineId)
+							   .stream()
+							   .sorted(Comparator.comparing(PPOrderIssueSchedule::getSeqNo))
+							   .map(this::toRawMaterialsIssueStep)
+							   .collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -238,14 +241,14 @@ public class ManufacturingJobLoaderAndSaver
 				.productName(supportingServices.getProductName(schedule.getProductId()))
 				.qtyToIssue(schedule.getQtyToIssue())
 				.issueFromLocator(LocatorInfo.builder()
-						.id(schedule.getIssueFromLocatorId())
-						.caption(supportingServices.getLocatorName(schedule.getIssueFromLocatorId()))
-						.build())
+										  .id(schedule.getIssueFromLocatorId())
+										  .caption(supportingServices.getLocatorName(schedule.getIssueFromLocatorId()))
+										  .build())
 				.issueFromHU(HUInfo.builder()
-						.id(schedule.getIssueFromHUId())
-						.barcode(supportingServices.getQRCodeByHuId(schedule.getIssueFromHUId()))
-						.huCapacity(getHUCapacity(schedule))
-						.build())
+									 .id(schedule.getIssueFromHUId())
+									 .barcode(supportingServices.getQRCodeByHuId(schedule.getIssueFromHUId()))
+									 .huCapacity(getHUCapacity(schedule))
+									 .build())
 				.issued(schedule.getIssued())
 				.build();
 	}
@@ -266,7 +269,7 @@ public class ManufacturingJobLoaderAndSaver
 
 		return FinishedGoodsReceive.builder()
 				.linesById(Stream.concat(Stream.of(finishedGood), coProducts)
-						.collect(ImmutableMap.toImmutableMap(FinishedGoodsReceiveLine::getId, line -> line)))
+								   .collect(ImmutableMap.toImmutableMap(FinishedGoodsReceiveLine::getId, line -> line)))
 				.build();
 	}
 
@@ -402,5 +405,15 @@ public class ManufacturingJobLoaderAndSaver
 		return Optional.of(supportingServices.getValidateSourceLocatorInfo(from.getOrderId()))
 				.filter(sourceLocatorInfo -> !sourceLocatorInfo.getSourceLocatorList().isEmpty())
 				.map(sourceLocatorInfo -> prepareJobActivity(from).sourceLocatorValidate(sourceLocatorInfo).build());
+	}
+
+	@NonNull
+	private Optional<ManufacturingJobActivity> toIssueOnlyWhatWasReceivedActivity(final @NonNull PPOrderRoutingActivity from)
+	{
+		return getBOMLines(from.getOrderId())
+				.stream()
+				.filter(bomLine -> BOMIssueMethod.Planning.getCode().equals(bomLine.getIssueMethod()))
+				.findFirst()
+				.map(ignored -> prepareJobActivity(from).build());
 	}
 }
