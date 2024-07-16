@@ -14,7 +14,9 @@ import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidatePojoSupplier;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
@@ -26,6 +28,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -79,9 +82,14 @@ public class ProductionAdvisedEventCreatorTest
 	@Test
 	public void createProductionAdvisedEvents_returns_same_supplyRequiredDescriptor()
 	{
-		final MaterialPlanningContext context = Mockito.mock(MaterialPlanningContext.class);
-		Mockito.when(context.getProductPlanning())
-				.thenReturn(ProductPlanning.builder().build());
+		final MaterialPlanningContext context = MaterialPlanningContext.builder()
+				.productId(ProductId.ofRepoId(1))
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.warehouseId(WarehouseId.MAIN)
+				.productPlanning(ProductPlanning.builder().build())
+				.plantId(ResourceId.ofRepoId(2))
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
+				.build();
 
 		Mockito.when(ppOrderCandidateDemandMatcher.matches(Mockito.any(MaterialPlanningContext.class)))
 				.thenReturn(true);
