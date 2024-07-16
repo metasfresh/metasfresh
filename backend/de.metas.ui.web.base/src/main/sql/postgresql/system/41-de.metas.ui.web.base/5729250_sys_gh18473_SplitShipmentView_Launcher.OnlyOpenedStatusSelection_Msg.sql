@@ -14,3 +14,7 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Shipment Disposition is closed',Updated=TO_TIMESTAMP('2024-07-15 14:56:14.501','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545433
 ;
 
+-- Value: de.metas.ui.web.split_shipment.SplitShipmentView_Launcher.OnlyOpenedStatusSelection
+-- 2024-07-16T09:19:33.393Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Lieferdisposition ist geschlossen',Updated=TO_TIMESTAMP('2024-07-16 10:19:33.393','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545433
+;
