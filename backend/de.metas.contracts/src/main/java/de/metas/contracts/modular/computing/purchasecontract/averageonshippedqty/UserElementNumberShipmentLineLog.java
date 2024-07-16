@@ -131,7 +131,7 @@ public class UserElementNumberShipmentLineLog extends AbstractModularContractLog
 		{
 			final Money zero = Money.zero(CurrencyId.ofRepoId(flatrateTermRecord.getC_Currency_ID()));
 			productPrice = ProductPrice.builder()
-					.productId(productId)
+					.productId(createLogRequest.getProductId())
 					.money(zero)
 					.uomId(UomId.ofRepoId(inOutLineRecord.getC_UOM_ID()))
 					.build();
