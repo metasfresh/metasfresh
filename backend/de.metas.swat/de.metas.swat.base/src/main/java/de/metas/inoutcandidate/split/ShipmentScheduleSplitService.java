@@ -40,7 +40,7 @@ public class ShipmentScheduleSplitService
 
 	private boolean isRelatedInOutValid(@NonNull final ShipmentScheduleSplit split)
 	{
-		final I_M_ShipmentSchedule_Split record = InterfaceWrapperHelper.load(split.getId(), I_M_ShipmentSchedule_Split.class);
+		final I_M_ShipmentSchedule_Split record = repository.getRecordById(split.getId());
 		final InOutId inOutId = InOutId.ofRepoIdOrNull(record.getM_InOut_ID());
 		if (inOutId == null)
 		{
