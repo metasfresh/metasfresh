@@ -367,17 +367,19 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 		assertThat(result.get().getEmailAddress()).isEqualTo("bPartnerUserRecord.EMail");
 	}
 
+	private org.compiere.model.I_AD_User createUserRecord(final String eMail)
+	{
+		return createUserRecord(eMail, false);
+	}
+
 	@SuppressWarnings("SameParameterValue")
-	private org.compiere.model.I_AD_User createUserRecord(final String eMail, final boolean... isDunningUser)
+	private org.compiere.model.I_AD_User createUserRecord(final String eMail, boolean isDunningUser)
 	{
 		final org.compiere.model.I_AD_User userRecord = newInstance(I_AD_User.class);
 		userRecord.setName("userRecord");
 		userRecord.setEMail(eMail);
 		userRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
-		if (isDunningUser.length > 0)
-		{
-			userRecord.setIsDunningContact(isDunningUser[0]);
-		}
+		userRecord.setIsDunningContact(isDunningUser);
 		saveRecord(userRecord);
 		return userRecord;
 	}

@@ -17,8 +17,11 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.user.User;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.compiere.model.I_AD_User;
@@ -58,6 +61,7 @@ public class DunningDocOutboundLogMailRecipientProvider
 	private final DocOutBoundRecipientRepository recipientRepository;
 	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 	private final IBPartnerBL bpartnerBL;
+	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final DunningService dunningService;
 
 	public DunningDocOutboundLogMailRecipientProvider(
@@ -70,6 +74,7 @@ public class DunningDocOutboundLogMailRecipientProvider
 		this.orderEmailPropagationSysConfigRepository = orderEmailPropagationSysConfigRepository;
 		this.bpartnerBL = bpartnerBL;
 		this.dunningService = dunningService;
+
 	}
 
 	@Override
@@ -98,8 +103,7 @@ public class DunningDocOutboundLogMailRecipientProvider
 		final List<I_C_Invoice> dunnedInvoices = dunningService.retrieveDunnedInvoices(dunningDocId);
 		final int singleCommonInvoiceContactId = CollectionUtils.extractSingleElementOrDefault(dunnedInvoices, I_C_Invoice::getAD_User_ID, -1);
 
-		final I_AD_User dunningContact =  dunningRecord.getC_Dunning_Contact();
-
+		final I_AD_User dunningContact = userBL.getById(UserId.ofRepoIdOrNull(dunningRecord.getC_Dunning_Contact_ID()));
 
 		final boolean propagateToDocOutboundLog = orderEmailPropagationSysConfigRepository.isPropagateToDocOutboundLog(ClientAndOrgId.ofClientAndOrg(request.getClientId(), request.getOrgId()));
 
@@ -115,7 +119,6 @@ public class DunningDocOutboundLogMailRecipientProvider
 			final DocOutBoundRecipient dunningRecipient = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(dunningContact.getAD_User_ID()));
 
 			final String dunningEmail = dunningContact.getEMail();
-
 
 			if (Check.isNotBlank(dunningEmail))
 			{
@@ -138,7 +141,7 @@ public class DunningDocOutboundLogMailRecipientProvider
 			if (Check.isNotBlank(locationEmail))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={} and the location has the email {} so we take that user as the dunning mail's participant, with this email address", dunningRecipient, locationEmail);
-				return Optional.of(dunningRecipient.withEmailAddress(invoiceEmail));
+				return Optional.of(dunningRecipient.withEmailAddress(locationEmail));
 			}
 
 			Loggables.addLog("The dunned invoices' common dunning user={} has not mail address", dunningRecipient);
@@ -165,7 +168,7 @@ public class DunningDocOutboundLogMailRecipientProvider
 			if (Check.isNotBlank(locationEmail))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={} and the location has the email {} so we take that user as the dunning mail's participant, with this email address", invoiceUser, locationEmail);
-				return Optional.of(invoiceUser.withEmailAddress(invoiceEmail));
+				return Optional.of(invoiceUser.withEmailAddress(locationEmail));
 			}
 
 			Loggables.addLog("The dunned invoices' common invoiceUser={} has not mail address", invoiceUser);
