@@ -30,7 +30,7 @@ const ScanAndValidateScreen = () => {
     }
 
     if (scannedBarcode !== validOptions[validOptionIndex].qrCode) {
-      toastError({ messageKey: 'activities.mfg.validateSourceLocator.doesNotMatch' });
+      toastError({ messageKey: 'activities.mfg.validateSourceLocator.qrDoesNotMatch' });
     } else {
       toastNotification({ messageKey: 'activities.mfg.validateSourceLocator.qrMatches' });
       history.goBack();

@@ -15,6 +15,7 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleCre
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.EmptyHUListener;
+import de.metas.i18n.AdMessageKey;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
@@ -63,6 +64,7 @@ import java.util.Objects;
 public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFActivityHandler, UserConfirmationSupport
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.rawMaterialsIssueOnlyWhatWasReceived");
+	private static final AdMessageKey NO_QTY_TO_ISSUE = AdMessageKey.of("de.metas.manufacturing.NO_QTY_TO_ISSUE");
 
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
@@ -144,6 +146,11 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 				.map(I_M_Source_HU::getM_HU)
 				.collect(ImmutableList.toImmutableList());
 		final Quantity qtyToIssue = issueLine.getQtyToIssue().min(quantityToIssueForWhatWasReceived);
+
+		if (qtyToIssue.signum() <= 0)
+		{
+			throw new AdempiereException(NO_QTY_TO_ISSUE);
+		}
 
 		issue(ppOrderId, husThatAreFlaggedAsSource, huId2SourceHu, issueLine.getProductId(), qtyToIssue);
 	}
