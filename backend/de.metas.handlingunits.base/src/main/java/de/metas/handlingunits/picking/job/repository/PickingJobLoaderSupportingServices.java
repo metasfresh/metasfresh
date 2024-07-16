@@ -16,11 +16,14 @@ import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductId;
+import de.metas.user.UserId;
+import de.metas.workplace.Workplace;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -41,6 +44,9 @@ public interface PickingJobLoaderSupportingServices
 	ZonedDateTime toZonedDateTime(@NonNull java.sql.Timestamp timestamp, @NonNull OrgId orgId);
 
 	PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull PickingSlotId pickingSlotId);
+
+	@NonNull
+	Optional<Workplace> getWorkplaceByUserId(@NonNull UserId userId);
 
 	String getProductNo(@NonNull ProductId productId);
 

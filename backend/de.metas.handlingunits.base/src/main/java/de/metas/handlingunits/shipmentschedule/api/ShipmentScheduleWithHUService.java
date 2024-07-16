@@ -121,6 +121,9 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -193,6 +196,7 @@ public class ShipmentScheduleWithHUService
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
 
 		final HUQRCodesService huQRCodeService = new HUQRCodesService(
 				new HUQRCodesRepository(),
@@ -203,7 +207,8 @@ public class ShipmentScheduleWithHUService
 		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
 				pickingJobSlotService,
 				bpartnerBL,
-				huQRCodeService
+				huQRCodeService,
+				workplaceService
 		);
 
 		final HUReservationService huReservationServiceTest = new HUReservationService(new HUReservationRepository());

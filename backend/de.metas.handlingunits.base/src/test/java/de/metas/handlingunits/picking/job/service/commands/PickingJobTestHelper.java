@@ -77,6 +77,9 @@ import de.metas.test.MetasfreshSnapshotFunction;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -155,6 +158,7 @@ public class PickingJobTestHelper
                 huQRCodesRepository,
                 new GlobalQRCodeService(DoNothingMassPrintingService.instance),
                 new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
+		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
 		InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,
@@ -173,7 +177,8 @@ public class PickingJobTestHelper
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
 						bpartnerBL,
-						huQRCodeService
+						huQRCodeService,
+						workplaceService
 				),
 				pickingConfigRepo,
 				ShipmentService.getInstance(),
@@ -183,7 +188,8 @@ public class PickingJobTestHelper
 						huQRCodeService
 				),
 				inventoryService,
-				huReservationService);
+				huReservationService,
+				pickingJobSlotService);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)
