@@ -147,7 +147,7 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 
 	private void refreshRows()
 	{
-		final LinkedHashMap<ShipmentScheduleSplitId, ShipmentScheduleSplit> existingSplitsById = shipmentScheduleSplitService.getByShipmentScheduleId(shipmentScheduleId)
+		final LinkedHashMap<ShipmentScheduleSplitId, ShipmentScheduleSplit> existingSplitsById = shipmentScheduleSplitService.getByShipmentScheduleIdExcludingVoidedShipments(shipmentScheduleId)
 				.stream()
 				.collect(GuavaCollectors.toLinkedHashMapByKey(ShipmentScheduleSplit::getId));
 

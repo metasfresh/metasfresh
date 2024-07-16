@@ -38,24 +38,6 @@ public class ShipmentScheduleSplitRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public List<ShipmentScheduleSplit> getRecordToProcessByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
-	{
-		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_Split.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule_Split.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
-				.orderBy(I_M_ShipmentSchedule_Split.COLUMNNAME_M_ShipmentSchedule_Split_ID)
-				.create()
-				.stream()
-				.filter(this::isNotProcessed)
-				.map(ShipmentScheduleSplitRepository::fromRecord)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private boolean isNotProcessed(@NonNull final I_M_ShipmentSchedule_Split record)
-	{
-		return !record.isProcessed();
-	}
-
 	private static ShipmentScheduleSplit fromRecord(final I_M_ShipmentSchedule_Split record)
 	{
 		return ShipmentScheduleSplit.builder()
