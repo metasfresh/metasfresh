@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.process;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Specific_Price;
@@ -63,9 +62,6 @@ public class ModCntr_Specific_Delete_Price_Selection extends JavaProcess impleme
 
 	@Param(parameterName = "M_Product_ID", mandatory = true)
 	private ProductId p_M_Product_ID;
-
-	@Param(parameterName = "Price", mandatory = true)
-	private BigDecimal p_price;
 
 	@Param(parameterName = "MinValue", mandatory = true)
 	private BigDecimal p_minValue;
@@ -123,7 +119,6 @@ public class ModCntr_Specific_Delete_Price_Selection extends JavaProcess impleme
 				.addInArrayFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, getSelectedContracts(getProcessInfo().getQueryFilterOrElseFalse()))
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Currency_ID, p_C_Currency_ID)
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_MinValue, p_minValue)
-				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_Price, p_price)
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_IsScalePrice, true)
 				.create()
 				.listIds(ModCntrSpecificPriceId::ofRepoId);
