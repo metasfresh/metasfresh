@@ -7,7 +7,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Split;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
