@@ -47,6 +47,7 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -81,6 +82,7 @@ public class PickingJobService
 	@NonNull private final HULabelService huLabelService;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUReservationService huReservationService;
+	@NonNull private final WorkplaceService workplaceService;
 
 	public PickingJob getById(final PickingJobId pickingJobId)
 	{
@@ -104,6 +106,7 @@ public class PickingJobService
 				.pickingJobHUReservationService(pickingJobHUReservationService)
 				.pickingConfigRepo(pickingConfigRepo)
 				.loadingSupportServices(pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices())
+				.workplaceService(workplaceService)
 				//
 				.request(request)
 				//
@@ -535,11 +538,11 @@ public class PickingJobService
 		if (luId != null)
 		{
 			huLabelService.print(HULabelPrintRequest.builder()
-					.sourceDocType(HULabelSourceDocType.Picking)
-					.hu(HUToReportWrapper.of(handlingUnitsBL.getById(luId)))
-					.onlyIfAutoPrint(true)
-					.failOnMissingLabelConfig(false)
-					.build());
+										 .sourceDocType(HULabelSourceDocType.Picking)
+										 .hu(HUToReportWrapper.of(handlingUnitsBL.getById(luId)))
+										 .onlyIfAutoPrint(true)
+										 .failOnMissingLabelConfig(false)
+										 .build());
 		}
 
 		return pickingJobChanged;

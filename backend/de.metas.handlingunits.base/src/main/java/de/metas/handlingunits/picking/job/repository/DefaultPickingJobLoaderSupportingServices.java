@@ -27,10 +27,8 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
@@ -45,7 +43,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -134,13 +131,6 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull final PickingSlotId pickingSlotId)
 	{
 		return pickingSlotIdAndCaptionsCache.computeIfAbsent(pickingSlotId, pickingSlotService::getPickingSlotIdAndCaption);
-	}
-
-	@Override
-	@NonNull
-	public Optional<Workplace> getWorkplaceByUserId(@NonNull final UserId userId)
-	{
-		return workplaceService.getWorkplaceByUserId(userId);
 	}
 
 	@Override

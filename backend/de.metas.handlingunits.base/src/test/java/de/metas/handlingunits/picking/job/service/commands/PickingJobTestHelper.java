@@ -175,7 +175,8 @@ public class PickingJobTestHelper
 						huQRCodeService
 				),
 				inventoryService,
-				huReservationService);
+				huReservationService,
+				workplaceService);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)
