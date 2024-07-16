@@ -72,7 +72,6 @@ import java.util.Set;
 	private Integer _warehouseId = null;
 	/**
 	 * M_Product_ID
-	 *
 	 * Default: -1 i.e. don't filter by product, don't take it from context
 	 */
 	private Integer _productId = -1;
@@ -87,7 +86,6 @@ import java.util.Set;
 
 	/**
 	 * Filter only active records
-	 *
 	 * Default: Yes
 	 */
 	private boolean _onlyActiveRecords = true;
