@@ -33,7 +33,7 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DDOrderUtil;
 import de.metas.material.planning.ddorder.DistributionNetworkLine;
 import de.metas.material.planning.ddorder.DistributionNetworkLineId;
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -60,9 +60,9 @@ public class DD_OrderLine_PostMaterialEvent
 {
 	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
 	@NonNull private final PostMaterialEventService postMaterialEventService;
+	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	@NonNull private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
 
 	@ModelChange(
 			timings = { ModelValidator.TYPE_AFTER_CHANGE },
@@ -84,7 +84,7 @@ public class DD_OrderLine_PostMaterialEvent
 		final DDOrder.DDOrderBuilder ddOrderBuilder = createAndInitPPOrderPojoBuilder(ddOrder);
 
 		final DistributionNetworkLine distributionNetworkLine = DistributionNetworkLineId.optionalOfRepoId(oldDDOrderLine.getDD_NetworkDistributionLine_ID())
-				.map(distributionNetworkDAO::getLineById)
+				.map(distributionNetworkRepository::getLineById)
 				.orElse(null);
 
 		final ProductPlanning productPlanning = getProductPlanning(ddOrder);

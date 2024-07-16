@@ -108,7 +108,8 @@ public class DDOrderPojoSupplierTest
 			final BigDecimal qtyToMoveRequested,
 			final BigDecimal transferPercent)
 	{
-		final DDOrderPojoSupplier ddOrderPojoSupplier = new DDOrderPojoSupplier(modelProductDescriptorExtractor);
+		final DistributionNetworkRepository distributionNetworkRepository = new DistributionNetworkRepository();
+		final DDOrderPojoSupplier ddOrderPojoSupplier = new DDOrderPojoSupplier(distributionNetworkRepository, modelProductDescriptorExtractor);
 
 		final BigDecimal qtyToMoveActual = ddOrderPojoSupplier
 				.calculateQtyToMove(Quantity.of(qtyToMoveRequested, uom), Percent.of(transferPercent))

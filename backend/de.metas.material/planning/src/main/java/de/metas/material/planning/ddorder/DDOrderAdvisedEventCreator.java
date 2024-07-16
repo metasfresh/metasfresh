@@ -6,10 +6,9 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,7 +43,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DDOrderAdvisedEventCreator
 {
-	@NonNull private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
+	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final DDOrderDemandMatcher ddOrderDemandMatcher;
 	@NonNull private final DDOrderPojoSupplier ddOrderPojoSupplier;
 
@@ -69,7 +68,7 @@ public class DDOrderAdvisedEventCreator
 			for (final DDOrderLine ddOrderLine : ddOrder.getLines())
 			{
 				final DistributionNetworkLine distributionNetworkLine = DistributionNetworkLineId.optionalOfRepoId(ddOrderLine.getNetworkDistributionLineId())
-						.map(distributionNetworkDAO::getLineById)
+						.map(distributionNetworkRepository::getLineById)
 						.orElseThrow(() -> new AdempiereException("Every DDOrderLine pojo created by this planner needs to have networkDistributionLineId > 0, but this one hasn't; ddOrderLine=" + ddOrderLine));
 
 				final DDOrderAdvisedEvent distributionAdvisedEvent = DDOrderAdvisedEvent.builder()

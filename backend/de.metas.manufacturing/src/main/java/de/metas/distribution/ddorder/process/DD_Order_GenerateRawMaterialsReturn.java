@@ -29,6 +29,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.ddorder.DistributionNetworkLine;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -43,6 +44,7 @@ import de.metas.storage.IStorageRecord;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ASICopy;
@@ -76,12 +78,13 @@ import java.util.Map;
 public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 {
 	// Services
-	private final transient IStorageEngineService storageEngineService = Services.get(IStorageEngineService.class);
-	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-	private final transient DDOrderLowLevelService ddOrderLowLevelService = SpringContextHolder.instance.getBean(DDOrderLowLevelService.class);
+	@NonNull private final IStorageEngineService storageEngineService = Services.get(IStorageEngineService.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService = SpringContextHolder.instance.getBean(DDOrderLowLevelService.class);
+	@NonNull private final DistributionNetworkRepository distributionNetworkRepository = SpringContextHolder.instance.getBean(DistributionNetworkRepository.class);
 
 	//
 	// Parameters
@@ -137,9 +140,12 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 						storageRecord.getProductId(),
 						attributeSetInstance.getM_AttributeSetInstance_ID());
 
-				candidate = new RawMaterialsReturnDDOrderLineCandidate(
-						attributeSetIinstanceAware,
-						storageRecord.getLocator());
+				candidate = RawMaterialsReturnDDOrderLineCandidate.builder()
+						.distributionNetworkRepository(distributionNetworkRepository)
+						.attributeSetInstanceAware(attributeSetIinstanceAware)
+						.locator(storageRecord.getLocator())
+						.build();
+				
 				key2candidate.put(key, candidate);
 			}
 

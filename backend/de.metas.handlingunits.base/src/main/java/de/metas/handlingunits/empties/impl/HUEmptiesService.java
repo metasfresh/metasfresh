@@ -13,7 +13,7 @@ import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.material.planning.ddorder.DistributionNetwork;
 import de.metas.material.planning.ddorder.DistributionNetworkLine;
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -21,6 +21,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -63,12 +64,12 @@ public class HUEmptiesService implements IHUEmptiesService
 	private WarehouseId getEmptiesWarehouse(@NonNull final I_M_Warehouse warehouse)
 	{
 		// services
-		final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
+		final DistributionNetworkRepository distributionNetworkRepository = SpringContextHolder.instance.getBean(DistributionNetworkRepository.class);
 
 		// In case the requirements will change and the empties distribution network
 		// will be product based, here we will need to get the product gebinde
 		// and send it as parameter in the method above
-		final DistributionNetwork emptiesDistributionNetwork = distributionNetworkDAO.getEmptiesDistributionNetwork();
+		final DistributionNetwork emptiesDistributionNetwork = distributionNetworkRepository.getEmptiesDistributionNetwork();
 
 		final List<DistributionNetworkLine> lines = emptiesDistributionNetwork.getLinesBySourceWarehouse(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
 

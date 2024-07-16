@@ -6,7 +6,7 @@ import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ddorder.DistributionNetwork;
 import de.metas.material.planning.ddorder.DistributionNetworkLine;
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -16,6 +16,7 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 
@@ -117,8 +118,8 @@ import java.util.Optional;
 			return null;
 		}
 
-		final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
-		final DistributionNetwork distributionNetwork = distributionNetworkDAO.getById(productPlanning.getDistributionNetworkId());
+		final DistributionNetworkRepository distributionNetworkRepository = SpringContextHolder.instance.getBean(DistributionNetworkRepository.class);
+		final DistributionNetwork distributionNetwork = distributionNetworkRepository.getById(productPlanning.getDistributionNetworkId());
 		final List<DistributionNetworkLine> distributionNetworkLines = distributionNetwork.getLinesBySourceWarehouse(WarehouseId.ofRepoId(context.getM_Warehouse_ID()));
 
 		if (distributionNetworkLines.isEmpty())

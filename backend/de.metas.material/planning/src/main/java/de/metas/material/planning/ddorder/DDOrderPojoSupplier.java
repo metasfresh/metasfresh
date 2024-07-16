@@ -7,9 +7,9 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.IMaterialRequest;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
-import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -61,7 +61,7 @@ import java.util.stream.Collectors;
 public class DDOrderPojoSupplier
 {
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	@NonNull private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
+	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final ModelProductDescriptorExtractor productDescriptorFactory;
 
 	public List<DDOrder> supplyPojos(@NonNull final IMaterialRequest request)
@@ -106,7 +106,7 @@ public class DDOrderPojoSupplier
 			return ImmutableList.of();
 		}
 
-		final DistributionNetwork network = distributionNetworkDAO.getById(productPlanningData.getDistributionNetworkId());
+		final DistributionNetwork network = distributionNetworkRepository.getById(productPlanningData.getDistributionNetworkId());
 		final List<DistributionNetworkLine> networkLines = network.getLinesByTargetWarehouse(productPlanningData.getWarehouseId());
 		if (networkLines.isEmpty())
 		{

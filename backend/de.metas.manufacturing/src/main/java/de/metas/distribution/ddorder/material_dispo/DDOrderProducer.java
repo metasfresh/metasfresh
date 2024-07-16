@@ -16,12 +16,13 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DDOrderUtil;
 import de.metas.material.planning.ddorder.DistributionNetworkLine;
 import de.metas.material.planning.ddorder.DistributionNetworkLineId;
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.mm.attributes.api.ASICopy;
@@ -69,22 +70,21 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * #L%
  */
 @Service
+@RequiredArgsConstructor
 public class DDOrderProducer
 {
-	private final DDOrderLowLevelService ddOrderLowLevelService;
-	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
-	private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
+	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
+	@NonNull private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 
 	public static final ModelDynAttributeAccessor<I_DD_Order, MaterialDispoGroupId> ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID = //
 			new ModelDynAttributeAccessor<>(I_DD_Order.class.getName(), "DDOrderRequestedEvent_GroupId", MaterialDispoGroupId.class);
 
 	public static final ModelDynAttributeAccessor<I_DD_Order, String> ATTR_DDORDER_REQUESTED_EVENT_TRACE_ID = //
 			new ModelDynAttributeAccessor<>(I_DD_Order.class.getName(), "DDOrderRequestedEvent_TraceId", String.class);
-
-	public DDOrderProducer(final DDOrderLowLevelService ddOrderLowLevelService) {this.ddOrderLowLevelService = ddOrderLowLevelService;}
 
 	public ImmutableList<I_DD_Order> createDDOrders(
 			@NonNull final DDOrder ddOrder,
@@ -95,7 +95,7 @@ public class DDOrderProducer
 
 		for (final DDOrderLine linePojo : ddOrder.getLines())
 		{
-			final DistributionNetworkLine distributionNetworkLine = distributionNetworkDAO.getLineById(DistributionNetworkLineId.ofRepoId(linePojo.getNetworkDistributionLineId()));
+			final DistributionNetworkLine distributionNetworkLine = distributionNetworkRepository.getLineById(DistributionNetworkLineId.ofRepoId(linePojo.getNetworkDistributionLineId()));
 			final FromToWarehouse fromToWarehouseKey = toFromToWarehouse(linePojo);
 
 			final I_DD_Order ddOrderRecord = warehouses2ddOrder.computeIfAbsent(
@@ -173,7 +173,7 @@ public class DDOrderProducer
 
 	private FromToWarehouse toFromToWarehouse(@NonNull final DDOrderLine linePojo)
 	{
-		final DistributionNetworkLine distributionNetworkLine = distributionNetworkDAO.getLineById(DistributionNetworkLineId.ofRepoId(linePojo.getNetworkDistributionLineId()));
+		final DistributionNetworkLine distributionNetworkLine = distributionNetworkRepository.getLineById(DistributionNetworkLineId.ofRepoId(linePojo.getNetworkDistributionLineId()));
 		return new FromToWarehouse(distributionNetworkLine.getSourceWarehouseId(), distributionNetworkLine.getTargetWarehouseId());
 	}
 

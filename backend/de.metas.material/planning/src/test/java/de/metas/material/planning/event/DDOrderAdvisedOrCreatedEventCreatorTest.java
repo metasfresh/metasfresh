@@ -13,9 +13,14 @@ import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
@@ -27,6 +32,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -56,6 +62,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class DDOrderAdvisedOrCreatedEventCreatorTest
 {
+	DistributionNetworkRepository distributionNetworkRepository;
 	DDOrderDemandMatcher ddOrderDemandMatcher;
 	DDOrderPojoSupplier ddOrderPojoSupplier;
 
@@ -73,6 +80,7 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 		product.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(product);
 
+		distributionNetworkRepository = new DistributionNetworkRepository();
 		ddOrderDemandMatcher = Mockito.mock(DDOrderDemandMatcher.class);
 		ddOrderPojoSupplier = Mockito.mock(DDOrderPojoSupplier.class);
 	}
@@ -80,9 +88,14 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 	@Test
 	public void createProductionAdvisedEvents_returns_same_supplyRequiredDescriptor()
 	{
-		final MaterialPlanningContext context = Mockito.mock(MaterialPlanningContext.class);
-		Mockito.when(context.getProductPlanning())
-				.thenReturn(ProductPlanning.builder().build());
+		final MaterialPlanningContext context = MaterialPlanningContext.builder()
+				.productId(ProductId.ofRepoId(1))
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.warehouseId(WarehouseId.MAIN)
+				.productPlanning(ProductPlanning.builder().build())
+				.plantId(ResourceId.ofRepoId(2))
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
+				.build();
 
 		Mockito.when(ddOrderDemandMatcher.matches(Mockito.any(MaterialPlanningContext.class)))
 				.thenReturn(true);
@@ -92,7 +105,7 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
 
-		final DDOrderAdvisedEventCreator productionAdvisedEventCreator = new DDOrderAdvisedEventCreator(ddOrderDemandMatcher, ddOrderPojoSupplier);
+		final DDOrderAdvisedEventCreator productionAdvisedEventCreator = new DDOrderAdvisedEventCreator(distributionNetworkRepository, ddOrderDemandMatcher, ddOrderPojoSupplier);
 		final List<DDOrderAdvisedEvent> events = productionAdvisedEventCreator.createDDOrderAdvisedEvents(supplyRequiredDescriptor, context);
 
 		assertThat(events).hasSize(1);

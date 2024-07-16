@@ -1,4 +1,4 @@
-package de.metas.material.planning.ddorder.impl;
+package de.metas.material.planning.ddorder;
 
 /*
  * #%L
@@ -27,11 +27,6 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
-import de.metas.material.planning.ddorder.DistributionNetwork;
-import de.metas.material.planning.ddorder.DistributionNetworkId;
-import de.metas.material.planning.ddorder.DistributionNetworkLine;
-import de.metas.material.planning.ddorder.DistributionNetworkLineId;
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -45,12 +40,14 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
+import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collector;
 
-public class DistributionNetworkDAO implements IDistributionNetworkDAO
+@Repository
+public class DistributionNetworkRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -59,19 +56,16 @@ public class DistributionNetworkDAO implements IDistributionNetworkDAO
 			.additionalTableNameToResetFor(I_DD_NetworkDistributionLine.Table_Name)
 			.build();
 
-	@Override
 	public DistributionNetwork getById(@NonNull final DistributionNetworkId id)
 	{
 		return getMap().getById(id);
 	}
 
-	@Override
 	public DistributionNetworkLine getLineById(@NonNull final DistributionNetworkLineId lineId)
 	{
 		return getMap().getLineById(lineId);
 	}
 
-	@Override
 	public DistributionNetwork getEmptiesDistributionNetwork()
 	{
 		return getMap().getEmptiesDistributionNetwork();
@@ -111,7 +105,7 @@ public class DistributionNetworkDAO implements IDistributionNetworkDAO
 				.id(DistributionNetworkId.ofRepoId(headerRecord.getDD_NetworkDistribution_ID()))
 				.name(headerRecord.getName())
 				.lines(lineRecords.stream()
-						.map(DistributionNetworkDAO::fromRecord)
+						.map(DistributionNetworkRepository::fromRecord)
 						.collect(ImmutableList.toImmutableList()))
 				.isEmptiesDistributionNetwork(headerRecord.isHUDestroyed())
 				.build();

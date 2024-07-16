@@ -20,7 +20,7 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DDOrderUtil;
 import de.metas.material.planning.ddorder.DistributionNetworkLine;
 import de.metas.material.planning.ddorder.DistributionNetworkLineId;
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.material.replenish.ReplenishInfo;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.ClientAndOrgId;
@@ -58,7 +58,7 @@ public class DD_Order_PostMaterialEvent
 {
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	@NonNull private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
+	@NonNull final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
 	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
 	@NonNull private final PostMaterialEventService materialEventService;
@@ -104,7 +104,7 @@ public class DD_Order_PostMaterialEvent
 		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
 		{
 			final DistributionNetworkLine distributionNetworkLine = DistributionNetworkLineId.optionalOfRepoId(ddOrderLine.getDD_NetworkDistributionLine_ID())
-					.map(distributionNetworkDAO::getLineById)
+					.map(distributionNetworkRepository::getLineById)
 					.orElse(null);
 
 			final ProductPlanning productPlanning = getProductPlanning(ddOrderRecord);
