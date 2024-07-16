@@ -98,3 +98,23 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 /* DDL */  select update_Process_Para_Translation_From_AD_Element(215)
 ;
 
+
+-- Value: Msg_No_Fallback_Price
+-- 2024-07-16T07:13:39.657Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Kein Fallback-Staffelpreis!',Updated=TO_TIMESTAMP('2024-07-16 10:13:39.657','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545431
+;
+
+-- 2024-07-16T07:13:39.665Z
+UPDATE AD_Message SET MsgText='Kein Fallback-Staffelpreis!' WHERE AD_Message_ID=545431
+;
+
+
+-- Process: ModCntr_Specific_Delete_Price_Selection(de.metas.contracts.modular.process.ModCntr_Specific_Delete_Price_Selection)
+-- ParameterName: Price
+-- 2024-07-16T07:20:36.811Z
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=542865
+;
+
+-- 2024-07-16T07:20:36.824Z
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=542865
+;
