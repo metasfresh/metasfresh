@@ -211,7 +211,6 @@ public class DDOrderProducer
 
 		//
 		// Product, UOM, Qty
-		// NOTE: we assume qtyToMove is in "mrpContext.getC_UOM()" which shall be the Product's stocking UOM
 		final ProductDescriptor productDescriptor = linePojo.getProductDescriptor();
 		final I_M_Product product = load(productDescriptor.getProductId(), I_M_Product.class);
 

@@ -6,10 +6,10 @@ import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 /*
@@ -84,11 +83,10 @@ public class DDOrderPojoSupplier
 
 		final List<DDOrder.DDOrderBuilder> builders = new ArrayList<>();
 
-		final IMaterialPlanningContext mrpContext = request.getMrpContext();
+		final MaterialPlanningContext context = request.getContext();
 
-		final Properties ctx = mrpContext.getCtx();
-		final ProductPlanning productPlanningData = mrpContext.getProductPlanning();
-		final ResourceId plantId = mrpContext.getPlantId();
+		final ProductPlanning productPlanningData = context.getProductPlanning();
+		final ResourceId plantId = context.getPlantId();
 
 		// TODO vpj-cd I need to create logic for DRP-040 Shipment Due Action Notice
 		// Indicates that a shipment for a Order Distribution is due.
@@ -164,7 +162,7 @@ public class DDOrderPojoSupplier
 				final OrgId warehouseToOrgId = warehouseBL.getWarehouseOrgId(warehouseToId);
 				// Org Must be linked to BPartner
 				// final OrgId locatorToOrgId = warehouseBL.getLocatorOrgId(locatorToId); // we strongly assume that we can got with the warehouse's org and don't need to retrieve its default locator's org!
-				final int orgBPartnerId = DDOrderUtil.retrieveOrgBPartnerId(ctx, warehouseToOrgId.getRepoId());
+				final int orgBPartnerId = DDOrderUtil.retrieveOrgBPartnerId(warehouseToOrgId.getRepoId());
 				if (orgBPartnerId <= 0)
 				{
 					// DRP-020: Target Org has no BP linked to it
@@ -214,7 +212,7 @@ public class DDOrderPojoSupplier
 					.setParameter("QtyToSupply (remaining)", qtyToSupplyRemaining)
 					.setParameter("@DD_NetworkDistribution_ID@", network)
 					.setParameter("@DD_NetworkDistributionLine_ID@", networkLines)
-					.setParameter("MRPContext", mrpContext);
+					.setParameter("context", context);
 		}
 
 		return builders.stream()
@@ -242,16 +240,16 @@ public class DDOrderPojoSupplier
 			@NonNull final Quantity qtyToMove,
 			@NonNull final IMaterialRequest request)
 	{
-		final IMaterialPlanningContext mrpContext = request.getMrpContext();
+		final MaterialPlanningContext context = request.getContext();
 
 		final PlainAttributeSetInstanceAware asiAware = PlainAttributeSetInstanceAware
 				.forProductIdAndAttributeSetInstanceId(
-						ProductId.toRepoId(mrpContext.getProductId()),
-						AttributeSetInstanceId.toRepoId(mrpContext.getAttributeSetInstanceId()));
+						ProductId.toRepoId(context.getProductId()),
+						AttributeSetInstanceId.toRepoId(context.getAttributeSetInstanceId()));
 
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(asiAware);
 
-		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);
+		final int durationDays = DDOrderUtil.calculateDurationDays(context.getProductPlanning(), networkLine);
 
 		final Quantity qtyToMoveInProductUOM = Services.get(IUOMConversionBL.class).convertToProductUOM(qtyToMove, asiAware.getProductId());
 

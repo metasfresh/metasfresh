@@ -1,7 +1,7 @@
 package de.metas.material.planning.event;
 
-import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -48,7 +48,7 @@ public class MaterialRequest implements IMaterialRequest
 	@Default
 	int mrpDemandBPartnerId = -1;
 
-	IMaterialPlanningContext  mrpContext;
+	MaterialPlanningContext context;
 
 	Instant demandDate;
 

@@ -9,16 +9,12 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
-import java.util.Properties;
 
 @UtilityClass
 public class DDOrderUtil
@@ -35,12 +31,10 @@ public class DDOrderUtil
 		return warehousesRepo.getInTransitWarehouseIdIfExists(adOrgId);
 	}
 
-	public int retrieveOrgBPartnerId(@NonNull final Properties ctx, final int orgId)
+	public int retrieveOrgBPartnerId(final int orgId)
 	{
-		final I_AD_Org org = InterfaceWrapperHelper.create(ctx, orgId, I_AD_Org.class, ITrx.TRXNAME_None);
-
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-		final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(org);
+		final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(orgId);
 
 		return orgBPartner.getC_BPartner_ID();
 	}

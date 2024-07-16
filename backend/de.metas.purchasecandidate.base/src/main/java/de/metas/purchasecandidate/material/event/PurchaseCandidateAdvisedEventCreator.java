@@ -3,9 +3,9 @@ package de.metas.purchasecandidate.material.event;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
-import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -54,9 +54,9 @@ public class PurchaseCandidateAdvisedEventCreator
 
 	public Optional<PurchaseCandidateAdvisedEvent> createPurchaseAdvisedEvent(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final IMutableMRPContext mrpContext)
+			@NonNull final MaterialPlanningContext context)
 	{
-		if (!purchaseOrderDemandMatcher.matches(mrpContext))
+		if (!purchaseOrderDemandMatcher.matches(context))
 		{
 			return Optional.empty();
 		}
@@ -71,7 +71,7 @@ public class PurchaseCandidateAdvisedEventCreator
 			return Optional.empty();
 		}
 
-		final ProductPlanning productPlanning = mrpContext.getProductPlanning();
+		final ProductPlanning productPlanning = context.getProductPlanning();
 
 		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent
 				.builder()

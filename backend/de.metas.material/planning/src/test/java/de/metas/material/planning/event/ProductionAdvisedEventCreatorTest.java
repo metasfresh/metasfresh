@@ -7,9 +7,8 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderData;
-import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
-import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
@@ -80,11 +79,11 @@ public class ProductionAdvisedEventCreatorTest
 	@Test
 	public void createProductionAdvisedEvents_returns_same_supplyRequiredDescriptor()
 	{
-		final IMutableMRPContext mrpContext = Mockito.mock(IMutableMRPContext.class);
-		Mockito.when(mrpContext.getProductPlanning())
+		final MaterialPlanningContext context = Mockito.mock(MaterialPlanningContext.class);
+		Mockito.when(context.getProductPlanning())
 				.thenReturn(ProductPlanning.builder().build());
 
-		Mockito.when(ppOrderCandidateDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
+		Mockito.when(ppOrderCandidateDemandMatcher.matches(Mockito.any(MaterialPlanningContext.class)))
 				.thenReturn(true);
 
 		Mockito.when(ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(Mockito.any(IMaterialRequest.class)))
@@ -93,7 +92,7 @@ public class ProductionAdvisedEventCreatorTest
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
 
 		final PPOrderCandidateAdvisedEventCreator pPOrderCandidateAdvisedCreator = new PPOrderCandidateAdvisedEventCreator(ppOrderCandidateDemandMatcher, ppOrderCandidatePojoSupplier);
-		final List<PPOrderCandidateAdvisedEvent> events = pPOrderCandidateAdvisedCreator.createPPOrderCandidateAdvisedEvents(supplyRequiredDescriptor, mrpContext);
+		final List<PPOrderCandidateAdvisedEvent> events = pPOrderCandidateAdvisedCreator.createPPOrderCandidateAdvisedEvents(supplyRequiredDescriptor, context);
 		assertThat(events).hasSize(1);
 		assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
 	}
@@ -102,14 +101,14 @@ public class ProductionAdvisedEventCreatorTest
 	{
 		return PPOrderCandidate.builder()
 				.ppOrderData(PPOrderData.builder()
-									 .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 2))
-									 .plantId(ResourceId.ofRepoId(1))
-									 .warehouseId(WarehouseId.ofRepoId(1))
-									 .productDescriptor(ProductDescriptor.forProductAndAttributes(1, AttributesKey.ofString("1")))
-									 .datePromised(Instant.now())
-									 .dateStartSchedule(Instant.now())
-									 .qtyRequired(new BigDecimal("100"))
-									 .build())
+						.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 2))
+						.plantId(ResourceId.ofRepoId(1))
+						.warehouseId(WarehouseId.ofRepoId(1))
+						.productDescriptor(ProductDescriptor.forProductAndAttributes(1, AttributesKey.ofString("1")))
+						.datePromised(Instant.now())
+						.dateStartSchedule(Instant.now())
+						.qtyRequired(new BigDecimal("100"))
+						.build())
 				.build();
 	}
 }

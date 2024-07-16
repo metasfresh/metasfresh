@@ -14,29 +14,25 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
-import de.metas.material.planning.IMRPContextFactory;
-import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -76,9 +72,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 	private static final Logger logger = LogManager.getLogger(SupplyRequiredHandler.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	@NonNull private final IMRPContextFactory mrpContextFactory = Services.get(IMRPContextFactory.class);
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator;
 	@NonNull private final PPOrderCandidateAdvisedEventCreator ppOrderCandidateAdvisedEventCreator;
 	@NonNull private final PostMaterialEventService postMaterialEventService;
@@ -100,27 +94,28 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 	{
 		updateMainData(descriptor);
 
-		final IMutableMRPContext mrpContext = createMRPContextOrNull(descriptor);
-		if (mrpContext == null)
+		final MaterialPlanningContext context = createContextOrNull(descriptor);
+		if (context == null)
 		{
 			return; // nothing to do
 		}
 
 		final List<MaterialEvent> events = new ArrayList<>();
 
-		events.addAll(dDOrderAdvisedEventCreator.createDDOrderAdvisedEvents(descriptor, mrpContext));
-		events.addAll(ppOrderCandidateAdvisedEventCreator.createPPOrderCandidateAdvisedEvents(descriptor, mrpContext));
+		events.addAll(dDOrderAdvisedEventCreator.createDDOrderAdvisedEvents(descriptor, context));
+		events.addAll(ppOrderCandidateAdvisedEventCreator.createPPOrderCandidateAdvisedEvents(descriptor, context));
 
 		events.forEach(postMaterialEventService::postEventAsync);
 	}
 
-	private IMutableMRPContext createMRPContextOrNull(@NonNull final SupplyRequiredDescriptor materialDemandEvent)
+	private MaterialPlanningContext createContextOrNull(@NonNull final SupplyRequiredDescriptor materialDemandEvent)
 	{
 		final EventDescriptor eventDescriptor = materialDemandEvent.getEventDescriptor();
 
 		final MaterialDescriptor materialDescriptor = materialDemandEvent.getMaterialDescriptor();
 
-		final I_M_Warehouse warehouse = warehouseDAO.getById(materialDescriptor.getWarehouseId());
+		final WarehouseId warehouseId = materialDescriptor.getWarehouseId();
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 
 		final ResourceId plantId = productPlanningDAO.findPlant(
 				eventDescriptor.getOrgId().getRepoId(),
@@ -128,11 +123,12 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 				materialDescriptor.getProductId(),
 				materialDescriptor.getAttributeSetInstanceId());
 
+		final ProductId productId = ProductId.ofRepoId(materialDescriptor.getProductId());
 		final ProductPlanningQuery productPlanningQuery = ProductPlanningQuery.builder()
 				.orgId(eventDescriptor.getOrgId())
-				.warehouseId(materialDescriptor.getWarehouseId())
+				.warehouseId(warehouseId)
 				.plantId(plantId)
-				.productId(ProductId.ofRepoId(materialDescriptor.getProductId()))
+				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescriptor.getAttributeSetInstanceId()))
 				.build();
 
@@ -143,23 +139,16 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 			return null;
 		}
 
-		final IMutableMRPContext mrpContext = mrpContextFactory.createInitialMRPContext();
-
-		final I_M_Product product = productBL.getById(ProductId.ofRepoId(materialDescriptor.getProductId()));
-		mrpContext.setM_Product(product);
-		mrpContext.setM_AttributeSetInstance_ID(materialDescriptor.getAttributeSetInstanceId());
-		mrpContext.setM_Warehouse(warehouse);
-		mrpContext.setDate(TimeUtil.asDate(materialDescriptor.getDate()));
-		mrpContext.setCtx(Env.getCtx());
-		mrpContext.setTrxName(ITrx.TRXNAME_ThreadInherited);
-
-		mrpContext.setProductPlanning(productPlanning);
-		mrpContext.setPlantId(plantId);
-
 		final I_AD_Org org = orgDAO.getById(eventDescriptor.getOrgId());
-		mrpContext.setAD_Client_ID(org.getAD_Client_ID());
-		mrpContext.setAD_Org(org);
-		return mrpContext;
+
+		return MaterialPlanningContext.builder()
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(materialDescriptor.getAttributeSetInstanceId()))
+				.warehouseId(warehouseId)
+				.productPlanning(productPlanning)
+				.plantId(plantId)
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.build();
 	}
 
 	private void updateMainData(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)

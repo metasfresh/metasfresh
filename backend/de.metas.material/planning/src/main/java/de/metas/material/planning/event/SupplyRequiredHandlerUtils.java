@@ -2,7 +2,7 @@ package de.metas.material.planning.event;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -42,14 +42,14 @@ public class SupplyRequiredHandlerUtils
 	@NonNull
 	public static MaterialRequest mkRequest(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final IMaterialPlanningContext mrpContext)
+			@NonNull final MaterialPlanningContext context)
 	{
 
 		final BPartnerId customerId = supplyRequiredDescriptor.getMaterialDescriptor().getCustomerId();
 
 		return MaterialRequest.builder()
 				.qtyToSupply(getQuantity(supplyRequiredDescriptor))
-				.mrpContext(mrpContext)
+				.context(context)
 				.mrpDemandBPartnerId(BPartnerId.toRepoIdOr(customerId, -1))
 				.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())
 				.mrpDemandShipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())

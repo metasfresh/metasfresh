@@ -6,8 +6,8 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -50,9 +50,9 @@ public class DDOrderAdvisedEventCreator
 
 	public List<DDOrderAdvisedEvent> createDDOrderAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			final IMutableMRPContext mrpContext)
+			final MaterialPlanningContext context)
 	{
-		if (!ddOrderDemandMatcher.matches(mrpContext))
+		if (!ddOrderDemandMatcher.matches(context))
 		{
 			return ImmutableList.of();
 		}
@@ -61,9 +61,9 @@ public class DDOrderAdvisedEventCreator
 
 		final List<DDOrder> ddOrders = ddOrderPojoSupplier
 				.supplyPojos(
-						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext));
+						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, context));
 
-		final ProductPlanning productPlanningData = mrpContext.getProductPlanning();
+		final ProductPlanning productPlanningData = context.getProductPlanning();
 		for (final DDOrder ddOrder : ddOrders)
 		{
 			for (final DDOrderLine ddOrderLine : ddOrder.getLines())

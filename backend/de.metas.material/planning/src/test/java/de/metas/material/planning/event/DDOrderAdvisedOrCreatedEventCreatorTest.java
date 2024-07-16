@@ -8,8 +8,7 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
@@ -81,11 +80,11 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 	@Test
 	public void createProductionAdvisedEvents_returns_same_supplyRequiredDescriptor()
 	{
-		final IMutableMRPContext mrpContext = Mockito.mock(IMutableMRPContext.class);
-		Mockito.when(mrpContext.getProductPlanning())
+		final MaterialPlanningContext context = Mockito.mock(MaterialPlanningContext.class);
+		Mockito.when(context.getProductPlanning())
 				.thenReturn(ProductPlanning.builder().build());
 
-		Mockito.when(ddOrderDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
+		Mockito.when(ddOrderDemandMatcher.matches(Mockito.any(MaterialPlanningContext.class)))
 				.thenReturn(true);
 
 		Mockito.when(ddOrderPojoSupplier.supplyPojos(Mockito.any()))
@@ -94,7 +93,7 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
 
 		final DDOrderAdvisedEventCreator productionAdvisedEventCreator = new DDOrderAdvisedEventCreator(ddOrderDemandMatcher, ddOrderPojoSupplier);
-		final List<DDOrderAdvisedEvent> events = productionAdvisedEventCreator.createDDOrderAdvisedEvents(supplyRequiredDescriptor, mrpContext);
+		final List<DDOrderAdvisedEvent> events = productionAdvisedEventCreator.createDDOrderAdvisedEvents(supplyRequiredDescriptor, context);
 
 		assertThat(events).hasSize(1);
 		assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);

@@ -73,7 +73,7 @@ import java.util.Set;
 	/**
 	 * M_Product_ID
 	 *
-	 * Default: -1 i.e. don't filter by product, don't take it from MRPContext
+	 * Default: -1 i.e. don't filter by product, don't take it from context
 	 */
 	private Integer _productId = -1;
 
