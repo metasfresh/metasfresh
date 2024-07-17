@@ -47,15 +47,6 @@ public class CandidateSaveResult
 		return !DateAndSeqNo.equals(previousTime, DateAndSeqNo.ofCandidate(candidate));
 	}
 
-	public boolean isDateMovedBackwards()
-	{
-		if (previousTime == null)
-		{
-			return false;
-		}
-		return previousTime.isAfter(DateAndSeqNo.ofCandidate(candidate));
-	}
-
 	public boolean isDateMovedForwards()
 	{
 		if (previousTime == null)
