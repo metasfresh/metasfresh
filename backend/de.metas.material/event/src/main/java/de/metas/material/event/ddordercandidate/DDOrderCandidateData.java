@@ -52,6 +52,11 @@ public class DDOrderCandidateData
 
 	boolean simulated;
 
+	/**
+	 * Not persisted in the {@code DD_Order} data record, but
+	 * when material-dispo posts {@link DDOrderCandidateRequestedEvent}, it contains a group-ID,
+	 * and the respective {@link DDOrderCandidateCreatedEvent} contains the same group-ID.
+	 */
 	@Nullable MaterialDispoGroupId materialDispoGroupId;
 
 	@JsonIgnore

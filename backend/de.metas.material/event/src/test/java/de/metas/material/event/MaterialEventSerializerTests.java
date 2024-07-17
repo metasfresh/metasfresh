@@ -17,7 +17,6 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
@@ -125,17 +124,6 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
-	public void ddOrderRequestedEvent()
-	{
-		final DDOrderRequestedEvent event = DDOrderRequestedEvent.builder()
-				.eventDescriptor(newEventDescriptor())
-				.dateOrdered(NOW)
-				.ddOrder(createDdOrder(0))
-				.build();
-		assertEventEqualAfterSerializeDeserialize(event);
-	}
-
-	@Test
 	public void ddOrderCreatedEvent()
 	{
 		final DDOrderCreatedEvent event = DDOrderCreatedEvent.builder()
@@ -161,6 +149,7 @@ public class MaterialEventSerializerTests
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private DDOrder createDdOrder(final int ddOrderId)
 	{
 		return DDOrder.builder()

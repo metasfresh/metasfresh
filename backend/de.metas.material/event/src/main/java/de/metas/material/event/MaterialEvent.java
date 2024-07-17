@@ -8,7 +8,6 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderDeletedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
-import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateCreatedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
@@ -69,7 +68,6 @@ import javax.annotation.Nullable;
 
 		@JsonSubTypes.Type(name = DDOrderCreatedEvent.TYPE, value = DDOrderCreatedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderDocStatusChangedEvent.TYPE, value = DDOrderDocStatusChangedEvent.class),
-		@JsonSubTypes.Type(name = DDOrderRequestedEvent.TYPE, value = DDOrderRequestedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderDeletedEvent.TYPE, value = DDOrderDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = DDOrderCandidateAdvisedEvent.TYPE, value = DDOrderCandidateAdvisedEvent.class),

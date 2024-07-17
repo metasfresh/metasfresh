@@ -69,11 +69,6 @@ public class DDOrder
 
 	DocStatus docStatus;
 
-	/**
-	 * Not persisted in the {@code DD_Order} data record, but
-	 * when material-dispo posts {@link DDOrderRequestedEvent}, it contains a group-ID,
-	 * and the respective {@link DDOrderCreatedEvent} contains the same group-ID.
-	 */
 	MaterialDispoGroupId materialDispoGroupId;
 
 	boolean simulated;

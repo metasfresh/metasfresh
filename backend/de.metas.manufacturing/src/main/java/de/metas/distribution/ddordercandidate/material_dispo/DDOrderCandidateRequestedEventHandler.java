@@ -3,7 +3,6 @@ package de.metas.distribution.ddordercandidate.material_dispo;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
-import de.metas.distribution.ddorder.material_dispo.DDOrderRequestedEventHandler;
 import de.metas.distribution.ddordercandidate.DDOrderCandidate;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
 import de.metas.logging.LogManager;
@@ -29,7 +28,7 @@ import java.util.Collection;
 public class DDOrderCandidateRequestedEventHandler
 		implements MaterialEventHandler<DDOrderCandidateRequestedEvent>
 {
-	@NonNull private static final Logger logger = LogManager.getLogger(DDOrderRequestedEventHandler.class);
+	@NonNull private static final Logger logger = LogManager.getLogger(DDOrderCandidateRequestedEventHandler.class);
 	@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository;
 
 	@Override
