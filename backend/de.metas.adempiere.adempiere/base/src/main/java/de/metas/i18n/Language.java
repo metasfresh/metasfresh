@@ -167,12 +167,12 @@ public final class Language implements Serializable
 			new Language("Finnish",
 					AD_Language_fi_FI, new Locale("fi", "FI"), Boolean.TRUE, "dd.MM.yyyy",
 					MediaSize.ISO.A4),
-			new Language("Fran\u00e7ais (CH)",
-					AD_Language_fr_CH, new Locale("fr", "CH"), Boolean.FALSE, "dd.MM.yyyy",
-					MediaSize.ISO.A4),
 			new Language("Fran\u00e7ais",
 					AD_Language_fr_FR, Locale.FRANCE, null, null, 		// dd.MM.yy
 					MediaSize.ISO.A4),
+			new Language("Fran\u00e7ais (CH)",
+						 AD_Language_fr_CH, new Locale("fr", "CH"), Boolean.FALSE, "dd.MM.yyyy",
+						 MediaSize.ISO.A4),
 			new Language("Fran\u00e7ais (CA)",
 					AD_Language_fr_CA, new Locale("fr", "CA"), Boolean.TRUE, "MM/dd/yyyy", 	// MM/dd/yy
 					MediaSize.NA.LETTER),
