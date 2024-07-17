@@ -11,7 +11,7 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
+import de.metas.material.dispo.commons.repository.CandidateSaveResult;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
@@ -103,7 +103,7 @@ public class StockCandidateServiceTests
 				candidateRepositoryWriteService);
 	}
 
-	private SaveResult createStockRecordAtTimeNOW(@Nullable final BPartnerId customerId)
+	private CandidateSaveResult createStockRecordAtTimeNOW(@Nullable final BPartnerId customerId)
 	{
 		final boolean reserved = customerId != null; // in stock candidates,reserved coesn't really matter, but we set it for consistency
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
@@ -130,7 +130,7 @@ public class StockCandidateServiceTests
 	@Test
 	void createStockCandidate_2ndWithout_1stWithout_customer()
 	{
-		final SaveResult nowCandidateResult = createStockRecordAtTimeNOW(null);
+		final CandidateSaveResult nowCandidateResult = createStockRecordAtTimeNOW(null);
 		assertThat(nowCandidateResult.getCandidate().getQuantity()).isEqualByComparingTo("10"); // guard
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
@@ -140,13 +140,13 @@ public class StockCandidateServiceTests
 				.quantity(BigDecimal.ONE)
 				.build();
 
-		final SaveResult result = invokeCreateStockCandidate(materialDescr);
+		final CandidateSaveResult result = invokeCreateStockCandidate(materialDescr);
 
 		assertThat(result.getCandidate().getQuantity()).isEqualByComparingTo(/* 0+1= */ONE);
 		assertThat(result.getPreviousQty()).isNull();
 	}
 
-	private SaveResult invokeCreateStockCandidate(final MaterialDescriptor materialDescr)
+	private CandidateSaveResult invokeCreateStockCandidate(final MaterialDescriptor materialDescr)
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.STOCK)
@@ -161,7 +161,7 @@ public class StockCandidateServiceTests
 	@Test
 	void createStockCandidate_2ndWith_1stWithout_customer()
 	{
-		final SaveResult candidate2Result = createStockRecordAtTimeNOW(BPartnerId.ofRepoId(10));
+		final CandidateSaveResult candidate2Result = createStockRecordAtTimeNOW(BPartnerId.ofRepoId(10));
 		assertThat(candidate2Result.getCandidate().getQuantity()).isEqualByComparingTo("10"); // guard
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
@@ -171,7 +171,7 @@ public class StockCandidateServiceTests
 				.quantity(BigDecimal.ONE)
 				.build();
 
-		final SaveResult candidate1Result = invokeCreateStockCandidate(materialDescr);
+		final CandidateSaveResult candidate1Result = invokeCreateStockCandidate(materialDescr);
 
 		assertThat(candidate1Result.getCandidate().getQuantity()).isEqualByComparingTo("1"); // the first candidate has its 1
 		assertThat(candidate1Result.getPreviousQty()).isNull();
@@ -186,7 +186,7 @@ public class StockCandidateServiceTests
 	@Test
 	void createStockCandidate_1stWithout_2ndWithout_customer()
 	{
-		final SaveResult nowCandidateResult = createStockRecordAtTimeNOW(null);
+		final CandidateSaveResult nowCandidateResult = createStockRecordAtTimeNOW(null);
 		assertThat(nowCandidateResult.getCandidate().getQuantity()).isEqualByComparingTo("10"); // guard
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
@@ -196,7 +196,7 @@ public class StockCandidateServiceTests
 				.quantity(BigDecimal.ONE)
 				.build();
 
-		final SaveResult result = invokeCreateStockCandidate(materialDescr);
+		final CandidateSaveResult result = invokeCreateStockCandidate(materialDescr);
 
 		assertThat(result.getCandidate().getQuantity()).isEqualByComparingTo(/* 10+1= */"11");
 		assertThat(result.getPreviousQty()).isEqualByComparingTo(TEN);
@@ -211,7 +211,7 @@ public class StockCandidateServiceTests
 	@Test
 	void createStockCandidate_1stWithout_2ndWith_customer()
 	{
-		final SaveResult candidate1Result = createStockRecordAtTimeNOW(null);
+		final CandidateSaveResult candidate1Result = createStockRecordAtTimeNOW(null);
 		assertThat(candidate1Result.getCandidate().getQuantity()).isEqualByComparingTo("10"); // guard
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
@@ -222,7 +222,7 @@ public class StockCandidateServiceTests
 				.quantity(BigDecimal.ONE)
 				.build();
 
-		final SaveResult candidate2Result = invokeCreateStockCandidate(materialDescr);
+		final CandidateSaveResult candidate2Result = invokeCreateStockCandidate(materialDescr);
 
 		assertThat(candidate2Result.getCandidate().getQuantity()).isEqualByComparingTo(/* 10+1= */"11");
 		assertThat(candidate2Result.getPreviousQty()).isEqualByComparingTo(TEN);
@@ -261,7 +261,7 @@ public class StockCandidateServiceTests
 				.id(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
 				.build();
 
-		final SaveResult result = stockCandidateService.updateQtyAndDate(candidate);
+		final CandidateSaveResult result = stockCandidateService.updateQtyAndDate(candidate);
 
 		assertThat(result.getCandidate().getQuantity()).isEqualByComparingTo("1");
 		assertThat(result.getCandidate().getDate()).isEqualTo(candidate.getDate());
@@ -403,7 +403,7 @@ public class StockCandidateServiceTests
 		invokeStockCandidateService(t3, "-3"); // (t1 => 10), (t3 => 7)
 
 		invokeStockCandidateService(t4, "2");  // (t1 => 10), (t3 => 7), (t4 => 8)
-		final SaveResult t5SaveResult = //
+		final CandidateSaveResult t5SaveResult = //
 				invokeStockCandidateService(t5, "-3"); // (t1 => 10), (t3 => 7), (t4 => 8), (t5 => 5)
 		invokeStockCandidateService(t6, "5");  // (t1 => 10), (t3 => 7), (t4 => 9), (t5 => 6), (t6 => 11)
 
@@ -419,11 +419,11 @@ public class StockCandidateServiceTests
 
 		// now "move" t5 => t2
 		final Candidate t5ToT2Candidate = t5SaveResult.getCandidate().withDate(t2).withQuantity(new BigDecimal("7"));
-		final SaveResult t5ToT2SaveResult = stockCandidateService.updateQtyAndDate(t5ToT2Candidate);
+		final CandidateSaveResult t5ToT2SaveResult = stockCandidateService.updateQtyAndDate(t5ToT2Candidate);
 
 		final Candidate persistentStockCandidateWithDelta = t5ToT2SaveResult.getCandidate().withQuantity(new BigDecimal("-3"));
 
-		final SaveResult appliedSaveResult = SaveResult
+		final CandidateSaveResult appliedSaveResult = CandidateSaveResult
 				.builder()
 				.previousTime(DateAndSeqNo.atTimeNoSeqNo(t5))
 				.previousQty(new BigDecimal("-3"))
@@ -448,7 +448,7 @@ public class StockCandidateServiceTests
 	void addOrUpdateStock_move_forwards()
 	{
 		invokeStockCandidateService(t1, "10"); // (t1 => 10)
-		final SaveResult t2SaveResult = //
+		final CandidateSaveResult t2SaveResult = //
 				invokeStockCandidateService(t2, "-3"); // (t1 => 10), (t2 => 7)
 		invokeStockCandidateService(t3, "-3"); // (t1 => 10), (t2 => 7), (t3 => 4)
 		invokeStockCandidateService(t4, "2");  // (t1 => 10), (t2 => 7), (t3 => 4), (t4 => 6)
@@ -468,11 +468,11 @@ public class StockCandidateServiceTests
 		final Candidate t2ToT5Candidate = t2SaveResult.getCandidate()
 				.withQuantity(new BigDecimal("3"))
 				.withDate(t5);
-		final SaveResult t2ToT5SaveResult = stockCandidateService.updateQtyAndDate(t2ToT5Candidate);
+		final CandidateSaveResult t2ToT5SaveResult = stockCandidateService.updateQtyAndDate(t2ToT5Candidate);
 
 		final Candidate persistentStockCandidateWithDelta = t2ToT5SaveResult.getCandidate().withQuantity(new BigDecimal("-3"));
 
-		final SaveResult appliedSaveResult = SaveResult
+		final CandidateSaveResult appliedSaveResult = CandidateSaveResult
 				.builder()
 				.previousTime(DateAndSeqNo.atTimeNoSeqNo(t2))
 				.previousQty(new BigDecimal("-3"))
@@ -503,7 +503,7 @@ public class StockCandidateServiceTests
 
 	}
 
-	private SaveResult invokeStockCandidateService(
+	private CandidateSaveResult invokeStockCandidateService(
 			@NonNull final Instant date,
 			@NonNull final String qty)
 	{
@@ -512,9 +512,9 @@ public class StockCandidateServiceTests
 
 	/**
 	 * @param qty qty to be "injected into the stock. System needs to create a new stock record or update an exiting one
-	 * @return the parameter that this method passed to {@link StockCandidateService#applyDeltaToMatchingLaterStockCandidates(SaveResult)}
+	 * @return the parameter that this method passed to {@link StockCandidateService#applyDeltaToMatchingLaterStockCandidates(CandidateSaveResult)}
 	 */
-	private SaveResult invokeStockCandidateService(
+	private CandidateSaveResult invokeStockCandidateService(
 			@NonNull final Instant date,
 			final int seqNo,
 			@NonNull final String qty)
@@ -546,7 +546,7 @@ public class StockCandidateServiceTests
 
 		final Candidate persistentStockCandidateWithDelta = persistendStockCandidate.withQuantity(new BigDecimal(qty));
 
-		final SaveResult appliedSaveResult = SaveResult
+		final CandidateSaveResult appliedSaveResult = CandidateSaveResult
 				.builder()
 				.candidate(persistentStockCandidateWithDelta)
 				.build();

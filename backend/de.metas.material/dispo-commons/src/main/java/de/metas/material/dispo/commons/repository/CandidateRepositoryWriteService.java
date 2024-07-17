@@ -41,7 +41,6 @@ import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -57,7 +56,6 @@ import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 import static de.metas.common.util.IdConstants.toRepoId;
@@ -123,7 +121,7 @@ public class CandidateRepositoryWriteService
 	 * <li>the quantity <b>delta</b> of the persisted data record before the update was made</li>
 	 * </ul>
 	 */
-	public SaveResult addOrUpdateOverwriteStoredSeqNo(@NonNull final Candidate candidate)
+	public CandidateSaveResult addOrUpdateOverwriteStoredSeqNo(@NonNull final Candidate candidate)
 	{
 		return addOrUpdate(candidate, false/* preserveExistingSeqNoAndParentId */);
 	}
@@ -131,7 +129,7 @@ public class CandidateRepositoryWriteService
 	/**
 	 * Similar to {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)}, but the given {@code candidate}'s {@code seqNo} (if specified at all!) will only be persisted if none is stored yet.
 	 */
-	public SaveResult addOrUpdatePreserveExistingSeqNo(@NonNull final Candidate candidate)
+	public CandidateSaveResult addOrUpdatePreserveExistingSeqNo(@NonNull final Candidate candidate)
 	{
 		return addOrUpdate(candidate, true);
 	}
@@ -139,7 +137,7 @@ public class CandidateRepositoryWriteService
 	/**
 	 * @param candidate candidate that we know does not exist, so there is no existing candidate to update
 	 */
-	public SaveResult add(@NonNull final Candidate candidate)
+	public CandidateSaveResult add(@NonNull final Candidate candidate)
 	{
 		return addOrUpdate(
 				CandidatesQuery.FALSE /*make sure we don't find anything to update*/,
@@ -154,121 +152,13 @@ public class CandidateRepositoryWriteService
 		addOrUpdate(query, candidate, false);
 	}
 
-	@Value
-	@Builder(toBuilder = true)
-	public static class SaveResult
-	{
-		@NonNull Candidate candidate;
-		@Nullable DateAndSeqNo previousTime;
-		@Nullable BigDecimal previousQty;
-
-		public CandidateId getId() {return candidate.getId();}
-
-		public Optional<MaterialDispoGroupId> getEffectiveGroupId() {return Optional.ofNullable(candidate.getEffectiveGroupId());}
-
-		public Optional<MaterialDispoGroupId> getGroupId() {return Optional.ofNullable(candidate.getGroupId());}
-
-		public BigDecimal getQtyDelta()
-		{
-			BigDecimal qtyDelta = candidate.getQuantity();
-			if (previousQty != null)
-			{
-				qtyDelta = qtyDelta.subtract(previousQty);
-			}
-			return qtyDelta;
-		}
-
-		/**
-		 * @return {@code true} if before the save, there already was a record with a different date.
-		 */
-		public boolean isDateMoved()
-		{
-			if (previousTime == null)
-			{
-				return false;
-			}
-			return !DateAndSeqNo.equals(previousTime, DateAndSeqNo.ofCandidate(candidate));
-		}
-
-		public boolean isDateMovedBackwards()
-		{
-			if (previousTime == null)
-			{
-				return false;
-			}
-			return previousTime.isAfter(DateAndSeqNo.ofCandidate(candidate));
-		}
-
-		public boolean isDateMovedForwards()
-		{
-			if (previousTime == null)
-			{
-				return false;
-			}
-			return previousTime.isBefore(DateAndSeqNo.ofCandidate(candidate));
-		}
-
-		/**
-		 * @return {@code true} there was no record before the save, or the record's date was changed.
-		 */
-		@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-		public boolean isDateChanged()
-		{
-			if (previousTime == null)
-			{
-				return true;
-			}
-			return !DateAndSeqNo.equals(previousTime, DateAndSeqNo.ofCandidate(candidate));
-		}
-
-		@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-		public boolean isQtyChanged()
-		{
-			return getQtyDelta().signum() != 0;
-		}
-
-		// TODO figure out if we really need this
-		public Candidate toCandidateWithQtyDelta()
-		{
-			return candidate.withQuantity(getQtyDelta());
-		}
-
-		/**
-		 * Convenience method that returns a new instance whose included {@link Candidate} has the given id.
-		 */
-		public SaveResult withCandidateId(@Nullable final CandidateId candidateId)
-		{
-			return toBuilder()
-					.candidate(candidate.withId(candidateId))
-					.build();
-		}
-
-		/**
-		 * Convenience method that returns a new instance with negated candidate quantity and previousQty
-		 */
-		public SaveResult withNegatedQuantity()
-		{
-			return toBuilder()
-					.candidate(candidate.withNegatedQuantity())
-					.previousQty(previousQty == null ? null : previousQty.negate())
-					.build();
-		}
-
-		public SaveResult withParentId(@Nullable final CandidateId parentId)
-		{
-			return toBuilder()
-					.candidate(candidate.withParentId(parentId))
-					.build();
-		}
-	}
-
-	private SaveResult addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
+	private CandidateSaveResult addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
 	{
 		final CandidatesQuery query = CandidatesQuery.fromCandidate(candidate, false/* includeParentId */);
 		return addOrUpdate(query, candidate, preserveExistingSeqNoAndParentId);
 	}
 
-	private SaveResult addOrUpdate(
+	private CandidateSaveResult addOrUpdate(
 			@NonNull final CandidatesQuery singleCandidateQuery,
 			@NonNull final Candidate candidate,
 			final boolean preserveExistingSeqNoAndParentId)
@@ -322,8 +212,7 @@ public class CandidateRepositoryWriteService
 				"addOrUpdate - {} candidateId={}; type={};\nsingleCandidateOrNullQuery={};\n\npreserveExistingSeqNoAndParentId={};\n\ncandidate={}",
 				verb, savedCandidate.getId().getRepoId(), savedCandidate.getType().toString(), singleCandidateQuery, preserveExistingSeqNoAndParentId, savedCandidate);
 
-		return SaveResult
-				.builder()
+		return CandidateSaveResult.builder()
 				.candidate(savedCandidate)
 				.previousQty(previousQty)
 				.previousTime(previousTime)

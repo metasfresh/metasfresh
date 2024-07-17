@@ -7,7 +7,7 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.DeleteResult;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
+import de.metas.material.dispo.commons.repository.CandidateSaveResult;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import lombok.NonNull;
@@ -73,7 +73,7 @@ public class SupplyCandidateHandler implements CandidateHandler
 	 * When creating a new candidate, then compute its qty by getting the qty from that stockCandidate that has the same product and locator and is "before" it and add the supply candidate's qty
 	 */
 	@Override
-	public SaveResult onCandidateNewOrChange(
+	public CandidateSaveResult onCandidateNewOrChange(
 			@NonNull final Candidate candidate,
 			@NonNull final OnNewOrChangeAdvise advise)
 	{
@@ -82,7 +82,7 @@ public class SupplyCandidateHandler implements CandidateHandler
 		// store the supply candidate and get both its ID and qty-delta
 		// TODO 3034 test: if we add a supplyCandidate that has an unspecified parent-id and and in DB there is an MD_Candidate with parentId > 0,
 		// then supplyCandidateDeltaWithId needs to have that parentId
-		final SaveResult candidateSaveResult;
+		final CandidateSaveResult candidateSaveResult;
 		if (advise.isAttemptUpdate())
 		{
 			candidateSaveResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidate);
@@ -101,7 +101,7 @@ public class SupplyCandidateHandler implements CandidateHandler
 
 		final Candidate savedCandidate = candidateSaveResult.getCandidate();
 
-		final SaveResult stockCandidate = stockCandidateService
+		final CandidateSaveResult stockCandidate = stockCandidateService
 				.createStockCandidate(savedCandidate)
 				.withCandidateId(savedCandidate.getParentId());
 
@@ -109,7 +109,7 @@ public class SupplyCandidateHandler implements CandidateHandler
 				.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate())
 				.getCandidate();
 
-		final SaveResult deltaToApplyToLaterStockCandidates = SaveResult.builder()
+		final CandidateSaveResult deltaToApplyToLaterStockCandidates = CandidateSaveResult.builder()
 				.candidate(savedCandidate)
 				.previousQty(candidateSaveResult.getPreviousQty())
 				.previousTime(candidateSaveResult.getPreviousTime())
@@ -138,7 +138,7 @@ public class SupplyCandidateHandler implements CandidateHandler
 
 		final BigDecimal previousQty = candidate.getQuantity();
 
-		final SaveResult applyDeltaRequest = SaveResult.builder()
+		final CandidateSaveResult applyDeltaRequest = CandidateSaveResult.builder()
 				.candidate(candidate
 						.withQuantity(ZERO)
 						.withDate(timeOfDeletedStock.getDate())

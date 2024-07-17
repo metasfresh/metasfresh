@@ -6,7 +6,7 @@ import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
+import de.metas.material.dispo.commons.repository.CandidateSaveResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.event.PostMaterialEventService;
@@ -74,7 +74,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 	}
 
 	@Override
-	public SaveResult onCandidateNewOrChange(
+	public CandidateSaveResult onCandidateNewOrChange(
 			@NonNull final Candidate candidate,
 			@NonNull final OnNewOrChangeAdvise advise)
 	{
@@ -87,7 +87,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 
 		assertCorrectCandidateType(candidate);
 
-		final SaveResult candidateSaveResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidate);
+		final CandidateSaveResult candidateSaveResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidate);
 		//final Candidate candidateWithQtyDeltaAndId = candidateSaveResult.toCandidateWithQtyDelta();
 
 		if (!candidateSaveResult.isQtyChanged() && !candidateSaveResult.isDateChanged())

@@ -3,7 +3,7 @@ package de.metas.material.dispo.service.event.handler.attributes;
 import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
+import de.metas.material.dispo.commons.repository.CandidateSaveResult;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.event.attributes.AttributesChangedEvent;
@@ -148,7 +148,7 @@ public class AttributesChangedEventHandlerTest
 		}
 
 		@Override
-		public SaveResult onCandidateNewOrChange(
+		public CandidateSaveResult onCandidateNewOrChange(
 				@NonNull final Candidate candidate,
 				@NonNull final OnNewOrChangeAdvise onNewOrChangeAdvise)
 		{
@@ -158,7 +158,7 @@ public class AttributesChangedEventHandlerTest
 
 			savedCandidates.add(candidateToReturn);
 
-			return SaveResult.builder().candidate(candidateToReturn).build();
+			return CandidateSaveResult.builder().candidate(candidateToReturn).build();
 		}
 
 		private MaterialDispoGroupId generateGroupId()

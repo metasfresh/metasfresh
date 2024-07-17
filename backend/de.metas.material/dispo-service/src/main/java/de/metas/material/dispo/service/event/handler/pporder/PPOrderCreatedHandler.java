@@ -12,7 +12,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
+import de.metas.material.dispo.commons.repository.CandidateSaveResult;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
@@ -136,7 +136,7 @@ public final class PPOrderCreatedHandler
 	}
 
 	@NonNull
-	private SaveResult createHeaderCandidate(@NonNull final PPOrderCreatedEvent ppOrderEvent)
+	private CandidateSaveResult createHeaderCandidate(@NonNull final PPOrderCreatedEvent ppOrderEvent)
 	{
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 

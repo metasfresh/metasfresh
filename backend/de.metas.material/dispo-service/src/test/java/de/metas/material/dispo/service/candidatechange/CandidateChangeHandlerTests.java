@@ -15,7 +15,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
+import de.metas.material.dispo.commons.repository.CandidateSaveResult;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo.Operator;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
@@ -163,7 +163,7 @@ public class CandidateChangeHandlerTests
 			}
 
 			@Override
-			public SaveResult onCandidateNewOrChange(@NonNull Candidate candidate, @NonNull OnNewOrChangeAdvise advise)
+			public CandidateSaveResult onCandidateNewOrChange(@NonNull Candidate candidate, @NonNull OnNewOrChangeAdvise advise)
 			{
 				throw new UnsupportedOperationException();
 			}
@@ -177,7 +177,7 @@ public class CandidateChangeHandlerTests
 	}
 
 	/**
-	 * Verifies that {@link StockCandidateService#applyDeltaToMatchingLaterStockCandidates(SaveResult)} applies the given delta to the right records.
+	 * Verifies that {@link StockCandidateService#applyDeltaToMatchingLaterStockCandidates(CandidateSaveResult)} applies the given delta to the right records.
 	 * Only records that have a <i>different</i> M_Warenhouse_ID shall not be touched.
 	 */
 	@Test
@@ -244,7 +244,7 @@ public class CandidateChangeHandlerTests
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.groupId(earlierCandidate.getGroupId()).build();
-		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(SaveResult.builder().candidate(candidateWithDelta).build());
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(CandidateSaveResult.builder().candidate(candidateWithDelta).build());
 
 		// assert that every stock record got some groupId
 		assertThat(DispoTestUtils.retrieveAllRecords()).allSatisfy(r -> assertThatModel(r).hasValueGreaterThanZero(I_MD_Candidate.COLUMN_MD_Candidate_GroupId));
