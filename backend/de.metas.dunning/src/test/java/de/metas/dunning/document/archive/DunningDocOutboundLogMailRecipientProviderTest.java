@@ -119,6 +119,8 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 		producer = new DefaultDunningProducer();
 
 		Services.registerService(IBPartnerBL.class, bpartnerBL);
+
+		createOrgInfo();
 	}
 
 	@Test
