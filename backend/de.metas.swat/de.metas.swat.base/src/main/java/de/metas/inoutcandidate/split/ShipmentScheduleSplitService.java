@@ -27,9 +27,16 @@ public class ShipmentScheduleSplitService
 
 	public List<ShipmentScheduleSplit> getByShipmentScheduleIdExcludingVoidedShipments(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		final NotVoidedShipmentsPredicate notVoidedShipmentsPredicate = new NotVoidedShipmentsPredicate(inOutBL);
+		final List<ShipmentScheduleSplit> splits = repository.getByShipmentScheduleId(shipmentScheduleId);
+		if (splits.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
-		return repository.getByShipmentScheduleId(shipmentScheduleId).stream()
+		final NotVoidedShipmentsPredicate notVoidedShipmentsPredicate = new NotVoidedShipmentsPredicate(inOutBL);
+		notVoidedShipmentsPredicate.warmUpFor(splits);
+
+		return splits.stream()
 				.filter(notVoidedShipmentsPredicate)
 				.collect(ImmutableList.toImmutableList());
 	}
