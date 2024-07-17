@@ -168,7 +168,7 @@ public final class Language implements Serializable
 					AD_Language_fi_FI, new Locale("fi", "FI"), Boolean.TRUE, "dd.MM.yyyy",
 					MediaSize.ISO.A4),
 			new Language("Fran\u00e7ais (CH)",
-					AD_Language_fr_FR, new Locale("fr", "CH"), Boolean.FALSE, "dd.MM.yyyy",
+					AD_Language_fr_CH, new Locale("fr", "CH"), Boolean.FALSE, "dd.MM.yyyy",
 					MediaSize.ISO.A4),
 			new Language("Fran\u00e7ais",
 					AD_Language_fr_FR, Locale.FRANCE, null, null, 		// dd.MM.yy
