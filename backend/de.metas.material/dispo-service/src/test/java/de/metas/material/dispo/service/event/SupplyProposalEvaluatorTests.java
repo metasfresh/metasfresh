@@ -22,8 +22,8 @@ import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
-import de.metas.material.dispo.service.event.handler.DDOrderAdvisedHandlerTests;
-import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.ddordercandidate.DDOrderCandidateAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.ddordercandidate.DDOrderCandidateAdvisedHandlerTests;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -46,7 +46,7 @@ import java.util.List;
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static java.math.BigDecimal.ONE;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -80,7 +80,7 @@ public class SupplyProposalEvaluatorTests
 	private static final WarehouseId SUPPLY_WAREHOUSE_ID = WarehouseId.ofRepoId(4);
 	private static final WarehouseId DEMAND_WAREHOUSE_ID = WarehouseId.ofRepoId(6);
 
-	private DDOrderAdvisedHandler ddOrderAdvisedHandler;
+	private DDOrderCandidateAdvisedHandler ddOrderCandidateAdvisedHandler;
 
 	/**
 	 * This is the code under test
@@ -89,8 +89,6 @@ public class SupplyProposalEvaluatorTests
 	private SupplyProposalEvaluator supplyProposalEvaluator;
 
 	private CandidateRepositoryWriteService candidateRepositoryCommands;
-
-	private AvailableToPromiseRepository availableToPromiseRepository;
 
 	@BeforeEach
 	public void init()
@@ -116,7 +114,7 @@ public class SupplyProposalEvaluatorTests
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
-		availableToPromiseRepository = new AvailableToPromiseRepository();
+		final AvailableToPromiseRepository availableToPromiseRepository = new AvailableToPromiseRepository();
 
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService);
 
@@ -130,7 +128,7 @@ public class SupplyProposalEvaluatorTests
 						stockCandidateService,
 						supplyCandidateHandler)));
 
-		ddOrderAdvisedHandler = new DDOrderAdvisedHandler(
+		ddOrderCandidateAdvisedHandler = new DDOrderCandidateAdvisedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
 				candidateChangeHandler,
@@ -242,7 +240,7 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChain()
 	{
-		DDOrderAdvisedHandlerTests.perform_twoAdvisedEvents(ddOrderAdvisedHandler);
+		DDOrderCandidateAdvisedHandlerTests.perform_twoAdvisedEvents(ddOrderCandidateAdvisedHandler);
 
 		// propose what would create an additional demand on A and an additional supply on B.
 		// shall be rejected because its repeats something we already did.
@@ -278,7 +276,7 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChainOpposite()
 	{
-		DDOrderAdvisedHandlerTests.perform_twoAdvisedEvents(ddOrderAdvisedHandler);
+		DDOrderCandidateAdvisedHandlerTests.perform_twoAdvisedEvents(ddOrderCandidateAdvisedHandler);
 		// we now have an unbalanced demand with a stock of -10 in "fromWarehouseId" (because that's where the "last" demand of the "last" DistibutionPlan is)
 		// and we have a stock of +10 in "toWarehouseId"
 

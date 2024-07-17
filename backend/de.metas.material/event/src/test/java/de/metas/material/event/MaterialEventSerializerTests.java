@@ -14,7 +14,6 @@ import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
@@ -133,22 +132,6 @@ public class MaterialEventSerializerTests
 				.dateOrdered(NOW)
 				.ddOrder(createDdOrder(0))
 				.build();
-		assertEventEqualAfterSerializeDeserialize(event);
-	}
-
-	@Test
-	public void ddOrderAdvisedEvent()
-	{
-		final DDOrderAdvisedEvent event = DDOrderAdvisedEvent.builder()
-				.supplyRequiredDescriptor(newSupplyRequiredDescriptor())
-				.advisedToCreateDDrder(true)
-				.pickIfFeasible(false)
-				.ddOrder(createDdOrder(0))
-				.fromWarehouseId(WarehouseId.ofRepoId(30))
-				.toWarehouseId(WarehouseId.ofRepoId(40))
-				.eventDescriptor(newEventDescriptor())
-				.build();
-		event.validate();
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 

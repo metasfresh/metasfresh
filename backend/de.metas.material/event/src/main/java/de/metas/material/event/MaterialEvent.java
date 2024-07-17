@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import de.metas.material.event.attributes.AttributesChangedEvent;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderDeletedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
@@ -68,7 +67,6 @@ import javax.annotation.Nullable;
 
 		@JsonSubTypes.Type(name = AttributesChangedEvent.TYPE, value = AttributesChangedEvent.class),
 
-		@JsonSubTypes.Type(name = DDOrderAdvisedEvent.TYPE, value = DDOrderAdvisedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderCreatedEvent.TYPE, value = DDOrderCreatedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderDocStatusChangedEvent.TYPE, value = DDOrderDocStatusChangedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderRequestedEvent.TYPE, value = DDOrderRequestedEvent.class),

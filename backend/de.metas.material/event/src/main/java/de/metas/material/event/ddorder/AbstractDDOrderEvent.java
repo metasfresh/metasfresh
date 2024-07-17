@@ -36,6 +36,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 /**
  * Send by the material planner when it came up with a brilliant distribution plan that could be turned into an {@link I_PP_Order}<br>
  * <b>or</or> if a ddOrder was actually created.
@@ -54,7 +55,7 @@ public abstract class AbstractDDOrderEvent implements MaterialEvent
 	private final DDOrder ddOrder;
 
 	/**
-	 * Note: this field is a bit redundant because the {@link #getPpOrder()}'s lines contain a network distribution line with this info.<br>
+	 * Note: this field is a bit redundant because the {@link #getDdOrder()}'s lines contain a network distribution line with this info.<br>
 	 * However, the material-dispo code doesn't know or care about how to get to that information.
 	 */
 	private final WarehouseId fromWarehouseId;

@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.event.handler;
+package de.metas.material.dispo.service.event.handler.ddordercandidate;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.DimensionService;
@@ -18,14 +18,13 @@ import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
-import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandler;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.order.OrderLineRepository;
@@ -80,7 +79,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 
 @ExtendWith(AdempiereTestWatcher.class)
-public class DDOrderAdvisedHandlerTests
+public class DDOrderCandidateAdvisedHandlerTests
 {
 	public static final Instant t0 = NOW;
 
@@ -108,7 +107,7 @@ public class DDOrderAdvisedHandlerTests
 
 	public static final ShipperId shipperId = ShipperId.ofRepoId(95);
 
-	private DDOrderAdvisedHandler ddOrderAdvisedHandler;
+	private DDOrderCandidateAdvisedHandler ddOrderCandidateAdvisedHandler;
 
 	@BeforeEach
 	public void init()
@@ -146,7 +145,7 @@ public class DDOrderAdvisedHandlerTests
 				demandCandiateHandler,
 				supplyCandidateHandler));
 
-		ddOrderAdvisedHandler = new DDOrderAdvisedHandler(
+		ddOrderCandidateAdvisedHandler = new DDOrderCandidateAdvisedHandler(
 				candidateRepository,
 				candidateRepositoryCommands,
 				candidateChangeService,
@@ -157,7 +156,7 @@ public class DDOrderAdvisedHandlerTests
 	}
 
 	/**
-	 * Verifies that for a {@link DDOrderAdvisedEvent}, the system shall (unless the event is ignored for different reasons!) create two pairs of candidate records:
+	 * Verifies that for a {@link DDOrderCandidateAdvisedEvent}, the system shall (unless the event is ignored for different reasons!) create two pairs of candidate records:
 	 * <ul>
 	 * <li>one supply-pair with a supply candidate and its stock <b>parent</b></li>
 	 * <li>one demand-pair with a demand candidate and its stock <b>child</b></li>
@@ -166,28 +165,33 @@ public class DDOrderAdvisedHandlerTests
 	@Test
 	public void handleDistributionAdvisedEvent_with_one_event()
 	{
-		final DDOrderAdvisedEvent event = DDOrderAdvisedEvent.builder()
+		final DDOrderCandidateAdvisedEvent event = DDOrderCandidateAdvisedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
-				.fromWarehouseId(fromWarehouseId)
-				.toWarehouseId(toWarehouseId)
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor(50))
-				.ddOrder(DDOrder.builder()
-						.orgId(ORG_ID)
-						.datePromised(t2)
-						.plantId(plantId)
+				.ddOrderCandidate(DDOrderCandidateData.builder()
 						.productPlanningId(productPlanningId)
+						.distributionNetworkAndLineId(distributionNetworkAndLineId)
+						//
+						.orgId(ORG_ID)
+						.sourceWarehouseId(fromWarehouseId)
+						.targetWarehouseId(toWarehouseId)
+						.targetPlantId(plantId)
 						.shipperId(shipperId)
-						.line(DDOrderLine.builder()
-								.productDescriptor(createProductDescriptor())
-								.bPartnerId(BPARTNER_ID.getRepoId())
-								.qty(BigDecimal.TEN)
-								.durationDays(1)
-								.distributionNetworkAndLineId(distributionNetworkAndLineId)
-								.build())
+						//
+						// int salesOrderLineId;
+						.customerId(BPARTNER_ID.getRepoId())
+						//
+						.productDescriptor(createProductDescriptor())
+						//
+						.datePromised(t2)
+						//
+						.qty(BigDecimal.TEN)
+						.uomId(1234)
+						//
+						.durationDays(1)
 						.build())
 				.build();
-		event.validate();
-		ddOrderAdvisedHandler.handleEvent(event);
+		ddOrderCandidateAdvisedHandler.handleEvent(event);
 
 		final List<I_MD_Candidate> allNonStockRecords = DispoTestUtils.filterExclStock();
 		final int groupIdOfFirstRecord = allNonStockRecords.get(0).getMD_Candidate_GroupId();
@@ -248,13 +252,13 @@ public class DDOrderAdvisedHandlerTests
 	@Test
 	public void twoAdvisedEvents()
 	{
-		perform_twoAdvisedEvents(ddOrderAdvisedHandler);
+		perform_twoAdvisedEvents(ddOrderCandidateAdvisedHandler);
 	}
 
 	/**
 	 * I moved this into a static method because i want to use the code to set the stage for other tests.
 	 */
-	public static void perform_twoAdvisedEvents(@NonNull final DDOrderAdvisedHandler ddOrderAdvisedHandler)
+	public static void perform_twoAdvisedEvents(@NonNull final DDOrderCandidateAdvisedHandler ddOrderAdvisedHandler)
 	{
 		final int durationTwoDays = 2; // => t3 minus 2days = t2 (expected date of the demand candidate)
 		adviseDistributionFromToStartDuration(ddOrderAdvisedHandler, intermediateWarehouseId, toWarehouseId,
@@ -349,7 +353,7 @@ public class DDOrderAdvisedHandlerTests
 	}
 
 	private static void adviseDistributionFromToStartDuration(
-			final DDOrderAdvisedHandler ddOrderAdvisedHandler,
+			final DDOrderCandidateAdvisedHandler ddOrderAdvisedHandler,
 			final WarehouseId fromWarehouseId,
 			final WarehouseId toWarehouseId,
 			final Instant start,
@@ -358,27 +362,26 @@ public class DDOrderAdvisedHandlerTests
 	{
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptor(demandCandidateId);
 
-		final DDOrderAdvisedEvent event = DDOrderAdvisedEvent.builder()
+		final DDOrderCandidateAdvisedEvent event = DDOrderCandidateAdvisedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
-				.fromWarehouseId(fromWarehouseId)
-				.toWarehouseId(toWarehouseId)
-				.ddOrder(DDOrder.builder()
-						.orgId(ORG_ID)
-						.datePromised(start)
-						.plantId(plantId)
+				.ddOrderCandidate(DDOrderCandidateData.builder()
 						.productPlanningId(productPlanningId)
+						.distributionNetworkAndLineId(distributionNetworkAndLineId)
+						//
+						.orgId(ORG_ID)
+						.sourceWarehouseId(fromWarehouseId)
+						.targetWarehouseId(toWarehouseId)
+						.targetPlantId(plantId)
 						.shipperId(shipperId)
-						.line(DDOrderLine.builder()
-								.salesOrderLineId(supplyRequiredDescriptor.getOrderLineId())
-								.productDescriptor(createProductDescriptor())
-								.qty(BigDecimal.TEN)
-								.distributionNetworkAndLineId(distributionNetworkAndLineId)
-								.durationDays(durationDays)
-								.build())
+						.salesOrderLineId(supplyRequiredDescriptor.getOrderLineId())
+						.productDescriptor(createProductDescriptor())
+						.datePromised(start)
+						.qty(BigDecimal.TEN)
+						.uomId(12345)
+						.durationDays(durationDays)
 						.build())
 				.build();
-		event.validate();
 		ddOrderAdvisedHandler.handleEvent(event);
 	}
 

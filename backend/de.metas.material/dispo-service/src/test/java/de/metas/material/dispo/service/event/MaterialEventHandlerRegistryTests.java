@@ -22,7 +22,7 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
 import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
-import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.ddordercandidate.DDOrderCandidateAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.event.MaterialEvent;
@@ -33,9 +33,8 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
-import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
@@ -139,7 +138,7 @@ public class MaterialEventHandlerRegistryTests
 						supplyCandidateHandler),
 				supplyCandidateHandler));
 
-		final DDOrderAdvisedHandler distributionAdvisedEventHandler = new DDOrderAdvisedHandler(
+		final DDOrderCandidateAdvisedHandler distributionAdvisedEventHandler = new DDOrderCandidateAdvisedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
 				candidateChangeHandler,
@@ -211,27 +210,29 @@ public class MaterialEventHandlerRegistryTests
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
 
 		// create a distributionAdvisedEvent event which matches the shipmentscheduleEvent that we processed in testShipmentScheduleEvent()
-		final DDOrderAdvisedEvent ddOrderAdvisedEvent = DDOrderAdvisedEvent.builder()
+		final DDOrderCandidateAdvisedEvent ddOrderAdvisedEvent = DDOrderCandidateAdvisedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
-				.fromWarehouseId(fromWarehouseId)
-				.toWarehouseId(toWarehouseId)
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
-				.ddOrder(DDOrder.builder()
-						.orgId(ORG_ID)
-						.plantId(ResourceId.ofRepoId(800))
+				.ddOrderCandidate(DDOrderCandidateData.builder()
 						.productPlanningId(ProductPlanningId.ofRepoId(810))
+						.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(900, 901))
+						//
+						.orgId(ORG_ID)
+						.sourceWarehouseId(fromWarehouseId)
+						.targetWarehouseId(toWarehouseId)
+						.targetPlantId(ResourceId.ofRepoId(800))
 						.shipperId(ShipperId.ofRepoId(820))
+						//
+						.productDescriptor(orderedMaterial)
+						//
 						.datePromised(shipmentScheduleEventTime)
-						.line(DDOrderLine.builder()
-								.productDescriptor(orderedMaterial)
-								.bPartnerId(orderedMaterial.getCustomerId().getRepoId())
-								.qty(BigDecimal.TEN)
-								.durationDays(0)
-								.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(900, 901))
-								.build())
+						//
+						.qty(new BigDecimal("10"))
+						.uomId(830)
+						//
+						.durationDays(0)
 						.build())
 				.build();
-		ddOrderAdvisedEvent.validate();
 
 		//
 		// when
