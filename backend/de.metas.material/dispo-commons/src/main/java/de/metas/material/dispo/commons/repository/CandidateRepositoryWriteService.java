@@ -146,12 +146,12 @@ public class CandidateRepositoryWriteService
 				candidate, false/*doesn't matter*/);
 	}
 
-	public SaveResult updateCandidateById(@NonNull final Candidate candidate)
+	public void updateCandidateById(@NonNull final Candidate candidate)
 	{
 		Check.errorIf(candidate.getId().isNull(), "The candidate parameter needs to have an id; candidate={}", candidate);
 		final CandidatesQuery query = CandidatesQuery.fromId(candidate.getId());
 
-		return addOrUpdate(query, candidate, false);
+		addOrUpdate(query, candidate, false);
 	}
 
 	@Value

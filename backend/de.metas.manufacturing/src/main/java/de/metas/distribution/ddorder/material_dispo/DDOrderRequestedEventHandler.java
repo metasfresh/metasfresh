@@ -82,7 +82,7 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 	}
 
 	@VisibleForTesting
-	ImmutableList<I_DD_Order> createDDOrders(@NonNull final DDOrderRequestedEvent ddOrderRequestedEvent)
+	void createDDOrders(@NonNull final DDOrderRequestedEvent ddOrderRequestedEvent)
 	{
 		final DDOrder ddOrder = ddOrderRequestedEvent.getDdOrder();
 		final Date dateOrdered = TimeUtil.asDate(ddOrderRequestedEvent.getDateOrdered());
@@ -106,6 +106,5 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 						ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
 			}
 		}
-		return ddOrderRecords;
 	}
 }

@@ -214,7 +214,8 @@ public class AdempiereTestHelper
 
 		// Logging
 		LogManager.setLevel(Level.WARN);
-		Loggables.temporarySetLoggable(Loggables.nop());
+		//noinspection resource
+		Loggables.temporarySetLoggable(Loggables.console(">>> "));
 
 		// JSON
 		JsonObjectMapperHolder.resetSharedJsonObjectMapper();

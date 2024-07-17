@@ -1,7 +1,6 @@
 package de.metas.material.dispo.service.candidatechange;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
@@ -33,7 +32,6 @@ import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +40,6 @@ import org.mockito.Mockito;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -90,16 +87,6 @@ import static org.compiere.util.TimeUtil.asTimestamp;
 @ExtendWith(AdempiereTestWatcher.class)
 public class CandidateChangeHandlerTests
 {
-	private static final BigDecimal FIFTEEN = new BigDecimal("15");
-
-	private static final BigDecimal THIRTYFIVE = new BigDecimal("35");
-
-	private static final BigDecimal SEVENTEEN = new BigDecimal("17");
-
-	private static final BigDecimal THIRTEEN = new BigDecimal("13");
-
-	private static final BigDecimal THREE = new BigDecimal("3");
-
 	private final Instant t1 = Instant.parse("2017-11-22T00:00:00Z");
 	private final Instant t2 = t1.plus(10, ChronoUnit.MINUTES);
 	private final Instant t3 = t1.plus(20, ChronoUnit.MINUTES);
@@ -113,18 +100,13 @@ public class CandidateChangeHandlerTests
 	private StockCandidateService stockCandidateService;
 	private CandidateRepositoryWriteService candidateRepositoryCommands;
 
-	private DimensionService dimensionService;
-
 	@BeforeEach
-	public void init()
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-
-		dimensionService = new DimensionService(dimensionFactories);
-		SpringContextHolder.registerJUnitBean(dimensionService);
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
+		//SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
@@ -181,7 +163,7 @@ public class CandidateChangeHandlerTests
 			}
 
 			@Override
-			public SaveResult onCandidateNewOrChange(Candidate candidate, OnNewOrChangeAdvise advise)
+			public SaveResult onCandidateNewOrChange(@NonNull Candidate candidate, @NonNull OnNewOrChangeAdvise advise)
 			{
 				throw new UnsupportedOperationException();
 			}
@@ -213,10 +195,10 @@ public class CandidateChangeHandlerTests
 
 			earlierCandidate = candidateRepositoryCommands
 					.addOrUpdateOverwriteStoredSeqNo(Candidate.builder()
-															 .type(CandidateType.STOCK)
-															 .clientAndOrgId(CLIENT_AND_ORG_ID)
-															 .materialDescriptor(earlierMaterialDescriptor)
-															 .build())
+							.type(CandidateType.STOCK)
+							.clientAndOrgId(CLIENT_AND_ORG_ID)
+							.materialDescriptor(earlierMaterialDescriptor)
+							.build())
 					.getCandidate();
 
 			final MaterialDescriptor laterMaterialDescriptor = materialDescriptor.withDate(t3);
@@ -255,7 +237,7 @@ public class CandidateChangeHandlerTests
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.date(t2)
-				.quantity(THREE)
+				.quantity(new BigDecimal("3"))
 				.build();
 		final Candidate candidateWithDelta = Candidate.builder()
 				.type(CandidateType.STOCK)
@@ -321,6 +303,7 @@ public class CandidateChangeHandlerTests
 		return materialDescriptor;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private CandidatesQuery mkQueryForStockUntilDate(
 			@NonNull final Instant date,
 			final WarehouseId warehouseId)
@@ -554,9 +537,9 @@ public class CandidateChangeHandlerTests
 	@Test
 	public void onCandidateNewOrChange_demand_then_demand_then_supply_then_supplyTrx_after_1st_demand()
 	{
-		createAndAddDemandWithQtyAndDemandDetail(THIRTEEN, BEFORE_BEFORE_NOW, 20);
-		createAndAddDemandWithQtyAndDemandDetail(SEVENTEEN, NOW, 30);
-		final Candidate supplyCandidate = createAndAddSupplyWithQtyAndDemandDetail(THIRTYFIVE, AFTER_NOW, 40);
+		createAndAddDemandWithQtyAndDemandDetail(new BigDecimal("13"), BEFORE_BEFORE_NOW, 20);
+		createAndAddDemandWithQtyAndDemandDetail(new BigDecimal("17"), NOW, 30);
+		final Candidate supplyCandidate = createAndAddSupplyWithQtyAndDemandDetail(new BigDecimal("35"), AFTER_NOW, 40);
 
 		{ // guards prior to the actual test
 			final List<I_MD_Candidate> allSupplyCandidates = DispoTestUtils.filter(CandidateType.SUPPLY);
@@ -584,11 +567,11 @@ public class CandidateChangeHandlerTests
 		final Candidate candidate = supplyCandidate.toBuilder()
 				.materialDescriptor(supplyCandidate.getMaterialDescriptor().withDate(BEFORE_NOW))
 				.transactionDetail(TransactionDetail.builder()
-										   .transactionId(50)
-										   .quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
-										   .transactionDate(BEFORE_NOW)
-										   .complete(true)
-										   .build())
+						.transactionId(50)
+						.quantity(new BigDecimal("15")) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
+						.transactionDate(BEFORE_NOW)
+						.complete(true)
+						.build())
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
@@ -614,9 +597,9 @@ public class CandidateChangeHandlerTests
 	@Test
 	public void onCandidateNewOrChange_supply_then_supply_then_demand_then_demandTrx_after_1st_supply()
 	{
-		createAndAddSupplyWithQtyAndDemandDetail(THIRTEEN, BEFORE_BEFORE_NOW, 20);
-		createAndAddSupplyWithQtyAndDemandDetail(SEVENTEEN, NOW, 30);
-		final Candidate supplyCandidate = createAndAddDemandWithQtyAndDemandDetail(THIRTYFIVE, AFTER_NOW, 40);
+		createAndAddSupplyWithQtyAndDemandDetail(new BigDecimal("13"), BEFORE_BEFORE_NOW, 20);
+		createAndAddSupplyWithQtyAndDemandDetail(new BigDecimal("17"), NOW, 30);
+		final Candidate supplyCandidate = createAndAddDemandWithQtyAndDemandDetail(new BigDecimal("35"), AFTER_NOW, 40);
 
 		{ // guards prior to the actual test
 			final List<I_MD_Candidate> allDemandCandidates = DispoTestUtils.filter(CandidateType.DEMAND);
@@ -644,11 +627,11 @@ public class CandidateChangeHandlerTests
 		final Candidate candidate = supplyCandidate.toBuilder()
 				.materialDescriptor(supplyCandidate.getMaterialDescriptor().withDate(BEFORE_NOW))
 				.transactionDetail(TransactionDetail.builder()
-										   .transactionId(50)
-										   .quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
-										   .transactionDate(BEFORE_NOW)
-										   .complete(true)
-										   .build())
+						.transactionId(50)
+						.quantity(new BigDecimal("15")) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
+						.transactionDate(BEFORE_NOW)
+						.complete(true)
+						.build())
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
@@ -711,20 +694,19 @@ public class CandidateChangeHandlerTests
 			@NonNull final BigDecimal qty,
 			@NonNull final Instant date)
 	{
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+		return MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
 				.date(date)
 				.build();
-		return materialDescr;
 	}
 
-	private Candidate createAndAddSupplyWithQtyAndDemandDetail(
+	private void createAndAddSupplyWithQtyAndDemandDetail(
 			@NonNull final BigDecimal qty,
 			final int shipmentScheduleIdForDemandDetail)
 	{
-		return createAndAddSupplyWithQtyAndDemandDetail(qty, NOW, shipmentScheduleIdForDemandDetail);
+		createAndAddSupplyWithQtyAndDemandDetail(qty, NOW, shipmentScheduleIdForDemandDetail);
 	}
 
 	private Candidate createAndAddSupplyWithQtyAndDemandDetail(
@@ -741,10 +723,10 @@ public class CandidateChangeHandlerTests
 
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.businessCaseDetail(PurchaseDetail.builder()
-											.qty(qty)
-											.advised(Flag.TRUE)
-											.receiptScheduleRepoId(receiptScheduleIdForSupplyDetail)
-											.build())
+						.qty(qty)
+						.advised(Flag.TRUE)
+						.receiptScheduleRepoId(receiptScheduleIdForSupplyDetail)
+						.build())
 				.build();
 
 		return candidateChangeHandler.onCandidateNewOrChange(supplyCandidate).getCandidate();

@@ -39,6 +39,7 @@ import lombok.ToString;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
+@Getter
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -49,10 +50,7 @@ public class DDOrderCandidateAdvisedEvent extends AbstractDDOrderCandidateEvent
 	/**
 	 * If {@code true}, then this event advises the recipient to directly request an actual DD_Order_Candidate to be created.
 	 */
-	@Getter
 	private final boolean advisedToCreateDDOrderCandidate;
-
-	@Getter
 	private final boolean pickIfFeasible;
 
 	@JsonCreator

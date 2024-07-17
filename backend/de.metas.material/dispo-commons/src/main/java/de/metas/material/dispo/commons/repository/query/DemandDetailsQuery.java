@@ -107,6 +107,7 @@ public class DemandDetailsQuery
 		}
 		else
 		{
+			//noinspection ThrowableNotThrown
 			Check.fail("documentLineDescriptor has unsupported type={}; documentLineDescriptor={}", documentLineDescriptor.getClass(), documentLineDescriptor);
 		}
 

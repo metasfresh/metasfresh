@@ -52,8 +52,8 @@ import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
-import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
+import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
@@ -95,7 +95,7 @@ public class CandidateRepositoryWriteServiceTests
 	private StockChangeDetailRepo stockChangeDetailRepo;
 
 	@BeforeEach
-	public void init()
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
@@ -109,18 +109,14 @@ public class CandidateRepositoryWriteServiceTests
 
 		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);
-
-		createForecastLine(61);
 	}
 
-	private I_M_ForecastLine createForecastLine(final int forecastLineId)
+	@SuppressWarnings("SameParameterValue")
+	private void createForecastLine(final int forecastLineId)
 	{
 		final I_M_ForecastLine forecastLine = newInstance(I_M_ForecastLine.class);
-		forecastLine.setM_ForecastLine_ID(61);
+		forecastLine.setM_ForecastLine_ID(forecastLineId);
 		save(forecastLine);
-
-		return forecastLine;
-
 	}
 
 	@Test
@@ -393,7 +389,7 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(distributionDetailRecord).isNotNull();
 		assertThat(distributionDetailRecord.getPP_Product_Planning_ID()).isEqualTo(80);
 		assertThat(distributionDetailRecord.getPP_Plant_ID()).isEqualTo(85);
-		assertThat(distributionDetailRecord.getDD_NetworkDistributionLine_ID()).isEqualTo(90);
+		assertThat(distributionDetailRecord.getDD_NetworkDistributionLine_ID()).isEqualTo(91);
 		assertThat(distributionDetailRecord.getDD_Order_ID()).isEqualTo(100);
 		assertThat(distributionDetailRecord.getDD_OrderLine_ID()).isEqualTo(110);
 		assertThat(distributionDetailRecord.getM_Shipper_ID()).isEqualTo(120);
@@ -403,6 +399,8 @@ public class CandidateRepositoryWriteServiceTests
 	@Test
 	public void addOrUpdateOverwriteStoredSeqNo_with_DemandDetail()
 	{
+		createForecastLine(61);
+
 		final Candidate productionCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.SHIPMENT)
@@ -431,6 +429,8 @@ public class CandidateRepositoryWriteServiceTests
 	@Test
 	public void addOrUpdateOverwriteStoredSeqNo_with_TransactionDetail()
 	{
+		createForecastLine(61);
+
 		final int productIdOffSet = 10;
 		final Candidate productionCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)

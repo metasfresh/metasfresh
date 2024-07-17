@@ -77,11 +77,6 @@ public class EventTestHelper
 
 	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofString("1");
 
-	public static SupplyRequiredDescriptor createSupplyRequiredDescriptor()
-	{
-		return createSupplyRequiredDescriptorWithProductId(PRODUCT_ID);
-	}
-
 	public static SupplyRequiredDescriptor createSupplyRequiredDescriptorWithProductId(final int productId)
 	{
 		return SupplyRequiredDescriptor.builder()

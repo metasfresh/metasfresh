@@ -43,6 +43,7 @@ import org.eevolution.model.I_DD_Order;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
+@Getter
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -53,10 +54,7 @@ public class DDOrderAdvisedEvent extends AbstractDDOrderEvent
 	/**
 	 * If {@code true}, then this event advises the recipient to directly request an actual DD_Order to be created.
 	 */
-	@Getter
 	private final boolean advisedToCreateDDrder;
-
-	@Getter
 	private final boolean pickIfFeasible;
 
 	@JsonCreator

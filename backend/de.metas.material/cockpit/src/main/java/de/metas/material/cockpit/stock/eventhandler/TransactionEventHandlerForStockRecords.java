@@ -7,7 +7,6 @@ import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.cockpit.stock.StockDataUpdateRequest;
 import de.metas.material.cockpit.stock.StockDataUpdateRequestHandler;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;

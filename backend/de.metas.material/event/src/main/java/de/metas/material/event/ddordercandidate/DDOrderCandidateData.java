@@ -11,7 +11,6 @@ import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,7 +39,7 @@ public class DDOrderCandidateData
 
 	int salesOrderLineId;
 	int customerId;
-	
+
 	@NonNull ProductDescriptor productDescriptor;
 	@Nullable MinMaxDescriptor fromWarehouseMinMaxDescriptor;
 
@@ -70,11 +69,5 @@ public class DDOrderCandidateData
 		{
 			throw new AdempiereException("Expected materialDispoGroupId to be set: " + this);
 		}
-	}
-
-	@NonNull
-	public DistributionNetworkAndLineId getDistributionNetworkAndLineIdNotNull()
-	{
-		return Check.assumeNotNull(getDistributionNetworkAndLineId(), "distributionNetworkAndLineId shall be set for {}", this);
 	}
 }

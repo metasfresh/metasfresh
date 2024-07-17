@@ -84,16 +84,15 @@ class DDOrderCandidateDataFactory
 		}
 
 		final DistributionNetwork network = distributionNetworkRepository.getById(productPlanningData.getDistributionNetworkId());
-		final List<DistributionNetworkLine> networkLines = network.getLinesByTargetWarehouse(productPlanningData.getWarehouseId());
+		final List<DistributionNetworkLine> networkLines = network.getLinesByTargetWarehouse(productPlanningData.getWarehouseIdNotNull());
 		if (networkLines.isEmpty())
 		{
 			// No network lines were found for our target warehouse
-			final WarehouseId targetWarehouseId = productPlanningData.getWarehouseId();
 			Loggables.addLog(
 					"DD_NetworkDistribution has no lines for target M_Warehouse_ID={}; {} returns empty list; "
 							+ "networkDistribution={}"
 							+ "targetWarehouseId={}",
-					productPlanningData.getWarehouseId(), this.getClass(), network, targetWarehouseId);
+					productPlanningData.getWarehouseId(), this.getClass(), network, productPlanningData.getWarehouseId());
 			return ImmutableList.of();
 		}
 
@@ -121,7 +120,7 @@ class DDOrderCandidateDataFactory
 			}
 
 			final Quantity qtyToMove = qtyToSupplyRemaining.multiply(networkLine.getTransferPercent());
-			if(qtyToMove.signum() == 0)
+			if (qtyToMove.signum() == 0)
 			{
 				continue;
 			}

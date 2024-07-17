@@ -7,6 +7,7 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -37,6 +38,8 @@ import java.util.Set;
 /**
  * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_TYPE_AD_Reference_ID}
  */
+@Getter
+@RequiredArgsConstructor
 public enum CandidateType implements ReferenceListAwareEnum
 {
 	DEMAND(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND),
@@ -62,7 +65,9 @@ public enum CandidateType implements ReferenceListAwareEnum
 
 	INVENTORY_UP(X_MD_Candidate.MD_CANDIDATE_TYPE_INVENTORY_UP),
 
-	/** TODO: remove this type; instead, "just" add an ATP column to candidate. */
+	/**
+	 * TODO: remove this type; instead, "just" add an ATP column to candidate.
+	 */
 	STOCK(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK),
 
 	ATTRIBUTES_CHANGED_FROM(X_MD_Candidate.MD_CANDIDATE_TYPE_ATTRIBUTES_CHANGED_FROM),
@@ -71,20 +76,14 @@ public enum CandidateType implements ReferenceListAwareEnum
 
 	private final static Set<CandidateType> INCREASING_STOCK_TYPES = ImmutableSet.of(SUPPLY, UNEXPECTED_INCREASE, INVENTORY_UP, ATTRIBUTES_CHANGED_TO);
 
-	@Getter
-	private final String code;
+	private static final ValuesIndex<CandidateType> index = ReferenceListAwareEnums.index(values());
 
-	CandidateType(final String code)
-	{
-		this.code = code;
-	}
+	@NonNull private final String code;
 
 	public static CandidateType ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
 	}
-
-	private static final ValuesIndex<CandidateType> index = ReferenceListAwareEnums.index(values());
 
 	public final boolean isIncreasingStock()
 	{

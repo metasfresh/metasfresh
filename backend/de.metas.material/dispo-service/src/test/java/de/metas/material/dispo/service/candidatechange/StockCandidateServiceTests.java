@@ -1,7 +1,7 @@
 package de.metas.material.dispo.service.candidatechange;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
@@ -19,7 +19,6 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +28,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
@@ -37,15 +35,16 @@ import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -83,17 +82,14 @@ public class StockCandidateServiceTests
 	private CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	private int parentIdSequence;
-	private DimensionService dimensionService;
 
 	@BeforeEach
 	void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
-		SpringContextHolder.registerJUnitBean(dimensionService);
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
+		//SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
@@ -234,7 +230,6 @@ public class StockCandidateServiceTests
 		final I_MD_Candidate candidate1Record = load(candidate1Result.getCandidate().getId(), I_MD_Candidate.class);
 		assertThat(candidate1Record.getQty()).isEqualByComparingTo("10");  // the original candidate still has its 10
 	}
-
 
 	@Test
 	void updateQuantity_error_if_missing_candidate_record()
@@ -462,7 +457,7 @@ public class StockCandidateServiceTests
 		{ // guard
 			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));
 			assertThat(records).hasSize(5);
-			assertDateAndQty(records.get(0), t1, "10"); 
+			assertDateAndQty(records.get(0), t1, "10");
 			assertDateAndQty(records.get(1), t2, "7"); // 10 - 3
 			assertDateAndQty(records.get(2), t3, "4"); //  7 - 3
 			assertDateAndQty(records.get(3), t4, "6"); //  4 + 2

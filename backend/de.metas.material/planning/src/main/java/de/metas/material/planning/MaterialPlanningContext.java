@@ -10,8 +10,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
-import java.util.Objects;
-
 @Value
 @Builder
 public class MaterialPlanningContext
@@ -25,19 +23,17 @@ public class MaterialPlanningContext
 
 	public void assertContextConsistent()
 	{
-		final ProductId contextProductId = getProductId();
-		final ProductId productPlanningProductId = getProductPlanning().getProductId();
-
-		if (!Objects.equals(contextProductId, productPlanningProductId))
+		if (getProductPlanning().getProductId() != null && !ProductId.equals(productId, productPlanning.getProductId()))
 		{
-			final String message = String.format("The given IMaterialPlanningContext has M_Product_ID=%s, but its included PP_Product_Planning has M_Product_ID=%s",
-					contextProductId, productPlanningProductId);
-			throw new AdempiereException(message)
+			throw new AdempiereException("Context product is not matching product planning")
 					.appendParametersToMessage()
-					.setParameter("IMaterialPlanningContext", this)
-					.setParameter("IMaterialPlanningContext.M_Product_ID", contextProductId)
-					.setParameter("IMaterialPlanningContext.ProductPlanning", getProductPlanning())
-					.setParameter("IMaterialPlanningContext.ProductPlanning.M_Product_ID", productPlanningProductId);
+					.setParameter("context", this);
+		}
+		if (getProductPlanning().getWarehouseId() != null && !WarehouseId.equals(warehouseId, productPlanning.getWarehouseId()))
+		{
+			throw new AdempiereException("Context warehouse is not matching product planning")
+					.appendParametersToMessage()
+					.setParameter("context", this);
 		}
 	}
 
