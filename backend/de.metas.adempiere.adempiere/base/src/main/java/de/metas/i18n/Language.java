@@ -83,6 +83,7 @@ public final class Language implements Serializable
 	private static final String AD_Language_es_DO = "es_DO";
 	private static final String AD_Language_fr_FR = "fr_FR";
 	private static final String AD_Language_fr_CA = "fr_CA";
+	private static final String AD_Language_fr_CH = "fr_CH";
 	private static final String AD_Language_bg_BG = "bg_BG";
 	private static final String AD_Language_th_TH = "th_TH";
 	private static final String AD_Language_pl_PL = "pl_PL";
@@ -165,6 +166,9 @@ public final class Language implements Serializable
 					MediaSize.ISO.A4),
 			new Language("Finnish",
 					AD_Language_fi_FI, new Locale("fi", "FI"), Boolean.TRUE, "dd.MM.yyyy",
+					MediaSize.ISO.A4),
+			new Language("Fran\u00e7ais (CH)",
+					AD_Language_fr_FR, new Locale("fr", "CH"), Boolean.FALSE, "dd.MM.yyyy",
 					MediaSize.ISO.A4),
 			new Language("Fran\u00e7ais",
 					AD_Language_fr_FR, Locale.FRANCE, null, null, 		// dd.MM.yy
