@@ -8,8 +8,10 @@ import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientReques
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunnableDoc;
+import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.impl.DefaultDunningCandidateProducer;
 import de.metas.dunning.api.impl.DefaultDunningProducer;
+import de.metas.dunning.api.impl.DunningBL;
 import de.metas.dunning.api.impl.PlainDunningContext;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
@@ -19,6 +21,7 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.letter.BoilerPlateRepository;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -29,6 +32,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -119,7 +123,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 		producer = new DefaultDunningProducer();
 
 		Services.registerService(IBPartnerBL.class, bpartnerBL);
-
+		SpringContextHolder.registerJUnitBean(new BoilerPlateRepository());
 		createOrgInfo();
 	}
 
