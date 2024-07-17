@@ -76,6 +76,7 @@ public final class Language implements Serializable
 	private static final String AD_Language_hr_HR = "hr_HR";
 	private static final String AD_Language_de_DE = "de_DE";
 	private static final String AD_Language_de_CH = "de_CH"; // 03362
+	private static final String AD_Language_it_CH = "it_CH";
 	private static final String AD_Language_it_IT = "it_IT";
 	private static final String AD_Language_es_ES = "es_ES";
 	private static final String AD_Language_es_MX = "es_MX";
@@ -184,6 +185,9 @@ public final class Language implements Serializable
 					MediaSize.ISO.A4),
 			new Language("Italiano",
 					AD_Language_it_IT, Locale.ITALY, null, null, 		// dd.MM.yy
+					MediaSize.ISO.A4),
+			new Language("Italiano (CH)",
+					AD_Language_it_CH, new Locale("it", "CH"), Boolean.FALSE, "dd.MM.yyyy",
 					MediaSize.ISO.A4),
 			new Language("\u65e5\u672c\u8a9e (JP)",
 					AD_Language_ja_JP, Locale.JAPAN, null, null,
