@@ -10,18 +10,17 @@ import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
-import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
+import de.metas.material.planning.ddordercandidate.DDOrderCandidateAdvisedEventCreator;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
@@ -40,7 +39,6 @@ import org.springframework.stereotype.Service;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /*
  * #%L
@@ -73,7 +71,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	@NonNull private final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator;
+	@NonNull private final DDOrderCandidateAdvisedEventCreator ddOrderCandidateAdvisedEventCreator;
 	@NonNull private final PPOrderCandidateAdvisedEventCreator ppOrderCandidateAdvisedEventCreator;
 	@NonNull private final PostMaterialEventService postMaterialEventService;
 	@NonNull private final MainDataRequestHandler mainDataRequestHandler;
@@ -100,9 +98,9 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 			return; // nothing to do
 		}
 
-		final List<MaterialEvent> events = new ArrayList<>();
+		final ArrayList<MaterialEvent> events = new ArrayList<>();
 
-		events.addAll(dDOrderAdvisedEventCreator.createDDOrderAdvisedEvents(descriptor, context));
+		events.addAll(ddOrderCandidateAdvisedEventCreator.createDDOrderCandidateAdvisedEvents(descriptor, context));
 		events.addAll(ppOrderCandidateAdvisedEventCreator.createPPOrderCandidateAdvisedEvents(descriptor, context));
 
 		events.forEach(postMaterialEventService::postEventAsync);
@@ -110,26 +108,25 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 
 	private MaterialPlanningContext createContextOrNull(@NonNull final SupplyRequiredDescriptor materialDemandEvent)
 	{
-		final EventDescriptor eventDescriptor = materialDemandEvent.getEventDescriptor();
+		final OrgId orgId = materialDemandEvent.getOrgId();
 
-		final MaterialDescriptor materialDescriptor = materialDemandEvent.getMaterialDescriptor();
-
-		final WarehouseId warehouseId = materialDescriptor.getWarehouseId();
+		final WarehouseId warehouseId = materialDemandEvent.getWarehouseId();
 		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 
+		final ProductId productId = ProductId.ofRepoId(materialDemandEvent.getProductId());
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(materialDemandEvent.getAttributeSetInstanceId());
 		final ResourceId plantId = productPlanningDAO.findPlant(
-				eventDescriptor.getOrgId().getRepoId(),
+				orgId.getRepoId(),
 				warehouse,
-				materialDescriptor.getProductId(),
-				materialDescriptor.getAttributeSetInstanceId());
+				productId.getRepoId(),
+				attributeSetInstanceId.getRepoId());
 
-		final ProductId productId = ProductId.ofRepoId(materialDescriptor.getProductId());
 		final ProductPlanningQuery productPlanningQuery = ProductPlanningQuery.builder()
-				.orgId(eventDescriptor.getOrgId())
+				.orgId(orgId)
 				.warehouseId(warehouseId)
 				.plantId(plantId)
 				.productId(productId)
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescriptor.getAttributeSetInstanceId()))
+				.attributeSetInstanceId(attributeSetInstanceId)
 				.build();
 
 		final ProductPlanning productPlanning = productPlanningDAO.find(productPlanningQuery).orElse(null);
@@ -139,11 +136,11 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 			return null;
 		}
 
-		final I_AD_Org org = orgDAO.getById(eventDescriptor.getOrgId());
+		final I_AD_Org org = orgDAO.getById(orgId);
 
 		return MaterialPlanningContext.builder()
 				.productId(productId)
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(materialDescriptor.getAttributeSetInstanceId()))
+				.attributeSetInstanceId(attributeSetInstanceId)
 				.warehouseId(warehouseId)
 				.productPlanning(productPlanning)
 				.plantId(plantId)
@@ -158,14 +155,14 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 			return;
 		}
 
-		final ZoneId orgTimezone = orgDAO.getTimeZone(supplyRequiredDescriptor.getEventDescriptor().getOrgId());
+		final ZoneId orgTimezone = orgDAO.getTimeZone(supplyRequiredDescriptor.getOrgId());
 
 		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier
 				.createForMaterial(supplyRequiredDescriptor.getMaterialDescriptor(), orgTimezone);
 
 		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
 				.identifier(mainDataRecordIdentifier)
-				.qtySupplyRequired(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
+				.qtySupplyRequired(supplyRequiredDescriptor.getQtyToSupplyBD())
 				.build();
 
 		mainDataRequestHandler.handleDataUpdateRequest(updateMainDataRequest);

@@ -45,15 +45,13 @@ public class SupplyRequiredHandlerUtils
 			@NonNull final MaterialPlanningContext context)
 	{
 
-		final BPartnerId customerId = supplyRequiredDescriptor.getMaterialDescriptor().getCustomerId();
-
 		return MaterialRequest.builder()
 				.qtyToSupply(getQuantity(supplyRequiredDescriptor))
 				.context(context)
-				.mrpDemandBPartnerId(BPartnerId.toRepoIdOr(customerId, -1))
+				.mrpDemandBPartnerId(BPartnerId.toRepoIdOr(supplyRequiredDescriptor.getCustomerId(), -1))
 				.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())
 				.mrpDemandShipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
-				.demandDate(supplyRequiredDescriptor.getMaterialDescriptor().getDate())
+				.demandDate(supplyRequiredDescriptor.getDemandDate())
 				.isSimulated(supplyRequiredDescriptor.isSimulated())
 				.build();
 	}
@@ -62,8 +60,8 @@ public class SupplyRequiredHandlerUtils
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 
-		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getMaterialDescriptor().getProductId());
-		final BigDecimal qtyToSupplyBD = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getProductId());
+		final BigDecimal qtyToSupplyBD = supplyRequiredDescriptor.getQtyToSupplyBD();
 		final I_C_UOM uom = productBL.getStockUOM(productId);
 		return Quantity.of(qtyToSupplyBD, uom);
 	}

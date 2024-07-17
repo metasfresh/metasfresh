@@ -73,7 +73,7 @@ public class SupplyCandidateHandler implements CandidateHandler
 	 * When creating a new candidate, then compute its qty by getting the qty from that stockCandidate that has the same product and locator and is "before" it and add the supply candidate's qty
 	 */
 	@Override
-	public Candidate onCandidateNewOrChange(
+	public SaveResult onCandidateNewOrChange(
 			@NonNull final Candidate candidate,
 			@NonNull final OnNewOrChangeAdvise advise)
 	{
@@ -94,7 +94,9 @@ public class SupplyCandidateHandler implements CandidateHandler
 
 		if (!candidateSaveResult.isDateChanged() && !candidateSaveResult.isQtyChanged())
 		{
-			return candidateSaveResult.toCandidateWithQtyDelta(); // nothing more to do, because the candidate didn't change any ATP quantity.
+			// nothing more to do, because the candidate didn't change any ATP quantity.
+			//return candidateSaveResult.toCandidateWithQtyDelta();
+			return candidateSaveResult;
 		}
 
 		final Candidate savedCandidate = candidateSaveResult.getCandidate();
@@ -121,7 +123,7 @@ public class SupplyCandidateHandler implements CandidateHandler
 						.withParentId(savedStockCandidate.getId()));
 
 		return candidateSaveResult
-				.toCandidateWithQtyDelta()
+				//.toCandidateWithQtyDelta()
 				.withParentId(savedStockCandidate.getId());
 	}
 

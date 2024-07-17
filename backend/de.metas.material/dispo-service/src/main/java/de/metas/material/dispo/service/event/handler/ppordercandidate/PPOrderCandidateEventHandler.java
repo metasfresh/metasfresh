@@ -97,8 +97,10 @@ public abstract class PPOrderCandidateEventHandler
 		final boolean attemptUpdate = !CandidatesQuery.FALSE.equals(preExistingSupplyQuery);
 
 		return candidateChangeService.onCandidateNewOrChange(
-				headerCandidate,
-				CandidateHandler.OnNewOrChangeAdvise.attemptUpdate(attemptUpdate));
+						headerCandidate,
+						CandidateHandler.OnNewOrChangeAdvise.attemptUpdate(attemptUpdate)
+				)
+				.toCandidateWithQtyDelta();
 	}
 
 	protected void createLineCandidates(
@@ -131,7 +133,7 @@ public abstract class PPOrderCandidateEventHandler
 					.simulated(simulated);
 			if (headerDemandDetail != null)
 			{
-				candidateBuilder.additionalDemandDetail(headerDemandDetail.withTraceId(event.getEventDescriptor().getTraceId()));
+				candidateBuilder.additionalDemandDetail(headerDemandDetail.withTraceId(event.getTraceId()));
 			}
 			if (groupId != null)
 			{

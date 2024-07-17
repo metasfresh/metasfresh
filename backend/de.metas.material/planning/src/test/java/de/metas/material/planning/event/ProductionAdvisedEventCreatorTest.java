@@ -7,7 +7,6 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderData;
-import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
@@ -94,7 +93,7 @@ public class ProductionAdvisedEventCreatorTest
 		Mockito.when(ppOrderCandidateDemandMatcher.matches(Mockito.any(MaterialPlanningContext.class)))
 				.thenReturn(true);
 
-		Mockito.when(ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(Mockito.any(IMaterialRequest.class)))
+		Mockito.when(ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(Mockito.any(MaterialRequest.class)))
 				.thenReturn(createDummyPPOrderCandidate());
 
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());

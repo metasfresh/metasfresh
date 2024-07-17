@@ -1,10 +1,10 @@
 package de.metas.material.planning.event;
 
-import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Builder.Default;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 
@@ -35,22 +35,13 @@ import java.time.Instant;
 @Value
 @Builder
 @With
-public class MaterialRequest implements IMaterialRequest
+public class MaterialRequest
 {
-	Quantity qtyToSupply;
-
-	@Default
-	int mrpDemandOrderLineSOId = -1;
-
-	@Default
-	int mrpDemandShipmentScheduleId = -1;
-
-	@Default
-	int mrpDemandBPartnerId = -1;
-
-	MaterialPlanningContext context;
-
-	Instant demandDate;
-
+	@NonNull MaterialPlanningContext context;
+	@NonNull Quantity qtyToSupply;
+	@NonNull Instant demandDate;
+	@Default int mrpDemandOrderLineSOId = -1;
+	@Default int mrpDemandShipmentScheduleId = -1;
+	@Default int mrpDemandBPartnerId = -1;
 	boolean isSimulated;
 }

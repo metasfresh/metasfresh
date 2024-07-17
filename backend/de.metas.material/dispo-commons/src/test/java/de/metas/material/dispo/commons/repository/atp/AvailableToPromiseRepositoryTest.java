@@ -328,7 +328,7 @@ public class AvailableToPromiseRepositoryTest
 				storageAttributesKey,
 				ATTRIBUTE_SET_INSTANCE_ID);
 		final MaterialDescriptor materialDescriptor = EventTestHelper
-				.createMaterialDescriptor()
+				.newMaterialDescriptor()
 				.withCustomerId(BPARTNER_ID_1)
 				.withProductDescriptor(productDescriptor);
 		return materialDescriptor;

@@ -1,7 +1,6 @@
 package de.metas.material.planning.ddorder;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -39,6 +39,7 @@ import java.util.List;
  * #L%
  */
 
+// TODO delete me
 @Service
 @RequiredArgsConstructor
 public class DDOrderAdvisedEventCreator
@@ -67,13 +68,13 @@ public class DDOrderAdvisedEventCreator
 		{
 			for (final DDOrderLine ddOrderLine : ddOrder.getLines())
 			{
-				final DistributionNetworkLine distributionNetworkLine = DistributionNetworkLineId.optionalOfRepoId(ddOrderLine.getNetworkDistributionLineId())
+				final DistributionNetworkLine distributionNetworkLine = Optional.ofNullable(ddOrderLine.getDistributionNetworkAndLineId())
 						.map(distributionNetworkRepository::getLineById)
-						.orElseThrow(() -> new AdempiereException("Every DDOrderLine pojo created by this planner needs to have networkDistributionLineId > 0, but this one hasn't; ddOrderLine=" + ddOrderLine));
+						.orElseThrow(() -> new AdempiereException("Every DDOrderLine pojo created by this planner needs to have networkDistributionLineId set, but this one hasn't; ddOrderLine=" + ddOrderLine));
 
 				final DDOrderAdvisedEvent distributionAdvisedEvent = DDOrderAdvisedEvent.builder()
+						.eventDescriptor(supplyRequiredDescriptor.newEventDescriptor())
 						.supplyRequiredDescriptor(supplyRequiredDescriptor)
-						.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
 						.fromWarehouseId(distributionNetworkLine.getSourceWarehouseId())
 						.toWarehouseId(distributionNetworkLine.getTargetWarehouseId())
 						.ddOrder(ddOrder)

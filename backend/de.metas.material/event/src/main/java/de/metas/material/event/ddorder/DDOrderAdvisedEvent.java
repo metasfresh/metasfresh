@@ -1,20 +1,20 @@
 package de.metas.material.event.ddorder;
 
-import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.model.I_DD_Order;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.model.I_DD_Order;
 
 /*
  * #%L
@@ -37,6 +37,7 @@ import lombok.ToString;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 /**
  * Send by the material planner when it came up with a distribution plan that could be turned into an {@link I_DD_Order}.
  *
@@ -95,16 +96,16 @@ public class DDOrderAdvisedEvent extends AbstractDDOrderEvent
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = getSupplyRequiredDescriptor();
 		Check.errorIf(supplyRequiredDescriptor == null, "The given ppOrderAdvisedEvent needs to have a supplyRequiredDescriptor");
 
-		final int productPlanningId = ddOrder.getProductPlanningId();
-		Check.errorIf(productPlanningId <= 0,
+		final ProductPlanningId productPlanningId = ddOrder.getProductPlanningId();
+		Check.errorIf(productPlanningId == null,
 				"The given ppOrderAdvisedEvent event has a ppOrder with productPlanningId={}", productPlanningId);
 
 		ddOrder.getLines().forEach(ddOrderLine -> {
 
-			final int networkDistributionLineId = ddOrderLine.getNetworkDistributionLineId();
-			Check.errorIf(networkDistributionLineId <= 0,
-					"The given ppOrderAdvisedEvent event has a ppOrderLine with networkDistributionLineId={}; ddOrderLine={}",
-					networkDistributionLineId, ddOrderLine);
+			final DistributionNetworkAndLineId distributionNetworkAndLineId = ddOrderLine.getDistributionNetworkAndLineId();
+			Check.errorIf(distributionNetworkAndLineId == null,
+					"The given ppOrderAdvisedEvent event has a ppOrderLine with distributionNetworkAndLineId={}; ddOrderLine={}",
+					distributionNetworkAndLineId, ddOrderLine);
 		});
 	}
 }

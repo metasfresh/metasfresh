@@ -12,6 +12,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
@@ -19,7 +20,6 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderData;
@@ -95,9 +95,10 @@ public final class PPOrderCreatedHandler
 		handlePPOrderCreatedEvent(event);
 	}
 
-	private MaterialDispoGroupId handlePPOrderCreatedEvent(@NonNull final PPOrderCreatedEvent ppOrderEvent)
+	private void handlePPOrderCreatedEvent(@NonNull final PPOrderCreatedEvent ppOrderEvent)
 	{
-		final Candidate headerCandidate = createHeaderCandidate(ppOrderEvent);
+		final Candidate headerCandidate = createHeaderCandidate(ppOrderEvent)
+				.getCandidate();
 
 		updateMainData(ppOrderEvent);
 
@@ -114,13 +115,11 @@ public final class PPOrderCreatedHandler
 				.advised(headerProductionDetail.getAdvised())
 				.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE) // only the ppOrder's header supply product can be picked directly because only there we might know the shipment schedule ID
 				.create();
-
-		return headerCandidate.getGroupId();
 	}
 
 	private void updateMainData(final @NonNull PPOrderCreatedEvent ppOrderEvent)
 	{
-		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderEvent.getEventDescriptor().getOrgId());
+		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderEvent.getOrgId());
 
 		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.builder()
 				.warehouseId(ppOrderEvent.getPpOrder().getPpOrderData().getWarehouseId())
@@ -137,7 +136,7 @@ public final class PPOrderCreatedHandler
 	}
 
 	@NonNull
-	private Candidate createHeaderCandidate(@NonNull final PPOrderCreatedEvent ppOrderEvent)
+	private SaveResult createHeaderCandidate(@NonNull final PPOrderCreatedEvent ppOrderEvent)
 	{
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 

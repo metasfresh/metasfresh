@@ -31,8 +31,8 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DDOrderUtil;
+import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkLine;
-import de.metas.material.planning.ddorder.DistributionNetworkLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.util.Services;
@@ -49,6 +49,7 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 import static de.metas.distribution.ddorder.lowlevel.interceptor.DD_Order_PostMaterialEvent.createAndInitPPOrderPojoBuilder;
 import static de.metas.distribution.ddorder.lowlevel.interceptor.DD_Order_PostMaterialEvent.createDDOrderLinePojo;
@@ -83,7 +84,7 @@ public class DD_OrderLine_PostMaterialEvent
 		final I_DD_Order ddOrder = ddOrderLineRecord.getDD_Order();
 		final DDOrder.DDOrderBuilder ddOrderBuilder = createAndInitPPOrderPojoBuilder(ddOrder);
 
-		final DistributionNetworkLine distributionNetworkLine = DistributionNetworkLineId.optionalOfRepoId(oldDDOrderLine.getDD_NetworkDistributionLine_ID())
+		final DistributionNetworkLine distributionNetworkLine = extractDistributionNetworkAndLineId(oldDDOrderLine)
 				.map(distributionNetworkRepository::getLineById)
 				.orElse(null);
 
@@ -103,6 +104,11 @@ public class DD_OrderLine_PostMaterialEvent
 				.build();
 
 		postMaterialEventService.postEventAsync(event);
+	}
+
+	private static Optional<DistributionNetworkAndLineId> extractDistributionNetworkAndLineId(final I_DD_OrderLine oldDDOrderLine)
+	{
+		return DistributionNetworkAndLineId.optionalOfRepoIds(oldDDOrderLine.getDD_NetworkDistribution_ID(), oldDDOrderLine.getDD_NetworkDistributionLine_ID());
 	}
 
 	@Nullable

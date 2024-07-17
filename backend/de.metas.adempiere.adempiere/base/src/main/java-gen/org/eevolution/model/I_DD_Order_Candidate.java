@@ -374,6 +374,33 @@ public interface I_DD_Order_Candidate
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Shipper_ID();
+
+	org.compiere.model.I_M_Shipper getM_Shipper();
+
+	void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
+
+	ModelColumn<I_DD_Order_Candidate, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+
+	/**
 	 * Set Warehouse from.
 	 *
 	 * <br>Type: Search

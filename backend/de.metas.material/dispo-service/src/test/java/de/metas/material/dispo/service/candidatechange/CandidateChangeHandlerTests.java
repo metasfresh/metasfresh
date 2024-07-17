@@ -61,7 +61,8 @@ import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.compiere.util.TimeUtil.asTimestamp;
 
 /*
@@ -180,7 +181,7 @@ public class CandidateChangeHandlerTests
 			}
 
 			@Override
-			public Candidate onCandidateNewOrChange(Candidate candidate, OnNewOrChangeAdvise advise)
+			public SaveResult onCandidateNewOrChange(Candidate candidate, OnNewOrChangeAdvise advise)
 			{
 				throw new UnsupportedOperationException();
 			}
@@ -194,7 +195,7 @@ public class CandidateChangeHandlerTests
 	}
 
 	/**
-	 * Verifies that {@link StockCandidateService#applyDeltaToLaterStockCandidates(SaveResult)} applies the given delta to the right records.
+	 * Verifies that {@link StockCandidateService#applyDeltaToMatchingLaterStockCandidates(SaveResult)} applies the given delta to the right records.
 	 * Only records that have a <i>different</i> M_Warenhouse_ID shall not be touched.
 	 */
 	@Test
@@ -409,7 +410,7 @@ public class CandidateChangeHandlerTests
 	}
 
 	/**
-	 * Similar to {@link #testDemand_Then_UnrelatedSupply()}, but this time, we first add the supply candidate.
+	 * Similar to {@link #onCandidateNewOrChange_supply_then_unrelated_demand_initial_stock()}, but this time, we first add the supply candidate.
 	 * Therefore its {@link I_MD_Candidate} records gets to be persisted first. still, the {@code SeqNo} needs to be "stable".
 	 */
 	@Test
@@ -703,7 +704,7 @@ public class CandidateChangeHandlerTests
 						0,
 						TEN))
 				.build();
-		return candidateChangeHandler.onCandidateNewOrChange(candidate);
+		return candidateChangeHandler.onCandidateNewOrChange(candidate).getCandidate();
 	}
 
 	private MaterialDescriptor createMaterialDescriptor(
@@ -746,6 +747,6 @@ public class CandidateChangeHandlerTests
 											.build())
 				.build();
 
-		return candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
+		return candidateChangeHandler.onCandidateNewOrChange(supplyCandidate).getCandidate();
 	}
 }

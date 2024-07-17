@@ -5,6 +5,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
@@ -74,6 +75,11 @@ public class DemandDetailsQuery
 				toUnspecifiedIfZero(demandDetail.getSubscriptionProgressId()),
 				toUnspecifiedIfZero(demandDetail.getForecastLineId()),
 				toUnspecifiedIfZero(demandDetail.getInOutLineId()));
+	}
+
+	public static DemandDetailsQuery ofSupplyRequiredDescriptor(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	{
+		return ofDemandDetail(DemandDetail.forSupplyRequiredDescriptor(supplyRequiredDescriptor));
 	}
 
 	public static DemandDetailsQuery forDocumentLine(

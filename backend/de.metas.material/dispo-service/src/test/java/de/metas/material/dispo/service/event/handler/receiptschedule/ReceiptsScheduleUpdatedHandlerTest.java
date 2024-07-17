@@ -32,7 +32,7 @@ import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.*;
@@ -130,7 +130,7 @@ public class ReceiptsScheduleUpdatedHandlerTest
 
 	private void createAndHandleUpdate(final Instant updateTimestamp)
 	{
-		final MaterialDescriptor eventMaterialDescriptor = createMaterialDescriptor()
+		final MaterialDescriptor eventMaterialDescriptor = newMaterialDescriptor()
 				.withDate(updateTimestamp)
 				.withQuantity(new BigDecimal("11"));
 

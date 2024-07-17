@@ -110,6 +110,21 @@ public class DDOrderAdvisedEventCreatorTest
 
 	private DDOrder createDummyDDOrder()
 	{
+		final DistributionNetworkAndLineId networkAndLineId = createNetworkAndLineId();
+
+		return DDOrder.builder()
+				.orgId(OrgId.ofRepoId(1))
+				.datePromised(Instant.now())
+				.line(DDOrderLine.builder()
+						.productDescriptor(ProductDescriptor.forProductAndAttributes(1, AttributesKey.ofString("1")))
+						.qty(new BigDecimal("100"))
+						.distributionNetworkAndLineId(networkAndLineId)
+						.build())
+				.build();
+	}
+
+	private DistributionNetworkAndLineId createNetworkAndLineId()
+	{
 		final I_DD_NetworkDistribution distributionNetwork = InterfaceWrapperHelper.newInstance(I_DD_NetworkDistribution.class);
 		distributionNetwork.setName("dummy");
 		InterfaceWrapperHelper.save(distributionNetwork);
@@ -122,15 +137,7 @@ public class DDOrderAdvisedEventCreatorTest
 		distributionNetworkLine.setPercent(BigDecimal.valueOf(100));
 		saveRecord(distributionNetworkLine);
 
-		return DDOrder.builder()
-				.orgId(OrgId.ofRepoId(1))
-				.datePromised(Instant.now())
-				.line(DDOrderLine.builder()
-						.productDescriptor(ProductDescriptor.forProductAndAttributes(1, AttributesKey.ofString("1")))
-						.qty(new BigDecimal("100"))
-						.networkDistributionLineId(distributionNetworkLine.getDD_NetworkDistributionLine_ID())
-						.build())
-				.build();
+		return DistributionNetworkAndLineId.ofRepoIds(distributionNetworkLine.getDD_NetworkDistribution_ID(), distributionNetworkLine.getDD_NetworkDistributionLine_ID());
 	}
 
 }

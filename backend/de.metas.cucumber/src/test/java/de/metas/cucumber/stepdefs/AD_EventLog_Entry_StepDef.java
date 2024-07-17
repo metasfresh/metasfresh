@@ -203,7 +203,7 @@ public class AD_EventLog_Entry_StepDef
 			final SupplyRequiredEvent supplyRequiredEvent = getSpecificMaterialEvent(event, SupplyRequiredEvent.class);
 
 			if (supplyRequiredEvent != null
-					&& supplyRequiredEvent.getSupplyRequiredDescriptor().getMaterialDescriptor().getProductId() == productId)
+					&& supplyRequiredEvent.getSupplyRequiredDescriptor().getProductId() == productId)
 			{
 				matchingLogs.add(eventLog);
 

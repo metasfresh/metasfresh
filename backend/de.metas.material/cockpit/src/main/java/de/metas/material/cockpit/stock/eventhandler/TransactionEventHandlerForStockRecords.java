@@ -76,11 +76,9 @@ public class TransactionEventHandlerForStockRecords
 	{
 		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
 
-		final EventDescriptor eventDescriptor = event.getEventDescriptor();
-
 		final StockDataRecordIdentifier identifier = StockDataRecordIdentifier.builder()
-				.clientId(eventDescriptor.getClientId())
-				.orgId(eventDescriptor.getOrgId())
+				.clientId(event.getClientId())
+				.orgId(event.getOrgId())
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.productId(ProductId.ofRepoId(materialDescriptor.getProductId()))
 				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())

@@ -26,9 +26,12 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.order.OrderLineRepository;
+import de.metas.product.ResourceId;
+import de.metas.shipping.ShipperId;
 import lombok.NonNull;
-import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
@@ -97,13 +100,13 @@ public class DDOrderAdvisedHandlerTests
 	public static final WarehouseId intermediateWarehouseId = WarehouseId.ofRepoId(20);
 	public static final WarehouseId toWarehouseId = WarehouseId.ofRepoId(30);
 
-	public static final int productPlanningId = 65;
+	public static final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoId(65);
 
-	public static final int plantId = 75;
+	public static final ResourceId plantId = ResourceId.ofRepoId(75);
 
-	public static final int networkDistributionLineId = 85;
+	public static final DistributionNetworkAndLineId distributionNetworkAndLineId = DistributionNetworkAndLineId.ofRepoIds(80, 85);
 
-	public static final int shipperId = 95;
+	public static final ShipperId shipperId = ShipperId.ofRepoId(95);
 
 	private DDOrderAdvisedHandler ddOrderAdvisedHandler;
 
@@ -179,7 +182,7 @@ public class DDOrderAdvisedHandlerTests
 								.bPartnerId(BPARTNER_ID.getRepoId())
 								.qty(BigDecimal.TEN)
 								.durationDays(1)
-								.networkDistributionLineId(networkDistributionLineId)
+								.distributionNetworkAndLineId(distributionNetworkAndLineId)
 								.build())
 						.build())
 				.build();
@@ -188,9 +191,7 @@ public class DDOrderAdvisedHandlerTests
 
 		final List<I_MD_Candidate> allNonStockRecords = DispoTestUtils.filterExclStock();
 		final int groupIdOfFirstRecord = allNonStockRecords.get(0).getMD_Candidate_GroupId();
-		assertThat(allNonStockRecords).allSatisfy(r -> {
-			assertThat(r.getMD_Candidate_GroupId()).as("all four records shall have the same groupId").isEqualTo(groupIdOfFirstRecord);
-		});
+		assertThat(allNonStockRecords).allSatisfy(r -> assertThat(r.getMD_Candidate_GroupId()).as("all four records shall have the same groupId").isEqualTo(groupIdOfFirstRecord));
 
 		assertThat(DispoTestUtils.retrieveAllRecords())
 				.hasSize(4)
@@ -334,7 +335,7 @@ public class DDOrderAdvisedHandlerTests
 		assertThat(t1Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Demand.getMD_Candidate_ID());
 
 		// for display reasons we expect the MD_Candidate_IDs to have a strict order, i.e. demand - stock - supply - demand etc..
-		final List<Integer> allRecordSeqNos = DispoTestUtils.retrieveAllRecords().stream().map(r -> r.getSeqNo()).sorted().collect(Collectors.toList());
+		final List<Integer> allRecordSeqNos = DispoTestUtils.retrieveAllRecords().stream().map(I_MD_Candidate::getSeqNo).sorted().collect(Collectors.toList());
 		assertThat(allRecordSeqNos)
 				.containsExactly(
 						t3Stock.getSeqNo(),
@@ -372,7 +373,7 @@ public class DDOrderAdvisedHandlerTests
 								.salesOrderLineId(supplyRequiredDescriptor.getOrderLineId())
 								.productDescriptor(createProductDescriptor())
 								.qty(BigDecimal.TEN)
-								.networkDistributionLineId(networkDistributionLineId)
+								.distributionNetworkAndLineId(distributionNetworkAndLineId)
 								.durationDays(durationDays)
 								.build())
 						.build())

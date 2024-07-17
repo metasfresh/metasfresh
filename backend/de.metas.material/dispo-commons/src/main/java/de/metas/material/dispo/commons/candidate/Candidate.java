@@ -1,5 +1,6 @@
 package de.metas.material.dispo.commons.candidate;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
@@ -8,6 +9,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -88,7 +90,7 @@ public class Candidate
 	 * Note that {@link CandidateBusinessCase#PRODUCTION} and {@link CandidateBusinessCase#DISTRIBUTION} have multiple candidates in one group,
 	 * Others like {@link CandidateBusinessCase#PURCHASE} have just one candidate in a group.
 	 */
-	MaterialDispoGroupId groupId;
+	@Nullable MaterialDispoGroupId groupId;
 
 	int seqNo;
 
@@ -113,7 +115,7 @@ public class Candidate
 			final CandidateBusinessCase businessCase,
 			final CandidateId id,
 			final CandidateId parentId,
-			final MaterialDispoGroupId groupId,
+			@Nullable final MaterialDispoGroupId groupId,
 			final int seqNo,
 			@NonNull final MaterialDescriptor materialDescriptor,
 			final MinMaxDescriptor minMaxDescriptor,
@@ -201,8 +203,8 @@ public class Candidate
 		}
 
 		Check.errorIf((businessCase == null) != (businessCaseDetail == null),
-					  "The given paramters businessCase and businessCaseDetail need to be both null or both not-null; businessCase={}; businessCaseDetail={}; this={}",
-					  businessCase, businessCaseDetail, this);
+				"The given paramters businessCase and businessCaseDetail need to be both null or both not-null; businessCase={}; businessCaseDetail={}; this={}",
+				businessCase, businessCaseDetail, this);
 
 		Check.errorIf(
 				businessCase != null && !businessCase.getDetailClass().isAssignableFrom(businessCaseDetail.getClass()),
@@ -237,11 +239,6 @@ public class Candidate
 		return withMaterialDescriptor(materialDescriptor.withDate(date));
 	}
 
-	public Candidate withWarehouseId(final WarehouseId warehouseId)
-	{
-		return withMaterialDescriptor(materialDescriptor.withWarehouseId(warehouseId));
-	}
-
 	@Nullable
 	public MaterialDispoGroupId getEffectiveGroupId()
 	{
@@ -259,20 +256,13 @@ public class Candidate
 		}
 	}
 
-	public Instant getDate()
-	{
-		return materialDescriptor.getDate();
-	}
+	public Instant getDate() {return getMaterialDescriptor().getDate();}
 
-	public int getProductId()
-	{
-		return materialDescriptor.getProductId();
-	}
+	public int getProductId() {return getMaterialDescriptor().getProductId();}
 
-	public WarehouseId getWarehouseId()
-	{
-		return materialDescriptor.getWarehouseId();
-	}
+	public WarehouseId getWarehouseId() {return getMaterialDescriptor().getWarehouseId();}
+
+	public BPartnerId getCustomerId() {return getMaterialDescriptor().getCustomerId();}
 
 	public BigDecimal computeActualQty()
 	{
@@ -294,5 +284,17 @@ public class Candidate
 			return BigDecimal.ZERO;
 		}
 		return businessCaseDetail.getQty();
+	}
+
+	@Nullable
+	public OrderLineId getSalesOrderLineId()
+	{
+		final DemandDetail demandDetail = getDemandDetail();
+		if (demandDetail == null)
+		{
+			return null;
+		}
+		
+		return OrderLineId.ofRepoIdOrNull(demandDetail.getOrderLineId());
 	}
 }

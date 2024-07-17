@@ -33,12 +33,9 @@ Feature: create distribution to balance demand
       | location_1 | bPLocation_1 | bpartner_1               |
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsInTransit |
-      | warehouse_1    | bpartner_1    | location_1             | true        |
-      | warehouse_2    | bpartner_1    | location_1             | false       |
-      | warehouseStd   | bpartner_1    | location_1             | false       |
-    And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | M_Warehouse_ID |
-      | locator_1               | warehouse_2    |
+#      | inTransit      | bpartner_1    | location_1             | true        |
+      | sourceWH       | bpartner_1    | location_1             | false       |
+      | targetWH       | bpartner_1    | location_1             | false       |
     And contains M_Shippers
       | Identifier |
       | shipper    |
@@ -47,25 +44,25 @@ Feature: create distribution to balance demand
       | ddNetwork_1               |
     And metasfresh contains DD_NetworkDistributionLine
       | DD_NetworkDistributionLine_ID | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
-      | ddNetworkLine_1               | ddNetwork_1               | warehouseStd   | warehouse_2          | shipper      |
+      | ddNetworkLine_1               | ddNetwork_1               | targetWH       | sourceWH             | shipper      |
     And metasfresh contains PP_Product_Plannings
       | M_Product_ID | IsCreatePlan | DD_NetworkDistribution_ID | M_Warehouse_ID |
-      | p_1          | true         | ddNetwork_1               | warehouseStd   |
+      | p_1          | true         | ddNetwork_1               | targetWH       |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  | OPT.M_Warehouse_ID.Identifier |
-      | SO         | true    | bpartner_1               | 2022-07-04  | 2022-07-04T00:00:00Z | warehouseStd                  |
+      | SO         | true    | bpartner_1               | 2022-07-04  | 2022-07-04T00:00:00Z | targetWH                      |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | SO                    | p_1                     | 14         |
     And the order identified by SO is completed
 
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | -14                    |
-      | c_2        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 14  | 0                      |
-      | c_3        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | -14 | -14                    |
-      | c_4        | SUPPLY            |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 0                      |
-    And after not more than 60s, DD_OrderLine found for orderLine ol_1
-      | Identifier |
-      | ddol_1     |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID |
+      | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | targetWH       |
+      | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |
+      | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |
+      | c_4        | SUPPLY            |                           | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | sourceWH       |
+    And after not more than 60s, following DD_Order_Candidates are found
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed |
+      | c1         | p_1          | sourceWH            | targetWH         | 14  | N         |

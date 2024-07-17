@@ -11,6 +11,7 @@ import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.report.PrintCopies;

@@ -96,7 +96,7 @@ abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends AbstractReceipt
 	private final CandidateBuilder prepareInitialSupplyCandidate(@NonNull final AbstractReceiptScheduleEvent event)
 	{
 		return Candidate.builder()
-				.clientAndOrgId(event.getEventDescriptor().getClientAndOrgId())
+				.clientAndOrgId(event.getClientAndOrgId())
 				.type(CandidateType.SUPPLY)
 				.materialDescriptor(event.getMaterialDescriptor())
 				.businessCase(CandidateBusinessCase.PURCHASE);

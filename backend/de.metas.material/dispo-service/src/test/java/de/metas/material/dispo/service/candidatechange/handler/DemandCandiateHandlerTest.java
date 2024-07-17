@@ -204,10 +204,9 @@ public class DemandCandiateHandlerTest
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = materialDemandEvent.getSupplyRequiredDescriptor();
 		assertThat(supplyRequiredDescriptor).isNotNull();
 
-		final MaterialDescriptor materialDescriptorOfEvent = supplyRequiredDescriptor.getMaterialDescriptor();
-		assertThat(materialDescriptorOfEvent.getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(materialDescriptorOfEvent.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-		assertThat(materialDescriptorOfEvent.getQuantity()).isEqualByComparingTo(expectedQty);
+		assertThat(supplyRequiredDescriptor.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(supplyRequiredDescriptor.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(supplyRequiredDescriptor.getQtyToSupplyBD()).isEqualByComparingTo(expectedQty);
 	}
 
 	@Test
@@ -233,9 +232,10 @@ public class DemandCandiateHandlerTest
 				.postEventNow(Mockito.any(), Mockito.any());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private static Candidate createCandidateWithType(@NonNull final CandidateType type)
 	{
-		final Candidate candidate = Candidate.builder()
+		return Candidate.builder()
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
 				.type(type)
 				.materialDescriptor(MaterialDescriptor.builder()
@@ -245,7 +245,6 @@ public class DemandCandiateHandlerTest
 						.quantity(BigDecimal.TEN)
 						.build())
 				.build();
-		return candidate;
 	}
 
 	/**

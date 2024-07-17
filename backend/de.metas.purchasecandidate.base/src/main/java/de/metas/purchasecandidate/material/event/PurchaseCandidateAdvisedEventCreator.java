@@ -1,11 +1,10 @@
 package de.metas.purchasecandidate.material.event;
 
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
-import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -61,8 +60,8 @@ public class PurchaseCandidateAdvisedEventCreator
 			return Optional.empty();
 		}
 
-		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getMaterialDescriptor().getProductId());
-		final OrgId orgId = supplyRequiredDescriptor.getEventDescriptor().getOrgId();
+		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getProductId());
+		final OrgId orgId = supplyRequiredDescriptor.getOrgId();
 
 		final Optional<VendorProductInfo> defaultVendorProductInfo = vendorProductInfoService.getDefaultVendorProductInfo(productId, orgId);
 		if (!defaultVendorProductInfo.isPresent())
@@ -73,9 +72,8 @@ public class PurchaseCandidateAdvisedEventCreator
 
 		final ProductPlanning productPlanning = context.getProductPlanning();
 
-		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent
-				.builder()
-				.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
+		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent.builder()
+				.eventDescriptor(supplyRequiredDescriptor.newEventDescriptor())
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.directlyCreatePurchaseCandidate(productPlanning.isCreatePlan())
 				.productPlanningId(ProductPlanningId.toRepoId(productPlanning.getId()))

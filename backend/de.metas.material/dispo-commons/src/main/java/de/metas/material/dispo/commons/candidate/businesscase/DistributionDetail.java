@@ -1,65 +1,57 @@
 package de.metas.material.dispo.commons.candidate.businesscase;
 
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
+import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
+import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
+import de.metas.product.ResourceId;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
 @Value
 @Builder(toBuilder = true)
 public class DistributionDetail implements BusinessCaseDetail
 {
-	public static DistributionDetail forDistributionDetailRecord(
-			@NonNull final I_MD_Candidate_Dist_Detail distributionDetailRecord)
-	{
-		final DistributionDetail distributionDetail = DistributionDetail.builder()
-				.advised(distributionDetailRecord.isAdvised())
-				.pickDirectlyIfFeasible(Flag.of(distributionDetailRecord.isPickDirectlyIfFeasible()))
-				.networkDistributionLineId(distributionDetailRecord.getDD_NetworkDistributionLine_ID())
-				.productPlanningId(distributionDetailRecord.getPP_Product_Planning_ID())
-				.plantId(distributionDetailRecord.getPP_Plant_ID())
-				.ddOrderId(distributionDetailRecord.getDD_Order_ID())
-				.ddOrderLineId(distributionDetailRecord.getDD_OrderLine_ID())
-				.ddOrderDocStatus(distributionDetailRecord.getDD_Order_DocStatus())
-				.qty(distributionDetailRecord.getPlannedQty())
-				.shipperId(distributionDetailRecord.getM_Shipper_ID())
-				.build();
-
-		return distributionDetail;
-	}
-
-	int productPlanningId;
-
-	int plantId;
-
-	int networkDistributionLineId;
-
-	int shipperId;
+	@Nullable ProductPlanningId productPlanningId;
+	@Nullable ResourceId plantId;
+	@Nullable DistributionNetworkAndLineId distributionNetworkAndLineId;
+	@Nullable ShipperId shipperId;
 
 	int ddOrderId;
-
 	int ddOrderLineId;
-
-	String ddOrderDocStatus;
+	DocStatus ddOrderDocStatus;
 
 	boolean advised;
 
-	@NonNull
-	@Default
-	Flag pickDirectlyIfFeasible=Flag.FALSE;
+	@NonNull @Default Flag pickDirectlyIfFeasible = Flag.FALSE;
+	@NonNull BigDecimal qty;
 
-	@NonNull
-	BigDecimal qty;
+	public static DistributionDetail ofRecord(@NonNull final I_MD_Candidate_Dist_Detail distributionDetailRecord)
+	{
+		return DistributionDetail.builder()
+				.advised(distributionDetailRecord.isAdvised())
+				.pickDirectlyIfFeasible(Flag.of(distributionDetailRecord.isPickDirectlyIfFeasible()))
+				.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIdsOrNull(distributionDetailRecord.getDD_NetworkDistribution_ID(), distributionDetailRecord.getDD_NetworkDistributionLine_ID()))
+				.productPlanningId(ProductPlanningId.ofRepoIdOrNull(distributionDetailRecord.getPP_Product_Planning_ID()))
+				.plantId(ResourceId.ofRepoIdOrNull(distributionDetailRecord.getPP_Plant_ID()))
+				.ddOrderId(distributionDetailRecord.getDD_Order_ID())
+				.ddOrderLineId(distributionDetailRecord.getDD_OrderLine_ID())
+				.ddOrderDocStatus(DocStatus.ofNullableCode(distributionDetailRecord.getDD_Order_DocStatus()))
+				.qty(distributionDetailRecord.getPlannedQty())
+				.shipperId(ShipperId.ofRepoIdOrNull(distributionDetailRecord.getM_Shipper_ID()))
+				.build();
+	}
 
 	public static DistributionDetail castOrNull(@Nullable final BusinessCaseDetail businessCaseDetail)
 	{
-		final boolean canBeCast = businessCaseDetail != null && businessCaseDetail instanceof DistributionDetail;
+		final boolean canBeCast = businessCaseDetail instanceof DistributionDetail;
 		if (canBeCast)
 		{
 			return cast(businessCaseDetail);

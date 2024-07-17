@@ -30,11 +30,11 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderData;
-import de.metas.material.planning.IMaterialRequest;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ProductPlanningService;
-import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.event.MaterialRequest;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.order.OrderLine;
@@ -77,7 +77,7 @@ public class PPOrderCandidatePojoSupplier
 	}
 
 	@NonNull
-	public PPOrderCandidate supplyPPOrderCandidatePojoWithoutLines(@NonNull final IMaterialRequest request)
+	public PPOrderCandidate supplyPPOrderCandidatePojoWithoutLines(@NonNull final MaterialRequest request)
 	{
 		try
 		{
@@ -91,7 +91,7 @@ public class PPOrderCandidatePojoSupplier
 		}
 	}
 
-	private PPOrderCandidate supplyPPOrderCandidatePojo(@NonNull final IMaterialRequest request)
+	private PPOrderCandidate supplyPPOrderCandidatePojo(@NonNull final MaterialRequest request)
 	{
 		final MaterialPlanningContext context = request.getContext();
 

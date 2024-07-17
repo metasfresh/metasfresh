@@ -8,6 +8,8 @@ import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Set;
 
 /*
@@ -88,4 +90,6 @@ public enum CandidateType implements ReferenceListAwareEnum
 	{
 		return INCREASING_STOCK_TYPES.contains(this);
 	}
+
+	public static boolean equals(@Nullable final CandidateType type1, @Nullable final CandidateType type2) {return Objects.equals(type1, type2);}
 }

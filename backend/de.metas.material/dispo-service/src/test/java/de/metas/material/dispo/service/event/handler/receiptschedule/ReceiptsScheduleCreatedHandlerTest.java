@@ -33,7 +33,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static org.assertj.core.api.Assertions.*;
 
 /*
@@ -94,7 +94,7 @@ public class ReceiptsScheduleCreatedHandlerTest
 
 	static void handleEvent_ReceiptScheduleCreatedEvent_performTest(@NonNull final ReceiptsScheduleCreatedHandler receiptsScheduleCreatedHandler)
 	{
-		final MaterialDescriptor eventMaterialDescriptor = createMaterialDescriptor().withDate(NOW);
+		final MaterialDescriptor eventMaterialDescriptor = newMaterialDescriptor().withDate(NOW);
 
 		final ReceiptScheduleCreatedEvent receiptScheduleCreatedEvent = ReceiptScheduleCreatedEvent
 				.builder()

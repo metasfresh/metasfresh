@@ -1,9 +1,9 @@
 package de.metas.material.planning.ddorder;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.material.planning.ProductPlanning;
-import de.metas.material.planning.exception.MrpException;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -31,12 +31,12 @@ public class DDOrderUtil
 		return warehousesRepo.getInTransitWarehouseIdIfExists(adOrgId);
 	}
 
-	public int retrieveOrgBPartnerId(final int orgId)
+	public Optional<BPartnerId> retrieveOrgBPartnerId(final OrgId orgId)
 	{
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-		final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(orgId);
+		final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(orgId.getRepoId());
 
-		return orgBPartner.getC_BPartner_ID();
+		return orgBPartner != null ? BPartnerId.optionalOfRepoId(orgBPartner.getC_BPartner_ID()) : Optional.empty();
 	}
 
 	public BPartnerLocationId retrieveOrgBPartnerLocationId(@NonNull final OrgId orgId)
@@ -59,7 +59,7 @@ public class DDOrderUtil
 		if (productPlanningData != null)
 		{
 			leadtimeDays = productPlanningData.getLeadTimeDays();
-			Check.assume(leadtimeDays >= 0, MrpException.class, "leadtimeDays >= 0");
+			Check.assume(leadtimeDays >= 0, "leadtimeDays >= 0");
 		}
 		else
 		{
@@ -85,7 +85,7 @@ public class DDOrderUtil
 		else if (productPlanningData != null)
 		{
 			transferTime = productPlanningData.getTransferTimeDays();
-			Check.assume(transferTime >= 0, MrpException.class, "transferTime >= 0");
+			Check.assume(transferTime >= 0, "transferTime >= 0");
 		}
 		else
 		{

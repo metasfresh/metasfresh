@@ -27,7 +27,7 @@ import org.mockito.Mockito;
 import java.math.BigDecimal;
 
 import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
 import static java.math.BigDecimal.ONE;
@@ -79,7 +79,7 @@ public class PPOrderChangedHandlerTest
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
 				// .status(CandidateStatus.doc_closed)
 				.type(CandidateType.DEMAND)
-				.materialDescriptor(createMaterialDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.businessCaseDetail(ProductionDetail.builder()
 						.qty(TEN)

@@ -5,7 +5,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -13,6 +12,7 @@ import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.CandidatesGroup;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -120,11 +120,11 @@ public class CandidateRepositoryRetrieval
 	/**
 	 * @return never {@code null}
 	 */
-	public List<Candidate> retrieveGroup(final MaterialDispoGroupId groupId)
+	public CandidatesGroup retrieveGroup(final MaterialDispoGroupId groupId)
 	{
 		if (groupId == null)
 		{
-			return ImmutableList.of();
+			return CandidatesGroup.EMPTY;
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -137,7 +137,7 @@ public class CandidateRepositoryRetrieval
 				.create()
 				.stream()
 				.map(r -> fromCandidateRecord(r).get())
-				.collect(Collectors.toList());
+				.collect(CandidatesGroup.collect());
 	}
 
 	@VisibleForTesting
@@ -294,7 +294,7 @@ public class CandidateRepositoryRetrieval
 			return null;
 		}
 
-		return DistributionDetail.forDistributionDetailRecord(distributionDetail);
+		return DistributionDetail.ofRecord(distributionDetail);
 	}
 
 	@Nullable

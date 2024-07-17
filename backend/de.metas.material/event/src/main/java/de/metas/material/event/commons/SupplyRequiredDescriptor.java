@@ -1,12 +1,18 @@
 package de.metas.material.event.commons;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.bpartner.BPartnerId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
@@ -36,32 +42,23 @@ import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 public class SupplyRequiredDescriptor
 {
 	EventDescriptor eventDescriptor;
-
 	MaterialDescriptor materialDescriptor;
-
-	/** the MD_Candidate_ID of the record which the required supply is about. */
+	/**
+	 * the MD_Candidate_ID of the record which the required supply is about.
+	 */
 	int demandCandidateId;
-
 	/**
 	 * The MD_Candidate_ID of the still "unspecific" supply-record that was already optimistically created.
 	 * It shall be updated by the response to this descriptor.
 	 */
 	int supplyCandidateId;
-
 	int shipmentScheduleId;
-
 	int forecastId;
-
 	int forecastLineId;
-
 	int orderId;
-
 	int orderLineId;
-
 	int subscriptionProgressId;
-
 	boolean simulated;
-
 	BigDecimal fullDemandQty;
 
 	@JsonCreator
@@ -97,4 +94,35 @@ public class SupplyRequiredDescriptor
 		this.simulated = simulated;
 		this.fullDemandQty = fullDemandQty;
 	}
+
+	@NonNull
+	@JsonIgnore
+	public OrgId getOrgId() {return getEventDescriptor().getOrgId();}
+
+	@NonNull
+	@JsonIgnore
+	public EventDescriptor newEventDescriptor() {return getEventDescriptor().withNewEventId();}
+
+	@NonNull
+	@JsonIgnore
+	public Instant getDemandDate() {return getMaterialDescriptor().getDate();}
+
+	@JsonIgnore
+	public int getProductId() {return getMaterialDescriptor().getProductId();}
+
+	@JsonIgnore
+	public BigDecimal getQtyToSupplyBD() {return getMaterialDescriptor().getQuantity();}
+
+	@Nullable
+	@JsonIgnore
+	public BPartnerId getCustomerId() {return getMaterialDescriptor().getCustomerId();}
+
+	@JsonIgnore
+	public WarehouseId getWarehouseId() {return getMaterialDescriptor().getWarehouseId();}
+
+	@JsonIgnore
+	public int getAttributeSetInstanceId() {return getMaterialDescriptor().getAttributeSetInstanceId();}
+
+	@JsonIgnore
+	public AttributesKey getStorageAttributesKey() {return getMaterialDescriptor().getStorageAttributesKey();}
 }

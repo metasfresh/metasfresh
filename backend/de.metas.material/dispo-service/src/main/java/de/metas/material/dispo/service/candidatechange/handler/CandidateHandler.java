@@ -2,6 +2,8 @@ package de.metas.material.dispo.service.candidatechange.handler;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -33,7 +35,7 @@ public interface CandidateHandler
 {
 	Collection<CandidateType> getHandeledTypes();
 
-	Candidate onCandidateNewOrChange(@NonNull Candidate candidate, @NonNull OnNewOrChangeAdvise advise);
+	SaveResult onCandidateNewOrChange(@NonNull Candidate candidate, @NonNull OnNewOrChangeAdvise advise);
 
 	void onCandidateDelete(Candidate candidate);
 

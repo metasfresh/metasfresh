@@ -2,8 +2,12 @@ package de.metas.material.event.ddorder;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.document.engine.DocStatus;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.OrgId;
+import de.metas.product.ResourceId;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -50,20 +54,20 @@ public class DDOrder
 	/**
 	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
 	 */
-	int plantId;
+	ResourceId plantId;
 
-	int productPlanningId;
+	ProductPlanningId productPlanningId;
 
 	Instant datePromised;
 
-	int shipperId;
-	
+	ShipperId shipperId;
+
 	@Singular
 	List<DDOrderLine> lines;
 
 	int ddOrderId;
 
-	String docStatus;
+	DocStatus docStatus;
 
 	/**
 	 * Not persisted in the {@code DD_Order} data record, but
@@ -78,19 +82,19 @@ public class DDOrder
 	@Builder
 	private DDOrder(
 			@JsonProperty("orgId") @NonNull final OrgId orgId,
-			@JsonProperty("plantId") final int plantId,
-			@JsonProperty("productPlanningId") final int productPlanningId,
+			@JsonProperty("plantId") final ResourceId plantId,
+			@JsonProperty("productPlanningId") final ProductPlanningId productPlanningId,
 			@JsonProperty("datePromised") @NonNull final Instant datePromised,
-			@JsonProperty("shipperId") final int shipperId,
+			@JsonProperty("shipperId") final ShipperId shipperId,
 			@JsonProperty("lines") @Singular final List<DDOrderLine> lines,
 			@JsonProperty("ddOrderId") final int ddOrderId,
-			@JsonProperty("docStatus") final String docStatus,
+			@JsonProperty("docStatus") final DocStatus docStatus,
 			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId,
 			@JsonProperty("simulated") final boolean simulated)
 	{
 		this.orgId = orgId;
 
-		// these two might be zero, if the DDOrder was created manually
+		// these two might be null if the DDOrder was created manually
 		this.plantId = plantId;
 		this.productPlanningId = productPlanningId;
 

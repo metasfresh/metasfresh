@@ -24,14 +24,13 @@ package de.metas.material.planning.ppordercandidate;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent.PPOrderCandidateAdvisedEventBuilder;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.MaterialRequest;
-import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.quantity.Quantity;
@@ -85,7 +84,7 @@ public class PPOrderCandidateAdvisedEventCreator
 
 			final PPOrderCandidateAdvisedEventBuilder eventBuilder = PPOrderCandidateAdvisedEvent.builder()
 					.supplyRequiredDescriptor(supplyRequiredDescriptor)
-					.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
+					.eventDescriptor(supplyRequiredDescriptor.newEventDescriptor())
 					.ppOrderCandidate(ppOrderCandidate)
 					.directlyCreatePPOrder(productPlanning.isCreatePlan());
 

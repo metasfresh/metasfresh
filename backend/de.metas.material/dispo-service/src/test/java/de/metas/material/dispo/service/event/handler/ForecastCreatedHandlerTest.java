@@ -215,9 +215,7 @@ public class ForecastCreatedHandlerTest
 
 		final SupplyRequiredEvent event = (SupplyRequiredEvent)eventCaptor.getValue();
 
-		final BigDecimal eventQty = event.getSupplyRequiredDescriptor()
-				.getMaterialDescriptor()
-				.getQuantity();
+		final BigDecimal eventQty = event.getSupplyRequiredDescriptor().getQtyToSupplyBD();
 
 		assertThat(eventQty)
 				.as("eventQty of " + event)

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 
 import java.util.Collection;
@@ -49,4 +50,11 @@ public class DistributionNetwork
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public DistributionNetworkLine getLineById(final DistributionNetworkLineId lineId)
+	{
+		return lines.stream()
+				.filter(line -> DistributionNetworkLineId.equals(line.getId(), lineId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No line found with id " + lineId + " in " + this));
+	}
 }

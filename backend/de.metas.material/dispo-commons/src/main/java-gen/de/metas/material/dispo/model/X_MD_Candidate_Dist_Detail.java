@@ -1,27 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.material.dispo.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for MD_Candidate_Dist_Detail
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements I_MD_Candidate_Dist_Detail, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -866909800L;
+	private static final long serialVersionUID = 1962368396L;
 
     /** Standard Constructor */
-    public X_MD_Candidate_Dist_Detail (Properties ctx, int MD_Candidate_Dist_Detail_ID, String trxName)
+    public X_MD_Candidate_Dist_Detail (final Properties ctx, final int MD_Candidate_Dist_Detail_ID, @Nullable final String trxName)
     {
       super (ctx, MD_Candidate_Dist_Detail_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_MD_Candidate_Dist_Detail (Properties ctx, ResultSet rs, String trxName)
+    public X_MD_Candidate_Dist_Detail (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,22 +30,49 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setActualQty (java.math.BigDecimal ActualQty)
+	public void setActualQty (final @Nullable BigDecimal ActualQty)
 	{
 		set_Value (COLUMNNAME_ActualQty, ActualQty);
 	}
 
 	@Override
-	public java.math.BigDecimal getActualQty() 
+	public BigDecimal getActualQty() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualQty);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualQty);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution()
+	{
+		return get_ValueAsPO(COLUMNNAME_DD_NetworkDistribution_ID, org.eevolution.model.I_DD_NetworkDistribution.class);
+	}
+
+	@Override
+	public void setDD_NetworkDistribution(final org.eevolution.model.I_DD_NetworkDistribution DD_NetworkDistribution)
+	{
+		set_ValueFromPO(COLUMNNAME_DD_NetworkDistribution_ID, org.eevolution.model.I_DD_NetworkDistribution.class, DD_NetworkDistribution);
+	}
+
+	@Override
+	public void setDD_NetworkDistribution_ID (final int DD_NetworkDistribution_ID)
+	{
+		if (DD_NetworkDistribution_ID < 1) 
+			set_Value (COLUMNNAME_DD_NetworkDistribution_ID, null);
+		else 
+			set_Value (COLUMNNAME_DD_NetworkDistribution_ID, DD_NetworkDistribution_ID);
+	}
+
+	@Override
+	public int getDD_NetworkDistribution_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DD_NetworkDistribution_ID);
 	}
 
 	@Override
@@ -54,18 +82,18 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setDD_NetworkDistributionLine(org.eevolution.model.I_DD_NetworkDistributionLine DD_NetworkDistributionLine)
+	public void setDD_NetworkDistributionLine(final org.eevolution.model.I_DD_NetworkDistributionLine DD_NetworkDistributionLine)
 	{
 		set_ValueFromPO(COLUMNNAME_DD_NetworkDistributionLine_ID, org.eevolution.model.I_DD_NetworkDistributionLine.class, DD_NetworkDistributionLine);
 	}
 
 	@Override
-	public void setDD_NetworkDistributionLine_ID (int DD_NetworkDistributionLine_ID)
+	public void setDD_NetworkDistributionLine_ID (final int DD_NetworkDistributionLine_ID)
 	{
 		if (DD_NetworkDistributionLine_ID < 1) 
 			set_Value (COLUMNNAME_DD_NetworkDistributionLine_ID, null);
 		else 
-			set_Value (COLUMNNAME_DD_NetworkDistributionLine_ID, Integer.valueOf(DD_NetworkDistributionLine_ID));
+			set_Value (COLUMNNAME_DD_NetworkDistributionLine_ID, DD_NetworkDistributionLine_ID);
 	}
 
 	@Override
@@ -104,16 +132,15 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	/** WaitingConfirmation = WC */
 	public static final String DD_ORDER_DOCSTATUS_WaitingConfirmation = "WC";
 	@Override
-	public void setDD_Order_DocStatus (java.lang.String DD_Order_DocStatus)
+	public void setDD_Order_DocStatus (final @Nullable java.lang.String DD_Order_DocStatus)
 	{
-
 		set_Value (COLUMNNAME_DD_Order_DocStatus, DD_Order_DocStatus);
 	}
 
 	@Override
 	public java.lang.String getDD_Order_DocStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DD_Order_DocStatus);
+		return get_ValueAsString(COLUMNNAME_DD_Order_DocStatus);
 	}
 
 	@Override
@@ -123,18 +150,18 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setDD_Order(org.eevolution.model.I_DD_Order DD_Order)
+	public void setDD_Order(final org.eevolution.model.I_DD_Order DD_Order)
 	{
 		set_ValueFromPO(COLUMNNAME_DD_Order_ID, org.eevolution.model.I_DD_Order.class, DD_Order);
 	}
 
 	@Override
-	public void setDD_Order_ID (int DD_Order_ID)
+	public void setDD_Order_ID (final int DD_Order_ID)
 	{
 		if (DD_Order_ID < 1) 
 			set_Value (COLUMNNAME_DD_Order_ID, null);
 		else 
-			set_Value (COLUMNNAME_DD_Order_ID, Integer.valueOf(DD_Order_ID));
+			set_Value (COLUMNNAME_DD_Order_ID, DD_Order_ID);
 	}
 
 	@Override
@@ -150,18 +177,18 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setDD_OrderLine(org.eevolution.model.I_DD_OrderLine DD_OrderLine)
+	public void setDD_OrderLine(final org.eevolution.model.I_DD_OrderLine DD_OrderLine)
 	{
 		set_ValueFromPO(COLUMNNAME_DD_OrderLine_ID, org.eevolution.model.I_DD_OrderLine.class, DD_OrderLine);
 	}
 
 	@Override
-	public void setDD_OrderLine_ID (int DD_OrderLine_ID)
+	public void setDD_OrderLine_ID (final int DD_OrderLine_ID)
 	{
 		if (DD_OrderLine_ID < 1) 
 			set_Value (COLUMNNAME_DD_OrderLine_ID, null);
 		else 
-			set_Value (COLUMNNAME_DD_OrderLine_ID, Integer.valueOf(DD_OrderLine_ID));
+			set_Value (COLUMNNAME_DD_OrderLine_ID, DD_OrderLine_ID);
 	}
 
 	@Override
@@ -171,9 +198,9 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setIsAdvised (boolean IsAdvised)
+	public void setIsAdvised (final boolean IsAdvised)
 	{
-		set_Value (COLUMNNAME_IsAdvised, Boolean.valueOf(IsAdvised));
+		set_Value (COLUMNNAME_IsAdvised, IsAdvised);
 	}
 
 	@Override
@@ -183,9 +210,9 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setIsPickDirectlyIfFeasible (boolean IsPickDirectlyIfFeasible)
+	public void setIsPickDirectlyIfFeasible (final boolean IsPickDirectlyIfFeasible)
 	{
-		set_Value (COLUMNNAME_IsPickDirectlyIfFeasible, Boolean.valueOf(IsPickDirectlyIfFeasible));
+		set_Value (COLUMNNAME_IsPickDirectlyIfFeasible, IsPickDirectlyIfFeasible);
 	}
 
 	@Override
@@ -195,12 +222,12 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setMD_Candidate_Dist_Detail_ID (int MD_Candidate_Dist_Detail_ID)
+	public void setMD_Candidate_Dist_Detail_ID (final int MD_Candidate_Dist_Detail_ID)
 	{
 		if (MD_Candidate_Dist_Detail_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_MD_Candidate_Dist_Detail_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_MD_Candidate_Dist_Detail_ID, Integer.valueOf(MD_Candidate_Dist_Detail_ID));
+			set_ValueNoCheck (COLUMNNAME_MD_Candidate_Dist_Detail_ID, MD_Candidate_Dist_Detail_ID);
 	}
 
 	@Override
@@ -216,18 +243,18 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setMD_Candidate(de.metas.material.dispo.model.I_MD_Candidate MD_Candidate)
+	public void setMD_Candidate(final de.metas.material.dispo.model.I_MD_Candidate MD_Candidate)
 	{
 		set_ValueFromPO(COLUMNNAME_MD_Candidate_ID, de.metas.material.dispo.model.I_MD_Candidate.class, MD_Candidate);
 	}
 
 	@Override
-	public void setMD_Candidate_ID (int MD_Candidate_ID)
+	public void setMD_Candidate_ID (final int MD_Candidate_ID)
 	{
 		if (MD_Candidate_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_MD_Candidate_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_MD_Candidate_ID, Integer.valueOf(MD_Candidate_ID));
+			set_ValueNoCheck (COLUMNNAME_MD_Candidate_ID, MD_Candidate_ID);
 	}
 
 	@Override
@@ -243,18 +270,18 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper)
+	public void setM_Shipper(final org.compiere.model.I_M_Shipper M_Shipper)
 	{
 		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
 	}
 
 	@Override
-	public void setM_Shipper_ID (int M_Shipper_ID)
+	public void setM_Shipper_ID (final int M_Shipper_ID)
 	{
 		if (M_Shipper_ID < 1) 
 			set_Value (COLUMNNAME_M_Shipper_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+			set_Value (COLUMNNAME_M_Shipper_ID, M_Shipper_ID);
 	}
 
 	@Override
@@ -264,15 +291,15 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setPlannedQty (java.math.BigDecimal PlannedQty)
+	public void setPlannedQty (final @Nullable BigDecimal PlannedQty)
 	{
 		set_Value (COLUMNNAME_PlannedQty, PlannedQty);
 	}
 
 	@Override
-	public java.math.BigDecimal getPlannedQty() 
+	public BigDecimal getPlannedQty() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedQty);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedQty);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -283,18 +310,18 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setPP_Plant(org.compiere.model.I_S_Resource PP_Plant)
+	public void setPP_Plant(final org.compiere.model.I_S_Resource PP_Plant)
 	{
 		set_ValueFromPO(COLUMNNAME_PP_Plant_ID, org.compiere.model.I_S_Resource.class, PP_Plant);
 	}
 
 	@Override
-	public void setPP_Plant_ID (int PP_Plant_ID)
+	public void setPP_Plant_ID (final int PP_Plant_ID)
 	{
 		if (PP_Plant_ID < 1) 
 			set_Value (COLUMNNAME_PP_Plant_ID, null);
 		else 
-			set_Value (COLUMNNAME_PP_Plant_ID, Integer.valueOf(PP_Plant_ID));
+			set_Value (COLUMNNAME_PP_Plant_ID, PP_Plant_ID);
 	}
 
 	@Override
@@ -304,12 +331,12 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setPP_Product_Planning_ID (int PP_Product_Planning_ID)
+	public void setPP_Product_Planning_ID (final int PP_Product_Planning_ID)
 	{
 		if (PP_Product_Planning_ID < 1) 
 			set_Value (COLUMNNAME_PP_Product_Planning_ID, null);
 		else 
-			set_Value (COLUMNNAME_PP_Product_Planning_ID, Integer.valueOf(PP_Product_Planning_ID));
+			set_Value (COLUMNNAME_PP_Product_Planning_ID, PP_Product_Planning_ID);
 	}
 
 	@Override

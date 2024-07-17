@@ -72,7 +72,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 
 		final List<PPOrderLine> newPPOrderLines = ppOrderChangedEvent.getNewPPOrderLines();
 
-		final OrgId orgId = ppOrderChangedEvent.getEventDescriptor().getOrgId();
+		final OrgId orgId = ppOrderChangedEvent.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 		
 		final List<UpdateMainDataRequest> requests = new ArrayList<>();
@@ -139,7 +139,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 
 	private void updateMainData(@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
 	{
-		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderChangedEvent.getEventDescriptor().getOrgId());
+		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderChangedEvent.getOrgId());
 
 		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.builder()
 				.productDescriptor(ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getProductDescriptor())

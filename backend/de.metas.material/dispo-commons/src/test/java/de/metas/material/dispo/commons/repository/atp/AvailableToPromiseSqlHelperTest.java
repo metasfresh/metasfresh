@@ -63,7 +63,7 @@ public class AvailableToPromiseSqlHelperTest
 				PRODUCT_ID,
 				attributesKey,
 				ATTRIBUTE_SET_INSTANCE_ID);
-		final MaterialDescriptor materialDescriptor = EventTestHelper.createMaterialDescriptor()
+		final MaterialDescriptor materialDescriptor = EventTestHelper.newMaterialDescriptor()
 				.withProductDescriptor(productDescriptor);
 		return materialDescriptor;
 	}

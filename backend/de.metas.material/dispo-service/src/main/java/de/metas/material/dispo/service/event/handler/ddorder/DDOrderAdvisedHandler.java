@@ -120,7 +120,7 @@ public class DDOrderAdvisedHandler
 
 		for (final MaterialDispoGroupId groupId : groupIds)
 		{
-			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId, event.getEventDescriptor().getTraceId());
+			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId, event.getTraceId());
 		}
 	}
 
@@ -166,7 +166,7 @@ public class DDOrderAdvisedHandler
 		final DDOrder ddOrder = ddOrderAdvisedEvent.getDdOrder();
 		final DistributionDetailsQuery distributionDetailsQuery = DistributionDetailsQuery.builder()
 				.productPlanningId(ddOrder.getProductPlanningId())
-				.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
+				.distributionNetworkAndLineId(ddOrderLine.getDistributionNetworkAndLineId())
 				.build();
 
 		return CandidatesQuery.builder()

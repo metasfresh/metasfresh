@@ -61,9 +61,18 @@ public class DistributionNetworkRepository
 		return getMap().getById(id);
 	}
 
+	/**
+	 * @deprecated Consider using {@link #getLineById(DistributionNetworkAndLineId)}
+	 */
+	@Deprecated
 	public DistributionNetworkLine getLineById(@NonNull final DistributionNetworkLineId lineId)
 	{
 		return getMap().getLineById(lineId);
+	}
+
+	public DistributionNetworkLine getLineById(@NonNull final DistributionNetworkAndLineId networkAndLineId)
+	{
+		return getMap().getLineById(networkAndLineId);
 	}
 
 	public DistributionNetwork getEmptiesDistributionNetwork()
@@ -111,7 +120,7 @@ public class DistributionNetworkRepository
 				.build();
 	}
 
-	private static DistributionNetworkLine fromRecord(@NonNull final I_DD_NetworkDistributionLine lineRecord)
+	public static DistributionNetworkLine fromRecord(@NonNull final I_DD_NetworkDistributionLine lineRecord)
 	{
 		return DistributionNetworkLine.builder()
 				.id(DistributionNetworkLineId.ofRepoId(lineRecord.getDD_NetworkDistributionLine_ID()))
@@ -192,6 +201,11 @@ public class DistributionNetworkRepository
 				throw new AdempiereException("No line found with id " + lineId);
 			}
 			return pair.getRight();
+		}
+
+		public DistributionNetworkLine getLineById(@NonNull final DistributionNetworkAndLineId networkAndLineId)
+		{
+			return getById(networkAndLineId.getNetworkId()).getLineById(networkAndLineId.getLineId());
 		}
 	}
 }

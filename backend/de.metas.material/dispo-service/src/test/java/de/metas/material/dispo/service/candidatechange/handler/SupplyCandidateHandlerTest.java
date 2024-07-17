@@ -293,7 +293,7 @@ public class SupplyCandidateHandlerTest
 				.materialDescriptor(materialDescriptor)
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.build();
-		final Candidate persistendCandidate = supplyCandiateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
+		final Candidate persistendCandidate = supplyCandiateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT).getCandidate();
 
 		assertThat(filter(CandidateType.SUPPLY)).hasSize(1); // guard
 		assertThat(filter(CandidateType.STOCK)).hasSize(1); // guard

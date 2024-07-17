@@ -1,0 +1,18 @@
+package de.metas.distribution.ddordercandidate;
+
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class DDOrderCandidateQuery
+{
+	@Nullable ProductId productId;
+	@Nullable WarehouseId sourceWarehouseId;
+	@Nullable WarehouseId targetWarehouseId;
+	@Nullable Boolean processed;
+}

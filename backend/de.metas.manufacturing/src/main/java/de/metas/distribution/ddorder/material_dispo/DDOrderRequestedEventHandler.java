@@ -86,7 +86,7 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 	{
 		final DDOrder ddOrder = ddOrderRequestedEvent.getDdOrder();
 		final Date dateOrdered = TimeUtil.asDate(ddOrderRequestedEvent.getDateOrdered());
-		final String ddOrderRequestedEventTrace = ddOrderRequestedEvent.getEventDescriptor().getTraceId();
+		final String ddOrderRequestedEventTrace = ddOrderRequestedEvent.getTraceId();
 
 		final ImmutableList<I_DD_Order> ddOrderRecords = ddOrderProducer.createDDOrders(ddOrder, dateOrdered, ddOrderRequestedEventTrace);
 

@@ -37,7 +37,7 @@ import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
 import static java.math.BigDecimal.ONE;
@@ -243,7 +243,7 @@ public class StockCandidateServiceTests
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.type(CandidateType.DEMAND)
 				.clearTransactionDetails()
-				.materialDescriptor(createMaterialDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
 				.id(CandidateId.ofRepoId(23))
 				.build();
 
@@ -262,7 +262,7 @@ public class StockCandidateServiceTests
 		final Candidate candidate = Candidate.builder()
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.type(CandidateType.DEMAND)
-				.materialDescriptor(createMaterialDescriptor().withQuantity(BigDecimal.ONE))
+				.materialDescriptor(newMaterialDescriptor().withQuantity(BigDecimal.ONE))
 				.id(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
 				.build();
 

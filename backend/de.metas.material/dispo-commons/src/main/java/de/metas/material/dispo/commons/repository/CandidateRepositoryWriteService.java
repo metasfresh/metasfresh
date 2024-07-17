@@ -34,8 +34,10 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.stock.ResetStockPInstanceId;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.mforecast.IForecastDAO;
 import de.metas.product.ResourceId;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -55,6 +57,7 @@ import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import static de.metas.common.util.IdConstants.toRepoId;
@@ -152,28 +155,27 @@ public class CandidateRepositoryWriteService
 	}
 
 	@Value
-	@Builder
+	@Builder(toBuilder = true)
 	public static class SaveResult
 	{
-		/**
-		 * The saved candidate.
-		 */
-		@NonNull
-		Candidate candidate;
+		@NonNull Candidate candidate;
+		@Nullable DateAndSeqNo previousTime;
+		@Nullable BigDecimal previousQty;
 
-		@Nullable
-		DateAndSeqNo previousTime;
+		public CandidateId getId() {return candidate.getId();}
 
-		@Nullable
-		BigDecimal previousQty;
+		public Optional<MaterialDispoGroupId> getEffectiveGroupId() {return Optional.ofNullable(candidate.getEffectiveGroupId());}
+
+		public Optional<MaterialDispoGroupId> getGroupId() {return Optional.ofNullable(candidate.getGroupId());}
 
 		public BigDecimal getQtyDelta()
 		{
-			if (previousQty == null)
+			BigDecimal qtyDelta = candidate.getQuantity();
+			if (previousQty != null)
 			{
-				return candidate.getQuantity();
+				qtyDelta = qtyDelta.subtract(previousQty);
 			}
-			return candidate.getQuantity().subtract(previousQty);
+			return qtyDelta;
 		}
 
 		/**
@@ -185,7 +187,7 @@ public class CandidateRepositoryWriteService
 			{
 				return false;
 			}
-			return !Objects.equals(previousTime, DateAndSeqNo.ofCandidate(candidate));
+			return !DateAndSeqNo.equals(previousTime, DateAndSeqNo.ofCandidate(candidate));
 		}
 
 		public boolean isDateMovedBackwards()
@@ -209,22 +211,20 @@ public class CandidateRepositoryWriteService
 		/**
 		 * @return {@code true} there was no record before the save, or the record's date was changed.
 		 */
+		@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 		public boolean isDateChanged()
 		{
 			if (previousTime == null)
 			{
 				return true;
 			}
-			return !Objects.equals(previousTime, DateAndSeqNo.ofCandidate(candidate));
+			return !DateAndSeqNo.equals(previousTime, DateAndSeqNo.ofCandidate(candidate));
 		}
 
+		@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 		public boolean isQtyChanged()
 		{
-			if (previousQty == null)
-			{
-				return true;
-			}
-			return previousQty.compareTo(candidate.getQuantity()) != 0;
+			return getQtyDelta().signum() != 0;
 		}
 
 		// TODO figure out if we really need this
@@ -238,11 +238,8 @@ public class CandidateRepositoryWriteService
 		 */
 		public SaveResult withCandidateId(@Nullable final CandidateId candidateId)
 		{
-			return SaveResult
-					.builder()
-					.candidate(candidate.toBuilder().id(candidateId).build())
-					.previousQty(previousQty)
-					.previousTime(previousTime)
+			return toBuilder()
+					.candidate(candidate.withId(candidateId))
 					.build();
 		}
 
@@ -251,11 +248,16 @@ public class CandidateRepositoryWriteService
 		 */
 		public SaveResult withNegatedQuantity()
 		{
-			return SaveResult
-					.builder()
+			return toBuilder()
 					.candidate(candidate.withNegatedQuantity())
 					.previousQty(previousQty == null ? null : previousQty.negate())
-					.previousTime(previousTime)
+					.build();
+		}
+
+		public SaveResult withParentId(@Nullable final CandidateId parentId)
+		{
+			return toBuilder()
+					.candidate(candidate.withParentId(parentId))
 					.build();
 		}
 	}
@@ -593,13 +595,14 @@ public class CandidateRepositoryWriteService
 		}
 
 		detailRecordToUpdate.setIsAdvised(distributionDetail.isAdvised());
-		detailRecordToUpdate.setDD_NetworkDistributionLine_ID(distributionDetail.getNetworkDistributionLineId());
-		detailRecordToUpdate.setPP_Plant_ID(distributionDetail.getPlantId());
-		detailRecordToUpdate.setPP_Product_Planning_ID(distributionDetail.getProductPlanningId());
+		detailRecordToUpdate.setDD_NetworkDistribution_ID(distributionDetail.getDistributionNetworkAndLineId() != null ? distributionDetail.getDistributionNetworkAndLineId().getNetworkId().getRepoId() : -1);
+		detailRecordToUpdate.setDD_NetworkDistributionLine_ID(distributionDetail.getDistributionNetworkAndLineId() != null ? distributionDetail.getDistributionNetworkAndLineId().getLineId().getRepoId() : -1);
+		detailRecordToUpdate.setPP_Plant_ID(ResourceId.toRepoId(distributionDetail.getPlantId()));
+		detailRecordToUpdate.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(distributionDetail.getProductPlanningId()));
 		detailRecordToUpdate.setDD_Order_ID(distributionDetail.getDdOrderId());
 		detailRecordToUpdate.setDD_OrderLine_ID(distributionDetail.getDdOrderLineId());
-		detailRecordToUpdate.setDD_Order_DocStatus(distributionDetail.getDdOrderDocStatus());
-		detailRecordToUpdate.setM_Shipper_ID(distributionDetail.getShipperId());
+		detailRecordToUpdate.setDD_Order_DocStatus(distributionDetail.getDdOrderDocStatus() != null ? distributionDetail.getDdOrderDocStatus().getCode() : null);
+		detailRecordToUpdate.setM_Shipper_ID(ShipperId.toRepoId(distributionDetail.getShipperId()));
 		detailRecordToUpdate.setPlannedQty(distributionDetail.getQty());
 		detailRecordToUpdate.setActualQty(candidate.computeActualQty());
 

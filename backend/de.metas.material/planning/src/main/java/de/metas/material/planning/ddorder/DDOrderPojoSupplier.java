@@ -2,14 +2,14 @@ package de.metas.material.planning.ddorder;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
-import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.event.MaterialRequest;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -64,7 +64,7 @@ public class DDOrderPojoSupplier
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final ModelProductDescriptorExtractor productDescriptorFactory;
 
-	public List<DDOrder> supplyPojos(@NonNull final IMaterialRequest request)
+	public List<DDOrder> supplyPojos(@NonNull final MaterialRequest request)
 	{
 		try
 		{
@@ -78,7 +78,7 @@ public class DDOrderPojoSupplier
 		}
 	}
 
-	public List<DDOrder> supplyPojos0(@NonNull final IMaterialRequest request)
+	public List<DDOrder> supplyPojos0(@NonNull final MaterialRequest request)
 	{
 
 		final List<DDOrder.DDOrderBuilder> builders = new ArrayList<>();
@@ -162,8 +162,8 @@ public class DDOrderPojoSupplier
 				final OrgId warehouseToOrgId = warehouseBL.getWarehouseOrgId(warehouseToId);
 				// Org Must be linked to BPartner
 				// final OrgId locatorToOrgId = warehouseBL.getLocatorOrgId(locatorToId); // we strongly assume that we can got with the warehouse's org and don't need to retrieve its default locator's org!
-				final int orgBPartnerId = DDOrderUtil.retrieveOrgBPartnerId(warehouseToOrgId.getRepoId());
-				if (orgBPartnerId <= 0)
+				final BPartnerId orgBPartnerId = DDOrderUtil.retrieveOrgBPartnerId(warehouseToOrgId).orElse(null);
+				if (orgBPartnerId == null)
 				{
 					// DRP-020: Target Org has no BP linked to it
 					Loggables.addLog(
@@ -181,10 +181,10 @@ public class DDOrderPojoSupplier
 				// Consolidate the demand in a single order for each Shipper , Business Partner , DemandDateStartSchedule
 				ddOrderBuilder = DDOrder.builder()
 						.orgId(warehouseToOrgId)
-						.plantId(plantId.getRepoId())
-						.productPlanningId(ProductPlanningId.toRepoId(productPlanningData.getId()))
+						.plantId(plantId)
+						.productPlanningId(productPlanningData.getId())
 						.datePromised(supplyDateFinishSchedule)
-						.shipperId(networkLine.getShipperId().getRepoId())
+						.shipperId(networkLine.getShipperId())
 						.simulated(request.isSimulated());
 
 				builders.add(ddOrderBuilder);
@@ -196,7 +196,7 @@ public class DDOrderPojoSupplier
 			// Crate DD order line
 			final Quantity qtyToMove = calculateQtyToMove(qtyToSupplyRemaining, networkLine.getTransferPercent());
 
-			final DDOrderLine ddOrderLine = createDD_OrderLine(networkLine, qtyToMove, request);
+			final DDOrderLine ddOrderLine = createDD_OrderLine(network.getId(), networkLine, qtyToMove, request);
 			ddOrderBuilder.line(ddOrderLine);
 
 			qtyToSupplyRemaining = qtyToSupplyRemaining.subtract(qtyToMove);
@@ -236,9 +236,10 @@ public class DDOrderPojoSupplier
 	}
 
 	private DDOrderLine createDD_OrderLine(
+			@NonNull final DistributionNetworkId networkId,
 			@NonNull final DistributionNetworkLine networkLine,
 			@NonNull final Quantity qtyToMove,
-			@NonNull final IMaterialRequest request)
+			@NonNull final MaterialRequest request)
 	{
 		final MaterialPlanningContext context = request.getContext();
 
@@ -258,7 +259,7 @@ public class DDOrderPojoSupplier
 				.bPartnerId(request.getMrpDemandBPartnerId())
 				.productDescriptor(productDescriptor)
 				.qty(qtyToMoveInProductUOM.toBigDecimal())
-				.networkDistributionLineId(networkLine.getId().getRepoId())
+				.distributionNetworkAndLineId(DistributionNetworkAndLineId.of(networkId, networkLine.getId()))
 				.durationDays(durationDays)
 				.build();
 	}

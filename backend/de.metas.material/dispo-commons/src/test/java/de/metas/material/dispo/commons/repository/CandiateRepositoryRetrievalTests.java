@@ -1,7 +1,7 @@
 package de.metas.material.dispo.commons.repository;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.document.engine.DocStatus;
@@ -28,6 +28,9 @@ import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
+import de.metas.shipping.ShipperId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.IPair;
@@ -40,7 +43,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,7 +59,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -88,16 +90,12 @@ public class CandiateRepositoryRetrievalTests
 
 	private RepositoryTestHelper repositoryTestHelper;
 
-	private DimensionService dimensionService;
-
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
+		DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
@@ -112,8 +110,6 @@ public class CandiateRepositoryRetrievalTests
 	{
 		final CandidatesQuery query = CandidatesQuery.fromCandidate(repositoryTestHelper.laterStockCandidate, false);
 		final Candidate candidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
-		assertThat(candidate).isNotNull();
-
 		assertThat(candidate).isEqualTo(repositoryTestHelper.laterStockCandidate);
 	}
 
@@ -134,7 +130,7 @@ public class CandiateRepositoryRetrievalTests
 
 		final Optional<Candidate> result = candidateRepositoryRetrieval.fromCandidateRecord(candidateRecord);
 
-		assertThat(result.isPresent());
+		assertThat(result).isPresent();
 		final Candidate candidate = result.get();
 		assertThat(candidate.getParentId().isNull()).isTrue();
 		assertThat(candidate.getDate()).isEqualTo(TimeUtil.asInstant(dateProjected));
@@ -173,23 +169,22 @@ public class CandiateRepositoryRetrievalTests
 
 		final Optional<Candidate> result = candidateRepositoryRetrieval.fromCandidateRecord(candidateRecord);
 
-		assertThat(result.isPresent());
+		assertThat(result).isPresent();
 		final Candidate candidate = result.get();
 		assertThat(candidate.getParentId().isNull()).isTrue();
 		assertThat(candidate.getDate()).isEqualTo(TimeUtil.asInstant(dateProjected));
-		assertThat(candidate.getTransactionDetails()).hasSize(2);
-
-		assertThat(candidate.getTransactionDetails()).anySatisfy(transactionDetail -> {
-			assertThat(transactionDetail.getTransactionId()).isEqualByComparingTo(30);
-			assertThat(transactionDetail.getQuantity()).isEqualByComparingTo("10");
-			assertThat(transactionDetail.getTransactionDate()).isEqualTo(NOW);
-		});
-
-		assertThat(candidate.getTransactionDetails()).anySatisfy(transactionDetail -> {
-			assertThat(transactionDetail.getTransactionId()).isEqualByComparingTo(31);
-			assertThat(transactionDetail.getQuantity()).isEqualByComparingTo("1");
-			assertThat(transactionDetail.getTransactionDate()).isEqualTo(AFTER_NOW);
-		});
+		assertThat(candidate.getTransactionDetails())
+				.hasSize(2)
+				.anySatisfy(transactionDetail -> {
+					assertThat(transactionDetail.getTransactionId()).isEqualByComparingTo(30);
+					assertThat(transactionDetail.getQuantity()).isEqualByComparingTo("10");
+					assertThat(transactionDetail.getTransactionDate()).isEqualTo(NOW);
+				})
+				.anySatisfy(transactionDetail -> {
+					assertThat(transactionDetail.getTransactionId()).isEqualByComparingTo(31);
+					assertThat(transactionDetail.getQuantity()).isEqualByComparingTo("1");
+					assertThat(transactionDetail.getTransactionDate()).isEqualTo(AFTER_NOW);
+				});
 	}
 
 	@Test
@@ -202,7 +197,7 @@ public class CandiateRepositoryRetrievalTests
 	{
 		final I_MD_Candidate_Prod_Detail productionDetailRecord = createProdDetailRecord(101, 111);
 
-		final CandidatesQuery query = CandidatesQuery.fromId(CandidateId.ofRepoId(productionDetailRecord.getMD_Candidate().getMD_Candidate_ID()));
+		final CandidatesQuery query = CandidatesQuery.fromId(CandidateId.ofRepoId(productionDetailRecord.getMD_Candidate_ID()));
 
 		final Candidate cand = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 		assertThat(cand).isNotNull();
@@ -225,6 +220,7 @@ public class CandiateRepositoryRetrievalTests
 		return ImmutablePair.of(cand, productionDetailRecord.getMD_Candidate());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_MD_Candidate_Prod_Detail createProdDetailRecord(final int ppOrderId, final int ppOrderLineId)
 	{
 		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
@@ -330,7 +326,7 @@ public class CandiateRepositoryRetrievalTests
 		final IPair<Candidate, I_MD_Candidate> pair = perform_retrieve_with_DistributionDetail();
 
 		final Candidate candidateWithDistributionDetail = pair.getLeft();
-		assertThat(distrDetailOrNull(candidateWithDistributionDetail)).isNotNull();
+		assertThat(distributionDetailOrNull(candidateWithDistributionDetail)).isNotNull();
 
 		final I_MD_Candidate record = pair.getRight();
 
@@ -343,7 +339,7 @@ public class CandiateRepositoryRetrievalTests
 		final Candidate expectedResultWithDistDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(CandidatesQuery.fromCandidate(candidateWithDistributionDetail, false));
 		assertThat(expectedResultWithDistDetails).isNotNull();
-		assertThat(distrDetailOrNull(expectedResultWithDistDetails)).isNotNull();
+		assertThat(distributionDetailOrNull(expectedResultWithDistDetails)).isNotNull();
 		assertThat(expectedResultWithDistDetails.getId().getRepoId()).isEqualTo(record.getMD_Candidate_ID());
 
 		final CandidatesQuery withoutdistDetailsQuery = CandidatesQuery
@@ -353,7 +349,7 @@ public class CandiateRepositoryRetrievalTests
 				.retrieveLatestMatchOrNull(withoutdistDetailsQuery);
 
 		assertThat(expectedRecordWithoutDistDetails).isNotNull();
-		assertThat(distrDetailOrNull(expectedRecordWithoutDistDetails)).isNull();
+		assertThat(distributionDetailOrNull(expectedRecordWithoutDistDetails)).isNull();
 		assertThat(expectedRecordWithoutDistDetails.getId().getRepoId()).isEqualTo(otherRecord.getMD_Candidate_ID());
 	}
 
@@ -365,6 +361,7 @@ public class CandiateRepositoryRetrievalTests
 		save(record);
 
 		final I_MD_Candidate_Dist_Detail distributionDetailRecord = newInstance(I_MD_Candidate_Dist_Detail.class);
+		distributionDetailRecord.setDD_NetworkDistribution_ID(70);
 		distributionDetailRecord.setDD_NetworkDistributionLine_ID(71);
 		distributionDetailRecord.setPP_Product_Planning_ID(81);
 		distributionDetailRecord.setMD_Candidate(record);
@@ -385,12 +382,12 @@ public class CandiateRepositoryRetrievalTests
 
 		final DistributionDetail distributionDetail = DistributionDetail.castOrNull(businessCaseDetail);
 		assertThat(distributionDetail).isNotNull();
-		assertThat(distributionDetail.getNetworkDistributionLineId()).isEqualTo(71);
-		assertThat(distributionDetail.getProductPlanningId()).isEqualTo(81);
+		assertThat(distributionDetail.getDistributionNetworkAndLineId()).isEqualTo(DistributionNetworkAndLineId.ofRepoIds(70, 71));
+		assertThat(distributionDetail.getProductPlanningId()).isEqualTo(ProductPlanningId.ofRepoId(81));
 		assertThat(distributionDetail.getDdOrderId()).isEqualTo(101);
 		assertThat(distributionDetail.getDdOrderLineId()).isEqualTo(111);
-		assertThat(distributionDetail.getShipperId()).isEqualTo(121);
-		assertThat(distributionDetail.getDdOrderDocStatus()).isEqualTo(DocStatus.Completed.getCode());
+		assertThat(distributionDetail.getShipperId()).isEqualTo(ShipperId.ofRepoId(121));
+		assertThat(distributionDetail.getDdOrderDocStatus()).isEqualTo(DocStatus.Completed);
 
 		return ImmutablePair.of(cand, record);
 	}
@@ -422,10 +419,9 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(distributionDetail).isNotNull();
 	}
 
-	private DistributionDetail distrDetailOrNull(final Candidate candidateWithDistributionDetail)
+	private DistributionDetail distributionDetailOrNull(final Candidate candidateWithDistributionDetail)
 	{
-		final DistributionDetail distributionDetail = DistributionDetail.castOrNull(candidateWithDistributionDetail.getBusinessCaseDetail());
-		return distributionDetail;
+		return DistributionDetail.castOrNull(candidateWithDistributionDetail.getBusinessCaseDetail());
 	}
 
 	@Test
@@ -541,7 +537,6 @@ public class CandiateRepositoryRetrievalTests
 	{
 		final CandidatesQuery sameTimeQuery = repositoryTestHelper.mkQueryForStockUntilDate(NOW);
 		final Candidate sameTimeStock = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(sameTimeQuery);
-		assertThat(sameTimeStock).isNotNull();
 		assertThat(sameTimeStock).isEqualTo(repositoryTestHelper.stockCandidate);
 	}
 
@@ -550,7 +545,6 @@ public class CandiateRepositoryRetrievalTests
 	{
 		final CandidatesQuery laterQuery = repositoryTestHelper.mkQueryForStockUntilDate(AFTER_NOW);
 		final Candidate laterStock = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(laterQuery);
-		assertThat(laterStock).isNotNull();
 		assertThat(laterStock).isEqualTo(repositoryTestHelper.laterStockCandidate);
 	}
 

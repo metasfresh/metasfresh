@@ -6,16 +6,15 @@ import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
@@ -94,28 +93,27 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 
 	private MaterialPlanningContext createContext(@NonNull final SupplyRequiredDescriptor materialDemandEvent)
 	{
-		final EventDescriptor eventDescriptor = materialDemandEvent.getEventDescriptor();
+		final OrgId orgId = materialDemandEvent.getOrgId();
 
-		final MaterialDescriptor materialDescriptor = materialDemandEvent.getMaterialDescriptor();
-
-		final WarehouseId warehouseId = materialDescriptor.getWarehouseId();
+		final WarehouseId warehouseId = materialDemandEvent.getWarehouseId();
 		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
-		final ProductId productId = ProductId.ofRepoId(materialDescriptor.getProductId());
+		final ProductId productId = ProductId.ofRepoId(materialDemandEvent.getProductId());
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(materialDemandEvent.getAttributeSetInstanceId());
 		final ResourceId plantId = productPlanningDAO.findPlant(
-				eventDescriptor.getOrgId().getRepoId(),
+				orgId.getRepoId(),
 				warehouse,
 				productId.getRepoId(),
-				materialDescriptor.getAttributeSetInstanceId());
+				attributeSetInstanceId.getRepoId());
 
 		final ProductPlanningQuery productPlanningQuery = ProductPlanningQuery.builder()
-				.orgId(eventDescriptor.getOrgId())
+				.orgId(orgId)
 				.warehouseId(warehouseId)
 				.plantId(plantId)
 				.productId(productId)
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescriptor.getAttributeSetInstanceId()))
+				.attributeSetInstanceId(attributeSetInstanceId)
 				.build();
 
 		final ProductPlanning productPlanning = productPlanningDAO.find(productPlanningQuery).orElse(null);
@@ -125,11 +123,11 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 			return null;
 		}
 
-		final I_AD_Org org = orgDAO.getById(eventDescriptor.getOrgId());
+		final I_AD_Org org = orgDAO.getById(orgId);
 
 		return MaterialPlanningContext.builder()
 				.productId(productId)
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(materialDescriptor.getAttributeSetInstanceId()))
+				.attributeSetInstanceId(attributeSetInstanceId)
 				.warehouseId(warehouseId)
 				.productPlanning(productPlanning)
 				.plantId(plantId)
