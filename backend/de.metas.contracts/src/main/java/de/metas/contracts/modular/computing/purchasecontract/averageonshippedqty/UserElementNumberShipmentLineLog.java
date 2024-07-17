@@ -131,7 +131,7 @@ public class UserElementNumberShipmentLineLog extends AbstractModularContractLog
 		{
 			final Money zero = Money.zero(CurrencyId.ofRepoId(flatrateTermRecord.getC_Currency_ID()));
 			productPrice = ProductPrice.builder()
-					.productId(productId)
+					.productId(createLogRequest.getProductId())
 					.money(zero)
 					.uomId(UomId.ofRepoId(inOutLineRecord.getC_UOM_ID()))
 					.build();
@@ -231,7 +231,16 @@ public class UserElementNumberShipmentLineLog extends AbstractModularContractLog
 	{
 		// dev-note ignoring the just updated price as because of scaling the system can't know if it's actually the price to be used
 		final ProductPriceWithFlags scalePriceWithFlags = getContractSpecificScalePrice(logEntry)
-				.orElseThrow(() -> new AdempiereException("No ContractSpecificScalePrice found for id=" + logEntry.getId()));
+				.orElseGet(		// we shall create a log, even there is no match, but with price 0
+		() ->
+		{
+			final Money zero = Money.zero(logEntry.getPriceActual().getCurrencyId());
+			return ProductPriceWithFlags.ofZero(ProductPrice.builder()
+					.productId(logEntry.getProductId())
+					.money(zero)
+					.uomId(logEntry.getQuantity().getUomId())
+					.build());
+		});
 
 		final Quantity qty = Check.assumeNotNull(logEntry.getQuantity(), "Quantity shouldn't be null");
 		final ProductPrice price = scalePriceWithFlags.toProductPrice();

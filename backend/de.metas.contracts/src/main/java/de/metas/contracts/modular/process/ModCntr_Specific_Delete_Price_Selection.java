@@ -33,16 +33,25 @@ import de.metas.contracts.modular.log.ModCntrLogPriceUpdateRequest;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.i18n.AdMessageKey;
+import de.metas.money.CurrencyId;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
-public class ModCntr_Specific_Delete_Price_Selection extends JavaProcess
+public class ModCntr_Specific_Delete_Price_Selection extends JavaProcess implements IProcessPrecondition
 {
 	@NonNull private final ModularContractPriceService modularContractPriceService = SpringContextHolder.instance.getBean(ModularContractPriceService.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -50,6 +59,28 @@ public class ModCntr_Specific_Delete_Price_Selection extends JavaProcess
 	@NonNull private final ModularContractLogHandlerRegistry logHandlerRegistry = SpringContextHolder.instance.getBean(ModularContractLogHandlerRegistry.class);
 
 	private static final AdMessageKey ERROR_MSG_NO_FALLBACK_PRICE = AdMessageKey.of("Msg_No_Fallback_Price");
+
+	@Param(parameterName = "M_Product_ID", mandatory = true)
+	private ProductId p_M_Product_ID;
+
+	@Param(parameterName = "MinValue", mandatory = true)
+	private BigDecimal p_minValue;
+
+	@Param(parameterName = "C_UOM_ID", mandatory = true)
+	private UomId p_C_UOM_ID;
+
+	@Param(parameterName = "C_Currency_ID", mandatory = true)
+	private CurrencyId p_C_Currency_ID;
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+		if (!existsAtLeastOneScalePrice(context))
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	protected String doIt()
@@ -83,17 +114,34 @@ public class ModCntr_Specific_Delete_Price_Selection extends JavaProcess
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, getSelectedContracts())
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_M_Product_ID, p_M_Product_ID)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_UOM_ID, p_C_UOM_ID)
+				.addInArrayFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, getSelectedContracts(getProcessInfo().getQueryFilterOrElseFalse()))
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Currency_ID, p_C_Currency_ID)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_MinValue, p_minValue)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_IsScalePrice, true)
 				.create()
 				.listIds(ModCntrSpecificPriceId::ofRepoId);
 	}
 
-	private Set<FlatrateTermId> getSelectedContracts()
+	private Set<FlatrateTermId> getSelectedContracts(final IQueryFilter<I_C_Flatrate_Term> processFilter)
 	{
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
+				.addFilter(processFilter)
 				.create()
 				.listIds(FlatrateTermId::ofRepoId);
+	}
+
+	private boolean existsAtLeastOneScalePrice(final @NonNull IProcessPreconditionsContext context)
+	{
+		// context.getQueryFilter()
+
+		return queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, getSelectedContracts(context.getQueryFilter(I_C_Flatrate_Term.class)))
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_IsScalePrice, true)
+				.create()
+				.count() > 0;
 	}
 
 }
