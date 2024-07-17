@@ -153,6 +153,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import com.google.common.annotations.VisibleForTesting;
 
 @Service
 @RequiredArgsConstructor
@@ -806,14 +807,23 @@ public class ShipmentScheduleWithHUService
 			@NonNull final ShipmentScheduleWithHUFactory factory)
 	{
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
-		final List<ShipmentScheduleSplit> shipmentScheduleSplits = shipmentScheduleSplitService.getByShipmentScheduleId(shipmentScheduleId);
+		final List<ShipmentScheduleSplit> shipmentScheduleSplits = getEligibleSplits(shipmentScheduleId);
 		if (shipmentScheduleSplits.isEmpty())
 		{
-			throw new AdempiereException("No shipment schedule split records defined");
+			throw new AdempiereException("No shipment schedule split records to process found");
 		}
 
 		return shipmentScheduleSplits.stream()
 				.map(split -> factory.ofSplit(schedule, split))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@VisibleForTesting
+	List<ShipmentScheduleSplit> getEligibleSplits(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		return shipmentScheduleSplitService.getByShipmentScheduleIdExcludingVoidedShipments(shipmentScheduleId)
+				.stream()
+				.filter(ShipmentScheduleSplit::isNotProcessed)
 				.collect(ImmutableList.toImmutableList());
 	}
 
