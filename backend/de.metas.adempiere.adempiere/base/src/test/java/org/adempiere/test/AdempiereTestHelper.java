@@ -227,7 +227,7 @@ public class AdempiereTestHelper
 
 	private static void log(final String methodName, final String message)
 	{
-		System.out.println("" + AdempiereTestHelper.class.getSimpleName() + "." + methodName + ": " + message);
+		System.out.println(AdempiereTestHelper.class.getSimpleName() + "." + methodName + ": " + message);
 	}
 
 	private static Properties setupContext()
