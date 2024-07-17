@@ -83,7 +83,7 @@ public class DunnableDoc implements IDunnableDoc
 		Check.assume(adClientId > 0, "AD_Client_ID > 0");
 		Check.assume(adOrgId > 0, "AD_Org_ID > 0");
 		Check.assume(C_BPartner_ID > 0, "C_BPartner_ID > 0");
-		Check.assume(C_BPartner_Location_ID > 0, "C_BPartner_ID > 0");
+		Check.assume(C_BPartner_Location_ID > 0, "C_BPartner_Location_ID > 0");
 		Check.assume(C_Currency_ID > 0, "C_Currency_ID > 0");
 		// Util.assume(graceDate != null, "dueDate not null"); not sure if grace date is mandatory
 
