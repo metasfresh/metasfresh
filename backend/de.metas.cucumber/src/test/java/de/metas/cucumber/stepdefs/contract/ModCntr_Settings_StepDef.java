@@ -37,7 +37,6 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
@@ -85,21 +84,22 @@ public class ModCntr_Settings_StepDef
 	private void createModCntrSettings(@NonNull final Map<String, String> tableRow)
 	{
 		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_Name);
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
+		final String rawProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_Product rawProduct = productTable.get(rawProductIdentifier);
 
-		final String calendarIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_Calendar calendarRecord = calendarTable.get(calendarIdentifier);
+		final String processedProductIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_M_Processed_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final String coProductIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_M_Co_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final String yearIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_C_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_Year yearRecord = yearTable.get(yearIdentifier);
 
 		final Boolean isSoTrx = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_IsSOTrx, false);
 		
-		final I_ModCntr_Settings modCntrSettingsRecord = CoalesceUtil.coalesceSuppliers(
+		final I_ModCntr_Settings modCntrSettingsRecord = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_ModCntr_Settings.class)
-						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, productRecord.getM_Product_ID())
-						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, calendarRecord.getC_Calendar_ID())
+						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, rawProduct.getM_Product_ID())
+						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, yearRecord.getC_Calendar_ID())
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearRecord.getC_Year_ID())
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, isSoTrx)
 						.create()
@@ -107,13 +107,23 @@ public class ModCntr_Settings_StepDef
 				() -> InterfaceWrapperHelper.newInstance(I_ModCntr_Settings.class));
 
 		modCntrSettingsRecord.setName(name);
-		modCntrSettingsRecord.setM_Raw_Product_ID(productRecord.getM_Product_ID());
-		modCntrSettingsRecord.setC_Calendar_ID(calendarRecord.getC_Calendar_ID());
+		modCntrSettingsRecord.setM_Raw_Product_ID(rawProduct.getM_Product_ID());
+		if (Check.isNotBlank(processedProductIdentifier))
+		{
+			final I_M_Product processedProduct = productTable.get(processedProductIdentifier);
+			modCntrSettingsRecord.setM_Processed_Product_ID(processedProduct.getM_Product_ID());
+		}
+		if (Check.isNotBlank(coProductIdentifier))
+		{
+			final I_M_Product coProduct = productTable.get(coProductIdentifier);
+			modCntrSettingsRecord.setM_Co_Product_ID(coProduct.getM_Product_ID());
+		}
+		modCntrSettingsRecord.setC_Calendar_ID(yearRecord.getC_Calendar_ID());
 		modCntrSettingsRecord.setC_Year_ID(yearRecord.getC_Year_ID());
 		modCntrSettingsRecord.setIsSOTrx(isSoTrx);
 		modCntrSettingsRecord.setStorageCostStartDate(Timestamp.valueOf("2024-04-24 07:15:00"));
 
-		final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Flatrate_Conditions.COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_Flatrate_Conditions.COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(pricingSystemIdentifier))
 		{
 			final I_M_PricingSystem pricingSystem = pricingSysTable.get(pricingSystemIdentifier);
