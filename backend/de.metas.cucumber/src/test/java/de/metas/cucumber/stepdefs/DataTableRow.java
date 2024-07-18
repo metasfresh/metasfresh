@@ -46,6 +46,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -389,22 +390,50 @@ public class DataTableRow
 		return Timestamp.valueOf(getAsLocalDate(columnName).atStartOfDay());
 	}
 
+	public Timestamp getAsInstantTimestamp(@NonNull final String columnName)
+	{
+		return Timestamp.from(getAsInstant(columnName));
+	}
+
 	public Instant getAsInstant(@NonNull final String columnName)
 	{
 		return parseInstant(getAsString(columnName), columnName);
 	}
 
 	@NonNull
-	private static Instant parseInstant(final String valueStr, final String columnInfo)
+	private static Instant parseInstant(@NonNull final String valueStr, final String columnInfo)
 	{
 		try
 		{
-			return Instant.parse(valueStr);
+			if (valueStr.contains("T"))
+			{
+				if (valueStr.endsWith("Z"))
+				{
+					return Instant.parse(valueStr);
+				}
+				else
+				{
+					return toInstant(LocalDateTime.parse(valueStr));
+				}
+			}
+			else
+			{
+				return toInstant(LocalDate.parse(valueStr).atStartOfDay());
+			}
 		}
 		catch (Exception ex)
 		{
 			throw new AdempiereException("Column `" + columnInfo + "` has invalid Instant `" + valueStr + "`");
 		}
+	}
+
+	private static Instant toInstant(@NonNull final LocalDateTime ldt)
+	{
+		// IMPORTANT: we use JVM timezone instead of SystemTime.zoneId()
+		// because that's the timezone java.sql.Timestamp would use it too,
+		// and because most of currently logic is silently assuming that
+		final ZoneId jvmTimeZone = ZoneId.systemDefault();
+		return ldt.atZone(jvmTimeZone).toInstant();
 	}
 
 	public Optional<LocalDateTime> getAsOptionalLocalDateTime(@NonNull final String columnName)
