@@ -690,7 +690,15 @@ public class PostFinanceYbInvoiceService
 		final byte[] data;
 		try
 		{
+<<<<<<< HEAD
 			final JAXBContext contextObj = JAXBContext.newInstance(Envelope.class);
+=======
+			final JAXBContext contextObj = JAXBContext.newInstance(ObjectFactory.class);
+
+			final SchemaFactory factory = SchemaFactory.newInstance(javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
+			final URL schemaUrl = ObjectFactory.class.getResource(YB_INVOICE_SCHEMA_LOCATION);
+			final Schema schema = factory.newSchema(schemaUrl);
+>>>>>>> c64608672de (fix postFinance ybInvoice (#18500))
 
 			final Marshaller marshallerObj = contextObj.createMarshaller();
 			marshallerObj.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
