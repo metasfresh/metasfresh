@@ -50,7 +50,6 @@ import java.util.List;
  * #L%
  */
 
-@With
 @Value
 @EqualsAndHashCode(doNotUseGetters = true)
 public class Candidate
@@ -69,7 +68,7 @@ public class Candidate
 
 	@NonNull ClientAndOrgId clientAndOrgId;
 
-	@NonNull CandidateType type;
+	@NonNull @With CandidateType type;
 
 	/**
 	 * Should be {@code null} for stock candidates.
@@ -91,11 +90,11 @@ public class Candidate
 	 * Note that {@link CandidateBusinessCase#PRODUCTION} and {@link CandidateBusinessCase#DISTRIBUTION} have multiple candidates in one group,
 	 * Others like {@link CandidateBusinessCase#PURCHASE} have just one candidate in a group.
 	 */
-	@Nullable MaterialDispoGroupId groupId;
+	@Nullable @With MaterialDispoGroupId groupId;
 
-	int seqNo;
+	@With int seqNo;
 
-	@NonNull MaterialDescriptor materialDescriptor;
+	@NonNull @With MaterialDescriptor materialDescriptor;
 
 	@NonNull MinMaxDescriptor minMaxDescriptor;
 
@@ -103,9 +102,9 @@ public class Candidate
 
 	@Nullable DemandDetail additionalDemandDetail;
 
-	@NonNull ImmutableList<TransactionDetail> transactionDetails;
+	@NonNull @With ImmutableList<TransactionDetail> transactionDetails;
 
-	Dimension dimension;
+	@With Dimension dimension;
 
 	boolean simulated;
 
@@ -211,7 +210,27 @@ public class Candidate
 				businessCase != null && !businessCase.isMatching(businessCaseDetail),
 				"The given parameters businessCase and businessCaseDetail don't match; businessCase={}; businessCaseDetail={}; this={}",
 				businessCase, businessCaseDetail, this);
+	}
 
+	public Candidate withNullId()
+	{
+		return CandidateId.isNull(this.id)
+				? this
+				: toBuilder().id(null).build();
+	}
+
+	public Candidate withId(@Nullable final CandidateId id)
+	{
+		return CandidateId.equals(this.id, id)
+				? this
+				: toBuilder().id(id).build();
+	}
+
+	public Candidate withParentId(@Nullable final CandidateId parentId)
+	{
+		return CandidateId.equals(this.parentId, parentId)
+				? this
+				: toBuilder().parentId(parentId).build();
 	}
 
 	public OrgId getOrgId()

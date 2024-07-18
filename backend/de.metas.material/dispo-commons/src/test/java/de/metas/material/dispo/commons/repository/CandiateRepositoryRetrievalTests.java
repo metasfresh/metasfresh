@@ -265,7 +265,7 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(expectedRecordWithProdDetails.getId().getRepoId()).isEqualTo(record.getMD_Candidate_ID());
 
 		final CandidatesQuery querqWithoutProdDetails = CandidatesQuery
-				.fromCandidate(cand.withId(null), false)
+				.fromCandidate(cand.withNullId(), false)
 				.withProductionDetailsQuery(ProductionDetailsQuery.NO_PRODUCTION_DETAIL);
 		final Candidate expectedRecordWithoutProdDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(querqWithoutProdDetails);
@@ -343,7 +343,7 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(expectedResultWithDistDetails.getId().getRepoId()).isEqualTo(record.getMD_Candidate_ID());
 
 		final CandidatesQuery withoutdistDetailsQuery = CandidatesQuery
-				.fromCandidate(candidateWithDistributionDetail.withId(null), false)
+				.fromCandidate(candidateWithDistributionDetail.withNullId(), false)
 				.withDistributionDetailsQuery(DistributionDetailsQuery.NO_DISTRIBUTION_DETAIL);
 		final Candidate expectedRecordWithoutDistDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(withoutdistDetailsQuery);
@@ -489,9 +489,10 @@ public class CandiateRepositoryRetrievalTests
 
 		final Candidate expectedRecordWithoutDemandDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(CandidatesQuery.fromCandidate(
-						cand
-								.withId(null)
-								.withBusinessCaseDetail(DemandDetail.forForecastLineId(74, 84, TEN)),
+						cand.toBuilder()
+								.id(null)
+								.businessCaseDetail(DemandDetail.forForecastLineId(74, 84, TEN))
+								.build(),
 						false));
 
 		assertThat(expectedRecordWithoutDemandDetails).isNotNull();

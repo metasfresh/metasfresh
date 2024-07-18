@@ -110,35 +110,37 @@ public class CandidateServiceTests
 						.build())
 				.build();
 
-		final Candidate candidate2 = candidate
-				.withType(CandidateType.DEMAND)
-				.withMaterialDescriptor(candidate.getMaterialDescriptor()
+		final Candidate candidate2 = candidate.toBuilder()
+				.type(CandidateType.DEMAND)
+				.materialDescriptor(candidate.getMaterialDescriptor()
 						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
-				.withDimension(candidate.getDimension())
-				.withBusinessCaseDetail(ProductionDetail.builder()
+				.dimension(candidate.getDimension())
+				.businessCaseDetail(ProductionDetail.builder()
 						.plantId(ResourceId.ofRepoId(210))
 						.productPlanningId(220)
 						.productBomLineId(500)
 						.advised(Flag.TRUE)
 						.pickDirectlyIfFeasible(Flag.FALSE)
 						.qty(TEN)
-						.build());
+						.build())
+				.build();
 
-		final Candidate candidate3 = candidate
-				.withType(CandidateType.DEMAND)
-				.withMaterialDescriptor(candidate.getMaterialDescriptor()
+		final Candidate candidate3 = candidate.toBuilder()
+				.type(CandidateType.DEMAND)
+				.materialDescriptor(candidate.getMaterialDescriptor()
 						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
-				.withDimension(candidate.getDimension())
-				.withBusinessCaseDetail(ProductionDetail.builder()
+				.dimension(candidate.getDimension())
+				.businessCaseDetail(ProductionDetail.builder()
 						.plantId(ResourceId.ofRepoId(210))
 						.productPlanningId(220)
 						.productBomLineId(600)
 						.advised(Flag.FALSE)
 						.pickDirectlyIfFeasible(Flag.TRUE)
 						.qty(TEN)
-						.build());
+						.build())
+				.build();
 
 		final PPOrderRequestedEvent ppOrderRequestedEvent = requestMaterialOrderService
 				.createPPOrderRequestedEvent(CandidatesGroup.of(candidate, candidate2, candidate3));
@@ -171,19 +173,20 @@ public class CandidateServiceTests
 						.build())
 				.build();
 
-		final Candidate demandCandidate = supplyCandidate
-				.withType(CandidateType.DEMAND)
-				.withMaterialDescriptor(supplyCandidate.getMaterialDescriptor()
+		final Candidate demandCandidate = supplyCandidate.toBuilder()
+				.type(CandidateType.DEMAND)
+				.materialDescriptor(supplyCandidate.getMaterialDescriptor()
 						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(productId.getRepoId()))
 						.withQuantity(BigDecimal.valueOf(20)))
-				.withDimension(supplyCandidate.getDimension())
-				.withBusinessCaseDetail(DistributionDetail.builder()
+				.dimension(supplyCandidate.getDimension())
+				.businessCaseDetail(DistributionDetail.builder()
 						.productPlanningId(ProductPlanningId.ofRepoId(220))
 						.plantId(ResourceId.ofRepoId(230))
 						.shipperId(ShipperId.ofRepoId(240))
 						.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(500, 500))
 						.qty(TEN)
-						.build());
+						.build())
+				.build();
 
 		final DDOrderCandidateRequestedEvent distributionOrderEvent = requestMaterialOrderService.createDDOrderCandidateRequestedEvent(CandidatesGroup.of(supplyCandidate, demandCandidate), null);
 		assertThat(distributionOrderEvent).isNotNull();
