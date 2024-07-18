@@ -212,12 +212,12 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		{
 			case PRODUCTION:
 				pickDirectlyIfFeasible = ProductionDetail
-						.cast(candidate.getBusinessCaseDetail())
+						.cast(candidate.getBusinessCaseDetailNotNull())
 						.getPickDirectlyIfFeasible();
 				break;
 			case DISTRIBUTION:
 				pickDirectlyIfFeasible = DistributionDetail
-						.cast(candidate.getBusinessCaseDetail())
+						.cast(candidate.getBusinessCaseDetailNotNull())
 						.getPickDirectlyIfFeasible();
 				break;
 			default:

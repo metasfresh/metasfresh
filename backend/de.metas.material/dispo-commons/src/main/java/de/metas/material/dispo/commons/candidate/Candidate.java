@@ -297,4 +297,10 @@ public class Candidate
 
 		return OrderLineId.ofRepoIdOrNull(demandDetail.getOrderLineId());
 	}
+
+	@NonNull
+	public BusinessCaseDetail getBusinessCaseDetailNotNull()
+	{
+		return Check.assumeNotNull(getBusinessCaseDetail(), "businessCaseDetail is not null: {}", this);
+	}
 }
