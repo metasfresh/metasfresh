@@ -22,12 +22,9 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.contracts.refund.RefundConfig;
 import de.metas.order.OrderLineId;
-import de.metas.product.ProductCategoryId;
 import lombok.NonNull;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product_Category;
 
 import javax.annotation.Nullable;
 
