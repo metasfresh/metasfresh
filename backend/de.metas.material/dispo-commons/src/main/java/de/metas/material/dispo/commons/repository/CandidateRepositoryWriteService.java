@@ -59,7 +59,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import static de.metas.common.util.IdConstants.toRepoId;
-import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -595,11 +594,12 @@ public class CandidateRepositoryWriteService
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate candidateRecord)
 	{
-		return candidate
-				.withId(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
-				.withParentId(CandidateId.ofRepoIdOrNull(candidateRecord.getMD_Candidate_Parent_ID()))
-				.withGroupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))
-				.withSeqNo(candidateRecord.getSeqNo());
+		return candidate.toBuilder()
+				.id(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
+				.parentId(CandidateId.ofRepoIdOrNull(candidateRecord.getMD_Candidate_Parent_ID()))
+				.groupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))
+				.seqNo(candidateRecord.getSeqNo())
+				.build();
 	}
 
 	@NonNull
