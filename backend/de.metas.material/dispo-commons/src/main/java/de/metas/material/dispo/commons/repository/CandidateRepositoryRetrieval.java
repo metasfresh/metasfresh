@@ -215,8 +215,6 @@ public class CandidateRepositoryRetrieval
 				.warehouseId(WarehouseId.ofRepoId(candidateRecord.getM_Warehouse_ID()))
 				.customerId(BPartnerId.ofRepoIdOrNull(candidateRecord.getC_BPartner_Customer_ID()))
 				.reservedForCustomer(candidateRecord.isReservedForCustomer())
-
-				// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
 				.date(TimeUtil.asInstant(dateProjected))
 				.build();
 
