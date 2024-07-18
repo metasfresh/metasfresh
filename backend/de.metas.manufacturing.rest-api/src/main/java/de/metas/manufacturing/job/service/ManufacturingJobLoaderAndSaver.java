@@ -23,6 +23,7 @@ import de.metas.manufacturing.job.model.RawMaterialsIssue;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ReceivingTarget;
+import de.metas.manufacturing.job.model.ValidateLocatorInfo;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
@@ -410,7 +411,7 @@ public class ManufacturingJobLoaderAndSaver
 	private Optional<ManufacturingJobActivity> toValidateLocatorInfoActivity(final @NonNull PPOrderRoutingActivity from)
 	{
 		return Optional.of(supportingServices.getValidateSourceLocatorInfo(from.getOrderId()))
-				.filter(sourceLocatorInfo -> !sourceLocatorInfo.getSourceLocatorList().isEmpty())
+				.filter(ValidateLocatorInfo::hasAnySourceLocators)
 				.map(sourceLocatorInfo -> prepareJobActivity(from).sourceLocatorValidate(sourceLocatorInfo).build());
 	}
 

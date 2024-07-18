@@ -38,4 +38,9 @@ public class ValidateLocatorInfo
 		return sourceLocatorList.stream()
 				.anyMatch(locatorInfo -> locatorInfo.getId().equals(locatorId));
 	}
+
+	public boolean hasAnySourceLocators()
+	{
+		return !sourceLocatorList.isEmpty();
+	}
 }
