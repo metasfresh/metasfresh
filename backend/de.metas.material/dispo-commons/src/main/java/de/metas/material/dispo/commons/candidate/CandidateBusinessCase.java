@@ -12,6 +12,7 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -40,7 +41,8 @@ import javax.annotation.Nullable;
 /**
  * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_BUSINESSCASE_AD_Reference_ID}
  */
- public enum CandidateBusinessCase implements ReferenceListAwareEnum
+@Getter
+public enum CandidateBusinessCase implements ReferenceListAwareEnum
 {
 	DISTRIBUTION(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION, DistributionDetail.class),
 
@@ -54,11 +56,8 @@ import javax.annotation.Nullable;
 
 	STOCK_CHANGE(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_STOCK_CHANGE, StockChangeDetail.class);
 
-	@Getter
-	private String code;
-
-	@Getter
-	private Class<? extends BusinessCaseDetail> detailClass;
+	@NonNull private final String code;
+	@NonNull private final Class<? extends BusinessCaseDetail> detailClass;
 
 	CandidateBusinessCase(
 			final String code,
@@ -86,10 +85,11 @@ import javax.annotation.Nullable;
 
 	public static String toCode(@Nullable final CandidateBusinessCase businessCase)
 	{
-		if (businessCase == null)
-		{
-			return null;
-		}
-		return businessCase.getCode();
+		return businessCase == null ? null : businessCase.getCode();
+	}
+	
+	public boolean isMatching(@Nullable final BusinessCaseDetail detail)
+	{
+		return this.detailClass.isInstance(detail);
 	}
 }

@@ -46,7 +46,7 @@ public class SupplyRequiredEventCreatorTest
 	@Test
 	public void createMaterialDemandEvent()
 	{
-		final Candidate demandCandidate = Candidate.builderForEventDescr(EventDescriptor.ofClientAndOrg(20, 30))
+		final Candidate demandCandidate = Candidate.builderForEventDescriptor(EventDescriptor.ofClientAndOrg(20, 30))
 				.id(CandidateId.ofRepoId(10))
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.PRODUCTION)

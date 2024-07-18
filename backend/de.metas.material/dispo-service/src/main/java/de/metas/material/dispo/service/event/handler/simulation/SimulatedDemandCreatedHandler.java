@@ -66,7 +66,7 @@ public class SimulatedDemandCreatedHandler implements MaterialEventHandler<Simul
 				.withTraceId(event.getTraceId());
 
 		final Candidate.CandidateBuilder candidateBuilder = Candidate
-				.builderForEventDescr(event.getEventDescriptor())
+				.builderForEventDescriptor(event.getEventDescriptor())
 				.materialDescriptor(event.getMaterialDescriptor())
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.SHIPMENT)

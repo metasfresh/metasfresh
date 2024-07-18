@@ -137,7 +137,7 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 	{
 		final CandidateBuilder builder = candidateRepositoryRetrieval.retrieveLatestMatch(createPreExistingCandidatesQuery(event, candidateType))
 				.map(Candidate::toBuilder)
-				.orElseGet(() -> Candidate.builderForEventDescr(event.getEventDescriptor()));
+				.orElseGet(() -> Candidate.builderForEventDescriptor(event.getEventDescriptor()));
 
 		builder.type(candidateType)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)

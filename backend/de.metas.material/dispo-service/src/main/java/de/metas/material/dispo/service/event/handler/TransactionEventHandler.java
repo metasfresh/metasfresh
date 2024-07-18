@@ -263,7 +263,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					event.getShipmentId().getInOutLineId().getRepoId(),
 					changedTransactionDetail.getQuantity());
 
-			final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescriptor())
+			final Candidate candidate = Candidate.builderForEventDescriptor(event.getEventDescriptor())
 					.type(CandidateType.UNEXPECTED_DECREASE)
 					.businessCase(CandidateBusinessCase.SHIPMENT)
 					.materialDescriptor(event.getMaterialDescriptor().withQuantity(changedTransactionDetail.getQuantity()))
@@ -663,7 +663,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			@NonNull final TransactionCreatedEvent transactionCreatedEvent,
 			@NonNull final BigDecimal quantity)
 	{
-		final CandidateBuilder builder = Candidate.builderForEventDescr(transactionCreatedEvent.getEventDescriptor());
+		final CandidateBuilder builder = Candidate.builderForEventDescriptor(transactionCreatedEvent.getEventDescriptor());
 
 		// TODO INVENTORY_UP/DOWN are not CandidateTypes, but business-cases!
 		if (quantity.signum() <= 0)

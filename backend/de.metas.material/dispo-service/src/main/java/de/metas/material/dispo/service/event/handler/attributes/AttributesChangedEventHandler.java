@@ -92,7 +92,7 @@ public class AttributesChangedEventHandler implements MaterialEventHandler<Attri
 			throw new AdempiereException("Invalid type: " + type); // really shall not happen
 		}
 
-		return Candidate.builderForEventDescr(event.getEventDescriptor())
+		return Candidate.builderForEventDescriptor(event.getEventDescriptor())
 				.type(type)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.warehouseId(event.getWarehouseId())

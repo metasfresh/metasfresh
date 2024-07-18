@@ -1,5 +1,6 @@
 package de.metas.material.dispo.commons.candidate;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
@@ -54,10 +55,10 @@ import java.util.List;
 @EqualsAndHashCode(doNotUseGetters = true)
 public class Candidate
 {
-	public static CandidateBuilder builderForEventDescr(@NonNull final EventDescriptor eventDescr)
+	public static CandidateBuilder builderForEventDescriptor(@NonNull final EventDescriptor eventDescriptor)
 	{
 		return Candidate.builder()
-				.clientAndOrgId(eventDescr.getClientAndOrgId());
+				.clientAndOrgId(eventDescriptor.getClientAndOrgId());
 	}
 
 	public static CandidateBuilder builderForClientAndOrgId(@NonNull final ClientAndOrgId clientAndOrgId)
@@ -66,23 +67,23 @@ public class Candidate
 				.clientAndOrgId(clientAndOrgId);
 	}
 
-	ClientAndOrgId clientAndOrgId;
+	@NonNull ClientAndOrgId clientAndOrgId;
 
-	CandidateType type;
+	@NonNull CandidateType type;
 
 	/**
 	 * Should be {@code null} for stock candidates.
 	 */
-	CandidateBusinessCase businessCase;
+	@Nullable CandidateBusinessCase businessCase;
 
-	CandidateId id;
+	@NonNull CandidateId id;
 
 	/**
 	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.
 	 * We have this for historic reasons.
-	 * On the longer run, stock-candidates will be merged into "normal" candidates and we won't need the parent-id anymore.
+	 * On the longer run, stock-candidates will be merged into "normal" candidates, and we won't need the parent-id anymore.
 	 */
-	CandidateId parentId;
+	@NonNull CandidateId parentId;
 
 	/**
 	 * The different supply candidate(s) and their corresponding demand candidate(s)
@@ -94,15 +95,15 @@ public class Candidate
 
 	int seqNo;
 
-	MaterialDescriptor materialDescriptor;
+	@NonNull MaterialDescriptor materialDescriptor;
 
-	MinMaxDescriptor minMaxDescriptor;
+	@NonNull MinMaxDescriptor minMaxDescriptor;
 
-	BusinessCaseDetail businessCaseDetail;
+	@Nullable BusinessCaseDetail businessCaseDetail;
 
-	DemandDetail additionalDemandDetail;
+	@Nullable DemandDetail additionalDemandDetail;
 
-	List<TransactionDetail> transactionDetails;
+	@NonNull ImmutableList<TransactionDetail> transactionDetails;
 
 	Dimension dimension;
 
@@ -112,15 +113,15 @@ public class Candidate
 	private Candidate(
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final CandidateType type,
-			final CandidateBusinessCase businessCase,
-			final CandidateId id,
-			final CandidateId parentId,
+			@Nullable final CandidateBusinessCase businessCase,
+			@Nullable final CandidateId id,
+			@Nullable final CandidateId parentId,
 			@Nullable final MaterialDispoGroupId groupId,
 			final int seqNo,
 			@NonNull final MaterialDescriptor materialDescriptor,
-			final MinMaxDescriptor minMaxDescriptor,
-			final BusinessCaseDetail businessCaseDetail,
-			final DemandDetail additionalDemandDetail,
+			@Nullable final MinMaxDescriptor minMaxDescriptor,
+			@Nullable final BusinessCaseDetail businessCaseDetail,
+			@Nullable final DemandDetail additionalDemandDetail,
 			@Singular @NonNull final List<TransactionDetail> transactionDetails,
 			final Dimension dimension,
 			final boolean simulated)
@@ -139,11 +140,11 @@ public class Candidate
 		this.seqNo = seqNo;
 
 		this.materialDescriptor = materialDescriptor;
-		this.minMaxDescriptor = CoalesceUtil.coalesce(minMaxDescriptor, MinMaxDescriptor.ZERO);
+		this.minMaxDescriptor = CoalesceUtil.coalesceNotNull(minMaxDescriptor, MinMaxDescriptor.ZERO);
 		this.businessCaseDetail = businessCaseDetail;
 		this.additionalDemandDetail = additionalDemandDetail;
 
-		this.transactionDetails = transactionDetails;
+		this.transactionDetails = ImmutableList.copyOf(transactionDetails);
 
 		if (type != CandidateType.STOCK
 				&& !Adempiere.isUnitTestMode() /* TODO create unit test candidates such that they are always valid and remove this */)
@@ -165,7 +166,7 @@ public class Candidate
 	}
 
 	// TODO always validate on construction, then make this method private
-	public Candidate validateNonStockCandidate()
+	public void validateNonStockCandidate()
 	{
 		switch (type)
 		{
@@ -183,7 +184,7 @@ public class Candidate
 			case UNEXPECTED_INCREASE:
 			case UNEXPECTED_DECREASE:
 				Check.errorIf(
-						transactionDetails == null || transactionDetails.isEmpty(),
+						transactionDetails.isEmpty(),
 						"If type={}, then the given transactionDetails may not be null or empty; this={}",
 						type, this);
 				break;
@@ -198,20 +199,19 @@ public class Candidate
 		{
 			Check.errorIf(
 					!transactionDetail.isComplete(),
-					"Every element from the given parameter transactionDetails needs to have iscomplete==true; transactionDetail={}; this={}",
+					"Every element from the given parameter transactionDetails needs to have isComplete==true; transactionDetail={}; this={}",
 					transactionDetail, this);
 		}
 
 		Check.errorIf((businessCase == null) != (businessCaseDetail == null),
-				"The given paramters businessCase and businessCaseDetail need to be both null or both not-null; businessCase={}; businessCaseDetail={}; this={}",
+				"The given parameters businessCase and businessCaseDetail need to be both null or both not-null; businessCase={}; businessCaseDetail={}; this={}",
 				businessCase, businessCaseDetail, this);
 
 		Check.errorIf(
-				businessCase != null && !businessCase.getDetailClass().isAssignableFrom(businessCaseDetail.getClass()),
-				"The given paramters businessCase and businessCaseDetail don't match; businessCase={}; businessCaseDetail={}; this={}",
+				businessCase != null && !businessCase.isMatching(businessCaseDetail),
+				"The given parameters businessCase and businessCaseDetail don't match; businessCase={}; businessCaseDetail={}; this={}",
 				businessCase, businessCaseDetail, this);
 
-		return this;
 	}
 
 	public OrgId getOrgId()
@@ -294,7 +294,7 @@ public class Candidate
 		{
 			return null;
 		}
-		
+
 		return OrderLineId.ofRepoIdOrNull(demandDetail.getOrderLineId());
 	}
 }

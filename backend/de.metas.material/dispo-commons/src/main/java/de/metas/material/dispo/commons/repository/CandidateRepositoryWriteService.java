@@ -323,11 +323,7 @@ public class CandidateRepositoryWriteService
 			candidateRecord.setMD_Candidate_GroupId(candidate.getGroupId().toInt());
 		}
 
-		final BigDecimal fulfilledQty = candidate
-				.getTransactionDetails()
-				.stream()
-				.map(TransactionDetail::getQuantity)
-				.reduce(ZERO, BigDecimal::add);
+		final BigDecimal fulfilledQty = candidate.computeActualQty();
 		candidateRecord.setQtyFulfilled(fulfilledQty);
 
 		final boolean typeImpliesProcessedDone =

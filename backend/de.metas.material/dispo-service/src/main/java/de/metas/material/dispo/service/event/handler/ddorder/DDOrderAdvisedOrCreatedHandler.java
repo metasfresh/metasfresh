@@ -228,7 +228,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 
 		return existingDemandCandidateOrNull != null
 				? existingDemandCandidateOrNull.toBuilder()
-				: Candidate.builderForEventDescr(ddOrderEvent.getEventDescriptor());
+				: Candidate.builderForEventDescriptor(ddOrderEvent.getEventDescriptor());
 	}
 
 	private CandidateBuilder createSupplyCandidateBuilder(final AbstractDDOrderEvent ddOrderEvent, final DDOrderLine ddOrderLine)
@@ -242,7 +242,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 
 		return existingSupplyCandidateOrNull != null
 				? existingSupplyCandidateOrNull.toBuilder()
-				: Candidate.builderForEventDescr(ddOrderEvent.getEventDescriptor());
+				: Candidate.builderForEventDescriptor(ddOrderEvent.getEventDescriptor());
 	}
 
 	private MaterialDescriptor createDemandMaterialDescriptor(
