@@ -103,6 +103,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -138,6 +139,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
 
@@ -1334,5 +1336,20 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			@Nullable final BPartnerId bpartnerId)
 	{
 		return handlingUnitsRepo.retrieveParentLUPIs(tuPIItemIds, bpartnerId);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<LocatorId> getLocatorIds(@NonNull final Collection<HuId> huIds)
+	{
+		final List<I_M_HU> hus = handlingUnitsRepo.getByIds(huIds);
+
+		final ImmutableSet<Integer> locatorIds = hus
+				.stream()
+				.map(I_M_HU::getM_Locator_ID)
+				.filter(locatorId -> locatorId > 0)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return warehouseBL.getLocatorIdsByRepoId(locatorIds);
 	}
 }

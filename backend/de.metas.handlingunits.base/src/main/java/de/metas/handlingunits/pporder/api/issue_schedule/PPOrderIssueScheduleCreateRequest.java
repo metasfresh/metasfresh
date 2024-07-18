@@ -3,7 +3,6 @@ package de.metas.handlingunits.pporder.api.issue_schedule;
 import de.metas.handlingunits.HuId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,7 +31,7 @@ public class PPOrderIssueScheduleCreateRequest
 	@Nullable Quantity qtyIssued;
 
 	@Builder
-	public PPOrderIssueScheduleCreateRequest(
+	private PPOrderIssueScheduleCreateRequest(
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final PPOrderBOMLineId ppOrderBOMLineId,
 			@NonNull final SeqNo seqNo,
@@ -45,7 +44,7 @@ public class PPOrderIssueScheduleCreateRequest
 	{
 		if (qtyIssued != null)
 		{
-			Check.assume(qtyIssued.getUomId().equals(qtyToIssue.getUomId()), "QtyIssue and QtyToIssue are in the same UOM.");
+			Quantity.assertSameUOM(qtyToIssue, qtyIssued);
 		}
 
 		this.ppOrderId = ppOrderId;

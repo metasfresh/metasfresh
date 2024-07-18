@@ -168,17 +168,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	@NonNull
-	public ImmutableList<I_M_HU> getOnlyActiveByIds(@NonNull final Collection<HuId> huIds)
-	{
-		return queryBL.createQueryBuilder(I_M_HU.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_HU.COLUMNNAME_M_HU_ID, huIds)
-				.create()
-				.listImmutable(I_M_HU.class);
-	}
-
-	@Override
 	public List<I_M_HU> getByIdsOutOfTrx(@NonNull final Collection<HuId> huIds)
 	{
 		return loadByRepoIdAwaresOutOfTrx(ImmutableSet.copyOf(huIds), I_M_HU.class);

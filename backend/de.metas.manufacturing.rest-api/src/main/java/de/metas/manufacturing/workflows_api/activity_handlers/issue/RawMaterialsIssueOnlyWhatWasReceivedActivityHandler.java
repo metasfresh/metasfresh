@@ -161,10 +161,10 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 				.collect(ImmutableMap.toImmutableMap(sourceHu -> HuId.ofRepoId(sourceHu.getM_HU_ID()),
 													 Function.identity()));
 
-		final ImmutableList<I_M_HU> activeHus = huDao.getOnlyActiveByIds(huId2SourceHu.keySet());
+		final List<I_M_HU> hus = huDao.getByIds(huId2SourceHu.keySet());
 
 		return SourceHUsCollection.builder()
-				.husThatAreFlaggedAsSource(activeHus)
+				.husThatAreFlaggedAsSource(ImmutableList.copyOf(hus))
 				.huId2SourceHu(huId2SourceHu)
 				.build();
 	}

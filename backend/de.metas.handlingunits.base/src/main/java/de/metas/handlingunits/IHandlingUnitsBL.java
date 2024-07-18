@@ -637,4 +637,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
 
 	boolean isHUHierarchyCleared(@NonNull final HuId huId);
+
+	@NonNull
+	ImmutableSet<LocatorId> getLocatorIds(@NonNull Collection<HuId> huIds);
 }

@@ -133,6 +133,11 @@ public class ManufacturingJobLoaderAndSaver
 		return bomLines.computeIfAbsent(ppOrderId, supportingServices::getOrderBOMLines);
 	}
 
+	private boolean hasAnyLinesWithIssueMethod(@NonNull final PPOrderId ppOrderId, @NonNull final BOMIssueMethod method)
+	{
+		return getBOMLines(ppOrderId).stream().anyMatch(line -> method.getCode().equals(line.getIssueMethod()));
+	}
+
 	private ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> getIssueSchedules(final PPOrderId ppOrderId)
 	{
 		return issueSchedules.computeIfAbsent(ppOrderId, supportingServices::getIssueSchedules);
@@ -412,14 +417,15 @@ public class ManufacturingJobLoaderAndSaver
 	@NonNull
 	private Optional<ManufacturingJobActivity> toIssueOnlyWhatWasReceivedActivity(final @NonNull PPOrderRoutingActivity from)
 	{
-		return getBOMLines(from.getOrderId())
-				.stream()
-				.filter(bomLine -> BOMIssueMethod.Planning.getCode().equals(bomLine.getIssueMethod()))
-				.findFirst()
-				.map(ignored -> prepareJobActivity(from)
-						.issueOnlyWhatWasReceivedConfig(IssueOnlyWhatWasReceivedConfig.ofIssueStrategy(
-								Optional.ofNullable(from.getRawMaterialsIssueStrategy())
-										.orElse(RawMaterialsIssueStrategy.DEFAULT)))
-						.build());
+		if (!hasAnyLinesWithIssueMethod(from.getOrderId(), BOMIssueMethod.Planning))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(prepareJobActivity(from)
+								   .issueOnlyWhatWasReceivedConfig(IssueOnlyWhatWasReceivedConfig.ofIssueStrategy(
+										   Optional.ofNullable(from.getRawMaterialsIssueStrategy())
+												   .orElse(RawMaterialsIssueStrategy.DEFAULT)))
+								   .build());
 	}
 }

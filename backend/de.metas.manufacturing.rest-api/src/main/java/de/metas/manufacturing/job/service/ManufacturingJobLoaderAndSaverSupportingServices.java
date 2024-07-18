@@ -141,12 +141,6 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	private ImmutableSet<LocatorId> getSourceLocatorIds(@NonNull final PPOrderId ppOrderId)
 	{
 		final ImmutableSet<HuId> huIds = sourceHUService.getSourceHUIds(ppOrderId);
-		final ImmutableSet<Integer> locatorIds = handlingUnitsBL.getByIds(huIds)
-				.stream()
-				.map(I_M_HU::getM_Locator_ID)
-				.filter(locatorId -> locatorId > 0)
-				.collect(ImmutableSet.toImmutableSet());
-
-		return warehouseBL.getLocatorIdsByRepoId(locatorIds);
+		return handlingUnitsBL.getLocatorIds(huIds);
 	}
 }
