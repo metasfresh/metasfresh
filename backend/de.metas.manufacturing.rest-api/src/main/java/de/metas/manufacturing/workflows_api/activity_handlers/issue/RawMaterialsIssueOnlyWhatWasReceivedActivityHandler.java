@@ -98,7 +98,6 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 	{
 		return UserConfirmationSupportUtil.createUIComponent(
 				UserConfirmationSupportUtil.UIComponentProps.builderFrom(wfActivity)
-						.question("Are you sure?")
 						.build());
 	}
 
