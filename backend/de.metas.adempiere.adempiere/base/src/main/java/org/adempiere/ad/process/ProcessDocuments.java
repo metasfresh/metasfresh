@@ -22,11 +22,14 @@ package org.adempiere.ad.process;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -36,11 +39,10 @@ import org.compiere.model.IQuery;
 import org.compiere.model.Query;
 import org.compiere.util.TrxRunnable2;
 
-import de.metas.document.engine.IDocumentBL;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.process.JavaProcess;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Select all records from AD_Table_ID, with given optional WhereClause for each record, call processIt with given DocAction
@@ -71,6 +73,14 @@ public class ProcessDocuments extends JavaProcess
 	// Statistics
 	private int countOK = 0;
 	private int countError = 0;
+
+	/**
+	 * WARNING: The preconditions will be checked only if the extending class implements the {@link de.metas.process.IProcessPrecondition} interface.
+	 */
+	protected ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	protected void prepare()
@@ -107,7 +117,7 @@ public class ProcessDocuments extends JavaProcess
 		this.countOK = 0;
 		this.countError = 0;
 
-		final Iterator<GenericPO> documents = retriveDocumentsToProcess(getCtx(), this.p_AD_Table_ID, this.p_DocStatus, this.p_WhereClause);
+		final Iterator<GenericPO> documents = retrieveDocumentsToProcess();
 		processDocuments(documents, this.p_DocAction);
 
 		return "@Processed@ (OK=#" + this.countOK + ", Error=#" + this.countError + ")";
@@ -151,32 +161,35 @@ public class ProcessDocuments extends JavaProcess
 		}
 	}
 
-	private Iterator<GenericPO> retriveDocumentsToProcess(final Properties ctx,
-			final int adTableId,
-			final String docStatus,
-			final String whereClause)
+	protected Iterator<GenericPO> retrieveDocumentsToProcess()
 	{
-		Check.assume(adTableId > 0, "adTableId > 0");
-		Check.assumeNotNull(docStatus, "docStatus not null");
+		Check.assume(this.p_AD_Table_ID > 0, "adTableId > 0");
+		Check.assumeNotNull(this.p_DocStatus, "docStatus not null");
 
 		final List<Object> params = new ArrayList<Object>();
 		final StringBuilder finalWhereClause = new StringBuilder();
 
 		finalWhereClause.append(ProcessDocuments.PARAM_DocStatus).append("=?");
-		params.add(docStatus);
+		params.add(this.p_DocStatus);
 
-		if (!Check.isEmpty(whereClause, true))
+		if (!Check.isEmpty(this.p_WhereClause, true))
 		{
-			finalWhereClause.append(" AND (").append(whereClause).append(")");
+			finalWhereClause.append(" AND (").append(this.p_WhereClause).append(")");
 		}
 
-		final String tableName = adTableDAO.retrieveTableName(adTableId);
+		final String tableName = adTableDAO.retrieveTableName(this.p_AD_Table_ID);
 
-		return new Query(ctx, tableName, finalWhereClause.toString(), ITrx.TRXNAME_None)
+		return new Query(getCtx(), tableName, finalWhereClause.toString(), ITrx.TRXNAME_None)
 				.setParameters(params)
 				// buffer size 1 was arbitrarily chosen
 				.setOnlyActiveRecords(true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 1)
 				.iterate();
+	}
+
+	@Nullable
+	protected String getP_DocStatus()
+	{
+		return p_DocStatus;
 	}
 }
