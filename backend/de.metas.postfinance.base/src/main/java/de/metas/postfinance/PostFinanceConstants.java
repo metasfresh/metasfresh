@@ -24,11 +24,11 @@ package de.metas.postfinance;
 
 public interface PostFinanceConstants
 {
-	String XML_PROPERTY_VALUE_YES = "yes";
-
 	String CUSTOMER_REGISTRATION_MESSAGE = "R";
 
 	String CUSTOM_FIELD_BPARTNEREXTERNALREFERENCE = "BPARTNEREXTERNALREFERENCE";
 
 	String DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber = "InvoiceReference";
+
+	String YB_INVOICE_SCHEMA_LOCATION = "ybInvoice_V2.0.5.xsd";
 }

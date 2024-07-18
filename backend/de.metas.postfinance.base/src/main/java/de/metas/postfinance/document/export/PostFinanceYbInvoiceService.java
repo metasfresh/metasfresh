@@ -123,8 +123,11 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.util.Base64;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -133,6 +136,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.metas.postfinance.B2BServiceWrapper.B2B_SERVICE_OBJECT_FACTORY;
+import static de.metas.postfinance.PostFinanceConstants.YB_INVOICE_SCHEMA_LOCATION;
 import static de.metas.postfinance.document.export.PostFinanceDocumentType.BILL;
 
 @Service
@@ -317,6 +321,7 @@ public class PostFinanceYbInvoiceService
 
 		final Envelope envelope = getEnvelopeWithHeader(invoiceToExport);
 		envelope.setBody(ybInvoiceType);
+		envelope.setType("");
 
 		return envelope;
 	}
@@ -692,10 +697,17 @@ public class PostFinanceYbInvoiceService
 		final byte[] data;
 		try
 		{
-			final JAXBContext contextObj = JAXBContext.newInstance(Envelope.class);
+			final JAXBContext contextObj = JAXBContext.newInstance(ObjectFactory.class);
+
+			final SchemaFactory factory = SchemaFactory.newInstance(javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
+			final URL schemaUrl = ObjectFactory.class.getResource(YB_INVOICE_SCHEMA_LOCATION);
+			final Schema schema = factory.newSchema(schemaUrl);
 
 			final Marshaller marshallerObj = contextObj.createMarshaller();
+			marshallerObj.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
 			marshallerObj.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			marshallerObj.setProperty(Marshaller.JAXB_FRAGMENT, true);
+			marshallerObj.setSchema(schema); //make sure schema is respected and get a proper error if not
 
 			final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			marshallerObj.marshal(envelope, outputStream);
@@ -703,7 +715,7 @@ public class PostFinanceYbInvoiceService
 		}
 		catch (final Exception e)
 		{
-			throw new PostFinanceExportException(e);
+			throw new PostFinanceExportException("Error in ybInvoice XML", e);
 		}
 
 		final Invoice invoice = B2B_SERVICE_OBJECT_FACTORY.createInvoice();
