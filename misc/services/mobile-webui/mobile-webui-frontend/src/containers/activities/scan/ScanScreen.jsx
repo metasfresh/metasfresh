@@ -41,7 +41,7 @@ const ScanScreen = () => {
     if (useTheAlreadyScannedQrCode === 'true' && currentValue?.qrCode !== undefined) {
       onBarcodeScanned({ scannedBarcode: currentValue?.qrCode });
     }
-  }, [useTheAlreadyScannedQrCode]);
+  }, [useTheAlreadyScannedQrCode, currentValue]);
 
   const history = useHistory();
   const onBarcodeScanned = ({ scannedBarcode }) => {
