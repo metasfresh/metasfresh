@@ -30,5 +30,5 @@ public interface PostFinanceConstants
 
 	String DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber = "InvoiceReference";
 
-	String YB_INVOICE_SCHEMA_LOCATION = "de/metas/postfinance/ybInvoice/v2/ybInvoice_V2.0.5.xsd";
+	String YB_INVOICE_SCHEMA_LOCATION = "ybInvoice_V2.0.5.xsd";
 }
