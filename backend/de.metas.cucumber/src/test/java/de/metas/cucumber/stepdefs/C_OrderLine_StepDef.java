@@ -389,8 +389,6 @@ public class C_OrderLine_StepDef
 	public void delete_orderLine(@NonNull final String orderLineIdentifier)
 	{
 		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-		assertThat(orderLine).isNotNull();
-
 		identifierIdsTable.put(orderLineIdentifier, orderLine.getC_OrderLine_ID());
 		InterfaceWrapperHelper.delete(orderLine);
 	}

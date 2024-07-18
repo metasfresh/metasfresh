@@ -40,7 +40,9 @@ public class DD_NetworkDistribution_StepDef
 	@And("metasfresh contains DD_NetworkDistribution")
 	public void metasfresh_contains_DD_NetworkDistribution(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::metasfresh_contains_DD_NetworkDistribution);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_DD_NetworkDistribution.COLUMNNAME_DD_NetworkDistribution_ID)
+				.forEach(this::metasfresh_contains_DD_NetworkDistribution);
 	}
 
 	private void metasfresh_contains_DD_NetworkDistribution(final DataTableRow row)
@@ -55,7 +57,6 @@ public class DD_NetworkDistribution_StepDef
 
 		InterfaceWrapperHelper.save(record);
 
-		row.getAsOptionalIdentifier(I_DD_NetworkDistribution.COLUMNNAME_DD_NetworkDistribution_ID)
-				.ifPresent(identifier -> ddNetworkTable.put(identifier, record));
+		row.getAsOptionalIdentifier().ifPresent(identifier -> ddNetworkTable.put(identifier, record));
 	}
 }
