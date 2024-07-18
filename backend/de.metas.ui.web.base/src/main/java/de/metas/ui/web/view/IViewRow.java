@@ -1,17 +1,11 @@
 package de.metas.ui.web.view;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -21,6 +15,11 @@ import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -142,5 +141,10 @@ public interface IViewRow
 				.stream()
 				.map(includedRow -> includedRow.streamRecursive())
 				.reduce(Stream.of(this), Stream::concat);
+	}
+
+	default boolean applies(@NonNull final ProcessDescriptor processDescriptor)
+	{
+		return true;
 	}
 }

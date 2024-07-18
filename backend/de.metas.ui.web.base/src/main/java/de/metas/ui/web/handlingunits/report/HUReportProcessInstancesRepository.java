@@ -165,6 +165,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 				.processDescriptor(ProcessDescriptor.builder()
 						.setProcessId(processId)
 						.setInternalName(InternalName.ofString(huProcessDescriptor.getInternalName()))
+						.setProcessClassname(adProcess.getClassname())
 						.setType(ProcessDescriptorType.Report)
 						.setParametersDescriptor(parametersDescriptor)
 						.setLayout(ProcessLayout.builder()
@@ -234,6 +235,11 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 	{
 		if (HUReportAwareViews.isHUReportAwareViewRow(row))
 		{
+			if (!row.applies(descriptor.getProcessDescriptor()))
+			{
+				return false;
+			}
+
 			final HUReportAwareViewRow huRow = HUReportAwareViews.cast(row);
 			final HuUnitType huUnitType = huRow.getHUUnitTypeOrNull();
 			return huUnitType != null && descriptor.appliesToHUUnitType(huUnitType);
