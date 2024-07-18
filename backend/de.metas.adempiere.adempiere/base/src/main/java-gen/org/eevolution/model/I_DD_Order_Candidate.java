@@ -52,6 +52,31 @@ public interface I_DD_Order_Candidate
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Sales Orderline.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderLineSO_ID (int C_OrderLineSO_ID);
+
+	/**
+	 * Get Sales Orderline.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderLineSO_ID();
+
+	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLineSO();
+
+	void setC_OrderLineSO(@Nullable org.compiere.model.I_C_OrderLine C_OrderLineSO);
+
+	ModelColumn<I_DD_Order_Candidate, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLineSO_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "C_OrderLineSO_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_C_OrderLineSO_ID = "C_OrderLineSO_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -289,6 +314,54 @@ public interface I_DD_Order_Candidate
 
 	ModelColumn<I_DD_Order_Candidate, Object> COLUMN_IsActive = new ModelColumn<>(I_DD_Order_Candidate.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Simulated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSimulated (boolean IsSimulated);
+
+	/**
+	 * Get Simulated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSimulated();
+
+	ModelColumn<I_DD_Order_Candidate, Object> COLUMN_IsSimulated = new ModelColumn<>(I_DD_Order_Candidate.class, "IsSimulated", null);
+	String COLUMNNAME_IsSimulated = "IsSimulated";
+
+	/**
+	 * Set Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+
+	/**
+	 * Get Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_AttributeSetInstance_ID();
+
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+
+	ModelColumn<I_DD_Order_Candidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
 	 * Set Packing Instruction.

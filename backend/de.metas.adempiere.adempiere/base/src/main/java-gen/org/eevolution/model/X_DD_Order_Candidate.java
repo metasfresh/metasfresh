@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -909128780L;
+	private static final long serialVersionUID = -81432511L;
 
     /** Standard Constructor */
     public X_DD_Order_Candidate (final Properties ctx, final int DD_Order_Candidate_ID, @Nullable final String trxName)
@@ -33,6 +33,33 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLineSO()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLineSO_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLineSO(final org.compiere.model.I_C_OrderLine C_OrderLineSO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLineSO_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLineSO);
+	}
+
+	@Override
+	public void setC_OrderLineSO_ID (final int C_OrderLineSO_ID)
+	{
+		if (C_OrderLineSO_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderLineSO_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderLineSO_ID, C_OrderLineSO_ID);
+	}
+
+	@Override
+	public int getC_OrderLineSO_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OrderLineSO_ID);
 	}
 
 	@Override
@@ -195,6 +222,45 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	public int getForward_PP_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Forward_PP_Order_ID);
+	}
+
+	@Override
+	public void setIsSimulated (final boolean IsSimulated)
+	{
+		set_Value (COLUMNNAME_IsSimulated, IsSimulated);
+	}
+
+	@Override
+	public boolean isSimulated() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSimulated);
+	}
+
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
+	{
+		if (M_AttributeSetInstance_ID < 0) 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
+	}
+
+	@Override
+	public int getM_AttributeSetInstance_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
 	}
 
 	@Override

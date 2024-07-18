@@ -1,5 +1,6 @@
 package de.metas.distribution.ddordercandidate;
 
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Value;
@@ -14,5 +15,7 @@ public class DDOrderCandidateQuery
 	@Nullable ProductId productId;
 	@Nullable WarehouseId sourceWarehouseId;
 	@Nullable WarehouseId targetWarehouseId;
+	@Nullable OrderLineId salesOrderLineId;
 	@Nullable Boolean processed;
+	@Nullable Boolean isSimulated;
 }

@@ -9,6 +9,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -65,6 +66,10 @@ public class DDOrderCandidateRequestedEventHandler
 				.targetWarehouseId(data.getTargetWarehouseId())
 				.targetPlantId(data.getTargetPlantId())
 				.shipperId(data.getShipperId())
+				//
+				.isSimulated(data.isSimulated())
+				//
+				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(data.getSalesOrderLineId()))
 				//
 				.distributionNetworkAndLineId(data.getDistributionNetworkAndLineId())
 				.productPlanningId(data.getProductPlanningId())

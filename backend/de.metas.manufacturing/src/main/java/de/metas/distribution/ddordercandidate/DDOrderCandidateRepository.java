@@ -5,6 +5,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -33,6 +34,12 @@ public class DDOrderCandidateRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private static final ModelDynAttributeAccessor<I_DD_Order_Candidate, String> DYNATTR_TraceId = new ModelDynAttributeAccessor<>("de.metas.material", "TraceId", String.class);
 	private static final ModelDynAttributeAccessor<I_DD_Order_Candidate, MaterialDispoGroupId> DYNATTR_GroupId = new ModelDynAttributeAccessor<>("de.metas.material", "GroupId", MaterialDispoGroupId.class);
+
+	public DDOrderCandidate getById(@NonNull final DDOrderCandidateId id)
+	{
+		final I_DD_Order_Candidate record = InterfaceWrapperHelper.load(id, I_DD_Order_Candidate.class);
+		return fromRecord(record);
+	}
 
 	public void save(@NonNull final DDOrderCandidate candidate)
 	{
@@ -64,7 +71,7 @@ public class DDOrderCandidateRepository
 		record.setQtyEntered(from.getQty().toBigDecimal());
 		record.setQtyEnteredTU(BigDecimal.valueOf(from.getQtyTUs()));
 
-		// TODO record.setM_AttributeSetInstance_ID(from.getAttributeSetInstanceId().getRepoId());
+		record.setM_AttributeSetInstance_ID(from.getAttributeSetInstanceId().getRepoId());
 
 		//
 		// From/To
@@ -75,6 +82,11 @@ public class DDOrderCandidateRepository
 		//
 		// Flags
 		record.setIsActive(true);
+		record.setIsSimulated(from.isSimulated());
+
+		//
+		// Forward document references
+		record.setC_OrderLineSO_ID(OrderLineId.toRepoId(from.getSalesOrderLineId()));
 
 		//
 		// Planning master data references
@@ -101,15 +113,18 @@ public class DDOrderCandidateRepository
 				.qty(Quantitys.create(record.getQtyEntered(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.qtyTUs(record.getQtyEnteredTU().intValueExact())
 				//
-				.attributeSetInstanceId(AttributeSetInstanceId.NONE) // TODO
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				//
 				.sourceWarehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_From_ID()))
 				.targetWarehouseId(WarehouseId.ofRepoId(record.getM_WarehouseTo_ID()))
 				.targetPlantId(ResourceId.ofRepoIdOrNull(record.getPP_Plant_To_ID()))
 				.shipperId(ShipperId.ofRepoId(record.getM_Shipper_ID()))
 				//
-				// isAllowPush;
-				// isKeepTargetPlant;
+				.isSimulated(record.isSimulated())
+				// isAllowPush
+				// isKeepTargetPlant
+				//
+				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()))
 				//
 				.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIdsOrNull(record.getDD_NetworkDistribution_ID(), record.getDD_NetworkDistributionLine_ID()))
 				.productPlanningId(ProductPlanningId.ofRepoIdOrNull(record.getPP_Product_Planning_ID()))
@@ -134,6 +149,13 @@ public class DDOrderCandidateRepository
 				.map(DDOrderCandidateRepository::fromRecord);
 	}
 
+	public void delete(@NonNull final DDOrderCandidateQuery query)
+	{
+		toSqlQuery(query)
+				.create()
+				.delete();
+	}
+
 	private IQueryBuilder<I_DD_Order_Candidate> toSqlQuery(@NonNull final DDOrderCandidateQuery query)
 	{
 		final IQueryBuilder<I_DD_Order_Candidate> queryBuilder = queryBL.createQueryBuilder(I_DD_Order_Candidate.class)
@@ -152,9 +174,17 @@ public class DDOrderCandidateRepository
 		{
 			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_M_WarehouseTo_ID, query.getTargetWarehouseId());
 		}
+		if (query.getSalesOrderLineId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_C_OrderLineSO_ID, query.getSalesOrderLineId());
+		}
 		if (query.getProcessed() != null)
 		{
 			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_Processed, query.getProcessed());
+		}
+		if (query.getIsSimulated() != null)
+		{
+			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_IsSimulated, query.getIsSimulated());
 		}
 
 		return queryBuilder;

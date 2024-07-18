@@ -4,6 +4,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -46,8 +47,11 @@ public class DDOrderCandidate
 	@Nullable private final ResourceId targetPlantId;
 	@NonNull private final ShipperId shipperId;
 
+	private final boolean isSimulated;
 	private final boolean isAllowPush;
 	private final boolean isKeepTargetPlant;
+	
+	@Nullable private final OrderLineId salesOrderLineId;
 
 	@Nullable private final DistributionNetworkAndLineId distributionNetworkAndLineId;
 	@Nullable private final ProductPlanningId productPlanningId;
