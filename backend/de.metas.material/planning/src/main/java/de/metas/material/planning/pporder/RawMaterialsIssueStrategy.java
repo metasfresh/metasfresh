@@ -65,6 +65,12 @@ public enum RawMaterialsIssueStrategy implements ReferenceListAwareEnum
 	}
 
 	@NonNull
+	public static RawMaterialsIssueStrategy ofCode(@Nullable final String code)
+	{
+		return ofCodeOrDefault(code);
+	}
+
+	@NonNull
 	public static RawMaterialsIssueStrategy ofCodeOrDefault(@Nullable final String code)
 	{
 		if (AssignedHUsOnly.getCode().equals(code))
