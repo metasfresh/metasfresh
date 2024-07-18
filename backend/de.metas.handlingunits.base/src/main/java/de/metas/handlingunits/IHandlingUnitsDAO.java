@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -94,6 +95,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	ClientAndOrgId getClientAndOrgId(@NonNull HuId huId);
 
 	List<I_M_HU> getByIds(Collection<HuId> huIds);
+
+	@NonNull
+	ImmutableList<I_M_HU> getOnlyActiveByIds(@NonNull Collection<HuId> huIds);
 
 	List<I_M_HU> getByIdsOutOfTrx(Collection<HuId> huIds);
 

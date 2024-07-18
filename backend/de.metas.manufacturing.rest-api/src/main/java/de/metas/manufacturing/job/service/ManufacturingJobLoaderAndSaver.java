@@ -14,6 +14,7 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.manufacturing.job.model.FinishedGoodsReceive;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.HUInfo;
+import de.metas.manufacturing.job.model.IssueOnlyWhatWasReceivedConfig;
 import de.metas.manufacturing.job.model.LocatorInfo;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
@@ -24,6 +25,7 @@ import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
+import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -414,6 +416,10 @@ public class ManufacturingJobLoaderAndSaver
 				.stream()
 				.filter(bomLine -> BOMIssueMethod.Planning.getCode().equals(bomLine.getIssueMethod()))
 				.findFirst()
-				.map(ignored -> prepareJobActivity(from).build());
+				.map(ignored -> prepareJobActivity(from)
+						.issueOnlyWhatWasReceivedConfig(IssueOnlyWhatWasReceivedConfig.ofIssueStrategy(
+								Optional.ofNullable(from.getRawMaterialsIssueStrategy())
+										.orElse(RawMaterialsIssueStrategy.DEFAULT)))
+						.build());
 	}
 }

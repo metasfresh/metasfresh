@@ -10,6 +10,7 @@ import { getActivityById } from '../../../reducers/wfProcesses';
 
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { fireWFActivityCompleted } from '../../../apps';
+import { toastError } from '../../../utils/toast';
 
 const ScanScreen = () => {
   const {
@@ -19,13 +20,15 @@ const ScanScreen = () => {
 
   const queryParameters = new URLSearchParams(window.location.search);
   const useTheAlreadyScannedQrCode = queryParameters.get('resendQr');
+  const validOptionIndex = queryParameters.get('validOptionIndex');
 
-  const { activityCaption, userInstructions, currentValue } = useSelector((state) => {
+  const { activityCaption, userInstructions, currentValue, validOptions } = useSelector((state) => {
     const activity = getActivityById(state, wfProcessId, activityId);
     return {
       activityCaption: activity?.caption,
       userInstructions: activity?.userInstructions,
       currentValue: activity?.dataStored.currentValue,
+      validOptions: activity?.dataStored?.validOptions,
     };
   });
 
@@ -43,6 +46,16 @@ const ScanScreen = () => {
   const history = useHistory();
   const onBarcodeScanned = ({ scannedBarcode }) => {
     //console.log('onBarcodeScanned', { scannedBarcode });
+    if (validOptionIndex !== undefined && !validOptions?.length) {
+      toastError({ messageKey: 'activities.mfg.validateSourceLocator.noValidOption' });
+      history.goBack();
+      return;
+    }
+
+    if (validOptionIndex !== undefined && scannedBarcode !== validOptions[validOptionIndex]?.qrCode) {
+      toastError({ messageKey: 'activities.mfg.validateSourceLocator.qrDoesNotMatch' });
+      return;
+    }
 
     dispatch(setScannedBarcode({ wfProcessId, activityId, scannedBarcode }));
 
@@ -71,7 +84,7 @@ const ScanScreen = () => {
       });
   };
 
-  return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} />;
+  return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} continuousRunning={true} />;
 };
 
 export default ScanScreen;

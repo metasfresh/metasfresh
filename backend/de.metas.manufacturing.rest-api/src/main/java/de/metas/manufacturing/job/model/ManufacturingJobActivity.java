@@ -39,6 +39,7 @@ public class ManufacturingJobActivity
 	@Nullable UserInstructions userInstructions;
 
 	@Nullable ValidateLocatorInfo sourceLocatorValidate;
+	@Nullable IssueOnlyWhatWasReceivedConfig issueOnlyWhatWasReceivedConfig;
 
 	@Builder(toBuilder = true)
 	private ManufacturingJobActivity(
@@ -52,7 +53,8 @@ public class ManufacturingJobActivity
 			@NonNull final PPOrderRoutingActivityStatus routingActivityStatus,
 			@NonNull final PPAlwaysAvailableToUser alwaysAvailableToUser,
 			@Nullable final UserInstructions userInstructions,
-			@Nullable final ValidateLocatorInfo sourceLocatorValidate)
+			@Nullable final ValidateLocatorInfo sourceLocatorValidate,
+			@Nullable final IssueOnlyWhatWasReceivedConfig issueOnlyWhatWasReceivedConfig)
 	{
 		if (CoalesceUtil.countNotNulls(rawMaterialsIssue, finishedGoodsReceive) > 1)
 		{
@@ -74,6 +76,7 @@ public class ManufacturingJobActivity
 		this.userInstructions = userInstructions;
 
 		this.sourceLocatorValidate = sourceLocatorValidate;
+		this.issueOnlyWhatWasReceivedConfig = issueOnlyWhatWasReceivedConfig;
 	}
 
 	private static WFActivityStatus computeStatus(

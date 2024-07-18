@@ -22,20 +22,13 @@
 
 package de.metas.manufacturing.job.model;
 
-import com.google.common.collect.ImmutableList;
+import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.warehouse.LocatorId;
 
-@Value(staticConstructor = "ofSourceLocatorList")
-public class ValidateLocatorInfo
+@Value(staticConstructor = "ofIssueStrategy")
+public class IssueOnlyWhatWasReceivedConfig
 {
 	@NonNull
-	ImmutableList<LocatorInfo> sourceLocatorList;
-
-	public boolean isLocatorIdValid(@NonNull final LocatorId locatorId)
-	{
-		return sourceLocatorList.stream()
-				.anyMatch(locatorInfo -> locatorInfo.getId().equals(locatorId));
-	}
+	RawMaterialsIssueStrategy issueStrategy;
 }

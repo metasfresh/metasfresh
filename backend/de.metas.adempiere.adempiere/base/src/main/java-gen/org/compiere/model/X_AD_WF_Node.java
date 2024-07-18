@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -956337002L;
+	private static final long serialVersionUID = 972609444L;
 
     /** Standard Constructor */
     public X_AD_WF_Node (final Properties ctx, final int AD_WF_Node_ID, @Nullable final String trxName)
@@ -681,10 +681,10 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public static final String PP_ACTIVITY_TYPE_ScanScaleDevice = "ScanScaleDevice";
 	/** RawMaterialsIssueAdjustment = MIA */
 	public static final String PP_ACTIVITY_TYPE_RawMaterialsIssueAdjustment = "MIA";
-	/** PrintReceivedHUQRCodes = PrintReceivedHUQRCodes */
-	public static final String PP_ACTIVITY_TYPE_PrintReceivedHUQRCodes = "PrintReceivedHUQRCodes";
 	/** CallExternalSystem = CallExternalSystem */
 	public static final String PP_ACTIVITY_TYPE_CallExternalSystem = "CallExternalSystem";
+	/** PrintReceivedHUQRCodes = PrintReceivedHUQRCodes */
+	public static final String PP_ACTIVITY_TYPE_PrintReceivedHUQRCodes = "PrintReceivedHUQRCodes";
 	/** Validate Locator = ValidateLocator */
 	public static final String PP_ACTIVITY_TYPE_ValidateLocator = "ValidateLocator";
 	/** Issue Only What Was Received = IssueOnlyWhatWasReceived */
@@ -783,6 +783,25 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public int getR_MailText_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_R_MailText_ID);
+	}
+
+	/** 
+	 * RawMaterialsIssueStrategy AD_Reference_ID=541877
+	 * Reference name: RawMaterialsIssueStrategy
+	 */
+	public static final int RAWMATERIALSISSUESTRATEGY_AD_Reference_ID=541877;
+	/** Only assigned HUs = AssignedHUsOnly */
+	public static final String RAWMATERIALSISSUESTRATEGY_OnlyAssignedHUs = "AssignedHUsOnly";
+	@Override
+	public void setRawMaterialsIssueStrategy (final @Nullable java.lang.String RawMaterialsIssueStrategy)
+	{
+		set_Value (COLUMNNAME_RawMaterialsIssueStrategy, RawMaterialsIssueStrategy);
+	}
+
+	@Override
+	public java.lang.String getRawMaterialsIssueStrategy() 
+	{
+		return get_ValueAsString(COLUMNNAME_RawMaterialsIssueStrategy);
 	}
 
 	@Override
