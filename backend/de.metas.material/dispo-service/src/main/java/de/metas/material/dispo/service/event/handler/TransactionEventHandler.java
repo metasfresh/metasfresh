@@ -202,6 +202,11 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	@NonNull
 	private Flag extractPickDirectlyIfFeasible(@NonNull final Candidate candidate)
 	{
+		if (candidate.getBusinessCase() == null)
+		{
+			throw new AdempiereException("Unsupported null business case; candidate=" + candidate);
+		}
+
 		final Flag pickDirectlyIfFeasible;
 		switch (candidate.getBusinessCase())
 		{
@@ -217,7 +222,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				break;
 			default:
 				throw Check.fail("Unsupported business case {}; candidate={}",
-								 candidate.getBusinessCase(), candidate);
+						candidate.getBusinessCase(), candidate);
 		}
 		return pickDirectlyIfFeasible;
 	}
@@ -263,7 +268,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					event.getShipmentId().getInOutLineId().getRepoId(),
 					changedTransactionDetail.getQuantity());
 
-			final Candidate candidate = Candidate.builderForEventDescriptor(event.getEventDescriptor())
+			return Candidate.builderForEventDescriptor(event.getEventDescriptor())
 					.type(CandidateType.UNEXPECTED_DECREASE)
 					.businessCase(CandidateBusinessCase.SHIPMENT)
 					.materialDescriptor(event.getMaterialDescriptor().withQuantity(changedTransactionDetail.getQuantity()))
@@ -271,8 +276,6 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					.businessCaseDetail(demandDetail)
 					.transactionDetail(changedTransactionDetail)
 					.build();
-
-			return candidate;
 		}
 		else
 		{
@@ -635,7 +638,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		return transactionDetailsSet
 				.stream()
 				.min(Comparator.comparing(TransactionDetail::getTransactionDate))
-				.get() // we know there is at least changedTransactionDetail, so we can call get() witch confidence
+				.orElseThrow(() -> new AdempiereException("Expected at least one transaction detail"))
 				.getTransactionDate();
 	}
 

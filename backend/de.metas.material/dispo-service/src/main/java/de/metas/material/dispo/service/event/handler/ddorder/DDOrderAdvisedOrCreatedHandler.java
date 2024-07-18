@@ -1,6 +1,5 @@
 package de.metas.material.dispo.service.event.handler.ddorder;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -126,24 +125,17 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 	}
 
 	/**
-	 * @return the groupId of the candidates that were created or updated.
+	 *
 	 */
-	protected final ImmutableSet<MaterialDispoGroupId> handleAbstractDDOrderEvent(@NonNull final AbstractDDOrderEvent ddOrderEvent)
+	protected final void createAndProcessCandidates(@NonNull final AbstractDDOrderEvent ddOrderEvent)
 	{
-		final ImmutableSet.Builder<MaterialDispoGroupId> groupIds = ImmutableSet.builder();
-
 		for (final DDOrderLine ddOrderLine : ddOrderEvent.getDdOrder().getLines())
 		{
-			final MaterialDispoGroupId groupId = createAndProcessCandidatePair(ddOrderEvent, ddOrderLine);
-			if (groupId != null)
-			{
-				groupIds.add(groupId);
-			}
+			createAndProcessCandidatePair(ddOrderEvent, ddOrderLine);
 		}
-		return groupIds.build();
 	}
 
-	private MaterialDispoGroupId createAndProcessCandidatePair(
+	private void createAndProcessCandidatePair(
 			final AbstractDDOrderEvent ddOrderEvent,
 			final DDOrderLine ddOrderLine)
 	{
@@ -215,7 +207,6 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 			handleMainDataUpdates((DDOrderCreatedEvent)ddOrderEvent, ddOrderLine);
 		}
 
-		return groupId;
 	}
 
 	private CandidateBuilder createDemandCandidateBuilder(final AbstractDDOrderEvent ddOrderEvent, final DDOrderLine ddOrderLine)

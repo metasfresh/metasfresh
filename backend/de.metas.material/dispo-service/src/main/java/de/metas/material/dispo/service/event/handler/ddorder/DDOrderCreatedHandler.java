@@ -82,7 +82,7 @@ public class DDOrderCreatedHandler extends DDOrderAdvisedOrCreatedHandler<DDOrde
 	@Override
 	public void handleEvent(DDOrderCreatedEvent event)
 	{
-		handleAbstractDDOrderEvent(event);
+		createAndProcessCandidates(event);
 	}
 
 	@Override
