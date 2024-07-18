@@ -6,11 +6,7 @@ Feature: create distribution to balance demand
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-14T08:00:00+00:00
-
-  @from:cucumber
-  @Id:S0171.300
-  Scenario: create distribution to balance demand
-    Given metasfresh contains M_Products:
+    And metasfresh contains M_Products:
       | Identifier |
       | p_1        |
     And metasfresh contains M_PricingSystems
@@ -33,7 +29,7 @@ Feature: create distribution to balance demand
       | location_1 | bPLocation_1 | bpartner_1               |
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsInTransit |
-#      | inTransit      | bpartner_1    | location_1             | true        |
+      | inTransit      | bpartner_1    | location_1             | true        |
       | sourceWH       | bpartner_1    | location_1             | false       |
       | targetWH       | bpartner_1    | location_1             | false       |
     And contains M_Shippers
@@ -49,7 +45,10 @@ Feature: create distribution to balance demand
       | M_Product_ID | IsCreatePlan | DD_NetworkDistribution_ID | M_Warehouse_ID |
       | p_1          | true         | ddNetwork_1               | targetWH       |
 
-    And metasfresh contains C_Orders:
+  @from:cucumber
+  @Id:S0171.300
+  Scenario: create distribution to balance demand
+    When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  | OPT.M_Warehouse_ID.Identifier |
       | SO         | true    | bpartner_1               | 2022-07-04  | 2022-07-04T00:00:00Z | targetWH                      |
     And metasfresh contains C_OrderLines:
@@ -57,7 +56,7 @@ Feature: create distribution to balance demand
       | ol_1       | SO                    | p_1                     | 14         |
     And the order identified by SO is completed
 
-    And after not more than 60s, the MD_Candidate table has only the following records
+    Then after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID |
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | targetWH       |
       | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |
