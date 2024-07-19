@@ -59,16 +59,18 @@ public class M_Warehouse_StepDef
 	@And("load M_Warehouse:")
 	public void load_M_Warehouse(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final String value = row.getAsString(COLUMNNAME_Value);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_Warehouse_ID)
+				.forEach(row -> {
+					final String value = row.getAsString(COLUMNNAME_Value);
 
-			final I_M_Warehouse warehouseRecord = queryBL.createQueryBuilder(I_M_Warehouse.class)
-					.addEqualsFilter(COLUMNNAME_Value, value)
-					.create()
-					.firstOnlyNotNull(I_M_Warehouse.class);
+					final I_M_Warehouse warehouseRecord = queryBL.createQueryBuilder(I_M_Warehouse.class)
+							.addEqualsFilter(COLUMNNAME_Value, value)
+							.create()
+							.firstOnlyNotNull(I_M_Warehouse.class);
 
-			row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID).put(warehouseTable, warehouseRecord);
-		});
+					row.getAsIdentifier().put(warehouseTable, warehouseRecord);
+				});
 	}
 
 	@And("metasfresh contains M_Warehouse:")
