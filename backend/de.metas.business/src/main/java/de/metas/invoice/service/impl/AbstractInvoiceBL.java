@@ -2107,4 +2107,27 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return PaymentTermId.ofRepoId(getById(invoiceId)
 				.getC_PaymentTerm_ID());
 	}
+
+	@Override
+	public boolean hasInvoicesWithForexContracts(
+			@NonNull final OrderId orderId,
+			@NonNull final Set<ForexContractId> contractIds)
+	{
+		Check.assumeNotEmpty(contractIds, "contractIds shall not be empty");
+
+		return getByOrderId(orderId)
+				.stream()
+				.map(InvoiceDAO::extractForeignContractRef)
+				.filter(Objects::nonNull)
+				.map(ForexContractRef::getForexContractId)
+				.anyMatch(contractIds::contains);
+	}
+
+	@Override
+	@NonNull
+	public PaymentTermId getPaymentTermId(@NonNull final InvoiceId invoiceId)
+	{
+		return PaymentTermId.ofRepoId(getById(invoiceId)
+				.getC_PaymentTerm_ID());
+	}
 }
