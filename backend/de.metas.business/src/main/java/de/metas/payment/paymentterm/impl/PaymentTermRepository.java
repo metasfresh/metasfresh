@@ -8,6 +8,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.BaseLineType;
 import de.metas.payment.paymentterm.CalculationMethod;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
