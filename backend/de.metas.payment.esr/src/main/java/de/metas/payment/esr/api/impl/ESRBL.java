@@ -52,9 +52,11 @@ import org.compiere.model.MOrg;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -119,16 +121,35 @@ public class ESRBL implements IESRBL
 	private boolean isReversal(I_C_Invoice invoice) {return invoice.getReversal_ID() > 0;}
 
 
+	@Nullable
 	private I_C_BP_BankAccount retrieveEsrBankAccount(@NonNull final I_C_Invoice invoiceRecord)
 	{
-		// get the account number for the org of the invoice
-		final int orgID = invoiceRecord.getAD_Org_ID();
-		final I_AD_Org org = MOrg.get(Env.getCtx(), orgID);
+		// check if we have a bank account in invoice already
+		Optional<I_C_BP_BankAccount> optionalBankAccount = retrieveEsrInvoiceCadidateBankAccountIfExists(invoiceRecord);
 
-		final List<I_C_BP_BankAccount> bankAccounts = esrBankAccountDAO.fetchOrgEsrAccounts(org);
+		if (optionalBankAccount.isEmpty())
+		{
+			// get the account number for the org of the invoice
+			final int orgID = invoiceRecord.getAD_Org_ID();
+			final I_AD_Org org = MOrg.get(Env.getCtx(), orgID);
 
-		Check.assume(!bankAccounts.isEmpty(), "No ESR bank account found.");
-		return bankAccounts.get(0);
+			final List<I_C_BP_BankAccount> bankAccounts = esrBankAccountDAO.fetchOrgEsrAccounts(org);
+
+			Check.assume(!bankAccounts.isEmpty(), "No ESR bank account found.");
+			return bankAccounts.get(0);
+		}
+		else
+		{
+			return optionalBankAccount.get();
+		}
+
+	}
+
+
+	private Optional<I_C_BP_BankAccount> retrieveEsrInvoiceCadidateBankAccountIfExists(@NonNull final I_C_Invoice invoiceRecord)
+	{
+		final I_C_BP_BankAccount orgBankAccount = (I_C_BP_BankAccount)invoiceRecord.getOrg_BP_Account();
+		return Optional.ofNullable(orgBankAccount);
 	}
 
 	/**
