@@ -448,8 +448,7 @@ public class MD_Candidate_StepDef
 				softly.assertThat(actualAttributesKeys).as("asi").isEqualTo(expectedAttributesKey);
 			}
 
-			final WarehouseId warehouseId = tableRow.getWarehouseId();
-			if (warehouseId != null)
+			if (tableRow.getWarehouseId() != null)
 			{
 				softly.assertThat(materialDispoRecord.getMaterialDescriptor().getWarehouseId()).as("warehouseId").isEqualTo(tableRow.getWarehouseId());
 			}

@@ -32,6 +32,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 
@@ -150,6 +151,21 @@ public class StepDefUtil
 			@NonNull final ItemProvider<T> worker) throws InterruptedException
 	{
 		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, (Supplier<String>)null);
+	}
+
+	public <T> T tryAndWaitForItem(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final IQuery<T> query) throws InterruptedException
+	{
+		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, toItemProvider(query));
+	}
+
+	private static <T> @NonNull ItemProvider<T> toItemProvider(final @NonNull IQuery<T> query)
+	{
+		return () -> query.firstOnlyOptional()
+				.map(ItemProvider.ProviderResult::resultWasFound)
+				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound("No item found for " + query));
 	}
 
 	public void tryAndWait(

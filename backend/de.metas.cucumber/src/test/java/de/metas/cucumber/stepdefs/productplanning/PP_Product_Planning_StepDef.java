@@ -48,6 +48,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
@@ -104,42 +105,63 @@ public class PP_Product_Planning_StepDef
 	}
 
 	@Given("metasfresh contains PP_Product_Plannings")
-	public void add_PP_Product_Planning(@NonNull final DataTable dataTable)
+	public void createOrUpdate(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::createPP_Product_Planning);
+		DataTableRows.of(dataTable).forEach(row -> createOrUpdate(row));
 	}
 
-	private void createPP_Product_Planning(@NonNull final DataTableRow tableRow)
+	@Given("update existing PP_Product_Plannings")
+	public void updateExisting(@NonNull final DataTable dataTable)
 	{
-		final I_M_Product productRecord = tableRow.getAsIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Product_ID).lookupIn(productTable);
-		final OrgId orgId = OrgId.ofRepoIdOrAny(productRecord.getAD_Org_ID());
-		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
-		final WarehouseId warehouseId = tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID).map(warehouseTable::getId).orElse(null);
+		DataTableRows.of(dataTable).forEach(this::updateExisting);
+	}
 
-		final ProductPlanning existingProductPlanning = getExistingProductPlanning(orgId, warehouseId, productId).orElse(null);
+	public void updateExisting(@NonNull final DataTableRow row)
+	{
+		final ProductPlanning productPlanning = getExistingProductPlanning(row).orElseThrow(() -> new AdempiereException("No product planning found for " + row));
+		createOrUpdate(productPlanning.toBuilder(), row);
+	}
 
-		final ProductPlanningBuilder builder = existingProductPlanning != null ? existingProductPlanning.toBuilder() : ProductPlanning.builder();
+	private void createOrUpdate(@NonNull final DataTableRow row)
+	{
+		final ProductPlanningBuilder builder = getExistingProductPlanning(row)
+				.map(ProductPlanning::toBuilder)
+				.orElseGet(() -> ProductPlanning.builder()
+						.plantId(TEST_PLANT_ID)
+						.workflowId(WORKFLOW_ID)
+						.isAttributeDependant(false)
+						.isPurchased(false)
+						.isManufactured(true));
 
-		builder.productId(productId);
-		builder.orgId(orgId);
-		builder.plantId(TEST_PLANT_ID);
-		builder.workflowId(tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_Workflow_ID).map(workflowTable::getId).orElse(WORKFLOW_ID));
-		tableRow.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan).ifPresent(builder::isCreatePlan);
-		builder.isAttributeDependant(tableRow.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).orElse(false));
-		builder.isManufactured(true);
+		createOrUpdate(builder, row);
+	}
 
-		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
+	private void createOrUpdate(@NonNull final ProductPlanningBuilder builder, @NonNull final DataTableRow row)
+	{
+		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Product_ID)
+				.map(productTable::get)
+				.ifPresent(product -> {
+					builder.productId(ProductId.ofRepoId(product.getM_Product_ID()));
+					builder.orgId(OrgId.ofRepoIdOrAny(product.getAD_Org_ID()));
+				});
+
+		row.getAsOptionalIdentifier(COLUMNNAME_AD_Workflow_ID).map(workflowTable::getId).ifPresent(builder::workflowId);
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan).ifPresent(builder::isCreatePlan);
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).ifPresent(builder::isAttributeDependant);
+
+		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
 				.map(productBomVersionsTable::getId)
 				.ifPresent(builder::bomVersionsId);
 
-		final boolean isPurchased = tableRow.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsPurchased).orElse(false);
-		if (isPurchased)
-		{
-			builder.isPurchased(true);
-			builder.isManufactured(false);
-		}
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsPurchased).ifPresent(isPurchased -> {
+			builder.isPurchased(isPurchased);
+			if (isPurchased)
+			{
+				builder.isManufactured(false);
+			}
+		});
 
-		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID)
+		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID)
 				.map(attributeSetInstanceTable::getId)
 				.ifPresent(asiId -> {
 					final AttributesKey storageAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
@@ -147,38 +169,37 @@ public class PP_Product_Planning_StepDef
 					builder.storageAttributesKey(storageAttributesKey.getAsString());
 				});
 
-		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_DD_NetworkDistribution_ID)
+		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_DD_NetworkDistribution_ID)
 				.map(ddNetworkTable::getId)
 				.ifPresent(distributionNetworkId -> {
 					builder.distributionNetworkId(distributionNetworkId);
 					builder.isManufactured(false);
 				});
 
-		if (warehouseId != null)
-		{
-			builder.warehouseId(warehouseId);
-		}
+		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID)
+				.map(warehouseTable::getId)
+				.ifPresent(builder::warehouseId);
 
-		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
+		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
 				.map(bomVersionsTable::getId)
 				.ifPresent(builder::bomVersionsId);
-		tableRow.getAsOptionalQuantity(
+		row.getAsOptionalQuantity(
 						I_PP_Product_Planning.COLUMNNAME_MaxManufacturedQtyPerOrderDispo,
 						I_PP_Product_Planning.COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID,
 						uomString -> uomDAO.getByX12DE355(X12DE355.ofCode(uomString))
 				)
 				.ifPresent(builder::maxManufacturedQtyPerOrderDispo);
 
-		tableRow.getAsOptionalInt(I_PP_Product_Planning.COLUMNNAME_SeqNo)
+		row.getAsOptionalInt(I_PP_Product_Planning.COLUMNNAME_SeqNo)
 				.ifPresent(builder::seqNo);
-		tableRow.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsMatured)
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsMatured)
 				.ifPresent(builder::isMatured);
-		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_ID)
+		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_ID)
 				.map(maturingConfigurationTable::get)
 				.map(I_M_Maturing_Configuration::getM_Maturing_Configuration_ID)
 				.map(MaturingConfigId::ofRepoId)
 				.ifPresent(builder::maturingConfigId);
-		tableRow.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_Line_ID)
+		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_Line_ID)
 				.map(maturingConfigurationLineTable::get)
 				.map(I_M_Maturing_Configuration_Line::getM_Maturing_Configuration_Line_ID)
 				.map(MaturingConfigLineId::ofRepoId)
@@ -186,7 +207,23 @@ public class PP_Product_Planning_StepDef
 
 		final ProductPlanning productPlanning = productPlanningDAO.save(builder.build());
 
-		tableRow.getAsOptionalIdentifier().ifPresent(identifier -> productPlanningTable.put(identifier, productPlanning));
+		row.getAsOptionalIdentifier().ifPresent(identifier -> productPlanningTable.putOrReplace(identifier, productPlanning));
+	}
+
+	@NonNull
+	private Optional<ProductPlanning> getExistingProductPlanning(final DataTableRow row)
+	{
+		final ProductPlanning productPlanning = row.getAsOptionalIdentifier().flatMap(productPlanningTable::getOptional).orElse(null);
+		if (productPlanning != null)
+		{
+			return Optional.of(productPlanning);
+		}
+
+		final I_M_Product productRecord = row.getAsIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Product_ID).lookupIn(productTable);
+		final OrgId orgId = OrgId.ofRepoIdOrAny(productRecord.getAD_Org_ID());
+		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
+		final WarehouseId warehouseId = row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID).map(warehouseTable::getId).orElse(null);
+		return getExistingProductPlanning(orgId, warehouseId, productId);
 	}
 
 	@NonNull
