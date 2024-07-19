@@ -276,7 +276,7 @@ public class CandidateRepositoryWriteServiceTests
 
 		final I_MD_Candidate record = filtered.get(0);
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId().getRepoId());
-		assertThat(record.getMD_Candidate_BusinessCase()).isEqualTo(productionCandidate.getBusinessCase().toString());
+		assertThat(CandidateBusinessCase.ofNullableCode(record.getMD_Candidate_BusinessCase())).isEqualTo(productionCandidate.getBusinessCase());
 		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
 
 		final I_MD_Candidate_Prod_Detail productionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Prod_Detail.class).create().firstOnly(I_MD_Candidate_Prod_Detail.class);
@@ -382,7 +382,7 @@ public class CandidateRepositoryWriteServiceTests
 
 		final I_MD_Candidate record = filtered.get(0);
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId().getRepoId());
-		assertThat(record.getMD_Candidate_BusinessCase()).isEqualTo(distributionCandidate.getBusinessCase().toString());
+		assertThat(CandidateBusinessCase.ofNullableCode(record.getMD_Candidate_BusinessCase())).isEqualTo(distributionCandidate.getBusinessCase());
 		assertThat(record.getM_Product_ID()).isEqualTo(distributionCandidate.getMaterialDescriptor().getProductId());
 
 		final I_MD_Candidate_Dist_Detail distributionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Dist_Detail.class).create().firstOnly(I_MD_Candidate_Dist_Detail.class);
@@ -417,7 +417,7 @@ public class CandidateRepositoryWriteServiceTests
 
 		final I_MD_Candidate record = filtered.get(0);
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId().getRepoId());
-		assertThat(record.getMD_Candidate_BusinessCase()).isEqualTo(productionCandidate.getBusinessCase().toString());
+		assertThat(CandidateBusinessCase.ofNullableCode(record.getMD_Candidate_BusinessCase())).isEqualTo(productionCandidate.getBusinessCase());
 		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
 		assertThat(record.getM_Forecast_ID()).isEqualTo(71);
 
@@ -450,7 +450,7 @@ public class CandidateRepositoryWriteServiceTests
 
 		final I_MD_Candidate record = filtered.get(0);
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId().getRepoId());
-		assertThat(record.getMD_Candidate_BusinessCase()).isEqualTo(productionCandidate.getBusinessCase().toString());
+		assertThat(CandidateBusinessCase.ofNullableCode(record.getMD_Candidate_BusinessCase())).isEqualTo(productionCandidate.getBusinessCase());
 		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
 		assertThat(record.getM_Forecast_ID()).as("The demandDetail's forecastId shall be set to the MD_Candidate").isEqualTo(62);
 

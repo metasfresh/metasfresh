@@ -301,7 +301,7 @@ public class CandidateRepositoryWriteService
 
 		if (candidate.getBusinessCase() != null)
 		{
-			candidateRecord.setMD_Candidate_BusinessCase(candidate.getBusinessCase().toString());
+			candidateRecord.setMD_Candidate_BusinessCase(candidate.getBusinessCase().getCode());
 		}
 
 		if (!candidate.getParentId().isNull())

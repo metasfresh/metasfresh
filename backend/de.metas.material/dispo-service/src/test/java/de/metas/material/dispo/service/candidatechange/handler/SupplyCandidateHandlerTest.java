@@ -238,7 +238,7 @@ public class SupplyCandidateHandlerTest
 		final I_MD_Candidate supplyRecord = filter(CandidateType.SUPPLY).get(0);
 
 		assertThat(supplyRecord.getQty()).isEqualByComparingTo(new BigDecimal("23"));
-		assertThat(supplyRecord.getMD_Candidate_BusinessCase()).isEqualTo(CandidateBusinessCase.PRODUCTION.toString());
+		assertThat(CandidateBusinessCase.ofNullableCode(supplyRecord.getMD_Candidate_BusinessCase())).isEqualTo(CandidateBusinessCase.PRODUCTION);
 		assertThat(stockRecord.getQty()).isEqualByComparingTo(new BigDecimal("11").add(new BigDecimal("23")));
 
 		// note that now, the stock record shall have the same SeqNo as it's "actual" record

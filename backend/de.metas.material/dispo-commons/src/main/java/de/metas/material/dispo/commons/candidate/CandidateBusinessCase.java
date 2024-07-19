@@ -59,7 +59,14 @@ public enum CandidateBusinessCase implements ReferenceListAwareEnum
 
 	public static CandidateBusinessCase ofCode(@NonNull final String code) {return index.ofCode(code);}
 
+	@Nullable
+	public static CandidateBusinessCase ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
+
 	public static String toCode(@Nullable final CandidateBusinessCase businessCase) {return businessCase == null ? null : businessCase.getCode();}
+
+	@Deprecated
+	@Override
+	public String toString() {return super.toString();}
 
 	public boolean isMatching(@Nullable final BusinessCaseDetail detail) {return this.detailClass.isInstance(detail);}
 }

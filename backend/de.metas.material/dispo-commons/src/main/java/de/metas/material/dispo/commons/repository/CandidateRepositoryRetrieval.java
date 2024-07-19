@@ -151,7 +151,7 @@ public class CandidateRepositoryRetrieval
 
 		final CandidateBuilder builder = createAndInitializeBuilder(candidateRecordOrNull);
 
-		final CandidateBusinessCase businessCase = getBusinesCaseOrNull(candidateRecordOrNull);
+		final CandidateBusinessCase businessCase = getBusinessCaseOrNull(candidateRecordOrNull);
 		builder.businessCase(businessCase);
 
 		final CandidateId candidateId = CandidateId.ofRepoId(candidateRecordOrNull.getMD_Candidate_ID());
@@ -185,14 +185,9 @@ public class CandidateRepositoryRetrieval
 	}
 
 	@Nullable
-	private static CandidateBusinessCase getBusinesCaseOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private static CandidateBusinessCase getBusinessCaseOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		CandidateBusinessCase subType = null;
-		if (!Check.isEmpty(candidateRecord.getMD_Candidate_BusinessCase()))
-		{
-			subType = CandidateBusinessCase.valueOf(candidateRecord.getMD_Candidate_BusinessCase());
-		}
-		return subType;
+		return CandidateBusinessCase.ofNullableCode(candidateRecord.getMD_Candidate_BusinessCase());
 	}
 
 	private static CandidateBuilder createAndInitializeBuilder(@NonNull final I_MD_Candidate candidateRecord)
