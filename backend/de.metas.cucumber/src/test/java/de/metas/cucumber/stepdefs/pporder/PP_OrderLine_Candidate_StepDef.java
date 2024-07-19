@@ -80,7 +80,7 @@ public class PP_OrderLine_Candidate_StepDef
 	@And("^after not more than (.*)s, PP_OrderLine_Candidates are found$")
 	public void validatePP_Order_candidate(
 			final int timeoutSec,
-			@NonNull final DataTable dataTable) throws InterruptedException
+			@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_PP_OrderLine_Candidate.Table_Name)
