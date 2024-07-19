@@ -51,6 +51,8 @@ import org.eevolution.model.X_PP_Product_BOM;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,6 +66,7 @@ public class PP_Product_Bom_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final int DEFAULT_C_DOCTYPE_ID = 541027;
+	private static final LocalDate DEFAULT_ValidFrom = LocalDate.parse("2000-01-01");
 
 	private final M_Product_StepDefData productTable;
 	private final PP_Product_BOM_StepDefData productBOMTable;
@@ -110,7 +113,9 @@ public class PP_Product_Bom_StepDef
 
 	private void createPP_Product_BOMLine(@NonNull final DataTableRow row)
 	{
-		final ProductBOMId bomId = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID).lookupIdIn(productBOMTable);
+		final I_PP_Product_BOM bom = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID).lookupIn(productBOMTable);
+		final ProductBOMId bomId = ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID());
+		// final ProductBOMId bomId = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID).lookupIdIn(productBOMTable);
 		final I_M_Product productRecord = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupIn(productTable);
 
 		final I_PP_Product_BOMLine bomLine = CoalesceUtil.coalesceSuppliersNotNull(
@@ -127,19 +132,21 @@ public class PP_Product_Bom_StepDef
 
 		bomLine.setComponentType(BOMComponentType.Component.getCode());
 
-		final Timestamp validFrom = row.getAsLocalDateTimestamp(I_PP_Product_BOMLine.COLUMNNAME_ValidFrom);
-		final BigDecimal qtyBatch = row.getAsBigDecimal(I_PP_Product_BOMLine.COLUMNNAME_QtyBatch);
+		final Timestamp validFrom = row.getAsOptionalLocalDate(I_PP_Product_BOMLine.COLUMNNAME_ValidFrom)
+				.map(localDate -> Timestamp.valueOf(localDate.atStartOfDay()))
+				.orElseGet(bom::getValidFrom);
 		bomLine.setValidFrom(validFrom);
 
 		final boolean isPercentage = row.getAsOptionalBoolean(I_PP_Product_BOMLine.COLUMNNAME_IsQtyPercentage).orElseFalse();
+		final BigDecimal qty = row.getAsBigDecimal(I_PP_Product_BOMLine.COLUMNNAME_QtyBatch);
 		if (isPercentage)
 		{
 			bomLine.setIsQtyPercentage(true);
-			bomLine.setQtyBatch(qtyBatch);
+			bomLine.setQtyBatch(qty);
 		}
 		else
 		{
-			bomLine.setQtyBOM(qtyBatch);
+			bomLine.setQtyBOM(qty);
 		}
 
 		row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)
@@ -157,7 +164,7 @@ public class PP_Product_Bom_StepDef
 
 		final I_M_Product productRecord = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_M_Product_ID).lookupIn(productTable);
 
-		final Timestamp validFrom = row.getAsLocalDateTimestamp(I_PP_Product_BOM.COLUMNNAME_ValidFrom);
+		final LocalDateTime validFrom = row.getAsOptionalLocalDate(I_PP_Product_BOM.COLUMNNAME_ValidFrom).orElse(DEFAULT_ValidFrom).atStartOfDay();
 
 		final I_PP_Product_BOM productBOMRecord = getExistingBOM(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.orElseGet(() -> newInstance(I_PP_Product_BOM.class));
@@ -168,7 +175,7 @@ public class PP_Product_Bom_StepDef
 		productBOMRecord.setName(productRecord.getName());
 		productBOMRecord.setBOMType(BOMType.CurrentActive.getCode());
 		productBOMRecord.setBOMUse(BOMUse.Manufacturing.getCode());
-		productBOMRecord.setValidFrom(validFrom);
+		productBOMRecord.setValidFrom(Timestamp.valueOf(validFrom));
 		productBOMRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
 		productBOMRecord.setC_DocType_ID(DEFAULT_C_DOCTYPE_ID);
 		productBOMRecord.setDateDoc(TimeUtil.asTimestamp(Instant.now()));
