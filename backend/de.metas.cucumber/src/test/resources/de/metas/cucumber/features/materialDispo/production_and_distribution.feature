@@ -55,9 +55,9 @@ Feature: Production + Distribution material dispo scenarios
 
 
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID | DD_NetworkDistribution_ID | M_Warehouse_ID |
-      | ppln_1     | bom_product  | bomVersions_1             |                           | production_WH  |
-      | ppln_2     | component    |                           | N1                        | production_WH  |
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID | DD_NetworkDistribution_ID | M_Warehouse_ID | IsCreatePlan |
+      | ppln_1     | bom_product  | bomVersions_1             |                           | production_WH  |              |
+      | ppln_2     | component    |                           | N1                        | production_WH  | Y            |
 
     And metasfresh contains C_BPartners:
       | Identifier | IsCustomer | M_PricingSystem_ID |
@@ -80,10 +80,14 @@ Feature: Production + Distribution material dispo scenarios
       | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID |
       | oc_1                  | component    | 10         | PCE               | CO            | boml_1                |
 
+    And after not more than 60s, following DD_Order_Candidates are found
+      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed |
+      | component    | rawMaterials_WH     | production_WH    | 10  | N         |
+
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID |
-      | 1          | DEMAND            | SHIPMENT                  | bom_product  | 2021-04-16T21:00:00Z | -10 | -10                    | production_WH  |
-      | 2          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 10  | 0                      | production_WH  |
-      | 3          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | -10 | -10                    | production_WH  |
-      | 4          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | 0                      | production_WH  |
-      | 5          | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -10 | -10                    | sourceWH       |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID  |
+      | 1          | DEMAND            | SHIPMENT                  | bom_product  | 2021-04-16T21:00:00Z | -10 | -10                    | production_WH   |
+      | 2          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 10  | 0                      | production_WH   |
+      | 3          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | -10 | -10                    | production_WH   |
+      | 4          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | 0                      | production_WH   |
+      | 5          | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -10 | -10                    | rawMaterials_WH |
