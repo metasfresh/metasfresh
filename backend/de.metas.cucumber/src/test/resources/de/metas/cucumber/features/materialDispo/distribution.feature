@@ -47,7 +47,7 @@ Feature: create distribution to balance demand
 
   @from:cucumber
   @Id:S0171.300
-  Scenario: create distribution to balance demand
+  Scenario: One distribution candidate is created to balance the full demand of the sales order
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  | OPT.M_Warehouse_ID.Identifier |
       | SO         | true    | bpartner_1               | 2022-07-04  | 2022-07-04T00:00:00Z | targetWH                      |
@@ -65,3 +65,29 @@ Feature: create distribution to balance demand
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed |
       | c1         | p_1          | sourceWH            | targetWH         | 14  | N         |
+
+  @from:cucumber
+  @Id:S0171.300
+  Scenario: One distribution candidate is created to partially balance the demand of the sales order. The other part is covered by inventory
+    And metasfresh initially has this MD_Candidate data
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID |
+      | s_1        | INVENTORY_UP      |                           | p_1          | 2021-07-01T21:00:00Z | 3   | 3                      | targetWH       |
+
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  | OPT.M_Warehouse_ID.Identifier |
+      | SO         | true    | bpartner_1               | 2022-07-04  | 2022-07-04T00:00:00Z | targetWH                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | SO                    | p_1                     | 14         |
+    And the order identified by SO is completed
+
+    Then after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID |
+      | s_1        | INVENTORY_UP      |                           | p_1          | 2021-07-01T21:00:00Z | 3   | 3                      | targetWH       |
+      | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -11                    | targetWH       |
+      | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 11  | 0                      | targetWH       |
+      | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -11 | -11                    | sourceWH       |
+      | c_4        | SUPPLY            |                           | p_1          | 2022-07-04T00:00:00Z | 11  | 0                      | sourceWH       |
+    And after not more than 60s, following DD_Order_Candidates are found
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed |
+      | c1         | p_1          | sourceWH            | targetWH         | 11  | N         |

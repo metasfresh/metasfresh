@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.material.dispo;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -152,27 +153,27 @@ public class MD_Candidate_StepDef
 	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
 		table.forEach((tableRow) -> {
+			final WarehouseId warehouseId = CoalesceUtil.coalesceNotNull(tableRow.getWarehouseId(), StepDefConstants.WAREHOUSE_ID);
+			
 			final I_MD_Candidate mdCandidateRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
 			mdCandidateRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			mdCandidateRecord.setM_Product_ID(tableRow.getProductId().getRepoId());
-			mdCandidateRecord.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
+			mdCandidateRecord.setM_Warehouse_ID(warehouseId.getRepoId());
 			mdCandidateRecord.setMD_Candidate_Type(tableRow.getType().getCode());
 			mdCandidateRecord.setMD_Candidate_BusinessCase(CandidateBusinessCase.toCode(tableRow.getBusinessCase()));
 			mdCandidateRecord.setQty(tableRow.getQty());
 			mdCandidateRecord.setDateProjected(TimeUtil.asTimestamp(tableRow.getTime()));
 
 			setAttributeSetInstance(mdCandidateRecord, tableRow);
-
 			InterfaceWrapperHelper.saveRecord(mdCandidateRecord);
 
 			mdCandidateRecord.setSeqNo(mdCandidateRecord.getMD_Candidate_ID());
-
 			InterfaceWrapperHelper.saveRecord(mdCandidateRecord);
 
 			final I_MD_Candidate mdStockCandidateRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
 			mdStockCandidateRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			mdStockCandidateRecord.setM_Product_ID(tableRow.getProductId().getRepoId());
-			mdStockCandidateRecord.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
+			mdStockCandidateRecord.setM_Warehouse_ID(warehouseId.getRepoId());
 			mdStockCandidateRecord.setMD_Candidate_Type(CandidateType.STOCK.getCode());
 			mdStockCandidateRecord.setSeqNo(mdCandidateRecord.getMD_Candidate_ID());
 			final boolean isDemand = CandidateType.DEMAND.equals(tableRow.getType()) || CandidateType.INVENTORY_DOWN.equals(tableRow.getType());
