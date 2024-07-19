@@ -23,6 +23,7 @@ import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddordercandidate.AbstractDDOrderCandidateEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.context.annotation.Profile;
@@ -77,6 +78,10 @@ public class DDOrderCandidateAdvisedHandler
 		if (event.isAdvisedToCreateDDOrderCandidate())
 		{
 			requestMaterialOrderService.requestMaterialOrderForCandidates(group, event.getTraceId());
+		}
+		else
+		{
+			Loggables.addLog("Skip creating DD_Order_Candidate because isAdvisedToCreateDDOrderCandidate=false (maybe because PP_Product_Planning.IsCreatePlan=false?)");
 		}
 	}
 
