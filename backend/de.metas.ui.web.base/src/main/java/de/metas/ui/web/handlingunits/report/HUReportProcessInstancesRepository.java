@@ -235,12 +235,13 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 	{
 		if (HUReportAwareViews.isHUReportAwareViewRow(row))
 		{
-			if (!row.applies(descriptor.getProcessDescriptor()))
+			final HUReportAwareViewRow huRow = HUReportAwareViews.cast(row);
+
+			if (!huRow.applies(descriptor.getProcessDescriptor()))
 			{
 				return false;
 			}
-
-			final HUReportAwareViewRow huRow = HUReportAwareViews.cast(row);
+			
 			final HuUnitType huUnitType = huRow.getHUUnitTypeOrNull();
 			return huUnitType != null && descriptor.appliesToHUUnitType(huUnitType);
 		}
