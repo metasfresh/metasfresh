@@ -108,4 +108,8 @@ public class SwaggerDocConstants
 	public static final String PAYMENT_TERM_IDENTIFIER_DOC = "Identifier of the paymentTerm in question. Can be\n"
 			+ "* a plain `<C_PaymentTerm_ID>`\n"
 			+ "* or something like `val-<C_PaymentTerm.Value>`\n";
+
+	public static final String BANK_ACCOUNT_IDENTIFIER_DOC = "Identifier of the C_BP_BankAccount in question. Can be\n"
+			+ "* a plain `<C_BP_BankAccount_ID>`\n"
+			+ "* or something like `val-<C_BP_BankAccount.IBAN>`\n";
 }

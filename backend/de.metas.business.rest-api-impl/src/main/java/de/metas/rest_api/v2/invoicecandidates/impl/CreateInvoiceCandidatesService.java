@@ -26,13 +26,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.rest_api.v2.JsonInvoiceRule;
@@ -100,6 +103,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
@@ -110,6 +114,7 @@ import static java.math.BigDecimal.ZERO;
 @Service
 public class CreateInvoiceCandidatesService
 {
+	public static final IBPartnerOrgBL orgBL = Services.get(IBPartnerOrgBL.class);
 	private final DocTypeService docTypeService;
 	private final CurrencyService currencyService;
 
@@ -199,6 +204,8 @@ public class CreateInvoiceCandidatesService
 		syncBPartnerToCandidate(candidate, orgId, item);
 
 		syncTargetDocTypeToCandidate(candidate, orgId, item.getInvoiceDocType());
+
+		syncBankAccountIdToCandidate(candidate, item, orgId);
 
 		syncDiscountOverrideToCandidate(candidate, item.getDiscountOverride());
 
@@ -476,6 +483,42 @@ public class CreateInvoiceCandidatesService
 		candidate.priceEnteredOverride(price);
 
 	}
+
+	@Nullable
+	private BankAccountId syncBankAccountIdToCandidate(
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
+			@NonNull final JsonCreateInvoiceCandidatesRequestItem item,
+			@NonNull final OrgId orgId)
+	{
+		if (Check.isNotBlank(item.getBankAccountIdentifier()))
+		{
+
+			final Optional<BPartnerId> orgBPartnerIdOptional = orgBL.retrieveLinkedBPartnerId(orgId);
+			if (orgBPartnerIdOptional.isPresent())
+			{
+				final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.ofOrNull(orgBPartnerIdOptional.get().toString());
+
+				final Optional<MetasfreshId> metasfreshId = jsonRetrieverService.resolveBankAccountIdentifier(OrgId.MAIN,
+						bpartnerIdentifier,
+						ExternalIdentifier.of(item.getBankAccountIdentifier()));
+
+				if (metasfreshId.isPresent())
+				{
+					final BankAccountId bankAccountId = BankAccountId.ofRepoId(metasfreshId.get().getValue());
+					candidate.bankAccountId(bankAccountId);
+					return bankAccountId;
+				}
+				return null;
+			}
+			return null;
+		}
+		else
+		{
+			return null;
+		}
+
+	}
+
 
 	@Nullable
 	private ProductPrice createProductPriceOrNull(
