@@ -149,6 +149,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	I_C_UOM getC_UOM(I_M_Transaction mtrx);
 
+	boolean isDestroyed(HuId huId);
+
 	/**
 	 * @return true if HU was destroyed
 	 */
@@ -297,6 +299,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	Set<HuPackingInstructionsIdAndCaption> getLUPIs(
 			@NonNull ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
 			@Nullable BPartnerId bpartnerId);
+
+	boolean isTUIncludedInLU(@NonNull I_M_HU tu, @NonNull I_M_HU expectedLU);
 
 	@Builder
 	@Value
@@ -630,9 +634,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 
+	void setHUStatus(@NonNull I_M_HU hu, @NonNull String huStatus);
+
 	boolean isEmptyStorage(I_M_HU hu);
 
 	void setClearanceStatusRecursively(final HuId huId, final ClearanceStatusInfo statusInfo);
+
+	boolean isHUHierarchyCleared(@NonNull I_M_HU hu);
 
 	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
 

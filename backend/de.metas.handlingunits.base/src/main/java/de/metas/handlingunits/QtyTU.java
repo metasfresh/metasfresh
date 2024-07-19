@@ -26,11 +26,13 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -128,6 +130,11 @@ public final class QtyTU implements Comparable<QtyTU>
 		return this.intValue - other.intValue;
 	}
 
+	public int compareTo(@NonNull final BigDecimal other)
+	{
+		return this.intValue - other.intValueExact();
+	}
+
 	public boolean isGreaterThan(@NonNull final QtyTU other) {return compareTo(other) > 0;}
 
 	public boolean isZero() {return intValue == 0;}
@@ -135,6 +142,14 @@ public final class QtyTU implements Comparable<QtyTU>
 	public boolean isPositive() {return intValue > 0;}
 
 	public boolean isOne() {return intValue == 1;}
+
+	public QtyTU assertPositive() {return assertPositive("qtyTU");}
+
+	public QtyTU assertPositive(@NonNull String variableName)
+	{
+		Check.assumeGreaterThanZero(intValue, variableName);
+		return this;
+	}
 
 	public QtyTU add(@NonNull final QtyTU toAdd)
 	{
@@ -152,7 +167,7 @@ public final class QtyTU implements Comparable<QtyTU>
 		}
 	}
 
-	public QtyTU subtractOrZero(@NonNull final int toSubtract)
+	public QtyTU subtractOrZero(final int toSubtract)
 	{
 		if (toSubtract <= 0)
 		{
@@ -174,5 +189,31 @@ public final class QtyTU implements Comparable<QtyTU>
 		{
 			return ofInt(Math.max(this.intValue - toSubtract.intValue, 0));
 		}
+	}
+
+	public QtyTU min(@NonNull final QtyTU other)
+	{
+		return this.intValue <= other.intValue ? this : other;
+	}
+
+	public Quantity computeQtyCUsPerTUUsingTotalQty(@NonNull final Quantity qtyCUsTotal)
+	{
+		if (isZero())
+		{
+			throw new AdempiereException("Cannot determine Qty CUs/TU when QtyTU is zero of total CUs " + qtyCUsTotal);
+		}
+		else if (isOne())
+		{
+			return qtyCUsTotal;
+		}
+		else
+		{
+			return qtyCUsTotal.divide(toInt());
+		}
+	}
+
+	public Quantity computeTotalQtyCUsUsingQtyCUsPerTU(@NonNull final Quantity qtyCUsPerTU)
+	{
+		return qtyCUsPerTU.multiply(toInt());
 	}
 }

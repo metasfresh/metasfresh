@@ -168,7 +168,10 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU_Item> retrieveItems(I_M_HU hu, HUItemType type);
 
+	@NonNull
 	I_M_HU_Item retrieveItem(I_M_HU hu, I_M_HU_PI_Item piItem);
+
+	Optional<I_M_HU_Item> retrieveItemIfExists(I_M_HU hu, I_M_HU_PI_Item piItem);
 
 	List<I_M_HU> retrieveIncludedHUs(final I_M_HU_Item item);
 
@@ -181,6 +184,11 @@ public interface IHandlingUnitsDAO extends ISingletonService
 			@Nullable String itemType,
 			@Nullable BPartnerId bpartnerId);
 
+	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull HuPackingInstructionsId piId,
+			@NonNull HuPackingInstructionsId includedPIId,
+			@Nullable BPartnerId bpartnerId);
+
 	List<I_M_HU_PI_Item> retrievePIItems(@NonNull I_M_HU_PI handlingUnitPI, @Nullable BPartnerId bpartnerId);
 
 	/**
@@ -190,6 +198,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @param bpartnerId optional. If not {@code null}, then exclude items with {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} that have a different {@link I_M_HU_PI_Item#COLUMNNAME_C_BPartner_ID}.
 	 */
 	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version version, final BPartnerId bpartnerId);
+
+	I_M_HU_PI_Item retrievePIItemMaterial(@NonNull I_M_HU_PI_Version version);
 
 	/**
 	 * Retrieve all {@link I_M_HU_PI_Item}s (active or inactive) for given M_HU_PI_Version.
@@ -306,12 +316,14 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	IPair<I_M_HU_Item, Boolean> createHUItemIfNotExists(I_M_HU hu, I_M_HU_PI_Item piItem);
 
+	I_M_HU_Item retrieveAggregatedItem(I_M_HU hu);
+
 	/**
 	 * Retrieve the aggregated item of the given HU if it has one.
 	 *
 	 * @return the aggregated item or null.
 	 */
-	I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu, I_M_HU_PI_Item piItem);
+	I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu);
 
 	/**
 	 * Retrieve all the child HUs of the given item, both active and not active

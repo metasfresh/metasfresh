@@ -26,6 +26,7 @@ import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
+ import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
 
@@ -38,7 +39,7 @@ import java.util.Optional;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@EqualsAndHashCode(exclude = "uom")
+@EqualsAndHashCode(exclude = "uom", doNotUseGetters = true)
 public final class Capacity
 {
 
@@ -73,11 +74,11 @@ public final class Capacity
 		return new Capacity(qty.toBigDecimal(), productId, qty.getUOM(), false);
 	}
 
-	private final ProductId productId;
+	@Getter private final ProductId productId;
 	private final UomId uomId;
 	private final I_C_UOM uom;
 	private final BigDecimal capacity;
-	private final boolean infiniteCapacity;
+	@Getter private final boolean infiniteCapacity;
 	private final boolean allowNegativeCapacity;
 
 	/**
@@ -114,11 +115,6 @@ public final class Capacity
 		allowNegativeCapacity = true;
 	}
 
-	public boolean isInfiniteCapacity()
-	{
-		return infiniteCapacity;
-	}
-
 	public boolean isAllowNegativeCapacity()
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve if it's infinite for {}", this);
@@ -134,6 +130,11 @@ public final class Capacity
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity as BigDecimal if it's infinite; this={}", this);
 		return capacity;
+	}
+	
+	public boolean isPositive()
+	{
+		return toBigDecimal().signum() > 0;
 	}
 
 	public Quantity toQuantity()
@@ -263,11 +264,6 @@ public final class Capacity
 				productId,
 				uom,
 				allowNegativeCapacity);
-	}
-
-	public ProductId getProductId()
-	{
-		return productId;
 	}
 
 	public I_C_UOM getC_UOM()

@@ -3,10 +3,16 @@ package de.metas.handlingunits;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.business.BusinessTestHelper;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,9 +21,19 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class QtyTUTest
 {
+	private I_C_UOM uomPCE;
+
+	@BeforeEach
+	void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+		uomPCE = BusinessTestHelper.createUomPCE();
+	}
+
 	@Test
 	void testSerializeDeserialize() throws IOException
 	{
@@ -120,6 +136,58 @@ class QtyTUTest
 		void test_12345_and_20000()
 		{
 			assertThat(QtyTU.ofInt(12345).subtractOrZero(QtyTU.ofInt(20000))).isSameAs(QtyTU.ZERO);
+		}
+	}
+
+	@Nested
+	class computeQtyCUsPerTUUsingTotalQty
+	{
+		@Test
+		void qtyTU_is_zero()
+		{
+			assertThatThrownBy(() -> QtyTU.ZERO.computeQtyCUsPerTUUsingTotalQty(Quantity.of(123, uomPCE)))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageStartingWith("Cannot determine Qty CUs/TU when QtyTU is zero");
+
+		}
+
+		@Test
+		void qtyTU_is_one()
+		{
+			assertThat(QtyTU.ONE.computeQtyCUsPerTUUsingTotalQty(Quantity.of(123, uomPCE)))
+					.isEqualTo(Quantity.of(123, uomPCE));
+		}
+
+		@Test
+		void of_14CUs_3TUs()
+		{
+			assertThat(QtyTU.ofInt(3).computeQtyCUsPerTUUsingTotalQty(Quantity.of(14, uomPCE)))
+					.isEqualTo(Quantity.of(5, uomPCE));
+		}
+	}
+
+	@Nested
+	class computeTotalQtyCUsUsingQtyCUsPerTU
+	{
+		@Test
+		void qtyTU_is_zero()
+		{
+			assertThat(QtyTU.ZERO.computeTotalQtyCUsUsingQtyCUsPerTU(Quantity.of(123, uomPCE)))
+					.isEqualTo(Quantity.zero(uomPCE));
+		}
+
+		@Test
+		void qtyTU_is_one()
+		{
+			assertThat(QtyTU.ONE.computeTotalQtyCUsUsingQtyCUsPerTU(Quantity.of(123, uomPCE)))
+					.isEqualTo(Quantity.of(123, uomPCE));
+		}
+
+		@Test
+		void of_3TUs_5CUsPerTU()
+		{
+			assertThat(QtyTU.ofInt(3).computeTotalQtyCUsUsingQtyCUsPerTU(Quantity.of(5, uomPCE)))
+					.isEqualTo(Quantity.of(15, uomPCE));
 		}
 	}
 }

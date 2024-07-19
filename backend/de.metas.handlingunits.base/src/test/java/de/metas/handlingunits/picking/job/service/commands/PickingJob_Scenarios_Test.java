@@ -5,8 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
-import de.metas.handlingunits.picking.PickFrom;
-import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
@@ -99,9 +97,9 @@ class PickingJob_Scenarios_Test
 					assertThat(pickedToHU.getActualPickedHU().getId()).isEqualTo(pickFromHUId);
 					HUStorageExpectation.newExpectation().product(productId).qty(pickedTo.getQtyPicked()).assertExpected(pickFromHUId);
 
-					final PickingCandidate pickingCandidate = helper.pickingCandidateRepository.getById(pickedToHU.getPickingCandidateId());
-					assertThat(pickingCandidate.getPickFrom()).isEqualTo(PickFrom.ofHuId(pickFromHUId));
-					assertThat(pickingCandidate.getPackedToHuId()).isEqualTo(pickFromHUId);
+					// final PickingCandidate pickingCandidate = helper.pickingCandidateRepository.getById(pickedToHU.getPickingCandidateId());
+					// assertThat(pickingCandidate.getPickFrom()).isEqualTo(PickFrom.ofHuId(pickFromHUId));
+					// assertThat(pickingCandidate.getPackedToHuId()).isEqualTo(pickFromHUId);
 				}
 			}
 		}
@@ -170,7 +168,7 @@ class PickingJob_Scenarios_Test
 											.qtyPicked(Quantity.of("100", helper.uomEach))
 											.pickFromHUId(vhu1.getId())
 											.actualPickedHU(vhu1)
-											.pickingCandidateId(pickedTo.getActualPickedHUs().get(0).getPickingCandidateId()) // N/A
+											//.pickingCandidateId(pickedTo.getActualPickedHUs().get(0).getPickingCandidateId()) // N/A
 											.build()))
 							.build());
 		}

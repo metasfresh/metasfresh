@@ -22,21 +22,28 @@
 
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.context.SharedTestContext;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLocksMap;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Lock;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class M_ShipmentSchedule_LockStepDef
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final ShipmentScheduleLockRepository lockRepository = SpringContextHolder.instance.getBean(ShipmentScheduleLockRepository.class);
 
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 
@@ -49,22 +56,20 @@ public class M_ShipmentSchedule_LockStepDef
 	public void validateLockForShipmentScheduleAndUser(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((tableRow) -> {
-			final int shipmentScheduleId = tableRow.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
-					.lookupIn(shipmentScheduleTable)
-					.getM_ShipmentSchedule_ID();
+			final ShipmentScheduleId shipmentScheduleId = tableRow.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+					.lookupIdIn(shipmentScheduleTable);
 
 			final String username = tableRow.getAsString(I_AD_User.COLUMNNAME_Login);
-			final int userId = queryBL.createQueryBuilder(I_AD_User.class)
-					.addEqualsFilter(I_AD_User.COLUMNNAME_Login, username)
-					.create()
-					.firstId();
+			SharedTestContext.put("username", username);
 
-			final boolean lockExists = queryBL.createQueryBuilder(I_M_ShipmentSchedule_Lock.class)
-					.addEqualsFilter(I_M_ShipmentSchedule_Lock.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
-					.addEqualsFilter(I_M_ShipmentSchedule_Lock.COLUMNNAME_LockedBy_User_ID, userId)
-					.create()
-					.anyMatch();
+			final UserId userId = userDAO.retrieveUserIdByLogin(username);
+			assertThat(userId).as("User exists for login=" + username).isNotNull();
+			SharedTestContext.put("userId", userId);
 
+			final ShipmentScheduleLocksMap locks = lockRepository.getByShipmentScheduleIds(ImmutableSet.of(shipmentScheduleId));
+			SharedTestContext.put("locks", locks);
+
+			final boolean lockExists = locks.isLockedBy(userId);
 			final boolean expecting_lockExists = tableRow.getAsBoolean("Exists");
 
 			assertThat(lockExists)
