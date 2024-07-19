@@ -67,12 +67,12 @@ Feature: Locked HUs can not be issued to production order
 
   Scenario: Locked HUs can not be issued to a production order
     Given metasfresh contains M_Products:
-      | Identifier              |
-      | manufacturingProduct_HU |
+      | Identifier |
+      | product    |
 
     And metasfresh contains PP_Product_BOM
-      | Identifier        | M_Product_ID            | PP_Product_BOMVersions_ID |
-      | bom_manufacturing | manufacturingProduct_HU | bomVersions_manufacturing |
+      | Identifier        | M_Product_ID | PP_Product_BOMVersions_ID |
+      | bom_manufacturing | product      | bomVersions_manufacturing |
     And metasfresh contains PP_Product_BOMLines
       | Identifier           | PP_Product_BOM_ID | M_Product_ID | QtyBatch |
       | bom_l_manufacturing1 | bom_manufacturing | huProduct    | 10       |
@@ -85,7 +85,7 @@ Feature: Locked HUs can not be issued to production order
 
     When create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
-      | ppOrder_manufacturing  | MOP         | manufacturingProduct_HU | 10         | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                |
+      | ppOrder_manufacturing  | MOP         | product                 | 10         | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                |
 
     Then after not more than 60s, PP_Order_BomLines are found
       | Identifier       | PP_Order_ID           | M_Product_ID | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
