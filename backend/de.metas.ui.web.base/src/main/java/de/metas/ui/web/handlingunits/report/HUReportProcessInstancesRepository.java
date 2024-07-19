@@ -160,6 +160,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 				.processDescriptor(ProcessDescriptor.builder()
 						.setProcessId(processId)
 						.setInternalName(InternalName.ofString(huProcessDescriptor.getInternalName()))
+						.setProcessClassname(adProcess.getClassname())
 						.setType(ProcessDescriptorType.Report)
 						.setParametersDescriptor(parametersDescriptor)
 						.setLayout(ProcessLayout.builder()
@@ -230,7 +231,17 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 		if (HUReportAwareViews.isHUReportAwareViewRow(row))
 		{
 			final HUReportAwareViewRow huRow = HUReportAwareViews.cast(row);
+<<<<<<< HEAD
 			final String huUnitType = huRow.getHUUnitTypeOrNull();
+=======
+
+			if (!huRow.applies(descriptor.getProcessDescriptor()))
+			{
+				return false;
+			}
+			
+			final HuUnitType huUnitType = huRow.getHUUnitTypeOrNull();
+>>>>>>> 205807b4eda (Show Process M_HU_Report_QRCode in HU Editor only on active HUs (#18503))
 			return huUnitType != null && descriptor.appliesToHUUnitType(huUnitType);
 		}
 		else

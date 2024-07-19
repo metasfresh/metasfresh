@@ -24,6 +24,12 @@ package de.metas.ui.web.handlingunits.report;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.HuUnitType;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
+import lombok.NonNull;
+>>>>>>> 205807b4eda (Show Process M_HU_Report_QRCode in HU Editor only on active HUs (#18503))
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.stream.Stream;
@@ -49,4 +55,9 @@ public interface HUReportAwareViewRow
 	boolean isTopLevel();
 
 	Stream<HUReportAwareViewRow> streamIncludedHUReportAwareRows();
+
+	default boolean applies(@NonNull final ProcessDescriptor processDescriptor)
+	{
+		return true;
+	}
 }
