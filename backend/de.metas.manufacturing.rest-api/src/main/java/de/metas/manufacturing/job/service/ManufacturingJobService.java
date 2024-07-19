@@ -625,8 +625,9 @@ public class ManufacturingJobService
 	}
 
 	@NonNull
-	public ManufacturingJob recomputeQtyToIssueForSteps(final @NonNull ManufacturingJob job)
+	public ManufacturingJob recomputeQtyToIssueForSteps(final @NonNull PPOrderId ppOrderId)
 	{
+		final ManufacturingJob job = getJobById(ppOrderId);
 		final ManufacturingJob changedJob = job.withChangedRawMaterialIssue(
 				rawMaterialsIssue -> rawMaterialsIssue.withChangedLines(this::recomputeQtyToIssueForSteps));
 

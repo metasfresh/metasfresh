@@ -134,7 +134,7 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 				.map(IssueWhatWasReceivedRequest.IssueWhatWasReceivedRequestBuilder::build)
 				.forEach(this::issueWhatWasReceived);
 
-		return jobService.recomputeQtyToIssueForSteps(job);
+		return jobService.recomputeQtyToIssueForSteps(job.getPpOrderId());
 	}
 
 	private void issueWhatWasReceived(@NonNull final IssueWhatWasReceivedRequest request)
