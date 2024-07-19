@@ -13,8 +13,8 @@ import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColu
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 
 /*
  * #%L

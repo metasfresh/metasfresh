@@ -13,7 +13,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
-import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.report.HUReportAwareViewRow;
