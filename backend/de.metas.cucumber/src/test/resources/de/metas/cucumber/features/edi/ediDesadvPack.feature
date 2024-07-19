@@ -252,8 +252,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | huProductTU                        | huPiItemTU                 | p_1                     | 10  | 2021-01-01 |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo     |
-      | huProduct_inventory       | 2021-04-16T00:00:00Z | inventoryDocNo |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo     |
+      | huProduct_inventory       | 2021-04-16   | inventoryDocNo |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory       | huProduct_inventoryLine       | p_1                     | 0       | 10       |
@@ -447,8 +447,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
   """
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo     |
-      | huProduct_inventory       | 2021-04-16T00:00:00Z | inventoryDocNo |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo     |
+      | huProduct_inventory       | 2021-04-16   | inventoryDocNo |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory       | huProduct_inventoryLine       | p_1                     | 0       | 5        |
