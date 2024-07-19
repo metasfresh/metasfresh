@@ -291,7 +291,7 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 		final boolean includeProcessed = true;
 		final DraftPPOrderQuantities draftQtys = huPPOrderQtyBL.getPPOrderQuantities(job.getPpOrderId(), includeProcessed);
 
-		if (draftQtys.getQtyReceived().map(Quantity::signum).orElse(-1) <= 0)
+		if (!draftQtys.isSomethingReceived())
 		{
 			throw new AdempiereException(NOTHING_WAS_RECEIVED_YET);
 		}
