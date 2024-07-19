@@ -33,6 +33,7 @@ import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -67,6 +68,9 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMetho
 
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
+
+	// create logs with at least 6 digist precion, in order to have later one, a better rounding
+	private final CurrencyPrecision precision = CurrencyPrecision.ofInt(6);
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
@@ -117,7 +121,7 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMetho
 
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
 
-		final Money money = computeAverageAmount(logs, request.getCurrencyId())
+		final Money money = computeAverageAmount(logs)
 				.orElseGet(() -> Money.zero(request.getCurrencyId()));
 
 		return ComputingResponse.builder()
@@ -138,7 +142,7 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMetho
 		return ComputingMethodType.AverageAddedValueOnShippedQuantity;
 	}
 
-	public Optional<Money> computeAverageAmount(@NonNull final ModularContractLogEntriesList logs, @NonNull final CurrencyId currencyId)
+	public Optional<Money> computeAverageAmount(@NonNull final ModularContractLogEntriesList logs)
 	{
 		final Optional<Money> totalMoney = logs.stream()
 				.map(ModularContractLogEntry::getAmount)
@@ -155,7 +159,7 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMetho
 			return Optional.empty();
 		}
 
-		final Money weightedAvgMoney = totalMoney.get().divide(totalQuantity.get().toBigDecimal(), currencyBL.getStdPrecision(currencyId));
+		final Money weightedAvgMoney = totalMoney.get().divide(totalQuantity.get().toBigDecimal(), precision);
 		return Optional.of(weightedAvgMoney);
 	}
 
