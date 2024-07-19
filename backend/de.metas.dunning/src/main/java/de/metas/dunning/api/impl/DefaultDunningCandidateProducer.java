@@ -22,7 +22,6 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningBL;
@@ -41,7 +40,6 @@ import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -151,9 +149,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		candidate.setDunningDate(LocalDateAndOrgId.toTimestamp(context.getDunningDate(), orgDAO::getTimeZone));
 		candidate.setC_BPartner_ID(sourceDoc.getC_BPartner_ID());
 		candidate.setC_BPartner_Location_ID(sourceDoc.getC_BPartner_Location_ID());
-		candidate.setC_Dunning_Contact_ID(bPartnerBL.getDefaultDunningContact(BPartnerId.ofRepoId(sourceDoc.getC_BPartner_ID()))
-												  .map(UserId::getRepoId)
-												  .orElse(sourceDoc.getContact_ID()));
+		candidate.setC_Dunning_Contact_ID(sourceDoc.getContact_ID());
 		candidate.setDueDate(sourceDoc.getDueDate().toTimestamp(orgDAO::getTimeZone));
 		candidate.setDunningGrace(LocalDateAndOrgId.toTimestamp(sourceDoc.getGraceDate(), orgDAO::getTimeZone));
 		candidate.setDaysDue(sourceDoc.getDaysDue());
