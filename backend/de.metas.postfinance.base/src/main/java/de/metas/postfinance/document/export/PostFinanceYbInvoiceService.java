@@ -625,7 +625,7 @@ public class PostFinanceYbInvoiceService
 		}
 		else
 		{
-			throw new PostFinanceExportException("Mandatory Due Date missing");
+			throw new PostFinanceExportException("Mandatory Due Date is missing");
 		}
 
 		final BPartnerId bPartnerId = invoiceToExport.getBiller().getId();
