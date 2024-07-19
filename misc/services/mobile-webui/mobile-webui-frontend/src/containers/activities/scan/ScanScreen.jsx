@@ -11,6 +11,7 @@ import { getActivityById } from '../../../reducers/wfProcesses';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { fireWFActivityCompleted } from '../../../apps';
 import { toastError } from '../../../utils/toast';
+import Spinner from '../../../components/Spinner';
 
 const ScanScreen = () => {
   const {
@@ -41,18 +42,18 @@ const ScanScreen = () => {
     if (useTheAlreadyScannedQrCode === 'true' && currentValue?.qrCode !== undefined) {
       onBarcodeScanned({ scannedBarcode: currentValue?.qrCode });
     }
-  }, [useTheAlreadyScannedQrCode, currentValue]);
+  }, [useTheAlreadyScannedQrCode, currentValue?.qrCode]);
 
   const history = useHistory();
   const onBarcodeScanned = ({ scannedBarcode }) => {
     //console.log('onBarcodeScanned', { scannedBarcode });
-    if (validOptionIndex !== undefined && !validOptions?.length) {
+    if (validOptionIndex != null && !validOptions?.length) {
       toastError({ messageKey: 'activities.mfg.validateSourceLocator.noValidOption' });
       history.goBack();
       return;
     }
 
-    if (validOptionIndex !== undefined && scannedBarcode !== validOptions[validOptionIndex]?.qrCode) {
+    if (validOptionIndex != null && scannedBarcode !== validOptions[validOptionIndex]?.qrCode) {
       toastError({ messageKey: 'activities.mfg.validateSourceLocator.qrDoesNotMatch' });
       return;
     }
@@ -83,6 +84,10 @@ const ScanScreen = () => {
         };
       });
   };
+
+  if (useTheAlreadyScannedQrCode === 'true') {
+    return <Spinner />;
+  }
 
   return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} continuousRunning={true} />;
 };

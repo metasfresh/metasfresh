@@ -312,6 +312,8 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				//
 				.scannedQRCode(GlobalQRCode.ofNullableString(record.getScannedQRCode()))
 				//
+				.rawMaterialsIssueStrategy(RawMaterialsIssueStrategy.ofCodeOrDefault(record.getRawMaterialsIssueStrategy()))
+				//
 				.build();
 	}
 

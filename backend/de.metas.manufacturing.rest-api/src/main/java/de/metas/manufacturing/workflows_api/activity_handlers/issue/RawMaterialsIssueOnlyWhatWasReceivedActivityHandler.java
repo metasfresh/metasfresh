@@ -110,9 +110,18 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 	@Override
 	public WFProcess userConfirmed(final UserConfirmationRequest request)
 	{
-		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(request.getWfProcess());
-		final ManufacturingJobActivityId jobActivityId = request.getWfActivity().getId().getAsId(ManufacturingJobActivityId.class);
+		final ManufacturingJob job = issueWhatWasReceived(request);
 
+		final ManufacturingJobActivityId jobActivityId = request.getWfActivity().getId().getAsId(ManufacturingJobActivityId.class);
+		final ManufacturingJob updatedJob = jobService.withActivityCompleted(job, jobActivityId);
+
+		return ManufacturingRestService.toWFProcess(updatedJob);
+	}
+
+	@NonNull
+	private ManufacturingJob issueWhatWasReceived(@NonNull final UserConfirmationRequest request)
+	{
+		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(request.getWfProcess());
 		final IssueWhatWasReceivedRequest.IssueWhatWasReceivedRequestBuilder requestBuilder = initIssueRequest(job, request);
 
 		job.getActivities()
@@ -125,18 +134,17 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 				.map(IssueWhatWasReceivedRequest.IssueWhatWasReceivedRequestBuilder::build)
 				.forEach(this::issueWhatWasReceived);
 
-		final ManufacturingJob updatedJob = jobService.withActivityCompleted(job, jobActivityId);
-		return ManufacturingRestService.toWFProcess(updatedJob);
+		return jobService.recomputeQtyToIssueForSteps(job);
 	}
 
 	private void issueWhatWasReceived(@NonNull final IssueWhatWasReceivedRequest request)
 	{
 		final Quantity quantityToIssueForWhatWasReceived = ppOrderBOMBL
 				.computeQtyToIssueBasedOnFinishedGoodReceipt(getBomLine(request.getLine()),
-															 uomDao.getById(request.getLine().getQtyToIssue().getUomId()),
+															 uomDao.getById(request.getLineQtyToIssue().getUomId()),
 															 request.getDraftQtys());
 
-		final Quantity qtyToIssue = request.getLine().getQtyToIssue().min(quantityToIssueForWhatWasReceived);
+		final Quantity qtyToIssue = request.getLineQtyToIssue().min(quantityToIssueForWhatWasReceived);
 		if (qtyToIssue.signum() <= 0)
 		{
 			throw new AdempiereException(NO_QTY_TO_ISSUE);
@@ -338,5 +346,11 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 		@NonNull DraftPPOrderQuantities draftQtys;
 		@NonNull RawMaterialsIssueLine line;
 		@NonNull Function<ProductId, SourceHUsCollection> loadSourceHUsForProductId;
+
+		@NonNull
+		public Quantity getLineQtyToIssue()
+		{
+			return line.getQtyToIssue();
+		}
 	}
 }

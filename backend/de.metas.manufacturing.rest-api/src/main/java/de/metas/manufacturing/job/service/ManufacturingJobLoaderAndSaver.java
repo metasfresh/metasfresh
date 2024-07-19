@@ -26,7 +26,6 @@ import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.model.ValidateLocatorInfo;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
-import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -424,9 +423,7 @@ public class ManufacturingJobLoaderAndSaver
 		}
 
 		return Optional.of(prepareJobActivity(from)
-								   .issueOnlyWhatWasReceivedConfig(IssueOnlyWhatWasReceivedConfig.ofIssueStrategy(
-										   Optional.ofNullable(from.getRawMaterialsIssueStrategy())
-												   .orElse(RawMaterialsIssueStrategy.DEFAULT)))
+								   .issueOnlyWhatWasReceivedConfig(IssueOnlyWhatWasReceivedConfig.ofIssueStrategy(from.getRawMaterialsIssueStrategy()))
 								   .build());
 	}
 }

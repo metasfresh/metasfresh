@@ -1,6 +1,7 @@
 package de.metas.manufacturing.job.service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.dao.ValueRestriction;
 import de.metas.device.accessor.DeviceAccessor;
@@ -27,6 +28,8 @@ import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.model.ManufacturingJobFacets;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
+import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
+import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
@@ -40,6 +43,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
@@ -618,5 +622,47 @@ public class ManufacturingJobService
 	public Set<HuId> getFinishedGoodsReceivedHUIds(@NonNull final PPOrderId ppOrderId)
 	{
 		return huPPOrderQtyBL.getFinishedGoodsReceivedHUIds(ppOrderId);
+	}
+
+	@NonNull
+	public ManufacturingJob recomputeQtyToIssueForSteps(final @NonNull ManufacturingJob job)
+	{
+		final ManufacturingJob changedJob = job.withChangedRawMaterialIssue(
+				rawMaterialsIssue -> rawMaterialsIssue.withChangedLines(this::recomputeQtyToIssueForSteps));
+
+		if (!changedJob.equals(job))
+		{
+			saveActivityStatuses(changedJob);
+		}
+
+		return changedJob;
+	}
+
+	@NonNull
+	private RawMaterialsIssueLine recomputeQtyToIssueForSteps(final @NonNull RawMaterialsIssueLine line)
+	{
+		Quantity qtyLeftToBeIssued = line.getQtyLeftToIssue().toZeroIfNegative();
+		final ImmutableList.Builder<RawMaterialsIssueStep> updatedStepsListBuilder = ImmutableList.builder();
+
+		for (final RawMaterialsIssueStep step : line.getSteps())
+		{
+			if (step.isIssued())
+			{
+				updatedStepsListBuilder.add(step);
+			}
+			else if (qtyLeftToBeIssued.isGreaterThan(step.getQtyToIssue()))
+			{
+				updatedStepsListBuilder.add(step);
+				qtyLeftToBeIssued = qtyLeftToBeIssued.subtract(step.getQtyToIssue());
+			}
+			else
+			{
+				ppOrderIssueScheduleService.updateQtyToIssue(step.getId(), qtyLeftToBeIssued);
+				updatedStepsListBuilder.add(step.withQtyToIssue(qtyLeftToBeIssued));
+				qtyLeftToBeIssued = qtyLeftToBeIssued.toZero();
+			}
+		}
+
+		return line.withSteps(updatedStepsListBuilder.build());
 	}
 }

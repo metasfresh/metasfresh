@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 972609444L;
+	private static final long serialVersionUID = -1923961648L;
 
     /** Standard Constructor */
     public X_AD_WF_Node (final Properties ctx, final int AD_WF_Node_ID, @Nullable final String trxName)
@@ -790,8 +790,8 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	 * Reference name: RawMaterialsIssueStrategy
 	 */
 	public static final int RAWMATERIALSISSUESTRATEGY_AD_Reference_ID=541877;
-	/** Only assigned HUs = AssignedHUsOnly */
-	public static final String RAWMATERIALSISSUESTRATEGY_OnlyAssignedHUs = "AssignedHUsOnly";
+	/** Only assigned HUs = AllocatedSourceHUsOnly */
+	public static final String RAWMATERIALSISSUESTRATEGY_OnlyAssignedHUs = "AllocatedSourceHUsOnly";
 	@Override
 	public void setRawMaterialsIssueStrategy (final @Nullable java.lang.String RawMaterialsIssueStrategy)
 	{

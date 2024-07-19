@@ -155,6 +155,9 @@ public class PPOrderIssueScheduleRepository
 		record.setQtyReject(qtyRejected != null ? qtyRejected.toBigDecimal() : BigDecimal.ZERO);
 		record.setRejectReason(qtyRejected != null ? qtyRejected.getReasonCode().getCode() : null);
 
+		record.setQtyToIssue(issueSchedule.getQtyToIssue().toBigDecimal());
+		record.setC_UOM_ID(issueSchedule.getQtyToIssue().getUomId().getRepoId());
+
 		InterfaceWrapperHelper.save(record);
 	}
 

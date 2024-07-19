@@ -190,4 +190,17 @@ public class ManufacturingJobActivity
 	{
 		return Objects.equals(this.finishedGoodsReceive, finishedGoodsReceive) ? this : toBuilder().finishedGoodsReceive(finishedGoodsReceive).build();
 	}
+
+	@NonNull
+	public ManufacturingJobActivity withChangedRawMaterialsIssue(@NonNull final UnaryOperator<RawMaterialsIssue> mapper)
+	{
+		if (rawMaterialsIssue != null)
+		{
+			return withRawMaterialsIssue(mapper.apply(rawMaterialsIssue));
+		}
+		else
+		{
+			return this;
+		}
+	}
 }
