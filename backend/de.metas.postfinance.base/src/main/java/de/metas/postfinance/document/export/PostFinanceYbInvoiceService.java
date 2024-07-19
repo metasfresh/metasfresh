@@ -616,6 +616,10 @@ public class PostFinanceYbInvoiceService
 			dueDate.setTime(invoiceRecord.getDueDate());
 			paymentInformation.setPaymentDueDate(toXMLCalendar(dueDate));
 		}
+		else
+		{
+			throw new PostFinanceExportException("Mandatory Due Date is missing");
+		}
 
 		final BPartnerId bPartnerId = invoiceToExport.getBiller().getId();
 		final Optional<BankAccount> bankAccountOptional = bankAccountDAO.getDefaultESRBankAccount(bPartnerId);
