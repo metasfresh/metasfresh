@@ -34,14 +34,30 @@ public class LocalDateAndOrgId implements Comparable<LocalDateAndOrgId> {
     }
 
     @Nullable
-    public static LocalDateAndOrgId ofNullableLocalDate(@Nullable final LocalDate localDate, @NonNull final OrgId orgId) {
-        return localDate != null ? ofLocalDate(localDate, orgId) : null;
-    }
+	public static LocalDateAndOrgId ofNullableLocalDate(@Nullable final LocalDate localDate, @NonNull final OrgId orgId)
+	{
+		return localDate != null ? ofLocalDate(localDate, orgId) : null;
+	}
 
-    public static LocalDateAndOrgId ofTimestamp(@NonNull final Timestamp timestamp, @NonNull final OrgId orgId, @NonNull final Function<OrgId, ZoneId> orgMapper) {
+	public static LocalDateAndOrgId ofTimestamp(@NonNull final Timestamp timestamp, @NonNull final OrgId orgId, @NonNull final Function<OrgId, ZoneId> orgMapper)
+	{
         final LocalDate localDate = timestamp.toInstant().atZone(orgMapper.apply(orgId)).toLocalDate();
         return new LocalDateAndOrgId(localDate, orgId);
     }
+
+	@Nullable
+	public static LocalDateAndOrgId ofNullableTimestamp(@Nullable final Timestamp timestamp, @NonNull final OrgId orgId, @NonNull final Function<OrgId, ZoneId> orgMapper)
+	{
+		return timestamp != null ? ofTimestamp(timestamp, orgId, orgMapper) : null;
+	}
+
+	@Nullable
+	public static Timestamp toTimestamp(
+			@Nullable final LocalDateAndOrgId localDateAndOrgId,
+			@NonNull final Function<OrgId, ZoneId> orgMapper)
+	{
+		return localDateAndOrgId != null ? localDateAndOrgId.toTimestamp(orgMapper) : null;
+	}
 
 	public static long daysBetween(@NonNull final LocalDateAndOrgId d1, @NonNull final LocalDateAndOrgId d2)
 	{
@@ -56,18 +72,7 @@ public class LocalDateAndOrgId implements Comparable<LocalDateAndOrgId> {
 
 	public Instant toInstant(@NonNull final Function<OrgId, ZoneId> orgMapper)
 	{
-		return localDate.atStartOfDay().atZone(orgMapper.apply(orgId)).toInstant();
-	}
-    @Nullable
-    public static LocalDateAndOrgId ofNullableTimestamp(@Nullable final Timestamp timestamp, @NonNull final OrgId orgId, @NonNull final Function<OrgId, ZoneId> orgMapper) {
-        return timestamp != null ? ofTimestamp(timestamp, orgId, orgMapper) : null;
-    }
-
-    @Nullable
-    public static Timestamp toTimestamp(
-            @Nullable final LocalDateAndOrgId localDateAndOrgId,
-            @NonNull final Function<OrgId, ZoneId> orgMapper) {
-        return localDateAndOrgId != null ? localDateAndOrgId.toTimestamp(orgMapper) : null;
+        return localDate.atStartOfDay().atZone(orgMapper.apply(orgId)).toInstant();
     }
 
     public Instant toEndOfDayInstant(@NonNull final Function<OrgId, ZoneId> orgMapper) {
