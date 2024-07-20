@@ -154,7 +154,7 @@ public class MD_Candidate_StepDef
 	{
 		table.forEach((tableRow) -> {
 			final WarehouseId warehouseId = CoalesceUtil.coalesceNotNull(tableRow.getWarehouseId(), StepDefConstants.WAREHOUSE_ID);
-			
+
 			final I_MD_Candidate mdCandidateRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
 			mdCandidateRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			mdCandidateRecord.setM_Product_ID(tableRow.getProductId().getRepoId());
@@ -403,12 +403,7 @@ public class MD_Candidate_StepDef
 
 		if (expectedCandidateAndStocks != storedCandidatesSize)
 		{
-			final StringBuilder message = new StringBuilder();
-			message.append("Expected to find: ").append(expectedCandidateAndStocks)
-					.append(" MD_Candidate records, but got: ").append(storedCandidatesSize)
-					.append(" See:\n");
-
-			logCandidateRecords(message, productIdSet, table);
+			logCandidateRecords(productIdSet, table);
 		}
 
 		assertThat(storedCandidatesSize).isEqualTo(expectedCandidateAndStocks);
@@ -743,27 +738,23 @@ public class MD_Candidate_StepDef
 	}
 
 	private void logCandidateRecords(
-			@NonNull final StringBuilder message,
 			@NonNull final ImmutableSet<ProductId> productIds,
 			@NonNull final MD_Candidate_StepDefTable table)
 	{
-		message.append("MD_Candidate records:").append("\n");
-
-		final String mdCandidateRecordsStr = queryBL.createQueryBuilder(I_MD_Candidate.class)
+		final List<I_MD_Candidate> actualCandidates = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addInArrayFilter(COLUMNNAME_M_Product_ID, productIds)
+				.orderBy(COLUMNNAME_MD_Candidate_ID)
 				.create()
-				.stream(I_MD_Candidate.class)
-				.map(MD_Candidate_StepDef::toString)
-				.collect(Collectors.joining("\n"));
+				.list();
 
-		final String rowsStr = table.stream()
-				.map(MaterialDispoTableRow::toString)
-				.collect(Collectors.joining("\n"));
+		final String mdCandidateRecordsStr = actualCandidates.stream().map(MD_Candidate_StepDef::toString).collect(Collectors.joining("\n"));
+		final String rowsStr = table.stream().map(MaterialDispoTableRow::toString).collect(Collectors.joining("\n"));
 
+		//noinspection StringConcatenationArgumentToLogCall
 		logger.error("*** Error while looking for MD_Candidate records, see current context:"
-				+ "\nMD_Candidate records:"
+				+ "\nActual MD_Candidate(s) - " + actualCandidates.size() + " records:"
 				+ "\n" + mdCandidateRecordsStr
-				+ "\nRows:"
+				+ "\nExpected Row(s) - " + table.size() + " rows:"
 				+ "\n" + rowsStr);
 	}
 
