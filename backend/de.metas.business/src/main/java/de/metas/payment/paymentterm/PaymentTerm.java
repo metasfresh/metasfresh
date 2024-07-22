@@ -20,12 +20,9 @@
  * #L%
  */
 
-package de.metas.payment.paymentterm.impl;
+package de.metas.payment.paymentterm;
 
 import de.metas.organization.OrgId;
-import de.metas.payment.paymentterm.BaseLineType;
-import de.metas.payment.paymentterm.CalculationMethod;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,7 +36,7 @@ import java.sql.Timestamp;
 
 @Builder
 @Value
-public final class PaymentTerm
+public class PaymentTerm
 {
 	@NonNull PaymentTermId id;
 	@NonNull OrgId orgId;
