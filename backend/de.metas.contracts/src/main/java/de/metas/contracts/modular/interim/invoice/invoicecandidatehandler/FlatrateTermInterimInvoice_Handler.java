@@ -214,7 +214,8 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 		final CurrencyPrecision currencyPrecision = currencyBL.getStdPrecision(productPrice.getCurrencyId());
 		final CurrencyPrecision precision = priceList != null ? CurrencyPrecision.ofInt(priceList.getPricePrecision()) : currencyPrecision;
 
-		final ProductPrice productPriceToInvoice = productPrice.convertToUom(uomId, precision, uomConversionBL);
+		//always round as if target uom = source uom there is no rounding
+		final ProductPrice productPriceToInvoice = productPrice.convertToUom(uomId, precision, uomConversionBL).round(precision);
 
 		final ContractSpecificPrice contractSpecificPrice = ContractSpecificPrice.builder()
 				.productPrice(productPriceToInvoice)
