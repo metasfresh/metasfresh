@@ -834,9 +834,11 @@ public final class AggregationEngine
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);
-		final Optional<PaymentTermId> paymentTermIdOpt = Optionals.firstPresentOfSuppliers(() -> getPaymentTermId(invoiceHeader),
-				paymentTermRepository::getDefaultPaymentTermId);
-		final PaymentTermId paymentTermId = Check.assumePresent(paymentTermIdOpt, "No payment term found for invoice candidates, BpartnerID {} and no default payment term defined.", invoiceHeader.getBillTo().getBpartnerId());
+		final PaymentTermId paymentTermId = Optionals.firstPresentOfSuppliers(
+						() -> getPaymentTermId(invoiceHeader),
+						paymentTermRepository::getDefaultPaymentTermId
+				)
+				.orElseThrow(() -> new AdempiereException("No payment term found for invoice candidates, BpartnerID {} and no default payment term defined."));
 		invoiceHeader.setPaymentTermId(paymentTermId);
 	}
 
