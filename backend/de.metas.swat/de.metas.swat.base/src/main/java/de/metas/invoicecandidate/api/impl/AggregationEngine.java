@@ -69,6 +69,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -833,10 +834,9 @@ public final class AggregationEngine
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);
-		final PaymentTermId paymentTermId = getPaymentTermId(invoiceHeader)
-				.orElse(paymentTermRepository.getDefaultPaymentTermId()
-						.orElse(null));
-		invoiceHeader.setPaymentTermId(paymentTermId);
+		final Optional<PaymentTermId> paymentTermId = Optionals.firstPresentOfSuppliers(() -> getPaymentTermId(invoiceHeader),
+				paymentTermRepository::getDefaultPaymentTermId);
+		paymentTermId.ifPresent(invoiceHeader::setPaymentTermId);
 	}
 
 	@NonNull

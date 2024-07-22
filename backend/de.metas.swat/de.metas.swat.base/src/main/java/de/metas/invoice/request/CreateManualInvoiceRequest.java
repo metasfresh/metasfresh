@@ -79,7 +79,7 @@ public class CreateManualInvoiceRequest
 	@NonNull
 	CurrencyId currencyId;
 
-	@NonNull PaymentTermId paymentTermId;
+	@Nullable PaymentTermId paymentTermId;
 
 	@NonNull
 	ImmutableList<CreateManualInvoiceLineRequest> lines;

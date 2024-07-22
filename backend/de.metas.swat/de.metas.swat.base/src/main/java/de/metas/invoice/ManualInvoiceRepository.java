@@ -168,11 +168,8 @@ public class ManualInvoiceRepository
 		final int inputDataSourceRecordId = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), API_DATA_SOURCE, /* throwEx */true, ITrx.TRXNAME_None)
 				.getAD_InputDataSource_ID();
 
-		final OrgId orgId = createManualInvoiceRequest.getOrgId();
-		final BPartnerId billBPartnerId = createManualInvoiceRequest.getBillBPartnerId();
-		final SOTrx soTrx = createManualInvoiceRequest.getSoTrx();
-		invoiceRecord.setAD_Org_ID(orgId.getRepoId());
-		invoiceRecord.setC_BPartner_ID(billBPartnerId.getRepoId());
+		invoiceRecord.setAD_Org_ID(createManualInvoiceRequest.getOrgId().getRepoId());
+		invoiceRecord.setC_BPartner_ID(createManualInvoiceRequest.getBillBPartnerId().getRepoId());
 		invoiceRecord.setC_BPartner_Location_ID(createManualInvoiceRequest.getBillBPartnerLocationId().getRepoId());
 		invoiceRecord.setAD_User_ID(BPartnerContactId.toRepoId(createManualInvoiceRequest.getBillContactId()));
 		invoiceRecord.setDateInvoiced(TimeUtil.asTimestamp(createManualInvoiceRequest.getDateInvoiced()));
@@ -182,7 +179,7 @@ public class ManualInvoiceRepository
 		invoiceRecord.setC_DocType_ID(createManualInvoiceRequest.getDocTypeId().getRepoId());
 		invoiceRecord.setC_DocTypeTarget_ID(createManualInvoiceRequest.getDocTypeId().getRepoId());
 		invoiceRecord.setPOReference(createManualInvoiceRequest.getPoReference());
-		invoiceRecord.setIsSOTrx(soTrx.toBoolean());
+		invoiceRecord.setIsSOTrx(createManualInvoiceRequest.getSoTrx().toBoolean());
 		invoiceRecord.setC_Currency_ID(createManualInvoiceRequest.getCurrencyId().getRepoId());
 		invoiceRecord.setM_PriceList_ID(createManualInvoiceRequest.getPriceListId().getRepoId());
 		invoiceRecord.setAD_InputDataSource_ID(inputDataSourceRecordId);
