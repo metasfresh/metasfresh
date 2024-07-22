@@ -34,11 +34,9 @@ import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
@@ -64,13 +62,12 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMetho
 {
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
 
-	// create logs with at least 6 digist precion, in order to have later one, a better rounding
-	private final CurrencyPrecision precision = CurrencyPrecision.ofInt(6);
+	// computeAverageAmount with at least 12 digit precision, will be rounded on IC creation according to priceList precision
+	private final CurrencyPrecision precision = CurrencyPrecision.ofInt(12);
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
