@@ -3,7 +3,11 @@ import PropTypes from 'prop-types';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
-import { pickingLineScreenLocation, pickingScanScreenLocation, selectPickTargetScreenLocation, } from '../../../routes/picking';
+import {
+  pickingLineScreenLocation,
+  pickingScanScreenLocation,
+  selectPickTargetScreenLocation,
+} from '../../../routes/picking';
 import { useHistory } from 'react-router-dom';
 import { trl } from '../../../utils/translations';
 import { getLinesArrayFromActivity } from '../../../reducers/wfProcesses';
