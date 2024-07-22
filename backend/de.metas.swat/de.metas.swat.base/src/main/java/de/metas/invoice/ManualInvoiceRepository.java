@@ -54,7 +54,7 @@ import java.util.function.Consumer;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-class ManualInvoiceRepository
+public class ManualInvoiceRepository
 {
 	public static final String API_DATA_SOURCE = "SOURCE.de.metas.rest_api.v2.invoice.InvoicesRestController";
 	@NonNull
@@ -183,6 +183,7 @@ class ManualInvoiceRepository
 		invoiceRecord.setC_Currency_ID(createManualInvoiceRequest.getCurrencyId().getRepoId());
 		invoiceRecord.setM_PriceList_ID(createManualInvoiceRequest.getPriceListId().getRepoId());
 		invoiceRecord.setAD_InputDataSource_ID(inputDataSourceRecordId);
+		invoiceRecord.setC_PaymentTerm_ID(createManualInvoiceRequest.getPaymentTermId().getRepoId());
 		saveRecord(invoiceRecord);
 
 		return invoiceRecord;
