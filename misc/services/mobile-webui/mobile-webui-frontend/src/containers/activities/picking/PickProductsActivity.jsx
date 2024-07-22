@@ -3,11 +3,7 @@ import PropTypes from 'prop-types';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
-import {
-  pickingLineScreenLocation,
-  pickingScanScreenLocation,
-  selectPickTargetScreenLocation,
-} from '../../../routes/picking';
+import { pickingLineScreenLocation, pickingScanScreenLocation, selectPickTargetScreenLocation, } from '../../../routes/picking';
 import { useHistory } from 'react-router-dom';
 import { trl } from '../../../utils/translations';
 import { getLinesArrayFromActivity } from '../../../reducers/wfProcesses';
@@ -18,7 +14,7 @@ export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
 const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity }) => {
   const {
-    dataStored: { isUserEditable },
+    dataStored: { isUserEditable, isAllowNewLU },
   } = activity;
   const lines = getLinesArrayFromActivity(activity);
   const allowPickingAnyHU = isAllowPickingAnyHUForActivity({ activity });
@@ -39,15 +35,17 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
 
   return (
     <div className="mt-5">
-      <ButtonWithIndicator
-        caption={
-          currentPickTarget?.caption
-            ? trl('activities.picking.pickingTarget.Current') + ': ' + currentPickTarget?.caption
-            : trl('activities.picking.pickingTarget.New')
-        }
-        disabled={!isUserEditable}
-        onClick={onSelectPickTargetClick}
-      />
+      {isAllowNewLU && (
+        <ButtonWithIndicator
+          caption={
+            currentPickTarget?.caption
+              ? trl('activities.picking.pickingTarget.Current') + ': ' + currentPickTarget?.caption
+              : trl('activities.picking.pickingTarget.New')
+          }
+          disabled={!isUserEditable}
+          onClick={onSelectPickTargetClick}
+        />
+      )}
       <br />
 
       {allowPickingAnyHU && (
