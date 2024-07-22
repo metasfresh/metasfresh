@@ -201,11 +201,7 @@ public class ManualInvoiceService
 		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = getBPartnerLocationAndCaptureId(requestHeader.getBillBPartnerLocationId());
 		final ZoneId zoneId = orgDAO.getTimeZone(requestHeader.getOrgId());
 		final PriceListId priceListId = getPriceListId(requestHeader, countryId, zoneId);
-		final PaymentTermId paymentTermId = paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.builder()
-				.orgId(requestHeader.getOrgId())
-				.bPartnerId(requestHeader.getBillBPartnerId())
-				.soTrx(requestHeader.getSoTrx())
-				.build());
+		final PaymentTermId paymentTermId = paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.forPartner(requestHeader.getBillBPartnerId(), requestHeader.getSoTrx()));
 
 		final CreateManualInvoiceRequest.CreateManualInvoiceRequestBuilder createManualInvoiceRequestBuilder = CreateManualInvoiceRequest.builder()
 				.orgId(requestHeader.getOrgId())
