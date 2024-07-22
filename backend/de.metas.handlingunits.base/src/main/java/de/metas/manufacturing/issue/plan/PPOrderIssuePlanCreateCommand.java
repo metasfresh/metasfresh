@@ -7,6 +7,7 @@ import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -18,8 +19,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.BOMIssueMethod;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderRouting;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.util.ArrayList;
@@ -33,6 +37,7 @@ public class PPOrderIssuePlanCreateCommand
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private  final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
 
 	private static final AdMessageKey MSG_CannotFullAllocate = AdMessageKey.of("PPOrderIssuePlanCreateCommand.CannotFullyAllocated");
 
@@ -43,6 +48,7 @@ public class PPOrderIssuePlanCreateCommand
 	//
 	// State
 	private final AllocableHUsMap allocableHUsMap;
+	private final PPOrderRouting ppOrderRouting;
 
 	@Builder
 	private PPOrderIssuePlanCreateCommand(
@@ -61,6 +67,7 @@ public class PPOrderIssuePlanCreateCommand
 						.huReservationService(huReservationService)
 						.build())
 				.build();
+		this.ppOrderRouting = ppOrderRoutingRepository.getByOrderId(ppOrderId);
 	}
 
 	public PPOrderIssuePlan execute()
@@ -93,7 +100,7 @@ public class PPOrderIssuePlanCreateCommand
 		final Quantity targetQty = ppOrderBOMBL.getQuantities(orderBOMLine).getRemainingQtyToIssue();
 		Quantity allocatedQty = targetQty.toZero();
 		final ArrayList<PPOrderIssuePlanStep> planSteps = new ArrayList<>();
-		final AllocableHUsList availableHUs = allocableHUsMap.getAllocableHUs(AllocableHUsGroupingKey.of(productId, pickFromLocatorId));
+		final AllocableHUsList availableHUs = getAvailableHusForLine(orderBOMLine);
 		for (final AllocableHU allocableHU : availableHUs)
 		{
 			final Quantity remainingQtyToAllocate = targetQty.subtract(allocatedQty);
@@ -167,6 +174,29 @@ public class PPOrderIssuePlanCreateCommand
 		}
 
 		return planSteps.stream();
+	}
+
+	@NonNull
+	private AllocableHUsList getAvailableHusForLine(final I_PP_Order_BOMLine orderBOMLine)
+	{
+		final RawMaterialsIssueStrategy issueStrategy = ppOrderRouting.getIssueStrategyForRawMaterialsActivity();
+		final RawMaterialsIssueStrategy actualStrategy = issueStrategy.applies(BOMIssueMethod.ofNullableCode(orderBOMLine.getIssueMethod()))
+				? issueStrategy
+				: RawMaterialsIssueStrategy.DEFAULT;
+		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
+
+		switch (actualStrategy)
+		{
+			case AssignedHUsOnly:
+				return allocableHUsMap.getAllocableHUs(AllocableHUsGroupingKey.onlySourceHUs(productId));
+			case DEFAULT:
+				final LocatorId pickFromLocatorId = getPickFromLocatorId(orderBOMLine);
+				return allocableHUsMap.getAllocableHUs(AllocableHUsGroupingKey.of(productId, pickFromLocatorId));
+			default:
+				throw new AdempiereException("Unknown RawMaterialsIssueStrategy")
+						.appendParametersToMessage()
+						.setParameter("RawMaterialsIssueStrategy", issueStrategy);
+		}
 	}
 
 	private static LocatorId getPickFromLocatorId(@NonNull final I_PP_Order_BOMLine orderBOMLine)

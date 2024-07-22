@@ -161,6 +161,11 @@ const translations = {
         target: 'Empf. Soll',
         picked: 'Ist',
       },
+      validateSourceLocator: {
+        noValidOption: 'Keine gültige Option verfügbar',
+        qrMatches: `OK!`,
+        qrDoesNotMatch: `Der gescannte QR stimmt nicht mit der Quelle Locator überein!`,
+      },
     },
   },
 };

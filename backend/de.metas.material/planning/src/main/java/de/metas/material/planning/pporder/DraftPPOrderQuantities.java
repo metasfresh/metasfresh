@@ -63,4 +63,9 @@ public final class DraftPPOrderQuantities
 				? Optional.of(bomLineQtys.getQtyIssuedOrReceived())
 				: Optional.empty();
 	}
+
+	public boolean isSomethingReceived()
+	{
+		return getQtyReceived().map(Quantity::signum).orElse(-1) > 0;
+	}
 }

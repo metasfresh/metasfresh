@@ -49,6 +49,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -275,5 +276,12 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		final Set<WarehouseId> pickFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
 		return warehouseDAO.getLocatorIdsByWarehouseIds(pickFromWarehouseIds);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull final Collection<Integer> locatorIds)
+	{
+		return warehouseDAO.getLocatorIdsByRepoId(locatorIds);
 	}
 }
