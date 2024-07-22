@@ -70,6 +70,7 @@ public class DDOrderCandidateRequestedEventHandler
 				.isSimulated(data.isSimulated())
 				//
 				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(data.getSalesOrderLineId()))
+				.ppOrderRef(data.getPpOrderRef())
 				//
 				.distributionNetworkAndLineId(data.getDistributionNetworkAndLineId())
 				.productPlanningId(data.getProductPlanningId())

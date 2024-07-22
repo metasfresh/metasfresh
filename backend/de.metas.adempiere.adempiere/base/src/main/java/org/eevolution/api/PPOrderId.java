@@ -22,18 +22,17 @@
 
 package org.eevolution.api;
 
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
@@ -72,4 +71,6 @@ public class PPOrderId implements RepoIdAware
 	{
 		return getRepoId();
 	}
+
+	public static boolean equals(@Nullable final PPOrderId id1, @Nullable final PPOrderId id2) {return Objects.equals(id1, id2);}
 }

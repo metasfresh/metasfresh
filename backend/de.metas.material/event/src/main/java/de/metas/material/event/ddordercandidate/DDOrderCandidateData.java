@@ -6,6 +6,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.organization.OrgId;
@@ -37,8 +38,9 @@ public class DDOrderCandidateData
 	@NonNull ResourceId targetPlantId;
 	@NonNull ShipperId shipperId;
 
-	int salesOrderLineId;
 	int customerId;
+	int salesOrderLineId;
+	@Nullable PPOrderRef ppOrderRef;
 
 	@NonNull ProductDescriptor productDescriptor;
 	@Nullable MinMaxDescriptor fromWarehouseMinMaxDescriptor;
@@ -58,7 +60,7 @@ public class DDOrderCandidateData
 	 * and the respective {@link DDOrderCandidateCreatedEvent} contains the same group-ID.
 	 */
 	@Nullable MaterialDispoGroupId materialDispoGroupId;
-
+	
 	@JsonIgnore
 	public int getProductId() {return getProductDescriptor().getProductId();}
 

@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -321,5 +322,17 @@ public class Candidate
 	public BusinessCaseDetail getBusinessCaseDetailNotNull()
 	{
 		return Check.assumeNotNull(getBusinessCaseDetail(), "businessCaseDetail is not null: {}", this);
+	}
+
+	public <T extends BusinessCaseDetail> Optional<T> getBusinessCaseDetail(@NonNull final Class<T> type)
+	{
+		return type.isInstance(businessCaseDetail) ? Optional.of(type.cast(businessCaseDetail)) : Optional.empty();
+	}
+
+	@Nullable
+	public String getTraceId()
+	{
+		final DemandDetail demandDetail = getDemandDetail();
+		return demandDetail != null ? demandDetail.getTraceId() : null;
 	}
 }

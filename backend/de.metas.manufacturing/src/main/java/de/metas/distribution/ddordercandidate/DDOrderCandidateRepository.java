@@ -3,6 +3,7 @@ package de.metas.distribution.ddordercandidate;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.order.OrderLineId;
@@ -21,9 +22,12 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order_Candidate;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Stream;
@@ -87,6 +91,7 @@ public class DDOrderCandidateRepository
 		//
 		// Forward document references
 		record.setC_OrderLineSO_ID(OrderLineId.toRepoId(from.getSalesOrderLineId()));
+		updateRecord(record, from.getPpOrderRef());
 
 		//
 		// Planning master data references
@@ -97,6 +102,14 @@ public class DDOrderCandidateRepository
 
 		DYNATTR_TraceId.setValue(record, from.getTraceId());
 		DYNATTR_GroupId.setValue(record, from.getMaterialDispoGroupId());
+	}
+
+	private static void updateRecord(@NonNull final I_DD_Order_Candidate record, @Nullable final PPOrderRef from)
+	{
+		record.setForward_PP_Order_ID(from != null ? PPOrderId.toRepoId(from.getPpOrderId()) : -1);
+		record.setForward_PP_Order_BOMLine_ID(from != null ? PPOrderBOMLineId.toRepoId(from.getPpOrderBOMLineId()) : -1);
+		record.setForward_PP_Order_Candidate_ID(from != null ? from.getPpOrderCandidateId() : -1);
+		record.setForward_PP_OrderLine_Candidate_ID(from != null ? from.getPpOrderLineCandidateId() : -1);
 	}
 
 	public static DDOrderCandidate fromRecord(final I_DD_Order_Candidate record)
@@ -131,7 +144,25 @@ public class DDOrderCandidateRepository
 				//
 				.traceId(DYNATTR_TraceId.getValue(record))
 				.materialDispoGroupId(DYNATTR_GroupId.getValue(record))
+				.ppOrderRef(extractPPOrderRef(record))
 				//
+				.build();
+	}
+
+	private static PPOrderRef extractPPOrderRef(final I_DD_Order_Candidate record)
+	{
+		final int ppOrderCandidateId = record.getForward_PP_Order_Candidate_ID();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(record.getForward_PP_Order_ID());
+		if (ppOrderCandidateId <= 0 && ppOrderId == null)
+		{
+			return null;
+		}
+
+		return PPOrderRef.builder()
+				.ppOrderCandidateId(ppOrderCandidateId)
+				.ppOrderLineCandidateId(record.getForward_PP_OrderLine_Candidate_ID())
+				.ppOrderId(ppOrderId)
+				.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoIdOrNull(record.getForward_PP_Order_BOMLine_ID()))
 				.build();
 	}
 

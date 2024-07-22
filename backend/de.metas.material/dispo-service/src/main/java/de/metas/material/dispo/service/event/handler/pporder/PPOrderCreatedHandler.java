@@ -23,6 +23,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderData;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.organization.IOrgDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -182,7 +183,7 @@ public final class PPOrderCreatedHandler
 				.plantId(ppOrder.getPpOrderData().getPlantId())
 				.workstationId(ppOrder.getPpOrderData().getWorkstationId())
 				.productPlanningId(ppOrder.getPpOrderData().getProductPlanningId())
-				.ppOrderId(ppOrder.getPpOrderId())
+				.ppOrderRef(PPOrderRef.ofPPOrderId(ppOrder.getPpOrderId()))
 				.ppOrderDocStatus(ppOrder.getDocStatus())
 				.build();
 	}

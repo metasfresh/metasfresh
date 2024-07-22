@@ -1,13 +1,14 @@
 package de.metas.material.event.commons;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.bpartner.BPartnerId;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -39,6 +40,7 @@ import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
  */
 
 @Value
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class SupplyRequiredDescriptor
 {
 	EventDescriptor eventDescriptor;
@@ -58,24 +60,26 @@ public class SupplyRequiredDescriptor
 	int orderId;
 	int orderLineId;
 	int subscriptionProgressId;
+	@Nullable PPOrderRef ppOrderRef;
 	boolean simulated;
 	BigDecimal fullDemandQty;
 
-	@JsonCreator
 	@Builder(toBuilder = true)
+	@Jacksonized
 	private SupplyRequiredDescriptor(
-			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
-			@JsonProperty("demandCandidateId") final int demandCandidateId,
-			@JsonProperty("supplyCandidateId") final int supplyCandidateId,
-			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
-			@JsonProperty("forecastId") final int forecastId,
-			@JsonProperty("forecastLineId") final int forecastLineId,
-			@JsonProperty("orderId") final int orderId,
-			@JsonProperty("orderLineId") final int orderLineId,
-			@JsonProperty("subscriptionProgressId") final int subscriptionProgressId,
-			@JsonProperty("simulated") final boolean simulated,
-			@JsonProperty("fullDemandQty") final BigDecimal fullDemandQty)
+			@NonNull final EventDescriptor eventDescriptor,
+			@NonNull final MaterialDescriptor materialDescriptor,
+			final int demandCandidateId,
+			final int supplyCandidateId,
+			final int shipmentScheduleId,
+			final int forecastId,
+			final int forecastLineId,
+			final int orderId,
+			final int orderLineId,
+			final int subscriptionProgressId,
+			@Nullable final PPOrderRef ppOrderRef,
+			final boolean simulated,
+			final BigDecimal fullDemandQty)
 	{
 		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
 		this.supplyCandidateId = supplyCandidateId;
@@ -91,6 +95,7 @@ public class SupplyRequiredDescriptor
 		this.orderLineId = orderLineId > 0 ? orderLineId : -1;
 
 		this.subscriptionProgressId = subscriptionProgressId > 0 ? subscriptionProgressId : -1;
+		this.ppOrderRef = ppOrderRef;
 		this.simulated = simulated;
 		this.fullDemandQty = fullDemandQty;
 	}

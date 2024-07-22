@@ -35,9 +35,12 @@ import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.util.Check;
+import de.metas.util.InSetPredicate;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -356,13 +359,9 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final List<Candidate> candidates;
 		final TransactionDetail transactionDetailOfEvent = createTransactionDetail(event);
 
-		final int ppOrderLineIdForQuery = event.getPpOrderLineId() > 0
-				? event.getPpOrderLineId()
-				: ProductionDetailsQuery.NO_PP_ORDER_LINE_ID;
-
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
-				.ppOrderId(event.getPpOrderId())
-				.ppOrderLineId(ppOrderLineIdForQuery)
+				.ppOrderId(PPOrderId.ofRepoIdOrNull(event.getPpOrderId()))
+				.ppOrderLineIds(InSetPredicate.onlyOrNone(PPOrderBOMLineId.ofRepoIdOrNull(event.getPpOrderLineId())))
 				.build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()

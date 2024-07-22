@@ -2,6 +2,7 @@ package de.metas.distribution.ddordercandidate;
 
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.order.OrderLineId;
@@ -52,6 +53,7 @@ public class DDOrderCandidate
 	private final boolean isKeepTargetPlant;
 	
 	@Nullable private final OrderLineId salesOrderLineId;
+	@Nullable private final PPOrderRef ppOrderRef;
 
 	@Nullable private final DistributionNetworkAndLineId distributionNetworkAndLineId;
 	@Nullable private final ProductPlanningId productPlanningId;

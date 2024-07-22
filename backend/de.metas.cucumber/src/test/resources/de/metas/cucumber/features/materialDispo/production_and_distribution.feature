@@ -90,12 +90,12 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | bom_product  | bom_1             | bom_product_planning   | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
     And after not more than 60s, PP_OrderLine_Candidates are found
-      | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID |
-      | oc_1                  | component    | 10         | PCE               | CO            | boml_1                |
+      | Identifier | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID |
+      | ocl_1      | oc_1                  | component    | 10         | PCE               | CO            | boml_1                |
 
     And after not more than 60s, following DD_Order_Candidates are found
-      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed |
-      | component    | rawMaterials_WH     | production_WH    | 10  | N         |
+      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID |
+      | component    | rawMaterials_WH     | production_WH    | 10  | N         | oc_1                          | ocl_1                             |
 
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID  |
@@ -132,34 +132,34 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | true      | bom_product  | bom_1             | bom_product_planning   | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
     And after not more than 60s, PP_OrderLine_Candidates are found
-      | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID |
-      | oc_1                  | component    | 0          | PCE               | CO            | boml_1                |
+      | Identifier | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID |
+      | ocl_1      | oc_1                  | component    | 0          | PCE               | CO            | boml_1                |
     And after not more than 60s, PP_Orders are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID | DatePromised         |
       | ppOrder    | bom_product  | bom_1             | bom_product_planning   | 540006        | 10         | 10         | PCE               | customer      | 2021-04-16T21:00:00Z |
     And after not more than 60s, PP_Order_BomLines are found
-      | PP_Order_ID | M_Product_ID | QtyRequiered | C_UOM_ID.X12DE355 | ComponentType |
-      | ppOrder     | component    | 10           | PCE               | CO            |
+      | Identifier     | PP_Order_ID | M_Product_ID | QtyRequiered | C_UOM_ID.X12DE355 | ComponentType |
+      | ppOrderBOMLine | ppOrder     | component    | 10           | PCE               | CO            |
     And after not more than 60s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID | PP_Order_ID | QtyEntered | C_UOM_ID.X12DE355 |
       | oc_1                  | ppOrder     | 10         | PCE               |
 
     And after not more than 60s, following DD_Order_Candidates are found
-      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed |
-      | component    | rawMaterials_WH     | production_WH    | 10  | N         |
+      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID |
+      | component    | rawMaterials_WH     | production_WH    | 10  | N         | oc_1                          | ocl_1                             |
 
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID  |
       # Sales Order / Shipment Schedule:
       | 1          | DEMAND            | SHIPMENT                  | bom_product  | 2021-04-16T21:00:00Z | -10 | -10                    | production_WH   |
       # PP_Order_Candidate:
-      | 2          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 0   | -10                    | production_WH   |
-      | 3          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | 0   | 0                      | production_WH   |
+      | 2          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 0   | 0                      | production_WH   |
+      | 3          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | 0   | -10                    | production_WH   |
       # PP_Order:
       | 4          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 10  | 0                      | production_WH   |
-      | 5          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | -10 | 0                      | production_WH   |
+      | 5          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | -10 | -10                    | production_WH   |
       # DD_Order_Candidate:
-      | 6          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | 10                     | production_WH   |
+      | 6          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | 0                      | production_WH   |
       | 7          | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -10 | -10                    | rawMaterials_WH |
 
     
@@ -198,12 +198,12 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | bom_product  | bom_1             | bom_product_planning   | 540006        | 7          | 7            | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
     And after not more than 60s, PP_OrderLine_Candidates are found
-      | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID |
-      | oc_1                  | component    | 7          | PCE               | CO            | boml_1                |
+      | Identifier | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID |
+      | ocl_1      | oc_1                  | component    | 7          | PCE               | CO            | boml_1                |
 
     And after not more than 60s, following DD_Order_Candidates are found
-      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed |
-      | component    | rawMaterials_WH     | production_WH    | 5   | N         |
+      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID |
+      | component    | rawMaterials_WH     | production_WH    | 5   | N         | oc_1                          | ocl_1                             |
 
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID  |

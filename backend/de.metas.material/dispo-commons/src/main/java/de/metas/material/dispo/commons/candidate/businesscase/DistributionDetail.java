@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons.candidate.businesscase;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.product.ResourceId;
@@ -11,6 +12,8 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -28,6 +31,10 @@ public class DistributionDetail implements BusinessCaseDetail
 	int ddOrderLineId;
 	DocStatus ddOrderDocStatus;
 
+	//
+	// Forward manufacturing
+	@Nullable PPOrderRef ppOrderRef;
+
 	boolean advised;
 
 	@NonNull @Default Flag pickDirectlyIfFeasible = Flag.FALSE;
@@ -44,8 +51,27 @@ public class DistributionDetail implements BusinessCaseDetail
 				.ddOrderId(distributionDetailRecord.getDD_Order_ID())
 				.ddOrderLineId(distributionDetailRecord.getDD_OrderLine_ID())
 				.ddOrderDocStatus(DocStatus.ofNullableCode(distributionDetailRecord.getDD_Order_DocStatus()))
+				.ppOrderRef(extractPPOrderRef(distributionDetailRecord))
 				.qty(distributionDetailRecord.getPlannedQty())
 				.shipperId(ShipperId.ofRepoIdOrNull(distributionDetailRecord.getM_Shipper_ID()))
+				.build();
+	}
+
+	@Nullable
+	private static PPOrderRef extractPPOrderRef(final I_MD_Candidate_Dist_Detail record)
+	{
+		final int ppOrderCandidateId = record.getPP_Order_Candidate_ID();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(record.getPP_Order_ID());
+		if (ppOrderCandidateId <= 0 && ppOrderId == null)
+		{
+			return null;
+		}
+
+		return PPOrderRef.builder()
+				.ppOrderCandidateId(ppOrderCandidateId)
+				.ppOrderLineCandidateId(record.getPP_OrderLine_Candidate_ID())
+				.ppOrderId(ppOrderId)
+				.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoIdOrNull(record.getPP_Order_BOMLine_ID()))
 				.build();
 	}
 

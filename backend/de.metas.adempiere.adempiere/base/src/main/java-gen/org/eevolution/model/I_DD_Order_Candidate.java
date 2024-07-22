@@ -268,6 +268,31 @@ public interface I_DD_Order_Candidate
 	String COLUMNNAME_Forward_PP_Order_BOMLine_ID = "Forward_PP_Order_BOMLine_ID";
 
 	/**
+	 * Set Produktionsdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setForward_PP_Order_Candidate_ID (int Forward_PP_Order_Candidate_ID);
+
+	/**
+	 * Get Produktionsdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getForward_PP_Order_Candidate_ID();
+
+	@Nullable org.eevolution.model.I_PP_Order_Candidate getForward_PP_Order_Candidate();
+
+	void setForward_PP_Order_Candidate(@Nullable org.eevolution.model.I_PP_Order_Candidate Forward_PP_Order_Candidate);
+
+	ModelColumn<I_DD_Order_Candidate, org.eevolution.model.I_PP_Order_Candidate> COLUMN_Forward_PP_Order_Candidate_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "Forward_PP_Order_Candidate_ID", org.eevolution.model.I_PP_Order_Candidate.class);
+	String COLUMNNAME_Forward_PP_Order_Candidate_ID = "Forward_PP_Order_Candidate_ID";
+
+	/**
 	 * Set Forward Manufacturing Order.
 	 *
 	 * <br>Type: Search
@@ -291,6 +316,31 @@ public interface I_DD_Order_Candidate
 
 	ModelColumn<I_DD_Order_Candidate, org.eevolution.model.I_PP_Order> COLUMN_Forward_PP_Order_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "Forward_PP_Order_ID", org.eevolution.model.I_PP_Order.class);
 	String COLUMNNAME_Forward_PP_Order_ID = "Forward_PP_Order_ID";
+
+	/**
+	 * Set Manufacturing Order Line Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setForward_PP_OrderLine_Candidate_ID (int Forward_PP_OrderLine_Candidate_ID);
+
+	/**
+	 * Get Manufacturing Order Line Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getForward_PP_OrderLine_Candidate_ID();
+
+	@Nullable org.eevolution.model.I_PP_OrderLine_Candidate getForward_PP_OrderLine_Candidate();
+
+	void setForward_PP_OrderLine_Candidate(@Nullable org.eevolution.model.I_PP_OrderLine_Candidate Forward_PP_OrderLine_Candidate);
+
+	ModelColumn<I_DD_Order_Candidate, org.eevolution.model.I_PP_OrderLine_Candidate> COLUMN_Forward_PP_OrderLine_Candidate_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "Forward_PP_OrderLine_Candidate_ID", org.eevolution.model.I_PP_OrderLine_Candidate.class);
+	String COLUMNNAME_Forward_PP_OrderLine_Candidate_ID = "Forward_PP_OrderLine_Candidate_ID";
 
 	/**
 	 * Set Active.

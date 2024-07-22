@@ -29,6 +29,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class PPOrderCandidateId implements RepoIdAware
@@ -57,4 +58,7 @@ public class PPOrderCandidateId implements RepoIdAware
 	{
 		return getRepoId();
 	}
+
+	public static boolean equals(@Nullable final PPOrderCandidateId id1, @Nullable final PPOrderCandidateId id2) {return Objects.equals(id1, id2);}
+
 }

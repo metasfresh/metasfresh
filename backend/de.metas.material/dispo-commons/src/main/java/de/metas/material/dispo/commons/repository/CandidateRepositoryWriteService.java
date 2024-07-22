@@ -33,6 +33,7 @@ import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.mforecast.IForecastDAO;
@@ -48,6 +49,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -440,10 +443,12 @@ public class CandidateRepositoryWriteService
 		productionDetailRecordToUpdate.setPP_Plant_ID(ResourceId.toRepoId(productionDetail.getPlantId()));
 		productionDetailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
 		productionDetailRecordToUpdate.setPP_Product_Planning_ID(productionDetail.getProductPlanningId());
-		productionDetailRecordToUpdate.setPP_Order_ID(productionDetail.getPpOrderId());
+
 		productionDetailRecordToUpdate.setPP_Order_Candidate_ID(productionDetail.getPpOrderCandidateId());
 		productionDetailRecordToUpdate.setPP_OrderLine_Candidate_ID(productionDetail.getPpOrderLineCandidateId());
-		productionDetailRecordToUpdate.setPP_Order_BOMLine_ID(productionDetail.getPpOrderLineId());
+		productionDetailRecordToUpdate.setPP_Order_ID(PPOrderId.toRepoId(productionDetail.getPpOrderId()));
+		productionDetailRecordToUpdate.setPP_Order_BOMLine_ID(PPOrderBOMLineId.toRepoId(productionDetail.getPpOrderBOMLineId()));
+
 		productionDetailRecordToUpdate.setPP_Order_DocStatus(DocStatus.toCodeOrNull(productionDetail.getPpOrderDocStatus()));
 		productionDetailRecordToUpdate.setPlannedQty(productionDetail.getQty());
 		productionDetailRecordToUpdate.setActualQty(candidate.computeActualQty());
@@ -486,6 +491,13 @@ public class CandidateRepositoryWriteService
 		detailRecordToUpdate.setDD_Order_ID(distributionDetail.getDdOrderId());
 		detailRecordToUpdate.setDD_OrderLine_ID(distributionDetail.getDdOrderLineId());
 		detailRecordToUpdate.setDD_Order_DocStatus(distributionDetail.getDdOrderDocStatus() != null ? distributionDetail.getDdOrderDocStatus().getCode() : null);
+
+		final PPOrderRef ppOrderRef = distributionDetail.getPpOrderRef();
+		detailRecordToUpdate.setPP_Order_ID(ppOrderRef != null ? PPOrderId.toRepoId(ppOrderRef.getPpOrderId()) : -1);
+		detailRecordToUpdate.setPP_Order_BOMLine_ID(ppOrderRef != null ? PPOrderBOMLineId.toRepoId(ppOrderRef.getPpOrderBOMLineId()) : -1);
+		detailRecordToUpdate.setPP_Order_Candidate_ID(ppOrderRef != null ? ppOrderRef.getPpOrderCandidateId() : -1);
+		detailRecordToUpdate.setPP_OrderLine_Candidate_ID(ppOrderRef != null ? ppOrderRef.getPpOrderLineCandidateId() : -1);
+
 		detailRecordToUpdate.setM_Shipper_ID(ShipperId.toRepoId(distributionDetail.getShipperId()));
 		detailRecordToUpdate.setPlannedQty(distributionDetail.getQty());
 		detailRecordToUpdate.setActualQty(candidate.computeActualQty());

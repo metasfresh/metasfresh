@@ -177,6 +177,7 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 				.plantId(extractPlantId(event, candidateType))
 				.productPlanningId(event.getProductPlanningId())
 				.shipperId(event.getShipperId())
+				.ppOrderRef(event.getDdOrderCandidate().getPpOrderRef())
 				.build();
 	}
 

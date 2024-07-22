@@ -23,6 +23,7 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderLineData;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import de.metas.order.OrderLine;
@@ -252,8 +253,9 @@ public class RequestMaterialOrderService
 				.targetPlantId(supplyDistributionDetail.getPlantId())
 				.shipperId(supplyDistributionDetail.getShipperId())
 				//
-				.salesOrderLineId(OrderLineId.toRepoId(demandCandidate.getSalesOrderLineId()))
 				.customerId(BPartnerId.toRepoId(supplyCandidate.getCustomerId()))
+				.salesOrderLineId(OrderLineId.toRepoId(demandCandidate.getSalesOrderLineId()))
+				.ppOrderRef(getPpOrderRef(supplyCandidate))
 				//
 				.productDescriptor(supplyCandidate.getMaterialDescriptor())
 				.datePromised(supplyCandidate.getDate())
@@ -350,4 +352,22 @@ public class RequestMaterialOrderService
 				.map(OrderLine::getHuPIItemProductId)
 				.orElse(null);
 	}
+
+	private static PPOrderRef getPpOrderRef(final Candidate candidate)
+	{
+		final ProductionDetail productionDetail = candidate.getBusinessCaseDetail(ProductionDetail.class).orElse(null);
+		if (productionDetail != null)
+		{
+			return productionDetail.getPpOrderRef();
+		}
+
+		final DistributionDetail distributionDetail = candidate.getBusinessCaseDetail(DistributionDetail.class).orElse(null);
+		if (distributionDetail != null)
+		{
+			return distributionDetail.getPpOrderRef();
+		}
+
+		return null;
+	}
+
 }

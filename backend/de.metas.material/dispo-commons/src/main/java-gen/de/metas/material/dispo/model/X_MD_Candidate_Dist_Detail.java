@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements I_MD_Candidate_Dist_Detail, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1962368396L;
+	private static final long serialVersionUID = -771226452L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Dist_Detail (final Properties ctx, final int MD_Candidate_Dist_Detail_ID, @Nullable final String trxName)
@@ -301,6 +301,114 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedQty);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order getPP_Order_BOMLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Order.class);
+	}
+
+	@Override
+	public void setPP_Order_BOMLine(final org.eevolution.model.I_PP_Order PP_Order_BOMLine)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Order.class, PP_Order_BOMLine);
+	}
+
+	@Override
+	public void setPP_Order_BOMLine_ID (final int PP_Order_BOMLine_ID)
+	{
+		if (PP_Order_BOMLine_ID < 1) 
+			set_Value (COLUMNNAME_PP_Order_BOMLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Order_BOMLine_ID, PP_Order_BOMLine_ID);
+	}
+
+	@Override
+	public int getPP_Order_BOMLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PP_Order_BOMLine_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order_Candidate getPP_Order_Candidate()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Order_Candidate_ID, org.eevolution.model.I_PP_Order_Candidate.class);
+	}
+
+	@Override
+	public void setPP_Order_Candidate(final org.eevolution.model.I_PP_Order_Candidate PP_Order_Candidate)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Order_Candidate_ID, org.eevolution.model.I_PP_Order_Candidate.class, PP_Order_Candidate);
+	}
+
+	@Override
+	public void setPP_Order_Candidate_ID (final int PP_Order_Candidate_ID)
+	{
+		if (PP_Order_Candidate_ID < 1) 
+			set_Value (COLUMNNAME_PP_Order_Candidate_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Order_Candidate_ID, PP_Order_Candidate_ID);
+	}
+
+	@Override
+	public int getPP_Order_Candidate_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PP_Order_Candidate_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order getPP_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
+	}
+
+	@Override
+	public void setPP_Order(final org.eevolution.model.I_PP_Order PP_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class, PP_Order);
+	}
+
+	@Override
+	public void setPP_Order_ID (final int PP_Order_ID)
+	{
+		if (PP_Order_ID < 1) 
+			set_Value (COLUMNNAME_PP_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Order_ID, PP_Order_ID);
+	}
+
+	@Override
+	public int getPP_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PP_Order_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order_Candidate getPP_OrderLine_Candidate()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_OrderLine_Candidate_ID, org.eevolution.model.I_PP_Order_Candidate.class);
+	}
+
+	@Override
+	public void setPP_OrderLine_Candidate(final org.eevolution.model.I_PP_Order_Candidate PP_OrderLine_Candidate)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_OrderLine_Candidate_ID, org.eevolution.model.I_PP_Order_Candidate.class, PP_OrderLine_Candidate);
+	}
+
+	@Override
+	public void setPP_OrderLine_Candidate_ID (final int PP_OrderLine_Candidate_ID)
+	{
+		if (PP_OrderLine_Candidate_ID < 1) 
+			set_Value (COLUMNNAME_PP_OrderLine_Candidate_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_OrderLine_Candidate_ID, PP_OrderLine_Candidate_ID);
+	}
+
+	@Override
+	public int getPP_OrderLine_Candidate_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PP_OrderLine_Candidate_ID);
 	}
 
 	@Override

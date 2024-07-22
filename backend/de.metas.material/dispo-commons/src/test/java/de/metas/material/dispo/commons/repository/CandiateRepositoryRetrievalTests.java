@@ -31,6 +31,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.shipping.ShipperId;
+import de.metas.util.InSetPredicate;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.IPair;
@@ -38,6 +39,8 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -193,6 +196,7 @@ public class CandiateRepositoryRetrievalTests
 		perform_retrieve_with_ProductionDetail();
 	}
 
+	@SuppressWarnings("DataFlowIssue")
 	private IPair<Candidate, I_MD_Candidate> perform_retrieve_with_ProductionDetail()
 	{
 		final I_MD_Candidate_Prod_Detail productionDetailRecord = createProdDetailRecord(101, 111);
@@ -213,8 +217,8 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(productionDetail.getDescription()).isEqualTo("description1");
 		assertThat(productionDetail.getProductBomLineId()).isEqualTo(71);
 		assertThat(productionDetail.getProductPlanningId()).isEqualTo(81);
-		assertThat(productionDetail.getPpOrderId()).isEqualTo(101);
-		assertThat(productionDetail.getPpOrderLineId()).isEqualTo(111);
+		assertThat(productionDetail.getPpOrderRef().getPpOrderId().getRepoId()).isEqualTo(101);
+		assertThat(productionDetail.getPpOrderRef().getPpOrderBOMLineId().getRepoId()).isEqualTo(111);
 		assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo(DocStatus.Completed);
 
 		return ImmutablePair.of(cand, productionDetailRecord.getMD_Candidate());
@@ -282,8 +286,8 @@ public class CandiateRepositoryRetrievalTests
 		createProdDetailRecord(101, 113);
 
 		final ProductionDetailsQuery poductionDetailsQuery = ProductionDetailsQuery.builder()
-				.ppOrderId(101)
-				.ppOrderLineId(ProductionDetailsQuery.NO_PP_ORDER_LINE_ID)
+				.ppOrderId(PPOrderId.ofRepoId(101))
+				.ppOrderLineIds(InSetPredicate.none())
 				.build();
 		final CandidatesQuery candidatesQuery = CandidatesQuery.builder().productionDetailsQuery(poductionDetailsQuery).build();
 
@@ -300,8 +304,8 @@ public class CandiateRepositoryRetrievalTests
 		createProdDetailRecord(101, 113);
 
 		final ProductionDetailsQuery poductionDetailsQuery = ProductionDetailsQuery.builder()
-				.ppOrderId(101)
-				.ppOrderLineId(112)
+				.ppOrderId(PPOrderId.ofRepoId(101))
+				.ppOrderLineIds(InSetPredicate.only(PPOrderBOMLineId.ofRepoId(112)))
 				.build();
 		final CandidatesQuery candidatesQuery = CandidatesQuery.builder().productionDetailsQuery(poductionDetailsQuery).build();
 

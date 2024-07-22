@@ -15,6 +15,7 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
@@ -104,6 +105,7 @@ public class CandidateServiceTests
 				.businessCaseDetail(ProductionDetail.builder()
 						.plantId(ResourceId.ofRepoId(210))
 						.productPlanningId(220)
+						.ppOrderRef(PPOrderRef.ofPPOrderId(1))
 						.advised(Flag.FALSE)
 						.pickDirectlyIfFeasible(Flag.FALSE)
 						.qty(TEN)
@@ -120,6 +122,7 @@ public class CandidateServiceTests
 						.plantId(ResourceId.ofRepoId(210))
 						.productPlanningId(220)
 						.productBomLineId(500)
+						.ppOrderRef(PPOrderRef.ofPPOrderId(1))
 						.advised(Flag.TRUE)
 						.pickDirectlyIfFeasible(Flag.FALSE)
 						.qty(TEN)
@@ -136,6 +139,7 @@ public class CandidateServiceTests
 						.plantId(ResourceId.ofRepoId(210))
 						.productPlanningId(220)
 						.productBomLineId(600)
+						.ppOrderRef(PPOrderRef.ofPPOrderId(1))
 						.advised(Flag.FALSE)
 						.pickDirectlyIfFeasible(Flag.TRUE)
 						.qty(TEN)

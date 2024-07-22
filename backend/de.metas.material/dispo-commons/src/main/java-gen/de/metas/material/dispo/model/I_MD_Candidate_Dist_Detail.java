@@ -380,6 +380,108 @@ public interface I_MD_Candidate_Dist_Detail
 	String COLUMNNAME_PlannedQty = "PlannedQty";
 
 	/**
+	 * Set Manufacturing Order BOM Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Order_BOMLine_ID (int PP_Order_BOMLine_ID);
+
+	/**
+	 * Get Manufacturing Order BOM Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPP_Order_BOMLine_ID();
+
+	@Nullable org.eevolution.model.I_PP_Order getPP_Order_BOMLine();
+
+	void setPP_Order_BOMLine(@Nullable org.eevolution.model.I_PP_Order PP_Order_BOMLine);
+
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_BOMLine_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "PP_Order_BOMLine_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_PP_Order_BOMLine_ID = "PP_Order_BOMLine_ID";
+
+	/**
+	 * Set Manufacturing candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Order_Candidate_ID (int PP_Order_Candidate_ID);
+
+	/**
+	 * Get Manufacturing candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPP_Order_Candidate_ID();
+
+	@Nullable org.eevolution.model.I_PP_Order_Candidate getPP_Order_Candidate();
+
+	void setPP_Order_Candidate(@Nullable org.eevolution.model.I_PP_Order_Candidate PP_Order_Candidate);
+
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_PP_Order_Candidate> COLUMN_PP_Order_Candidate_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "PP_Order_Candidate_ID", org.eevolution.model.I_PP_Order_Candidate.class);
+	String COLUMNNAME_PP_Order_Candidate_ID = "PP_Order_Candidate_ID";
+
+	/**
+	 * Set Manufacturing Order.
+	 * Manufacturing Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Order_ID (int PP_Order_ID);
+
+	/**
+	 * Get Manufacturing Order.
+	 * Manufacturing Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPP_Order_ID();
+
+	@Nullable org.eevolution.model.I_PP_Order getPP_Order();
+
+	void setPP_Order(@Nullable org.eevolution.model.I_PP_Order PP_Order);
+
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
+
+	/**
+	 * Set Manufacturing Order Line Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_OrderLine_Candidate_ID (int PP_OrderLine_Candidate_ID);
+
+	/**
+	 * Get Manufacturing Order Line Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPP_OrderLine_Candidate_ID();
+
+	@Nullable org.eevolution.model.I_PP_Order_Candidate getPP_OrderLine_Candidate();
+
+	void setPP_OrderLine_Candidate(@Nullable org.eevolution.model.I_PP_Order_Candidate PP_OrderLine_Candidate);
+
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_PP_Order_Candidate> COLUMN_PP_OrderLine_Candidate_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "PP_OrderLine_Candidate_ID", org.eevolution.model.I_PP_Order_Candidate.class);
+	String COLUMNNAME_PP_OrderLine_Candidate_ID = "PP_OrderLine_Candidate_ID";
+
+	/**
 	 * Set Plant.
 	 *
 	 * <br>Type: Search

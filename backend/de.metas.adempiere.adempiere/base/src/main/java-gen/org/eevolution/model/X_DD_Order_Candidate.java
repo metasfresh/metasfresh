@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -81432511L;
+	private static final long serialVersionUID = -14642095L;
 
     /** Standard Constructor */
     public X_DD_Order_Candidate (final Properties ctx, final int DD_Order_Candidate_ID, @Nullable final String trxName)
@@ -198,6 +198,33 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	}
 
 	@Override
+	public org.eevolution.model.I_PP_Order_Candidate getForward_PP_Order_Candidate()
+	{
+		return get_ValueAsPO(COLUMNNAME_Forward_PP_Order_Candidate_ID, org.eevolution.model.I_PP_Order_Candidate.class);
+	}
+
+	@Override
+	public void setForward_PP_Order_Candidate(final org.eevolution.model.I_PP_Order_Candidate Forward_PP_Order_Candidate)
+	{
+		set_ValueFromPO(COLUMNNAME_Forward_PP_Order_Candidate_ID, org.eevolution.model.I_PP_Order_Candidate.class, Forward_PP_Order_Candidate);
+	}
+
+	@Override
+	public void setForward_PP_Order_Candidate_ID (final int Forward_PP_Order_Candidate_ID)
+	{
+		if (Forward_PP_Order_Candidate_ID < 1) 
+			set_Value (COLUMNNAME_Forward_PP_Order_Candidate_ID, null);
+		else 
+			set_Value (COLUMNNAME_Forward_PP_Order_Candidate_ID, Forward_PP_Order_Candidate_ID);
+	}
+
+	@Override
+	public int getForward_PP_Order_Candidate_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Forward_PP_Order_Candidate_ID);
+	}
+
+	@Override
 	public org.eevolution.model.I_PP_Order getForward_PP_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_Forward_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
@@ -222,6 +249,33 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	public int getForward_PP_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Forward_PP_Order_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_OrderLine_Candidate getForward_PP_OrderLine_Candidate()
+	{
+		return get_ValueAsPO(COLUMNNAME_Forward_PP_OrderLine_Candidate_ID, org.eevolution.model.I_PP_OrderLine_Candidate.class);
+	}
+
+	@Override
+	public void setForward_PP_OrderLine_Candidate(final org.eevolution.model.I_PP_OrderLine_Candidate Forward_PP_OrderLine_Candidate)
+	{
+		set_ValueFromPO(COLUMNNAME_Forward_PP_OrderLine_Candidate_ID, org.eevolution.model.I_PP_OrderLine_Candidate.class, Forward_PP_OrderLine_Candidate);
+	}
+
+	@Override
+	public void setForward_PP_OrderLine_Candidate_ID (final int Forward_PP_OrderLine_Candidate_ID)
+	{
+		if (Forward_PP_OrderLine_Candidate_ID < 1) 
+			set_Value (COLUMNNAME_Forward_PP_OrderLine_Candidate_ID, null);
+		else 
+			set_Value (COLUMNNAME_Forward_PP_OrderLine_Candidate_ID, Forward_PP_OrderLine_Candidate_ID);
+	}
+
+	@Override
+	public int getForward_PP_OrderLine_Candidate_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Forward_PP_OrderLine_Candidate_ID);
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import org.junit.jupiter.api.Test;
 
@@ -53,7 +54,9 @@ public class SupplyRequiredEventCreatorTest
 				.businessCaseDetail(ProductionDetail.builder()
 						.advised(Flag.FALSE)
 						.pickDirectlyIfFeasible(Flag.FALSE)
-						.qty(new BigDecimal("10")).build())
+						.ppOrderRef(PPOrderRef.ofPPOrderId(123))
+						.qty(new BigDecimal("10"))
+						.build())
 				.groupId(MaterialDispoGroupId.ofInt(40))
 				.seqNo(50)
 				.materialDescriptor(MaterialDescriptor.builder()

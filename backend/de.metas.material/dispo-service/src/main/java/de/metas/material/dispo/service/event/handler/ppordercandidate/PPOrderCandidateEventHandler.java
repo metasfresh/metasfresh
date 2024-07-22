@@ -44,6 +44,7 @@ import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderLineCandidate;
 import de.metas.material.event.pporder.PPOrderLineData;
+import de.metas.material.event.pporder.PPOrderRef;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -192,7 +193,7 @@ public abstract class PPOrderCandidateEventHandler
 				.workstationId(ppOrderCandidate.getPpOrderData().getWorkstationId())
 				.pickDirectlyIfFeasible(Flag.FALSE)
 				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId())
-				.ppOrderCandidateId(ppOrderCandidate.getPpOrderCandidateId())
+				.ppOrderRef(PPOrderRef.ofPPOrderCandidateIdOrNull(ppOrderCandidate.getPpOrderCandidateId()))
 				.build();
 	}
 
@@ -254,7 +255,7 @@ public abstract class PPOrderCandidateEventHandler
 				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId())
 				.productBomLineId(ppOrderLineData.getProductBomLineId())
 				.description(ppOrderLineData.getDescription())
-				.ppOrderLineCandidateId(ppOrderLineCandidate.getPpOrderLineCandidateId())
+				.ppOrderRef(PPOrderRef.ofPPOrderLineCandidateId(ppOrderCandidate.getPpOrderCandidateId(), ppOrderLineCandidate.getPpOrderLineCandidateId()))
 				.build();
 	}
 

@@ -62,6 +62,7 @@ import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.PPOrderAndBOMLineId;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -271,8 +272,8 @@ public class MaterialEventSerializerTests
 						.productDescriptor(createProductDescriptorWithOffSet(3))
 						.minMaxDescriptor(createSampleMinMaxDescriptor())
 						.issueOrReceiveDate(NOW)
-						.oldPPOrderLineId(40)
-						.newPPOrderLineId(50)
+						.oldPPOrderLineId(PPOrderAndBOMLineId.ofRepoIds(1, 40))
+						.newPPOrderLineId(PPOrderAndBOMLineId.ofRepoIds(1, 50))
 						.oldQtyRequired(new BigDecimal("60"))
 						.newQtyRequired(new BigDecimal("70"))
 						.oldQtyDelivered(new BigDecimal("61"))

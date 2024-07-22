@@ -13,6 +13,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
+import org.eevolution.api.PPOrderId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -62,6 +63,7 @@ public class CandidateRepositoryRetrievalTest
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 	}
 
+	@SuppressWarnings("DataFlowIssue")
 	@Test
 	public void retrieveCandidatesForPPOrderId()
 	{
@@ -93,14 +95,14 @@ public class CandidateRepositoryRetrievalTest
 			}
 		}
 
-		final List<Candidate> result = candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(23);
+		final List<Candidate> result = candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(PPOrderId.ofRepoId(23));
 		System.out.println("Got result: " + result);
 
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getId()).isEqualTo(candidateId);
 
 		final ProductionDetail productionDetail = ProductionDetail.cast(result.get(0).getBusinessCaseDetailNotNull());
-		assertThat(productionDetail.getPpOrderId()).isEqualTo(23);
+		assertThat(productionDetail.getPpOrderRef().getPpOrderId().getRepoId()).isEqualTo(23);
 	}
 
 	private I_MD_Candidate createCandidateRecord(@NonNull final Timestamp dateProjected)

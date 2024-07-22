@@ -38,6 +38,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
@@ -49,6 +50,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -265,12 +268,27 @@ public class CandidateRepositoryRetrieval
 				.plantId(ResourceId.ofRepoIdOrNull(productionDetailRecord.getPP_Plant_ID()))
 				.productBomLineId(productionDetailRecord.getPP_Product_BOMLine_ID())
 				.productPlanningId(productionDetailRecord.getPP_Product_Planning_ID())
-				.ppOrderId(productionDetailRecord.getPP_Order_ID())
-				.ppOrderLineId(productionDetailRecord.getPP_Order_BOMLine_ID())
+				.ppOrderRef(extractPPOrderRef(productionDetailRecord))
 				.ppOrderDocStatus(DocStatus.ofNullableCode(productionDetailRecord.getPP_Order_DocStatus()))
 				.qty(productionDetailRecord.getPlannedQty())
-				.ppOrderCandidateId(productionDetailRecord.getPP_Order_Candidate_ID())
-				.ppOrderLineCandidateId(productionDetailRecord.getPP_OrderLine_Candidate_ID())
+				.build();
+	}
+
+	@Nullable
+	private static PPOrderRef extractPPOrderRef(final I_MD_Candidate_Prod_Detail record)
+	{
+		final int ppOrderCandidateId = record.getPP_Order_Candidate_ID();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(record.getPP_Order_ID());
+		if (ppOrderCandidateId <= 0 || ppOrderId == null)
+		{
+			return null;
+		}
+
+		return PPOrderRef.builder()
+				.ppOrderCandidateId(ppOrderCandidateId)
+				.ppOrderLineCandidateId(record.getPP_OrderLine_Candidate_ID())
+				.ppOrderId(ppOrderId)
+				.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoIdOrNull(record.getPP_Order_BOMLine_ID()))
 				.build();
 	}
 
@@ -387,7 +405,7 @@ public class CandidateRepositoryRetrieval
 				.endOrderBy();
 	}
 
-	public List<Candidate> retrieveCandidatesForPPOrderId(final int ppOrderId)
+	public List<Candidate> retrieveCandidatesForPPOrderId(@NonNull final PPOrderId ppOrderId)
 	{
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.productionDetailsQuery(ProductionDetailsQuery.builder()
