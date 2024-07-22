@@ -700,7 +700,7 @@ public class PostFinanceYbInvoiceService
 			final JAXBContext contextObj = JAXBContext.newInstance(ObjectFactory.class);
 
 			final SchemaFactory factory = SchemaFactory.newInstance(javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			final URL schemaUrl = getClass().getClassLoader().getResource(YB_INVOICE_SCHEMA_LOCATION);
+			final URL schemaUrl = ObjectFactory.class.getResource(YB_INVOICE_SCHEMA_LOCATION);
 			final Schema schema = factory.newSchema(schemaUrl);
 
 			final Marshaller marshallerObj = contextObj.createMarshaller();
