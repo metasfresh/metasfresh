@@ -280,7 +280,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 	{
 		final I_C_Flatrate_Term contract = request.getModularContract();
 		final ZonedDateTime date = TimeUtil.asZonedDateTime(contract.getStartDate(), orgDAO.getTimeZone(OrgId.ofRepoId(contract.getAD_Org_ID())));
-		final ModularContractSettings settings = modularContractSettingsService.getByFlatrateTermId(FlatrateTermId.ofRepoId(contract.getModular_Flatrate_Term_ID()));
+		final ModularContractSettings settings = modularContractSettingsService.getByFlatrateTermId(FlatrateTermId.ofRepoId(contract.getC_Flatrate_Term_ID()));
 		final I_M_PriceList priceList = priceListBL.getCurrentPricelistOrNull(
 				request.getPricingSystemId(),
 				bPartnerDAO.getCountryId(BPartnerLocationId.ofRepoId(contract.getBill_BPartner_ID(), contract.getBill_Location_ID())),
