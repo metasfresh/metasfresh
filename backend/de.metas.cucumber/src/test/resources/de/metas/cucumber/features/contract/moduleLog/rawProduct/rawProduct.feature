@@ -223,9 +223,21 @@ Feature: Modular contract log from purchase order for raw product
       | log_13                    | receiptLine_2        | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | addValueOnRaw_PO_2      | bp_moduleLogPO                      | bp_moduleLogPO                  | 200  | M_InOutLine     | moduleLogContract_1           | modCntr_type_3             | false         | MaterialReceipt              | EUR                        | PCE                   | -1200      | y2022                             | modCntr_module_6                 | -6.00           | PCE                       | addValueOnRawProduct_06032024_1      | Y              |
       | log_14                    | receiptLine_2        | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | subtractValueOnRaw_PO_2 | bp_moduleLogPO                      | bp_moduleLogPO                  | 200  | M_InOutLine     | moduleLogContract_1           | modCntr_type_4             | false         | MaterialReceipt              | EUR                        | PCE                   | 1800       | y2022                             | modCntr_module_5                 | 9.00            | PCE                       | subtractValueOnRawProduct_06032024_1 | Y              |
 
+    #TODO Sales Order, shipment disposition, shipment
+
+    And load AD_User:
+      | AD_User_ID.Identifier | Login      |
+      | metasfresh_user       | metasfresh |
+
+    And distribute interest
+      | AD_User_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | InterimDate | BillingDate |
+      | metasfresh_user       | invGroup                             | 2022-02-15  | 2022-04-15  |
+
+    And load latest ModCntr_Interest_Run for invoicing group invGroup as lastInterestRun
+
     And create final invoice
-      | C_Flatrate_Term_ID.Identifier | UserLogin  |
-      | moduleLogContract_1           | metasfresh |
+      | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier |
+      | moduleLogContract_1           | metasfresh_user       |
 
     And after not more than 60s, modular C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID.Identifier | C_Flatrate_Term_ID.Identifier | M_Product_ID.Identifier | ProductName                          |

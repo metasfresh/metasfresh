@@ -26,21 +26,20 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.finalinvoice.workpackage.ModularContractInvoiceEnqueuer;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
+import lombok.RequiredArgsConstructor;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
 
 import java.time.LocalDate;
 import java.util.Map;
-import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.process.params.InvoicingParams.PARA_DateAcct;
@@ -49,17 +48,13 @@ import static de.metas.invoicecandidate.process.params.InvoicingParams.PARA_Igno
 import static de.metas.invoicecandidate.process.params.InvoicingParams.PARA_IsCompleteInvoices;
 import static de.metas.invoicecandidate.process.params.InvoicingParams.PARA_OverrideDueDate;
 
+@RequiredArgsConstructor
 public class C_ModularFinalInvoice_StepDef
 {
 	private final ModularContractInvoiceEnqueuer finalInvoiceEnqueuer = SpringContextHolder.instance.getBean(ModularContractInvoiceEnqueuer.class);
-	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
-	private final C_Flatrate_Term_StepDefData contractTable;
-
-	public C_ModularFinalInvoice_StepDef(@NonNull final C_Flatrate_Term_StepDefData contractTable)
-	{
-		this.contractTable = contractTable;
-	}
+	@NonNull private final C_Flatrate_Term_StepDefData contractTable;
+	@NonNull private final AD_User_StepDefData userTable;
 
 	@And("create final invoice")
 	public void create_finalInvoice(@NonNull final DataTable dataTable)
@@ -75,16 +70,12 @@ public class C_ModularFinalInvoice_StepDef
 		final String contractIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_Flatrate_Term contractRecord = contractTable.get(contractIdentifier);
 
-		final String userLogin = DataTableUtil.extractStringForColumnName(row, "UserLogin");
-
-		final UserId userId = Optional.ofNullable(userDAO.retrieveUserIdByLogin(userLogin))
-				.orElseThrow(() -> new AdempiereException("No User found for UserLogin !")
-						.appendParametersToMessage()
-						.setParameter("UserLogin", userLogin));
+		final String adUserIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_User.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final UserId userId = userTable.getUserId(adUserIdentifier);
 
 		finalInvoiceEnqueuer.enqueueFinalInvoice(ImmutableSet.of(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID())),
-										userId,
-										createDefaultIInvoicingParams(row));
+				userId,
+				createDefaultIInvoicingParams(row));
 	}
 
 	@NonNull
