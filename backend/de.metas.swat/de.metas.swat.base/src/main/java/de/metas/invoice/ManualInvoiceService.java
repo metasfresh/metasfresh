@@ -155,7 +155,7 @@ public class ManualInvoiceService
 			@NonNull final Map<String, Object> valuesByColumnName)
 	{
 		manualInvoiceRepository.applyAndSave(invoiceAndLineId,
-											 (invoiceLineRecord) -> customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(invoiceLineRecord), valuesByColumnName));
+				(invoiceLineRecord) -> customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(invoiceLineRecord), valuesByColumnName));
 	}
 
 	private void saveInvoiceCustomColumns(
@@ -163,7 +163,7 @@ public class ManualInvoiceService
 			@NonNull final Map<String, Object> valuesByColumnName)
 	{
 		manualInvoiceRepository.applyAndSave(invoiceId,
-											 (invoiceRecord) -> customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(invoiceRecord), valuesByColumnName));
+				(invoiceRecord) -> customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(invoiceRecord), valuesByColumnName));
 	}
 
 	private void handleAcctData(
@@ -174,9 +174,9 @@ public class ManualInvoiceService
 				.stream()
 				.filter(line -> line.getElementValueId() != null)
 				.map(line -> buildInvoiceAcctRule(line.getElementValueId(),
-												  invoice.getRepoIdByExternalLineId(line.getExternalLineId()),
-												  request.getAcctSchema().getId(),
-												  line.getProductAcctType()))
+						invoice.getRepoIdByExternalLineId(line.getExternalLineId()),
+						request.getAcctSchema().getId(),
+						line.getProductAcctType()))
 				.collect(ImmutableList.toImmutableList());
 
 		if (rules.isEmpty())
@@ -201,7 +201,7 @@ public class ManualInvoiceService
 		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = getBPartnerLocationAndCaptureId(requestHeader.getBillBPartnerLocationId());
 		final ZoneId zoneId = orgDAO.getTimeZone(requestHeader.getOrgId());
 		final PriceListId priceListId = getPriceListId(requestHeader, countryId, zoneId);
-		final Optional<PaymentTermId> paymentTermId = paymentTermRepository.retrievePaymentTermId(PaymentTermQuery.builder()
+		final PaymentTermId paymentTermId = paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.builder()
 				.orgId(requestHeader.getOrgId())
 				.bPartnerId(requestHeader.getBillBPartnerId())
 				.soTrx(requestHeader.getSoTrx())
@@ -219,18 +219,17 @@ public class ManualInvoiceService
 				.docTypeId(requestHeader.getDocTypeId())
 				.poReference(requestHeader.getPoReference())
 				.soTrx(requestHeader.getSoTrx())
-				.currencyId(requestHeader.getCurrencyId());
-
-		paymentTermId.ifPresent(createManualInvoiceRequestBuilder::paymentTermId);
+				.currencyId(requestHeader.getCurrencyId())
+				.paymentTermId(paymentTermId);
 
 		final ImmutableList<CreateManualInvoiceLineRequest> lines = request.getLines()
 				.stream()
 				.map(requestLine -> buildManualInvoiceLine(request,
-														   requestLine,
-														   priceListId,
-														   countryId,
-														   bPartnerLocationAndCaptureId,
-														   zoneId))
+						requestLine,
+						priceListId,
+						countryId,
+						bPartnerLocationAndCaptureId,
+						zoneId))
 				.collect(ImmutableList.toImmutableList());
 
 		return createManualInvoiceRequestBuilder
@@ -333,10 +332,10 @@ public class ManualInvoiceService
 			@NonNull final ZoneId zoneId)
 	{
 		final IEditablePricingContext editablePricingContext = pricingBL.createInitialContext(header.getOrgId(),
-																							  requestLine.getProductId(),
-																							  header.getBillBPartnerId(),
-																							  requestLine.getQtyToInvoice(),
-																							  header.getSoTrx())
+						requestLine.getProductId(),
+						header.getBillBPartnerId(),
+						requestLine.getQtyToInvoice(),
+						header.getSoTrx())
 				.setFailIfNotCalculated();
 
 		editablePricingContext.setPriceListId(priceListId);
@@ -397,13 +396,13 @@ public class ManualInvoiceService
 		return InvoiceAcctRule.builder()
 				.elementValueId(elementValueId)
 				.matcher(InvoiceAcctRuleMatcher.builder()
-								 .invoiceAndLineId(invoiceAndLineId)
-								 .acctSchemaId(acctSchemaId)
-								 .accountTypeName(Optional.ofNullable(productAcctType)
-														  .map(ProductAcctType::getColumnName)
-														  .map(AccountTypeName::ofColumnName)
-														  .orElse(null))
-								 .build())
+						.invoiceAndLineId(invoiceAndLineId)
+						.acctSchemaId(acctSchemaId)
+						.accountTypeName(Optional.ofNullable(productAcctType)
+								.map(ProductAcctType::getColumnName)
+								.map(AccountTypeName::ofColumnName)
+								.orElse(null))
+						.build())
 				.build();
 	}
 
