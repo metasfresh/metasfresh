@@ -121,6 +121,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow New LU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowNewLU (boolean IsAllowNewLU);
+
+	/**
+	 * Get Allow New LU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowNewLU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowNewLU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowNewLU", null);
+	String COLUMNNAME_IsAllowNewLU = "IsAllowNewLU";
+
+	/**
 	 * Set Allow picking any HU.
 	 *
 	 * <br>Type: YesNo
@@ -143,6 +164,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	/**
 	 * Set Always split HU.
+	 * If checked, the selected HU is always split before picking.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -152,6 +174,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	/**
 	 * Get Always split HU.
+	 * If checked, the selected HU is always split before picking.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
