@@ -148,6 +148,7 @@ public final class AggregationEngine
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
 	 */
 	private final Map<AggregationKey, InvoiceHeaderAndLineAggregators> key2headerAndAggregators = new LinkedHashMap<>();
+
 	@Builder
 	private AggregationEngine(
 			@Nullable final MatchInvoiceService matchInvoiceService,
@@ -832,7 +833,10 @@ public final class AggregationEngine
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);
-		invoiceHeader.setPaymentTermId(getPaymentTermId(invoiceHeader).orElse(null));
+		final PaymentTermId paymentTermId = getPaymentTermId(invoiceHeader)
+				.orElse(paymentTermRepository.getDefaultPaymentTermId()
+						.orElse(null));
+		invoiceHeader.setPaymentTermId(paymentTermId);
 	}
 
 	@NonNull
@@ -948,7 +952,7 @@ public final class AggregationEngine
 		}
 
 		return Optional.of(aggregationDAO.retrieveAggregation(InterfaceWrapperHelper.getCtx(icRecord),
-															  headerAggregationId.getRepoId()));
+				headerAggregationId.getRepoId()));
 	}
 
 	private void setDocTypeInvoiceId(@NonNull final InvoiceHeaderImpl invoiceHeader)

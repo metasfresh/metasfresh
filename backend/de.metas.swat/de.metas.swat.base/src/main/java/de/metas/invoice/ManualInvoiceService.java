@@ -47,6 +47,9 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
@@ -85,6 +88,7 @@ public class ManualInvoiceService
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private final InvoiceAcctService invoiceAcctService;
 	private final CustomColumnService customColumnService;
@@ -197,6 +201,11 @@ public class ManualInvoiceService
 		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = getBPartnerLocationAndCaptureId(requestHeader.getBillBPartnerLocationId());
 		final ZoneId zoneId = orgDAO.getTimeZone(requestHeader.getOrgId());
 		final PriceListId priceListId = getPriceListId(requestHeader, countryId, zoneId);
+		final Optional<PaymentTermId> paymentTermId = paymentTermRepository.retrievePaymentTermId(PaymentTermQuery.builder()
+				.orgId(requestHeader.getOrgId())
+				.bPartnerId(requestHeader.getBillBPartnerId())
+				.soTrx(requestHeader.getSoTrx())
+				.build());
 
 		final CreateManualInvoiceRequest.CreateManualInvoiceRequestBuilder createManualInvoiceRequestBuilder = CreateManualInvoiceRequest.builder()
 				.orgId(requestHeader.getOrgId())
@@ -211,6 +220,8 @@ public class ManualInvoiceService
 				.poReference(requestHeader.getPoReference())
 				.soTrx(requestHeader.getSoTrx())
 				.currencyId(requestHeader.getCurrencyId());
+
+		paymentTermId.ifPresent(createManualInvoiceRequestBuilder::paymentTermId);
 
 		final ImmutableList<CreateManualInvoiceLineRequest> lines = request.getLines()
 				.stream()

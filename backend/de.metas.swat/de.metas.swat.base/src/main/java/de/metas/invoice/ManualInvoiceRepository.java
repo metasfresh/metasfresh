@@ -54,7 +54,7 @@ import java.util.function.Consumer;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-class ManualInvoiceRepository
+public class ManualInvoiceRepository
 {
 	public static final String API_DATA_SOURCE = "SOURCE.de.metas.rest_api.v2.invoice.InvoicesRestController";
 	@NonNull
@@ -168,8 +168,11 @@ class ManualInvoiceRepository
 		final int inputDataSourceRecordId = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), API_DATA_SOURCE, /* throwEx */true, ITrx.TRXNAME_None)
 				.getAD_InputDataSource_ID();
 
-		invoiceRecord.setAD_Org_ID(createManualInvoiceRequest.getOrgId().getRepoId());
-		invoiceRecord.setC_BPartner_ID(createManualInvoiceRequest.getBillBPartnerId().getRepoId());
+		final OrgId orgId = createManualInvoiceRequest.getOrgId();
+		final BPartnerId billBPartnerId = createManualInvoiceRequest.getBillBPartnerId();
+		final SOTrx soTrx = createManualInvoiceRequest.getSoTrx();
+		invoiceRecord.setAD_Org_ID(orgId.getRepoId());
+		invoiceRecord.setC_BPartner_ID(billBPartnerId.getRepoId());
 		invoiceRecord.setC_BPartner_Location_ID(createManualInvoiceRequest.getBillBPartnerLocationId().getRepoId());
 		invoiceRecord.setAD_User_ID(BPartnerContactId.toRepoId(createManualInvoiceRequest.getBillContactId()));
 		invoiceRecord.setDateInvoiced(TimeUtil.asTimestamp(createManualInvoiceRequest.getDateInvoiced()));
@@ -179,10 +182,11 @@ class ManualInvoiceRepository
 		invoiceRecord.setC_DocType_ID(createManualInvoiceRequest.getDocTypeId().getRepoId());
 		invoiceRecord.setC_DocTypeTarget_ID(createManualInvoiceRequest.getDocTypeId().getRepoId());
 		invoiceRecord.setPOReference(createManualInvoiceRequest.getPoReference());
-		invoiceRecord.setIsSOTrx(createManualInvoiceRequest.getSoTrx().toBoolean());
+		invoiceRecord.setIsSOTrx(soTrx.toBoolean());
 		invoiceRecord.setC_Currency_ID(createManualInvoiceRequest.getCurrencyId().getRepoId());
 		invoiceRecord.setM_PriceList_ID(createManualInvoiceRequest.getPriceListId().getRepoId());
 		invoiceRecord.setAD_InputDataSource_ID(inputDataSourceRecordId);
+		invoiceRecord.setC_PaymentTerm_ID(createManualInvoiceRequest.getPaymentTermId().getRepoId());
 		saveRecord(invoiceRecord);
 
 		return invoiceRecord;
