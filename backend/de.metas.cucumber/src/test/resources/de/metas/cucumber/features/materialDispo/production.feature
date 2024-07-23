@@ -368,7 +368,7 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
-  @flaky
+
   @Id:S0196_200
   @from:cucumber
   @Id:S0129.2_120

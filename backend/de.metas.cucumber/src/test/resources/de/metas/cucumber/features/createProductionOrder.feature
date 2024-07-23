@@ -21,7 +21,6 @@ Feature: create production order
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standard_category                | attributeSet_convenienceSalate   |
 
-  @flaky
   @from:cucumber
   @Id:S0129.1_100
   @Id:S0129.2_100
@@ -241,7 +240,7 @@ Feature: create production order
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
-  @flaky
+
   @Id:S0196_500
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, it is completed, then it is reactivated and its qtyOrdered is updated and the ordered is completed again. Then, the order is reactivated once again, its qtyOrdered updated to the initial value and the order is completed.
@@ -533,7 +532,6 @@ Feature: create production order
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
   @from:cucumber
-  @flaky
   @Id:S0129.2_130
   @Id:S0129.2_150
   @Id:S0129.2_170
@@ -865,7 +863,6 @@ Feature: create production order
       | s_2                        | INVENTORY_UP      |                               | p_11                    | 2021-04-14T21:00:00Z | 10   | 10                     |
 
   @from:cucumber
-  @flaky
   @Id:S0129.2_200
   @Id:S0196_700
   Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the past
@@ -1059,7 +1056,7 @@ Feature: create production order
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_111                    | 10             | 10              |
 
-  @flaky
+
   @Id:S0196_800
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the future
@@ -1500,7 +1497,7 @@ Feature: create production order
       | c_ppo_l_1_d                | DEMAND            | PRODUCTION                    | p_comp_1                | 2021-04-16T21:00:00Z | 200 | 0                      |
       | c_ppo_l_2_d                | DEMAND            | PRODUCTION                    | p_comp_3                | 2021-04-16T21:00:00Z | 300 | 0                      |
 
-  @flaky
+
   @Id:S0196_900
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, it is reactivated and its DatePromised is updated in the future
@@ -1727,7 +1724,6 @@ Feature: create production order
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
   @Id:S0196_1000
-  @flaky
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, it is reactivated and its DatePromised is updated in the past
     Given metasfresh contains M_Products:
