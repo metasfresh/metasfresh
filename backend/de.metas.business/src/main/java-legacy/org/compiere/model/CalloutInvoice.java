@@ -82,7 +82,7 @@ public class CalloutInvoice extends CalloutEngine
 
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final DocumentLocationAdaptersRegistry documentLocationAdaptersRegistry = SpringContextHolder.instance.getBean(DocumentLocationAdaptersRegistry.class);
-	
+
 	/**
 	 * Invoice Header- BPartner.
 	 * - M_PriceList_ID (+ Context)
@@ -194,6 +194,12 @@ public class CalloutInvoice extends CalloutEngine
 				if (!rs.wasNull())
 				{
 					invoice.setC_PaymentTerm_ID(paymentTermId);
+				}
+				else {
+					final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+					paymentTermRepository.getDefaultPaymentTermId()
+							.map(PaymentTermId::getRepoId)
+							.ifPresent(invoice::setC_PaymentTerm_ID);
 				}
 
 				// Location
