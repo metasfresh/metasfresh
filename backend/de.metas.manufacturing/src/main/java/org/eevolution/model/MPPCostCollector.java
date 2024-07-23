@@ -285,12 +285,9 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(getCostCollectorType());
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(getPP_Order_BOMLine_ID());
-		final String mtrxMovementType;
 
 		if (costCollectorType.isAnyComponentIssueOrCoProduct(orderBOMLineId))
 		{
-			mtrxMovementType = X_M_Transaction.MOVEMENTTYPE_WorkOrderMinus;
-
 			final PPCostCollectorQuantities qtys = costCollectorBL.getQuantities(this);
 			ppOrderBOMBL.addQty(OrderBOMLineQtyChangeRequest.builder()
 					.orderBOMLineId(orderBOMLineId)
@@ -304,8 +301,6 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		}
 		else if (costCollectorType.isMaterialReceipt())
 		{
-			mtrxMovementType = X_M_Transaction.MOVEMENTTYPE_WorkOrderPlus;
-
 			final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
 			final PPCostCollectorQuantities qtys = costCollectorBL.getQuantities(this);
@@ -323,16 +318,33 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 			throw new AdempiereException("Unknown issue/receipt cost collector type: " + costCollectorType);
 		}
 
-		//
-		final Quantity movementQtyInStockingUOM = costCollectorBL.getMovementQtyInStockingUOM(this)
-				.negateIf(X_M_Transaction.MOVEMENTTYPE_WorkOrderMinus.equals(mtrxMovementType));
-		final MTransaction mtrx = new MTransaction(getCtx(),
+		final Quantity movementQtyInStockingUOM = costCollectorBL.getMovementQtyInStockingUOM(this);
+
+		final String mtrxMovementType;
+		final BigDecimal mtrxMovementQty;
+		if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
+		{
+			mtrxMovementType = X_M_Transaction.MOVEMENTTYPE_WorkOrderMinus;
+			mtrxMovementQty = movementQtyInStockingUOM.toBigDecimal().negate();
+		}
+		else if (costCollectorType.isMaterialReceiptOrCoProduct())
+		{
+			mtrxMovementType = X_M_Transaction.MOVEMENTTYPE_WorkOrderPlus;
+			mtrxMovementQty = movementQtyInStockingUOM.toBigDecimal();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown issue/receipt cost collector type: " + costCollectorType);
+		}
+
+		final MTransaction mtrx = new MTransaction(
+				getCtx(),
 				getAD_Org_ID(),
 				mtrxMovementType,
 				getM_Locator_ID(),
 				getM_Product_ID(),
 				getM_AttributeSetInstance_ID(),
-				movementQtyInStockingUOM.toBigDecimal(),
+				mtrxMovementQty,
 				getMovementDate(),
 				get_TrxName());
 		mtrx.setPP_Cost_Collector_ID(getPP_Cost_Collector_ID());
