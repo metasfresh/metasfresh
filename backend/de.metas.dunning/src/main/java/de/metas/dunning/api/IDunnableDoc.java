@@ -22,11 +22,11 @@ package de.metas.dunning.api;
  * #L%
  */
 
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.util.Services;
 import org.adempiere.ad.table.api.IADTableDAO;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * Dunnable document.
@@ -55,9 +55,9 @@ public interface IDunnableDoc
 
 	BigDecimal getOpenAmt();
 
-	Date getDueDate();
+	LocalDateAndOrgId getDueDate();
 
-	Date getGraceDate();
+	LocalDateAndOrgId getGraceDate();
 
 	int getDaysDue();
 
@@ -65,8 +65,7 @@ public interface IDunnableDoc
 
 	default int getTableId()
 	{
-		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(getTableName());
-		return tableId;
+		return Services.get(IADTableDAO.class).retrieveTableId(getTableName());
 	}
 
 	int getRecordId();

@@ -29,11 +29,11 @@ import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunningCandidateSource;
 import de.metas.dunning.spi.IDunningConfigurator;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.util.ISingletonService;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -48,9 +48,9 @@ public interface IDunningBL extends ISingletonService
 
 	IDunningConfig getDunningConfig();
 
-	IDunningContext createDunningContext(Properties ctx, I_C_DunningLevel dunningLevel, Date dunningDate, String trxName, RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery);
+	IDunningContext createDunningContext(Properties ctx, I_C_DunningLevel dunningLevel, LocalDateAndOrgId dunningDate, String trxName, RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery);
 
-	IDunningContext createDunningContext(Properties ctx, I_C_DunningLevel dunningLevel, Date dunningDate, ITrxRunConfig trxRunnerConfig, String trxName, RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery);
+	IDunningContext createDunningContext(Properties ctx, I_C_DunningLevel dunningLevel, LocalDateAndOrgId dunningDate, ITrxRunConfig trxRunnerConfig, String trxName, RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery);
 
 	IDunningContext createDunningContext(IDunningContext context, String trxName);
 

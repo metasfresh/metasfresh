@@ -112,8 +112,8 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.BaseLineType;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTerm;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
@@ -2793,7 +2793,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
-				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
-
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()),
+				() -> paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.forPartner(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx()))));
 	}
 }
