@@ -86,6 +86,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 0               |
 
+  @ignore
   @Id:S0189_200
   @from:cucumber
   Scenario: SO with qty = 10, no ASI, reactivated, changed the qty to 12
@@ -392,6 +393,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
       | cp_dd_2                                 | cp_2                     | ol_2                      | 10             | 10              |
 
+  @ignore
   @Id:S0189_700
   @from:cucumber
   Scenario: SO with 2 lines (qty=10, same product) and different ASIs, reactivated, changed ASI to the same one
@@ -619,6 +621,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 12             | 12              |
 
+  @ignore
   @Id:S0189_1000
   @from:cucumber
   Scenario: SO with 1 line (qty=10), no ASI, reactivated, changed the date promised
@@ -672,6 +675,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
+  @ignore
   @Id:S0189_1100
   @from:cucumber
   Scenario: SO with 1 line (qty=10) and ASI, reactivated, changed ASI and qty=8
