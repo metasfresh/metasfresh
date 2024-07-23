@@ -31,7 +31,6 @@ import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
@@ -76,7 +75,6 @@ public class ComputingMethodService
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	@NonNull private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
-	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	public void validateAction(@NonNull final TableRecordReference recordRef, @NonNull final ModelAction action)
 	{
@@ -218,7 +216,8 @@ public class ComputingMethodService
 	@NonNull
 	public ProductPrice productPriceToUOM(@NonNull final ProductPrice priceWithPriceUOM, @NonNull final UomId stockUOMId)
 	{
-		final CurrencyPrecision precision = currencyBL.getStdPrecision(priceWithPriceUOM.getCurrencyId());
+		// use 12 digit precision, because it will be rounded on IC creation according to priceList precision
+		final CurrencyPrecision precision = CurrencyPrecision.ofInt(12);
 		return priceWithPriceUOM.convertToUom(stockUOMId, precision, uomConversionBL);
 	}
 }
