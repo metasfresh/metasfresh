@@ -662,4 +662,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	boolean isHUHierarchyCleared(@NonNull final HuId huId);
 
 	ClientAndOrgId getClientAndOrgId(@NonNull final HuId huId);
+
+	@NonNull
+	ImmutableSet<LocatorId> getLocatorIds(@NonNull Collection<HuId> huIds);
 }

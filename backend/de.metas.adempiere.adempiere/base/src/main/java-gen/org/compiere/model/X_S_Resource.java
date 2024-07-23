@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1720848993L;
+	private static final long serialVersionUID = 664197132L;
 
     /** Standard Constructor */
     public X_S_Resource (final Properties ctx, final int S_Resource_ID, @Nullable final String trxName)
@@ -156,6 +156,21 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
+	public void setExternalSystem_Config_ID (final int ExternalSystem_Config_ID)
+	{
+		if (ExternalSystem_Config_ID < 1)
+			set_Value (COLUMNNAME_ExternalSystem_Config_ID, null);
+		else
+			set_Value (COLUMNNAME_ExternalSystem_Config_ID, ExternalSystem_Config_ID);
+	}
+
+	@Override
+	public int getExternalSystem_Config_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_ID);
+	}
+
+	@Override
 	public void setIsAvailable (final boolean IsAvailable)
 	{
 		set_Value (COLUMNNAME_IsAvailable, IsAvailable);
@@ -192,6 +207,8 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	public static final String MANUFACTURINGRESOURCETYPE_WorkCenter = "WC";
 	/** WorkStation = WS */
 	public static final String MANUFACTURINGRESOURCETYPE_WorkStation = "WS";
+	/** ExternalSystem = ES */
+	public static final String MANUFACTURINGRESOURCETYPE_ExternalSystem = "ES";
 	@Override
 	public void setManufacturingResourceType (final @Nullable java.lang.String ManufacturingResourceType)
 	{

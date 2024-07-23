@@ -40,6 +40,9 @@ public class ManufacturingJobActivity
 	@Nullable UserInstructions userInstructions;
 	@Nullable PPOrderTargetPlanningStatus targetPlanningStatus;
 
+	@Nullable ValidateLocatorInfo sourceLocatorValidate;
+	@Nullable IssueOnlyWhatWasReceivedConfig issueOnlyWhatWasReceivedConfig;
+
 	@Builder(toBuilder = true)
 	private ManufacturingJobActivity(
 			@NonNull final ManufacturingJobActivityId id,
@@ -52,7 +55,9 @@ public class ManufacturingJobActivity
 			@NonNull final PPOrderRoutingActivityStatus routingActivityStatus,
 			@NonNull final PPAlwaysAvailableToUser alwaysAvailableToUser,
 			@Nullable final UserInstructions userInstructions,
-			@Nullable final PPOrderTargetPlanningStatus targetPlanningStatus)
+			@Nullable final PPOrderTargetPlanningStatus targetPlanningStatus,
+			@Nullable final ValidateLocatorInfo sourceLocatorValidate,
+			@Nullable final IssueOnlyWhatWasReceivedConfig issueOnlyWhatWasReceivedConfig)
 	{
 		if (CoalesceUtil.countNotNulls(rawMaterialsIssue, finishedGoodsReceive) > 1)
 		{
@@ -73,6 +78,9 @@ public class ManufacturingJobActivity
 		this.alwaysAvailableToUser = alwaysAvailableToUser;
 		this.userInstructions = userInstructions;
 		this.targetPlanningStatus = targetPlanningStatus;
+
+		this.sourceLocatorValidate = sourceLocatorValidate;
+		this.issueOnlyWhatWasReceivedConfig = issueOnlyWhatWasReceivedConfig;
 	}
 
 	private static WFActivityStatus computeStatus(
@@ -185,5 +193,18 @@ public class ManufacturingJobActivity
 	public ManufacturingJobActivity withFinishedGoodsReceive(@Nullable FinishedGoodsReceive finishedGoodsReceive)
 	{
 		return Objects.equals(this.finishedGoodsReceive, finishedGoodsReceive) ? this : toBuilder().finishedGoodsReceive(finishedGoodsReceive).build();
+	}
+
+	@NonNull
+	public ManufacturingJobActivity withChangedRawMaterialsIssue(@NonNull final UnaryOperator<RawMaterialsIssue> mapper)
+	{
+		if (rawMaterialsIssue != null)
+		{
+			return withRawMaterialsIssue(mapper.apply(rawMaterialsIssue));
+		}
+		else
+		{
+			return this;
+		}
 	}
 }

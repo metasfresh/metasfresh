@@ -116,7 +116,8 @@ public class RawMaterialsIssueLine
 		return withSteps(stepsNew);
 	}
 
-	private RawMaterialsIssueLine withSteps(final ImmutableList<RawMaterialsIssueStep> stepsNew)
+	@NonNull
+	public RawMaterialsIssueLine withSteps(final ImmutableList<RawMaterialsIssueStep> stepsNew)
 	{
 		return !Objects.equals(this.steps, stepsNew)
 				? toBuilder().steps(stepsNew).build()
@@ -137,5 +138,11 @@ public class RawMaterialsIssueLine
 				.append(getProductName());
 
 		return message.build();
+	}
+
+	@NonNull
+	public Quantity getQtyLeftToIssue()
+	{
+		return qtyToIssue.subtract(qtyIssued);
 	}
 }

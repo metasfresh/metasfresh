@@ -781,6 +781,29 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_QueuingTime = "QueuingTime";
 
 	/**
+	 * Set Issue strategy.
+	 * Issue strategy for raw materials
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRawMaterialsIssueStrategy (@Nullable java.lang.String RawMaterialsIssueStrategy);
+
+	/**
+	 * Get Issue strategy.
+	 * Issue strategy for raw materials
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRawMaterialsIssueStrategy();
+
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_RawMaterialsIssueStrategy = new ModelColumn<>(I_PP_Order_Node.class, "RawMaterialsIssueStrategy", null);
+	String COLUMNNAME_RawMaterialsIssueStrategy = "RawMaterialsIssueStrategy";
+
+	/**
 	 * Set Scanned QR Code.
 	 *
 	 * <br>Type: TextLong

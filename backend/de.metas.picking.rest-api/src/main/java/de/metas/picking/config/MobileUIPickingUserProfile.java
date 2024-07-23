@@ -42,6 +42,7 @@ public class MobileUIPickingUserProfile
 {
 	public static final MobileUIPickingUserProfile DEFAULT = builder()
 			.name("default")
+			.isAllowNewLU(true)
 			.filters(PickingFiltersList.ofList(ImmutableList.of(
 					PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),
 					PickingFilter.of(PickingJobFacetGroup.DELIVERY_DATE, 20)))
@@ -66,6 +67,7 @@ public class MobileUIPickingUserProfile
 	@NonNull ImmutableSet<BPartnerId> onlyBPartnerIds;
 	boolean isAllowPickingAnyHU;
 	boolean isAlwaysSplitHUsEnabled;
+	boolean isAllowNewLU;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
 	@Getter(AccessLevel.PACKAGE) @NonNull ImmutableList<PickingJobField> fields;
@@ -79,6 +81,7 @@ public class MobileUIPickingUserProfile
 			final @Nullable ImmutableSet<BPartnerId> onlyBPartnerIds,
 			final boolean isAllowPickingAnyHU,
 			final boolean isAlwaysSplitHUsEnabled,
+			final boolean isAllowNewLU,
 			final @Nullable CreateShipmentPolicy createShipmentPolicy,
 			final @Nullable PickingFiltersList filters,
 			final @NonNull ImmutableList<PickingJobField> fields)
@@ -89,6 +92,7 @@ public class MobileUIPickingUserProfile
 		this.onlyBPartnerIds = onlyBPartnerIds != null ? onlyBPartnerIds : ImmutableSet.of();
 		this.isAllowPickingAnyHU = isAllowPickingAnyHU;
 		this.isAlwaysSplitHUsEnabled = isAlwaysSplitHUsEnabled;
+		this.isAllowNewLU = isAllowNewLU;
 		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.DO_NOT_CREATE;
 		this.filters = filters != null ? filters : PickingFiltersList.EMPTY;
 		this.fields = fields;

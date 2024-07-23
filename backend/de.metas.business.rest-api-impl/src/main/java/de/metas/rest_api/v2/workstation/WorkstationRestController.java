@@ -1,6 +1,8 @@
 package de.metas.rest_api.v2.workstation;
 
 import de.metas.Profiles;
+import de.metas.material.planning.Resource;
+import de.metas.material.planning.ResourceService;
 import de.metas.product.ResourceId;
 import de.metas.resource.Resource;
 import de.metas.resource.ResourceService;
@@ -33,6 +35,7 @@ public class WorkstationRestController
 	@NonNull private final UserWorkstationService userWorkstationService;
 	@NonNull private final WorkplaceService workplaceService;
 
+	@NonNull
 	private Resource getWorkstationById(final ResourceId workstationId)
 	{
 		final Resource workstation = resourceService.getResourceById(workstationId);
@@ -42,15 +45,10 @@ public class WorkstationRestController
 
 	private static void assertWorkstation(final Resource workstation)
 	{
-		if (!isWorkstation(workstation))
+		if (!workstation.isWorkstation())
 		{
 			throw new AdempiereException("Not a workstation QR Code");
 		}
-	}
-
-	private static boolean isWorkstation(final Resource resource)
-	{
-		return resource.getManufacturingResourceType() != null && resource.getManufacturingResourceType().isWorkstation();
 	}
 
 	private JsonWorkstation toJson(final Resource workstation)

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1942363997L;
+	private static final long serialVersionUID = -1792738769L;
 
     /** Standard Constructor */
     public X_PP_Order_Node (final Properties ctx, final int PP_Order_Node_ID, @Nullable final String trxName)
@@ -345,6 +345,10 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public static final String PP_ACTIVITY_TYPE_CallExternalSystem = "CallExternalSystem";
 	/** PrintReceivedHUQRCodes = PrintReceivedHUQRCodes */
 	public static final String PP_ACTIVITY_TYPE_PrintReceivedHUQRCodes = "PrintReceivedHUQRCodes";
+	/** Validate Locator = ValidateLocator */
+	public static final String PP_ACTIVITY_TYPE_ValidateLocator = "ValidateLocator";
+	/** Issue Only What Was Received = IssueOnlyWhatWasReceived */
+	public static final String PP_ACTIVITY_TYPE_IssueOnlyWhatWasReceived = "IssueOnlyWhatWasReceived";
 	@Override
 	public void setPP_Activity_Type (final java.lang.String PP_Activity_Type)
 	{
@@ -521,6 +525,25 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public int getQueuingTime() 
 	{
 		return get_ValueAsInt(COLUMNNAME_QueuingTime);
+	}
+
+	/**
+	 * RawMaterialsIssueStrategy AD_Reference_ID=541877
+	 * Reference name: RawMaterialsIssueStrategy
+	 */
+	public static final int RAWMATERIALSISSUESTRATEGY_AD_Reference_ID=541877;
+	/** Only assigned HUs = AssignedHUsOnly */
+	public static final String RAWMATERIALSISSUESTRATEGY_OnlyAssignedHUs = "AssignedHUsOnly";
+	@Override
+	public void setRawMaterialsIssueStrategy (final @Nullable java.lang.String RawMaterialsIssueStrategy)
+	{
+		set_Value (COLUMNNAME_RawMaterialsIssueStrategy, RawMaterialsIssueStrategy);
+	}
+
+	@Override
+	public java.lang.String getRawMaterialsIssueStrategy()
+	{
+		return get_ValueAsString(COLUMNNAME_RawMaterialsIssueStrategy);
 	}
 
 	@Override
