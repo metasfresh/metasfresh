@@ -18,13 +18,15 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Objects;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Jacksonized
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class DDOrderCandidateData
@@ -60,7 +62,7 @@ public class DDOrderCandidateData
 	 * and the respective {@link DDOrderCandidateCreatedEvent} contains the same group-ID.
 	 */
 	@Nullable MaterialDispoGroupId materialDispoGroupId;
-	
+
 	@JsonIgnore
 	public int getProductId() {return getProductDescriptor().getProductId();}
 
@@ -77,4 +79,16 @@ public class DDOrderCandidateData
 			throw new AdempiereException("Expected materialDispoGroupId to be set: " + this);
 		}
 	}
+
+	public DDOrderCandidateData withPPOrderId(@Nullable final PPOrderId newPPOrderId)
+	{
+		final PPOrderRef ppOrderRefNew = PPOrderRef.withPPOrderId(ppOrderRef, newPPOrderId);
+		if (Objects.equals(this.ppOrderRef, ppOrderRefNew))
+		{
+			return this;
+		}
+
+		return toBuilder().ppOrderRef(ppOrderRefNew).build();
+	}
+
 }

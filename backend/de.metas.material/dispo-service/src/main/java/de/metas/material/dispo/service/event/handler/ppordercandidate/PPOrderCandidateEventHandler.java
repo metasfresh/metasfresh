@@ -51,7 +51,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class PPOrderCandidateEventHandler
+abstract class PPOrderCandidateEventHandler
 {
 	protected final CandidateChangeService candidateChangeService;
 	protected final CandidateRepositoryRetrieval candidateRepositoryRetrieval;

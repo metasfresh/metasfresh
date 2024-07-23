@@ -6,11 +6,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.pporder.PPOrderRef;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.eevolution.api.PPOrderId;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -73,4 +77,37 @@ public class DDOrderCandidateAdvisedEvent extends AbstractDDOrderCandidateEvent
 		return (DDOrderCandidateAdvisedEvent)event;
 	}
 
+	public DDOrderCandidateAdvisedEvent withPPOrderId(@Nullable final PPOrderId newPPOrderId)
+	{
+		if (PPOrderId.equals(getPPOrderId(), newPPOrderId))
+		{
+			return this;
+		}
+
+		return new DDOrderCandidateAdvisedEvent(
+				getEventDescriptor(),
+				getDdOrderCandidate().withPPOrderId(newPPOrderId),
+				getSupplyRequiredDescriptorNotNull(),
+				advisedToCreateDDOrderCandidate,
+				pickIfFeasible
+		);
+	}
+
+	@Nullable
+	private PPOrderId getPPOrderId()
+	{
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = getSupplyRequiredDescriptor();
+		if (supplyRequiredDescriptor == null)
+		{
+			return null;
+		}
+
+		final PPOrderRef ppOrderRef = supplyRequiredDescriptor.getPpOrderRef();
+		if (ppOrderRef == null)
+		{
+			return null;
+		}
+
+		return ppOrderRef.getPpOrderId();
+	}
 }

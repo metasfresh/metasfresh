@@ -279,7 +279,7 @@ public class CandidateRepositoryRetrieval
 	{
 		final int ppOrderCandidateId = record.getPP_Order_Candidate_ID();
 		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(record.getPP_Order_ID());
-		if (ppOrderCandidateId <= 0 || ppOrderId == null)
+		if (ppOrderCandidateId <= 0 && ppOrderId == null)
 		{
 			return null;
 		}

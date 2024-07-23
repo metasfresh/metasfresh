@@ -14,6 +14,7 @@ import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /*
  * #%L
@@ -131,4 +132,16 @@ public class ProductionDetail implements BusinessCaseDetail
 	{
 		return this.ppOrderRef != null && this.ppOrderRef.isBOMLine();
 	}
+
+	public ProductionDetail withPPOrderId(@Nullable final PPOrderId newPPOrderId)
+	{
+		final PPOrderRef ppOrderRefNew = PPOrderRef.withPPOrderId(ppOrderRef, newPPOrderId);
+		if (Objects.equals(this.ppOrderRef, ppOrderRefNew))
+		{
+			return this;
+		}
+
+		return toBuilder().ppOrderRef(ppOrderRefNew).build();
+	}
+
 }

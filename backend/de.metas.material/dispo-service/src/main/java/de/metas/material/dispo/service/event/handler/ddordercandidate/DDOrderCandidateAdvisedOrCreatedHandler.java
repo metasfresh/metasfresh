@@ -18,6 +18,7 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddordercandidate.AbstractDDOrderCandidateEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateCreatedEvent;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
@@ -35,7 +36,7 @@ import java.util.function.Consumer;
 abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrderCandidateEvent>
 		implements MaterialEventHandler<T>
 {
-	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	@NonNull protected final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWrite;
 	@NonNull private final CandidateChangeService candidateChangeHandler;
 	@NonNull private final DDOrderDetailRequestHandler ddOrderDetailRequestHandler;
@@ -58,18 +59,18 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 	}
 
 	@Nullable
-	protected static ResourceId extractPlantId(@NonNull final AbstractDDOrderCandidateEvent event, @NonNull final CandidateType candidateType)
+	private static ResourceId extractPlantId(@NonNull final DDOrderCandidateData ddOrderCandidate, @NonNull final CandidateType candidateType)
 	{
 		switch (candidateType)
 		{
 			case SUPPLY:
-				return event.getTargetPlantId();
+				return ddOrderCandidate.getTargetPlantId();
 			case DEMAND:
 				return null;
 			default:
 				throw new AdempiereException("Unexpected candidateType").appendParametersToMessage()
 						.setParameter("candidateType", candidateType)
-						.setParameter("event", event);
+						.setParameter("ddOrderCandidate", ddOrderCandidate);
 		}
 	}
 
@@ -148,7 +149,7 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 						.date(computeDate(event, candidateType))
 						.warehouseId(extractWarehouseId(event, candidateType))
 						.build())
-				.businessCaseDetail(toDistributionDetail(event, candidateType))
+				.businessCaseDetail(toDistributionDetail(event.getDdOrderCandidate(), candidateType))
 				.additionalDemandDetail(DemandDetail.forSupplyRequiredDescriptor(event.getSupplyRequiredDescriptorNotNull()).withTraceId(event.getTraceId()))
 				.simulated(event.isSimulated())
 				.build();
@@ -166,18 +167,18 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 
 	protected abstract Flag extractIsAdviseEvent(@NonNull final AbstractDDOrderCandidateEvent event);
 
-	private static DistributionDetail toDistributionDetail(@NonNull final AbstractDDOrderCandidateEvent event, @NonNull final CandidateType candidateType)
+	private static DistributionDetail toDistributionDetail(@NonNull final DDOrderCandidateData ddOrderCandidate, @NonNull final CandidateType candidateType)
 	{
 		return DistributionDetail.builder()
 				//.ddOrderDocStatus(ddOrder.getDocStatus())
 				//.ddOrderId(ddOrder.getDdOrderId())
 				//.ddOrderLineId(ddOrderLine.getDdOrderLineId())
-				.distributionNetworkAndLineId(event.getDistributionNetworkAndLineId())
-				.qty(event.getQty())
-				.plantId(extractPlantId(event, candidateType))
-				.productPlanningId(event.getProductPlanningId())
-				.shipperId(event.getShipperId())
-				.ppOrderRef(event.getDdOrderCandidate().getPpOrderRef())
+				.distributionNetworkAndLineId(ddOrderCandidate.getDistributionNetworkAndLineId())
+				.qty(ddOrderCandidate.getQty())
+				.plantId(extractPlantId(ddOrderCandidate, candidateType))
+				.productPlanningId(ddOrderCandidate.getProductPlanningId())
+				.shipperId(ddOrderCandidate.getShipperId())
+				.ppOrderRef(ddOrderCandidate.getPpOrderRef())
 				.build();
 	}
 

@@ -41,7 +41,7 @@ public class DDOrderCandidateAdvisedEventCreator
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final ProductPlanning productPlanningData)
 	{
-		return DDOrderCandidateAdvisedEvent.builder()
+				return DDOrderCandidateAdvisedEvent.builder()
 				.eventDescriptor(supplyRequiredDescriptor.newEventDescriptor())
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.ddOrderCandidate(ddOrderCandidate)

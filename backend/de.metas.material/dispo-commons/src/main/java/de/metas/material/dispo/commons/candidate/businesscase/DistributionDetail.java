@@ -17,6 +17,7 @@ import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Value
 @Builder(toBuilder = true)
@@ -94,5 +95,16 @@ public class DistributionDetail implements BusinessCaseDetail
 	public CandidateBusinessCase getCandidateBusinessCase()
 	{
 		return CandidateBusinessCase.DISTRIBUTION;
+	}
+
+	public BusinessCaseDetail withPPOrderId(@Nullable final PPOrderId newPPOrderId)
+	{
+		final PPOrderRef ppOrderRefNew = PPOrderRef.withPPOrderId(ppOrderRef, newPPOrderId);
+		if (Objects.equals(this.ppOrderRef, ppOrderRefNew))
+		{
+			return this;
+		}
+
+		return toBuilder().ppOrderRef(ppOrderRefNew).build();
 	}
 }

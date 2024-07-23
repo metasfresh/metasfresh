@@ -67,6 +67,7 @@ public class DistributionDetailsQuery
 	@Nullable DistributionNetworkAndLineId distributionNetworkAndLineId;
 	int ddOrderLineId;
 	int ddOrderId;
+	int ppOrderCandidateId;
 
 	/**
 	 * Convenience method that uses this instance to kickstart and return a builder.
@@ -117,6 +118,11 @@ public class DistributionDetailsQuery
 			if (ddOrderLineId > 0)
 			{
 				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_OrderLine_ID, ddOrderLineId);
+				doFilter = true;
+			}
+			if (ppOrderCandidateId > 0)
+			{
+				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId);
 				doFilter = true;
 			}
 

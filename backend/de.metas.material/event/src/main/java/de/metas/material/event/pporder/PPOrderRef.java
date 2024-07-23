@@ -105,6 +105,33 @@ public class PPOrderRef
 				: toBuilder().ppOrderId(ppOrderIdNew).ppOrderBOMLineId(lineIdNew).build();
 	}
 
+	public PPOrderRef withPPOrderId(@Nullable final PPOrderId ppOrderId)
+	{
+		if (PPOrderId.equals(this.ppOrderId, ppOrderId))
+		{
+			return this;
+		}
+
+		return toBuilder().ppOrderId(ppOrderId).build();
+	}
+
+	@Nullable
+	public static PPOrderRef withPPOrderId(@Nullable final PPOrderRef ppOrderRef, @Nullable final PPOrderId newPPOrderId)
+	{
+		if (ppOrderRef != null)
+		{
+			return ppOrderRef.withPPOrderId(newPPOrderId);
+		}
+		else if (newPPOrderId != null)
+		{
+			return ofPPOrderId(newPPOrderId);
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 	@Nullable
 	public static PPOrderRef withPPOrderAndBOMLineId(@Nullable final PPOrderRef ppOrderRef, @Nullable final PPOrderAndBOMLineId newPPOrderAndBOMLineId)
 	{

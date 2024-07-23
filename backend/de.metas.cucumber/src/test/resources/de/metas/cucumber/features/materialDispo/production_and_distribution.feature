@@ -145,8 +145,8 @@ Feature: Production + Distribution material dispo scenarios
       | oc_1                  | ppOrder     | 10         | PCE               |
 
     And after not more than 60s, following DD_Order_Candidates are found
-      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID |
-      | component    | rawMaterials_WH     | production_WH    | 10  | N         | oc_1                          | ocl_1                             |
+      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID | Forward_PP_Order_ID |
+      | component    | rawMaterials_WH     | production_WH    | 10  | N         | oc_1                          | ocl_1                             | ppOrder             |
 
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID  |

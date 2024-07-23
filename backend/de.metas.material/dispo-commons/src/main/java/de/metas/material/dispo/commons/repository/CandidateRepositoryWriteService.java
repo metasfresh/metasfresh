@@ -43,6 +43,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -92,21 +93,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 @Service
+@RequiredArgsConstructor
 public class CandidateRepositoryWriteService
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	private final DimensionService dimensionService;
-	private final StockChangeDetailRepo stockChangeDetailRepo;
 	private final IForecastDAO forecastDAO = Services.get(IForecastDAO.class);
-
-	public CandidateRepositoryWriteService(
-			@NonNull final DimensionService dimensionService,
-			@NonNull final StockChangeDetailRepo stockChangeDetailRepo)
-	{
-		this.dimensionService = dimensionService;
-		this.stockChangeDetailRepo = stockChangeDetailRepo;
-	}
+	@NonNull private final DimensionService dimensionService;
+	@NonNull private final StockChangeDetailRepo stockChangeDetailRepo;
 
 	/**
 	 * Stores the given {@code candidate}.

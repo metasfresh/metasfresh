@@ -99,7 +99,7 @@ public class Candidate
 
 	@NonNull MinMaxDescriptor minMaxDescriptor;
 
-	@Nullable BusinessCaseDetail businessCaseDetail;
+	@Nullable @With BusinessCaseDetail businessCaseDetail;
 
 	@Nullable DemandDetail additionalDemandDetail;
 
