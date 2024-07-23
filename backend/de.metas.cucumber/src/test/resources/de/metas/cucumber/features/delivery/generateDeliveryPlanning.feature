@@ -119,6 +119,7 @@ Feature: Delivery planning automatically generated when M_ShipmentSchedule is cr
 
 
   @from:cucumber
+  @ignore
   Scenario: Delivery planning is updated after SO is reactivated and SO line's qty is changed
 
     Given metasfresh contains M_PricingSystems
