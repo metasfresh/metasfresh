@@ -597,6 +597,7 @@
         <xsd:sequence>
             <xsd:element name="GLN" type="xsd:string"/>
             <xsd:element minOccurs="0" name="StoreGLN" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="Lookup_Label" type="xsd:string"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="EDI_Imp_C_BPartner_Location_Lookup_GLNType">
