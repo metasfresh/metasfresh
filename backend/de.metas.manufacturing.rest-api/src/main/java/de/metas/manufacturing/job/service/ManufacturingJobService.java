@@ -313,11 +313,11 @@ public class ManufacturingJobService
 	private Stream<de.metas.handlingunits.model.I_PP_Order> streamAlreadyAssignedManufacturingOrders(final @NonNull UserId responsibleId)
 	{
 		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
-				.onlyCompleted(true)
-				.sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
-				.responsibleId(ValueRestriction.equalsTo(responsibleId))
-				.onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
-				.build());
+														   .onlyCompleted(true)
+														   .sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
+														   .responsibleId(ValueRestriction.equalsTo(responsibleId))
+														   .onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
+														   .build());
 	}
 
 	private ManufacturingOrderQuery toManufacturingOrderQuery(@NonNull ManufacturingJobReferenceQuery query)
@@ -372,7 +372,7 @@ public class ManufacturingJobService
 			final ImmutableSet<ResourceTypeId> facetResourceTypeIds = query.getActiveFacetIds().getResourceTypeIds();
 			if (!facetResourceTypeIds.isEmpty())
 			{
-			final ImmutableSet<ResourceId> facetPlantIds = resourceService.getResourceIdsByResourceTypeIds(facetResourceTypeIds);
+				final ImmutableSet<ResourceId> facetPlantIds = resourceService.getResourceIdsByResourceTypeIds(facetResourceTypeIds);
 				onlyPlantIds = onlyPlantIds.intersectWith(facetPlantIds);
 			}
 		}
@@ -440,7 +440,7 @@ public class ManufacturingJobService
 		else
 		{
 			throw new AdempiereException("Cannot un-assign " + ppOrder.getDocumentNo()
-					+ " because its assigned to a different responsible than the one we thought (expected: " + expectedResponsibleId + ", actual: " + currentResponsibleId + ")");
+												 + " because its assigned to a different responsible than the one we thought (expected: " + expectedResponsibleId + ", actual: " + currentResponsibleId + ")");
 		}
 	}
 

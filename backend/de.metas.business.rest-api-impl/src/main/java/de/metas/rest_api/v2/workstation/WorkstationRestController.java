@@ -1,11 +1,9 @@
 package de.metas.rest_api.v2.workstation;
 
 import de.metas.Profiles;
-import de.metas.material.planning.Resource;
-import de.metas.material.planning.ResourceService;
+import de.metas.resource.ResourceService;
 import de.metas.product.ResourceId;
 import de.metas.resource.Resource;
-import de.metas.resource.ResourceService;
 import de.metas.resource.UserWorkstationService;
 import de.metas.resource.qrcode.ResourceQRCode;
 import de.metas.user.UserId;

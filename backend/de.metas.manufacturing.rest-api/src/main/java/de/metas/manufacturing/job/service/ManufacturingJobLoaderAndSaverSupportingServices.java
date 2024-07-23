@@ -14,9 +14,9 @@ import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.ITranslatableString;
+import de.metas.manufacturing.job.model.LocatorInfo;
 import de.metas.manufacturing.job.model.ProductInfo;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
-import de.metas.manufacturing.job.model.LocatorInfo;
 import de.metas.manufacturing.job.model.ValidateLocatorInfo;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
@@ -65,22 +65,46 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	@NonNull HUQRCodesService huQRCodeService;
 	@NonNull PPOrderSourceHUService sourceHUService;
 
-	public ZoneId getTimeZone(final OrgId orgId) {return orgDAO.getTimeZone(orgId);}
+	public ZoneId getTimeZone(final OrgId orgId)
+	{
+		return orgDAO.getTimeZone(orgId);
+	}
 
-	public String getLocatorName(@NonNull final LocatorId locatorId) {return warehouseBL.getLocatorNameById(locatorId);}
+	public String getLocatorName(@NonNull final LocatorId locatorId)
+	{
+		return warehouseBL.getLocatorNameById(locatorId);
+	}
 
-	public ITranslatableString getProductName(@NonNull final ProductId productId) {return productBL.getProductNameTrl(productId);}
-	
+	public ITranslatableString getProductName(@NonNull final ProductId productId)
+	{
+		return productBL.getProductNameTrl(productId);
+	}
+
 	@NonNull
-	public String getProductValue(@NonNull final ProductId productId) {return productBL.getProductValue(productId);}
+	public String getProductValue(@NonNull final ProductId productId)
+	{
+		return productBL.getProductValue(productId);
+	}
 
-	public I_PP_Order getPPOrderRecordById(@NonNull final PPOrderId ppOrderId) {return ppOrderBL.getById(ppOrderId);}
+	public I_PP_Order getPPOrderRecordById(@NonNull final PPOrderId ppOrderId)
+	{
+		return ppOrderBL.getById(ppOrderId);
+	}
 
-	public PPOrderRouting getOrderRouting(@NonNull final PPOrderId ppOrderId) {return ppOrderRoutingRepository.getByOrderId(ppOrderId);}
+	public PPOrderRouting getOrderRouting(@NonNull final PPOrderId ppOrderId)
+	{
+		return ppOrderRoutingRepository.getByOrderId(ppOrderId);
+	}
 
-	public void saveOrderRouting(@NonNull final PPOrderRouting routing) {ppOrderRoutingRepository.save(routing);}
+	public void saveOrderRouting(@NonNull final PPOrderRouting routing)
+	{
+		ppOrderRoutingRepository.save(routing);
+	}
 
-	public ImmutableList<I_PP_Order_BOMLine> getOrderBOMLines(@NonNull final PPOrderId ppOrderId) {return ImmutableList.copyOf(ppOrderBOMBL.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class));}
+	public ImmutableList<I_PP_Order_BOMLine> getOrderBOMLines(@NonNull final PPOrderId ppOrderId)
+	{
+		return ImmutableList.copyOf(ppOrderBOMBL.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class));
+	}
 
 	@NonNull
 	public ZonedDateTime getDateStartSchedule(@NonNull final I_PP_Order ppOrder)
@@ -88,9 +112,15 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 		return InstantAndOrgId.ofTimestamp(ppOrder.getDateStartSchedule(), ppOrder.getAD_Org_ID()).toZonedDateTime(orgDAO::getTimeZone);
 	}
 
-	public PPOrderQuantities getQuantities(@NonNull final I_PP_Order order) {return ppOrderBOMBL.getQuantities(order);}
+	public PPOrderQuantities getQuantities(@NonNull final I_PP_Order order)
+	{
+		return ppOrderBOMBL.getQuantities(order);
+	}
 
-	public OrderBOMLineQuantities getQuantities(@NonNull final I_PP_Order_BOMLine orderBOMLine) {return ppOrderBOMBL.getQuantities(orderBOMLine);}
+	public OrderBOMLineQuantities getQuantities(@NonNull final I_PP_Order_BOMLine orderBOMLine)
+	{
+		return ppOrderBOMBL.getQuantities(orderBOMLine);
+	}
 
 	public ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> getIssueSchedules(@NonNull final PPOrderId ppOrderId)
 	{
@@ -167,7 +197,8 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	}
 
 	@NonNull
-	public ProductInfo getProductInfo(@NonNull final ProductId productId) {
+	public ProductInfo getProductInfo(@NonNull final ProductId productId)
+	{
 		final I_M_Product product = productBL.getById(productId);
 
 		return ProductInfo.builder()

@@ -104,8 +104,8 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -143,7 +143,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();

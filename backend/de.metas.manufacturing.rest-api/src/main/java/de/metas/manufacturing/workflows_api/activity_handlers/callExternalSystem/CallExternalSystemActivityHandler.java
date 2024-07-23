@@ -37,8 +37,8 @@ import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.manufacturing.workflows_api.ManufacturingRestService;
-import de.metas.material.planning.Resource;
-import de.metas.material.planning.ResourceService;
+import de.metas.resource.Resource;
+import de.metas.resource.ResourceService;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.resource.qrcode.ResourceQRCode;
@@ -207,7 +207,7 @@ public class CallExternalSystemActivityHandler implements WFActivityHandler, Set
 	@NonNull
 	private IExternalSystemChildConfigId getExternalSystemChildConfigId(@NonNull final ResourceQRCode resourceQRCode)
 	{
-		final Resource externalSystemResource = resourceService.getById(resourceQRCode.getResourceId());
+		final Resource externalSystemResource = resourceService.getResourceById(resourceQRCode.getResourceId());
 		if (!externalSystemResource.isExternalSystem())
 		{
 			throw new AdempiereException("Scanned resource is not an external system!");

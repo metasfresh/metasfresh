@@ -17,8 +17,8 @@ import de.metas.manufacturing.workflows_api.activity_handlers.confirmation.Confi
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueAdjustmentActivityHandler;
-import de.metas.manufacturing.workflows_api.activity_handlers.printReceivedHUQRCodes.PrintReceivedHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueOnlyWhatWasReceivedActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.printReceivedHUQRCodes.PrintReceivedHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.scanScaleDevice.ScanScaleDeviceActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.validateLocator.ValidateLocatorActivityHandler;
@@ -128,9 +128,9 @@ public class ManufacturingRestService
 				.responsibleId(job.getResponsibleId())
 				.document(job)
 				.activities(job.getActivities()
-						.stream()
-						.map(ManufacturingRestService::toWFActivity)
-						.collect(ImmutableList.toImmutableList()))
+									.stream()
+									.map(ManufacturingRestService::toWFActivity)
+									.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
