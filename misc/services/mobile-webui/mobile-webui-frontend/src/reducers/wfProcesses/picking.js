@@ -174,6 +174,7 @@ const normalizePickingSteps = (steps) => {
 
 const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStored, fromActivity }) => {
   draftActivityDataStored.pickTarget = fromActivity.componentProps.pickTarget;
+  draftActivityDataStored.isAllowNewLU = fromActivity.componentProps.isAllowNewLU;
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
 
   //

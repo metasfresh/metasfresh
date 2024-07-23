@@ -166,4 +166,8 @@ public class PickingJobRestService
 		return pickingJobService.closePickTarget(pickingJob);
 	}
 
+	public boolean isAllowNewLU()
+	{
+		return mobileUIPickingUserProfileRepository.getProfile().isAllowNewLU();
+	}
 }

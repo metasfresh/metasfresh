@@ -75,6 +75,7 @@ public class MobileUIPickingUserProfileRepository
 				.onlyBPartnerIds(onlyBPartnerIds)
 				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
+				.isAllowNewLU(profileRecord.isAllowNewLU())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.filters(retrieveFilters(profileRecord))
 				.fields(retrieveFields(profileRecord))

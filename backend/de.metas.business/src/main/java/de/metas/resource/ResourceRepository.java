@@ -165,6 +165,7 @@ class ResourceRepository
 				.internalName(record.getInternalName())
 				.humanResourceTestGroupId(HumanResourceTestGroupId.ofRepoIdOrNull(record.getS_HumanResourceTestGroup_ID()))
 				.workplaceId(WorkplaceId.ofRepoIdOrNull(record.getC_Workplace_ID()))
+				.externalSystemParentConfigId(record.getExternalSystem_Config_ID() > 0 ? record.getExternalSystem_Config_ID() : null)
 				.build();
 	}
 
