@@ -32,26 +32,15 @@ import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfig;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
-import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMapping;
-import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMappingId;
-import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfig;
-import de.metas.externalsystem.leichmehl.LeichMehlPluFileConfigGroup;
-import de.metas.externalsystem.leichmehl.LeichMehlPluFileConfigGroupId;
-import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfigId;
-import de.metas.externalsystem.leichmehl.ReplacementSource;
-import de.metas.externalsystem.leichmehl.TargetFieldType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
-import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
-import de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -79,7 +68,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -151,6 +139,13 @@ public class ExternalSystemConfigRepo
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 		}
+	}
+
+	@NonNull
+	public Optional<IExternalSystemChildConfig> getChildByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		final ExternalSystemType type = ExternalSystemType.ofCode(getParentTypeById(id));
+		return getChildByParentIdAndType(id, type);
 	}
 
 	public Optional<IExternalSystemChildConfig> getChildByParentIdAndType(
