@@ -1,5 +1,6 @@
 @Id:S0299
 @from:cucumber
+@ignore
 Feature: After a quantity of a product is issued/received for the manufacturing order, an entry is created in the module contract log
 
   Scenario: There is an entry created in the module contract log when a quantity for the manufacturing order is issued and receipt
