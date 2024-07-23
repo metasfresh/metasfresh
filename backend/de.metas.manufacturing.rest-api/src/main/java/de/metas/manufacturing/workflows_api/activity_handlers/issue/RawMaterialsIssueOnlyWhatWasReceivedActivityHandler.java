@@ -244,7 +244,7 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 				.createIssues(extractedCUs)
 				.stream()
 				.map(ppOrderQty -> {
-					final Quantity qtyIssued = Quantitys.create(ppOrderQty.getQty(), UomId.ofRepoId(ppOrderQty.getC_UOM_ID()));
+					final Quantity qtyIssued = Quantitys.of(ppOrderQty.getQty(), UomId.ofRepoId(ppOrderQty.getC_UOM_ID()));
 					return PPOrderIssueScheduleCreateRequest.builder()
 							.ppOrderId(ppOrderId)
 							.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoId(ppOrderQty.getPP_Order_BOMLine_ID()))
