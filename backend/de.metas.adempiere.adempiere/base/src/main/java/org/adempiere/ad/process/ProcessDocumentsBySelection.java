@@ -34,7 +34,7 @@ import org.adempiere.model.GenericPO;
 
 import java.util.Iterator;
 
-public class ProcessDocumentsBySelection extends ProcessDocuments implements IProcessPrecondition
+public class ProcessDocumentsBySelection extends AbstractProcessDocumentsTemplate implements IProcessPrecondition
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
