@@ -183,6 +183,8 @@ public class TestPaymentTermIdPriority extends AbstractAggregationEngineTestBase
 	{
 		final I_C_PaymentTerm pt = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
 		pt.setC_PaymentTerm_ID(new Random().nextInt(1000000));
+		pt.setValue("testValue");
+		pt.setName("testName");
 		pt.setIsAllowOverrideDueDate(true);
 		pt.setCalculationMethod(X_C_PaymentTerm.CALCULATIONMETHOD_BaseLineDatePlusXDays);
 		pt.setBaseLineType(X_C_PaymentTerm.BASELINETYPE_InvoiceDate);
