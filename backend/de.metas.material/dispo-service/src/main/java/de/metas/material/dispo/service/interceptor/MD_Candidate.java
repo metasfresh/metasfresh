@@ -221,7 +221,8 @@ public class MD_Candidate
 		return !candidateRecord.getDateProjected().equals(oldCandidateRecord.getDateProjected())
 				|| !candidateRecord.getStorageAttributesKey().equals(oldCandidateRecord.getStorageAttributesKey())
 				|| oldCandidateRecord.getM_Warehouse_ID() != candidateRecord.getM_Warehouse_ID()
-				|| oldCandidateRecord.getM_Product_ID() != candidateRecord.getM_Product_ID();
+				|| oldCandidateRecord.getM_Product_ID() != candidateRecord.getM_Product_ID()
+				|| oldCandidateRecord.getQty().compareTo(candidateRecord.getQty()) != 0;
 	}
 	
 	private static boolean isUpdateOldStockRequired(
