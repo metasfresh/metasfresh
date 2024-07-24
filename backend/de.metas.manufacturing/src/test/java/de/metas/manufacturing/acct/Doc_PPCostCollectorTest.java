@@ -1,6 +1,7 @@
 package de.metas.manufacturing.acct;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.doc.AcctDocContext;
@@ -36,7 +37,7 @@ class Post_CostCollectors_Now_ManualTest
 {
 	void run()
 	{
-		postPP_Cost_Collectors(1000667);
+		postPP_Cost_Collectors(1000667, 1000766);
 	}
 
 	private final IQueryBL queryBL;
@@ -99,19 +100,22 @@ class Post_CostCollectors_Now_ManualTest
 			return;
 		}
 
-		final List<I_PP_Cost_Collector> records = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
+		final ImmutableMap<Integer, I_PP_Cost_Collector> recordsById = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
 				.addInArrayFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Cost_Collector_ID, ids)
 				.create()
-				.list();
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(I_PP_Cost_Collector::getPP_Cost_Collector_ID, cc -> cc));
 
-		System.out.println("Posting: " + records);
+		System.out.println("Posting: " + recordsById.values());
 
 		final AcctDocContext.AcctDocContextBuilder contextTemplate = AcctDocContext.builder()
 				.services(acctDocRequiredServicesFacade)
 				.acctSchemas(acctSchemas);
 
-		for (final I_PP_Cost_Collector documentModel : records)
+		for (final int id : ids)
 		{
+			final I_PP_Cost_Collector documentModel = recordsById.get(id);
+			
 			final Doc_PPCostCollector doc = new Doc_PPCostCollector(contextTemplate.documentModel(documentModel).build());
 			doc.post(true, true);
 			System.out.println("Posted: " + documentModel);
