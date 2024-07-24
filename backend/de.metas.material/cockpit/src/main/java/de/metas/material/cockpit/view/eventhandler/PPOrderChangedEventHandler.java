@@ -53,7 +53,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	
+
 	public PPOrderChangedEventHandler(@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
@@ -74,7 +74,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 
 		final OrgId orgId = ppOrderChangedEvent.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-		
+
 		final List<UpdateMainDataRequest> requests = new ArrayList<>();
 		for (final PPOrderLine newPPOrderLine : newPPOrderLines)
 		{
@@ -83,9 +83,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 					.date(TimeUtil.getDay(newPPOrderLine.getPpOrderLineData().getIssueOrReceiveDate(), timeZone))
 					.build();
 
-			final BigDecimal qtyRequiredForProduction = //
-					newPPOrderLine.getPpOrderLineData().getQtyRequired()
-							.subtract(newPPOrderLine.getPpOrderLineData().getQtyDelivered());
+			final BigDecimal qtyRequiredForProduction = newPPOrderLine.getPpOrderLineData().getQtyOpenNegateIfReceipt();
 
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)

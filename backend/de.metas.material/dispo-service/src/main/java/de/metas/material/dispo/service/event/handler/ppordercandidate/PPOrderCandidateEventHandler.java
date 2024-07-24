@@ -114,7 +114,7 @@ abstract class PPOrderCandidateEventHandler
 
 		for (final PPOrderLineCandidate ppOrderLineCandidate : ppOrderLineCandidates)
 		{
-			final Candidate existingLineCandidate = retrieveExistingLineCandidateOrNull(ppOrderLineCandidate, simulated);
+			final Candidate existingLineCandidate = retrieveExistingLineCandidateOrNull(ppOrderLineCandidate, groupId, simulated);
 
 			final Candidate.CandidateBuilder candidateBuilder = existingLineCandidate != null
 					? existingLineCandidate.toBuilder()
@@ -168,7 +168,7 @@ abstract class PPOrderCandidateEventHandler
 
 		for (final PPOrderLineCandidate ppOrderLineCandidate : ppOrderLineCandidates)
 		{
-			final Candidate existingLineCandidate = retrieveExistingLineCandidateOrNull(ppOrderLineCandidate, simulated);
+			final Candidate existingLineCandidate = retrieveExistingLineCandidateOrNull(ppOrderLineCandidate, null, simulated);
 
 			if (existingLineCandidate != null)
 			{
@@ -219,7 +219,10 @@ abstract class PPOrderCandidateEventHandler
 	}
 
 	@Nullable
-	private Candidate retrieveExistingLineCandidateOrNull(@NonNull final PPOrderLineCandidate ppOrderLineCandidate, final boolean simulated)
+	private Candidate retrieveExistingLineCandidateOrNull(
+			@NonNull final PPOrderLineCandidate ppOrderLineCandidate,
+			@Nullable final MaterialDispoGroupId groupId,
+			final boolean simulated)
 	{
 		final SimulatedQueryQualifier simulatedQueryQualifier = simulated
 				? SimulatedQueryQualifier.ONLY_SIMULATED
@@ -234,6 +237,7 @@ abstract class PPOrderCandidateEventHandler
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.productionDetailsQuery(productionDetailsQuery)
 				.simulatedQueryQualifier(simulatedQueryQualifier)
+				.groupId(groupId)
 				.build();
 
 		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(lineCandidateQuery);
@@ -251,7 +255,7 @@ abstract class PPOrderCandidateEventHandler
 				.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
 				.plantId(ppOrderCandidate.getPpOrderData().getPlantId())
 				.workstationId(ppOrderCandidate.getPpOrderData().getWorkstationId())
-				.qty(ppOrderLineData.getQtyRequired())
+				.qty(ppOrderLineData.getQtyOpenNegateIfReceipt())
 				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId())
 				.productBomLineId(ppOrderLineData.getProductBomLineId())
 				.description(ppOrderLineData.getDescription())
@@ -269,7 +273,7 @@ abstract class PPOrderCandidateEventHandler
 		return MaterialDescriptor.builder()
 				.date(ppOrderLineCandidate.getPpOrderLineData().getIssueOrReceiveDate())
 				.productDescriptor(ppOrderLineCandidate.getPpOrderLineData().getProductDescriptor())
-				.quantity(ppOrderLineCandidate.getPpOrderLineData().getQtyRequired())
+				.quantity(ppOrderLineCandidate.getPpOrderLineData().getQtyOpenNegateIfReceipt())
 				.warehouseId(ppOrderData.getWarehouseId())
 				.build();
 	}

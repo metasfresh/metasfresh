@@ -25,6 +25,7 @@ package de.metas.material.event.pporder;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
@@ -39,7 +40,7 @@ import java.time.Instant;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class PPOrderLineData
 {
-	String description;
+	@Nullable String description;
 
 	int productBomLineId;
 
@@ -48,23 +49,26 @@ public class PPOrderLineData
 	 */
 	boolean receipt;
 
-	Instant issueOrReceiveDate;
+	@NonNull Instant issueOrReceiveDate;
 
-	ProductDescriptor productDescriptor;
+	@NonNull ProductDescriptor productDescriptor;
 
-	@Nullable
-	MinMaxDescriptor minMaxDescriptor;
+	@Nullable MinMaxDescriptor minMaxDescriptor;
 
-	/** qty in stocking UOM */
-	BigDecimal qtyRequired;
+	/**
+	 * qty in stocking UOM
+	 */
+	@NonNull BigDecimal qtyRequired;
 
-	/** qty in stocking UOM */
-	BigDecimal qtyDelivered;
+	/**
+	 * qty in stocking UOM
+	 */
+	@NonNull BigDecimal qtyDelivered;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrderLineData(
-			@JsonProperty("description") final String description,
+			@JsonProperty("description") @Nullable final String description,
 			@JsonProperty("productBomLineId") final int productBomLineId,
 			@JsonProperty("receipt") @NonNull final Boolean receipt,
 			@JsonProperty("issueOrReceiveDate") @NonNull final Instant issueOrReceiveDate,
@@ -83,7 +87,7 @@ public class PPOrderLineData
 		this.productDescriptor = productDescriptor;
 		this.minMaxDescriptor = minMaxDescriptor;
 		this.qtyRequired = qtyRequired;
-		this.qtyDelivered = qtyDelivered;
+		this.qtyDelivered = CoalesceUtil.coalesceNotNull(qtyDelivered, BigDecimal.ZERO);
 	}
 
 	public BigDecimal getQtyOpen()

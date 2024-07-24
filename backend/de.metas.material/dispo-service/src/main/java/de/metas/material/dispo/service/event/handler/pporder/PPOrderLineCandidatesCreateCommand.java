@@ -167,7 +167,7 @@ final class PPOrderLineCandidatesCreateCommand
 				.pickDirectlyIfFeasible(pickDirectlyIfFeasible)
 				.plantId(ppOrder.getPpOrderData().getPlantId())
 				.workstationId(ppOrder.getPpOrderData().getWorkstationId())
-				.qty(ppOrderLine.getPpOrderLineData().getQtyRequired())
+				.qty(ppOrderLine.getPpOrderLineData().getQtyOpenNegateIfReceipt())
 				.productPlanningId(ppOrder.getPpOrderData().getProductPlanningId())
 				.productBomLineId(ppOrderLine.getPpOrderLineData().getProductBomLineId())
 				.description(ppOrderLine.getPpOrderLineData().getDescription())
