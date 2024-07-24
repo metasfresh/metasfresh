@@ -161,7 +161,7 @@ public interface IInvoiceBL extends ISingletonService {
 
 	Optional<I_C_Invoice> getByIdIfExists(@NonNull InvoiceId invoiceId);
 
-    List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	List<? extends I_C_Invoice> getByOrderId(@NonNull OrderId orderId);
 
@@ -169,7 +169,7 @@ public interface IInvoiceBL extends ISingletonService {
 
 	I_C_Invoice getByLineId(@NonNull InvoiceLineId invoiceLineId);
 
-	I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
+    I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
 
     I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
 

@@ -51,7 +51,7 @@ import java.util.function.Consumer;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-class ManualInvoiceRepository
+public class ManualInvoiceRepository
 {
 	@NonNull
 	public ManualInvoice save(@NonNull final CreateManualInvoiceRequest createManualInvoiceRequest)
@@ -175,6 +175,7 @@ class ManualInvoiceRepository
 		invoiceRecord.setC_Currency_ID(createManualInvoiceRequest.getCurrencyId().getRepoId());
 		invoiceRecord.setM_PriceList_ID(createManualInvoiceRequest.getPriceListId().getRepoId());
 		invoiceRecord.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(createManualInvoiceRequest.getDataSourceId()));
+		invoiceRecord.setC_PaymentTerm_ID(createManualInvoiceRequest.getPaymentTermId().getRepoId());
 		saveRecord(invoiceRecord);
 
 		return invoiceRecord;

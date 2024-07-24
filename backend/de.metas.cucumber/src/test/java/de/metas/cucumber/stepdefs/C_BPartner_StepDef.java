@@ -33,6 +33,7 @@ import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
@@ -105,19 +106,21 @@ public class C_BPartner_StepDef
 {
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
-	private final C_BPartner_StepDefData bPartnerTable;
-	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
-	private final M_PricingSystem_StepDefData pricingSystemTable;
-	private final M_Product_StepDefData productTable;
-	private final M_DiscountSchema_StepDefData discountSchemaTable;
-	private final C_Dunning_StepDefData dunningTable;
-	private final AD_Org_StepDefData orgTable;
+	@NonNull private final C_BPartner_StepDefData bPartnerTable;
+	@NonNull private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	@NonNull private final M_PricingSystem_StepDefData pricingSystemTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_DiscountSchema_StepDefData discountSchemaTable;
+	@NonNull private final C_Dunning_StepDefData dunningTable;
+	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
+	@NonNull private final AD_Org_StepDefData orgTable;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
+
 
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable)
@@ -501,6 +504,13 @@ public class C_BPartner_StepDef
 
 			final Boolean isManuallyCreated = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_BPartner.COLUMNNAME_IsManuallyCreated, false);
 			softly.assertThat(bPartnerRecord.isManuallyCreated()).as("IsManuallyCreated").isEqualTo(isManuallyCreated);
+
+			final String paymentTermIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.C_PaymentTerm_ID" + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(paymentTermIdentifier))
+			{
+				final I_C_PaymentTerm paymentTerm = paymentTermTable.get(paymentTermIdentifier);
+				softly.assertThat(paymentTerm.getC_PaymentTerm_ID()).as("C_PaymentTerm_ID").isEqualTo(bPartnerRecord.getC_PaymentTerm_ID());
+			}
 		}
 
 		softly.assertAll();

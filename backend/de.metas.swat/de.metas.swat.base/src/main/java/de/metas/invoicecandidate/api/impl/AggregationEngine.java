@@ -72,6 +72,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -852,7 +853,12 @@ public final class AggregationEngine
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);
-		invoiceHeader.setPaymentTermId(getPaymentTermId(invoiceHeader).orElse(null));
+		final PaymentTermId paymentTermId = Optionals.firstPresentOfSuppliers(
+						() -> getPaymentTermId(invoiceHeader),
+						paymentTermRepository::getDefaultPaymentTermId
+				)
+				.orElseThrow(() -> new AdempiereException("No payment term found for invoice candidates, BpartnerID {} and no default payment term defined."));
+		invoiceHeader.setPaymentTermId(paymentTermId);
 	}
 
 	@NonNull
@@ -968,7 +974,7 @@ public final class AggregationEngine
 		}
 
 		return Optional.of(aggregationDAO.retrieveAggregation(InterfaceWrapperHelper.getCtx(icRecord),
-															  headerAggregationId.getRepoId()));
+				headerAggregationId.getRepoId()));
 	}
 
 	private void setDocTypeInvoiceId(@NonNull final InvoiceHeaderImpl invoiceHeader)
