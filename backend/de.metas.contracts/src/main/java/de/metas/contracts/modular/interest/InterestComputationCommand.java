@@ -185,7 +185,7 @@ public class InterestComputationCommand
 			@NonNull final FlatrateTermId contractId)
 	{
 		final Iterator<ModularContractLogEntry> shippingNotificationIterator = streamShippingNotificationLogEntries(request, contractId).iterator();
-		final Iterator<ModularContractLogEntry> interimContractIterator = streamInterimContractLogEntries(contractId, request).iterator();
+		final Iterator<ModularContractLogEntry> interimContractIterator = streamModularContractLogEntries(contractId, request).iterator();
 		final ModularContractSettings settings = modularContractService.getModularSettingsForContract(contractId);
 
 		BigDecimal totalInterestScore = BigDecimal.ZERO;
@@ -300,7 +300,7 @@ public class InterestComputationCommand
 	}
 
 	@NonNull
-	private Stream<ModularContractLogEntry> streamInterimContractLogEntries(
+	private Stream<ModularContractLogEntry> streamModularContractLogEntries(
 			@Nullable final FlatrateTermId contractId,
 			@NonNull final InterestComputationRequest request)
 	{
@@ -312,7 +312,7 @@ public class InterestComputationCommand
 				.flatrateTermId(contractId)
 				.onlyIfAmountIsSet(true)
 				.lockOwner(request.getLockOwner())
-				.logEntryDocumentType(LogEntryDocumentType.CONTRACT_PREFINANCING)
+				.logEntryDocumentType(LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT)
 				.orderBy(ModularContractLogQuery.OrderBy.TRANSACTION_DATE_ASC)
 				.build();
 
@@ -395,7 +395,7 @@ public class InterestComputationCommand
 				.interestRunId(request.getInterestRunId())
 				.additionalInterestDays(additionalInterestDays)
 				.orgDAO(orgDAO)
-				.interimContractEntry(interimContractEntry)
+				.modularContractLogEntry(interimContractEntry)
 				.openAmount(openAmountInTargetCurr)
 				.build();
 	}

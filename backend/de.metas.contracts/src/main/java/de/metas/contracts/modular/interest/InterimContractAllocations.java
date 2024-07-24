@@ -46,7 +46,7 @@ public class InterimContractAllocations
 {
 	@NonNull private final InterestRunId interestRunId;
 	@NonNull private final Integer additionalInterestDays;
-	@Nullable @Getter private final ModularContractLogEntry interimContractEntry;
+	@Nullable @Getter private final ModularContractLogEntry modularContractLogEntry;
 
 	@NonNull private final IOrgDAO orgDAO;
 	@Getter @NonNull private final List<CreateModularLogInterestRequest> allocatedShippingNotifications = new ArrayList<>();
@@ -115,7 +115,7 @@ public class InterimContractAllocations
 		return CreateModularLogInterestRequest.builder()
 				.interestRunId(interestRunId)
 				.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
-				.interimContractLogId(interimContractEntry == null ? null : interimContractEntry.getId())
+				.interimContractLogId(modularContractLogEntry == null ? null : modularContractLogEntry.getId())
 				.allocatedAmt(getAmountToAllocate(shippingNotification))
 				.interestDays(getInterestDays(shippingNotification))
 				.build();
@@ -145,7 +145,7 @@ public class InterimContractAllocations
 			return cachedInterimContractDate;
 		}
 
-		cachedInterimContractDate = interimContractEntry.getTransactionDate().toInstant(orgDAO::getTimeZone);
+		cachedInterimContractDate = modularContractLogEntry.getTransactionDate().toInstant(orgDAO::getTimeZone);
 		return cachedInterimContractDate;
 	}
 
