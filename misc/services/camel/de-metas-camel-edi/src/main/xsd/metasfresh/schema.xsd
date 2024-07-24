@@ -499,6 +499,8 @@
             <xsd:element minOccurs="0" name="eancom_doctype" type="xsd:string"/>
             <xsd:element minOccurs="0" name="EDI_cctop_invoic_v_ID" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="GrandTotal" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="PmtDiscount" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="GrandTotalMinusPmtDiscount" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="invoice_documentno" type="xsd:string"/>
             <xsd:element minOccurs="0" name="ISO_Code" type="xsd:string"/>
             <xsd:element minOccurs="0" name="MovementDate" type="xsd:date"/>
