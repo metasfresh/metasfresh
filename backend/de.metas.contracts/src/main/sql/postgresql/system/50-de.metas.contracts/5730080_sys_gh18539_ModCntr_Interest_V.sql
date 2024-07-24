@@ -42,12 +42,12 @@ SELECT mi.modcntr_interest_id                                                   
        l.bill_bpartner_id,
        ig.modcntr_invoicinggroup_id,
        l.initial_product_id,
-       NULL::numeric                                                                                 AS C_InterimInvoice_ID, -- Don't delete yet to make sure reports which might use it still work
+       NULL::NUMERIC                                                                                 AS C_InterimInvoice_ID, -- Don't delete yet to make sure reports which might use it still work
        interimContract.c_flatrate_term_id                                                            AS C_Interim_Flatrate_Term_ID,
        shn.m_shipping_notification_id                                                                AS M_Shipping_Notification_ID,
        uom.c_uom_id,
        l.productname,
-       p.name                                                                                        AS name,
+       p.name                                                                                        AS NAME,
        p.value                                                                                       AS ProductValue,
        t.modularcontracthandlertype,
        bp.value                                                                                      AS Bill_BPartner_Value,
@@ -90,6 +90,7 @@ FROM modcntr_interest mi
          LEFT JOIN modcntr_log interimContractLog ON mi.interimcontract_modcntr_log_id = interimContractLog.modcntr_log_id
          LEFT JOIN c_flatrate_term interimContract ON interimContract.c_flatrate_term_id = interimContractLog.record_id
          LEFT JOIN c_currency currency ON interimContract.c_currency_id = currency.c_currency_id
+         LEFT JOIN FinalInvoice ON FinalInvoice.c_invoice_candidate_id = l.c_invoice_candidate_id
          INNER JOIN m_product p ON l.initial_product_id = p.m_product_id
          INNER JOIN C_UOM uom ON l.c_uom_id = uom.c_uom_id
 WHERE mi.finalinterest != 0
