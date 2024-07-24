@@ -86,7 +86,6 @@ SELECT
 FROM C_Invoice i
          LEFT JOIN C_DocType dt ON dt.C_DocType_ID = i.C_DocTypetarget_ID
          LEFT JOIN C_Order o ON o.C_Order_ID=i.C_Order_ID
-         LEFT JOIN EDI_Desadv desadv ON desadv.EDI_Desadv_ID = o.EDI_Desadv_ID -- note that we prefer the EDI_Desadv over M_InOut. there might be multiple InOuts, all with the same POReference and the same EDI_Desadv_ID
          LEFT JOIN C_PaymentTerm pterm ON i.c_paymentterm_id = pterm.c_paymentterm_id
          LEFT JOIN LATERAL (
     SELECT
