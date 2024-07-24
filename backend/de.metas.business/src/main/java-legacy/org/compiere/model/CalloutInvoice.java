@@ -81,8 +81,9 @@ public class CalloutInvoice extends CalloutEngine
 	protected static final String SYS_Config_C_Invoice_SOTrx_OnlyAllowBillToDefault_Contact = "C_Invoice.SOTrx_OnlyAllowBillToDefault_Contact";
 
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final DocumentLocationAdaptersRegistry documentLocationAdaptersRegistry = SpringContextHolder.instance.getBean(DocumentLocationAdaptersRegistry.class);
-	
+
 	/**
 	 * Invoice Header- BPartner.
 	 * - M_PriceList_ID (+ Context)
@@ -194,6 +195,11 @@ public class CalloutInvoice extends CalloutEngine
 				if (!rs.wasNull())
 				{
 					invoice.setC_PaymentTerm_ID(paymentTermId);
+				}
+				else {
+					paymentTermRepository.getDefaultPaymentTermId()
+							.map(PaymentTermId::getRepoId)
+							.ifPresent(invoice::setC_PaymentTerm_ID);
 				}
 
 				// Location

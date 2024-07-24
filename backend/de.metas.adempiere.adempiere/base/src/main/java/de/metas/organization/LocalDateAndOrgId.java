@@ -99,8 +99,8 @@ public class LocalDateAndOrgId implements Comparable<LocalDateAndOrgId> {
      *
      * @see #compareTo(LocalDateAndOrgId)
      */
-    private int compareToByLocalDate(final @Nullable LocalDateAndOrgId o)
-    {
+	private int compareToByLocalDate(final @Nullable LocalDateAndOrgId o)
+	{
         if (o == null)
         {
 			return 1;
