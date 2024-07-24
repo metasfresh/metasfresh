@@ -112,7 +112,7 @@ public class DunningTestBase
 
 	protected CurrencyId currencyEUR;
 	protected CurrencyId currencyCHF;
-	protected final IDunningBL dunningBL = Services.get(IDunningBL.class);
+	protected IDunningBL dunningBL;
 	protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Before
@@ -141,6 +141,7 @@ public class DunningTestBase
 
 		final PlainDocumentBL docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
 		docActionBL.setDefaultProcessInterceptor(PlainDocumentBL.PROCESSINTERCEPTOR_CompleteDirectly);
+		dunningBL = Services.get(IDunningBL.class);
 
 		MockedCloseableIterator.clear();
 
