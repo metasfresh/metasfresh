@@ -78,6 +78,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	SvCo("SvCo"),
 	SvProcessed("SvProcessed");
 
+	public static final ImmutableList<ComputingMethodType> INTERIM_INVOICE_SPECIFIC_METHODS = ImmutableList.of(INTERIM_CONTRACT);
+
 	public static final ImmutableList<ComputingMethodType> DEFINITIVE_INVOICE_SPECIFIC_METHODS = ImmutableList.of(DefinitiveInvoiceRawProduct,
 			DefinitiveInvoiceProcessedProduct);
 	public static final ImmutableList<ComputingMethodType> FINAL_INVOICE_SPECIFIC_METHODS = ImmutableList.of(INTERIM_CONTRACT,
@@ -99,6 +101,21 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 
 	public static final ImmutableList<ComputingMethodType> INTEREST_SPECIFIC_METHODS = ImmutableList.of(AddValueOnInterim,
 			SubtractValueOnInterim);
+	//If not all interim amt has been covered by shipping notifications, it is possible that some unprocessed logs exist for the AddValueOnInterim/SubtractValueOnInterim
+	public static final ImmutableList<ComputingMethodType> FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS = ImmutableList.of(INTERIM_CONTRACT,
+			Receipt,
+			SalesOnRawProduct,
+			SalesOnProcessedProduct,
+			CoProduct,
+			AddValueOnRawProduct,
+			AddValueOnProcessedProduct,
+			SubtractValueOnRawProduct,
+			ReductionCalibration,
+			StorageCost,
+			AverageAddedValueOnShippedQuantity,
+			AvCo,
+			SvCo,
+			SvProcessed);
 
 	private static final ImmutableSet<ComputingMethodType> SUBTRACTED_VALUE_METHODS = ImmutableSet.of(
 			SubtractValueOnRawProduct,

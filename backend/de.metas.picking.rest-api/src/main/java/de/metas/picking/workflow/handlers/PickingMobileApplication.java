@@ -37,6 +37,7 @@
 	import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 	import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 	import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+	import de.metas.handlingunits.picking.job.model.PickingTarget;
 	import de.metas.handlingunits.qrcodes.model.HUQRCode;
 	import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 	import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -78,7 +79,9 @@
 	import org.adempiere.exceptions.AdempiereException;
 	import org.springframework.stereotype.Component;
 
+	import javax.annotation.Nullable;
 	import java.util.Collection;
+	import java.util.List;
 	import java.util.Objects;
 	import java.util.function.BiFunction;
 	import java.util.function.UnaryOperator;
@@ -394,6 +397,8 @@
 					.bestBeforeDate(json.getBestBeforeDate())
 					.isSetLotNo(json.isSetLotNo())
 					.lotNo(json.getLotNo())
+					.isCloseTarget(json.isCloseTarget())
+					//
 					.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
 							.map(HUQRCode::fromGlobalQRCodeJsonString)
 							.orElse(null))
@@ -450,4 +455,36 @@
 					});
 
 		}
+
+		public List<PickingTarget> getAvailableTargets(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		{
+			final WFProcess wfProcess = getWFProcessById(wfProcessId);
+			wfProcess.assertHasAccess(callerId);
+
+			final PickingJob pickingJob = getPickingJob(wfProcess);
+			return pickingJobRestService.getAvailableTargets(pickingJob);
+		}
+
+		public WFProcess setPickTarget(@NonNull final WFProcessId wfProcessId, @Nullable final PickingTarget target, @NonNull final UserId callerId)
+		{
+			return changeWFProcessById(
+					wfProcessId,
+					(wfProcess, pickingJob) -> {
+						wfProcess.assertHasAccess(callerId);
+						return pickingJobRestService.setPickTarget(pickingJob, target);
+					});
+
+		}
+
+		public WFProcess closePickTarget(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		{
+			return changeWFProcessById(
+					wfProcessId,
+					(wfProcess, pickingJob) -> {
+						wfProcess.assertHasAccess(callerId);
+						return pickingJobRestService.closePickTarget(pickingJob);
+					});
+
+		}
+
 	}

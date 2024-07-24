@@ -10,22 +10,17 @@ package de.metas.handlingunits.attribute.strategy.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -33,6 +28,10 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
 
 /* package */final class HUAttributeTransferRequest implements IHUAttributeTransferRequest
 {
@@ -42,7 +41,7 @@ import de.metas.util.Check;
 	private final BigDecimal qty;
 	private final I_C_UOM uom;
 
-	private final IAttributeStorage attributeStorageFrom;
+	private final IAttributeSet attributeStorageFrom;
 	private final IAttributeStorage attributeStorageTo;
 
 	private final IHUStorage huStorageFrom;
@@ -53,15 +52,15 @@ import de.metas.util.Check;
 	private final boolean vhuTransfer;
 
 	public HUAttributeTransferRequest(final IHUContext huContext,
-			final ProductId productId,
-			final BigDecimal qty,
-			final I_C_UOM uom,
-			final IAttributeStorage attributeStorageFrom,
-			final IAttributeStorage attributeStorageTo,
-			final IHUStorage huStorageFrom,
-			final IHUStorage huStorageTo,
-			final BigDecimal qtyUnloaded,
-			final boolean vhuTransfer)
+									  final ProductId productId,
+									  final BigDecimal qty,
+									  final I_C_UOM uom,
+									  final IAttributeSet attributeStorageFrom,
+									  final IAttributeStorage attributeStorageTo,
+									  final IHUStorage huStorageFrom,
+									  final IHUStorage huStorageTo,
+									  final BigDecimal qtyUnloaded,
+									  final boolean vhuTransfer)
 	{
 		super();
 
@@ -123,7 +122,7 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public IAttributeStorage getAttributesFrom()
+	public IAttributeSet getAttributesFrom()
 	{
 		return attributeStorageFrom;
 	}

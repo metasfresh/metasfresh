@@ -25,19 +25,21 @@ package de.metas.contracts.modular.computing.purchasecontract.addedvalue.process
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingOrder;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingProcessedReceipt;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -47,11 +49,14 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class AVProcessedComputingMethod implements IComputingMethodHandler
+public class AVProcessedComputingMethod extends AbstractComputingMethodHandler
 {
 	@NonNull private final ManufacturingFacadeService manufacturingFacadeService;
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
+
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
@@ -112,6 +117,7 @@ public class AVProcessedComputingMethod implements IComputingMethodHandler
 				.ids(logs.getIds())
 				.price(computingMethodService.productPriceToUOM(price, stockUOMId))
 				.qty(computingMethodService.getQtySumInStockUOM(logs))
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.build();
 	}
 }

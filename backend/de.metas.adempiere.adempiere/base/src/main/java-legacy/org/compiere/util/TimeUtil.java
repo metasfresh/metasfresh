@@ -24,9 +24,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.Period;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAdjusters;
 import java.util.BitSet;
@@ -594,7 +596,7 @@ public class TimeUtil
 	{
 		return (int)LocalDateAndOrgId.daysBetween(start, end);
 	}
-	
+
 	/**
 	 * Calculate the number of days between start and end.
 	 *
@@ -2340,4 +2342,44 @@ public class TimeUtil
 
 		return !range1.intersection(range2).isEmpty();
 	}
+
+	/**
+	 * Compute the days between two dates as if each year is 360 days long.
+	 * More details and an implementation for Excel can be found in {@link org.apache.poi.ss.formula.functions.Days360}
+	 */
+	public static long getDaysBetween360(@NonNull final ZonedDateTime from, @NonNull final ZonedDateTime to)
+	{
+		if (to.isBefore(from))
+		{
+			throw new IllegalArgumentException();
+		}
+		ZonedDateTime dayFrom = from;
+		ZonedDateTime dayTo = to;
+
+		if (dayFrom.getDayOfMonth() == 31)
+		{
+			dayFrom = dayFrom.withDayOfMonth(30);
+		}
+		if (dayTo.getDayOfMonth() == 31)
+		{
+			dayTo = dayTo.withDayOfMonth(30);
+		}
+
+		final long months = ChronoUnit.MONTHS.between(
+				YearMonth.from(dayFrom), YearMonth.from(dayTo));
+
+		final int daysLeft = dayTo.getDayOfMonth() - dayFrom.getDayOfMonth();
+
+		return 30 * months + daysLeft;
+	}
+
+	/**
+	 * Compute the days between two dates as if each year is 360 days long.
+	 * More details and an implementation for Excel can be found in {@link org.apache.poi.ss.formula.functions.Days360}
+	 */
+	public static long getDaysBetween360(@NonNull final Instant from, @NonNull final Instant to)
+	{
+		return getDaysBetween360(asZonedDateTime(from), asZonedDateTime(to));
+	}
+
 }    // TimeUtil

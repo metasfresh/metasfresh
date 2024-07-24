@@ -45,9 +45,28 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 {
+	// If enabled, the EDI document will be computed for each shipment. Note: when the sys config is enabled, the 'EXP_M_InOut_Desadv_V' EXP_Format must be manually activated and the default 'EDI_Exp_Desadv' inactivated.
+	public final static String SYS_CONFIG_OneDesadvPerShipment = "de.metas.edi.OneDesadvPerShipment";
+
+	// Services
+	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	/**
 	 * TODO enqueue edi documents ordered by their POReference; use an {@link ITrxItemChunkProcessor} to aggregate the inouts to desadvs and send them when a new chunk starts. That way we can omit the
 	 * aggregation in the synchronous enqueuing process and have the code here much cleaner.
@@ -55,9 +74,6 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		// Services
-		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 
 		final List<Exception> feedback = new ArrayList<Exception>();
 
@@ -122,7 +138,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 		final String tableName = InterfaceWrapperHelper.getModelTableName(ediDocument);
 
 		final Object model;
-		if (org.compiere.model.I_M_InOut.Table_Name.equals(tableName))
+		if (org.compiere.model.I_M_InOut.Table_Name.equals(tableName) && !sysConfigBL.getBooleanValue(SYS_CONFIG_OneDesadvPerShipment, false))
 		{
 			final I_M_InOut inOut = InterfaceWrapperHelper.create(ediDocument, I_M_InOut.class);
 			model = inOut.getEDI_Desadv(); // use DESADV for InOut documents

@@ -64,8 +64,8 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC
 
 public abstract class AbstractPurchaseContractHandler extends AbstractModularContractLogHandler
 {
-	private final static AdMessageKey MSG_ON_INTERIM_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimContractCompleteLogDescription");
-	private final static AdMessageKey MSG_ON_MODULAR_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.modularContractCompleteLogDescription");
+	protected final static AdMessageKey MSG_ON_INTERIM_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimContractCompleteLogDescription");
+	protected final static AdMessageKey MSG_ON_MODULAR_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.modularContractCompleteLogDescription");
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -123,7 +123,7 @@ public abstract class AbstractPurchaseContractHandler extends AbstractModularCon
 		final String description = msgBL.getBaseLanguageMsg(msgToUse, productName, quantity);
 
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(modularContractRecord.getBill_BPartner_ID());
-		final ProductPrice priceActual = flatrateBL.extractPriceActual(modularContractRecord);
+		final ProductPrice priceActual = flatrateBL.extractPriceActual(flatrateTermRecord);
 		final Money amount = quantity != null && priceActual != null
 				? priceActual.computeAmount(quantity)
 				: null;

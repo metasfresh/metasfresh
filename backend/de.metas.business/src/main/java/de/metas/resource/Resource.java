@@ -46,6 +46,7 @@ public class Resource
 	@Nullable ResourceGroupId resourceGroupId;
 	@NonNull ResourceTypeId resourceTypeId;
 	@Nullable ManufacturingResourceType manufacturingResourceType;
+	@Nullable Integer externalSystemParentConfigId;
 
 	@Nullable UserId responsibleId;
 
@@ -56,4 +57,14 @@ public class Resource
 	@Nullable WorkplaceId workplaceId;
 
 	public boolean isPlant() {return manufacturingResourceType != null && manufacturingResourceType.isPlant();}
+
+	public boolean isWorkstation()
+	{
+		return manufacturingResourceType != null && manufacturingResourceType.isWorkstation();
+	}
+
+	public boolean isExternalSystem()
+	{
+		return manufacturingResourceType != null && manufacturingResourceType.isExternalSystem();
+	}
 }

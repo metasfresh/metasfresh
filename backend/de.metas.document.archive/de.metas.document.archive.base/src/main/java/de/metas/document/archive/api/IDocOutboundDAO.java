@@ -26,6 +26,7 @@ import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.document.archive.postfinance.PostFinanceStatus;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -67,7 +68,7 @@ public interface IDocOutboundDAO extends ISingletonService
 	@Nullable
 	I_C_Doc_Outbound_Log_Line retrieveCurrentPDFArchiveLogLineOrNull(@NonNull DocOutboundLogId docOutboundLogId);
 
-	void setPostFinanceExportStatus(@NonNull DocOutboundLogId docOutboundLogId, @NonNull String exportStatus);
+	void setPostFinanceExportStatus(@NonNull DocOutboundLogId docOutboundLogId, @NonNull PostFinanceStatus exportStatus);
 
 	/**
 	 * Find among the given <code>log</code>'s {@link I_C_Doc_Outbound_Log_Line}s the latest one with action <code>PDF</code> (i.e highest ID)

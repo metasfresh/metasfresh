@@ -112,12 +112,20 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 	@Override
 	public DraftPPOrderQuantities getDraftPPOrderQuantities(@NonNull final PPOrderId ppOrderId)
 	{
+		final boolean includeProcessedQty = false;
+		return getPPOrderQuantities(ppOrderId, includeProcessedQty);
+	}
+
+	@Override
+	@NonNull
+	public DraftPPOrderQuantities getPPOrderQuantities(@NonNull final PPOrderId ppOrderId, final boolean includeProcessed)
+	{
 		Quantity finishedGood_QtyReceived = null;
 		final HashMap<PPOrderBOMLineId, DraftPPOrderBOMLineQuantities> linesById = new HashMap<>();
 
 		for (final I_PP_Order_Qty candidate : huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId))
 		{
-			if (candidate.isProcessed())
+			if (!includeProcessed && candidate.isProcessed())
 			{
 				continue;
 			}

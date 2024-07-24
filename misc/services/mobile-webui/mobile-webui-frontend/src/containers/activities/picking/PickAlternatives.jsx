@@ -16,7 +16,7 @@ const PickAlternatives = ({
   return (
     <>
       {pickFromAlternatives &&
-        Object.values(pickFromAlternatives)
+        pickFromAlternatives
           .filter((pickFromAlternative) => pickFromAlternative.isDisplayed)
           .map((pickFromAlternative) => {
             return (
@@ -46,7 +46,7 @@ PickAlternatives.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
-  pickFromAlternatives: PropTypes.object.isRequired,
+  pickFromAlternatives: PropTypes.array.isRequired,
   uom: PropTypes.string.isRequired,
   disabled: PropTypes.bool,
 };

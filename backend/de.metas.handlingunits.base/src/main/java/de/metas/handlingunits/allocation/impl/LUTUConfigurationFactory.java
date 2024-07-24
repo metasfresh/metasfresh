@@ -116,12 +116,9 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		}
 		else
 		{
-			luProducerDestination.setLUItemPI(null);
-			luProducerDestination.setLUPI(null);
-			luProducerDestination.setMaxLUs(0);
+			luProducerDestination.setNoLU();
 
 			// TU configuration
-			// luProducerDestination.setMaxTUsPerLU(0); // no need to set
 			luProducerDestination.setCreateTUsForRemainingQty(true); // we will create only TUs
 
 			if (qtyTUInfinite)

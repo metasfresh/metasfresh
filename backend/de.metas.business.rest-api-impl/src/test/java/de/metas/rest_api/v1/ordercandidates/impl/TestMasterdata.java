@@ -40,6 +40,7 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_BPartner;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Ignore;
@@ -132,6 +133,8 @@ final class TestMasterdata
 		bpRecord.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		bpRecord.setC_BP_Group_ID(groupRecord.getC_BP_Group_ID());
 		bpRecord.setVATaxID(vatId);
+		bpRecord.setInvoiceRule(X_C_BPartner.INVOICERULE_AfterDelivery);
+		bpRecord.setPaymentRule(X_C_BPartner.PAYMENTRULE_Cash);
 		saveRecord(bpRecord);
 
 		return prepareBPartnerLocation()
@@ -181,6 +184,8 @@ final class TestMasterdata
 		bpRecord.setPaymentRule(PaymentRule.OnCredit.getCode());
 		bpRecord.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		bpRecord.setC_BP_Group_ID(groupRecord.getC_BP_Group_ID());
+		bpRecord.setInvoiceRule(X_C_BPartner.INVOICERULE_AfterDelivery);
+		bpRecord.setPaymentRule(X_C_BPartner.PAYMENTRULE_Cash);
 		saveRecord(bpRecord);
 
 		return BPartnerId.ofRepoId(bpRecord.getC_BPartner_ID());
@@ -265,7 +270,7 @@ final class TestMasterdata
 			@NonNull final PriceListId priceListId,
 			@NonNull final LocalDate validFrom)
 	{
-		I_M_PriceList_Version record = newInstance(I_M_PriceList_Version.class);
+		final I_M_PriceList_Version record = newInstance(I_M_PriceList_Version.class);
 		record.setM_PriceList_ID(priceListId.getRepoId());
 		record.setValidFrom(TimeUtil.asTimestamp(validFrom));
 		saveRecord(record);
@@ -333,6 +338,8 @@ final class TestMasterdata
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setSalesPartnerCode(salesRepCode);
 		partner.setIsSalesRep(true);
+		partner.setInvoiceRule(X_C_BPartner.INVOICERULE_AfterDelivery);
+		partner.setPaymentRule(X_C_BPartner.PAYMENTRULE_Cash);
 		saveRecord(partner);
 
 		return BPartnerId.ofRepoId(partner.getC_BPartner_ID());

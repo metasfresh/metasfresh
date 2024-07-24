@@ -1,16 +1,5 @@
 package de.metas.handlingunits.hutransaction.impl;
 
-import java.time.ZonedDateTime;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.slf4j.Logger;
-
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.exceptions.HUException;
@@ -26,42 +15,44 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
 public final class HUTransactionCandidate implements IHUTransactionCandidate
 {
-	private static final transient Logger logger = LogManager.getLogger(HUTransactionCandidate.class);
+	private static final Logger logger = LogManager.getLogger(HUTransactionCandidate.class);
 
 	// Dimension
-	@Getter
-	@Setter
-	private Object referencedModel;
+	@Getter @Setter private Object referencedModel;
 
-	private final I_M_HU_Item huItem;
+	@Nullable private final I_M_HU_Item huItem;
 
-	private final I_M_HU_Item vhuItem;
+	@Nullable private final I_M_HU_Item vhuItem;
+
 	// Product/Qty/UOM
 
-	@Getter
-	private final ProductId productId;
-
-	@Getter
-	private final Quantity quantity;
+	@Getter private final ProductId productId;
+	@Getter private final Quantity quantity;
 
 	// Physical position and status
 	private final LocatorId locatorId;
-
 	private final String huStatus;
 
 	// Reference
 	private final String id;
 
-	@Getter
-	private final ZonedDateTime date;
+	@Getter private final ZonedDateTime date;
 
 	private IHUTransactionCandidate counterpartTrx;
 
-	@Getter
-	private boolean skipProcessing = false;
+	@Getter private boolean skipProcessing = false;
 
 	public HUTransactionCandidate(
 			final Object referencedModel,
@@ -91,21 +82,23 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 			final Quantity quantity,
 			final ZonedDateTime date)
 	{
-		this(model,
+		this(
+				model,
 				huItem,
 				vhuItem,
 				productId,
 				quantity,
 				date,
 				null, // locator, will be handled
-				null); // huStatus, will be handled
+				null // huStatus, will be handled
+		);
 	}
 
 	@Builder
 	public HUTransactionCandidate(
 			final Object model,
-			final I_M_HU_Item huItem,
-			final I_M_HU_Item vhuItem,
+			@Nullable final I_M_HU_Item huItem,
+			@Nullable final I_M_HU_Item vhuItem,
 			@NonNull final ProductId productId,
 			@NonNull final Quantity quantity,
 			@NonNull final ZonedDateTime date,
@@ -150,16 +143,9 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 			this.huItem = null;
 		}
 
-		// vhuItem
 		this.vhuItem = vhuItem;
-
-		// Product
 		this.productId = productId;
-
-		// Qty/UOM
 		this.quantity = quantity;
-
-		// Transaction date
 		this.date = date;
 
 		final I_M_HU effectiveHU = getEffectiveHU();

@@ -9,7 +9,7 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HUTestHelper;
@@ -34,6 +34,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.MockedPickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
@@ -51,6 +52,9 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
+import de.metas.handlingunits.report.labels.HULabelConfigRepository;
+import de.metas.handlingunits.report.labels.HULabelConfigService;
+import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
@@ -73,6 +77,9 @@ import de.metas.test.MetasfreshSnapshotFunction;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -139,7 +146,7 @@ public class PickingJobTestHelper
 
 		pickingCandidateRepository = new PickingCandidateRepository();
 		SpringContextHolder.registerJUnitBean(pickingCandidateRepository); // needed for HUPickingSlotBL
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO()); // needed for HUPickingSlotBL
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository()); // needed for HUPickingSlotBL
 		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO()); // needed for HUPickingSlotBL
 
 		pickingConfigRepo = new PickingConfigRepositoryV2();
@@ -151,6 +158,7 @@ public class PickingJobTestHelper
                 huQRCodesRepository,
                 new GlobalQRCodeService(DoNothingMassPrintingService.instance),
                 new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
+		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
 		InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,
@@ -169,13 +177,20 @@ public class PickingJobTestHelper
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
 						bpartnerBL,
-						huQRCodeService
+						huQRCodeService,
+						workplaceService
 				),
 				pickingConfigRepo,
 				ShipmentService.getInstance(),
 				huQRCodeService,
+				new HULabelService(
+						new HULabelConfigService(new HULabelConfigRepository()),
+						huQRCodeService
+				),
 				inventoryService,
-				huReservationService);
+				huReservationService,
+				pickingJobSlotService,
+				workplaceService);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)
@@ -330,6 +345,13 @@ public class PickingJobTestHelper
 				.luPIItem(luPIItem)
 				.tuPackingInstructionId(tuPackingInstructionId)
 				.build();
+	}
+
+	public HUInfo createVHUInfo(@NonNull final ProductId productId, @NonNull final String qtyStr, @NonNull final String qrCodeId)
+	{
+		final HuId huId = createVHU(productId, qtyStr);
+		final HUQRCode qrCode = createQRCode(huId, qrCodeId);
+		return HUInfo.builder().id(huId).qrCode(qrCode).build();
 	}
 
 	public HuId createVHU(final ProductId productId, final String qtyStr)

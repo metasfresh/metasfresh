@@ -121,6 +121,9 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -131,6 +134,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_UOM;
@@ -149,6 +153,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import com.google.common.annotations.VisibleForTesting;
 
 @Service
 @RequiredArgsConstructor
@@ -192,6 +197,7 @@ public class ShipmentScheduleWithHUService
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
 
 		final HUQRCodesService huQRCodeService = new HUQRCodesService(
 				new HUQRCodesRepository(),
@@ -202,7 +208,8 @@ public class ShipmentScheduleWithHUService
 		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
 				pickingJobSlotService,
 				bpartnerBL,
-				huQRCodeService
+				huQRCodeService,
+				workplaceService
 		);
 
 		final HUReservationService huReservationServiceTest = new HUReservationService(new HUReservationRepository());
@@ -800,14 +807,23 @@ public class ShipmentScheduleWithHUService
 			@NonNull final ShipmentScheduleWithHUFactory factory)
 	{
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
-		final List<ShipmentScheduleSplit> shipmentScheduleSplits = shipmentScheduleSplitService.getByShipmentScheduleId(shipmentScheduleId);
+		final List<ShipmentScheduleSplit> shipmentScheduleSplits = getEligibleSplits(shipmentScheduleId);
 		if (shipmentScheduleSplits.isEmpty())
 		{
-			throw new AdempiereException("No shipment schedule split records defined");
+			throw new AdempiereException("No shipment schedule split records to process found");
 		}
 
 		return shipmentScheduleSplits.stream()
 				.map(split -> factory.ofSplit(schedule, split))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@VisibleForTesting
+	List<ShipmentScheduleSplit> getEligibleSplits(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		return shipmentScheduleSplitService.getByShipmentScheduleIdExcludingVoidedShipments(shipmentScheduleId)
+				.stream()
+				.filter(ShipmentScheduleSplit::isNotProcessed)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -1154,6 +1170,7 @@ public class ShipmentScheduleWithHUService
 				.movementDate(SystemTime.asZonedDateTime())
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(schedule.getM_AttributeSetInstance_ID()))
 				.modularContractId(contractId)
+				.forRecordRef(TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, schedule.getM_ShipmentSchedule_ID()))
 				.build();
 
 		final HuId createdHuId = inventoryService.createInventoryForMissingQty(req);

@@ -56,4 +56,7 @@ public interface IHUPPOrderQtyBL extends ISingletonService
 	Set<HuId> getFinishedGoodsReceivedHUIds(@NonNull PPOrderId ppOrderId);
 
 	void setNewLUAndSave(@NonNull List<I_PP_Order_Qty> candidates, @NonNull HuId newLUId);
+	
+	@NonNull
+	DraftPPOrderQuantities getPPOrderQuantities(@NonNull PPOrderId ppOrderId, boolean includeProcessed);
 }

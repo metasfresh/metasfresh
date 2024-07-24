@@ -18,6 +18,20 @@ Feature: create invoices using invoice API
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
       | endCustomer_1            | 2156425           |
 
+    And load C_PaymentTerm by id:
+      | C_PaymentTerm_ID.Identifier | C_PaymentTerm_ID |
+      | PaymentTerm_30DayNet        | 1000002          |
+      | PaymentTerm_10Day1Prc       | 1000009          |
+
+    And validate C_PaymentTerm:
+      | C_PaymentTerm_ID.Identifier | Value         | Name          |
+      | PaymentTerm_10Day1Prc       | 10 Tage 1 %   | 10 Tage 1 %   |
+      | PaymentTerm_30DayNet        | 30 Tage netto | 30 Tage netto |
+
+    And validate C_BPartner:
+      | C_BPartner_ID.Identifier | Value | OPT.C_PaymentTerm_ID.Identifier |
+      | endCustomer_1            | G0001 | PaymentTerm_10Day1Prc           |
+
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Location_ID |
       | endCustomerLocation_1             | 2205175                    |
@@ -102,8 +116,8 @@ Feature: create invoices using invoice API
       | invoice_1               |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx |
-      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 30 Tage netto | true      | CO        | EUR                     | 2022-01-20       | 2022-01-19   | 2022-01-18      | docType                     | docType                           | true        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx |
+      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 10 Tage 1 % | true      | CO        | EUR                     | 2022-01-20       | 2022-01-19   | 2022-01-18      | docType                     | docType                           | true        |
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
@@ -221,8 +235,8 @@ Feature: create invoices using invoice API
       | invoice_1               |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx |
-      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 30 Tage netto | true      | CO        | EUR                     | 2022-01-20       | 2022-01-19   | 2022-01-18      | docType                     | docType                           | true        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx |
+      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 10 Tage 1 % | true      | CO        | EUR                     | 2022-01-20       | 2022-01-19   | 2022-01-18      | docType                     | docType                           | true        |
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
@@ -310,8 +324,8 @@ Feature: create invoices using invoice API
       | invoice_1               |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx |
-      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 30 Tage netto | true      | CO        | EUR                     | 2022-01-25       | 2022-01-24   | 2022-01-23      | docType                     | docType                           | true        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx |
+      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 10 Tage 1 % | true      | CO        | EUR                     | 2022-01-25       | 2022-01-24   | 2022-01-23      | docType                     | docType                           | true        |
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
@@ -460,6 +474,109 @@ Feature: create invoices using invoice API
       "dateAcct": "2022-01-19",
       "dateOrdered": "2022-01-18",
       "externalHeaderId": "externalHeaderId_15022023_5",
+      "invoiceDocType": {
+        "docBaseType": "ARI",
+        "docSubType": null
+      },
+      "poReference": "poReference",
+      "soTrx": "SALES",
+      "currencyCode": "EUR",
+      "grandTotal": 105,
+      "taxTotal": 5
+    },
+    "lines": [
+      {
+        "externalLineId": "externalLineId",
+        "line": 10,
+        "lineDescription": "lineDescription",
+        "priceEntered": {
+          "priceUomCode": "PCE",
+          "value": 10
+        },
+        "productIdentifier": "ext-SAP-productExtRef",
+        "qtyToInvoice": 10,
+        "uomCode": "PCE",
+        "taxCode": "testTax2"
+      }
+    ]
+  }
+}
+"""
+
+    And process invoice create response
+      | C_Invoice_ID.Identifier |
+      | invoice_2               |
+
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx |
+      | invoice_2               | endCustomer_1            | endCustomerLocation_1             | poReference     | 10 Tage 1 % | true      | CO        | EUR                     | 2022-01-20       | 2022-01-19   | 2022-01-18      | docType                     | docType                           | true        |
+
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
+      | invoiceLine_2               | invoice_2               | product_2               | 10          | true      | 10               | 10              | 100            | tax                     | 10       | 5              | PCE                   | PCE                       | true              | 10                        |
+
+  @from:cucumber
+  @Id:S0248_600
+  Scenario: BP has no payment term, default payment term is used
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                  | Value             |
+      | ps_1       | Testpreisliste Kunden | Testpreise Kunden |
+    Given metasfresh contains C_BPartners:
+      | Identifier    | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.DeliveryRule |
+      | endCustomer_1 | BPartner_A_no_PayTerm | N            | Y              | ps_1                          | A                |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier            | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | endCustomerLocation_1 | 1234312345487 | endCustomer_1            | true                | true                |
+
+    And metasfresh contains M_Products:
+      | Identifier | Name            |
+      | product_2  | product_1502023 |
+
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID.InternalName | Name           | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax        | Normal                        | TaxName_150223 | 2023-02-01 | 5    | DE                       | DE                        |
+
+    And load C_DocType:
+      | C_DocType_ID.Identifier | OPT.DocBaseType | OPT.IsDefault |
+      | docType                 | ARI             | true          |
+
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | Type             | ExternalReference      | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Product_ID.Identifier |
+      | billBPartnerExtRef                | SAP            | BPartner         | bpartnerExtReference   | endCustomer_1                |                                       |                             |
+      | billBPartnerLocationExtRef        | SAP            | BPartnerLocation | bpartnerLocationExtRef |                              | endCustomerLocation_1                 |                             |
+      | productExtRef                     | SAP            | Product          | productExtRef          |                              |                                       | product_2                   |
+
+    And load C_AcctSchema:
+      | C_AcctSchema_ID.Identifier | OPT.Name              |
+      | acctSchema_1               | metas fresh UN/34 CHF |
+
+    And metasfresh contains C_Vat_Code:
+      | C_VAT_Code_ID.Identifier | C_Tax_ID.Identifier | C_AcctSchema_ID.Identifier | VATCode  | ValidFrom  |
+      | vatCode                  | tax                 | acctSchema_1               | testTax2 | 2023-02-01 |
+
+    And load C_TaxCategory:
+      | C_TaxCategory_ID.Identifier | OPT.C_TaxCategory_ID |
+      | taxCategory_1               | 1000009              |
+
+    And update C_TaxCategory:
+      | C_TaxCategory_ID.Identifier | OPT.IsManualTax |
+      | taxCategory_1               | true            |
+
+    And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/new' and fulfills with '200' status code
+    """
+{
+  "invoice": {
+    "action": {
+      "completeIt": true
+    },
+    "header": {
+      "orgCode": "001",
+      "billPartnerIdentifier": "ext-SAP-bpartnerExtReference",
+      "billLocationIdentifier": "ext-SAP-bpartnerLocationExtRef",
+      "dateInvoiced": "2022-01-20",
+      "dateAcct": "2022-01-19",
+      "dateOrdered": "2022-01-18",
+      "externalHeaderId": "externalHeaderId_15022023_6",
       "invoiceDocType": {
         "docBaseType": "ARI",
         "docSubType": null

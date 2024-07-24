@@ -155,12 +155,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
-import static de.metas.bpartner.interceptor.MakeUniqueNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.externalreference.ExternalIdentifier.Type.EXTERNAL_REFERENCE;
 import static de.metas.externalreference.ExternalIdentifier.Type.METASFRESH_ID;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isBlank;
+import static org.compiere.model.MakeUniqueLocationNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
 
 @ToString
 public class JsonPersisterService

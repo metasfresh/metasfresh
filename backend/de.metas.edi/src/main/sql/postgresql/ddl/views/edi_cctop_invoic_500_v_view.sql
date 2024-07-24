@@ -7,18 +7,18 @@ CREATE OR REPLACE VIEW public.edi_cctop_invoic_500_v AS
 SELECT SUM(il.qtyEntered)                                                                                                            AS QtyInvoiced,
        CASE
            WHEN u.x12de355 = 'TU' THEN 'PCE'
-                                  ELSE u.x12de355
+                                              ELSE u.x12de355
        END                                                                                                                           AS eancom_uom, /* C_InvoiceLine's UOM */
        CASE
            WHEN u_ordered.x12de355 IN ('TU', 'COLI') THEN CEIL(il.QtyInvoiced / GREATEST(ol.QtyItemCapacity, 1))
                                                      ELSE uomconvert(il.M_Product_ID, p.C_UOM_ID, u_ordered.C_UOM_ID, il.QtyInvoiced)
        END                                                                                                                           AS QtyInvoicedInOrderedUOM,
        u_ordered.x12de355                                                                                                            AS eancom_ordered_uom, /* leaving out that CASE-mumbo-jumbo from the other uoms; IDK if it's needed (anymore) */
-       MIN(il.c_invoiceline_id)                                                                                                      AS edi_cctop_invoic_500_v_id,
-       SUM(il.linenetamt)                                                                                                            AS linenetamt,
-       MIN(il.line)                                                                                                                  AS line,
+       MIN(il.c_invoiceline_id)                                                                                                                                                AS edi_cctop_invoic_500_v_id,
+       SUM(il.linenetamt)                                                                                                                                                      AS linenetamt,
+       MIN(il.line)                                                                                                                                                            AS line,
        il.c_invoice_id,
-       il.c_invoice_id                                                                                                               AS edi_cctop_invoic_v_id,
+       il.c_invoice_id                                                                                                                                                         AS edi_cctop_invoic_v_id,
        il.priceactual,
        il.pricelist,
        ol.invoicableqtybasedon,
@@ -31,43 +31,46 @@ SELECT SUM(il.qtyEntered)                                                       
        t.rate,
        CASE /* be lenient if il.price_uom_id is not set; see https://github.com/metasfresh/metasfresh/issues/6458 */
            WHEN COALESCE(u_price.x12de355, u.x12de355) = 'TU' THEN 'PCE'
-                                                              ELSE COALESCE(u_price.x12de355, u.x12de355)
+                                                                          ELSE COALESCE(u_price.x12de355, u.x12de355)
        END                                                                                                                           AS eancom_price_uom /* C_InvoiceLine's Price-UOM */,
        CASE
            WHEN t.rate = 0 THEN 'Y'
                            ELSE ''
-       END                                                                                                                           AS taxfree,
+       END                                                                                                                                                                     AS taxfree,
        c.iso_code,
        il.ad_client_id,
        il.ad_org_id,
-       MIN(il.created)                                                                                                               AS created,
-       MIN(il.createdby)::numeric(10, 0)                                                                                             AS createdby,
-       MAX(il.updated)                                                                                                               AS updated,
-       MAX(il.updatedby)::numeric(10, 0)                                                                                             AS updatedby,
+       MIN(il.created)                                                                                                                                                         AS created,
+       MIN(il.createdby)::numeric(10, 0)                                                                                                                                       AS createdby,
+       MAX(il.updated)                                                                                                                                                         AS updated,
+       MAX(il.updatedby)::numeric(10, 0)                                                                                                                                       AS updatedby,
        il.isactive,
        CASE pc.value
            WHEN 'Leergut' THEN 'P'
                           ELSE ''
-       END                                                                                                                           AS leergut,
+       END                                                                                                                                                                     AS leergut,
        COALESCE(NULLIF(pp.productdescription, ''), NULLIF(pp.description, ''), NULLIF(p.description, ''),
                 p.name)::character varying                                       AS productdescription,
-       COALESCE(ol.line, il.line)                                                                                                    AS orderline,
+       COALESCE(ol.line, il.line)                                                                                                                                              AS orderline,
        COALESCE(NULLIF(o.poreference, ''), i.poreference)::character varying(40)                                                     AS orderporeference,
        il.c_orderline_id,
-       SUM(il.taxamtinfo)                                                        AS taxamtinfo,
+       SUM(il.taxamtinfo)                                                                                                                                                      AS taxamtinfo,
        REGEXP_REPLACE(pip.GTIN, '\s+$', '')                                      AS GTIN, -- Deprecated: superseded by buyer_gtin_tu
        REGEXP_REPLACE(pip.EAN_TU, '\s+$', '')                                    AS EAN_TU,
        REGEXP_REPLACE(pip.UPC, '\s+$', '')                                       AS UPC_TU,
-       REGEXP_REPLACE(pip.GTIN::text, '\s+$'::text, ''::text)                    AS Buyer_GTIN_TU,
-       REGEXP_REPLACE(pp.GTIN::text, '\s+$'::text, ''::text)                     AS Buyer_GTIN_CU,
-       REGEXP_REPLACE(pp.EAN_CU::text, '\s+$'::text, ''::text)                   AS Buyer_EAN_CU,
-       REGEXP_REPLACE(p.GTIN::text, '\s+$'::text, ''::text)                      AS Supplier_GTIN_CU,
-       il.QtyEnteredInBPartnerUOM                                                as qtyEnteredInBPartnerUOM,
-       il.C_UOM_BPartner_ID                                                      as C_UOM_BPartner_ID,
-       ol.externalseqno                                                          as externalSeqNo
+       REGEXP_REPLACE(pip.GTIN, '\s+$', '')                                      AS Buyer_GTIN_TU,
+       COALESCE( -- if there is no explicit pp.GTIN, then assume that the G from GTIN is respected and thus buyer&supplier work with the same value
+               NULLIF(REGEXP_REPLACE(pp.GTIN, '\s+$', ''), ''),
+               REGEXP_REPLACE(p.GTIN, '\s+$', '')
+       )                                                                         AS Buyer_GTIN_CU,
+       REGEXP_REPLACE(pp.EAN_CU, '\s+$', '')                                     AS Buyer_EAN_CU,
+       REGEXP_REPLACE(p.GTIN, '\s+$', '')                                        AS Supplier_GTIN_CU,
+       il.QtyEnteredInBPartnerUOM                                                AS qtyEnteredInBPartnerUOM,
+       il.C_UOM_BPartner_ID                                                      AS C_UOM_BPartner_ID,
+       ol.externalseqno                                                          AS externalSeqNo
 FROM c_invoiceline il
          LEFT JOIN c_orderline ol ON ol.c_orderline_id = il.c_orderline_id AND ol.isactive = 'Y'
-         LEFT JOIN M_HU_PI_Item_Product pip ON ol.M_HU_PI_Item_Product_ID = pip.M_HU_PI_Item_Product_ID
+         LEFT JOIN m_hu_pi_item_product pip ON COALESCE(ol.m_hu_pi_item_product_id, il.m_hu_pi_item_product_id) = pip.m_hu_pi_item_product_id
          LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
          LEFT JOIN c_uom u_ordered ON u_ordered.c_uom_id = COALESCE(ol.c_uom_id, il.c_uom_id)
          LEFT JOIN m_product p ON p.m_product_id = il.m_product_id
@@ -95,13 +98,14 @@ GROUP BY il.c_invoice_id,
          t.rate,
          (CASE
               WHEN u.x12de355 = 'TU' THEN 'PCE'
-                                     ELSE u.x12de355
-          END),
+                                                    ELSE u.x12de355
+             END),
          (CASE /* be lenient if il.price_uom_id is not set; see https://github.com/metasfresh/metasfresh/issues/6458 */
               WHEN COALESCE(u_price.x12de355, u.x12de355) = 'TU' THEN 'PCE'
-                                                                 ELSE COALESCE(u_price.x12de355, u.x12de355)
-          END),
-         (CASE
+                                                                                ELSE COALESCE(u_price.x12de355, u.x12de355)
+             END),
+         (
+             CASE
               WHEN u_ordered.x12de355 IN ('TU', 'COLI') THEN CEIL(il.QtyInvoiced / GREATEST(ol.QtyItemCapacity, 1))
                                                         ELSE uomconvert(il.M_Product_ID, p.C_UOM_ID, u_ordered.C_UOM_ID, il.QtyInvoiced)
           END),

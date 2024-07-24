@@ -26,9 +26,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.ComputingRequest;
-import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
@@ -53,7 +51,7 @@ import static de.metas.contracts.modular.ComputingMethodType.SALES_ORDER_LINE_PR
 @Deprecated
 @Component
 @RequiredArgsConstructor
-public class SalesOrderLineProFormaModularContractHandler implements IComputingMethodHandler
+public class SalesOrderLineProFormaModularContractHandler extends AbstractComputingMethodHandler
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
@@ -90,12 +88,6 @@ public class SalesOrderLineProFormaModularContractHandler implements IComputingM
 		}
 		return Stream.empty();
 
-	}
-
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
 	}
 
 	@Override

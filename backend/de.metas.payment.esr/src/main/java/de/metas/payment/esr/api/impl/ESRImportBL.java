@@ -121,7 +121,7 @@ public class ESRImportBL implements IESRImportBL
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 
 	/**
-	 * @task <a href="https://github.com/metasfresh/metasfresh/issues/2118">https://github.com/metasfresh/metasfresh/issues/2118</a>
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/2118">https://github.com/metasfresh/metasfresh/issues/2118</a>
 	 */
 	private static final String CFG_PROCESS_UNSPPORTED_TRX_TYPES = "de.metas.payment.esr.ProcessUnspportedTrxTypes";
 

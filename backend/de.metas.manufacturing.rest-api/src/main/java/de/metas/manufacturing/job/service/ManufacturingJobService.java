@@ -1,6 +1,7 @@
 package de.metas.manufacturing.job.service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.dao.ValueRestriction;
@@ -9,9 +10,11 @@ import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.accessor.DeviceId;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
 import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
@@ -27,6 +30,8 @@ import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.model.ManufacturingJobFacets;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
+import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
+import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
@@ -74,6 +79,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
@@ -88,6 +94,7 @@ public class ManufacturingJobService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ResourceService resourceService;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
@@ -129,6 +136,7 @@ public class ManufacturingJobService
 				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
 				.huQRCodeService(huQRCodeService)
+				.sourceHUService(ppOrderSourceHUService)
 				.build();
 	}
 
@@ -206,8 +214,9 @@ public class ManufacturingJobService
 			return ManufacturingJobReference.builder()
 					.ppOrderId(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
 					.documentNo(ppOrder.getDocumentNo())
-					.datePromised(loadingAndSavingSupportServices.getDatePromised(ppOrder))
+					.dateStartSchedule(loadingAndSavingSupportServices.getDateStartSchedule(ppOrder))
 					.productName(loadingAndSavingSupportServices.getProductName(ProductId.ofRepoId(ppOrder.getM_Product_ID())))
+					.productValue(loadingAndSavingSupportServices.getProductValue(ProductId.ofRepoId(ppOrder.getM_Product_ID())))
 					.qtyRequiredToProduce(loadingAndSavingSupportServices.getQuantities(ppOrder).getQtyRequiredToProduce())
 					.isJobStarted(isJobStarted)
 					.build();
@@ -304,11 +313,11 @@ public class ManufacturingJobService
 	private Stream<de.metas.handlingunits.model.I_PP_Order> streamAlreadyAssignedManufacturingOrders(final @NonNull UserId responsibleId)
 	{
 		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
-				.onlyCompleted(true)
-				.sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
-				.responsibleId(ValueRestriction.equalsTo(responsibleId))
-				.onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
-				.build());
+														   .onlyCompleted(true)
+														   .sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
+														   .responsibleId(ValueRestriction.equalsTo(responsibleId))
+														   .onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
+														   .build());
 	}
 
 	private ManufacturingOrderQuery toManufacturingOrderQuery(@NonNull ManufacturingJobReferenceQuery query)
@@ -337,9 +346,9 @@ public class ManufacturingJobService
 			queryBuilder.onlyWorkstationId(query.getWorkstationId());
 		}
 
-		if (defaultFilters.contains(ManufacturingJobDefaultFilter.TodayDatePromised))
+		if (defaultFilters.contains(ManufacturingJobDefaultFilter.TodayDateStartSchedule))
 		{
-			queryBuilder.datePromisedDay(query.getNow());
+			queryBuilder.dateStartScheduleDay(query.getNow());
 		}
 
 		//
@@ -363,7 +372,7 @@ public class ManufacturingJobService
 			final ImmutableSet<ResourceTypeId> facetResourceTypeIds = query.getActiveFacetIds().getResourceTypeIds();
 			if (!facetResourceTypeIds.isEmpty())
 			{
-			final ImmutableSet<ResourceId> facetPlantIds = resourceService.getResourceIdsByResourceTypeIds(facetResourceTypeIds);
+				final ImmutableSet<ResourceId> facetPlantIds = resourceService.getResourceIdsByResourceTypeIds(facetResourceTypeIds);
 				onlyPlantIds = onlyPlantIds.intersectWith(facetPlantIds);
 			}
 		}
@@ -431,7 +440,7 @@ public class ManufacturingJobService
 		else
 		{
 			throw new AdempiereException("Cannot un-assign " + ppOrder.getDocumentNo()
-					+ " because its assigned to a different responsible than the one we thought (expected: " + expectedResponsibleId + ", actual: " + currentResponsibleId + ")");
+												 + " because its assigned to a different responsible than the one we thought (expected: " + expectedResponsibleId + ", actual: " + currentResponsibleId + ")");
 		}
 	}
 
@@ -446,7 +455,7 @@ public class ManufacturingJobService
 		trxManager.runInThreadInheritedTrx(() -> streamAlreadyAssignedManufacturingOrders(responsibleId).forEach(this::unassignFromResponsible));
 	}
 
-	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId)
+	public ManufacturingJob withActivityCompleted(final ManufacturingJob job, final ManufacturingJobActivityId jobActivityId)
 	{
 		final PPOrderId ppOrderId = job.getPpOrderId();
 		final ManufacturingJobActivity jobActivity = job.getActivityById(jobActivityId);
@@ -647,5 +656,54 @@ public class ManufacturingJobService
 		}
 
 		return loaderAndSaver.load(ppOrderId);
+	}
+
+	@NonNull
+	public Set<HuId> getFinishedGoodsReceivedHUIds(@NonNull final PPOrderId ppOrderId)
+	{
+		return huPPOrderQtyBL.getFinishedGoodsReceivedHUIds(ppOrderId);
+	}
+
+	@NonNull
+	public ManufacturingJob recomputeQtyToIssueForSteps(final @NonNull PPOrderId ppOrderId)
+	{
+		final ManufacturingJob job = getJobById(ppOrderId);
+		final ManufacturingJob changedJob = job.withChangedRawMaterialIssue(
+				rawMaterialsIssue -> rawMaterialsIssue.withChangedLines(this::recomputeQtyToIssueForSteps));
+
+		if (!changedJob.equals(job))
+		{
+			saveActivityStatuses(changedJob);
+		}
+
+		return changedJob;
+	}
+
+	@NonNull
+	private RawMaterialsIssueLine recomputeQtyToIssueForSteps(final @NonNull RawMaterialsIssueLine line)
+	{
+		Quantity qtyLeftToBeIssued = line.getQtyLeftToIssue().toZeroIfNegative();
+		final ImmutableList.Builder<RawMaterialsIssueStep> updatedStepsListBuilder = ImmutableList.builder();
+
+		for (final RawMaterialsIssueStep step : line.getSteps())
+		{
+			if (step.isIssued())
+			{
+				updatedStepsListBuilder.add(step);
+			}
+			else if (qtyLeftToBeIssued.isGreaterThan(step.getQtyToIssue()))
+			{
+				updatedStepsListBuilder.add(step);
+				qtyLeftToBeIssued = qtyLeftToBeIssued.subtract(step.getQtyToIssue());
+			}
+			else
+			{
+				ppOrderIssueScheduleService.updateQtyToIssue(step.getId(), qtyLeftToBeIssued);
+				updatedStepsListBuilder.add(step.withQtyToIssue(qtyLeftToBeIssued));
+				qtyLeftToBeIssued = qtyLeftToBeIssued.toZero();
+			}
+		}
+
+		return line.withSteps(updatedStepsListBuilder.build());
 	}
 }

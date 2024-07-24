@@ -80,10 +80,17 @@ public class OLCandRepository
 		final OLCandFactory olCandFactory = new OLCandFactory();
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		return trxManager.callInThreadInheritedTrx(() -> requests.stream()
-				.map(this::createAndSaveOLCandRecord)
-				.map(olCandFactory::toOLCand)
-				.collect(ImmutableList.toImmutableList()));
+		return trxManager.callInThreadInheritedTrx(
+				() -> {
+					final ImmutableList.Builder<OLCand> result = ImmutableList.builder();
+					for(final OLCandCreateRequest request: requests)
+					{ // using for-loop because if one request fails, it's very hard to debug
+						final I_C_OLCand olCandRecord = createAndSaveOLCandRecord(request);
+						final OLCand olCand = olCandFactory.toOLCand(olCandRecord);
+						result.add(olCand);
+					}
+					return result.build();
+				});
 	}
 
 	public OLCand create(@NonNull final OLCandCreateRequest request)

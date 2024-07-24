@@ -27,6 +27,7 @@ import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.document.archive.postfinance.PostFinanceStatus;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -126,10 +127,10 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
-	public void setPostFinanceExportStatus(@NonNull final DocOutboundLogId docOutboundLogId, @NonNull final String exportStatus)
+	public void setPostFinanceExportStatus(@NonNull final DocOutboundLogId docOutboundLogId, @NonNull final PostFinanceStatus exportStatus)
 	{
 		final I_C_Doc_Outbound_Log logRecord = getById(docOutboundLogId);
-		logRecord.setPostFinance_Export_Status(exportStatus);
+		logRecord.setPostFinance_Export_Status(exportStatus.getCode());
 		InterfaceWrapperHelper.save(logRecord);
 	}
 

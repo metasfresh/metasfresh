@@ -429,7 +429,7 @@ public class WarehouseDAO implements IWarehouseDAO
 						locatorId -> locatorId))
 				.asMap();
 
-		return CollectionUtils.mapValues(locatorIdsByWarehouseId, collection -> ImmutableList.copyOf(collection));
+		return CollectionUtils.mapValues(locatorIdsByWarehouseId, ImmutableList::copyOf);
 	}
 
 	@Override
@@ -947,4 +947,13 @@ public class WarehouseDAO implements IWarehouseDAO
 		return ClientAndOrgId.ofClientAndOrg(warehouse.getAD_Client_ID(), warehouse.getAD_Org_ID());
 	}
 
+	@Override
+	@NonNull
+	public ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull final Collection<Integer> locatorIds)
+	{
+		return getLocatorsByRepoIds(ImmutableSet.copyOf(locatorIds))
+				.stream()
+				.map(LocatorId::ofRecord)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }

@@ -24,7 +24,7 @@ package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.pr
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class SVProcessedComputingMethod implements IComputingMethodHandler
+public class SVProcessedComputingMethod extends AbstractComputingMethodHandler
 {
 
 	@Override

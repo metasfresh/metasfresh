@@ -41,6 +41,7 @@ import { useSearchParams } from '../../../hooks/useSearchParams';
 import { useHeaderUpdate } from './PickLineScreen';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
+import { useCurrentPickTarget } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
 
 export const NEXT_PickingJob = 'pickingJob';
 export const NEXT_NextPickingLine = 'nextPickingLine';
@@ -69,6 +70,8 @@ const PickLineScanScreen = () => {
     qtyRejectedReasons,
     catchWeightUom,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
+
+  const pickTarget = useCurrentPickTarget({ wfProcessId, activityId });
 
   useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
 
@@ -101,6 +104,7 @@ const PickLineScanScreen = () => {
       catchWeightUom={catchWeightUom}
       isShowBestBeforeDate={isShowBestBeforeDate}
       isShowLotNo={isShowLotNo}
+      isShowCloseTargetButton={!!pickTarget}
       //
       resolveScannedBarcode={resolveScannedBarcode}
       onResult={onResult}
@@ -224,6 +228,7 @@ const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null,
     bestBeforeDate = null,
     lotNo = null,
     productNo,
+    isCloseTarget = false,
     isDone = true,
     resolvedBarcodeData,
     ...others
@@ -267,6 +272,7 @@ const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null,
       bestBeforeDate,
       setLotNo: isShowLotNo,
       lotNo,
+      isCloseTarget,
     })
       .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
       .then(() => isDone && onClose());

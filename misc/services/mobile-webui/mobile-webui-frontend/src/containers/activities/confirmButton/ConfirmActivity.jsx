@@ -1,13 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { postUserConfirmation } from '../../../api/confirmation';
-import { setActivityUserConfirmed } from '../../../actions/UserConfirmationActions';
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import { toastError } from '../../../utils/toast';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { appLaunchersLocation } from '../../../routes/launchers';
-import { setActivityProcessing } from '../../../actions/WorkflowActions';
+import { setActivityProcessing, updateWFProcess } from '../../../actions/WorkflowActions';
 
 const ConfirmActivity = ({
   applicationId,
@@ -26,7 +25,9 @@ const ConfirmActivity = ({
   const onUserConfirmed = () => {
     dispatch(setActivityProcessing({ wfProcessId, activityId, processing: true }));
     postUserConfirmation({ wfProcessId, activityId })
-      .then(() => dispatch(setActivityUserConfirmed({ wfProcessId, activityId })))
+      .then((wfProcess) => {
+        dispatch(updateWFProcess({ wfProcess }));
+      })
       .then(() => {
         if (isLastActivity) {
           history.push(appLaunchersLocation({ applicationId }));

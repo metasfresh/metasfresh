@@ -30,9 +30,9 @@ import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
-import de.metas.contracts.modular.interim.invoice.service.IInterimFlatrateTermService;
+import de.metas.contracts.modular.interim.invoice.service.impl.InterimFlatrateTermService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutLineQuery;
@@ -58,10 +58,10 @@ public class C_Flatrate_Term
 {
 	private final BPartnerInterimContractService bPartnerInterimContractService;
 	private final ModularContractService modularContractService;
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final ModularContractSettingsRepository modularContractSettingsRepository;
 	private final ModularContractPriceService modularContractPriceService;
+	private final InterimFlatrateTermService interimFlatrateTermService;
 
-	private final IInterimFlatrateTermService interimInvoiceFlatrateTermBL = Services.get(IInterimFlatrateTermService.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
@@ -81,7 +81,7 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()));
+		final ModularContractSettings settings = modularContractSettingsRepository.getByFlatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()));
 		if (!settings.getSoTrx().isPurchase())
 		{
 			return;
@@ -93,9 +93,9 @@ public class C_Flatrate_Term
 		}
 
 		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
-		interimInvoiceFlatrateTermBL.create(flatrateTermRecord,
-				flatrateTermRecord.getStartDate(),
-				flatrateTermRecord.getEndDate()
+		interimFlatrateTermService.create(flatrateTermRecord,
+										  flatrateTermRecord.getStartDate(),
+										  flatrateTermRecord.getEndDate()
 		);
 	}
 

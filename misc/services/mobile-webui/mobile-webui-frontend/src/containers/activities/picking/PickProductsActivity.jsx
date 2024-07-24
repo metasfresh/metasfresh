@@ -3,22 +3,32 @@ import PropTypes from 'prop-types';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
-import { pickingLineScreenLocation, pickingScanScreenLocation } from '../../../routes/picking';
+import {
+  pickingLineScreenLocation,
+  pickingScanScreenLocation,
+  selectPickTargetScreenLocation,
+} from '../../../routes/picking';
 import { useHistory } from 'react-router-dom';
 import { trl } from '../../../utils/translations';
 import { getLinesArrayFromActivity } from '../../../reducers/wfProcesses';
 import { isAllowPickingAnyHUForActivity } from '../../../utils/picking';
+import { useCurrentPickTarget } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
 
 export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
 const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity }) => {
   const {
-    dataStored: { isUserEditable },
+    dataStored: { isUserEditable, isAllowNewLU },
   } = activity;
   const lines = getLinesArrayFromActivity(activity);
   const allowPickingAnyHU = isAllowPickingAnyHUForActivity({ activity });
 
   const history = useHistory();
+
+  const currentPickTarget = useCurrentPickTarget({ wfProcessId, activityId });
+  const onSelectPickTargetClick = () => {
+    history.push(selectPickTargetScreenLocation({ applicationId, wfProcessId, activityId }));
+  };
 
   const onScanButtonClick = () => {
     history.push(pickingScanScreenLocation({ applicationId, wfProcessId, activityId }));
@@ -29,6 +39,19 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
 
   return (
     <div className="mt-5">
+      {isAllowNewLU && (
+        <ButtonWithIndicator
+          caption={
+            currentPickTarget?.caption
+              ? trl('activities.picking.pickingTarget.Current') + ': ' + currentPickTarget?.caption
+              : trl('activities.picking.pickingTarget.New')
+          }
+          disabled={!isUserEditable}
+          onClick={onSelectPickTargetClick}
+        />
+      )}
+      <br />
+
       {allowPickingAnyHU && (
         <ButtonWithIndicator
           caption={trl('activities.picking.scanQRCode')}

@@ -1528,7 +1528,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 				final I_C_Invoice_Candidate invoiceCandidate = ilaToReverse.getC_Invoice_Candidate();
 				invoiceCandidate.setProcessed_Override(null); // reset processed_override, because now that the invoice was reversed, the users might want to do something new with the IC.
-
 				invoiceCandidate.setApprovalForInvoicing(false);
 
 				// #870
@@ -2657,8 +2656,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Stop waiting for ICs to be updated async-queue; Selection={}",invoiceCandidateIdsSelection);
 		}
 	}
-	
-	
+
+
 	// TODO: would be nice to use de.metas.ui.web.view.descriptor.SqlAndParams but that is in module webui-api, and here we don't have access to it
 	@Override
 	public @NonNull InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable final String extraWhereClause)
@@ -2825,8 +2824,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
-				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
-
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()),
+				() -> paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.forPartner(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx()))));
 	}
 
 	private void createMatchInvForInOutLine(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)

@@ -28,7 +28,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 
 import javax.annotation.Nullable;
-import java.util.Date;
 import java.util.Properties;
 
 public class PlainDunningContext extends AbstractDunningContext

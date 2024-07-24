@@ -6,7 +6,9 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -27,6 +29,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -53,10 +56,12 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPartnerBL bpartnerBL;
 	private final PickingJobSlotService pickingSlotService;
+	private final WorkplaceService workplaceService;
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final HUQRCodesService huQRCodeService;
 
 	private final HashMap<OrderId, String> salesOrderDocumentNosCache = new HashMap<>();
@@ -68,11 +73,13 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	public DefaultPickingJobLoaderSupportingServices(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final PickingJobSlotService pickingSlotService,
-			@NonNull final HUQRCodesService huQRCodeService)
+			@NonNull final HUQRCodesService huQRCodeService,
+			@NonNull final WorkplaceService workplaceService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.pickingSlotService = pickingSlotService;
 		this.huQRCodeService = huQRCodeService;
+		this.workplaceService = workplaceService;
 	}
 
 	@Override
@@ -158,6 +165,12 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	public HUPIItemProduct getPackingInfo(@NonNull final HUPIItemProductId huPIItemProductId)
 	{
 		return huPIItemProductBL.getById(huPIItemProductId);
+	}
+
+	@Override
+	public String getPICaption(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsBL.getPI(piId).getName();
 	}
 
 	@Override

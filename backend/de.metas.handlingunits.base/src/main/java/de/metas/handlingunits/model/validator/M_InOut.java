@@ -37,6 +37,7 @@ import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
@@ -44,11 +45,17 @@ import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inventory.InventoryId;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -56,41 +63,51 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Inventory;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 @Interceptor(I_M_InOut.class)
 @Component
+@RequiredArgsConstructor
 public class M_InOut
 {
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
-	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
-	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
-	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
-	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
-	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
-	private final ReturnsServiceFacade returnsServiceFacade;
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	@NonNull private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
+	@NonNull private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
+	@NonNull private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+	@NonNull private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
+	@NonNull private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
+	@NonNull private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+	@NonNull private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
+	@NonNull private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	@NonNull private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
+	@NonNull private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	public M_InOut(
-			@NonNull final ReturnsServiceFacade returnsServiceFacade)
-	{
-		this.returnsServiceFacade = returnsServiceFacade;
-	}
+	@NonNull private final ReturnsServiceFacade returnsServiceFacade;
+	@NonNull private final InventoryService inventoryService;
+
+	private static final AdMessageKey MSG_SHIPMENT_WITH_VIRTUAL_HU_INVENTORY = AdMessageKey.of("de.metas.handlingunits.model.validator.M_InOut.notifyIfVirtualHUAssignedToShipment");
+	private static final AdMessageKey MSG_ERROR_RECEIPT_REACTIVATE_WITH_ASSIGNED_HU = AdMessageKey.of("de.metas.handlingunits.model.validator.M_InOut.reactivateReceiptNotAllowedIfHUAssigned");
+	private static final String SYS_CFG_ALLOW_RECEIPT_REACTIVATE_WITH_ASSIGNED_HU = "de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned";
 
 	@Init
 	public void init()
@@ -105,11 +122,7 @@ public class M_InOut
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void destroyHandlingUnitsForReceipt(final I_M_InOut inout)
 	{
-		if (inout.isSOTrx())
-		{
-			// TODO: change HUStatus from Shipped back to Picked
-		}
-		else
+		if (!inout.isSOTrx())
 		{
 			huInOutBL.copyAssignmentsToReversal(inout);
 			huInOutBL.destroyHUs(inout);
@@ -260,31 +273,21 @@ public class M_InOut
 		huPackageBL.unassignShipmentFromPackages(shipment);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
 	public void assertReActivationAllowed(final I_M_InOut inout)
 	{
-		//
-		// Services
-
-		final boolean hasHUAssignments = huAssignmentDAO.hasHUAssignmentsForModel(inout);
-		if (!hasHUAssignments) // reactivation is allowed if there are no HU assignments
+		if(inout.isSOTrx() || sysConfigBL.getBooleanValue(SYS_CFG_ALLOW_RECEIPT_REACTIVATE_WITH_ASSIGNED_HU, false))
 		{
 			return;
 		}
 
-		//
-		// Shipment
-		if (inout.isSOTrx())
+		final List<I_M_InOutLine> inOutLines = inoutDao.retrieveLines(inout, I_M_InOutLine.class);
+		for(final I_M_InOutLine inOutLine : inOutLines)
 		{
-			// TODO: change HUStatus from Shipped back to Picked
-			// check the calls of de.metas.handlingunits.inout.impl.HUShipmentAssignmentBL.setHUStatus(IHUContext, I_M_HU, boolean)
-		}
-		//
-		// Receipt
-		else
-		{
-			// TODO: destroy the HUs
-			throw new UnsupportedOperationException();
+			if (huAssignmentDAO.hasHUAssignmentsForModel(inOutLine))
+			{
+				throw new HUException(MSG_ERROR_RECEIPT_REACTIVATE_WITH_ASSIGNED_HU);
+			}
 		}
 	}
 
@@ -412,4 +415,34 @@ public class M_InOut
 		huInOutBL.validateMandatoryOnShipmentAttributes(shipment);
 	}
 
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REACTIVATE })
+	public void notifyIfVirtualHUAssignedToShipment(final I_M_InOut shipment)
+	{
+		if(!shipment.isSOTrx())
+		{
+			return;
+		}
+
+		final List<I_M_HU> hus = huInOutDAO.retrieveHandlingUnits(shipment);
+		final Set<HuId> huIdSet = hus.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(Collectors.toSet());
+
+		final Set<InventoryId> inventoryIds = inventoryService.getVirtualInventoryIdsByHUIds(huIdSet,
+																							 ClientId.ofRepoId(shipment.getAD_Client_ID()),
+																							 OrgId.ofRepoId(shipment.getAD_Org_ID()));
+
+		final List<UserNotificationRequest> notificationRequestList = new ArrayList<>();
+		for (final InventoryId inventoryId : inventoryIds)
+		{
+			notificationRequestList.add(UserNotificationRequest.builder()
+												.recipientUserId(Env.getLoggedUserId())
+												.contentADMessage(MSG_SHIPMENT_WITH_VIRTUAL_HU_INVENTORY)
+												.contentADMessageParam(shipment.getDocumentNo())
+												.targetAction(UserNotificationRequest.TargetRecordAction.of(TableRecordReference.of(I_M_Inventory.Table_Name, inventoryId)))
+												.build());
+		}
+		notificationBL.sendAfterCommit(notificationRequestList);
+	}
 }

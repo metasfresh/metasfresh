@@ -200,7 +200,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		final WorkplaceId workplaceId = (userToPrintId == null) ? null : workplaceService.getWorkplaceByUserId(userToPrintId)
 				.map(Workplace::getId)
 				.orElse(null);
-		
+
 		return retrievePrinterConfig(hostKey, userToPrintId, workplaceId);
 	}
 
@@ -209,7 +209,9 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	public final I_AD_Printer_Config retrievePrinterConfig(@Nullable final String hostKey, @Nullable final UserId userToPrintId, @Nullable final WorkplaceId workplaceId)
 	{
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("hostKey", hostKey);
-				final MDC.MDCCloseable ignore2 = MDC.putCloseable("userToPrintId", Integer.toString(UserId.toRepoId(userToPrintId))))
+				final MDC.MDCCloseable ignore2 = MDC.putCloseable("userToPrintId", Integer.toString(UserId.toRepoId(userToPrintId)));
+				final MDC.MDCCloseable ignore3 = MDC.putCloseable("workplaceId", Integer.toString(WorkplaceId.toRepoId(workplaceId)))
+		)
 		{
 			final IQueryBuilder<I_AD_Printer_Config> queryBuilder = queryBL
 					.createQueryBuilderOutOfTrx(I_AD_Printer_Config.class)
@@ -238,7 +240,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				}
 				else
 				{
-				logger.debug("retrievePrinterConfig - hostKey={} - userToPrintId is null -> order by AD_User_PrinterMatchingConfig_ID to prefer records with user set", hostKey);
+				logger.debug("retrievePrinterConfig - hostKey={} - userToPrintId is null -> order by AD_User_PrinterMatchingConfig_ID to prefer records with user set (hostKey={})", hostKey);
 					Check.errorIf(Check.isBlank(hostKey), "If the 'userToPrintId' param is empty, then the 'hostKey has to be not-blank");
 					queryBuilder.orderBy(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID); // prefer records with userId set
 				}
@@ -434,8 +436,8 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		}
 
 		Check.errorUnless(result != null, "Missing AD_PrinterHW_MediaSize with name {} for printer {}",
-						  mediaSizeName,
-						  hwPrinter.getName());
+				mediaSizeName,
+				hwPrinter.getName());
 		return result;
 	}
 

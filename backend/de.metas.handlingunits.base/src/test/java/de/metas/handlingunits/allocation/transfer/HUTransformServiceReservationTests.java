@@ -15,6 +15,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.util.HUTracerInstance;
 import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -194,6 +195,7 @@ public class HUTransformServiceReservationTests
 		final I_M_HU cuToSplit = data.mkAggregateHUWithTotalQtyCU("200");
 
 		final I_M_HU topLevelParent = handlingUnitsBL.getTopLevelParent(cuToSplit);
+		new HUTracerInstance().dump("topLevelParent - before husToNewCUs", topLevelParent);
 
 		final HUsToNewCUsRequest husToNewCUsRequest = HUsToNewCUsRequest.builder()
 				.sourceHU(topLevelParent)
@@ -204,6 +206,8 @@ public class HUTransformServiceReservationTests
 
 		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
 		// data.helper.commitAndDumpHU(topLevelParent);
+		new HUTracerInstance().dump("topLevelParent - after husToNewCUs", topLevelParent);
+		new HUTracerInstance().dump("newCUs", newCUs);
 
 		final Node existingLUXML = HUXmlConverter.toXml(topLevelParent);
 		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet[@HUStatus='A'])", is("1")));

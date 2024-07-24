@@ -35,6 +35,8 @@ SELECT
         END) AS EANCOM_DocType
      , i.GrandTotal
      , i.TotalLines
+     , ROUND(i.GrandTotal * pterm.discount / 100::NUMERIC, 2)                    AS PmtDiscount
+     , i.GrandTotal - ROUND(i.GrandTotal * pterm.discount / 100::NUMERIC, 2)     AS GrandTotalMinusPmtDiscount
     /* IF docSubType is CS, the we don't reference the original shipment*/
      , CASE WHEN dt.DocSubType='CS' THEN NULL ELSE COALESCE(shipment.MovementDate, iomd.movementdate) END AS MovementDate
      , CASE WHEN dt.DocSubType='CS' THEN NULL ELSE COALESCE(shipment.DocumentNo, iodn.documentno) END AS Shipment_DocumentNo
@@ -84,6 +86,7 @@ SELECT
 FROM C_Invoice i
          LEFT JOIN C_DocType dt ON dt.C_DocType_ID = i.C_DocTypetarget_ID
          LEFT JOIN C_Order o ON o.C_Order_ID=i.C_Order_ID
+         LEFT JOIN C_PaymentTerm pterm ON i.c_paymentterm_id = pterm.c_paymentterm_id
          LEFT JOIN LATERAL (
     SELECT
         io.DocumentNo, io.MovementDate

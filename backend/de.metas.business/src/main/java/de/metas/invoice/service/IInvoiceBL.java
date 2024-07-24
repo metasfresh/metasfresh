@@ -145,7 +145,7 @@ public interface IInvoiceBL extends ISingletonService {
      */
     boolean isCreditMemo(String docBaseType);
 
-	boolean isReversal(InvoiceId invoiceId);
+    boolean isReversal(InvoiceId invoiceId);
 
     /**
      * @return <code>true</code> if the given invoice is the reversal of another invoice.
@@ -161,7 +161,7 @@ public interface IInvoiceBL extends ISingletonService {
 
 	Optional<I_C_Invoice> getByIdIfExists(@NonNull InvoiceId invoiceId);
 
-    List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	List<? extends I_C_Invoice> getByOrderId(@NonNull OrderId orderId);
 
@@ -169,7 +169,7 @@ public interface IInvoiceBL extends ISingletonService {
 
 	I_C_Invoice getByLineId(@NonNull InvoiceLineId invoiceLineId);
 
-	I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
+    I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
 
     I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
 

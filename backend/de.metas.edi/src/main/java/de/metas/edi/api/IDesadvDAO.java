@@ -22,6 +22,7 @@
 
 package de.metas.edi.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
@@ -29,7 +30,9 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.inout.InOutId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.util.lang.IContextAware;
@@ -121,4 +124,10 @@ public interface IDesadvDAO extends ISingletonService
 	void save(@NonNull I_EDI_Desadv ediDesadv);
 
 	I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId);
+
+	@NonNull
+	List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull I_EDI_Desadv desadv, @NonNull ImmutableSet<EDIExportStatus> statusSet);
+
+	@NonNull
+	I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull InOutId shipmentId);
 }

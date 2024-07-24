@@ -32,6 +32,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -50,4 +51,5 @@ public class CreateVirtualInventoryWithQtyReq
 	@Nullable AttributeSetInstanceId attributeSetInstanceId;
 	@Nullable PickingJobId pickingJobId;
 	@Nullable FlatrateTermId modularContractId;
+	@Nullable TableRecordReference forRecordRef;
 }
