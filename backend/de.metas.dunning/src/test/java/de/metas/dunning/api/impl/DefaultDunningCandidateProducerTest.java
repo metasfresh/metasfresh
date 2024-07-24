@@ -63,7 +63,6 @@ import static org.junit.Assert.assertThat;
  * </ul>
  *
  * @author tsa
- *
  */
 public class DefaultDunningCandidateProducerTest extends DunningTestBase
 {
@@ -357,7 +356,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
 					builder.setGraceDate(null)
 							.create()
-					);
+			);
 			Assert.assertNotNull("GraceDate null - candidate shall be generated", candidate);
 		}
 		// GraceDate before context DunningDate
@@ -365,7 +364,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
 					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(TimeUtil.addDays(dunningDate, -1), OrgId.MAIN, orgDAO::getTimeZone))
 							.create()
-					);
+			);
 			Assert.assertNotNull("GraceDate before context DunningDate - candidate shall be generated", candidate);
 		}
 		// GraceDate equals context DunningDate
@@ -373,7 +372,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
 					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(dunningDate, OrgId.MAIN, orgDAO::getTimeZone))
 							.create()
-					);
+			);
 			Assert.assertNull("GraceDate equals with context DunningDate - candidate shall NOT be generated", candidate);
 		}
 		// GraceDate after context DunningDate
@@ -381,7 +380,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
 					builder.setGraceDate(LocalDateAndOrgId.ofTimestamp(TimeUtil.addDays(dunningDate, 1), OrgId.MAIN, orgDAO::getTimeZone))
 							.create()
-					);
+			);
 			Assert.assertNull("GraceDate after context DunningDate - candidate shall NOT be generated", candidate);
 		}
 	}
@@ -633,7 +632,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		Assert.assertEquals("Invalid candidate - AD_Client_ID: " + candidate, fromDoc.getAD_Client_ID(), candidate.getAD_Client_ID());
 		Assert.assertEquals("Invalid candidate - AD_Org_ID: " + candidate, fromDoc.getAD_Org_ID(), candidate.getAD_Org_ID());
 
-		assertThat("Invalid candidate - AD_Table_ID: " + candidate,fromDoc.getTableName(), equalToIgnoringCase(Services.get(IADTableDAO.class).retrieveTableName(candidate.getAD_Table_ID())));
+		assertThat("Invalid candidate - AD_Table_ID: " + candidate, fromDoc.getTableName(), equalToIgnoringCase(Services.get(IADTableDAO.class).retrieveTableName(candidate.getAD_Table_ID())));
 		Assert.assertEquals("Invalid candidate - Record_ID: " + candidate, fromDoc.getRecordId(), candidate.getRecord_ID());
 		Assert.assertEquals("Invalid candidate - C_DunningLevel: " + candidate, context.getC_DunningLevel(), candidate.getC_DunningLevel());
 		Assert.assertFalse("Invalid candidate - Processed: " + candidate, candidate.isProcessed());
