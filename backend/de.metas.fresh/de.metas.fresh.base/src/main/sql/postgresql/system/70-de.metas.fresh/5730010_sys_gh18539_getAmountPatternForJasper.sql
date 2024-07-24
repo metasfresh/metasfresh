@@ -1,7 +1,7 @@
 DROP FUNCTION IF EXISTS report.getAmountPatternForJasper(numeric)
 ;
 
-CREATE FUNCTION report.getAmountPatternForJasper(p_record_id numeric)
+CREATE FUNCTION report.getAmountPatternForJasper(p_currency_id numeric)
     RETURNS TABLE
             (
                 AmountPattern text
@@ -17,7 +17,7 @@ SELECT (CASE
     END)
            AS AmountPattern
 FROM C_Currency cu
-WHERE cu.C_Currency_ID = p_record_id
+WHERE cu.C_Currency_ID = p_currency_id
 $$
 ;
 
