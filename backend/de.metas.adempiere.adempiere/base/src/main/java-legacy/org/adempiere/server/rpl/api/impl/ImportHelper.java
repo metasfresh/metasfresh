@@ -1206,27 +1206,27 @@ public class ImportHelper implements IImportHelper
 				whereClause.append(" AND ");
 			}
 
-			final String filterOperator = uniqueFormatLine.getFilterOperator();
-			if(X_EXP_FormatLine.FILTEROPERATOR_Equals.equals(filterOperator))
+			if (paramSQL == null || !nodeExists)
 			{
-				if (paramSQL == null || !nodeExists)
-				{
-					whereClause.append(columnSQL).append(" IS NULL ");
-				}
-				else
-				{
-					whereClause.append(columnSQL).append(" = ? ");
-					params.add(paramSQL);
-				}
-			}
-			else if (X_EXP_FormatLine.FILTEROPERATOR_Like.equals(filterOperator))
-			{
-				whereClause.append(columnSQL).append(" ILIKE '%").append(paramSQL).append("%' ");
+				whereClause.append(columnSQL).append(" IS NULL ");
 			}
 			else
 			{
-				throw Check.fail("Unexpected FilterOperator={} in EXP_FormatLine_ID={} (Name={}, EXP_Format_ID={}) ",
-						   filterOperator, uniqueFormatLine.getEXP_FormatLine_ID(), uniqueFormatLine.getName(), uniqueFormatLine.getEXP_Format_ID());
+				final String filterOperator = uniqueFormatLine.getFilterOperator();
+				if(X_EXP_FormatLine.FILTEROPERATOR_Equals.equals(filterOperator))
+				{
+						whereClause.append(columnSQL).append(" = ? ");
+						params.add(paramSQL);
+				}
+				else if (X_EXP_FormatLine.FILTEROPERATOR_Like.equals(filterOperator))
+				{
+					whereClause.append(columnSQL).append(" ILIKE '%").append(paramSQL).append("%' ");
+				}
+				else
+				{
+					throw Check.fail("Unexpected FilterOperator={} in EXP_FormatLine_ID={} (Name={}, EXP_Format_ID={}) ",
+									 filterOperator, uniqueFormatLine.getEXP_FormatLine_ID(), uniqueFormatLine.getName(), uniqueFormatLine.getEXP_Format_ID());
+				}
 			}
 			col++;
 		}
