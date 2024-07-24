@@ -93,6 +93,7 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -114,6 +115,7 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.user.User;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -180,6 +182,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -725,7 +728,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				.setFrom(invoicingInfo.getBillLocation());
 
 		invoicingInfo.getPaymentRule().ifPresent(paymentRule -> invoice.setPaymentRule(paymentRule.getCode()));
-		invoicingInfo.getPaymentTermId().ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
+		final PaymentTermId paymentTermId = Optionals.firstPresentOfSuppliers(invoicingInfo::getPaymentTermId,
+						paymentTermRepository::getDefaultPaymentTermId)
+				.orElse(null);
+		invoice.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermId));
 
 		invoice.setM_PriceList_ID(invoicingInfo.getPriceListId().getRepoId());
 		invoice.setIsTaxIncluded(invoicingInfo.isTaxIncluded());
