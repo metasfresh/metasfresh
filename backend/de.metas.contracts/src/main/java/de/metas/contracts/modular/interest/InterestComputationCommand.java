@@ -376,8 +376,8 @@ public class InterestComputationCommand
 			final int additionalInterestDays,
 			@NonNull final ModularContractLogEntry modularContractLogEntry)
 	{
-		Check.assume(LogEntryDocumentType.CONTRACT_PREFINANCING == modularContractLogEntry.getDocumentType(),
-					 "Expecting DocumentType = " + LogEntryDocumentType.CONTRACT_PREFINANCING +
+		Check.assume(LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT == modularContractLogEntry.getDocumentType(),
+					 "Expecting DocumentType = " + LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT +
 							 " but got " + modularContractLogEntry.getDocumentType() + "! LogId=" + modularContractLogEntry.getId());
 		Check.assumeNotNull(modularContractLogEntry.getAmount(), "Invoices with no amount should've been skipped already! LogId="
 				+ modularContractLogEntry.getId());
