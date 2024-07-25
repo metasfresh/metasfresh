@@ -32,9 +32,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
+@Builder
 public class InterestComputationRequest
 {
 	@NonNull InterestRunId interestRunId;
@@ -42,30 +41,6 @@ public class InterestComputationRequest
 	@NonNull Money interestToDistribute;
 	@NonNull LockOwner lockOwner;
 	@NonNull CurrencyPrecision interestCurrencyPrecision;
-	@Nullable BonusComputationTimeInterval bonusComputationTimeInterval;
-
-	@Builder(toBuilder = true)
-	public InterestComputationRequest(
-			@NonNull final InterestRunId interestRunId,
-			@NonNull final InvoicingGroupId invoicingGroupId,
-			@NonNull final Money interestToDistribute,
-			@NonNull final LockOwner lockOwner,
-			@NonNull final CurrencyPrecision interestCurrencyPrecision,
-			@Nullable final BonusComputationTimeInterval bonusComputationTimeInterval)
-	{
-		this.interestRunId = interestRunId;
-		this.invoicingGroupId = invoicingGroupId;
-		this.interestToDistribute = interestToDistribute;
-		this.lockOwner = lockOwner;
-		this.interestCurrencyPrecision = interestCurrencyPrecision;
-		this.bonusComputationTimeInterval = bonusComputationTimeInterval;
-	}
-
-	@NonNull
-	public ComputingMethodType getComputingMethodType()
-	{
-		return bonusComputationTimeInterval != null
-				? ComputingMethodType.SubtractValueOnInterim
-				: ComputingMethodType.AddValueOnInterim;
-	}
+	@NonNull ComputingMethodType computingMethodType;
+	@NonNull BonusAndInterestTimeInterval bonusAndInterestTimeInterval;
 }
