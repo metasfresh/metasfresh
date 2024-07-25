@@ -482,6 +482,14 @@ public class ModularContractLogDAO
 				.collect(ModularContractLogEntriesList.collect());
 	}
 
+	@NonNull
+	public Optional<ModularContractLogEntry> getModularContractLogEntry(@NonNull final ModularContractLogQuery query)
+	{
+		return toSqlQuery(query)
+				.firstOnlyOptional()
+				.map(this::fromRecord);
+	}
+
 	@Nullable
 	public PInstanceId getModularContractLogEntrySelection(@NonNull final ModularContractLogQuery query)
 	{
