@@ -75,11 +75,11 @@ pull_request_rules:
     conditions:
       - check-success=testspace-analytics
       - check-success=continuous-integration/jenkins/branch
+      - label=ops:auto_merge
       - or: *ALL_BASE_BRANCHES
       - or:
           - "#approved-reviews-by>=1"
           - label=ops:without_review_approval
-      - not: label=ops:dont_auto_merge
     actions:
       queue:
         name: default
