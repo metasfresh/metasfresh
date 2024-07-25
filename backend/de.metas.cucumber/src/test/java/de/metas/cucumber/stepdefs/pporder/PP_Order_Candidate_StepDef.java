@@ -168,7 +168,7 @@ public class PP_Order_Candidate_StepDef
 	@And("^after not more than (.*)s, PP_Order_Candidates are found$")
 	public void validatePP_Order_Candidate(
 			final int timeoutSec,
-			@NonNull final DataTable dataTable) throws InterruptedException
+			@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> validatePP_Order_Candidate(timeoutSec, row));
 	}

@@ -457,7 +457,9 @@ public class MD_Candidate_StepDef
 	public void validate_md_candidate_by_id(@NonNull final DataTable dataTable)
 	{
 		final long timeoutSec = 60L; //FIXME: add to stepdef
-		DataTableRows.of(dataTable).forEach((row) -> validate_md_candidate_with_stock(row, timeoutSec));
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_MD_Candidate_ID)
+				.forEach((row) -> validate_md_candidate_with_stock(row, timeoutSec));
 	}
 
 	@And("the following stock MD_Candidates are validated")
@@ -615,7 +617,7 @@ public class MD_Candidate_StepDef
 	@SuppressWarnings("SameParameterValue")
 	private void validate_md_candidate_with_stock(@NonNull final DataTableRow row, final long timeoutSec) throws InterruptedException
 	{
-		final StepDefDataIdentifier materialDispoDataIdentifier = row.getAsIdentifier(COLUMNNAME_MD_Candidate_ID);
+		final StepDefDataIdentifier materialDispoDataIdentifier = row.getAsIdentifier();
 		final CandidateBusinessCase businessCase = row.getAsOptionalEnum(COLUMNNAME_MD_Candidate_BusinessCase, CandidateBusinessCase.class).orElse(null);
 		final ProductId productId = productTable.getId(row.getAsIdentifier(I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID));
 		final String dateProjected = row.getAsString(COLUMNNAME_DateProjected);
