@@ -150,4 +150,11 @@ public class ProductPrice
 	{
 		return Quantitys.of(totalAmt.divide(money, currencyPrecision).toBigDecimal(), uomId);
 	}
+
+	public ProductPrice round(@NonNull final CurrencyPrecision precision)
+	{
+		return toBuilder()
+				.money(money.round(precision))
+				.build();
+	}
 }
