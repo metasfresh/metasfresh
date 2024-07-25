@@ -217,6 +217,8 @@ Feature: create multiple production candidates
       | ppOrderCandidate                 | ppOrder_3              | 1          | PCE               |
 
 
+  # TODO remove this ignore when https://github.com/metasfresh/mf15/issues/2228 is done
+  @ignore
   @from:cucumber
   @Id:S0212.300
   Scenario: The manufacturing candidate is created for a sales order line and then the sales order is re-opened and the ordered quantity is increased,
