@@ -299,7 +299,10 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public List<I_M_PriceList> retrievePriceLists(final PricingSystemId pricingSystemId, final CountryId countryId, final SOTrx soTrx)
+	public List<I_M_PriceList> retrievePriceLists(
+			@NonNull final PricingSystemId pricingSystemId, 
+			@NonNull final CountryId countryId, 
+			@Nullable final SOTrx soTrx)
 	{
 		return retrievePriceListsCollectionByPricingSystemId(pricingSystemId)
 				.filterAndList(countryId, soTrx);
