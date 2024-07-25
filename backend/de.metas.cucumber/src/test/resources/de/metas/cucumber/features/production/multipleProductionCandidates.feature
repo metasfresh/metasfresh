@@ -230,37 +230,37 @@ Feature: create multiple production candidates
   and both candidates are marked as processed
 
     Given metasfresh contains M_Products:
-      | Identifier | M_Product_Category_ID.Identifier |
-      | p_1        | standard_category                |
-      | p_2        | standard_category                |
+      | Identifier | M_Product_Category_ID |
+      | p_1        | standard_category     |
+      | p_2        | standard_category     |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_10042023_3 | pricing_system_value_10042023_3 | pricing_system_description_10042023_3 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | pl_1       | ps_1               | DE                    | EUR                 | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                          | ValidFrom  |
-      | plv_1      | pl_1                      | trackedProduct-PLV_10042023_3 | 2021-04-01 |
+      | Identifier | M_PriceList_ID |
+      | plv_1      | pl_1           |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
-      | pp_2       | plv_1                             | p_2                     | 10.0     | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | plv_1                  | p_1          | 10.0     | PCE               | Normal                        |
+      | plv_1                  | p_2          | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains PP_Product_BOM
-      | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
-      | bom_1      | p_1                     | 2021-04-01 | bomVersions_1                        |
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID |
+      | bom_1      | p_1          | bomVersions_1             |
     And metasfresh contains PP_Product_BOMLines
-      | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
-      | boml_1     | bom_1                        | p_2                     | 2021-04-01 | 10       |
+      | Identifier | PP_Product_BOM_ID | M_Product_ID | QtyBatch |
+      | boml_1     | bom_1             | p_2          | 10       |
     And the PP_Product_BOM identified by bom_1 is completed
     And metasfresh contains C_BPartners:
       | Identifier    | IsCustomer | M_PricingSystem_ID |
       | endcustomer_2 | Y          | ps_1               |
 
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.MaxManufacturedQtyPerOrderDispo | OPT.MaxManufacturedQtyPerOrderDispoUOMCode | OPT.SeqNo |
-      | ppln_1     | p_1                     | bomVersions_1                            | false        | 10                                  | PCE                                        | 10        |
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID | IsCreatePlan | MaxManufacturedQtyPerOrderDispo | MaxManufacturedQtyPerOrderDispoUOMCode | SeqNo |
+      | ppln_1     | p_1          | bomVersions_1             | false        | 10                              | PCE                                    | 10    |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
@@ -275,8 +275,8 @@ Feature: create multiple production candidates
     When the order identified by o_3 is completed
 
     Then after not more than 120s, PP_Order_Candidates are found
-      | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.SeqNo |
-      | ppOrderCandidate_3_1 | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 3          | 3            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10        |
+      | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | SeqNo |
+      | ppOrderCandidate_3_1 | false     | p_1          | bom_1             | ppln_1                 | 540006        | 3          | 3            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
 
     And the order identified by o_3 is reactivated
     And update C_OrderLine:
@@ -284,18 +284,18 @@ Feature: create multiple production candidates
       | ol_3                      | 12             |
     And the order identified by o_3 is completed
     And after not more than 120s, PP_Order_Candidates are found
-      | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.SeqNo |
-      | ppOrderCandidate_3_1 | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 3          | 3            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10        |
-      | ppOrderCandidate_3_2 | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 9          | 9            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10        |
+      | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | SeqNo |
+      | ppOrderCandidate_3_1 | false     | p_1          | bom_1             | ppln_1                 | 540006        | 3          | 3            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
+      | ppOrderCandidate_3_2 | false     | p_1          | bom_1             | ppln_1                 | 540006        | 9          | 9            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
 
     And update PP_Order_Candidates
       | PP_Order_Candidate_ID.Identifier | OPT.QtyToProcess |
       | ppOrderCandidate_3_2             | 4                |
 
     When generate PP_Order process is invoked for selection, with completeDocument=true and autoProcessCandidateAfterProduction=true
-      | PP_Order_Candidate_ID.Identifier |
-      | ppOrderCandidate_3_1             |
-      | ppOrderCandidate_3_2             |
+      | PP_Order_Candidate_ID |
+      | ppOrderCandidate_3_1  |
+      | ppOrderCandidate_3_2  |
 
     # we are expecting two PP_Orders for ppOrderCandidate_3_2, because
     # CapacityPerProductionCycle=5, and the two candidates sum up to a quantity of 3+4=7
@@ -308,19 +308,19 @@ Feature: create multiple production candidates
       | ppOrder_3_2            | 2          |
 
     And after not more than 120s, PP_Order_Candidates are found
-      | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | ppOrderCandidate_3_1 | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 3          | 0            | 3            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
-      | ppOrderCandidate_3_2 | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 9          | 5            | 4            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
+      | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | ppOrderCandidate_3_1 | true      | p_1          | bom_1             | ppln_1                 | 540006        | 3          | 0            | 3            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
+      | ppOrderCandidate_3_2 | true      | p_1          | bom_1             | ppln_1                 | 540006        | 9          | 5            | 4            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
 
     And after not more than 120s, PP_Orders are found
-      | Identifier  | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.DocStatus |
-      | ppOrder_3_1 | p_1                     | bom_1                        | ppln_1                            | 540006        | 5          | 5          | PCE               | endcustomer_2            | 2022-11-07T21:00:00Z | CO            |
-      | ppOrder_3_2 | p_1                     | bom_1                        | ppln_1                            | 540006        | 2          | 2          | PCE               | endcustomer_2            | 2022-11-07T21:00:00Z | CO            |
+      | Identifier  | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID | DatePromised         | DocStatus |
+      | ppOrder_3_1 | p_1          | bom_1             | ppln_1                 | 540006        | 5          | 5          | PCE               | endcustomer_2 | 2022-11-07T21:00:00Z | CO        |
+      | ppOrder_3_2 | p_1          | bom_1             | ppln_1                 | 540006        | 2          | 2          | PCE               | endcustomer_2 | 2022-11-07T21:00:00Z | CO        |
     And after not more than 120s, PP_OrderCandidate_PP_Order are found
-      | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
-      | ppOrderCandidate_3_1             | ppOrder_3_1            | 3          | PCE               |
-      | ppOrderCandidate_3_2             | ppOrder_3_1            | 2          | PCE               |
-      | ppOrderCandidate_3_2             | ppOrder_3_2            | 2          | PCE               |
+      | PP_Order_Candidate_ID | PP_Order_ID | QtyEntered | C_UOM_ID.X12DE355 |
+      | ppOrderCandidate_3_1  | ppOrder_3_1 | 3          | PCE               |
+      | ppOrderCandidate_3_2  | ppOrder_3_1 | 2          | PCE               |
+      | ppOrderCandidate_3_2  | ppOrder_3_2 | 2          | PCE               |
 
 
   @from:cucumber
