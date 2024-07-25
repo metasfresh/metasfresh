@@ -51,7 +51,6 @@ public class ModularContractAllocations
 	@NonNull private final IOrgDAO orgDAO;
 	@Getter @NonNull private final List<CreateModularLogInterestRequest> allocatedShippingNotifications = new ArrayList<>();
 	@NonNull @Getter private Money openAmount;
-	@Nullable private Instant cachedInterimContractDate;
 
 	public synchronized boolean canAllocate(@Nullable final AllocationItem shippingNotification)
 	{
