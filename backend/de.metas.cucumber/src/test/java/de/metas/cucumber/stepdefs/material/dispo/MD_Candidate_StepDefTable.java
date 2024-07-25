@@ -106,6 +106,7 @@ public class MD_Candidate_StepDefTable
 							.date(time)
 							.operator(DateAndSeqNo.Operator.INCLUSIVE)
 							.build())
+					.warehouseId(warehouseId)
 					.build();
 
 			return CandidatesQuery.builder()

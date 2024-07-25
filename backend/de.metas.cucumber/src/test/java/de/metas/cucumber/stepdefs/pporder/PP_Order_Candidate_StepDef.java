@@ -40,6 +40,7 @@ import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_Line_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
+import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU;
@@ -64,6 +65,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -107,63 +109,33 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.eevolution.model.I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID;
 
+@RequiredArgsConstructor
 public class PP_Order_Candidate_StepDef
 {
 	private final static Logger logger = LogManager.getLogger(PP_Order_Candidate_StepDef.class);
 
-	private final M_Product_StepDefData productTable;
-	private final PP_Product_BOM_StepDefData productBOMTable;
-	private final PP_Product_Planning_StepDefData productPlanningTable;
-	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final M_Warehouse_StepDefData warehouseTable;
-	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
-	private final IdentifierIds_StepDefData identifierIdsTable;
-	private final C_OrderLine_StepDefData orderLineTable;
-	private final M_Maturing_Configuration_StepDefData maturingConfigTable;
-	private final M_Maturing_Configuration_Line_StepDefData maturingConfigLineTable;
-	private final M_HU_StepDefData huTable;
+	@NonNull private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer = SpringContextHolder.instance.getBean(PPOrderCandidateEnqueuer.class);
+	@NonNull private final PPOrderCandidateService ppOrderCandidateService = SpringContextHolder.instance.getBean(PPOrderCandidateService.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer;
-	private final PPOrderCandidateService ppOrderCandidateService;
-
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final PP_Product_BOM_StepDefData productBOMTable;
+	@NonNull private final PP_Product_Planning_StepDefData productPlanningTable;
+	@NonNull private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
+	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
+	@NonNull private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull private final M_Maturing_Configuration_StepDefData maturingConfigTable;
+	@NonNull private final M_Maturing_Configuration_Line_StepDefData maturingConfigLineTable;
+	@NonNull private final M_HU_StepDefData huTable;
+	@NonNull private final S_Resource_StepDefData resourceTable;
 
 	private static final AdMessageKey MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyEnteredLowerThanQtyProcessed");
 	private static final AdMessageKey MSG_QTY_TO_PROCESS_GREATER_THAN_QTY_LEFT = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyToProcessGreaterThanQtyLeftToBeProcessed");
-
-	public PP_Order_Candidate_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final PP_Product_BOM_StepDefData productBOMTable,
-			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
-			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
-			@NonNull final IdentifierIds_StepDefData identifierIdsTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_Maturing_Configuration_StepDefData maturingConfigTable,
-			@NonNull final M_Maturing_Configuration_Line_StepDefData maturingConfigLineTable,
-			@NonNull final M_HU_StepDefData huTable)
-	{
-		this.attributeSetInstanceTable = attributeSetInstanceTable;
-		this.maturingConfigTable = maturingConfigTable;
-		this.maturingConfigLineTable = maturingConfigLineTable;
-		this.huTable = huTable;
-		this.ppOrderCandidateEnqueuer = SpringContextHolder.instance.getBean(PPOrderCandidateEnqueuer.class);
-		this.ppOrderCandidateService = SpringContextHolder.instance.getBean(PPOrderCandidateService.class);
-
-		this.productTable = productTable;
-		this.productBOMTable = productBOMTable;
-		this.productPlanningTable = productPlanningTable;
-		this.ppOrderCandidateTable = ppOrderCandidateTable;
-		this.warehouseTable = warehouseTable;
-		this.huPiItemProductTable = huPiItemProductTable;
-		this.identifierIdsTable = identifierIdsTable;
-		this.orderLineTable = orderLineTable;
-	}
 
 	@And("^after not more than (.*)s, PP_Order_Candidates are found$")
 	public void validatePP_Order_Candidate(
@@ -421,7 +393,8 @@ public class PP_Order_Candidate_StepDef
 		final ProductBOMId bomId = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID).lookupIdIn(productBOMTable);
 		final ProductPlanning productPlanning = row.getAsIdentifier("PP_Product_Planning_ID").lookupIn(productPlanningTable);
 
-		final ResourceId resourceId = ResourceId.ofRepoId(row.getAsInt(I_S_Resource.COLUMNNAME_S_Resource_ID));
+		final StepDefDataIdentifier resourceIdentifier = row.getAsIdentifier(I_S_Resource.COLUMNNAME_S_Resource_ID);
+		final ResourceId resourceId = resourceTable.getIdOptional(resourceIdentifier).orElseGet(() -> resourceIdentifier.getAsId(ResourceId.class));
 		final int qtyEntered = row.getAsInt(I_PP_Order_Candidate.COLUMNNAME_QtyEntered);
 		final int qtyToProcess = row.getAsInt(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess);
 		final int qtyProcessed = row.getAsInt(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed);
@@ -544,9 +517,9 @@ public class PP_Order_Candidate_StepDef
 
 		ppOrderCandidateRecord.setPP_Product_Planning_ID(productPlanning.getIdNotNull().getRepoId());
 
-		final int resourceId = DataTableUtil.extractIntForColumnName(tableRow, I_S_Resource.COLUMNNAME_S_Resource_ID);
-
-		ppOrderCandidateRecord.setS_Resource_ID(resourceId);
+		final StepDefDataIdentifier resourceIdentifier = StepDefDataIdentifier.ofString(DataTableUtil.extractStringForColumnName(tableRow, I_S_Resource.COLUMNNAME_S_Resource_ID));
+		final ResourceId resourceId = resourceTable.getIdOptional(resourceIdentifier).orElseGet(() -> resourceIdentifier.getAsId(ResourceId.class));
+		ppOrderCandidateRecord.setS_Resource_ID(resourceId.getRepoId());
 
 		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_QtyEntered);
 

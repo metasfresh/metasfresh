@@ -196,7 +196,7 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-  Scenario: Expect infinite loop to be detected and the last DD_Order_Candidate to not be generated
+  Scenario: detect infinite loop: targetWH <- sourceWH <- targetWH
     Given metasfresh contains DD_NetworkDistributionLine
       | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
       | ddNetwork_1               | sourceWH       | targetWH             | shipper      |
@@ -214,10 +214,57 @@ Feature: create distribution to balance demand
 
     Then after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID |
-      | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | targetWH       |
-      | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |
-      | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |
-      | c_4        | SUPPLY            |                           | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | sourceWH       |
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | targetWH       |
+      | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |
+      | 3          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |
+      | 6          | SUPPLY            |                           | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | sourceWH       |
     And after not more than 60s, following DD_Order_Candidates are found
-      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed |
-      | c1         | p_1          | sourceWH            | targetWH         | 14  | N         |
+      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed |
+      | p_1          | sourceWH            | targetWH         | 14  | N         |
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+  @from:cucumber
+  Scenario: detect infinite loop: targetWH <- sourceWH <- sourceWH2 <- sourceWH3 <- targetWH
+    Given metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
+      | sourceWH2      | bpartner_1    | location_1             |
+      | sourceWH3      | bpartner_1    | location_1             |
+    Given metasfresh contains DD_NetworkDistributionLine
+      | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
+      | ddNetwork_1               | sourceWH       | sourceWH2            | shipper      |
+      | ddNetwork_1               | sourceWH2      | sourceWH3            | shipper      |
+      | ddNetwork_1               | sourceWH3      | targetWH             | shipper      |
+    And metasfresh contains PP_Product_Plannings
+      | M_Product_ID | IsCreatePlan | DD_NetworkDistribution_ID | M_Warehouse_ID |
+      | p_1          | true         | ddNetwork_1               | targetWH       |
+      | p_1          | true         | ddNetwork_1               | sourceWH       |
+      | p_1          | true         | ddNetwork_1               | sourceWH2      |
+      | p_1          | true         | ddNetwork_1               | sourceWH3      |
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  | OPT.M_Warehouse_ID.Identifier |
+      | SO         | true    | bpartner_1               | 2022-07-04  | 2022-07-04T00:00:00Z | targetWH                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | SO                    | p_1                     | 14         |
+    And the order identified by SO is completed
+
+    Then after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID |
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | targetWH       |
+      | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |
+      | 3          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |
+      | 4          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | sourceWH       |
+      | 5          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH2      |
+      | 6          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | sourceWH2      |
+      | 7          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH3      |
+      | 8          | SUPPLY            |                           | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | sourceWH3      |
+    And after not more than 60s, following DD_Order_Candidates are found
+      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed |
+      | p_1          | sourceWH            | targetWH         | 14  | N         |
+      | p_1          | sourceWH2           | sourceWH         | 14  | N         |
+      | p_1          | sourceWH3           | sourceWH2        | 14  | N         |

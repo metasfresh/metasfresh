@@ -522,7 +522,8 @@ public class MD_Candidate_StepDef
 			}
 		}
 
-		return ProviderResult.resultWasNotFound(resultNotFoundLog.toString());
+		return ProviderResult.resultWasNotFound(resultNotFoundLog
+				+ "\n\t tableRow=" + tableRow);
 	}
 
 	private BooleanWithReason checkMatching(final MaterialDispoDataItem item, final @NonNull MaterialDispoTableRow tableRow)
@@ -556,7 +557,9 @@ public class MD_Candidate_StepDef
 		{
 			return BooleanWithReason.falseBecause("item with id=" + item.getCandidateId().getRepoId()
 					+ " does not match tableRow with Identifier " + tableRow.getIdentifier()
-					+ " because the business case values are different");
+					+ " because the business case values are different"
+					+ " Expected=" + tableRow.getBusinessCase() + ", Actual= " + item.getBusinessCase()
+			);
 		}
 
 		return BooleanWithReason.TRUE;

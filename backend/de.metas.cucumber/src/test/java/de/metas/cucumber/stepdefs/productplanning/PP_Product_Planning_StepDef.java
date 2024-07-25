@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMVersions_StepDefD
 import de.metas.cucumber.stepdefs.distribution.DD_NetworkDistribution_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_Line_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_StepDefData;
+import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.cucumber.stepdefs.workflow.AD_Workflow_StepDefData;
 import de.metas.material.event.commons.AttributesKey;
@@ -48,6 +49,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
@@ -60,49 +62,30 @@ import org.eevolution.model.I_PP_Product_Planning;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TEST_PLANT_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.WORKFLOW_ID;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_AD_Workflow_ID;
 
+@RequiredArgsConstructor
 public class PP_Product_Planning_StepDef
 {
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
-	private final M_Product_StepDefData productTable;
-	private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
-	private final PP_Product_Planning_StepDefData productPlanningTable;
-	private final PP_Product_BOMVersions_StepDefData bomVersionsTable;
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final DD_NetworkDistribution_StepDefData ddNetworkTable;
-	private final M_Warehouse_StepDefData warehouseTable;
-	private final AD_Workflow_StepDefData workflowTable;
-	private final M_Maturing_Configuration_StepDefData maturingConfigurationTable;
-	private final M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
+	@NonNull private final PP_Product_Planning_StepDefData productPlanningTable;
+	@NonNull private final PP_Product_BOMVersions_StepDefData bomVersionsTable;
+	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	@NonNull private final DD_NetworkDistribution_StepDefData ddNetworkTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final AD_Workflow_StepDefData workflowTable;
+	@NonNull private final M_Maturing_Configuration_StepDefData maturingConfigurationTable;
+	@NonNull private final M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable;
+	@NonNull private final S_Resource_StepDefData resourceTable;
 
-	public PP_Product_Planning_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final PP_Product_BOMVersions_StepDefData productBomVersionsTable,
-			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
-			@NonNull final PP_Product_BOMVersions_StepDefData bomVersionsTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final DD_NetworkDistribution_StepDefData ddNetworkTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final AD_Workflow_StepDefData workflowTable,
-			@NonNull final M_Maturing_Configuration_StepDefData maturingConfigurationTable,
-			@NonNull final M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable)
-	{
-		this.productTable = productTable;
-		this.productBomVersionsTable = productBomVersionsTable;
-		this.productPlanningTable = productPlanningTable;
-		this.bomVersionsTable = bomVersionsTable;
-		this.attributeSetInstanceTable = attributeSetInstanceTable;
-		this.ddNetworkTable = ddNetworkTable;
-		this.warehouseTable = warehouseTable;
-		this.workflowTable = workflowTable;
-		this.maturingConfigurationTable = maturingConfigurationTable;
-		this.maturingConfigurationLineTable = maturingConfigurationLineTable;
-	}
+	private static final ResourceId DEFAULT_PLANT_ID = ResourceId.ofRepoId(540006);
+	
+	
 
 	@Given("metasfresh contains PP_Product_Plannings")
 	public void createOrUpdate(@NonNull final DataTable dataTable)
@@ -127,7 +110,7 @@ public class PP_Product_Planning_StepDef
 		final ProductPlanningBuilder builder = getExistingProductPlanning(row)
 				.map(ProductPlanning::toBuilder)
 				.orElseGet(() -> ProductPlanning.builder()
-						.plantId(TEST_PLANT_ID)
+						.plantId(DEFAULT_PLANT_ID)
 						.workflowId(WORKFLOW_ID)
 						.isAttributeDependant(false)
 						.isPurchased(false)
@@ -145,6 +128,7 @@ public class PP_Product_Planning_StepDef
 					builder.orgId(OrgId.ofRepoIdOrAny(product.getAD_Org_ID()));
 				});
 
+		getResourceId(row).ifPresent(builder::plantId);
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_Workflow_ID).map(workflowTable::getId).ifPresent(builder::workflowId);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan).ifPresent(builder::isCreatePlan);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).ifPresent(builder::isAttributeDependant);
@@ -211,6 +195,12 @@ public class PP_Product_Planning_StepDef
 		row.getAsOptionalIdentifier().ifPresent(identifier -> productPlanningTable.putOrReplace(identifier, productPlanning));
 	}
 
+	private @NonNull Optional<ResourceId> getResourceId(final @NonNull DataTableRow row)
+	{
+		return row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID)
+				.map(plantIdentifier -> resourceTable.getIdOptional(plantIdentifier).orElseGet(() -> plantIdentifier.getAsId(ResourceId.class)));
+	}
+
 	@NonNull
 	private Optional<ProductPlanning> getExistingProductPlanning(final DataTableRow row)
 	{
@@ -224,17 +214,18 @@ public class PP_Product_Planning_StepDef
 		final OrgId orgId = OrgId.ofRepoIdOrAny(productRecord.getAD_Org_ID());
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
 		final WarehouseId warehouseId = row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID).map(warehouseTable::getId).orElse(null);
-		return getExistingProductPlanning(orgId, warehouseId, productId);
+		final ResourceId plantId = getResourceId(row).orElse(DEFAULT_PLANT_ID);
+
+		return getExistingProductPlanning(orgId, warehouseId, plantId, productId);
 	}
 
 	@NonNull
 	private Optional<ProductPlanning> getExistingProductPlanning(
 			@NonNull final OrgId orgId,
 			@Nullable final WarehouseId warehouseId,
+			@NonNull final ResourceId plantId,
 			@NonNull final ProductId productId)
 	{
-		final ResourceId plantId = TEST_PLANT_ID;
-
 		return productPlanningDAO.find(ProductPlanningQuery.builder()
 						.orgId(orgId)
 						.warehouseId(warehouseId)

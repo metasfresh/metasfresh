@@ -28,11 +28,16 @@ Feature: Production + Distribution material dispo scenarios
 
 
 
+    And create S_Resource:
+      | Identifier | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
+      | plant      | 1000000           | Y                       | PT                        | 999             |
+
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID  | IsInTransit |
-      | inTransit       | true        |
-      | rawMaterials_WH | false       |
-      | production_WH   | false       |
+      | M_Warehouse_ID  | IsInTransit | PP_Plant_ID |
+      | inTransit       | true        |             |
+      | rawMaterials_WH | false       |             |
+      | production_WH   | false       | plant       |
+
     And contains M_Shippers
       | Identifier |
       | shipper    |
@@ -55,9 +60,9 @@ Feature: Production + Distribution material dispo scenarios
 
 
     And metasfresh contains PP_Product_Plannings
-      | Identifier           | M_Product_ID | PP_Product_BOMVersions_ID | DD_NetworkDistribution_ID | M_Warehouse_ID |
-      | bom_product_planning | bom_product  | bomVersions_1             |                           | production_WH  |
-      | component_planning   | component    |                           | N1                        | production_WH  |
+      | Identifier           | M_Product_ID | PP_Product_BOMVersions_ID | DD_NetworkDistribution_ID | M_Warehouse_ID | S_Resource_ID |
+      | bom_product_planning | bom_product  | bomVersions_1             |                           | production_WH  | plant         |
+      | component_planning   | component    |                           | N1                        | production_WH  | plant         |
 
     And metasfresh contains C_BPartners:
       | Identifier | IsCustomer | M_PricingSystem_ID |
@@ -88,7 +93,7 @@ Feature: Production + Distribution material dispo scenarios
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_1       | false     | bom_product  | bom_1             | bom_product_planning   | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_1       | false     | bom_product  | bom_1             | bom_product_planning   | plant         | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
     And after not more than 60s, PP_OrderLine_Candidates are found
       | Identifier | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID |
       | ocl_1      | oc_1                  | component    | 10         | PCE               | CO            | boml_1                |
@@ -130,13 +135,13 @@ Feature: Production + Distribution material dispo scenarios
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_1       | true      | bom_product  | bom_1             | bom_product_planning   | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_1       | true      | bom_product  | bom_1             | bom_product_planning   | plant         | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
     And after not more than 60s, PP_OrderLine_Candidates are found
       | Identifier | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID |
       | ocl_1      | oc_1                  | component    | 0          | PCE               | CO            | boml_1                |
     And after not more than 60s, PP_Orders are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID | DatePromised         |
-      | ppOrder    | bom_product  | bom_1             | bom_product_planning   | 540006        | 10         | 10         | PCE               | customer      | 2021-04-16T21:00:00Z |
+      | ppOrder    | bom_product  | bom_1             | bom_product_planning   | plant         | 10         | 10         | PCE               | customer      | 2021-04-16T21:00:00Z |
     And after not more than 60s, PP_Order_BomLines are found
       | Identifier     | PP_Order_ID | M_Product_ID | QtyRequiered | C_UOM_ID.X12DE355 | ComponentType |
       | ppOrderBOMLine | ppOrder     | component    | 10           | PCE               | CO            |
@@ -196,7 +201,7 @@ Feature: Production + Distribution material dispo scenarios
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_1       | false     | bom_product  | bom_1             | bom_product_planning   | 540006        | 7          | 7            | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_1       | false     | bom_product  | bom_1             | bom_product_planning   | plant         | 7          | 7            | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
     And after not more than 60s, PP_OrderLine_Candidates are found
       | Identifier | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID |
       | ocl_1      | oc_1                  | component    | 7          | PCE               | CO            | boml_1                |
