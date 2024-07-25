@@ -1,10 +1,8 @@
-package org.adempiere.ad.process;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,70 +11,67 @@ package org.adempiere.ad.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+package org.adempiere.ad.process;
+
 import de.metas.document.engine.DocStatus;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.GenericPO;
 
 import java.util.Iterator;
 
-public class ProcessDocuments extends AbstractProcessDocumentsTemplate
+public class ProcessDocumentsBySelection extends AbstractProcessDocumentsTemplate implements IProcessPrecondition
 {
 	// services
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-
-	public static final String PARAM_AD_Table_ID = "AD_Table_ID";
-	@Param(parameterName = PARAM_AD_Table_ID, mandatory = true)
-	private int p_AD_Table_ID = -1;
 
 	public static final String PARAM_DocStatus = "DocStatus";
 	@Param(parameterName = PARAM_DocStatus)
 	private DocStatus p_DocStatus;
 
-	public static final String PARAM_WhereClause = "WhereClause";
-	@Param(parameterName = PARAM_WhereClause)
-	private String p_WhereClause;
-
 	public static final String PARAM_DocAction = "DocAction";
-	@Param(parameterName = PARAM_DocAction)
+	@Param(parameterName = PARAM_DocAction, mandatory = true)
 	private String p_DocAction;
 
 	@Override
-	protected Iterator<GenericPO> retrieveDocumentsToProcess()
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		if (p_AD_Table_ID <= 0)
+		if (context.isNoSelection())
 		{
-			throw new FillMandatoryException(PARAM_AD_Table_ID);
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final String tableName = adTableDAO.retrieveTableName(this.p_AD_Table_ID);
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	@NonNull
+	protected Iterator<GenericPO> retrieveDocumentsToProcess()
+	{
+		final String tableName = Check.assumeNotNull(getTableName(), "The process must be associated with a table!");
 
 		final IQueryBuilder<Object> queryBuilder = queryBL.createQueryBuilder(tableName)
-				.addOnlyActiveRecordsFilter();
+				.addOnlyActiveRecordsFilter()
+				.filter(getProcessInfo().getQueryFilterOrElseFalse());
 
 		if (p_DocStatus != null)
 		{
 			queryBuilder.addEqualsFilter(PARAM_DocStatus, p_DocStatus);
-		}
-		if (!Check.isBlank(p_WhereClause))
-		{
-			queryBuilder.filter(TypedSqlQueryFilter.of(p_WhereClause));
 		}
 
 		return queryBuilder.create().iterate(GenericPO.class);
