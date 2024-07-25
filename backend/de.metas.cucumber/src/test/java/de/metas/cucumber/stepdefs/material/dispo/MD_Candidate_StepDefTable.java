@@ -54,7 +54,7 @@ import java.util.stream.Stream;
 public class MD_Candidate_StepDefTable
 {
 	@NonNull @Getter(AccessLevel.NONE) @Singular ImmutableMap<StepDefDataIdentifier, MaterialDispoTableRow> rows;
-
+	
 	public int size() {return rows.size();}
 
 	public Stream<MaterialDispoTableRow> stream() {return rows.values().stream();}
@@ -86,34 +86,16 @@ public class MD_Candidate_StepDefTable
 	@Builder
 	public static class MaterialDispoTableRow
 	{
-		@NonNull
-		StepDefDataIdentifier identifier;
-
-		@NonNull
-		CandidateType type;
-
-		@Nullable
-		CandidateBusinessCase businessCase;
-
-		@NonNull
-		ProductId productId;
-
-		@NonNull
-		BigDecimal qty;
-
-		@NonNull
-		BigDecimal atp;
-
-		@NonNull
-		Instant time;
-
-		@Nullable
-		StepDefDataIdentifier attributeSetInstanceId;
-
+		@NonNull StepDefDataIdentifier identifier;
+		@NonNull CandidateType type;
+		@Nullable CandidateBusinessCase businessCase;
+		@NonNull ProductId productId;
+		@NonNull BigDecimal qty;
+		@NonNull BigDecimal atp;
+		@NonNull Instant time;
+		@Nullable StepDefDataIdentifier attributeSetInstanceId;
 		boolean simulated;
-
-		@Nullable
-		WarehouseId warehouseId;
+		@Nullable WarehouseId warehouseId;
 
 		public CandidatesQuery createQuery()
 		{

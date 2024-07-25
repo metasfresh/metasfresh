@@ -35,7 +35,6 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -73,14 +72,13 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
+import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 
 public class C_OrderLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final M_Product_StepDefData productTable;
@@ -389,8 +387,6 @@ public class C_OrderLine_StepDef
 	public void delete_orderLine(@NonNull final String orderLineIdentifier)
 	{
 		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-		assertThat(orderLine).isNotNull();
-
 		identifierIdsTable.put(orderLineIdentifier, orderLine.getC_OrderLine_ID());
 		InterfaceWrapperHelper.delete(orderLine);
 	}

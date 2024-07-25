@@ -29,7 +29,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "id" : "UTC-08:00"
       }
     },
-    "docStatus" : "Drafted",
+    "docStatus" : "DR",
     "documentNo" : "documentNo",
     "lines" : [
       {
@@ -183,7 +183,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "id" : "UTC-08:00"
       }
     },
-    "docStatus" : "Drafted",
+    "docStatus" : "DR",
     "documentNo" : "documentNo",
     "lines" : [
       {
@@ -316,7 +316,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "id" : "UTC-08:00"
       }
     },
-    "docStatus" : "Drafted",
+    "docStatus" : "DR",
     "documentNo" : "documentNo",
     "lines" : [
       {

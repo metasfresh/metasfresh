@@ -57,7 +57,9 @@ public class M_Locator_StepDef
 	@And("load M_Locator:")
 	public void loadLocators(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::loadLocator);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_Locator_ID)
+				.forEach(this::loadLocator);
 	}
 
 	private void loadLocator(final DataTableRow row)
@@ -73,7 +75,7 @@ public class M_Locator_StepDef
 				.create()
 				.firstNotNull(I_M_Locator.class);
 
-		row.getAsOptionalIdentifier(COLUMNNAME_M_Locator_ID)
+		row.getAsOptionalIdentifier()
 				.ifPresent(locatorIdentifier -> locatorTable.put(locatorIdentifier, locatorRecord));
 
 		row.getAsOptionalString("REST.Context.QRCode")
@@ -87,7 +89,7 @@ public class M_Locator_StepDef
 	public void create_M_Locator_Simple(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((row) -> {
-			final String value = row.getAsString(I_M_Locator.COLUMNNAME_Value);
+			final String value = row.suggestValueAndName().getValue();
 
 			final StepDefDataIdentifier warehouseIdentifier = row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID);
 			final WarehouseId warehouseId = warehouseTable.getIdOptional(warehouseIdentifier)

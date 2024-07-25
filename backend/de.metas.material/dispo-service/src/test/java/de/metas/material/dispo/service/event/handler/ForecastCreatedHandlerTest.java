@@ -1,13 +1,11 @@
 package de.metas.material.dispo.service.event.handler;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.ForecastLineDimensionFactory;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
@@ -26,7 +24,6 @@ import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_ForecastLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +32,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,7 +42,7 @@ import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -76,28 +72,26 @@ import static org.mockito.Mockito.when;
 public class ForecastCreatedHandlerTest
 {
 	private ForecastCreatedHandler forecastCreatedHandler;
-	private CandidateRepositoryRetrieval candidateRepository;
 	private AvailableToPromiseRepository stockRepository;
 	private PostMaterialEventService postMaterialEventService;
-	private DimensionService dimensionService;
 
 	int forecastLineId;
+
 	@BeforeEach
-	public void init()
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionFactories.add(new ForecastLineDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
-		SpringContextHolder.registerJUnitBean(dimensionService);
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(
+				new MDCandidateDimensionFactory(),
+				new ForecastLineDimensionFactory()
+		));
+		//SpringContextHolder.registerJUnitBean(dimensionService);
 
-		candidateRepository = Mockito.mock(CandidateRepositoryRetrieval.class);
 		stockRepository = Mockito.mock(AvailableToPromiseRepository.class);
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
-		forecastLineId = createForecastline().getM_ForecastLine_ID();
+		forecastLineId = createForecastLine().getM_ForecastLine_ID();
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
@@ -110,14 +104,13 @@ public class ForecastCreatedHandlerTest
 								stockRepository))));
 	}
 
-	private I_M_ForecastLine createForecastline()
+	private I_M_ForecastLine createForecastLine()
 	{
 		final I_M_ForecastLine forecastLine = newInstance(I_M_ForecastLine.class);
-
 		save(forecastLine);
-
 		return forecastLine;
 	}
+
 	/**
 	 * We create a forecast event with quantity = 8, and there is no projected stock quantity.<br>
 	 * We assert that the method under test fires a MaterialDemandEvent with a quantity of 8 - 0 = 8.
@@ -215,9 +208,7 @@ public class ForecastCreatedHandlerTest
 
 		final SupplyRequiredEvent event = (SupplyRequiredEvent)eventCaptor.getValue();
 
-		final BigDecimal eventQty = event.getSupplyRequiredDescriptor()
-				.getMaterialDescriptor()
-				.getQuantity();
+		final BigDecimal eventQty = event.getSupplyRequiredDescriptor().getQtyToSupplyBD();
 
 		assertThat(eventQty)
 				.as("eventQty of " + event)

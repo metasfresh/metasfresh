@@ -32,13 +32,21 @@ import javax.annotation.Nullable;
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
 public class C_OrderLine_StepDefData extends StepDefData<I_C_OrderLine>
+		implements StepDefDataGetIdAware<OrderLineId, I_C_OrderLine>
 {
 	public C_OrderLine_StepDefData()
 	{
 		super(I_C_OrderLine.class);
 	}
 
+	@Override
+	public OrderLineId extractIdFromRecord(final I_C_OrderLine record)
+	{
+		return OrderLineId.ofRepoId(record.getC_OrderLine_ID());
+	}
+
 	@Nullable
+	@Override
 	public OrderLineId getId(@NonNull final StepDefDataIdentifier identifier)
 	{
 		if (identifier.isNullPlaceholder())

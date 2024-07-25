@@ -1,52 +1,39 @@
 package de.metas.material.planning.ddorder;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-
+import de.metas.business.BusinessTestHelper;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.planning.exception.MrpException;
+import de.metas.quantity.Quantity;
+import de.metas.uom.X12DE355;
+import de.metas.util.lang.Percent;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.planning.exception.MrpException;
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class DDOrderPojoSupplierTest
 {
 	private ModelProductDescriptorExtractor modelProductDescriptorExtractor;
+	private I_C_UOM uom;
 
 	@BeforeEach
 	public void init()
 	{
+		AdempiereTestHelper.get().init();
 		modelProductDescriptorExtractor = Mockito.mock(ModelProductDescriptorExtractor.class);
 	}
 
 	@Test
 	public void test_calculateQtyToMove_ZeroQty()
 	{
+		uom = BusinessTestHelper.createUOM("uom", 0, X12DE355.KILOGRAM);
+
 		test_calculateQtyToMove(
 				new BigDecimal("0"), // qtyToMoveExpected
 				new BigDecimal("0"), // qtyToMoveRequested
@@ -57,6 +44,8 @@ public class DDOrderPojoSupplierTest
 	@Test
 	public void test_calculateQtyToMove_HighPrecision_Transfer100()
 	{
+		uom = BusinessTestHelper.createUOM("uom", 7, X12DE355.KILOGRAM);
+
 		test_calculateQtyToMove(
 				new BigDecimal("12.3456789"), // qtyToMoveExpected
 				new BigDecimal("12.3456789"), // qtyToMoveRequested
@@ -67,6 +56,8 @@ public class DDOrderPojoSupplierTest
 	@Test
 	public void test_calculateQtyToMove_HighPrecision_Transfer50()
 	{
+		uom = BusinessTestHelper.createUOM("uom", 8, X12DE355.KILOGRAM);
+
 		test_calculateQtyToMove(
 				new BigDecimal("15.22222222"), // qtyToMoveExpected
 				new BigDecimal("30.44444444"), // qtyToMoveRequested
@@ -77,6 +68,8 @@ public class DDOrderPojoSupplierTest
 	@Test
 	public void test_calculateQtyToMove_HighPrecision_Transfer10()
 	{
+		uom = BusinessTestHelper.createUOM("uom", 16, X12DE355.KILOGRAM);
+
 		test_calculateQtyToMove(
 				new BigDecimal("03.0123713812937129"), // qtyToMoveExpected
 				new BigDecimal("30.123713812937129"), // qtyToMoveRequested
@@ -87,6 +80,8 @@ public class DDOrderPojoSupplierTest
 	@Test
 	public void test_calculateQtyToMove_AnyQty_Transfer0()
 	{
+		uom = BusinessTestHelper.createUOM("uom", 16, X12DE355.KILOGRAM);
+
 		test_calculateQtyToMove(
 				new BigDecimal("0"), // qtyToMoveExpected
 				new BigDecimal("30.123713812937129"), // qtyToMoveRequested
@@ -97,6 +92,8 @@ public class DDOrderPojoSupplierTest
 	@Test
 	public void test_calculateQtyToMove_AnyQty_TransferNegative()
 	{
+		uom = BusinessTestHelper.createUOM("uom", 16, X12DE355.KILOGRAM);
+
 		assertThatThrownBy(() -> test_calculateQtyToMove(
 				new BigDecimal("99999999999999999"), // qtyToMoveExpected - does not matter
 				new BigDecimal("30.123713812937129"), // qtyToMoveRequested
@@ -111,10 +108,12 @@ public class DDOrderPojoSupplierTest
 			final BigDecimal qtyToMoveRequested,
 			final BigDecimal transferPercent)
 	{
-		final DDOrderPojoSupplier ddOrderPojoSupplier = new DDOrderPojoSupplier(modelProductDescriptorExtractor);
+		final DistributionNetworkRepository distributionNetworkRepository = new DistributionNetworkRepository();
+		final DDOrderPojoSupplier ddOrderPojoSupplier = new DDOrderPojoSupplier(distributionNetworkRepository, modelProductDescriptorExtractor);
 
 		final BigDecimal qtyToMoveActual = ddOrderPojoSupplier
-				.calculateQtyToMove(qtyToMoveRequested, transferPercent);
+				.calculateQtyToMove(Quantity.of(qtyToMoveRequested, uom), Percent.of(transferPercent))
+				.toBigDecimal();
 
 		assertThat(qtyToMoveActual)
 				.as("QtyToMove for " + " QtyToMoveRequested=" + qtyToMoveRequested + ", TransferPercent=" + transferPercent)

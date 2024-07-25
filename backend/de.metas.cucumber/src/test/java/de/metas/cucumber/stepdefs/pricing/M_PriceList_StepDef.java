@@ -167,9 +167,9 @@ public class M_PriceList_StepDef
 
 		final String countryCode = row.getAsOptionalString("C_Country.CountryCode").orElse(null);
 		final String currencyISOCode = row.getAsString("C_Currency.ISO_Code");
-		final String name = row.getAsOptionalName("Name").orElseGet(() -> pricingSystem.getName() + "_" + countryCode);
-		final String description = row.getAsOptionalString("Description").orElse(null);
 		final boolean soTrx = row.getAsBoolean("SOTrx");
+		final String name = row.getAsOptionalName("Name").orElseGet(() -> pricingSystem.getName() + "_" + countryCode + "_" + (soTrx ? "SO" : "PO"));
+		final String description = row.getAsOptionalString("Description").orElse(null);
 		final boolean isTaxIncluded = row.getAsOptionalBoolean("IsTaxIncluded").orElseFalse();
 		final int pricePrecision = row.getAsOptionalInt("PricePrecision").orElse(2);
 		final boolean isActive = row.getAsOptionalBoolean("IsActive").orElseTrue();

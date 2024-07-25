@@ -27,6 +27,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.OptionalBoolean;
+import de.metas.util.Optionals;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -34,6 +35,7 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import io.cucumber.datatable.DataTable;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
@@ -44,6 +46,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +59,8 @@ import java.util.function.Function;
 public class DataTableRow
 {
 	private final int lineNo; // introduced to improve logging/debugging
-	final Map<String, String> map;
+	@NonNull private final Map<String, String> map;
+	@Nullable @Setter private String additionalRowIdentifierColumnName;
 
 	DataTableRow(
 			final int lineNo,
@@ -208,29 +212,29 @@ public class DataTableRow
 	@NonNull
 	public StepDefDataIdentifier getAsIdentifier()
 	{
-		return getAsIdentifier(StepDefDataIdentifier.SUFFIX);
+		return getAsOptionalIdentifier()
+				.orElseThrow(() -> new AdempiereException("No row identifier")
+						.appendParametersToMessage()
+						.setParameter("row", map)
+						.setParameter("additionalRowIdentifierColumnName", additionalRowIdentifierColumnName));
 	}
 
 	@NonNull
-	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier() {return getAsOptionalIdentifier(StepDefDataIdentifier.SUFFIX);}
+	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier()
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> getAsOptionalIdentifier(StepDefDataIdentifier.SUFFIX),
+				() -> additionalRowIdentifierColumnName != null ? getAsOptionalIdentifier(additionalRowIdentifierColumnName) : Optional.empty()
+		);
+	}
 
 	@NonNull
 	public StepDefDataIdentifier getAsIdentifier(@NonNull final String columnName)
 	{
-		String string = map.get(columnName);
-		if (string == null && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
-		{
-			string = map.get(columnName + "." + StepDefDataIdentifier.SUFFIX);
-		}
-
-		if (string == null || Check.isBlank(string))
-		{
-			throw new AdempiereException("Missing value for columnName=" + columnName)
-					.appendParametersToMessage()
-					.setParameter("row", map);
-		}
-
-		return StepDefDataIdentifier.ofString(string);
+		return getAsOptionalIdentifier(columnName)
+				.orElseThrow(() -> new AdempiereException("Missing value for columnName=" + columnName)
+						.appendParametersToMessage()
+						.setParameter("row", map));
 	}
 
 	@NonNull
@@ -386,22 +390,50 @@ public class DataTableRow
 		return Timestamp.valueOf(getAsLocalDate(columnName).atStartOfDay());
 	}
 
+	public Timestamp getAsInstantTimestamp(@NonNull final String columnName)
+	{
+		return Timestamp.from(getAsInstant(columnName));
+	}
+
 	public Instant getAsInstant(@NonNull final String columnName)
 	{
 		return parseInstant(getAsString(columnName), columnName);
 	}
 
 	@NonNull
-	private static Instant parseInstant(final String valueStr, final String columnInfo)
+	private static Instant parseInstant(@NonNull final String valueStr, final String columnInfo)
 	{
 		try
 		{
-			return Instant.parse(valueStr);
+			if (valueStr.contains("T"))
+			{
+				if (valueStr.endsWith("Z"))
+				{
+					return Instant.parse(valueStr);
+				}
+				else
+				{
+					return toInstant(LocalDateTime.parse(valueStr));
+				}
+			}
+			else
+			{
+				return toInstant(LocalDate.parse(valueStr).atStartOfDay());
+			}
 		}
 		catch (Exception ex)
 		{
 			throw new AdempiereException("Column `" + columnInfo + "` has invalid Instant `" + valueStr + "`");
 		}
+	}
+
+	private static Instant toInstant(@NonNull final LocalDateTime ldt)
+	{
+		// IMPORTANT: we use JVM timezone instead of SystemTime.zoneId()
+		// because that's the timezone java.sql.Timestamp would use it too,
+		// and because most of currently logic is silently assuming that
+		final ZoneId jvmTimeZone = ZoneId.systemDefault();
+		return ldt.atZone(jvmTimeZone).toInstant();
 	}
 
 	public Optional<LocalDateTime> getAsOptionalLocalDateTime(@NonNull final String columnName)

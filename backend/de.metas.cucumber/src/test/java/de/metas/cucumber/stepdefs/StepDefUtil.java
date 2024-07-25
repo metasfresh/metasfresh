@@ -24,13 +24,15 @@ package de.metas.cucumber.stepdefs;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.util.StringUtils;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.StringUtils;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 
@@ -49,19 +51,21 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class StepDefUtil
 {
 	private static final Logger logger = LogManager.getLogger(StepDefUtil.class);
+	public static final String SYS_maxWaitSeconds = "maxWaitSeconds";
 
 	/**
 	 * Waits for the given {@code worker} to supply {@code true}.
 	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
 	 *
-	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 * @param maxWaitSecondsParam set to a value <=0 to wait forever (use only when developing locally)
 	 */
 	public void tryAndWait(
-			final long maxWaitSeconds,
+			final long maxWaitSecondsParam,
 			final long checkingIntervalMs,
 			@NonNull final Supplier<Boolean> worker,
 			@Nullable final Runnable logContext) throws InterruptedException
 	{
+		final long maxWaitSeconds = getMaxWaitSecondsEffective(maxWaitSecondsParam);
 		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
 
 		boolean conditionIsMet = false;
@@ -106,15 +110,16 @@ public class StepDefUtil
 	 * Waits for the given {@code worker} to supply an optional that is present.
 	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
 	 *
-	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 * @param maxWaitSecondsParam set to a value <=0 to wait forever (use only when developing locally)
 	 */
 	@Deprecated
 	public <T> T tryAndWaitForItem(
-			final long maxWaitSeconds,
+			final long maxWaitSecondsParam,
 			final long checkingIntervalMs,
 			@NonNull final ItemProvider<T> worker,
 			@Nullable final Runnable logContext) throws InterruptedException
 	{
+		final long maxWaitSeconds = getMaxWaitSecondsEffective(maxWaitSecondsParam);
 		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
 
 		ItemProvider.ProviderResult<T> lastWorkerResult = null;
@@ -148,6 +153,21 @@ public class StepDefUtil
 		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, (Supplier<String>)null);
 	}
 
+	public <T> T tryAndWaitForItem(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final IQuery<T> query) throws InterruptedException
+	{
+		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, toItemProvider(query));
+	}
+
+	private static <T> @NonNull ItemProvider<T> toItemProvider(final @NonNull IQuery<T> query)
+	{
+		return () -> query.firstOnlyOptional()
+				.map(ItemProvider.ProviderResult::resultWasFound)
+				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound("No item found for " + query));
+	}
+
 	public void tryAndWait(
 			final long maxWaitSeconds,
 			final long checkingIntervalMs,
@@ -160,15 +180,16 @@ public class StepDefUtil
 	 * Waits for the given {@code worker} to supply an optional that is present.
 	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
 	 *
-	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 * @param maxWaitSecondsParam set to a value <=0 to wait forever (use only when developing locally)
 	 */
 	@Deprecated
 	public <T> T tryAndWaitForItem(
-			final long maxWaitSeconds,
+			final long maxWaitSecondsParam,
 			final long checkingIntervalMs,
 			@NonNull final Supplier<Optional<T>> worker,
 			@Nullable final Runnable logContext) throws InterruptedException
 	{
+		final long maxWaitSeconds = getMaxWaitSecondsEffective(maxWaitSecondsParam);
 		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
 
 		try
@@ -198,7 +219,7 @@ public class StepDefUtil
 		{
 			logContext.run();
 		}
-		Assertions.fail("the given spllier didn't succeed within the " + maxWaitSeconds + "second timeout");
+		Assertions.fail("the given worker didn't succeed within the " + maxWaitSeconds + "second timeout");
 		return null;
 	}
 
@@ -206,14 +227,15 @@ public class StepDefUtil
 	 * Waits for the given {@code worker} to supply an optional that is present.
 	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
 	 *
-	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 * @param maxWaitSecondsParam set to a value <=0 to wait forever (use only when developing locally)
 	 */
 	public <T> T tryAndWaitForItem(
-			final long maxWaitSeconds,
+			final long maxWaitSecondsParam,
 			final long checkingIntervalMs,
 			@NonNull final Supplier<Optional<T>> worker,
 			@Nullable final Supplier<String> logContext) throws InterruptedException
 	{
+		final long maxWaitSeconds = getMaxWaitSecondsEffective(maxWaitSecondsParam);
 		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
 
 		try
@@ -259,10 +281,10 @@ public class StepDefUtil
 	 * Waits for the given {@code worker} to supply an optional that is present.
 	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
 	 *
-	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 * @param maxWaitSecondsParam set to a value <=0 to wait forever (use only when developing locally)
 	 */
 	public <T> T tryAndWaitForItem(
-			final long maxWaitSeconds,
+			final long maxWaitSecondsParam,
 			final long checkingIntervalMs,
 			@NonNull final ItemProvider<T> worker,
 			@Nullable final Supplier<String> logContext) throws InterruptedException
@@ -284,6 +306,7 @@ public class StepDefUtil
 		//
 		// Wait given millis and then invoke the worker again and again until max wait time
 		int iteration = 1; // NOTE: start from 1 because we already had the first iteration above
+		final long maxWaitSeconds = getMaxWaitSecondsEffective(maxWaitSecondsParam);
 		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
 		while (deadLineMillis > System.currentTimeMillis())
 		{
@@ -313,6 +336,21 @@ public class StepDefUtil
 				+ "The logging output of the last try is:\n" + lastWorkerResult.getLog()
 				+ "\n Context: " + context);
 		return null; // will never get here because fail throws
+	}
+
+	private static long getMaxWaitSecondsEffective(final long maxWaitSecondsParam)
+	{
+		final Integer sys_maxWaitSeconds = StringUtils.trimBlankToOptional(System.getProperty(SYS_maxWaitSeconds))
+				.map(value -> NumberUtils.asInteger(value, null))
+				.orElse(null);
+		if (sys_maxWaitSeconds != null)
+		{
+			final long maxWaitSecondsEffective = (long)sys_maxWaitSeconds;
+			logger.info("NOTE: using maxWaitSeconds={}s (from `{}` system property), instead of {}s", maxWaitSecondsEffective, SYS_maxWaitSeconds, maxWaitSecondsParam);
+			return maxWaitSecondsEffective;
+		}
+
+		return maxWaitSecondsParam;
 	}
 
 	private static long computeDeadLineMillis(final long maxWaitSeconds)

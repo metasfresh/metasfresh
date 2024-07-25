@@ -76,7 +76,7 @@ public class AbstractPurchaseOfferEventHandler
 	private UpdateMainDataRequest createDataUpdateRequestForEvent(
 			@NonNull final AbstractPurchaseOfferEvent purchaseOfferedEvent)
 	{
-		final OrgId orgId = purchaseOfferedEvent.getEventDescriptor().getOrgId();
+		final OrgId orgId = purchaseOfferedEvent.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 		
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
@@ -84,10 +84,9 @@ public class AbstractPurchaseOfferEventHandler
 				.date(TimeUtil.getDay(purchaseOfferedEvent.getDate(), timeZone))
 				.build();
 
-		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
+		return UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.offeredQty(purchaseOfferedEvent.getQtyDelta())
 				.build();
-		return request;
 	}
 }
