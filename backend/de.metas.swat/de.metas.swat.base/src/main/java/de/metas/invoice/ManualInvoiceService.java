@@ -47,6 +47,9 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
@@ -85,6 +88,7 @@ public class ManualInvoiceService
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private final InvoiceAcctService invoiceAcctService;
 	private final CustomColumnService customColumnService;
@@ -151,7 +155,7 @@ public class ManualInvoiceService
 			@NonNull final Map<String, Object> valuesByColumnName)
 	{
 		manualInvoiceRepository.applyAndSave(invoiceAndLineId,
-											 (invoiceLineRecord) -> customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(invoiceLineRecord), valuesByColumnName));
+				(invoiceLineRecord) -> customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(invoiceLineRecord), valuesByColumnName));
 	}
 
 	private void saveInvoiceCustomColumns(
@@ -159,7 +163,7 @@ public class ManualInvoiceService
 			@NonNull final Map<String, Object> valuesByColumnName)
 	{
 		manualInvoiceRepository.applyAndSave(invoiceId,
-											 (invoiceRecord) -> customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(invoiceRecord), valuesByColumnName));
+				(invoiceRecord) -> customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(invoiceRecord), valuesByColumnName));
 	}
 
 	private void handleAcctData(
@@ -170,9 +174,9 @@ public class ManualInvoiceService
 				.stream()
 				.filter(line -> line.getElementValueId() != null)
 				.map(line -> buildInvoiceAcctRule(line.getElementValueId(),
-												  invoice.getRepoIdByExternalLineId(line.getExternalLineId()),
-												  request.getAcctSchema().getId(),
-												  line.getProductAcctType()))
+						invoice.getRepoIdByExternalLineId(line.getExternalLineId()),
+						request.getAcctSchema().getId(),
+						line.getProductAcctType()))
 				.collect(ImmutableList.toImmutableList());
 
 		if (rules.isEmpty())
@@ -197,6 +201,7 @@ public class ManualInvoiceService
 		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = getBPartnerLocationAndCaptureId(requestHeader.getBillBPartnerLocationId());
 		final ZoneId zoneId = orgDAO.getTimeZone(requestHeader.getOrgId());
 		final PriceListId priceListId = getPriceListId(requestHeader, countryId, zoneId);
+		final PaymentTermId paymentTermId = paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.forPartner(requestHeader.getBillBPartnerId(), requestHeader.getSoTrx()));
 
 		final CreateManualInvoiceRequest.CreateManualInvoiceRequestBuilder createManualInvoiceRequestBuilder = CreateManualInvoiceRequest.builder()
 				.orgId(requestHeader.getOrgId())
@@ -210,16 +215,17 @@ public class ManualInvoiceService
 				.docTypeId(requestHeader.getDocTypeId())
 				.poReference(requestHeader.getPoReference())
 				.soTrx(requestHeader.getSoTrx())
-				.currencyId(requestHeader.getCurrencyId());
+				.currencyId(requestHeader.getCurrencyId())
+				.paymentTermId(paymentTermId);
 
 		final ImmutableList<CreateManualInvoiceLineRequest> lines = request.getLines()
 				.stream()
 				.map(requestLine -> buildManualInvoiceLine(request,
-														   requestLine,
-														   priceListId,
-														   countryId,
-														   bPartnerLocationAndCaptureId,
-														   zoneId))
+						requestLine,
+						priceListId,
+						countryId,
+						bPartnerLocationAndCaptureId,
+						zoneId))
 				.collect(ImmutableList.toImmutableList());
 
 		return createManualInvoiceRequestBuilder
@@ -322,10 +328,10 @@ public class ManualInvoiceService
 			@NonNull final ZoneId zoneId)
 	{
 		final IEditablePricingContext editablePricingContext = pricingBL.createInitialContext(header.getOrgId(),
-																							  requestLine.getProductId(),
-																							  header.getBillBPartnerId(),
-																							  requestLine.getQtyToInvoice(),
-																							  header.getSoTrx())
+						requestLine.getProductId(),
+						header.getBillBPartnerId(),
+						requestLine.getQtyToInvoice(),
+						header.getSoTrx())
 				.setFailIfNotCalculated();
 
 		editablePricingContext.setPriceListId(priceListId);
@@ -386,13 +392,13 @@ public class ManualInvoiceService
 		return InvoiceAcctRule.builder()
 				.elementValueId(elementValueId)
 				.matcher(InvoiceAcctRuleMatcher.builder()
-								 .invoiceAndLineId(invoiceAndLineId)
-								 .acctSchemaId(acctSchemaId)
-								 .accountTypeName(Optional.ofNullable(productAcctType)
-														  .map(ProductAcctType::getColumnName)
-														  .map(AccountTypeName::ofColumnName)
-														  .orElse(null))
-								 .build())
+						.invoiceAndLineId(invoiceAndLineId)
+						.acctSchemaId(acctSchemaId)
+						.accountTypeName(Optional.ofNullable(productAcctType)
+								.map(ProductAcctType::getColumnName)
+								.map(AccountTypeName::ofColumnName)
+								.orElse(null))
+						.build())
 				.build();
 	}
 

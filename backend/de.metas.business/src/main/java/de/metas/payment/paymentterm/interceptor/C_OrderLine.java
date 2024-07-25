@@ -1,24 +1,20 @@
 package de.metas.payment.paymentterm.interceptor;
 
-import java.math.BigDecimal;
-
-import de.metas.payment.paymentterm.impl.PaymentTerm;
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_PaymentTerm;
-import org.springframework.stereotype.Component;
-
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.compiere.model.I_C_OrderLine;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L

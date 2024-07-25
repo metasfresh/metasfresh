@@ -22,15 +22,12 @@ package de.metas.dunning.invoice.api;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Iterator;
-
-import org.compiere.model.I_C_Invoice;
-
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_C_Invoice;
+
+import java.util.Iterator;
 
 
 /**
@@ -41,7 +38,5 @@ import de.metas.util.ISingletonService;
  */
 public interface IInvoiceSourceDAO extends ISingletonService
 {
-	int computeDueDays(Date dueDate, Date date);
-
 	Iterator<I_C_Dunning_Candidate_Invoice_v1> retrieveDunningCandidateInvoices(IDunningContext context);
 }

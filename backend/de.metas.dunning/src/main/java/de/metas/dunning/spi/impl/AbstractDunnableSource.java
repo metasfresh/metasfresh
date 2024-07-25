@@ -22,21 +22,22 @@ package de.metas.dunning.spi.impl;
  * #L%
  */
 
-
-import java.util.Iterator;
-
-import org.slf4j.Logger;
-
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.spi.IDunnableSource;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.util.Services;
 import de.metas.util.collections.FilterIterator;
+import org.slf4j.Logger;
+
+import java.util.Iterator;
 
 public abstract class AbstractDunnableSource implements IDunnableSource
 {
 	protected final transient Logger logger = LogManager.getLogger(getClass());
+	protected final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	protected abstract Iterator<IDunnableDoc> createRawSourceIterator(IDunningContext context);
 

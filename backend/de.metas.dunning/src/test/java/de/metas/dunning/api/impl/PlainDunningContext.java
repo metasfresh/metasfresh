@@ -23,11 +23,11 @@ package de.metas.dunning.api.impl;
  */
 
 import de.metas.dunning.interfaces.I_C_DunningLevel;
+import de.metas.organization.LocalDateAndOrgId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 
 import javax.annotation.Nullable;
-import java.util.Date;
 import java.util.Properties;
 
 public class PlainDunningContext extends AbstractDunningContext
@@ -36,7 +36,7 @@ public class PlainDunningContext extends AbstractDunningContext
 	private final Properties ctx;
 	private final ITrxRunConfig trxRunConfig;
 	
-	private Date dunningDate;
+	private LocalDateAndOrgId dunningDate;
 	private I_C_DunningLevel dunningLevel;
 
 	@Nullable
@@ -76,7 +76,8 @@ public class PlainDunningContext extends AbstractDunningContext
 	}
 
 	@Override
-	public Date getDunningDate()
+	@Nullable
+	public LocalDateAndOrgId getDunningDate()
 	{
 		return dunningDate;
 	}
@@ -91,7 +92,7 @@ public class PlainDunningContext extends AbstractDunningContext
 		this.dunningLevel = dunningLevel;
 	}
 
-	public void setDunningDate(Date dunningDate)
+	public void setDunningDate(@Nullable LocalDateAndOrgId dunningDate)
 	{
 		this.dunningDate = dunningDate;
 	}

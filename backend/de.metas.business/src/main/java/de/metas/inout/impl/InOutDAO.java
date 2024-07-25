@@ -56,6 +56,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -89,6 +90,12 @@ public class InOutDAO implements IInOutDAO
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
 	{
 		return load(inoutId, I_M_InOut.class);
+	}
+
+	@Override
+	public List<I_M_InOut> getByIds(@NonNull final Set<InOutId> inoutIds)
+	{
+		return loadByRepoIdAwares(inoutIds, I_M_InOut.class);
 	}
 
 	@Nullable
@@ -305,10 +312,10 @@ public class InOutDAO implements IInOutDAO
 	{
 		return queryBL.createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
 				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus,
-									   IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
-									   // anymore, because they are already in a shipper-transportation
-									   IDocument.STATUS_InProgress,
-									   IDocument.STATUS_WaitingConfirmation)
+						IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
+						// anymore, because they are already in a shipper-transportation
+						IDocument.STATUS_InProgress,
+						IDocument.STATUS_WaitingConfirmation)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
