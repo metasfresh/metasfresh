@@ -484,7 +484,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 			shipmentLine.setM_HU_PI_Item_Product_Override(piipForShipmentLine); // this field is currently displayed in the swing client, so we set it, even if it's redundant
 			shipmentLine.setM_HU_PI_Item_Product_Calculated(piipForShipmentLine);
 
-			if (getQtyTypeToUse().isOnlyUseToDeliver())
+			if (getQtyTypeToUse().isOnlyUseToDeliver() || getQtyTypeToUse().isSplitShipment())
 			{
 				final QuantityTU qtyTUs = computeQtyTUs(piipForShipmentLine);
 				shipmentLine.setQtyTU_Override(qtyTUs.toBigDecimal());
