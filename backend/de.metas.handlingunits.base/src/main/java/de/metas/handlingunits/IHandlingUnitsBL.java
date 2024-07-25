@@ -414,6 +414,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	void markDestroyed(IHUContext huContext, I_M_HU hu);
 
+	void saveHU(I_M_HU hu);
+
 	/**
 	 * Marks all HUs as destroyed, but doesn't handle the storages.
 	 *
