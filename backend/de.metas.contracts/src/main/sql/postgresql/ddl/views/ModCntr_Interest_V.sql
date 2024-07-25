@@ -25,18 +25,18 @@ WITH interimAmts AS (SELECT SUM(amount
                               INNER JOIN modcntr_log l ON mi.shippingnotification_modcntr_log_id = l.modcntr_log_id AND l.isbillable = 'Y'
                      WHERE mi.interiminvoice_modcntr_log_id IS NOT NULL
                        AND finalinterest != 0
-                     ORDER BY datetrx, modcntr_interest_id),
-     FinalInvoice AS (SELECT distinct finalIL.C_Invoice_ID,
-                                      finalIC.c_invoice_candidate_id,
-                                      report.getPricePatternForJasper(finalI.m_pricelist_id) AS PricePattern,
-                                      report.getAmountPatternForJasper(finalI.c_currency_id) AS amountpattern
-                      FROM c_invoice_candidate finalIC
-                               INNER JOIN C_Invoice_Line_Alloc finalILA ON finalIC.c_invoice_candidate_id = finalILA.c_invoice_candidate_id
-                               INNER JOIN c_invoiceline finalIL ON finalIL.c_invoiceline_id = finalILA.c_invoiceline_id
-                               INNER JOIN c_invoice finalI ON finalI.c_invoice_id = finalIL.c_invoice_id AND finalI.docstatus IN ('CO', 'CL')
-                               INNER JOIN modcntr_log l ON finalIC.c_invoice_candidate_id = l.c_invoice_candidate_id)
+                     ORDER BY datetrx, modcntr_interest_id)
 SELECT mi.modcntr_interest_id                                                                        AS modcntr_interest_v_id,
-       FinalInvoice.C_Invoice_ID                                                                     AS C_FinalInvoice_ID,
+       CASE
+           WHEN (l.c_invoice_candidate_id IS NULL) THEN NULL
+                                                   ELSE
+                                                       (SELECT finalIL.C_Invoice_ID
+                                                        FROM c_invoice_candidate finalIC
+                                                                 INNER JOIN C_Invoice_Line_Alloc finalILA ON finalIC.c_invoice_candidate_id = finalILA.c_invoice_candidate_id
+                                                                 INNER JOIN c_invoiceline finalIL ON finalIL.c_invoiceline_id = finalILA.c_invoiceline_id
+                                                                 INNER JOIN c_invoice finalI ON finalI.c_invoice_id = finalIL.c_invoice_id AND finalI.docstatus IN ('CO', 'CL')
+                                                        WHERE l.c_invoice_candidate_id = finalIC.c_invoice_candidate_id)
+       END                                                                                           AS C_FinalInvoice_ID,
        ir.modcntr_interest_run_id,
        l.c_flatrate_term_id,
        l.bill_bpartner_id,
@@ -72,9 +72,7 @@ SELECT mi.modcntr_interest_id                                                   
        mi.interestdays,
        mi.interestscore,
        mi.finalinterest,
-       mi.ad_client_id,
-       FinalInvoice.PricePattern                                                                     AS PricePattern,
-       FinalInvoice.amountpattern                                                                    AS amountpattern
+       mi.ad_client_id
 
 FROM modcntr_interest mi
          INNER JOIN modCntr_log l ON mi.shippingnotification_modcntr_log_id = l.modcntr_log_id AND l.isbillable = 'Y'
