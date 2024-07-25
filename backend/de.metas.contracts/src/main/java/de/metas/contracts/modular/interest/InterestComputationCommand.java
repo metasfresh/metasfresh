@@ -379,7 +379,7 @@ public class InterestComputationCommand
 		Check.assume(LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT == modularContractLogEntry.getDocumentType(),
 					 "Expecting DocumentType = " + LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT +
 							 " but got " + modularContractLogEntry.getDocumentType() + "! LogId=" + modularContractLogEntry.getId());
-		Check.assumeNotNull(modularContractLogEntry.getAmount(), "Invoices with no amount should've been skipped already! LogId="
+		Check.assumeNotNull(modularContractLogEntry.getAmount(), "Contracts with no amount should've been skipped already! LogId="
 				+ modularContractLogEntry.getId());
 
 		final Money interimAmtToAllocate = modularContractLogEntry.getAmount().abs();
