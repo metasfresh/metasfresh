@@ -68,7 +68,6 @@ public class InterestComputationCommand
 	 * we consider a fiscal year as having 12 months of 30 days
 	 */
 	public static final int TOTAL_DAYS_OF_FISCAL_YEAR = 360;
-	public static final long SUBTRACT_VALUE_NO_INTEREST_DAYS = 0;
 
 	@NonNull private final ModularLogInterestRepository interestRepository;
 	@NonNull private final ModularContractLogService modularContractLogService;
@@ -92,13 +91,11 @@ public class InterestComputationCommand
 
 		deletePreviousProgress(currentLogSelection);
 
-		final InterestComputationRequest interestComputationRequest = getInterestDistributionRequest(request, runId);
+		final InterestComputationRequest.InterestComputationRequestBuilder interestDistributionRequestBuilder = getInterestDistributionRequestBuilder(request, runId);
 
-		computeAndDistributeInterest(interestComputationRequest);
+		computeAndDistributeInterest(interestDistributionRequestBuilder.computingMethodType(ComputingMethodType.AddValueOnInterim).build());
 
-		computeAndDistributeBonus(interestComputationRequest.toBuilder()
-										  .bonusComputationTimeInterval(request.getBonusComputationTimeInterval())
-										  .build());
+		computeAndDistributeBonus(interestDistributionRequestBuilder.computingMethodType(ComputingMethodType.SubtractValueOnInterim).build());
 
 		final boolean anyRecordsCreatedForCurrentRun = queryBL.createQueryBuilder(I_ModCntr_Interest.class)
 				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_ModCntr_Interest_Run_ID, runId)
@@ -246,20 +243,6 @@ public class InterestComputationCommand
 		final InterestComputationRequest interestComputationRequest = saveSubtractedValueRequest.getRequest();
 		final ModularContractAllocations.AllocationItem shippingNotification = saveSubtractedValueRequest.getShippingNotification();
 		final Percent bonusInterestRate = saveSubtractedValueRequest.getBonusInterestRate();
-
-		if (interestComputationRequest.getBonusComputationTimeInterval() == null)
-		{
-			final CreateModularLogInterestRequest createInterestRequest = CreateModularLogInterestRequest.builder()
-					.interestRunId(interestComputationRequest.getInterestRunId())
-					.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
-					.allocatedAmt(shippingNotification.getOpenAmount())
-					.interestDays(SUBTRACT_VALUE_NO_INTEREST_DAYS)
-					.finalInterest(Money.zero(interestComputationRequest.getInterestToDistribute().getCurrencyId()))
-					.build();
-
-			interestRepository.create(createInterestRequest);
-			return;
-		}
 
 		final long interestDays = interestComputationRequest.getBonusComputationTimeInterval().getBonusInterestDays();
 
@@ -445,8 +428,7 @@ public class InterestComputationCommand
 		createBonusRecords(request);
 	}
 
-	@NonNull
-	public InterestComputationRequest getInterestDistributionRequest(
+	private InterestComputationRequest.InterestComputationRequestBuilder getInterestDistributionRequestBuilder(
 			@NonNull final InterestBonusComputationRequest request,
 			@NonNull final InterestRunId runId)
 	{
@@ -455,8 +437,9 @@ public class InterestComputationCommand
 				.interestRunId(runId)
 				.interestToDistribute(request.getInterestToDistribute())
 				.invoicingGroupId(request.getInvoicingGroupId())
-				.lockOwner(request.getLockOwner())
-				.build();
+				.bonusComputationTimeInterval(request.getBonusComputationTimeInterval())
+				.lockOwner(request.getLockOwner());
+
 	}
 
 	@Value(staticConstructor = "of")
