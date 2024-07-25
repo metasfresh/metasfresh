@@ -162,7 +162,8 @@ public class InterestComputationCommand
 		while (shippingNotificationIterator.hasNext())
 		{
 			currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
-															 shippingNotificationIterator.next());
+															 shippingNotificationIterator.next(),
+															 request.getBonusComputationTimeInterval());
 
 			{
 				final SaveSubtractedValueRequest saveSubtractedValueRequest = SaveSubtractedValueRequest.builder()
@@ -199,7 +200,8 @@ public class InterestComputationCommand
 				while (!currentModularContractAllocations.canAllocate(currentShippingNotification) && shippingNotificationIterator.hasNext())
 				{
 					currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
-																	 shippingNotificationIterator.next());
+																	 shippingNotificationIterator.next(),
+																	 request.getBonusComputationTimeInterval());
 				}
 
 				if (currentModularContractAllocations.canAllocate(currentShippingNotification))
@@ -386,7 +388,8 @@ public class InterestComputationCommand
 	@NonNull
 	private ModularContractAllocations.AllocationItem initAllocationItem(
 			@NonNull final CurrencyId targetCurrencyId,
-			@NonNull final ModularContractLogEntry shippingNotification)
+			@NonNull final ModularContractLogEntry shippingNotification,
+			@NonNull final BonusComputationTimeInterval bonusComputationTimeInterval)
 	{
 		Check.assume(LogEntryDocumentType.SHIPPING_NOTIFICATION == shippingNotification.getDocumentType(),
 					 "Expecting DocumentType = " + LogEntryDocumentType.SHIPPING_NOTIFICATION +
@@ -405,6 +408,7 @@ public class InterestComputationCommand
 		return ModularContractAllocations.AllocationItem.builder()
 				.shippingNotificationEntry(shippingNotification)
 				.openAmount(shippingNotificationAmountInTargetCurr)
+				.bonusComputationTimeInterval(bonusComputationTimeInterval)
 				.build();
 	}
 

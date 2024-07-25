@@ -128,8 +128,8 @@ public class ModularContractAllocations
 				.getTransactionDate()
 				.toInstant(orgDAO::getTimeZone);
 
-		final Instant interimDate = getInterimDate();
-		if(interimDate.isAfter(shippingDate))
+		final Instant interimDate = shippingNotification.getBonusComputationTimeInterval().getInterimDate();
+		if (interimDate.isAfter(shippingDate))
 		{
 			return additionalInterestDays;
 		}
@@ -137,33 +137,24 @@ public class ModularContractAllocations
 		return TimeUtil.getDaysBetween360(interimDate, shippingDate) + additionalInterestDays;
 	}
 
-	@NonNull
-	private Instant getInterimDate()
-	{
-		if (cachedInterimContractDate != null)
-		{
-			return cachedInterimContractDate;
-		}
-
-		cachedInterimContractDate = modularContractLogEntry.getTransactionDate().toInstant(orgDAO::getTimeZone);
-		return cachedInterimContractDate;
-	}
-
 	@Value
 	public static class AllocationItem
 	{
 		@NonNull ModularContractLogEntry shippingNotificationEntry;
 		@NonNull @With Money openAmount;
+		@NonNull BonusComputationTimeInterval bonusComputationTimeInterval;
 
 		@Builder(toBuilder = true)
 		private AllocationItem(
 				@NonNull final ModularContractLogEntry shippingNotificationEntry,
-				@NonNull final Money openAmount)
+				@NonNull final Money openAmount,
+				@NonNull final BonusComputationTimeInterval bonusComputationTimeInterval)
 		{
 			Check.assume(openAmount.signum() >= 0, "OpenAmount cannot be negative!");
 
 			this.shippingNotificationEntry = shippingNotificationEntry;
 			this.openAmount = openAmount;
+			this.bonusComputationTimeInterval = bonusComputationTimeInterval;
 		}
 
 		public AllocationItem subtractAllocatedAmount(@NonNull final Money allocatedAmt)
