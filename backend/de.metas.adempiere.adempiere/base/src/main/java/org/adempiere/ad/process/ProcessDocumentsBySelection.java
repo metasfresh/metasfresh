@@ -22,8 +22,10 @@
 
 package org.adempiere.ad.process;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -36,7 +38,16 @@ import java.util.Iterator;
 
 public class ProcessDocumentsBySelection extends AbstractProcessDocumentsTemplate implements IProcessPrecondition
 {
+	// services
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public static final String PARAM_DocStatus = "DocStatus";
+	@Param(parameterName = PARAM_DocStatus)
+	private DocStatus p_DocStatus;
+
+	public static final String PARAM_DocAction = "DocAction";
+	@Param(parameterName = PARAM_DocAction, mandatory = true)
+	private String p_DocAction;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -52,20 +63,20 @@ public class ProcessDocumentsBySelection extends AbstractProcessDocumentsTemplat
 	@NonNull
 	protected Iterator<GenericPO> retrieveDocumentsToProcess()
 	{
-		final String tableName = getTableName();
-		Check.assumeNotNull(tableName, "The process must be associated with a table!");
+		final String tableName = Check.assumeNotNull(getTableName(), "The process must be associated with a table!");
 
 		final IQueryBuilder<Object> queryBuilder = queryBL.createQueryBuilder(tableName)
+				.addOnlyActiveRecordsFilter()
 				.filter(getProcessInfo().getQueryFilterOrElseFalse());
 
-		final String docStatus = getP_DocStatus();
-		if (docStatus != null)
+		if (p_DocStatus != null)
 		{
-			queryBuilder.addEqualsFilter(PARAM_DocStatus, docStatus);
+			queryBuilder.addEqualsFilter(PARAM_DocStatus, p_DocStatus);
 		}
 
-		return queryBuilder
-				.create()
-				.iterate(GenericPO.class);
+		return queryBuilder.create().iterate(GenericPO.class);
 	}
+
+	@Override
+	protected String getDocAction() {return p_DocAction;}
 }

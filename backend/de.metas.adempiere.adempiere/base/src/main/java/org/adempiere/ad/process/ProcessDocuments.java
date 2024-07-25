@@ -22,15 +22,66 @@ package org.adempiere.ad.process;
  * #L%
  */
 
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.ProcessPreconditionsResolution;
-import lombok.NonNull;
+import de.metas.document.engine.DocStatus;
+import de.metas.process.Param;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.GenericPO;
 
-public class ProcessDocuments extends AbstractProcessDocumentsTemplate implements IProcessPrecondition
+import java.util.Iterator;
+
+public class ProcessDocuments extends AbstractProcessDocumentsTemplate
 {
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	// services
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
+	public static final String PARAM_AD_Table_ID = "AD_Table_ID";
+	@Param(parameterName = PARAM_AD_Table_ID, mandatory = true)
+	private int p_AD_Table_ID = -1;
+
+	public static final String PARAM_DocStatus = "DocStatus";
+	@Param(parameterName = PARAM_DocStatus)
+	private DocStatus p_DocStatus;
+
+	public static final String PARAM_WhereClause = "WhereClause";
+	@Param(parameterName = PARAM_WhereClause)
+	private String p_WhereClause;
+
+	public static final String PARAM_DocAction = "DocAction";
+	@Param(parameterName = PARAM_DocAction)
+	private String p_DocAction;
+
+	@Override
+	protected Iterator<GenericPO> retrieveDocumentsToProcess()
 	{
-		return ProcessPreconditionsResolution.accept();
+		if (p_AD_Table_ID <= 0)
+		{
+			throw new FillMandatoryException(PARAM_AD_Table_ID);
+		}
+
+		final String tableName = adTableDAO.retrieveTableName(this.p_AD_Table_ID);
+
+		final IQueryBuilder<Object> queryBuilder = queryBL.createQueryBuilder(tableName)
+				.addOnlyActiveRecordsFilter();
+
+		if (p_DocStatus != null)
+		{
+			queryBuilder.addEqualsFilter(PARAM_DocStatus, p_DocStatus);
+		}
+		if (!Check.isBlank(p_WhereClause))
+		{
+			queryBuilder.filter(TypedSqlQueryFilter.of(p_WhereClause));
+		}
+
+		return queryBuilder.create().iterate(GenericPO.class);
 	}
+
+	@Override
+	protected String getDocAction() {return p_DocAction;}
 }
