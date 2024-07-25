@@ -37,9 +37,12 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.impl.AbstractPurchaseContractHandler;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -54,6 +57,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -63,9 +67,11 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Component
 @Getter
-public class InterimContractLog extends AbstractPurchaseContractHandler
+public class PurchaseModularContractLog extends AbstractPurchaseContractHandler
 {
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -74,16 +80,17 @@ public class InterimContractLog extends AbstractPurchaseContractHandler
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@NonNull private final AVInterimComputingMethod computingMethod;
-	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.CONTRACT_PREFINANCING;
+	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT;
 	@NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.MODULAR_CONTRACT;
 	private final ModularContractLogService modularContractLogService;
 
-	public InterimContractLog(
+	public PurchaseModularContractLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final AVInterimComputingMethod computingMethod, final ModularContractLogService modularContractLogService)
@@ -106,11 +113,9 @@ public class InterimContractLog extends AbstractPurchaseContractHandler
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest request)
 	{
 		final TableRecordReference tableRecordReference = request.getRecordRef();
-		final FlatrateTermId interimContractId = FlatrateTermId.ofRepoId(tableRecordReference.getRecordIdAssumingTableName(getSupportedTableName()));
-		final I_C_Flatrate_Term interimContractRecord = flatrateBL.getById(interimContractId);
-
-		final FlatrateTermId modularContractId = FlatrateTermId.ofRepoId(interimContractRecord.getModular_Flatrate_Term_ID());
+		final FlatrateTermId modularContractId = FlatrateTermId.ofRepoId(tableRecordReference.getRecordIdAssumingTableName(getSupportedTableName()));
 		final I_C_Flatrate_Term modularContractRecord = flatrateBL.getById(modularContractId);
+
 
 		final ProductId contractProductId = ProductId.ofRepoId(modularContractRecord.getM_Product_ID());
 
@@ -130,15 +135,21 @@ public class InterimContractLog extends AbstractPurchaseContractHandler
 
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(modularContractRecord.getBill_BPartner_ID());
 
-		final ProductPrice priceActual = flatrateBL.extractPriceActual(interimContractRecord);
-		Check.assumeNotNull(priceActual, "The interim contract must have a price.");
+		final Percent interimPricePercent = request.getModularContractSettings().getInterimPricePercent();
+
+		final CurrencyPrecision currencyPrecision = currencyBL.getStdPrecision(CurrencyId.ofRepoId(modularContractRecord.getC_Currency_ID()));
+		final ProductPrice modularContractPriceActual = flatrateBL.extractPriceActual(modularContractRecord);
+		Check.assumeNotNull(modularContractPriceActual, "The contract must have a price.");
+
+		final BigDecimal interimPriceValue = interimPricePercent.computePercentageOf(modularContractPriceActual.toBigDecimal(), currencyPrecision.toInt());
+		final ProductPrice interimPriceActual = modularContractPriceActual.withValueAndUomId(interimPriceValue, modularContractPriceActual.getUomId());
 
 		final Money amount = quantity != null
-				? priceActual.computeAmount(quantity)
+				? interimPriceActual.computeAmount(quantity)
 				: null;
 
-		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(interimContractRecord.getStartDate(),
-																				OrgId.ofRepoId(interimContractRecord.getAD_Org_ID()),
+		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(modularContractRecord.getStartDate(),
+																				OrgId.ofRepoId(modularContractRecord.getAD_Org_ID()),
 																				orgDAO::getTimeZone);
 
 		final YearAndCalendarId yearAndCalendarId = request.getModularContractSettings().getYearAndCalendarId();
@@ -147,8 +158,8 @@ public class InterimContractLog extends AbstractPurchaseContractHandler
 
 		final ProductPrice productPrice = ProductPrice.builder()
 				.productId(contractProductId)
-				.money(priceActual.toMoney())
-				.uomId(priceActual.getUomId())
+				.money(interimPriceActual.toMoney())
+				.uomId(interimPriceActual.getUomId())
 				.build();
 
 		final boolean interimContractLogExists = modularContractLogService.anyMatch(ModularContractLogQuery.builder()
@@ -162,7 +173,7 @@ public class InterimContractLog extends AbstractPurchaseContractHandler
 											.productId(contractProductId)
 											.initialProductId(contractProductId)
 											.productName(request.getProductName())
-											.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, interimContractId))
+											.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, modularContractId))
 											.producerBPartnerId(billBPartnerId)
 											.invoicingBPartnerId(billBPartnerId)
 											.collectionPointBPartnerId(BPartnerId.ofRepoId(warehouseRecord.getC_BPartner_ID()))

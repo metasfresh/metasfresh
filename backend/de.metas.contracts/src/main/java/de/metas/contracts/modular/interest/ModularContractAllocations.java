@@ -42,16 +42,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Builder
-public class InterimContractAllocations
+public class ModularContractAllocations
 {
 	@NonNull private final InterestRunId interestRunId;
 	@NonNull private final Integer additionalInterestDays;
-	@Nullable @Getter private final ModularContractLogEntry interimContractEntry;
+	@Nullable @Getter private final ModularContractLogEntry modularContractLogEntry;
 
 	@NonNull private final IOrgDAO orgDAO;
 	@Getter @NonNull private final List<CreateModularLogInterestRequest> allocatedShippingNotifications = new ArrayList<>();
 	@NonNull @Getter private Money openAmount;
-	@Nullable private Instant cachedInterimContractDate;
 
 	public synchronized boolean canAllocate(@Nullable final AllocationItem shippingNotification)
 	{
@@ -115,7 +114,7 @@ public class InterimContractAllocations
 		return CreateModularLogInterestRequest.builder()
 				.interestRunId(interestRunId)
 				.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
-				.interimContractLogId(interimContractEntry == null ? null : interimContractEntry.getId())
+				.modularContractLogEntryId(modularContractLogEntry == null ? null : modularContractLogEntry.getId())
 				.allocatedAmt(getAmountToAllocate(shippingNotification))
 				.interestDays(getInterestDays(shippingNotification))
 				.build();
@@ -128,8 +127,8 @@ public class InterimContractAllocations
 				.getTransactionDate()
 				.toInstant(orgDAO::getTimeZone);
 
-		final Instant interimDate = getInterimDate();
-		if(interimDate.isAfter(shippingDate))
+		final Instant interimDate = shippingNotification.getBonusAndInterestTimeInterval().getInterimDate();
+		if (interimDate.isAfter(shippingDate))
 		{
 			return additionalInterestDays;
 		}
@@ -137,33 +136,24 @@ public class InterimContractAllocations
 		return TimeUtil.getDaysBetween360(interimDate, shippingDate) + additionalInterestDays;
 	}
 
-	@NonNull
-	private Instant getInterimDate()
-	{
-		if (cachedInterimContractDate != null)
-		{
-			return cachedInterimContractDate;
-		}
-
-		cachedInterimContractDate = interimContractEntry.getTransactionDate().toInstant(orgDAO::getTimeZone);
-		return cachedInterimContractDate;
-	}
-
 	@Value
 	public static class AllocationItem
 	{
 		@NonNull ModularContractLogEntry shippingNotificationEntry;
 		@NonNull @With Money openAmount;
+		@NonNull BonusAndInterestTimeInterval bonusAndInterestTimeInterval;
 
 		@Builder(toBuilder = true)
 		private AllocationItem(
 				@NonNull final ModularContractLogEntry shippingNotificationEntry,
-				@NonNull final Money openAmount)
+				@NonNull final Money openAmount,
+				@NonNull final BonusAndInterestTimeInterval bonusAndInterestTimeInterval)
 		{
 			Check.assume(openAmount.signum() >= 0, "OpenAmount cannot be negative!");
 
 			this.shippingNotificationEntry = shippingNotificationEntry;
 			this.openAmount = openAmount;
+			this.bonusAndInterestTimeInterval = bonusAndInterestTimeInterval;
 		}
 
 		public AllocationItem subtractAllocatedAmount(@NonNull final Money allocatedAmt)

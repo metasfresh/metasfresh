@@ -53,7 +53,7 @@ public class ModularLogInterestRepository
 
 		record.setModCntr_Interest_Run_ID(request.getInterestRunId().getRepoId());
 		record.setShippingNotification_ModCntr_Log_ID(request.getShippingNotificationLogId().getRepoId());
-		record.setInterimContract_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getInterimContractLogId()));
+		record.setInterimContract_ModCntr_Log_ID(ModularContractLogEntryId.toRepoId(request.getModularContractLogEntryId()));
 
 		final Money allocatedAmt = request.getAllocatedAmt();
 		record.setMatchedAmt(allocatedAmt.toBigDecimal());
