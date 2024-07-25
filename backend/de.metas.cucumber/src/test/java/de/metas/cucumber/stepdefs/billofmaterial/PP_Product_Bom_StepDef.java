@@ -25,9 +25,7 @@ package de.metas.cucumber.stepdefs.billofmaterial;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -117,7 +115,6 @@ public class PP_Product_Bom_StepDef
 	{
 		final I_PP_Product_BOM bom = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID).lookupIn(productBOMTable);
 		final ProductBOMId bomId = ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID());
-		// final ProductBOMId bomId = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID).lookupIdIn(productBOMTable);
 		final I_M_Product productRecord = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupIn(productTable);
 
 		final I_PP_Product_BOMLine bomLine = CoalesceUtil.coalesceSuppliersNotNull(
@@ -132,15 +129,8 @@ public class PP_Product_Bom_StepDef
 		bomLine.setM_Product_ID(productRecord.getM_Product_ID());
 		bomLine.setC_UOM_ID(productRecord.getC_UOM_ID());
 
-		final String componentTypeCode = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Product_BOMLine.COLUMNNAME_ComponentType);
-		if (Check.isNotBlank(componentTypeCode))
-		{
-			bomLine.setComponentType(BOMComponentType.ofCode(componentTypeCode).getCode());
-		}
-		else
-		{
-			bomLine.setComponentType(BOMComponentType.Component.getCode());
-		}
+		final BOMComponentType componentType = row.getAsOptionalEnum(I_PP_Product_BOMLine.COLUMNNAME_ComponentType, BOMComponentType.class).orElse(BOMComponentType.Component);
+		bomLine.setComponentType(componentType.getCode());
 
 		final Timestamp validFrom = row.getAsOptionalLocalDate(I_PP_Product_BOMLine.COLUMNNAME_ValidFrom)
 				.map(localDate -> Timestamp.valueOf(localDate.atStartOfDay()))
@@ -176,9 +166,7 @@ public class PP_Product_Bom_StepDef
 
 		final LocalDateTime validFrom = row.getAsOptionalLocalDate(I_PP_Product_BOM.COLUMNNAME_ValidFrom).orElse(DEFAULT_ValidFrom).atStartOfDay();
 
-		final BOMType bomType = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Product_BOM.COLUMNNAME_BOMType))
-				.map(BOMType::ofCode)
-				.orElse(BOMType.CurrentActive);
+		BOMType bomType = row.getAsOptionalEnum(I_PP_Product_BOM.COLUMNNAME_BOMType, BOMType.class).orElse(BOMType.CurrentActive);
 
 		final I_PP_Product_BOM productBOMRecord = getExistingBOM(ProductId.ofRepoId(productRecord.getM_Product_ID()), bomType)
 				.orElseGet(() -> newInstance(I_PP_Product_BOM.class));
@@ -258,10 +246,12 @@ public class PP_Product_Bom_StepDef
 
 	private I_PP_Product_BOMVersions createBOMVersions(@NonNull final DataTableRow row)
 	{
-		final String bomVersionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		if (productBomVersionsTable.getOptional(bomVersionsIdentifier).isPresent())
+		final I_PP_Product_BOMVersions existingBOMVersions = row.getAsOptionalIdentifier(I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID)
+				.flatMap(productBomVersionsTable::getOptional)
+				.orElse(null);
+		if (existingBOMVersions != null)
 		{
-			return productBomVersionsTable.getOptional(bomVersionsIdentifier).get();
+			return existingBOMVersions;
 		}
 
 		final I_M_Product productRecord = row.getAsIdentifier(I_PP_Product_BOMVersions.COLUMNNAME_M_Product_ID).lookupIn(productTable);

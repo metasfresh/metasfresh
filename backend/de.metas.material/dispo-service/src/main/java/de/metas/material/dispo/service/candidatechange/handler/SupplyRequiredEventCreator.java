@@ -100,16 +100,6 @@ public class SupplyRequiredEventCreator
 		if(businessCaseDetail != null && businessCaseDetail.getCandidateBusinessCase() == CandidateBusinessCase.PRODUCTION)
 		{
 			final ProductionDetail productionDetail = ProductionDetail.cast(businessCaseDetail);
-			if(productionDetail.getPpOrderId() > 0)
-			{
-				descriptorBuilder
-						.ppOrderId(productionDetail.getPpOrderId());
-			}
-			if(productionDetail.getPpOrderLineCandidateId() > 0)
-			{
-				descriptorBuilder
-						.ppOrderLineCandidateId(productionDetail.getPpOrderLineCandidateId());
-			}
 			descriptorBuilder.ppOrderProductPlanningId(productionDetail.getProductPlanningId());
 		}
 		return descriptorBuilder.build();

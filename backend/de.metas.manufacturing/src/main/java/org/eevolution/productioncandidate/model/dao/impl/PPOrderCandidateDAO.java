@@ -135,6 +135,7 @@ public class PPOrderCandidateDAO implements IPPOrderCandidateDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Override
 	public ImmutableSet<PPOrderId> getPPOrderIds(@NonNull final PPOrderCandidateId ppOrderCandidateId)
 	{
 		return queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)

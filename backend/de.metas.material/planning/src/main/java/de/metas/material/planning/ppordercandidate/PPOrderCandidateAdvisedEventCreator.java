@@ -133,8 +133,8 @@ public class PPOrderCandidateAdvisedEventCreator
 			final PPOrderCandidate ppOrderCandidate = ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(request);
 
 			final PPOrderCandidateAdvisedEventBuilder eventBuilder = PPOrderCandidateAdvisedEvent.builder()
-					.supplyRequiredDescriptor(supplyRequiredDescriptor)
-					.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor().withNewEventId())
+					.supplyRequiredDescriptor(supplyRequiredDescriptorToUse)
+					.eventDescriptor(supplyRequiredDescriptorToUse.getEventDescriptor().withNewEventId())
 					.ppOrderCandidate(ppOrderCandidate)
 					.directlyCreatePPOrder(productPlanning.isCreatePlan());
 

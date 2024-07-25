@@ -129,9 +129,8 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 					.lotForLot(supplyRequiredDescriptor.getIsLotForLot())
 					.build();
 
-			final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, CandidateHandler.OnNewOrChangeAdvise.DONT_UPDATE);
-			final int supplyCandidateId = supplyCandidateWithId.getId().getRepoId();
-			final SupplyRequiredDescriptor updatedSupplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().supplyCandidateId(supplyCandidateId).build();
+			final CandidateId supplyCandidateId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, CandidateHandler.OnNewOrChangeAdvise.DONT_UPDATE).getId();
+			final SupplyRequiredDescriptor updatedSupplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().supplyCandidateId(supplyCandidateId.getRepoId()).build();
 			updatedEvent = event.toBuilder().supplyRequiredDescriptor(updatedSupplyRequiredDescriptor).build();
 		}
 		else

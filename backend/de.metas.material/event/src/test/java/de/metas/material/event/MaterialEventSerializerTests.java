@@ -3,6 +3,7 @@ package de.metas.material.event;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
+import de.metas.event.Event;
 import de.metas.material.event.attributes.AttributesChangedEvent;
 import de.metas.material.event.attributes.AttributesKeyWithASI;
 import de.metas.material.event.commons.AttributesKey;
@@ -17,6 +18,7 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
@@ -61,9 +63,11 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
+import de.metas.util.JSONObjectMapper;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderAndBOMLineId;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -71,13 +75,13 @@ import java.time.Instant;
 
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.assertEventEqualAfterSerializeDeserialize;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
 import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.valueOf;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -103,13 +107,6 @@ import static java.math.BigDecimal.valueOf;
 
 public class MaterialEventSerializerTests
 {
-
-	private static final BigDecimal ELEVEN = TEN.add(ONE);
-
-	private static final BigDecimal TWELVE = ELEVEN.add(ONE);
-
-	private static final BigDecimal THIRTEEN = TWELVE.add(ONE);
-
 	private MaterialEventConverter materialEventConverter;
 
 	@BeforeEach
@@ -596,11 +593,11 @@ public class MaterialEventSerializerTests
 				.materialDescriptor(newMaterialDescriptor())
 				.minMaxDescriptor(createSampleMinMaxDescriptor())
 				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
-												.orderedQuantity(TEN)
-												.orderedQuantityDelta(TEN)
-												.reservedQuantityDelta(new BigDecimal("3"))
-												.reservedQuantity(new BigDecimal("3"))
-												.build())
+						.orderedQuantity(TEN)
+						.orderedQuantityDelta(TEN)
+						.reservedQuantityDelta(new BigDecimal("3"))
+						.reservedQuantity(new BigDecimal("3"))
+						.build())
 				.shipmentScheduleId(4);
 	}
 
@@ -612,11 +609,11 @@ public class MaterialEventSerializerTests
 				.materialDescriptor(newMaterialDescriptor())
 				.minMaxDescriptor(createSampleMinMaxDescriptor())
 				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
-												.orderedQuantity(new BigDecimal("2"))
-												.orderedQuantityDelta(new BigDecimal("2"))
-												.reservedQuantity(new BigDecimal("3"))
-												.reservedQuantityDelta(new BigDecimal("4"))
-												.build())
+						.orderedQuantity(new BigDecimal("2"))
+						.orderedQuantityDelta(new BigDecimal("2"))
+						.reservedQuantity(new BigDecimal("3"))
+						.reservedQuantityDelta(new BigDecimal("4"))
+						.build())
 				.shipmentScheduleId(5)
 				.build();
 
@@ -630,11 +627,11 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(newEventDescriptor())
 				.materialDescriptor(newMaterialDescriptor())
 				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
-												.orderedQuantity(new BigDecimal("2"))
-												.orderedQuantityDelta(new BigDecimal("2"))
-												.reservedQuantity(new BigDecimal("3"))
-												.reservedQuantityDelta(new BigDecimal("4"))
-												.build())
+						.orderedQuantity(new BigDecimal("2"))
+						.orderedQuantityDelta(new BigDecimal("2"))
+						.reservedQuantity(new BigDecimal("3"))
+						.reservedQuantityDelta(new BigDecimal("4"))
+						.build())
 				.shipmentScheduleId(5)
 				.build();
 

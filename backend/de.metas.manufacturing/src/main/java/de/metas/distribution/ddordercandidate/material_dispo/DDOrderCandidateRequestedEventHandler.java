@@ -58,7 +58,7 @@ public class DDOrderCandidateRequestedEventHandler
 				//
 				.productId(ProductId.ofRepoId(data.getProductId()))
 				//.hupiItemProductId(...) // TODO
-				.qty(Quantitys.create(data.getQty(), UomId.ofRepoId(data.getUomId())))
+				.qty(Quantitys.of(data.getQty(), UomId.ofRepoId(data.getUomId())))
 				//.qtyTUs(...) // TODO
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(data.getAttributeSetInstanceId()))
 				//

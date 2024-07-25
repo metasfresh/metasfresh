@@ -3,6 +3,7 @@ package de.metas.material.event.pporder;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.event.MaterialEvent;
@@ -115,7 +116,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 		}
 
 		return ppOrderLineChanges.stream()
-				.filter(changedDescriptor -> changedDescriptor.getNewPPOrderLineId() == ppOrderLineId)
+				.filter(changedDescriptor -> changedDescriptor.getNewPPOrderLineRepoId() == ppOrderLineId)
 				.findFirst();
 	}
 
@@ -202,6 +203,12 @@ public class PPOrderChangedEvent implements MaterialEvent
 			this.newQtyRequired = newQtyRequired;
 			this.oldQtyDelivered = oldQtyDelivered;
 			this.newQtyDelivered = newQtyDelivered;
+		}
+
+		@JsonIgnore
+		public int getNewPPOrderLineRepoId()
+		{
+			return newPPOrderLineId != null ? newPPOrderLineId.getLineRepoId() : -1;
 		}
 	}
 

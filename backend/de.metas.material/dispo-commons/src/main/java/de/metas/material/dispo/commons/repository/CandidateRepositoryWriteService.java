@@ -71,13 +71,12 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
-import org.reflections.util.Utils;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.reflections.util.Utils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -89,7 +88,6 @@ import java.util.Set;
 
 import static de.metas.common.util.IdConstants.toRepoId;
 import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK;
-import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -145,115 +143,12 @@ public class CandidateRepositoryWriteService
 				candidate, false/*doesn't matter*/);
 	}
 
-	public void updateCandidateById(@NonNull final Candidate candidate)
+	public CandidateSaveResult updateCandidateById(@NonNull final Candidate candidate)
 	{
 		Check.errorIf(candidate.getId().isNull(), "The candidate parameter needs to have an id; candidate={}", candidate);
 		final CandidatesQuery query = CandidatesQuery.fromId(candidate.getId());
 
 		return addOrUpdate(query, candidate, false);
-	}
-
-	@Value
-	@Builder
-	public static class SaveResult
-	{
-		/**
-		 * The saved candidate.
-		 */
-		@NonNull
-		Candidate candidate;
-
-		@Nullable
-		DateAndSeqNo previousTime;
-
-		@Nullable
-		BigDecimal previousQty;
-
-		public BigDecimal getQtyDelta()
-		{
-			if (previousQty == null)
-			{
-				return candidate.getQuantity();
-			}
-			return candidate.getQuantity().subtract(previousQty);
-		}
-
-		/**
-		 * @return {@code true} if before the save, there already was a record with a different date.
-		 */
-		public boolean isDateMoved()
-		{
-			if (previousTime == null)
-			{
-				return false;
-			}
-			return !Objects.equals(previousTime, DateAndSeqNo.ofCandidate(candidate));
-		}
-
-		public boolean isDateMovedBackwards()
-		{
-			if (previousTime == null)
-			{
-				return false;
-			}
-			return previousTime.isAfter(DateAndSeqNo.ofCandidate(candidate));
-		}
-
-		public boolean isDateMovedForwards()
-		{
-			if (previousTime == null)
-			{
-				return false;
-			}
-			return previousTime.isBefore(DateAndSeqNo.ofCandidate(candidate));
-		}
-
-		/**
-		 * @return {@code true} there was no record before the save, or the record's date was changed.
-		 */
-		public boolean isDateChanged()
-		{
-			if (previousTime == null)
-			{
-				return true;
-			}
-			return !Objects.equals(previousTime, DateAndSeqNo.ofCandidate(candidate));
-		}
-
-		public boolean isQtyChanged()
-		{
-			if (previousQty == null)
-			{
-				return true;
-			}
-			return previousQty.compareTo(candidate.getQuantity()) != 0;
-		}
-
-		// TODO figure out if we really need this
-		public Candidate toCandidateWithQtyDelta()
-		{
-			return candidate.withQuantity(getQtyDelta());
-		}
-
-		public Candidate toCandidateWithUpdateInfo()
-		{
-			return candidate.toBuilder()
-					.deltaQuantity(getQtyDelta())
-					.updated(true)
-					.build();
-		}
-
-		/**
-		 * Convenience method that returns a new instance whose included {@link Candidate} has the given id.
-		 */
-		public SaveResult withCandidateId(@Nullable final CandidateId candidateId)
-		{
-			return SaveResult
-					.builder()
-					.candidate(candidate.toBuilder().id(candidateId).build())
-					.previousQty(previousQty)
-					.previousTime(previousTime)
-					.build();
 	}
 
 	private CandidateSaveResult addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
@@ -983,7 +878,7 @@ public class CandidateRepositoryWriteService
 		return new DeleteResult(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()),
 																 DateAndSeqNo
 																		 .builder()
-																		 .date(TimeUtil.asInstant(candidateRecord.getDateProjected()))
+																		 .date(candidateRecord.getDateProjected().toInstant())
 																		 .seqNo(candidateRecord.getSeqNo())
 																		 .build(),
 																 candidateRecord.getQty());

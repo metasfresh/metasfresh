@@ -8,8 +8,6 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderData;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
@@ -114,20 +112,26 @@ public class ProductionAdvisedEventCreatorTest
 
 		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
 		assertThat(events).hasSize(1);
+		assertThat(events.get(0).getSupplyRequiredDescriptor()).usingRecursiveComparison().isEqualTo(supplyRequiredDescriptor);
 		assertThat(events.get(0).getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
 	}
 
 	@Test
 	public void createProductionAdvisedEvents_returns_supplyRequiredDescriptor_with_LotForLot_Applied()
 	{
-		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
-		Mockito.when(mrpContext.getProductPlanning())
-				.thenReturn(ProductPlanning.builder().isLotForLot(true).build());
+		final MaterialPlanningContext context = MaterialPlanningContext.builder()
+				.productId(ProductId.ofRepoId(1))
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.warehouseId(WarehouseId.MAIN)
+				.productPlanning(ProductPlanning.builder().isLotForLot(true).build())
+				.plantId(ResourceId.ofRepoId(2))
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
+				.build();
 
-		Mockito.when(ppOrderCandidateDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
+		Mockito.when(ppOrderCandidateDemandMatcher.matches(Mockito.any(MaterialPlanningContext.class)))
 				.thenReturn(true);
 
-		Mockito.when(ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(Mockito.any(IMaterialRequest.class)))
+		Mockito.when(ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(Mockito.any(MaterialRequest.class)))
 				.thenReturn(createDummyPPOrderCandidate());
 
 		Mockito.when(orgDAO.getTimeZone(Mockito.any()))
@@ -136,7 +140,7 @@ public class ProductionAdvisedEventCreatorTest
 		SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
 
 		final PPOrderCandidateAdvisedEventCreator pPOrderCandidateAdvisedCreator = new PPOrderCandidateAdvisedEventCreator(ppOrderCandidateDemandMatcher, ppOrderCandidatePojoSupplier);
-		final List<PPOrderCandidateAdvisedEvent> events = pPOrderCandidateAdvisedCreator.createPPOrderCandidateAdvisedEvents(supplyRequiredDescriptor, mrpContext);
+		final List<PPOrderCandidateAdvisedEvent> events = pPOrderCandidateAdvisedCreator.createPPOrderCandidateAdvisedEvents(supplyRequiredDescriptor, context);
 
 		supplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder()
 				.isLotForLot(ISLOTFORLOT_Yes)
@@ -144,6 +148,7 @@ public class ProductionAdvisedEventCreatorTest
 				.build();
 
 		assertThat(events).hasSize(1);
+		assertThat(events.get(0).getSupplyRequiredDescriptor()).usingRecursiveComparison().isEqualTo(supplyRequiredDescriptor);
 		assertThat(events.get(0).getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
 	}
 

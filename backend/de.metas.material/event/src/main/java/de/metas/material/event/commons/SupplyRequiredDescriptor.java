@@ -10,6 +10,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -170,4 +171,17 @@ public class SupplyRequiredDescriptor
 
 	@JsonIgnore
 	public AttributesKey getStorageAttributesKey() {return getMaterialDescriptor().getStorageAttributesKey();}
+
+	@JsonIgnore
+	@Nullable
+	public PPOrderId getPpOrderId()
+	{
+		return ppOrderRef != null ? ppOrderRef.getPpOrderId() : null;
+	}
+
+	@JsonIgnore
+	public int getPpOrderLineCandidateId()
+	{
+		return ppOrderRef != null ? ppOrderRef.getPpOrderLineCandidateId() : -1;
+	}
 }

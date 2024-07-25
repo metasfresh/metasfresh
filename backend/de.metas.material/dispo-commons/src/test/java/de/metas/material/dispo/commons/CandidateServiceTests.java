@@ -176,6 +176,7 @@ public class CandidateServiceTests
 						.shipperId(ShipperId.ofRepoId(240))
 						.qty(TEN)
 						.build())
+				.groupId(MaterialDispoGroupId.ofInt(888))
 				.build();
 
 		final Candidate demandCandidate = supplyCandidate.toBuilder()
@@ -191,6 +192,7 @@ public class CandidateServiceTests
 						.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(500, 500))
 						.qty(TEN)
 						.build())
+				.groupId(supplyCandidate.getGroupId())
 				.build();
 
 		final DDOrderCandidateRequestedEvent distributionOrderEvent = requestMaterialOrderService.createDDOrderCandidateRequestedEvent(CandidatesGroup.of(supplyCandidate, demandCandidate), null);

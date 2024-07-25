@@ -12,6 +12,7 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -125,6 +126,9 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 
 		final I_AD_Org org = orgDAO.getById(orgId);
 
+		final ProductPlanningId ppOrderProductPlanningId = ProductPlanningId.ofRepoIdOrNull((materialDemandEvent.getPpOrderProductPlanningId()));
+		final ProductPlanning ppOrderProductPlanning = ppOrderProductPlanningId != null ? productPlanningDAO.getById(ppOrderProductPlanningId) : null;
+
 		return MaterialPlanningContext.builder()
 				.productId(productId)
 				.attributeSetInstanceId(attributeSetInstanceId)
@@ -132,6 +136,7 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 				.productPlanning(productPlanning)
 				.plantId(plantId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.ppOrderProductPlanning(ppOrderProductPlanning)
 				.build();
 	}
 }

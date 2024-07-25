@@ -37,6 +37,7 @@ import org.eevolution.model.I_DD_NetworkDistribution;
 @RequiredArgsConstructor
 public class DD_NetworkDistribution_StepDef
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final DD_NetworkDistribution_StepDefData ddNetworkTable;
 
 	@And("metasfresh contains DD_NetworkDistribution")
@@ -65,19 +66,16 @@ public class DD_NetworkDistribution_StepDef
 	@And("load DD_NetworkDistribution:")
 	public void load_DD_NetworkDistribution(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			final String value = DataTableUtil.extractStringForColumnName(row, I_DD_NetworkDistribution.COLUMNNAME_Value);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_DD_NetworkDistribution.COLUMNNAME_DD_NetworkDistribution_ID)
+				.forEach(row -> {
+					final String value = row.getAsString(I_DD_NetworkDistribution.COLUMNNAME_Value);
+					final I_DD_NetworkDistribution record = queryBL.createQueryBuilder(I_DD_NetworkDistribution.class)
+							.addEqualsFilter(I_DD_NetworkDistribution.COLUMNNAME_Value, value)
+							.create()
+							.firstOnlyNotNull(I_DD_NetworkDistribution.class);
 
-			final I_DD_NetworkDistribution warehouseRecord = queryBL.createQueryBuilder(I_DD_NetworkDistribution.class)
-					.addEqualsFilter(I_DD_NetworkDistribution.COLUMNNAME_Value, value)
-					.create()
-					.firstOnlyNotNull(I_DD_NetworkDistribution.class);
-
-			final String networkDistributionIdentifier = DataTableUtil.extractStringForColumnName(row, I_DD_NetworkDistribution.COLUMNNAME_DD_NetworkDistribution_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			ddNetworkTable.putOrReplace(networkDistributionIdentifier, warehouseRecord);
-		}
+					ddNetworkTable.putOrReplace(row.getAsIdentifier(), record);
+				});
 	}
 }

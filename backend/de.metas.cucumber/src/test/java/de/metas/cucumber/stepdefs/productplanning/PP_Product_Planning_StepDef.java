@@ -148,8 +148,7 @@ public class PP_Product_Planning_StepDef
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_Workflow_ID).map(workflowTable::getId).ifPresent(builder::workflowId);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan).ifPresent(builder::isCreatePlan);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).ifPresent(builder::isAttributeDependant);
-		final boolean isLotForLot = tableRow.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsLotForLot).orElse(false);
-		builder.isLotForLot(isLotForLot);
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsLotForLot).ifPresent(builder::isLotForLot);
 
 		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
 				.map(productBomVersionsTable::getId)

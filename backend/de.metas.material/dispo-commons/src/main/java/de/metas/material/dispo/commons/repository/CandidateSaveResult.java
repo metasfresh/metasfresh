@@ -81,6 +81,14 @@ public class CandidateSaveResult
 		return candidate.withQuantity(getQtyDelta());
 	}
 
+	public Candidate toCandidateWithUpdateInfo()
+	{
+		return candidate.toBuilder()
+				.deltaQuantity(getQtyDelta())
+				.updated(true)
+				.build();
+	}
+
 	/**
 	 * Convenience method that returns a new instance whose included {@link Candidate} has the given id.
 	 */

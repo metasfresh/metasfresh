@@ -6,6 +6,7 @@ import de.metas.document.dimension.ForecastLineDimensionFactory;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
@@ -72,6 +73,7 @@ import static org.mockito.Mockito.when;
 public class ForecastCreatedHandlerTest
 {
 	private ForecastCreatedHandler forecastCreatedHandler;
+	private CandidateRepositoryRetrieval candidateRepository;
 	private AvailableToPromiseRepository stockRepository;
 	private PostMaterialEventService postMaterialEventService;
 
@@ -88,6 +90,7 @@ public class ForecastCreatedHandlerTest
 		));
 		//SpringContextHolder.registerJUnitBean(dimensionService);
 
+		candidateRepository = Mockito.mock(CandidateRepositoryRetrieval.class);
 		stockRepository = Mockito.mock(AvailableToPromiseRepository.class);
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 

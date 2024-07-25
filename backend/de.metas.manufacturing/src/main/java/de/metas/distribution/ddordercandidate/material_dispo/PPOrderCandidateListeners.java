@@ -14,12 +14,13 @@ import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +37,7 @@ public class PPOrderCandidateListeners
 	@RequiredArgsConstructor
 	public static class PPOrderCandidateUpdatedEventHandler implements MaterialEventHandler<PPOrderCandidateUpdatedEvent>
 	{
-		@NonNull private final PPOrderCandidateDAO ppOrderCandidateDAO;
+		@NonNull private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 		@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 		@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 

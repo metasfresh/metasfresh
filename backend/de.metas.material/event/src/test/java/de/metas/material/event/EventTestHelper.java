@@ -146,7 +146,7 @@ public class EventTestHelper
 		// Test via materialEventConverter
 		{
 			MaterialEventConverter materialEventConverter = new MaterialEventConverter();
-			final Event eventbusEvent = materialEventConverter.fromMaterialEvent(originalEvent, null);
+			final Event eventbusEvent = materialEventConverter.fromMaterialEvent(originalEvent);
 			final MaterialEvent deserializedEvent = materialEventConverter.toMaterialEvent(eventbusEvent);
 
 			assertThat(deserializedEvent).usingRecursiveComparison().isEqualTo(originalEvent);

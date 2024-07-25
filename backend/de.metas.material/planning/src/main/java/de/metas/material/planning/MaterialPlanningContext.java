@@ -10,6 +10,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class MaterialPlanningContext
@@ -20,6 +22,8 @@ public class MaterialPlanningContext
 	@NonNull ProductPlanning productPlanning;
 	@NonNull ResourceId plantId;
 	@NonNull ClientAndOrgId clientAndOrgId;
+
+	@Nullable ProductPlanning ppOrderProductPlanning;
 
 	public void assertContextConsistent()
 	{

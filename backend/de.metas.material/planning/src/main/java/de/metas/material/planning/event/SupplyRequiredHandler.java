@@ -119,7 +119,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 
 		final ProductId productId = ProductId.ofRepoId(materialDemandEvent.getProductId());
 		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(materialDemandEvent.getAttributeSetInstanceId());
-		final ResourceId plantId = productPlanningDAO.findPlant(
+		final ResourceId plantId = productPlanningDAO.findPlantId(
 				orgId.getRepoId(),
 				warehouse,
 				productId.getRepoId(),
