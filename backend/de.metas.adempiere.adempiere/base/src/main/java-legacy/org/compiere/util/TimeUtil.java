@@ -1226,6 +1226,11 @@ public class TimeUtil
 		return asTimestamp(obj, null);
 	}
 
+	public static Timestamp asTimestamp(@Nullable final ZonedDateTime zdt)
+	{
+		return zdt != null ? asTimestampNotNull(zdt) : null;
+	}
+
 	public static Timestamp asTimestamp(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)

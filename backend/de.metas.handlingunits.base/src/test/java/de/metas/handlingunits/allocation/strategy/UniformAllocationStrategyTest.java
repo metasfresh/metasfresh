@@ -23,6 +23,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.TraceUtils;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -32,6 +33,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_UOM;
@@ -339,6 +341,7 @@ public class UniformAllocationStrategyTest
 		public void beforeEach()
 		{
 			Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
+			SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
 
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			final HUTransformService huTransformService = HUTransformService.newInstance(lutuProducerDestinationTestSupport.helper.getHUContext());

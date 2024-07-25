@@ -29,6 +29,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
@@ -459,7 +460,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	 */
 	private final Map<String, Object> valuesOld;
 	private boolean useOldValues = false;
-	private final String idColumnName;
+	@Getter private final String idColumnName;
 
 	private boolean strictValues = false;
 	public static final boolean DEFAULT_StrictValues = false;

@@ -1,18 +1,19 @@
 package de.metas.material.dispo.commons.repository.query;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail.DistributionDetailBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
+import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -41,44 +42,41 @@ import lombok.Value;
 public class DistributionDetailsQuery
 {
 	public static final DistributionDetailsQuery NO_DISTRIBUTION_DETAIL = DistributionDetailsQuery.builder()
-			.productPlanningId(-10)
-			.networkDistributionLineId(-10)
+			.productPlanningId(null)
+			.distributionNetworkAndLineId(null)
 			.ddOrderId(-10)
 			.ddOrderLineId(-10)
 			.build();
 
-	public static DistributionDetailsQuery ofDistributionDetailOrNull(
-			@Nullable final DistributionDetail distributionDetail)
+	public static DistributionDetailsQuery ofDistributionDetailOrNull(@Nullable final DistributionDetail distributionDetail)
 	{
-		if(distributionDetail == null)
+		if (distributionDetail == null)
 		{
 			return null;
 		}
+
 		return builder()
 				.productPlanningId(distributionDetail.getProductPlanningId())
-				.networkDistributionLineId(distributionDetail.getNetworkDistributionLineId())
+				.distributionNetworkAndLineId(distributionDetail.getDistributionNetworkAndLineId())
 				.ddOrderId(distributionDetail.getDdOrderId())
 				.ddOrderLineId(distributionDetail.getDdOrderLineId())
 				.build();
 	}
 
-	int productPlanningId;
-
-	int networkDistributionLineId;
-
+	@Nullable ProductPlanningId productPlanningId;
+	@Nullable DistributionNetworkAndLineId distributionNetworkAndLineId;
 	int ddOrderLineId;
-
 	int ddOrderId;
+	int ppOrderCandidateId;
 
 	/**
 	 * Convenience method that uses this instance to kickstart and return a builder.
-	 *
 	 */
 	public DistributionDetailBuilder toDistributionDetailBuilder()
 	{
 		return DistributionDetail.builder()
 				.productPlanningId(productPlanningId)
-				.networkDistributionLineId(networkDistributionLineId)
+				.distributionNetworkAndLineId(distributionNetworkAndLineId)
 				.ddOrderId(ddOrderId)
 				.ddOrderLineId(ddOrderLineId);
 	}
@@ -101,24 +99,30 @@ public class DistributionDetailsQuery
 		else
 		{
 			boolean doFilter = false;
-			if (productPlanningId > 0)
+			if (productPlanningId != null)
 			{
-				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_PP_Product_Planning_ID, productPlanningId);
+				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_PP_Product_Planning_ID, productPlanningId);
 				doFilter = true;
 			}
-			if (networkDistributionLineId > 0)
+			if (distributionNetworkAndLineId != null)
 			{
-				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_DD_NetworkDistributionLine_ID, networkDistributionLineId);
+				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_NetworkDistribution_ID, distributionNetworkAndLineId.getNetworkId());
+				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_NetworkDistributionLine_ID, distributionNetworkAndLineId.getLineId());
 				doFilter = true;
 			}
 			if (ddOrderId > 0)
 			{
-				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_DD_Order_ID, ddOrderId);
+				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_Order_ID, ddOrderId);
 				doFilter = true;
 			}
 			if (ddOrderLineId > 0)
 			{
-				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_DD_OrderLine_ID, ddOrderLineId);
+				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_OrderLine_ID, ddOrderLineId);
+				doFilter = true;
+			}
+			if (ppOrderCandidateId > 0)
+			{
+				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId);
 				doFilter = true;
 			}
 

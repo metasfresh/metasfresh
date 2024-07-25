@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.material.dispo;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -154,27 +155,27 @@ public class MD_Candidate_StepDef
 	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
 		table.forEach((tableRow) -> {
+			final WarehouseId warehouseId = CoalesceUtil.coalesceNotNull(tableRow.getWarehouseId(), StepDefConstants.WAREHOUSE_ID);
+
 			final I_MD_Candidate mdCandidateRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
 			mdCandidateRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			mdCandidateRecord.setM_Product_ID(tableRow.getProductId().getRepoId());
-			mdCandidateRecord.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
+			mdCandidateRecord.setM_Warehouse_ID(warehouseId.getRepoId());
 			mdCandidateRecord.setMD_Candidate_Type(tableRow.getType().getCode());
 			mdCandidateRecord.setMD_Candidate_BusinessCase(CandidateBusinessCase.toCode(tableRow.getBusinessCase()));
 			mdCandidateRecord.setQty(tableRow.getQty());
 			mdCandidateRecord.setDateProjected(TimeUtil.asTimestamp(tableRow.getTime()));
 
 			setAttributeSetInstance(mdCandidateRecord, tableRow);
-
 			InterfaceWrapperHelper.saveRecord(mdCandidateRecord);
 
 			mdCandidateRecord.setSeqNo(mdCandidateRecord.getMD_Candidate_ID());
-
 			InterfaceWrapperHelper.saveRecord(mdCandidateRecord);
 
 			final I_MD_Candidate mdStockCandidateRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
 			mdStockCandidateRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			mdStockCandidateRecord.setM_Product_ID(tableRow.getProductId().getRepoId());
-			mdStockCandidateRecord.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
+			mdStockCandidateRecord.setM_Warehouse_ID(warehouseId.getRepoId());
 			mdStockCandidateRecord.setMD_Candidate_Type(CandidateType.STOCK.getCode());
 			mdStockCandidateRecord.setSeqNo(mdCandidateRecord.getMD_Candidate_ID());
 			final boolean isDemand = CandidateType.DEMAND.equals(tableRow.getType()) || CandidateType.INVENTORY_DOWN.equals(tableRow.getType());
@@ -352,6 +353,7 @@ public class MD_Candidate_StepDef
 			default -> throw new AdempiereException("Event type not handled: " + eventType);
 		};
 
+		//noinspection deprecation
 		postMaterialEventService.enqueueEventNow(event);
 	}
 
@@ -397,12 +399,7 @@ public class MD_Candidate_StepDef
 
 		if (expectedCandidateAndStocks != storedCandidatesSize)
 		{
-			final StringBuilder message = new StringBuilder();
-			message.append("Expected to find: ").append(expectedCandidateAndStocks)
-					.append(" MD_Candidate records, but got: ").append(storedCandidatesSize)
-					.append(" See:\n");
-
-			logCandidateRecords(message, productIdSet, table);
+			logCandidateRecords(productIdSet, table);
 		}
 
 		assertThat(storedCandidatesSize).isEqualTo(expectedCandidateAndStocks);
@@ -442,8 +439,7 @@ public class MD_Candidate_StepDef
 				softly.assertThat(actualAttributesKeys).as("asi").isEqualTo(expectedAttributesKey);
 			}
 
-			final WarehouseId warehouseId = tableRow.getWarehouseId();
-			if (warehouseId != null)
+			if (tableRow.getWarehouseId() != null)
 			{
 				softly.assertThat(materialDispoRecord.getMaterialDescriptor().getWarehouseId()).as("warehouseId").isEqualTo(tableRow.getWarehouseId());
 			}
@@ -571,6 +567,7 @@ public class MD_Candidate_StepDef
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
 
+		//noinspection deprecation
 		postMaterialEventService.enqueueEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
 				.build());
@@ -740,27 +737,23 @@ public class MD_Candidate_StepDef
 	}
 
 	private void logCandidateRecords(
-			@NonNull final StringBuilder message,
 			@NonNull final ImmutableSet<ProductId> productIds,
 			@NonNull final MD_Candidate_StepDefTable table)
 	{
-		message.append("MD_Candidate records:").append("\n");
-
-		final String mdCandidateRecordsStr = queryBL.createQueryBuilder(I_MD_Candidate.class)
+		final List<I_MD_Candidate> actualCandidates = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addInArrayFilter(COLUMNNAME_M_Product_ID, productIds)
+				.orderBy(COLUMNNAME_MD_Candidate_ID)
 				.create()
-				.stream(I_MD_Candidate.class)
-				.map(MD_Candidate_StepDef::toString)
-				.collect(Collectors.joining("\n"));
+				.list();
 
-		final String rowsStr = table.stream()
-				.map(MaterialDispoTableRow::toString)
-				.collect(Collectors.joining("\n"));
+		final String mdCandidateRecordsStr = actualCandidates.stream().map(MD_Candidate_StepDef::toString).collect(Collectors.joining("\n"));
+		final String rowsStr = table.stream().map(MaterialDispoTableRow::toString).collect(Collectors.joining("\n"));
 
+		//noinspection StringConcatenationArgumentToLogCall
 		logger.error("*** Error while looking for MD_Candidate records, see current context:"
-				+ "\nMD_Candidate records:"
+				+ "\nActual MD_Candidate(s) - " + actualCandidates.size() + " records:"
 				+ "\n" + mdCandidateRecordsStr
-				+ "\nRows:"
+				+ "\nExpected Row(s) - " + table.size() + " rows:"
 				+ "\n" + rowsStr);
 	}
 

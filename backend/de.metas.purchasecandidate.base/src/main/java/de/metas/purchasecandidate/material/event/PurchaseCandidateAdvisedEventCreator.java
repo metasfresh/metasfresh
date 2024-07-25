@@ -6,6 +6,7 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.OrgId;
@@ -60,15 +61,15 @@ public class PurchaseCandidateAdvisedEventCreator
 
 	public Optional<PurchaseCandidateAdvisedEvent> createPurchaseAdvisedEvent(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final IMaterialPlanningContext mrpContext)
+			@NonNull final MaterialPlanningContext context)
 	{
-		if (!purchaseOrderDemandMatcher.matches(mrpContext))
+		if (!purchaseOrderDemandMatcher.matches(context))
 		{
 			return Optional.empty();
 		}
 
 		// temporary workaround to avoid creating 2 PurchaseCandidates, one for each PPOrderCandidate and PPOrder
-		final ProductPlanning productPlanning = mrpContext.getProductPlanning();
+		final ProductPlanning productPlanning = context.getProductPlanning();
 		final BigDecimal requiredQty = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
 		if(!productPlanning.isLotForLot() && requiredQty.signum() <= 0)
 		{
@@ -76,7 +77,7 @@ public class PurchaseCandidateAdvisedEventCreator
 			return Optional.empty();
 		}
 
-		final ProductPlanning ppOrderProductPlanning = mrpContext.getPpOrderProductPlanning();
+		final ProductPlanning ppOrderProductPlanning = context.getPpOrderProductPlanning();
 		if(productPlanning.isLotForLot()
 				&& supplyRequiredDescriptor.getPpOrderLineCandidateId() > 0
 				&& ppOrderProductPlanning != null
@@ -94,8 +95,8 @@ public class PurchaseCandidateAdvisedEventCreator
 			return Optional.empty();
 		}
 
-		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getMaterialDescriptor().getProductId());
-		final OrgId orgId = supplyRequiredDescriptor.getEventDescriptor().getOrgId();
+		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getProductId());
+		final OrgId orgId = supplyRequiredDescriptor.getOrgId();
 
 		final Optional<VendorProductInfo> defaultVendorProductInfo = vendorProductInfoService.getDefaultVendorProductInfo(productId, orgId);
 		if (defaultVendorProductInfo.isEmpty())

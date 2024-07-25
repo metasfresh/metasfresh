@@ -9,15 +9,18 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
-import de.metas.material.planning.impl.MaterialPlanningContext;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.pricing.conditions.BreakValueType;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
@@ -65,9 +68,6 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 {
 	private PurchaseCandidateAdvisedEventCreator purchaseCandidateAdvisedEventCreator; // service under test
 
-	private BPartnerId bpartnerVendorId;
-	private ProductId productId;
-
 	@BeforeEach
 	void beforeEach()
 	{
@@ -95,8 +95,41 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		final I_C_BPartner bPartnerVendorRecord = newInstance(I_C_BPartner.class);
 		bPartnerVendorRecord.setPO_DiscountSchema(discountSchemaRecord); // note that right now we don't need to have an actual price
 		save(bPartnerVendorRecord);
-		this.bpartnerVendorId = BPartnerId.ofRepoId(bPartnerVendorRecord.getC_BPartner_ID());
 
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(10, 20);
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = SupplyRequiredDescriptor.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(clientAndOrgId))
+				.materialDescriptor(createMaterialDescriptor())
+				.demandCandidateId(50)
+				.build();
+
+		final MaterialPlanningContext context = MaterialPlanningContext.builder()
+				.productId(ProductId.ofRepoId(1))
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.warehouseId(WarehouseId.MAIN)
+				.productPlanning(productPlanning)
+				.plantId(ResourceId.ofRepoId(2))
+				.clientAndOrgId(clientAndOrgId)
+				.build();
+
+		final PurchaseCandidateAdvisedEventCreator purchaseCandidateAdvisedEventCreator = new PurchaseCandidateAdvisedEventCreator(
+				new PurchaseOrderDemandMatcher(),
+				new VendorProductInfoService(new BPartnerBL(new UserRepository())));
+
+		// invoke the method under test
+		final Optional<PurchaseCandidateAdvisedEvent> purchaseAdvisedEvent = purchaseCandidateAdvisedEventCreator
+				.createPurchaseAdvisedEvent(
+						supplyRequiredDescriptor,
+						context);
+
+		assertThat(purchaseAdvisedEvent).isPresent();
+		assertThat(purchaseAdvisedEvent.get().getProductPlanningId()).isEqualTo(productPlanning.getIdNotNull().getRepoId());
+		assertThat(purchaseAdvisedEvent.get().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
+		assertThat(purchaseAdvisedEvent.get().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
+	}
+
+	static MaterialDescriptor createMaterialDescriptor()
+	{
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setM_Product_Category_ID(60);
 		product.setValue("Value");

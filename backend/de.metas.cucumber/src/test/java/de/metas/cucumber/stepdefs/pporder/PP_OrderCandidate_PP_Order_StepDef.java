@@ -23,9 +23,10 @@
 package de.metas.cucumber.stepdefs.pporder;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -36,9 +37,12 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -48,7 +52,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class PP_OrderCandidate_PP_Order_StepDef
 {
@@ -67,38 +71,24 @@ public class PP_OrderCandidate_PP_Order_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@And("^after not more than (.*)s, PP_OrderCandidate_PP_Order are found$")
-	public void validatePP_OrderCandidate_PP_Order(
-			final int timeoutSec,
-			@NonNull final DataTable dataTable) throws InterruptedException
+	public void validatePP_OrderCandidate_PP_Order(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_PP_Order orderRecord = ppOrderTable.get(orderIdentifier);
+		DataTableRows.of(dataTable).forEach(row -> StepDefUtil.tryAndWaitForItem(timeoutSec, 500, toPPOrderCandidateQuery(row)));
+	}
 
-			final String orderCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_PP_Order_Candidate orderCandidateRecord = ppOrderCandidateTable.get(orderCandidateIdentifier);
-
-			final int qtyEntered = DataTableUtil.extractIntForColumnName(tableRow, I_PP_OrderCandidate_PP_Order.COLUMNNAME_QtyEntered);
-
-			final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_PP_OrderCandidate_PP_Order.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
-			final Supplier<Boolean> allocationQueryExecutor = () -> {
-
-				final I_PP_OrderCandidate_PP_Order allocationRecord = queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
-						.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_ID, orderRecord.getPP_Order_ID())
-						.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID, orderCandidateRecord.getPP_Order_Candidate_ID())
-						.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_QtyEntered, qtyEntered)
-						.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_C_UOM_ID, uomId.getRepoId())
-						.create()
-						.firstOnly(I_PP_OrderCandidate_PP_Order.class);
-
-				return allocationRecord != null;
-			};
-
-			StepDefUtil.tryAndWait(timeoutSec, 500, allocationQueryExecutor);
-		}
+	private IQuery<I_PP_OrderCandidate_PP_Order> toPPOrderCandidateQuery(final DataTableRow row)
+	{
+		final PPOrderId ppOrderId = row.getAsIdentifier(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_ID).lookupIdIn(ppOrderTable);
+		final PPOrderCandidateId ppOrderCandidateId = row.getAsIdentifier(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID).lookupIdIn(ppOrderCandidateTable);
+		final int qtyEntered = row.getAsInt(I_PP_OrderCandidate_PP_Order.COLUMNNAME_QtyEntered);
+		final String x12de355Code = row.getAsString(I_PP_OrderCandidate_PP_Order.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+		return queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
+				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderId)
+				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId)
+				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_QtyEntered, qtyEntered)
+				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_C_UOM_ID, uomId)
+				.create();
 	}
 
 	@And("^after not more than (.*)s, load PP_Order by candidate id: (.*)$")

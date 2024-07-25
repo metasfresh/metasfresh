@@ -1,42 +1,42 @@
 package de.metas.material.dispo.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for MD_Candidate_Dist_Detail
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_MD_Candidate_Dist_Detail 
 {
 
-    /** TableName=MD_Candidate_Dist_Detail */
-    public static final String Table_Name = "MD_Candidate_Dist_Detail";
+	String Table_Name = "MD_Candidate_Dist_Detail";
 
-    /** AD_Table_ID=540821 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540821 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
-	 * Set Istmenge.
+	 * Set Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setActualQty (java.math.BigDecimal ActualQty);
+	void setActualQty (@Nullable BigDecimal ActualQty);
 
 	/**
-	 * Get Istmenge.
+	 * Get Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getActualQty();
+	BigDecimal getActualQty();
 
-    /** Column definition for ActualQty */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_ActualQty = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object>(I_MD_Candidate_Dist_Detail.class, "ActualQty", null);
-    /** Column name ActualQty */
-    public static final String COLUMNNAME_ActualQty = "ActualQty";
+	ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_ActualQty = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "ActualQty", null);
+	String COLUMNNAME_ActualQty = "ActualQty";
 
 	/**
 	 * Get Client.
@@ -46,10 +46,9 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -59,7 +58,7 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -69,10 +68,9 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Get Created.
@@ -82,12 +80,10 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object>(I_MD_Candidate_Dist_Detail.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_Created = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -97,10 +93,36 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Network Distribution.
+	 * Identifies a distribution network, distribution networks are used to establish the source and target of the materials in the supply chain
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDD_NetworkDistribution_ID (int DD_NetworkDistribution_ID);
+
+	/**
+	 * Get Network Distribution.
+	 * Identifies a distribution network, distribution networks are used to establish the source and target of the materials in the supply chain
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDD_NetworkDistribution_ID();
+
+	@Nullable org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution();
+
+	void setDD_NetworkDistribution(@Nullable org.eevolution.model.I_DD_NetworkDistribution DD_NetworkDistribution);
+
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_DD_NetworkDistribution> COLUMN_DD_NetworkDistribution_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "DD_NetworkDistribution_ID", org.eevolution.model.I_DD_NetworkDistribution.class);
+	String COLUMNNAME_DD_NetworkDistribution_ID = "DD_NetworkDistribution_ID";
 
 	/**
 	 * Set Network Distribution Line.
@@ -109,7 +131,7 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDD_NetworkDistributionLine_ID (int DD_NetworkDistributionLine_ID);
+	void setDD_NetworkDistributionLine_ID (int DD_NetworkDistributionLine_ID);
 
 	/**
 	 * Get Network Distribution Line.
@@ -118,39 +140,35 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDD_NetworkDistributionLine_ID();
+	int getDD_NetworkDistributionLine_ID();
 
-	public org.eevolution.model.I_DD_NetworkDistributionLine getDD_NetworkDistributionLine();
+	@Nullable org.eevolution.model.I_DD_NetworkDistributionLine getDD_NetworkDistributionLine();
 
-	public void setDD_NetworkDistributionLine(org.eevolution.model.I_DD_NetworkDistributionLine DD_NetworkDistributionLine);
+	void setDD_NetworkDistributionLine(@Nullable org.eevolution.model.I_DD_NetworkDistributionLine DD_NetworkDistributionLine);
 
-    /** Column definition for DD_NetworkDistributionLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_DD_NetworkDistributionLine> COLUMN_DD_NetworkDistributionLine_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_DD_NetworkDistributionLine>(I_MD_Candidate_Dist_Detail.class, "DD_NetworkDistributionLine_ID", org.eevolution.model.I_DD_NetworkDistributionLine.class);
-    /** Column name DD_NetworkDistributionLine_ID */
-    public static final String COLUMNNAME_DD_NetworkDistributionLine_ID = "DD_NetworkDistributionLine_ID";
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_DD_NetworkDistributionLine> COLUMN_DD_NetworkDistributionLine_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "DD_NetworkDistributionLine_ID", org.eevolution.model.I_DD_NetworkDistributionLine.class);
+	String COLUMNNAME_DD_NetworkDistributionLine_ID = "DD_NetworkDistributionLine_ID";
 
 	/**
-	 * Set Belegstatus.
+	 * Set Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDD_Order_DocStatus (java.lang.String DD_Order_DocStatus);
+	void setDD_Order_DocStatus (@Nullable java.lang.String DD_Order_DocStatus);
 
 	/**
-	 * Get Belegstatus.
+	 * Get Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDD_Order_DocStatus();
+	@Nullable java.lang.String getDD_Order_DocStatus();
 
-    /** Column definition for DD_Order_DocStatus */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_DD_Order_DocStatus = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object>(I_MD_Candidate_Dist_Detail.class, "DD_Order_DocStatus", null);
-    /** Column name DD_Order_DocStatus */
-    public static final String COLUMNNAME_DD_Order_DocStatus = "DD_Order_DocStatus";
+	ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_DD_Order_DocStatus = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "DD_Order_DocStatus", null);
+	String COLUMNNAME_DD_Order_DocStatus = "DD_Order_DocStatus";
 
 	/**
 	 * Set Distribution Order.
@@ -159,7 +177,7 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDD_Order_ID (int DD_Order_ID);
+	void setDD_Order_ID (int DD_Order_ID);
 
 	/**
 	 * Get Distribution Order.
@@ -168,16 +186,14 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDD_Order_ID();
+	int getDD_Order_ID();
 
-	public org.eevolution.model.I_DD_Order getDD_Order();
+	@Nullable org.eevolution.model.I_DD_Order getDD_Order();
 
-	public void setDD_Order(org.eevolution.model.I_DD_Order DD_Order);
+	void setDD_Order(@Nullable org.eevolution.model.I_DD_Order DD_Order);
 
-    /** Column definition for DD_Order_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_DD_Order> COLUMN_DD_Order_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_DD_Order>(I_MD_Candidate_Dist_Detail.class, "DD_Order_ID", org.eevolution.model.I_DD_Order.class);
-    /** Column name DD_Order_ID */
-    public static final String COLUMNNAME_DD_Order_ID = "DD_Order_ID";
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_DD_Order> COLUMN_DD_Order_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "DD_Order_ID", org.eevolution.model.I_DD_Order.class);
+	String COLUMNNAME_DD_Order_ID = "DD_Order_ID";
 
 	/**
 	 * Set Distribution Order Line.
@@ -186,7 +202,7 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDD_OrderLine_ID (int DD_OrderLine_ID);
+	void setDD_OrderLine_ID (int DD_OrderLine_ID);
 
 	/**
 	 * Get Distribution Order Line.
@@ -195,16 +211,14 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDD_OrderLine_ID();
+	int getDD_OrderLine_ID();
 
-	public org.eevolution.model.I_DD_OrderLine getDD_OrderLine();
+	@Nullable org.eevolution.model.I_DD_OrderLine getDD_OrderLine();
 
-	public void setDD_OrderLine(org.eevolution.model.I_DD_OrderLine DD_OrderLine);
+	void setDD_OrderLine(@Nullable org.eevolution.model.I_DD_OrderLine DD_OrderLine);
 
-    /** Column definition for DD_OrderLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_DD_OrderLine> COLUMN_DD_OrderLine_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_DD_OrderLine>(I_MD_Candidate_Dist_Detail.class, "DD_OrderLine_ID", org.eevolution.model.I_DD_OrderLine.class);
-    /** Column name DD_OrderLine_ID */
-    public static final String COLUMNNAME_DD_OrderLine_ID = "DD_OrderLine_ID";
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_DD_OrderLine> COLUMN_DD_OrderLine_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "DD_OrderLine_ID", org.eevolution.model.I_DD_OrderLine.class);
+	String COLUMNNAME_DD_OrderLine_ID = "DD_OrderLine_ID";
 
 	/**
 	 * Set Active.
@@ -214,7 +228,7 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -224,112 +238,98 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object>(I_MD_Candidate_Dist_Detail.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_IsActive = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Geplant.
-	 * Ja bedeutet, dass es zumindest ursprünglich kein entsprechendes Dokument (z.B. Produktionsauftrag) gab, sondern dass das System einen Beleg vorgeschlagen hatte.
+	 * Set System Advised.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAdvised (boolean IsAdvised);
+	void setIsAdvised (boolean IsAdvised);
 
 	/**
-	 * Get Geplant.
-	 * Ja bedeutet, dass es zumindest ursprünglich kein entsprechendes Dokument (z.B. Produktionsauftrag) gab, sondern dass das System einen Beleg vorgeschlagen hatte.
+	 * Get System Advised.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAdvised();
+	boolean isAdvised();
 
-    /** Column definition for IsAdvised */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_IsAdvised = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object>(I_MD_Candidate_Dist_Detail.class, "IsAdvised", null);
-    /** Column name IsAdvised */
-    public static final String COLUMNNAME_IsAdvised = "IsAdvised";
+	ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_IsAdvised = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "IsAdvised", null);
+	String COLUMNNAME_IsAdvised = "IsAdvised";
 
 	/**
-	 * Set Sofort Kommissionieren wenn möglich.
-	 * Falls "Ja" und ein Bestand wird für einen bestimmten Lieferdispo-Eintrag bereit gestellt oder produziert, dann wird dieser sofort zugeordnet und als kommissioniert markiert.
+	 * Set Auto Picking.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsPickDirectlyIfFeasible (boolean IsPickDirectlyIfFeasible);
+	void setIsPickDirectlyIfFeasible (boolean IsPickDirectlyIfFeasible);
 
 	/**
-	 * Get Sofort Kommissionieren wenn möglich.
-	 * Falls "Ja" und ein Bestand wird für einen bestimmten Lieferdispo-Eintrag bereit gestellt oder produziert, dann wird dieser sofort zugeordnet und als kommissioniert markiert.
+	 * Get Auto Picking.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isPickDirectlyIfFeasible();
+	boolean isPickDirectlyIfFeasible();
 
-    /** Column definition for IsPickDirectlyIfFeasible */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_IsPickDirectlyIfFeasible = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object>(I_MD_Candidate_Dist_Detail.class, "IsPickDirectlyIfFeasible", null);
-    /** Column name IsPickDirectlyIfFeasible */
-    public static final String COLUMNNAME_IsPickDirectlyIfFeasible = "IsPickDirectlyIfFeasible";
+	ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_IsPickDirectlyIfFeasible = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "IsPickDirectlyIfFeasible", null);
+	String COLUMNNAME_IsPickDirectlyIfFeasible = "IsPickDirectlyIfFeasible";
 
 	/**
-	 * Set Dispo-Bereitstellungsdetail.
+	 * Set Dispo Supplydetail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setMD_Candidate_Dist_Detail_ID (int MD_Candidate_Dist_Detail_ID);
+	void setMD_Candidate_Dist_Detail_ID (int MD_Candidate_Dist_Detail_ID);
 
 	/**
-	 * Get Dispo-Bereitstellungsdetail.
+	 * Get Dispo Supplydetail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getMD_Candidate_Dist_Detail_ID();
+	int getMD_Candidate_Dist_Detail_ID();
 
-    /** Column definition for MD_Candidate_Dist_Detail_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_MD_Candidate_Dist_Detail_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object>(I_MD_Candidate_Dist_Detail.class, "MD_Candidate_Dist_Detail_ID", null);
-    /** Column name MD_Candidate_Dist_Detail_ID */
-    public static final String COLUMNNAME_MD_Candidate_Dist_Detail_ID = "MD_Candidate_Dist_Detail_ID";
+	ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_MD_Candidate_Dist_Detail_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "MD_Candidate_Dist_Detail_ID", null);
+	String COLUMNNAME_MD_Candidate_Dist_Detail_ID = "MD_Candidate_Dist_Detail_ID";
 
 	/**
-	 * Set Dispositionskandidat.
+	 * Set Dispo Candidate.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setMD_Candidate_ID (int MD_Candidate_ID);
+	void setMD_Candidate_ID (int MD_Candidate_ID);
 
 	/**
-	 * Get Dispositionskandidat.
+	 * Get Dispo Candidate.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getMD_Candidate_ID();
+	int getMD_Candidate_ID();
 
-	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate();
+	de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate();
 
-	public void setMD_Candidate(de.metas.material.dispo.model.I_MD_Candidate MD_Candidate);
+	void setMD_Candidate(de.metas.material.dispo.model.I_MD_Candidate MD_Candidate);
 
-    /** Column definition for MD_Candidate_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, de.metas.material.dispo.model.I_MD_Candidate> COLUMN_MD_Candidate_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, de.metas.material.dispo.model.I_MD_Candidate>(I_MD_Candidate_Dist_Detail.class, "MD_Candidate_ID", de.metas.material.dispo.model.I_MD_Candidate.class);
-    /** Column name MD_Candidate_ID */
-    public static final String COLUMNNAME_MD_Candidate_ID = "MD_Candidate_ID";
+	ModelColumn<I_MD_Candidate_Dist_Detail, de.metas.material.dispo.model.I_MD_Candidate> COLUMN_MD_Candidate_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "MD_Candidate_ID", de.metas.material.dispo.model.I_MD_Candidate.class);
+	String COLUMNNAME_MD_Candidate_ID = "MD_Candidate_ID";
 
 	/**
 	 * Set Shipper.
@@ -339,7 +339,7 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Shipper_ID (int M_Shipper_ID);
+	void setM_Shipper_ID (int M_Shipper_ID);
 
 	/**
 	 * Get Shipper.
@@ -349,89 +349,184 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Shipper_ID();
+	int getM_Shipper_ID();
 
-	public org.compiere.model.I_M_Shipper getM_Shipper();
+	@Nullable org.compiere.model.I_M_Shipper getM_Shipper();
 
-	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
+	void setM_Shipper(@Nullable org.compiere.model.I_M_Shipper M_Shipper);
 
-    /** Column definition for M_Shipper_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.compiere.model.I_M_Shipper>(I_MD_Candidate_Dist_Detail.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
-    /** Column name M_Shipper_ID */
-    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
-	 * Set Geplante Menge.
+	 * Set Planned Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPlannedQty (java.math.BigDecimal PlannedQty);
+	void setPlannedQty (@Nullable BigDecimal PlannedQty);
 
 	/**
-	 * Get Geplante Menge.
+	 * Get Planned Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPlannedQty();
+	BigDecimal getPlannedQty();
 
-    /** Column definition for PlannedQty */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_PlannedQty = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object>(I_MD_Candidate_Dist_Detail.class, "PlannedQty", null);
-    /** Column name PlannedQty */
-    public static final String COLUMNNAME_PlannedQty = "PlannedQty";
+	ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_PlannedQty = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "PlannedQty", null);
+	String COLUMNNAME_PlannedQty = "PlannedQty";
 
 	/**
-	 * Set Produktionsstätte.
+	 * Set Manufacturing Order BOM Line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Plant_ID (int PP_Plant_ID);
+	void setPP_Order_BOMLine_ID (int PP_Order_BOMLine_ID);
 
 	/**
-	 * Get Produktionsstätte.
+	 * Get Manufacturing Order BOM Line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Plant_ID();
+	int getPP_Order_BOMLine_ID();
 
-	public org.compiere.model.I_S_Resource getPP_Plant();
+	@Nullable org.eevolution.model.I_PP_Order getPP_Order_BOMLine();
 
-	public void setPP_Plant(org.compiere.model.I_S_Resource PP_Plant);
+	void setPP_Order_BOMLine(@Nullable org.eevolution.model.I_PP_Order PP_Order_BOMLine);
 
-    /** Column definition for PP_Plant_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.compiere.model.I_S_Resource> COLUMN_PP_Plant_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.compiere.model.I_S_Resource>(I_MD_Candidate_Dist_Detail.class, "PP_Plant_ID", org.compiere.model.I_S_Resource.class);
-    /** Column name PP_Plant_ID */
-    public static final String COLUMNNAME_PP_Plant_ID = "PP_Plant_ID";
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_BOMLine_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "PP_Order_BOMLine_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_PP_Order_BOMLine_ID = "PP_Order_BOMLine_ID";
+
+	/**
+	 * Set Manufacturing candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Order_Candidate_ID (int PP_Order_Candidate_ID);
+
+	/**
+	 * Get Manufacturing candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPP_Order_Candidate_ID();
+
+	@Nullable org.eevolution.model.I_PP_Order_Candidate getPP_Order_Candidate();
+
+	void setPP_Order_Candidate(@Nullable org.eevolution.model.I_PP_Order_Candidate PP_Order_Candidate);
+
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_PP_Order_Candidate> COLUMN_PP_Order_Candidate_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "PP_Order_Candidate_ID", org.eevolution.model.I_PP_Order_Candidate.class);
+	String COLUMNNAME_PP_Order_Candidate_ID = "PP_Order_Candidate_ID";
+
+	/**
+	 * Set Manufacturing Order.
+	 * Manufacturing Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Order_ID (int PP_Order_ID);
+
+	/**
+	 * Get Manufacturing Order.
+	 * Manufacturing Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPP_Order_ID();
+
+	@Nullable org.eevolution.model.I_PP_Order getPP_Order();
+
+	void setPP_Order(@Nullable org.eevolution.model.I_PP_Order PP_Order);
+
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
+
+	/**
+	 * Set Manufacturing Order Line Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_OrderLine_Candidate_ID (int PP_OrderLine_Candidate_ID);
+
+	/**
+	 * Get Manufacturing Order Line Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPP_OrderLine_Candidate_ID();
+
+	@Nullable org.eevolution.model.I_PP_Order_Candidate getPP_OrderLine_Candidate();
+
+	void setPP_OrderLine_Candidate(@Nullable org.eevolution.model.I_PP_Order_Candidate PP_OrderLine_Candidate);
+
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_PP_Order_Candidate> COLUMN_PP_OrderLine_Candidate_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "PP_OrderLine_Candidate_ID", org.eevolution.model.I_PP_Order_Candidate.class);
+	String COLUMNNAME_PP_OrderLine_Candidate_ID = "PP_OrderLine_Candidate_ID";
+
+	/**
+	 * Set Plant.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Plant_ID (int PP_Plant_ID);
+
+	/**
+	 * Get Plant.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPP_Plant_ID();
+
+	@Nullable org.compiere.model.I_S_Resource getPP_Plant();
+
+	void setPP_Plant(@Nullable org.compiere.model.I_S_Resource PP_Plant);
+
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.compiere.model.I_S_Resource> COLUMN_PP_Plant_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "PP_Plant_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_PP_Plant_ID = "PP_Plant_ID";
 
 	/**
 	 * Set Product Planning.
+	 * Product Planning
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Product_Planning_ID (int PP_Product_Planning_ID);
+	void setPP_Product_Planning_ID (int PP_Product_Planning_ID);
 
 	/**
 	 * Get Product Planning.
+	 * Product Planning
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Product_Planning_ID();
+	int getPP_Product_Planning_ID();
 
-	/** Column definition for PP_Product_Planning_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_PP_Product_Planning> COLUMN_PP_Product_Planning_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_PP_Product_Planning>(I_MD_Candidate_Dist_Detail.class, "PP_Product_Planning_ID", org.eevolution.model.I_PP_Product_Planning.class);
-    /** Column name PP_Product_Planning_ID */
-    public static final String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
+	String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
 
 	/**
 	 * Get Updated.
@@ -441,12 +536,10 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object>(I_MD_Candidate_Dist_Detail.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_Updated = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -456,8 +549,7 @@ public interface I_MD_Candidate_Dist_Detail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -17,6 +17,7 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
         "inventoryLineHUs": [
           {
             "huId": 100,
+            "id" : 1000000,
             "id": 1000000,
             "inventoryType": "PHYSICAL",
             "qtyBook": "10 Ea",

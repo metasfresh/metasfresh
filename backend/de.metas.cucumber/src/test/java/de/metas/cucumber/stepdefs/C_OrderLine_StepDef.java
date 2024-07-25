@@ -41,7 +41,6 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.event.commons.AttributesKey;
@@ -104,7 +103,6 @@ public class C_OrderLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -515,8 +513,6 @@ public class C_OrderLine_StepDef
 	public void delete_orderLine(@NonNull final String orderLineIdentifier)
 	{
 		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-		assertThat(orderLine).isNotNull();
-
 		identifierIdsTable.put(orderLineIdentifier, orderLine.getC_OrderLine_ID());
 		InterfaceWrapperHelper.delete(orderLine);
 	}

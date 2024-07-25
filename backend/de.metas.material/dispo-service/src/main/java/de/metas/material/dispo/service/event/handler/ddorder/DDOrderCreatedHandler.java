@@ -90,7 +90,7 @@ public class DDOrderCreatedHandler extends DDOrderAdvisedOrCreatedHandler<DDOrde
 	@Override
 	public void handleEvent(DDOrderCreatedEvent event)
 	{
-		handleAbstractDDOrderEvent(event);
+		createAndProcessCandidates(event);
 	}
 
 	@Override
@@ -152,8 +152,7 @@ public class DDOrderCreatedHandler extends DDOrderAdvisedOrCreatedHandler<DDOrde
 
 	private DDOrderCreatedEvent cast(@NonNull final AbstractDDOrderEvent ddOrderEvent)
 	{
-		final DDOrderCreatedEvent ddOrderAdvisedEvent = (DDOrderCreatedEvent)ddOrderEvent;
-		return ddOrderAdvisedEvent;
+		return (DDOrderCreatedEvent)ddOrderEvent;
 	}
 
 	private static MaterialDescriptorQuery createMaterialDescriptorQuery(

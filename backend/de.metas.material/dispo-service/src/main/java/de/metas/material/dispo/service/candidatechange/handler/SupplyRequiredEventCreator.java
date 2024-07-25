@@ -12,13 +12,13 @@ import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor.SupplyRequiredDescriptorBuilder;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Optional;
 
 /*
  * #%L
@@ -120,14 +120,16 @@ public class SupplyRequiredEventCreator
 			@NonNull final Candidate candidate,
 			@NonNull final BigDecimal qty)
 	{
-		final String traceId = Optional.ofNullable(candidate.getDemandDetail()).map(DemandDetail::getTraceId).orElse(null);
-		final BigDecimal fullDemandQty = candidate.getMaterialDescriptor().getQuantity();
+		final PPOrderRef ppOrderRef = candidate.getBusinessCaseDetail(ProductionDetail.class)
+				.map(ProductionDetail::getPpOrderRef)
+				.orElse(null);
 
 		return SupplyRequiredDescriptor.builder()
 				.demandCandidateId(candidate.getId().getRepoId())
-				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(candidate.getClientAndOrgId(), traceId))
+				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(candidate.getClientAndOrgId(), candidate.getTraceId()))
 				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty))
-				.fullDemandQty(fullDemandQty)
+				.fullDemandQty(candidate.getQuantity())
+				.ppOrderRef(ppOrderRef)
 				.simulated(candidate.isSimulated())
 				.isLotForLot(candidate.getLotForLot())
 				.updated(candidate.isUpdated())

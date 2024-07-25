@@ -1,7 +1,6 @@
 package de.metas.material.dispo.service.event;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.event.log.EventLogUserService;
@@ -23,7 +22,7 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
 import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
-import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.ddordercandidate.DDOrderCandidateAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.event.MaterialEvent;
@@ -34,13 +33,16 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
-import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
+import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.order.OrderLineRepository;
+import de.metas.product.ResourceId;
+import de.metas.shipping.ShipperId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
@@ -55,14 +57,12 @@ import org.mockito.Mockito;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -102,16 +102,12 @@ public class MaterialEventHandlerRegistryTests
 	private EventLogUserService eventLogUserService;
 	private AvailableToPromiseRepository availableToPromiseRepository;
 
-	private DimensionService dimensionService;
-
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
@@ -142,7 +138,7 @@ public class MaterialEventHandlerRegistryTests
 						supplyCandidateHandler),
 				supplyCandidateHandler));
 
-		final DDOrderAdvisedHandler distributionAdvisedEventHandler = new DDOrderAdvisedHandler(
+		final DDOrderCandidateAdvisedHandler distributionAdvisedEventHandler = new DDOrderCandidateAdvisedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
 				candidateChangeHandler,
@@ -162,8 +158,7 @@ public class MaterialEventHandlerRegistryTests
 				candidateChangeHandler,
 				candidateRepositoryRetrieval);
 
-		@SuppressWarnings("rawtypes")
-		final Optional<Collection<MaterialEventHandler>> handlers = Optional.of(ImmutableList.of(
+		@SuppressWarnings("rawtypes") final Optional<Collection<MaterialEventHandler>> handlers = Optional.of(ImmutableList.of(
 				distributionAdvisedEventHandler,
 				forecastCreatedEventHandler,
 				transactionEventHandler,
@@ -180,10 +175,10 @@ public class MaterialEventHandlerRegistryTests
 	private void setupEventLogUserServiceOnlyInvokesHandler()
 	{
 		Mockito.doAnswer(invocation -> {
-			final InvokeHandlerAndLogRequest request = (InvokeHandlerAndLogRequest)invocation.getArguments()[0];
-			request.getInvokaction().run();
-			return null; // void
-		})
+					final InvokeHandlerAndLogRequest request = (InvokeHandlerAndLogRequest)invocation.getArguments()[0];
+					request.getInvokaction().run();
+					return null; // void
+				})
 				.when(eventLogUserService)
 				.invokeHandlerAndLog(Mockito.any());
 	}
@@ -215,27 +210,29 @@ public class MaterialEventHandlerRegistryTests
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
 
 		// create a distributionAdvisedEvent event which matches the shipmentscheduleEvent that we processed in testShipmentScheduleEvent()
-		final DDOrderAdvisedEvent ddOrderAdvisedEvent = DDOrderAdvisedEvent.builder()
+		final DDOrderCandidateAdvisedEvent ddOrderAdvisedEvent = DDOrderCandidateAdvisedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
-				.fromWarehouseId(fromWarehouseId)
-				.toWarehouseId(toWarehouseId)
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
-				.ddOrder(DDOrder.builder()
-								 .orgId(ORG_ID)
-								 .plantId(800)
-								 .productPlanningId(810)
-								 .shipperId(820)
-								 .datePromised(shipmentScheduleEventTime)
-								 .line(DDOrderLine.builder()
-											   .productDescriptor(orderedMaterial)
-											   .bPartnerId(orderedMaterial.getCustomerId().getRepoId())
-											   .qty(BigDecimal.TEN)
-											   .durationDays(0)
-											   .networkDistributionLineId(900)
-											   .build())
-								 .build())
+				.ddOrderCandidate(DDOrderCandidateData.builder()
+						.productPlanningId(ProductPlanningId.ofRepoId(810))
+						.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(900, 901))
+						//
+						.orgId(ORG_ID)
+						.sourceWarehouseId(fromWarehouseId)
+						.targetWarehouseId(toWarehouseId)
+						.targetPlantId(ResourceId.ofRepoId(800))
+						.shipperId(ShipperId.ofRepoId(820))
+						//
+						.productDescriptor(orderedMaterial)
+						//
+						.datePromised(shipmentScheduleEventTime)
+						//
+						.qty(new BigDecimal("10"))
+						.uomId(830)
+						//
+						.durationDays(0)
+						.build())
 				.build();
-		ddOrderAdvisedEvent.validate();
 
 		//
 		// when
@@ -261,21 +258,21 @@ public class MaterialEventHandlerRegistryTests
 		final I_MD_Candidate fromWarehouseSupply = DispoTestUtils.filter(CandidateType.SUPPLY, fromWarehouseId).get(0);
 		final I_MD_Candidate fromWarehouseSupplyStock = DispoTestUtils.retrieveStockCandidate(fromWarehouseSupply);
 
-		final List<I_MD_Candidate> allRecordsBySeqNo = DispoTestUtils.sortBySeqNo(DispoTestUtils.retrieveAllRecords());
-		assertThat(allRecordsBySeqNo).containsOnly(
-				toWarehouseDemand,
-				toWarehouseDemandStock,
-				toWarehouseSupplyStock,
-				toWarehouseSupply,
-				fromWarehouseDemand,
-				fromWarehouseDemandStock,
-				fromWarehouseSupply,
-				fromWarehouseSupplyStock);
-		assertThat(allRecordsBySeqNo).containsSubsequence(
-				toWarehouseDemand,
-				toWarehouseSupply,
-				fromWarehouseDemand,
-				fromWarehouseSupply);
+		assertThat(DispoTestUtils.sortBySeqNo(DispoTestUtils.retrieveAllRecords()))
+				.containsOnly(
+						toWarehouseDemand,
+						toWarehouseDemandStock,
+						toWarehouseSupplyStock,
+						toWarehouseSupply,
+						fromWarehouseDemand,
+						fromWarehouseDemandStock,
+						fromWarehouseSupply,
+						fromWarehouseSupplyStock)
+				.containsSubsequence(
+						toWarehouseDemand,
+						toWarehouseSupply,
+						fromWarehouseDemand,
+						fromWarehouseSupply);
 
 		assertThat(toWarehouseDemand.getQty()).isEqualByComparingTo("10");
 		assertThat(toWarehouseDemandStock.getQty()).isEqualByComparingTo("-10");

@@ -102,13 +102,17 @@ public class M_Inventory_StepDef
 	@Given("metasfresh contains M_Inventories:")
 	public void addNewInventory(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::addNewInventory);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_Inventory.COLUMNNAME_M_Inventory_ID)
+				.forEach(this::addNewInventory);
 	}
 
 	@Given("metasfresh contains M_InventoriesLines:")
 	public void addNewInventoryLines(@NonNull final io.cucumber.datatable.DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::addNewInventoryLine);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID)
+				.forEach(this::addNewInventoryLine);
 	}
 
 	@Given("^the inventory identified by (.*) is (completed|reversed)")
@@ -218,7 +222,6 @@ public class M_Inventory_StepDef
 
 		saveRecord(inventoryRecord);
 
-		row.getAsOptionalIdentifier(I_M_Inventory.COLUMNNAME_M_Inventory_ID).ifPresent(inventoryIdentifier -> inventoryTable.put(inventoryIdentifier, inventoryRecord));
 		row.getAsOptionalIdentifier().ifPresent(inventoryIdentifier -> inventoryTable.put(inventoryIdentifier, inventoryRecord));
 	}
 
@@ -259,7 +262,6 @@ public class M_Inventory_StepDef
 
 		saveRecord(inventoryLine);
 
-		row.getAsOptionalIdentifier(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID).ifPresent(identifier -> inventoryLineTable.put(identifier, inventoryLine));
 		row.getAsOptionalIdentifier().ifPresent(identifier -> inventoryLineTable.put(identifier, inventoryLine));
 	}
 

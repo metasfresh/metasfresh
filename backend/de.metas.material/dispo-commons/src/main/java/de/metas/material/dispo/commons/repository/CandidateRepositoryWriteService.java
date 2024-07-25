@@ -55,14 +55,17 @@ import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.stock.ResetStockPInstanceId;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.mforecast.IForecastDAO;
 import de.metas.product.ResourceId;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -73,6 +76,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
 import org.reflections.util.Utils;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -93,24 +98,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Service
+@RequiredArgsConstructor
 public class CandidateRepositoryWriteService
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	private final DimensionService dimensionService;
-	private final StockChangeDetailRepo stockChangeDetailRepo;
 	private final IForecastDAO forecastDAO = Services.get(IForecastDAO.class);
-	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-
-	public CandidateRepositoryWriteService(
-			@NonNull final DimensionService dimensionService,
-			@NonNull final StockChangeDetailRepo stockChangeDetailRepo,
-			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
-	{
-		this.dimensionService = dimensionService;
-		this.stockChangeDetailRepo = stockChangeDetailRepo;
-		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
-	}
+	@NonNull private final DimensionService dimensionService;
+	@NonNull private final StockChangeDetailRepo stockChangeDetailRepo;
+	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	/**
 	 * Stores the given {@code candidate}.
@@ -127,7 +122,7 @@ public class CandidateRepositoryWriteService
 	 * <li>the quantity <b>delta</b> of the persisted data record before the update was made</li>
 	 * </ul>
 	 */
-	public SaveResult addOrUpdateOverwriteStoredSeqNo(@NonNull final Candidate candidate)
+	public CandidateSaveResult addOrUpdateOverwriteStoredSeqNo(@NonNull final Candidate candidate)
 	{
 		return addOrUpdate(candidate, false/* preserveExistingSeqNoAndParentId */);
 	}
@@ -135,7 +130,7 @@ public class CandidateRepositoryWriteService
 	/**
 	 * Similar to {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)}, but the given {@code candidate}'s {@code seqNo} (if specified at all!) will only be persisted if none is stored yet.
 	 */
-	public SaveResult addOrUpdatePreserveExistingSeqNo(@NonNull final Candidate candidate)
+	public CandidateSaveResult addOrUpdatePreserveExistingSeqNo(@NonNull final Candidate candidate)
 	{
 		return addOrUpdate(candidate, true);
 	}
@@ -143,14 +138,14 @@ public class CandidateRepositoryWriteService
 	/**
 	 * @param candidate candidate that we know does not exist, so there is no existing candidate to update
 	 */
-	public SaveResult add(@NonNull final Candidate candidate)
+	public CandidateSaveResult add(@NonNull final Candidate candidate)
 	{
 		return addOrUpdate(
 				CandidatesQuery.FALSE /*make sure we don't find anything to update*/,
 				candidate, false/*doesn't matter*/);
 	}
 
-	public SaveResult updateCandidateById(@NonNull final Candidate candidate)
+	public void updateCandidateById(@NonNull final Candidate candidate)
 	{
 		Check.errorIf(candidate.getId().isNull(), "The candidate parameter needs to have an id; candidate={}", candidate);
 		final CandidatesQuery query = CandidatesQuery.fromId(candidate.getId());
@@ -259,29 +254,15 @@ public class CandidateRepositoryWriteService
 					.previousQty(previousQty)
 					.previousTime(previousTime)
 					.build();
-		}
-
-		/**
-		 * Convenience method that returns a new instance with negated candidate quantity and previousQty
-		 */
-		public SaveResult withNegatedQuantity()
-		{
-			return SaveResult
-					.builder()
-					.candidate(candidate.withNegatedQuantity())
-					.previousQty(previousQty == null ? null : previousQty.negate())
-					.previousTime(previousTime)
-					.build();
-		}
 	}
 
-	private SaveResult addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
+	private CandidateSaveResult addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
 	{
 		final CandidatesQuery query = CandidatesQuery.fromCandidate(candidate, false/* includeParentId */);
 		return addOrUpdate(query, candidate, preserveExistingSeqNoAndParentId);
 	}
 
-	private SaveResult addOrUpdate(
+	private CandidateSaveResult addOrUpdate(
 			@NonNull final CandidatesQuery singleCandidateQuery,
 			@NonNull final Candidate candidate,
 			final boolean preserveExistingSeqNoAndParentId)
@@ -335,8 +316,7 @@ public class CandidateRepositoryWriteService
 				"addOrUpdate - {} candidateId={}; type={};\nsingleCandidateOrNullQuery={};\n\npreserveExistingSeqNoAndParentId={};\n\ncandidate={}",
 				verb, savedCandidate.getId().getRepoId(), savedCandidate.getType().toString(), singleCandidateQuery, preserveExistingSeqNoAndParentId, savedCandidate);
 
-		return SaveResult
-				.builder()
+		return CandidateSaveResult.builder()
 				.candidate(savedCandidate)
 				.previousQty(previousQty)
 				.previousTime(previousTime)
@@ -432,7 +412,7 @@ public class CandidateRepositoryWriteService
 
 		if (candidate.getBusinessCase() != null)
 		{
-			candidateRecord.setMD_Candidate_BusinessCase(candidate.getBusinessCase().toString());
+			candidateRecord.setMD_Candidate_BusinessCase(candidate.getBusinessCase().getCode());
 		}
 
 		if (!candidate.getParentId().isNull())
@@ -453,11 +433,7 @@ public class CandidateRepositoryWriteService
 			candidateRecord.setMD_Candidate_GroupId(candidate.getGroupId().toInt());
 		}
 
-		final BigDecimal fulfilledQty = candidate
-				.getTransactionDetails()
-				.stream()
-				.map(TransactionDetail::getQuantity)
-				.reduce(ZERO, BigDecimal::add);
+		final BigDecimal fulfilledQty = candidate.computeActualQty();
 		candidateRecord.setQtyFulfilled(fulfilledQty);
 
 		final boolean typeImpliesProcessedDone =
@@ -549,7 +525,7 @@ public class CandidateRepositoryWriteService
 		}
 
 		final I_MD_Candidate_Prod_Detail productionDetailRecordToUpdate;
-		final I_MD_Candidate_Prod_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Prod_Detail.class);
+		final I_MD_Candidate_Prod_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(candidate.getId(), I_MD_Candidate_Prod_Detail.class);
 		if (existingDetail == null)
 		{
 			productionDetailRecordToUpdate = newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
@@ -575,10 +551,12 @@ public class CandidateRepositoryWriteService
 		productionDetailRecordToUpdate.setPP_Plant_ID(ResourceId.toRepoId(productionDetail.getPlantId()));
 		productionDetailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
 		productionDetailRecordToUpdate.setPP_Product_Planning_ID(productionDetail.getProductPlanningId());
-		productionDetailRecordToUpdate.setPP_Order_ID(productionDetail.getPpOrderId());
+
 		productionDetailRecordToUpdate.setPP_Order_Candidate_ID(productionDetail.getPpOrderCandidateId());
 		productionDetailRecordToUpdate.setPP_OrderLine_Candidate_ID(productionDetail.getPpOrderLineCandidateId());
-		productionDetailRecordToUpdate.setPP_Order_BOMLine_ID(productionDetail.getPpOrderLineId());
+		productionDetailRecordToUpdate.setPP_Order_ID(PPOrderId.toRepoId(productionDetail.getPpOrderId()));
+		productionDetailRecordToUpdate.setPP_Order_BOMLine_ID(PPOrderBOMLineId.toRepoId(productionDetail.getPpOrderBOMLineId()));
+
 		productionDetailRecordToUpdate.setPP_Order_DocStatus(DocStatus.toCodeOrNull(productionDetail.getPpOrderDocStatus()));
 		productionDetailRecordToUpdate.setPlannedQty(productionDetail.getQty());
 		productionDetailRecordToUpdate.setActualQty(candidate.computeActualQty());
@@ -597,7 +575,7 @@ public class CandidateRepositoryWriteService
 		}
 
 		final I_MD_Candidate_Dist_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Dist_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Dist_Detail.class);
+		final I_MD_Candidate_Dist_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(candidate.getId(), I_MD_Candidate_Dist_Detail.class);
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Dist_Detail.class, synchedRecord);
@@ -614,13 +592,21 @@ public class CandidateRepositoryWriteService
 		}
 
 		detailRecordToUpdate.setIsAdvised(distributionDetail.isAdvised());
-		detailRecordToUpdate.setDD_NetworkDistributionLine_ID(distributionDetail.getNetworkDistributionLineId());
-		detailRecordToUpdate.setPP_Plant_ID(distributionDetail.getPlantId());
-		detailRecordToUpdate.setPP_Product_Planning_ID(distributionDetail.getProductPlanningId());
+		detailRecordToUpdate.setDD_NetworkDistribution_ID(distributionDetail.getDistributionNetworkAndLineId() != null ? distributionDetail.getDistributionNetworkAndLineId().getNetworkId().getRepoId() : -1);
+		detailRecordToUpdate.setDD_NetworkDistributionLine_ID(distributionDetail.getDistributionNetworkAndLineId() != null ? distributionDetail.getDistributionNetworkAndLineId().getLineId().getRepoId() : -1);
+		detailRecordToUpdate.setPP_Plant_ID(ResourceId.toRepoId(distributionDetail.getPlantId()));
+		detailRecordToUpdate.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(distributionDetail.getProductPlanningId()));
 		detailRecordToUpdate.setDD_Order_ID(distributionDetail.getDdOrderId());
 		detailRecordToUpdate.setDD_OrderLine_ID(distributionDetail.getDdOrderLineId());
-		detailRecordToUpdate.setDD_Order_DocStatus(distributionDetail.getDdOrderDocStatus());
-		detailRecordToUpdate.setM_Shipper_ID(distributionDetail.getShipperId());
+		detailRecordToUpdate.setDD_Order_DocStatus(distributionDetail.getDdOrderDocStatus() != null ? distributionDetail.getDdOrderDocStatus().getCode() : null);
+
+		final PPOrderRef ppOrderRef = distributionDetail.getPpOrderRef();
+		detailRecordToUpdate.setPP_Order_ID(ppOrderRef != null ? PPOrderId.toRepoId(ppOrderRef.getPpOrderId()) : -1);
+		detailRecordToUpdate.setPP_Order_BOMLine_ID(ppOrderRef != null ? PPOrderBOMLineId.toRepoId(ppOrderRef.getPpOrderBOMLineId()) : -1);
+		detailRecordToUpdate.setPP_Order_Candidate_ID(ppOrderRef != null ? ppOrderRef.getPpOrderCandidateId() : -1);
+		detailRecordToUpdate.setPP_OrderLine_Candidate_ID(ppOrderRef != null ? ppOrderRef.getPpOrderLineCandidateId() : -1);
+
+		detailRecordToUpdate.setM_Shipper_ID(ShipperId.toRepoId(distributionDetail.getShipperId()));
 		detailRecordToUpdate.setPlannedQty(distributionDetail.getQty());
 		detailRecordToUpdate.setActualQty(candidate.computeActualQty());
 
@@ -636,7 +622,7 @@ public class CandidateRepositoryWriteService
 		}
 
 		final I_MD_Candidate_Demand_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Demand_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Demand_Detail.class);
+		final I_MD_Candidate_Demand_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(candidate.getId(), I_MD_Candidate_Demand_Detail.class);
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Demand_Detail.class, synchedRecord);
@@ -728,11 +714,12 @@ public class CandidateRepositoryWriteService
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate candidateRecord)
 	{
-		return candidate
-				.withId(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
-				.withParentId(CandidateId.ofRepoIdOrNull(candidateRecord.getMD_Candidate_Parent_ID()))
-				.withGroupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))
-				.withSeqNo(candidateRecord.getSeqNo());
+		return candidate.toBuilder()
+				.id(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
+				.parentId(CandidateId.ofRepoIdOrNull(candidateRecord.getMD_Candidate_Parent_ID()))
+				.groupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))
+				.seqNo(candidateRecord.getSeqNo())
+				.build();
 	}
 
 	/**
@@ -741,7 +728,7 @@ public class CandidateRepositoryWriteService
 	@NonNull
 	public DeleteResult deleteCandidateById(@NonNull final CandidateId candidateId)
 	{
-		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
+		final I_MD_Candidate candidateRecord = retrieveRecordById(candidateId);
 
 		final boolean isStock = MD_CANDIDATE_TYPE_STOCK.equals(candidateRecord.getMD_Candidate_Type());
 
@@ -815,6 +802,11 @@ public class CandidateRepositoryWriteService
 		return deleteResult;
 	}
 
+	private I_MD_Candidate retrieveRecordById(final @NonNull CandidateId candidateId)
+	{
+		return load(candidateId, I_MD_Candidate.class);
+	}
+
 	@NonNull
 	public Set<CandidateId> deleteCandidatesAndDetailsByQuery(@NonNull final DeleteCandidatesQuery deleteCandidatesQuery)
 	{
@@ -852,7 +844,7 @@ public class CandidateRepositoryWriteService
 	{
 		alreadySeenIds.add(candidateId);
 
-		final I_MD_Candidate candidateRecord = InterfaceWrapperHelper.load(candidateId, I_MD_Candidate.class);
+		final I_MD_Candidate candidateRecord = retrieveRecordById(candidateId);
 
 		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 

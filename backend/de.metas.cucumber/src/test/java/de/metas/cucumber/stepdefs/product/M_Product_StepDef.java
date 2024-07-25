@@ -38,6 +38,7 @@ import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.rest_api.v2.product.ExternalIdentifierResolver;
@@ -65,7 +66,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.DB;
@@ -80,7 +80,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STAND
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_IsStocked;
@@ -350,17 +350,10 @@ public class M_Product_StepDef
 			productRecord.setHUClearanceStatus(clearanceStatus.getCode());
 		}
 
-		final String productCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_Product_Category_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(productCategoryIdentifier))
-		{
-			final I_M_Product_Category productCategory = productCategoryTable.get(productCategoryIdentifier);
-			assertThat(productCategory).isNotNull();
-			productRecord.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
-		}
-		else
-		{
-			productRecord.setM_Product_Category_ID(PRODUCT_CATEGORY_STANDARD_ID.getRepoId());
-		}
+		final ProductCategoryId productCategoryId = rowObj.getAsOptionalIdentifier(COLUMNNAME_M_Product_Category_ID)
+				.map(productCategoryTable::getId)
+				.orElse(PRODUCT_CATEGORY_STANDARD_ID);
+		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
 
 		final String description = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_Description);
 		if (Check.isNotBlank(description))

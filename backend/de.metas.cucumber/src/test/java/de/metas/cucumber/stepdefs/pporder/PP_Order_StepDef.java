@@ -44,15 +44,17 @@ import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.externalsystem.export.pporder.ExportPPOrderToExternalSystem;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.product.ProductId;
@@ -76,24 +78,24 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Candidate;
-import org.eevolution.model.I_PP_Product_BOM;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -102,7 +104,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -171,25 +172,15 @@ public class PP_Order_StepDef
 	@And("^after not more than (.*)s, PP_Orders are found$")
 	public void validatePP_Order_Candidate(
 			final int timeoutSec,
-			@NonNull final DataTable dataTable) throws InterruptedException
+			@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			validatePP_Order(timeoutSec, row);
-		}
+		DataTableRows.of(dataTable).forEach(row -> validatePP_Order(timeoutSec, row));
 	}
 
 	@And("^after not more than (.*)s, PP_Order_BomLines are found$")
-	public void validatePP_Order_BomLine(
-			final int timeoutSec,
-			@NonNull final DataTable dataTable) throws InterruptedException
+	public void validatePP_Order_BomLine(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			validatePP_Order_BomLine(timeoutSec, row);
-		}
+		DataTableRows.of(dataTable).forEach(row -> validatePP_Order_BomLine(timeoutSec, row));
 	}
 
 	@And("create PP_Order:")
@@ -395,164 +386,98 @@ public class PP_Order_StepDef
 		}
 	}
 
-	private void validatePP_Order_BomLine(
-			final int timeoutSec,
-			@NonNull final Map<String, String> tableRow) throws InterruptedException
+	private void validatePP_Order_BomLine(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
+		final I_PP_Order_BOMLine ppOrderBOMLine = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, toPPOrderBOMLineQuery(row));
 
-		final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_PP_Order ppOrderRecord = ppOrderTable.get(ppOrderIdentifier);
+		row.getAsOptionalIdentifier(I_PP_Order_BOMLine.COLUMNNAME_M_AttributeSetInstance_ID)
+				.map(attributeSetInstanceTable::getId)
+				.ifPresent(expectedAsiId -> {
+					final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(expectedAsiId).orElse(AttributesKey.NONE);
+					final AttributesKey ppOrderBOMLineAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(ppOrderBOMLine.getM_AttributeSetInstance_ID())).orElse(AttributesKey.NONE);
+					assertThat(ppOrderBOMLineAttributesKeys).isEqualTo(expectedAttributesKeys);
+				});
 
-		final BigDecimal qtyRequired = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered);
-		final boolean isQtyPercentage = DataTableUtil.extractBooleanForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_IsQtyPercentage);
-
-		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
-
-		final String componentType = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_ComponentType);
-
-		final String ppOrderBOMLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final Supplier<Boolean> ppOrderBOMLineQueryExecutor = () -> {
-
-			final I_PP_Order_BOMLine orderBOMLineRecord = queryBL.createQueryBuilder(I_PP_Order_BOMLine.class)
-					.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, ppOrderRecord.getPP_Order_ID())
-					.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
-					.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered, qtyRequired)
-					.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_IsQtyPercentage, isQtyPercentage)
-					.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_C_UOM_ID, uomId.getRepoId())
-					.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_ComponentType, componentType)
-					.create()
-					.firstOnly(I_PP_Order_BOMLine.class);
-
-			if (orderBOMLineRecord == null)
-			{
-				return false;
-			}
-
-			ppOrderBomLineTable.putOrReplace(ppOrderBOMLineIdentifier, orderBOMLineRecord);
-			return true;
-		};
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderBOMLineQueryExecutor);
-
-		final I_PP_Order_BOMLine ppOrderBOMLine = ppOrderBomLineTable.get(ppOrderBOMLineIdentifier);
-		assertThat(ppOrderBOMLine).isNotNull();
-
-		//validate asi
-		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order_BOMLine.COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(attributeSetInstanceIdentifier))
-		{
-			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
-			assertThat(expectedASI).isNotNull();
-
-			final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
-			final AttributesKey ppOrderBOMLineAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(ppOrderBOMLine.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
-
-			assertThat(ppOrderBOMLineAttributesKeys).isEqualTo(expectedAttributesKeys);
-		}
+		row.getAsOptionalIdentifier().ifPresent(identifier -> ppOrderBomLineTable.putOrReplace(identifier, ppOrderBOMLine));
 	}
 
-	private void validatePP_Order(
-			final int timeoutSec,
-			@NonNull final Map<String, String> tableRow) throws InterruptedException
+	private IQuery<I_PP_Order_BOMLine> toPPOrderBOMLineQuery(final @NonNull DataTableRow row)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
-
-		final String productBOMIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_PP_Product_BOM productBOMRecord = productBOMTable.get(productBOMIdentifier);
-
-		final String productPlanningIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "PP_Product_Planning_ID" + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final ProductPlanning productPlanning = productPlanningTable.get(productPlanningIdentifier);
-
-		final int resourceId = DataTableUtil.extractIntForColumnName(tableRow, I_S_Resource.COLUMNNAME_S_Resource_ID);
-		final int qtyEntered = DataTableUtil.extractIntForColumnName(tableRow, I_PP_Order.COLUMNNAME_QtyEntered);
-		final int qtyOrdered = DataTableUtil.extractIntForColumnName(tableRow, I_PP_Order.COLUMNNAME_QtyOrdered);
-
-		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final ProductId productId = row.getAsIdentifier(I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
+		final PPOrderId ppOrderId = row.getAsIdentifier(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID).lookupIdIn(ppOrderTable);
+		final int qtyRequired = row.getAsInt(I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered);
+		final boolean isQtyPercentage = row.getAsOptionalBoolean(I_PP_Order_BOMLine.COLUMNNAME_IsQtyPercentage).orElseFalse();
+		final String x12de355Code = row.getAsString(I_PP_Order_BOMLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+		final BOMComponentType componentType = row.getAsEnum(I_PP_Order_BOMLine.COLUMNNAME_ComponentType, BOMComponentType.class);
 
-		final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		return queryBL.createQueryBuilder(I_PP_Order_BOMLine.class)
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, ppOrderId)
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered, qtyRequired)
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_IsQtyPercentage, isQtyPercentage)
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_C_UOM_ID, uomId.getRepoId())
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_ComponentType, componentType)
+				.create();
+	}
 
-		final Instant datePromised = DataTableUtil.extractInstantForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_DatePromised);
+	private void validatePP_Order(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
+	{
+		final I_PP_Order ppOrder = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, toPPOrderQuery(row));
 
-		final String docStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_DocStatus);
+		row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_M_AttributeSetInstance_ID)
+				.map(attributeSetInstanceTable::getId)
+				.ifPresent(expectedAsiId -> {
+					final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(expectedAsiId).orElse(AttributesKey.NONE);
+					final AttributesKey ppOrderAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(ppOrder.getM_AttributeSetInstance_ID())).orElse(AttributesKey.NONE);
+					assertThat(ppOrderAttributesKeys).isEqualTo(expectedAttributesKeys);
+				});
 
-		final String orderRecordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_PP_Order.Table_Name);
+		row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.ifPresent(itemProductIdentifier -> {
+					final HUPIItemProductId huPiItemProductId = huPiItemProductTable.getIdOptional(itemProductIdentifier)
+							.orElseGet(() -> itemProductIdentifier.getAsId(HUPIItemProductId.class));
+
+					assertThat(ppOrder.getM_HU_PI_Item_Product_ID()).isEqualTo(huPiItemProductId.getRepoId());
+				});
+
+		row.getAsOptionalIdentifier().ifPresent(identifier -> ppOrderTable.putOrReplace(identifier, ppOrder));
+	}
+
+	private IQuery<I_PP_Order> toPPOrderQuery(final @NonNull DataTableRow row)
+	{
+		final ProductId productId = row.getAsIdentifier(I_PP_Order.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
+		final ProductBOMId bomId = row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID).lookupIdIn(productBOMTable);
+		final ProductPlanningId productPlanningId = row.getAsIdentifier("PP_Product_Planning_ID").lookupIdIn(productPlanningTable);
+		final ResourceId plantId = ResourceId.ofRepoId(row.getAsInt(I_PP_Order.COLUMNNAME_S_Resource_ID));
+		final int qtyEntered = row.getAsInt(I_PP_Order.COLUMNNAME_QtyEntered);
+		final int qtyOrdered = row.getAsInt(I_PP_Order.COLUMNNAME_QtyOrdered);
+		final String x12de355Code = row.getAsString(I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+		final Instant datePromised = row.getAsInstant(I_PP_Order_Candidate.COLUMNNAME_DatePromised);
+
 		final IQueryBuilder<I_PP_Order> queryBuilder = queryBL.createQueryBuilder(I_PP_Order.class)
-				.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
-				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID, productBOMRecord.getPP_Product_BOM_ID())
-				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_Planning_ID, productPlanning.getIdNotNull())
-				.addEqualsFilter(I_PP_Order.COLUMNNAME_S_Resource_ID, resourceId)
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID, bomId)
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_Planning_ID, productPlanningId)
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_S_Resource_ID, plantId)
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_QtyEntered, qtyEntered)
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_QtyOrdered, qtyOrdered)
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_C_UOM_ID, uomId.getRepoId())
-
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, datePromised);
 
-		Optional.ofNullable(bPartnerIdentifier)
-				.map(bPartnerTable::get)
-				.ifPresent(bPartnerRecord -> queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_C_BPartner_ID, bPartnerRecord.getC_BPartner_ID()));
+		row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_C_BPartner_ID)
+				.map(bPartnerTable::getId)
+				.ifPresent(bpartnerId -> queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_C_BPartner_ID, bpartnerId));
 
-		if (Check.isNotBlank(docStatus))
-		{
-			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, docStatus);
-		}
+		row.getAsOptionalEnum(I_PP_Order.COLUMNNAME_DocStatus, DocStatus.class)
+				.ifPresent(docStatus -> queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, docStatus));
 
-		ppOrderTable.getOptional(orderRecordIdentifier)
-				.ifPresent(ppOrder -> queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID()));
+		row.getAsOptionalIdentifier()
+				.flatMap(ppOrderTable::getIdOptional)
+				.ifPresent(ppOrderId -> queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderId));
 
-		final Supplier<Boolean> ppOrderQueryExecutor = () -> {
-
-			final I_PP_Order orderRecord = queryBuilder
-					.create()
-					.firstOnly(I_PP_Order.class);
-
-			if (orderRecord != null)
-			{
-				ppOrderTable.putOrReplace(orderRecordIdentifier, orderRecord);
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		};
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderQueryExecutor);
-
-		final I_PP_Order ppOrder = ppOrderTable.get(orderRecordIdentifier);
-		assertThat(ppOrder).isNotNull();
-
-		//validate asi
-		final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order_BOMLine.COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(asiIdentifier))
-		{
-			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(asiIdentifier);
-			assertThat(expectedASI).isNotNull();
-
-			final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
-			final AttributesKey ppOrderAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(ppOrder.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
-
-			assertThat(ppOrderAttributesKeys).isEqualTo(expectedAttributesKeys);
-		}
-
-		final String itemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(itemProductIdentifier))
-		{
-			final Integer huPiItemProductRecordID = huPiItemProductTable.getOptional(itemProductIdentifier)
-					.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
-					.orElseGet(() -> Integer.parseInt(itemProductIdentifier));
-
-			assertThat(ppOrder.getM_HU_PI_Item_Product_ID()).isEqualTo(huPiItemProductRecordID);
-		}
+		return queryBuilder.create();
 	}
 
 	private void locateAndLoadPPOrders(int timeoutSec, @NonNull final Map<String, ArrayList<String>> ppOrderCandidate2PPOrderIdsOrdered) throws InterruptedException

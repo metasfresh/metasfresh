@@ -92,7 +92,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 			final boolean simulated = row.getAsOptionalBoolean("simulated").orElseFalse();
 
 			final WarehouseId warehouseId = row.getAsOptionalIdentifier("M_Warehouse_ID")
-					.flatMap(warehouseTable::getIdOptional)
+					.map(warehouseTable::getId)
 					.orElse(null);
 
 			final MD_Candidate_StepDefTable.MaterialDispoTableRow tableRow = MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()
