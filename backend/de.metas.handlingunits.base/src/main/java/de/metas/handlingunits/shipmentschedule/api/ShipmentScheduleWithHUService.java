@@ -23,6 +23,7 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -142,7 +143,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import com.google.common.annotations.VisibleForTesting;
 
 @Service
 @RequiredArgsConstructor
@@ -414,7 +414,8 @@ public class ShipmentScheduleWithHUService
 			@NonNull final Quantity qtyToDeliver,
 			final boolean pickAccordingToPackingInstruction,
 			@NonNull final ShipmentScheduleWithHUFactory factory,
-			@NonNull final HUsToPickOnTheFly hUsToPickOnTheFly)
+			@NonNull final HUsToPickOnTheFly hUsToPickOnTheFly,
+			@Nullable final ShipmentScheduleSplit split)
 	{
 		if (hUsToPickOnTheFly == HUsToPickOnTheFly.None)
 		{
@@ -438,11 +439,10 @@ public class ShipmentScheduleWithHUService
 		//			loggableWithLogger.addLog("pickHUsOnTheFly - ShipmentSchedule's storageQuery is not a HUStorageQuery; nothing to do");
 		//			return ImmutableList.of();
 		//		}
-
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
 
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(scheduleRecord.getM_ShipmentSchedule_ID());
-		final List<ShipmentScheduleWithHU> alreadyPickedOnTheFlyButNotDelivered = getAlreadyPickedOnTheFlyButNotDelivered(shipmentScheduleId, factory);
+		final List<ShipmentScheduleWithHU> alreadyPickedOnTheFlyButNotDelivered = split != null ? Collections.emptyList() : getAlreadyPickedOnTheFlyButNotDelivered(shipmentScheduleId, factory);
 
 		result.addAll(alreadyPickedOnTheFlyButNotDelivered);
 
@@ -456,12 +456,7 @@ public class ShipmentScheduleWithHUService
 		boolean firstHU = true;
 
 		// if we have HUs on stock, get them now
-		final List<I_M_HU> husToPick = switch (hUsToPickOnTheFly)
-		{
-			case None -> throw new AdempiereException("Trying to pick on the fly when hUsToPickOnTheFly=None");
-			case OnlySourceHUs -> retrievePickOnTheFlySourceHUs(scheduleRecord);
-			case AnyHu -> retrieveAnyMatchingHUs(scheduleRecord);
-		};
+		final List<I_M_HU> husToPick = getHusToPick(scheduleRecord, hUsToPickOnTheFly);
 
 		for (final I_M_HU sourceHURecord : husToPick)
 		{
@@ -543,6 +538,16 @@ public class ShipmentScheduleWithHUService
 		}
 
 		return result.build();
+	}
+
+	private @NonNull List<I_M_HU> getHusToPick(final @NonNull I_M_ShipmentSchedule scheduleRecord, final @NonNull HUsToPickOnTheFly hUsToPickOnTheFly)
+	{
+		return switch (hUsToPickOnTheFly)
+		{
+			case None -> throw new AdempiereException("Trying to pick on the fly when hUsToPickOnTheFly=None");
+			case OnlySourceHUs -> retrievePickOnTheFlySourceHUs(scheduleRecord);
+			case AnyHu -> retrieveAnyMatchingHUs(scheduleRecord);
+		};
 	}
 
 	// method coming from tenacious_d
@@ -771,8 +776,15 @@ public class ShipmentScheduleWithHUService
 			throw new AdempiereException("No shipment schedule split records to process found");
 		}
 
+		final HUsToPickOnTheFly hUsToPickOnTheFly = retrievePickAvailableHUsOntheFly(factory.getHuContext());
 		return shipmentScheduleSplits.stream()
-				.map(split -> factory.ofSplit(schedule, split))
+				.map(split -> pickHUsOnTheFly(schedule,
+						split.getQtyToDeliver(),
+						false,
+						factory,
+						hUsToPickOnTheFly,
+						split))
+				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -1059,7 +1071,8 @@ public class ShipmentScheduleWithHUService
 				qtyToDeliver,
 				pickAccordingToPackingInstruction,
 				factory,
-				hUsToPickOnTheFly);
+				hUsToPickOnTheFly,
+				null);
 	}
 
 	@NonNull
