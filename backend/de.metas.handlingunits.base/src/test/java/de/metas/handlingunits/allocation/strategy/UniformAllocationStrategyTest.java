@@ -388,6 +388,8 @@ public class UniformAllocationStrategyTest
 		public void beforeEach()
 		{
 			Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
+			SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+			
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			final HUTransformService huTransformService = HUTransformService.newInstance(lutuProducerDestinationTestSupport.helper.getHUContext());
 
