@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Builder
-public class InterimContractAllocations
+public class ModularContractAllocations
 {
 	@NonNull private final InterestRunId interestRunId;
 	@NonNull private final Integer additionalInterestDays;
@@ -115,7 +115,7 @@ public class InterimContractAllocations
 		return CreateModularLogInterestRequest.builder()
 				.interestRunId(interestRunId)
 				.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
-				.interimContractLogId(modularContractLogEntry == null ? null : modularContractLogEntry.getId())
+				.modularContractLogEntryId(modularContractLogEntry == null ? null : modularContractLogEntry.getId())
 				.allocatedAmt(getAmountToAllocate(shippingNotification))
 				.interestDays(getInterestDays(shippingNotification))
 				.build();
