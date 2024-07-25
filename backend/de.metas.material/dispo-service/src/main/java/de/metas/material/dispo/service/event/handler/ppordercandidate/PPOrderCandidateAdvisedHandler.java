@@ -38,7 +38,6 @@ import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
@@ -164,7 +163,7 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 				.directlyCreatePPOrder(eventWithRecomputedQty.isDirectlyCreatePPOrder())
 				.build();
 
-		materialEventService.enqueueEventNow(ppOrderRequestEvent);
+		materialEventService.enqueueEventAfterNextCommit(ppOrderRequestEvent); // want to avoid the situation that some response comes back before the data here was even committed to DB
 	}
 
 	private MaterialDispoGroupId handlePPOrderCandidateAdvisedEvent(@NonNull final PPOrderCandidateAdvisedEvent ppOrderCandidateAdvisedEvent)

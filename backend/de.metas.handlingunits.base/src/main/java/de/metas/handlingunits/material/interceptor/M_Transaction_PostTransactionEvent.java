@@ -59,8 +59,8 @@ public class M_Transaction_PostTransactionEvent
 
 	/**
 	 * Note: it's important to enqueue the transaction after it was saved and before it is deleted, because we need its ID.
-	 *
-	 * task https://github.com/metasfresh/metasfresh/issues/710
+	 * <p>
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/710">https://github.com/metasfresh/metasfresh/issues/710</a>
 	 */
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
@@ -82,7 +82,7 @@ public class M_Transaction_PostTransactionEvent
 		final List<MaterialEvent> events = transactionEventCreator.createEventsForTransaction(transaction, deleted);
 		for (final MaterialEvent event : events)
 		{
-			materialEventService.enqueueEventNow(event);
+			materialEventService.enqueueEventAfterNextCommit(event);
 		}
 	}
 }

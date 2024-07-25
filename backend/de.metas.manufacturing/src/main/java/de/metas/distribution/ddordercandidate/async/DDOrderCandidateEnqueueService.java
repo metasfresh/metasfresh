@@ -88,7 +88,7 @@ public class DDOrderCandidateEnqueueService
 		{
 			return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(request);
 		}
-		catch (JsonProcessingException e)
+		catch (final JsonProcessingException e)
 		{
 			throw new AdempiereException("Cannot convert to json: " + request, e);
 		}
@@ -101,7 +101,7 @@ public class DDOrderCandidateEnqueueService
 		{
 			return JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(jsonString, DDOrderCandidateEnqueueRequest.class);
 		}
-		catch (JsonProcessingException e)
+		catch (final JsonProcessingException e)
 		{
 			throw new AdempiereException("Cannot read json: " + jsonString, e);
 		}

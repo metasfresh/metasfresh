@@ -110,8 +110,7 @@ import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candida
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_AttributeSetInstance_ID;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_Product_ID;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.*;
 
 @RequiredArgsConstructor
 public class MD_Candidate_StepDef
@@ -301,7 +300,7 @@ public class MD_Candidate_StepDef
 					.create()
 					.firstOnly(I_MD_Candidate_StockChange_Detail.class);
 
-			softly.assertThat(stockChangeDetail).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s", freshQtyOnHandLineId).isNotNull();
+			assertThat(stockChangeDetail).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s", freshQtyOnHandLineId).isNotNull();
 			softly.assertThat(stockChangeDetail.getFresh_QtyOnHand_ID()).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s - Fresh_QtyOnHand_ID", freshQtyOnHandLineId).isEqualTo(freshQtyOnHandId);
 			softly.assertThat(stockChangeDetail.isReverted()).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s - isReverted", freshQtyOnHandLineId).isEqualTo(isReverted);
 
@@ -355,19 +354,24 @@ public class MD_Candidate_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, candidateWasDeleted);
 	}
 
-	@And("metasfresh has no MD_Candidate_StockChange_Detail data for identifier {string}")
-	public void metasfresh_has_no_md_candidate_stockChange_detail_for_identifier(@NonNull final String identifier)
+	@And("^after not more than (.*)s, metasfresh has no MD_Candidate_StockChange_Detail data for identifier (.*)$")
+	public void metasfresh_has_no_md_candidate_stockChange_detail_for_identifier(final int timeoutSec, @NonNull final String identifier) throws InterruptedException
 	{
 		final TableRecordReference stockChangeDetail = stockChangeDetailStepDefData.getRecordDataItem(identifier)
 				.getTableRecordReference();
 		assertThat(stockChangeDetail).isNotNull();
-		final I_MD_Candidate_StockChange_Detail stockChangeDetailFromDB = queryBL.createQueryBuilder(I_MD_Candidate_StockChange_Detail.class)
-				.addEqualsFilter(I_MD_Candidate_StockChange_Detail.COLUMNNAME_MD_Candidate_StockChange_Detail_ID, stockChangeDetail.getRecord_ID())
-				.orderBy(I_MD_Candidate_StockChange_Detail.COLUMNNAME_MD_Candidate_StockChange_Detail_ID)
-				.create()
-				.firstOnly(I_MD_Candidate_StockChange_Detail.class);
 
-		assertThat(stockChangeDetailFromDB).isNull();
+		final Supplier<Boolean> candidateDetailWasDeleted = () ->
+		{
+			final I_MD_Candidate_StockChange_Detail stockChangeDetailFromDB = queryBL.createQueryBuilder(I_MD_Candidate_StockChange_Detail.class)
+					.addEqualsFilter(I_MD_Candidate_StockChange_Detail.COLUMNNAME_MD_Candidate_StockChange_Detail_ID, stockChangeDetail.getRecord_ID())
+					.orderBy(I_MD_Candidate_StockChange_Detail.COLUMNNAME_MD_Candidate_StockChange_Detail_ID)
+					.create()
+					.firstOnly(I_MD_Candidate_StockChange_Detail.class);
+			return stockChangeDetailFromDB == null;
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, candidateDetailWasDeleted);
 	}
 
 	@And("^after not more than (.*)s, the MD_Candidate table has only the following records$")
@@ -487,7 +491,7 @@ public class MD_Candidate_StepDef
 	}
 
 	private ProviderResult<MaterialDispoDataItem> retrieveMaterialDispoDataItem(
-			final @NonNull MaterialDispoTableRow row, 
+			final @NonNull MaterialDispoTableRow row,
 			final Map<CandidateId, StepDefDataIdentifier> candidateIdsToExclude)
 	{
 		final CandidatesQuery candidatesQuery = row.toCandidatesQuery();
