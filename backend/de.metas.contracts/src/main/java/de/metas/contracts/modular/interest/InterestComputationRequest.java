@@ -42,5 +42,5 @@ public class InterestComputationRequest
 	@NonNull LockOwner lockOwner;
 	@NonNull CurrencyPrecision interestCurrencyPrecision;
 	@NonNull ComputingMethodType computingMethodType;
-	@NonNull BonusComputationTimeInterval bonusComputationTimeInterval;
+	@NonNull BonusAndInterestTimeInterval bonusAndInterestTimeInterval;
 }

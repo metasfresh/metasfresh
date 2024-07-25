@@ -163,7 +163,7 @@ public class InterestComputationCommand
 		{
 			currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
 															 shippingNotificationIterator.next(),
-															 request.getBonusComputationTimeInterval());
+															 request.getBonusAndInterestTimeInterval());
 
 			{
 				final SaveSubtractedValueRequest saveSubtractedValueRequest = SaveSubtractedValueRequest.builder()
@@ -201,7 +201,7 @@ public class InterestComputationCommand
 				{
 					currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
 																	 shippingNotificationIterator.next(),
-																	 request.getBonusComputationTimeInterval());
+																	 request.getBonusAndInterestTimeInterval());
 				}
 
 				if (currentModularContractAllocations.canAllocate(currentShippingNotification))
@@ -246,7 +246,7 @@ public class InterestComputationCommand
 		final ModularContractAllocations.AllocationItem shippingNotification = saveSubtractedValueRequest.getShippingNotification();
 		final Percent bonusInterestRate = saveSubtractedValueRequest.getBonusInterestRate();
 
-		final long interestDays = interestComputationRequest.getBonusComputationTimeInterval().getBonusInterestDays();
+		final long interestDays = interestComputationRequest.getBonusAndInterestTimeInterval().getBonusInterestDays();
 
 		final BigDecimal bonusAmountAsBD = bonusInterestRate.computePercentageOf(shippingNotification.getOpenAmount().toBigDecimal(),
 																				 interestComputationRequest.getInterestCurrencyPrecision().toInt())
@@ -389,7 +389,7 @@ public class InterestComputationCommand
 	private ModularContractAllocations.AllocationItem initAllocationItem(
 			@NonNull final CurrencyId targetCurrencyId,
 			@NonNull final ModularContractLogEntry shippingNotification,
-			@NonNull final BonusComputationTimeInterval bonusComputationTimeInterval)
+			@NonNull final BonusAndInterestTimeInterval bonusAndInterestTimeInterval)
 	{
 		Check.assume(LogEntryDocumentType.SHIPPING_NOTIFICATION == shippingNotification.getDocumentType(),
 					 "Expecting DocumentType = " + LogEntryDocumentType.SHIPPING_NOTIFICATION +
@@ -408,7 +408,7 @@ public class InterestComputationCommand
 		return ModularContractAllocations.AllocationItem.builder()
 				.shippingNotificationEntry(shippingNotification)
 				.openAmount(shippingNotificationAmountInTargetCurr)
-				.bonusComputationTimeInterval(bonusComputationTimeInterval)
+				.bonusAndInterestTimeInterval(bonusAndInterestTimeInterval)
 				.build();
 	}
 
@@ -441,7 +441,7 @@ public class InterestComputationCommand
 				.interestRunId(runId)
 				.interestToDistribute(request.getInterestToDistribute())
 				.invoicingGroupId(request.getInvoicingGroupId())
-				.bonusComputationTimeInterval(request.getBonusComputationTimeInterval())
+				.bonusAndInterestTimeInterval(request.getBonusAndInterestTimeInterval())
 				.lockOwner(request.getLockOwner());
 
 	}
