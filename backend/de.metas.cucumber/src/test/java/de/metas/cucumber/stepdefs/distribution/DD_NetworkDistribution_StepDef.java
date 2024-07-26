@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,16 +25,19 @@ package de.metas.cucumber.stepdefs.distribution;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.model.I_DD_NetworkDistribution;
 
 @RequiredArgsConstructor
 public class DD_NetworkDistribution_StepDef
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final DD_NetworkDistribution_StepDefData ddNetworkTable;
 
 	@And("metasfresh contains DD_NetworkDistribution")
@@ -58,5 +61,21 @@ public class DD_NetworkDistribution_StepDef
 		InterfaceWrapperHelper.save(record);
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> ddNetworkTable.put(identifier, record));
+	}
+
+	@And("load DD_NetworkDistribution:")
+	public void load_DD_NetworkDistribution(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_DD_NetworkDistribution.COLUMNNAME_DD_NetworkDistribution_ID)
+				.forEach(row -> {
+					final String value = row.getAsString(I_DD_NetworkDistribution.COLUMNNAME_Value);
+					final I_DD_NetworkDistribution record = queryBL.createQueryBuilder(I_DD_NetworkDistribution.class)
+							.addEqualsFilter(I_DD_NetworkDistribution.COLUMNNAME_Value, value)
+							.create()
+							.firstOnlyNotNull(I_DD_NetworkDistribution.class);
+
+					ddNetworkTable.putOrReplace(row.getAsIdentifier(), record);
+				});
 	}
 }

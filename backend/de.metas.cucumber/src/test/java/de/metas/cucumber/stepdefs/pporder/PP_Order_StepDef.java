@@ -30,6 +30,8 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
@@ -38,7 +40,10 @@ import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.externalsystem.export.pporder.ExportPPOrderToExternalSystem;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
@@ -70,12 +75,15 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
@@ -90,6 +98,7 @@ import org.eevolution.model.I_PP_Order_Candidate;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -97,6 +106,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PP_Order_StepDef
@@ -107,6 +117,7 @@ public class PP_Order_StepDef
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	private final ExportPPOrderToExternalSystem exportPPOrderToExternalSystem = SpringContextHolder.instance.getBean(ExportPPOrderToExternalSystem.class);
 
@@ -122,6 +133,7 @@ public class PP_Order_StepDef
 	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
 	private final M_HU_StepDefData huTable;
 	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 
 	public PP_Order_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -135,7 +147,8 @@ public class PP_Order_StepDef
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
 			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
 			@NonNull final M_HU_StepDefData huTable,
-			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable)
+			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable)
 	{
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
@@ -149,6 +162,7 @@ public class PP_Order_StepDef
 		this.ppOrderCandidateTable = ppOrderCandidateTable;
 		this.huTable = huTable;
 		this.leichMehlConfigTable = leichMehlConfigTable;
+		this.warehouseTable = warehouseTable;
 	}
 
 	@And("^after not more than (.*)s, PP_Orders are found$")
@@ -198,11 +212,23 @@ public class PP_Order_StepDef
 
 			final String productPlanningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_PP_Product_Planning_ID + "." + TABLECOLUMN_IDENTIFIER);
 
+			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final WarehouseId warehouseId;
+			if (Check.isNotBlank(warehouseIdentifier))
+			{
+				final I_M_Warehouse warehouseRecord = warehouseTable.get(warehouseIdentifier);
+				warehouseId = WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID());
+			}
+			else
+			{
+				warehouseId = StepDefConstants.WAREHOUSE_ID;
+			}
+
 			final PPOrderCreateRequest.PPOrderCreateRequestBuilder ppOrderCreateRequest = PPOrderCreateRequest.builder()
 					.docBaseType(docBaseType)
 					.clientAndOrgId(clientAndOrgId)
 					.plantId(resourceId)
-					.warehouseId(StepDefConstants.WAREHOUSE_ID)
+					.warehouseId(warehouseId)
 					.productId(productId)
 					.qtyRequired(quantity)
 					.dateOrdered(dateOrdered)
@@ -244,6 +270,16 @@ public class PP_Order_StepDef
 			{
 				StepDefUtil.validateErrorMessage(e, errorMessage);
 			}
+		}
+	}
+
+	@And("update PP_Order:")
+	public void update_PP_Order(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			updatePPOrder(row);
 		}
 	}
 
@@ -314,6 +350,30 @@ public class PP_Order_StepDef
 		}
 	}
 
+	@And("^the manufacturing order identified by (.*) is (reactivated|completed)$")
+	public void order_action(
+			@NonNull final String orderIdentifier,
+			@NonNull final String action)
+	{
+		final I_PP_Order orderRecord = ppOrderTable.get(orderIdentifier);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case reactivated:
+				orderRecord.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(orderRecord, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				break;
+			case completed:
+				orderRecord.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(orderRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			default:
+				throw new AdempiereException("Unhandled PP_Order action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
+		}
+	}
+
 	private void validatePP_Order_BomLine(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
 	{
 		final I_PP_Order_BOMLine ppOrderBOMLine = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, toPPOrderBOMLineQuery(row));
@@ -377,7 +437,9 @@ public class PP_Order_StepDef
 		final ProductId productId = row.getAsIdentifier(I_PP_Order.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
 		final ProductBOMId bomId = row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID).lookupIdIn(productBOMTable);
 		final ProductPlanningId productPlanningId = row.getAsIdentifier("PP_Product_Planning_ID").lookupIdIn(productPlanningTable);
-		final ResourceId plantId = ResourceId.ofRepoId(row.getAsInt(I_PP_Order.COLUMNNAME_S_Resource_ID));
+
+		final StepDefDataIdentifier plantIdentifier = row.getAsIdentifier(I_PP_Order.COLUMNNAME_S_Resource_ID);
+		final ResourceId plantId = resourceTable.getIdOptional(plantIdentifier).orElseGet(() -> plantIdentifier.getAsId(ResourceId.class));
 		final int qtyEntered = row.getAsInt(I_PP_Order.COLUMNNAME_QtyEntered);
 		final int qtyOrdered = row.getAsInt(I_PP_Order.COLUMNNAME_QtyOrdered);
 		final String x12de355Code = row.getAsString(I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
@@ -463,6 +525,27 @@ public class PP_Order_StepDef
 		}
 
 		return ppOrderCandidate2PPOrderIdsOrdered;
+	}
+
+	private void updatePPOrder(@NonNull final Map<String, String> row)
+	{
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_PP_Order ppOrderRecord = ppOrderTable.get(orderIdentifier);
+
+		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_PP_Order.COLUMNNAME_QtyEntered);
+		if (qtyEntered != null)
+		{
+			ppOrderRecord.setQtyEntered(qtyEntered);
+			ppOrderRecord.setQtyOrdered(qtyEntered);
+		}
+
+		final ZonedDateTime datePromised = DataTableUtil.extractZonedDateTimeOrNullForColumnName(row, "OPT." + I_PP_Order.COLUMNNAME_DatePromised);
+		if (datePromised != null)
+		{
+			ppOrderRecord.setDatePromised(TimeUtil.asTimestampNotNull(datePromised));
+		}
+
+		saveRecord(ppOrderRecord);
 	}
 
 	@And("load manufactured HU for PP_Order:")

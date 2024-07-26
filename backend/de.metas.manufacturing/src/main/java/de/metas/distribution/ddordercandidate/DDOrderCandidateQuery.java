@@ -5,6 +5,8 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
 
@@ -18,4 +20,6 @@ public class DDOrderCandidateQuery
 	@Nullable OrderLineId salesOrderLineId;
 	@Nullable Boolean processed;
 	@Nullable Boolean isSimulated;
+	@Nullable PPOrderId excludePPOrderId;
+	@Nullable PPOrderCandidateId ppOrderCandidateId;
 }

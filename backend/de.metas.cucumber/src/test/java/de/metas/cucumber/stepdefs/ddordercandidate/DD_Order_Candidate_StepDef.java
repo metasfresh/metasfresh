@@ -32,7 +32,6 @@ import org.eevolution.productioncandidate.model.PPOrderLineCandidateId;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -53,7 +52,7 @@ public class DD_Order_Candidate_StepDef
 	public void validateDDOrderLineCandidates(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
-			final DDOrderCandidate candidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 1000, () -> validateDDOrderLineCandidate(row), (Supplier<String>)null);
+			final DDOrderCandidate candidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 1000, () -> validateDDOrderLineCandidate(row));
 			row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderCandidateTable.put(identifier, candidate));
 		});
 	}
@@ -65,11 +64,14 @@ public class DD_Order_Candidate_StepDef
 
 		if (candidates.isEmpty())
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("No candidate found");
+			return ItemProvider.ProviderResult.resultWasNotFound("No candidate found"
+					+ "\n\trow=" + row);
 		}
 		else if (candidates.size() > 1)
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("More than one candidate found");
+			return ItemProvider.ProviderResult.resultWasNotFound("More than one candidate found"
+					+ "\n\trow=" + row
+					+ "\n\tcandidates=" + candidates);
 		}
 
 		final DDOrderCandidate candidate = candidates.get(0);
@@ -77,13 +79,17 @@ public class DD_Order_Candidate_StepDef
 		final BigDecimal qtyEntered = row.getAsOptionalBigDecimal("Qty").orElse(null);
 		if (qtyEntered != null && qtyEntered.compareTo(candidate.getQty().toBigDecimal()) != 0)
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("qty not matching, expected " + qtyEntered + " but found " + candidate.getQty().toBigDecimal());
+			return ItemProvider.ProviderResult.resultWasNotFound("qty not matching, expected " + qtyEntered + " but found " + candidate.getQty().toBigDecimal()
+					+ "\n\trow=" + row
+					+ "\n\tcandidate=" + candidate);
 		}
 
 		final Boolean isSimulated = row.getAsOptionalBoolean("IsSimulated").toBooleanOrNull();
 		if (isSimulated != null && isSimulated != candidate.isSimulated())
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("IsSimulated not matching, expected " + isSimulated + " but found " + candidate.isSimulated());
+			return ItemProvider.ProviderResult.resultWasNotFound("IsSimulated not matching, expected " + isSimulated + " but found " + candidate.isSimulated()
+					+ "\n\trow=" + row
+					+ "\n\tcandidate=" + candidate);
 		}
 
 		final StepDefDataIdentifier salesOrderLineIdentifier = row.getAsOptionalIdentifier("C_OrderLineSO_ID").orElse(null);
@@ -92,7 +98,9 @@ public class DD_Order_Candidate_StepDef
 			final OrderLineId salesOrderLineId = salesOrderLineIdentifier.lookupIdIn(orderLineTable);
 			if (!OrderLineId.equals(salesOrderLineId, candidate.getSalesOrderLineId()))
 			{
-				return ItemProvider.ProviderResult.resultWasNotFound("IsSimulated not matching, expected " + salesOrderLineId + " but found " + candidate.getSalesOrderLineId());
+				return ItemProvider.ProviderResult.resultWasNotFound("IsSimulated not matching, expected " + salesOrderLineId + " but found " + candidate.getSalesOrderLineId()
+						+ "\n\trow=" + row
+						+ "\n\tcandidate=" + candidate);
 			}
 		}
 
@@ -104,7 +112,9 @@ public class DD_Order_Candidate_StepDef
 			final PPOrderCandidateId actualPPOrderCandidateId = ppOrderRef != null ? PPOrderCandidateId.ofRepoIdOrNull(ppOrderRef.getPpOrderCandidateId()) : null;
 			if (!PPOrderCandidateId.equals(actualPPOrderCandidateId, expectedPPOrderCandidateId))
 			{
-				return ItemProvider.ProviderResult.resultWasNotFound("Forward_PP_Order_Candidate_ID not matching, expected " + expectedPPOrderCandidateId + " but found " + actualPPOrderCandidateId);
+				return ItemProvider.ProviderResult.resultWasNotFound("Forward_PP_Order_Candidate_ID not matching, expected " + expectedPPOrderCandidateId + " but found " + actualPPOrderCandidateId
+						+ "\n\trow=" + row
+						+ "\n\tcandidate=" + candidate);
 			}
 		}
 
@@ -116,7 +126,9 @@ public class DD_Order_Candidate_StepDef
 			final PPOrderLineCandidateId actualPPOrderLineCandidateId = ppOrderRef != null ? PPOrderLineCandidateId.ofRepoIdOrNull(ppOrderRef.getPpOrderLineCandidateId()) : null;
 			if (!PPOrderLineCandidateId.equals(actualPPOrderLineCandidateId, expectedPPOrderLineCandidateId))
 			{
-				return ItemProvider.ProviderResult.resultWasNotFound("Forward_PP_OrderLine_Candidate_ID not matching, expected " + expectedPPOrderLineCandidateId + " but found " + actualPPOrderLineCandidateId);
+				return ItemProvider.ProviderResult.resultWasNotFound("Forward_PP_OrderLine_Candidate_ID not matching, expected " + expectedPPOrderLineCandidateId + " but found " + actualPPOrderLineCandidateId
+						+ "\n\trow=" + row
+						+ "\n\tcandidate=" + candidate);
 			}
 		}
 
@@ -128,7 +140,9 @@ public class DD_Order_Candidate_StepDef
 			final PPOrderId actualPPOrderId = ppOrderRef != null ? ppOrderRef.getPpOrderId() : null;
 			if (!PPOrderId.equals(actualPPOrderId, expectedPPOrderId))
 			{
-				return ItemProvider.ProviderResult.resultWasNotFound("Forward_PP_Order_ID not matching, expected " + expectedPPOrderId + " but found " + actualPPOrderId);
+				return ItemProvider.ProviderResult.resultWasNotFound("Forward_PP_Order_ID not matching, expected " + expectedPPOrderId + " but found " + actualPPOrderId
+						+ "\n\trow=" + row
+						+ "\n\tcandidate=" + candidate);
 			}
 		}
 
@@ -140,7 +154,9 @@ public class DD_Order_Candidate_StepDef
 			final PPOrderBOMLineId actualPPOrderBOMLineId = ppOrderRef != null ? ppOrderRef.getPpOrderBOMLineId() : null;
 			if (!PPOrderBOMLineId.equals(actualPPOrderBOMLineId, expectedPPOrderBOMLineId))
 			{
-				return ItemProvider.ProviderResult.resultWasNotFound("Forward_PP_Order_BOMLine_ID not matching, expected " + expectedPPOrderBOMLineId + " but found " + actualPPOrderBOMLineId);
+				return ItemProvider.ProviderResult.resultWasNotFound("Forward_PP_Order_BOMLine_ID not matching, expected " + expectedPPOrderBOMLineId + " but found " + actualPPOrderBOMLineId
+						+ "\n\trow=" + row
+						+ "\n\tcandidate=" + candidate);
 			}
 		}
 

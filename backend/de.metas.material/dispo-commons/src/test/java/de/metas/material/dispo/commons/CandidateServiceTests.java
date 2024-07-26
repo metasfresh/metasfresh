@@ -14,6 +14,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
@@ -175,6 +176,7 @@ public class CandidateServiceTests
 						.shipperId(ShipperId.ofRepoId(240))
 						.qty(TEN)
 						.build())
+				.groupId(MaterialDispoGroupId.ofInt(888))
 				.build();
 
 		final Candidate demandCandidate = supplyCandidate.toBuilder()
@@ -190,6 +192,7 @@ public class CandidateServiceTests
 						.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(500, 500))
 						.qty(TEN)
 						.build())
+				.groupId(supplyCandidate.getGroupId())
 				.build();
 
 		final DDOrderCandidateRequestedEvent distributionOrderEvent = requestMaterialOrderService.createDDOrderCandidateRequestedEvent(CandidatesGroup.of(supplyCandidate, demandCandidate), null);
