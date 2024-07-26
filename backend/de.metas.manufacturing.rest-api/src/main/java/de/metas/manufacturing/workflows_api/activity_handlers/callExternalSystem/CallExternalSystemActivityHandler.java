@@ -72,6 +72,7 @@ public class CallExternalSystemActivityHandler implements WFActivityHandler, Set
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.callExternalSystem");
 	public static final AdMessageKey RESEND_TO_SAME_MACHINE_MESSAGE_KEY = AdMessageKey.of("de.metas.manufacturing.callExternalSystem.ResendToSameMachine");
+	public static final AdMessageKey NOT_AN_EXTERNAL_SYSTEM_ERR_MESSAGE_KEY = AdMessageKey.of("de.metas.manufacturing.callExternalSystem.NOT_AN_EXTERNAL_SYSTEM_ERR");
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -200,7 +201,7 @@ public class CallExternalSystemActivityHandler implements WFActivityHandler, Set
 		}
 		else
 		{
-			throw new AdempiereException("Unknown QR code type=" + scannedQRCode.getType());
+			throw new AdempiereException(NOT_AN_EXTERNAL_SYSTEM_ERR_MESSAGE_KEY);
 		}
 	}
 
@@ -210,12 +211,12 @@ public class CallExternalSystemActivityHandler implements WFActivityHandler, Set
 		final Resource externalSystemResource = resourceService.getById(resourceQRCode.getResourceId());
 		if (!externalSystemResource.isExternalSystem())
 		{
-			throw new AdempiereException("Scanned resource is not an external system!");
+			throw new AdempiereException(NOT_AN_EXTERNAL_SYSTEM_ERR_MESSAGE_KEY);
 		}
 
 		return ExternalSystemParentConfigId.ofRepoIdOptional(externalSystemResource.getExternalSystemParentConfigId())
 				.flatMap(externalSystemConfigRepo::getChildByParentId)
 				.map(IExternalSystemChildConfig::getId)
-				.orElseThrow(() -> new AdempiereException("Scanned resource does not have an external system attached!"));
+				.orElseThrow(() -> new AdempiereException(NOT_AN_EXTERNAL_SYSTEM_ERR_MESSAGE_KEY));
 	}
 }
