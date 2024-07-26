@@ -152,7 +152,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 			@JsonProperty("billLocationIdentifier") @Nullable final String billLocationIdentifier,
 			@JsonProperty("billContactIdentifier") @Nullable final String billContactIdentifier,
 			@JsonProperty("productIdentifier") @NonNull final String productIdentifier,
-			@JsonProperty("bankAccountIdentifier") @NonNull final String bankAccountIdentifier,
+			@JsonProperty("bankAccountIdentifier") @Nullable final String bankAccountIdentifier,
 			@JsonProperty("soTrx") @NonNull final JsonSOTrx soTrx,
 			@JsonProperty("invoiceDocType") @Nullable final JsonDocTypeInfo invoiceDocType,
 			@JsonProperty("invoiceRuleOverride") @Nullable final JsonInvoiceRule invoiceRuleOverride,
