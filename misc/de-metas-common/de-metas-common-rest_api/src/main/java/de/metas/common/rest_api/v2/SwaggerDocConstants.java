@@ -111,5 +111,7 @@ public class SwaggerDocConstants
 
 	public static final String BANK_ACCOUNT_IDENTIFIER_DOC = "Identifier of the C_BP_BankAccount in question. Can be\n"
 			+ "* a plain `<C_BP_BankAccount_ID>`\n"
-			+ "* or something like `val-<C_BP_BankAccount.IBAN>`\n";
+			+ "* or `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n"
+			+ "* or `iban-<IBAN>`\n"
+			+ "* or `qr_iban-<QR-IBAN>`\n";
 }

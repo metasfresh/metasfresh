@@ -114,20 +114,19 @@ import static java.math.BigDecimal.ZERO;
 @Service
 public class CreateInvoiceCandidatesService
 {
-	public static final IBPartnerOrgBL orgBL = Services.get(IBPartnerOrgBL.class);
-	private final DocTypeService docTypeService;
-	private final CurrencyService currencyService;
-
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-	private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
-	private final InvoiceCandidateRepository invoiceCandidateRepository;
-	private final ManualCandidateService manualCandidateService;
-	private final ProductRestService productRestService;
-	private final BPRelationsService bpRelationsService;
-	private final JsonRetrieverService jsonRetrieverService;
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull public final IBPartnerOrgBL orgBL = Services.get(IBPartnerOrgBL.class);
+	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	@NonNull private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
+	@NonNull private final InvoiceCandidateRepository invoiceCandidateRepository;
+	@NonNull private final ManualCandidateService manualCandidateService;
+	@NonNull private final ProductRestService productRestService;
+	@NonNull private final BPRelationsService bpRelationsService;
+	@NonNull private final JsonRetrieverService jsonRetrieverService;
+	@NonNull private final DocTypeService docTypeService;
+	@NonNull private final CurrencyService currencyService;
 
 	public CreateInvoiceCandidatesService(
 			@NonNull final DocTypeService docTypeService,
@@ -484,8 +483,7 @@ public class CreateInvoiceCandidatesService
 
 	}
 
-	@Nullable
-	private BankAccountId syncBankAccountIdToCandidate(
+	private void syncBankAccountIdToCandidate(
 			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item,
 			@NonNull final OrgId orgId)
@@ -496,9 +494,9 @@ public class CreateInvoiceCandidatesService
 			final Optional<BPartnerId> orgBPartnerIdOptional = orgBL.retrieveLinkedBPartnerId(orgId);
 			if (orgBPartnerIdOptional.isPresent())
 			{
-				final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.ofOrNull(orgBPartnerIdOptional.get().toString());
+				final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(orgBPartnerIdOptional.get().toString());
 
-				final Optional<MetasfreshId> metasfreshId = jsonRetrieverService.resolveBankAccountIdentifier(OrgId.MAIN,
+				final Optional<MetasfreshId> metasfreshId = jsonRetrieverService.resolveBankAccountIdentifier(orgId,
 						bpartnerIdentifier,
 						ExternalIdentifier.of(item.getBankAccountIdentifier()));
 
@@ -506,17 +504,9 @@ public class CreateInvoiceCandidatesService
 				{
 					final BankAccountId bankAccountId = BankAccountId.ofRepoId(metasfreshId.get().getValue());
 					candidate.bankAccountId(bankAccountId);
-					return bankAccountId;
 				}
-				return null;
 			}
-			return null;
 		}
-		else
-		{
-			return null;
-		}
-
 	}
 
 
