@@ -28,6 +28,7 @@ import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.manufacturing.workflows_api.ManufacturingRestService;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -288,10 +289,9 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 			@NonNull final ManufacturingJob job,
 			@NonNull final UserConfirmationRequest request)
 	{
-		final boolean includeProcessed = true;
-		final DraftPPOrderQuantities draftQtys = huPPOrderQtyBL.getPPOrderQuantities(job.getPpOrderId(), includeProcessed);
+		final PPOrderQuantities ppOrderQuantities = ppOrderBOMBL.getQuantities(ppOrderBL.getById(job.getPpOrderId()));
 
-		if (!draftQtys.isSomethingReceived())
+		if (!ppOrderQuantities.isSomethingReceived())
 		{
 			throw new AdempiereException(NOTHING_WAS_RECEIVED_YET);
 		}
@@ -299,7 +299,7 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 		final IssueOnlyWhatWasReceivedConfig issueConfig = getIssueWhatWasReceivedConfig(job, request);
 		return IssueWhatWasReceivedRequest.builder()
 				.ppOrderId(job.getPpOrderId())
-				.draftQtys(draftQtys)
+				.draftQtys(huPPOrderQtyBL.getDraftPPOrderQuantities(job.getPpOrderId()))
 				.loadSourceHUsForProductId(getLoadSourceHUsForProductFunction(issueConfig, job.getPpOrderId()));
 	}
 
