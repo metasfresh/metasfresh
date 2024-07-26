@@ -93,8 +93,8 @@ Feature: Group invoices and credit memos into a single document
       | schedule_SO | orderLine_SO              | N             | 8                |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo      |
-      | inventory                 | 2022-06-16T00:00:00Z | inventoryDocNo2 |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
+      | inventory                 | 2022-06-16   | inventoryDocNo2 |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | inventory                 | inventoryLine                 | product_SO              | 0       | 10       |
@@ -272,8 +272,8 @@ Feature: Group invoices and credit memos into a single document
       | schedule_SO | orderLine_SO              | N             | 12               |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo      |
-      | inventory                 | 2022-06-16T00:00:00Z | inventoryDocNo2 |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
+      | inventory                 | 2022-06-16   | inventoryDocNo2 |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | inventory                 | inventoryLine                 | product_SO              | 0       | 10       |
@@ -445,8 +445,8 @@ Feature: Group invoices and credit memos into a single document
       | schedule_SO | orderLine_SO              | N             | 12               |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo      |
-      | inventory                 | 2022-06-16T00:00:00Z | inventoryDocNo2 |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
+      | inventory                 | 2022-06-16   | inventoryDocNo2 |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | inventory                 | inventoryLine                 | product_SO              | 0       | 10       |

@@ -30,6 +30,7 @@ import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -77,6 +78,8 @@ public class CreateManualInvoiceRequest
 
 	@NonNull
 	CurrencyId currencyId;
+
+	@NonNull PaymentTermId paymentTermId;
 
 	@NonNull
 	ImmutableList<CreateManualInvoiceLineRequest> lines;
