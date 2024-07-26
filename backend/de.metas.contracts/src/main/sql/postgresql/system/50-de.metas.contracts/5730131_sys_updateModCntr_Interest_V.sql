@@ -85,7 +85,6 @@ FROM modcntr_interest mi
          INNER JOIN modcntr_settings s ON m.modcntr_settings_id = s.modcntr_settings_id
          LEFT JOIN interimAmts ON l.c_flatrate_term_id = interimAmts.c_flatrate_term_id AND l.modcntr_module_id = interimAmts.modcntr_module_id
          LEFT JOIN matchedAmts ON matchedamts.modcntr_interest_id = mi.modcntr_interest_id
-    -- With the latest changes interimcontract_modcntr_log_id will actually contain the modcntr_log_id for the original modular contract, not the optional interim contract
          LEFT JOIN modcntr_log modularContractLog ON mi.interimcontract_modcntr_log_id = modularContractLog.modcntr_log_id
          LEFT JOIN c_flatrate_term modularContract ON modularContract.c_flatrate_term_id = modularContractLog.record_id
          LEFT JOIN c_flatrate_term interimContract ON interimContract.modular_flatrate_term_id = modularContract.c_flatrate_term_id AND interimContract.type_conditions = 'InterimInvoice'
