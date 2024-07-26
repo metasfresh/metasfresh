@@ -494,7 +494,7 @@ public class CreateInvoiceCandidatesService
 			final Optional<BPartnerId> orgBPartnerIdOptional = orgBL.retrieveLinkedBPartnerId(orgId);
 			if (orgBPartnerIdOptional.isPresent())
 			{
-				final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(orgBPartnerIdOptional.get().toString());
+				final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(String.valueOf(BPartnerId.toRepoId(orgBPartnerIdOptional.get())));
 
 				final Optional<MetasfreshId> metasfreshId = jsonRetrieverService.resolveBankAccountIdentifier(orgId,
 						bpartnerIdentifier,
