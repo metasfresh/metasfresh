@@ -415,7 +415,7 @@ public class ShipmentScheduleWithHUService
 			final boolean pickAccordingToPackingInstruction,
 			@NonNull final ShipmentScheduleWithHUFactory factory,
 			@NonNull final HUsToPickOnTheFly hUsToPickOnTheFly,
-			@Nullable final ShipmentScheduleSplit split)
+			@Nullable final ShipmentScheduleSplit shipmentScheduleSplit)
 	{
 		if (hUsToPickOnTheFly == HUsToPickOnTheFly.None)
 		{
@@ -442,7 +442,7 @@ public class ShipmentScheduleWithHUService
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
 
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(scheduleRecord.getM_ShipmentSchedule_ID());
-		final List<ShipmentScheduleWithHU> alreadyPickedOnTheFlyButNotDelivered = split != null ? Collections.emptyList() : getAlreadyPickedOnTheFlyButNotDelivered(shipmentScheduleId, factory);
+		final List<ShipmentScheduleWithHU> alreadyPickedOnTheFlyButNotDelivered = shipmentScheduleSplit != null ? Collections.emptyList() : getAlreadyPickedOnTheFlyButNotDelivered(shipmentScheduleId, factory);
 
 		result.addAll(alreadyPickedOnTheFlyButNotDelivered);
 
@@ -470,11 +470,11 @@ public class ShipmentScheduleWithHUService
 			}
 
 			final Quantity quantityToSplit = qtyOfSourceHU.min(remainingQtyToAllocate);
-			loggableWithLogger.addLog("pickHUsOnTheFly - QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}",
+			loggableWithLogger.addLog("pickHUsOnTheFly - QtyToDeliver={}; shipmentScheduleSplit Qty={} from available M_HU_ID={} with Qty={}",
 					qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
 
 			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
-			loggable.addLog("pickHUsOnTheFly - QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}",
+			loggable.addLog("pickHUsOnTheFly - QtyToDeliver={}; shipmentScheduleSplit Qty={} from available M_HU_ID={} with Qty={}",
 					qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
 
 			final List<I_M_HU> newHURecords = createNewlyPickedHUs(scheduleRecord, sourceHURecord, quantityToSplit, pickAccordingToPackingInstruction);
@@ -485,7 +485,7 @@ public class ShipmentScheduleWithHUService
 			for (final I_M_HU newHURecord : newHURecords)
 			{
 				final Quantity qtyOfNewHU = extractQtyOfHU(newHURecord, productId, uomRecord);
-				loggableWithLogger.addLog("pickHUsOnTheFly - QtyToDeliver={}; assign split M_HU_ID={} with Qty={}", qtyToDeliver, newHURecord.getM_HU_ID(), qtyOfNewHU);
+				loggableWithLogger.addLog("pickHUsOnTheFly - QtyToDeliver={}; assign shipmentScheduleSplit M_HU_ID={} with Qty={}", qtyToDeliver, newHURecord.getM_HU_ID(), qtyOfNewHU);
 
 				Quantity catchQtyOverride = null;
 				if (firstHU)
@@ -506,7 +506,8 @@ public class ShipmentScheduleWithHUService
 						qtys,
 						newHURecord,
 						factory,
-						anonymousTuPickedOnTheFly));
+						anonymousTuPickedOnTheFly,
+						shipmentScheduleSplit));
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(qtyOfNewHU);
 			}
 
@@ -534,7 +535,8 @@ public class ShipmentScheduleWithHUService
 					qtys,
 					huForRemainingQty,
 					factory,
-					true));
+					true,
+					shipmentScheduleSplit));
 		}
 
 		return result.build();
