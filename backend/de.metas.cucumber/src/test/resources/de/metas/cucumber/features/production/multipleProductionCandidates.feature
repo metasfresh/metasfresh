@@ -26,7 +26,7 @@ Feature: create multiple production candidates
       | S_Resource_ID.Identifier | S_Resource_ID |
       | testResource             | 540006        |
 
-  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7504398064/job/20433480647
+
   @Id:S0129.1_140
   @Id:S0212.100
   @from:cucumber

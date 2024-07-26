@@ -8,7 +8,7 @@ Feature: Stock shortage solved via distribution
     And metasfresh has date and time 2022-07-04T08:00:00+00:00
     And there is no in transit M_Warehouse
 
-  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7568809968/attempts/1?pr=17166
+
   @from:cucumber
   @Id:S0229_100
   @Id:S0264_800

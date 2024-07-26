@@ -340,7 +340,6 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
   @Id:S0264_500
   @Id:S0196_300
   @from:cucumber
-  @flaky
   Scenario: Production candidate is created in the past
     Given metasfresh contains M_Products:
       | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
