@@ -34,5 +34,5 @@ public class SaveSubtractedValueRequest
 {
 	@NonNull InterestComputationRequest request;
 	@NonNull Percent bonusInterestRate;
-	@With @NonNull InterimContractAllocations.AllocationItem shippingNotification;
+	@With @NonNull ModularContractAllocations.AllocationItem shippingNotification;
 }

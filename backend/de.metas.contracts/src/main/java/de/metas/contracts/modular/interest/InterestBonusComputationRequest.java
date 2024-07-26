@@ -45,9 +45,9 @@ public class InterestBonusComputationRequest
 	@NonNull UserId userId;
 
 	@NonNull
-	public BonusComputationTimeInterval getBonusComputationTimeInterval()
+	public BonusAndInterestTimeInterval getBonusAndInterestTimeInterval()
 	{
-		return BonusComputationTimeInterval.builder()
+		return BonusAndInterestTimeInterval.builder()
 				.billingDate(billingDate)
 				.interimDate(interimDate)
 				.build();
