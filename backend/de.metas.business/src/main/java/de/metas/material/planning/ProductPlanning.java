@@ -100,35 +100,35 @@ public class ProductPlanning
 	@Nullable DistributionNetworkId distributionNetworkId;
 
 	public ProductPlanning(final boolean disallowSaving,
-			@Nullable final ProductPlanningId id,
-			@Nullable final ProductPlanningSchemaId productPlanningSchemaId,
-			@Nullable final ProductId productId,
-			@Nullable final WarehouseId warehouseId,
-			@Nullable final OrgId orgId,
-			@Nullable final ResourceId plantId,
-			final boolean isAttributeDependant,
-			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
-			@Nullable final String storageAttributesKey,
-			final int seqNo,
-			@Nullable final UserId plannerId,
-			final boolean isCreatePlan,
-			final int transferTimeDays,
-			final int leadTimeDays,
-			final boolean isDocComplete,
+						   @Nullable final ProductPlanningId id,
+						   @Nullable final ProductPlanningSchemaId productPlanningSchemaId,
+						   @Nullable final ProductId productId,
+						   @Nullable final WarehouseId warehouseId,
+						   @Nullable final OrgId orgId,
+						   @Nullable final ResourceId plantId,
+						   final boolean isAttributeDependant,
+						   @Nullable final AttributeSetInstanceId attributeSetInstanceId,
+						   @Nullable final String storageAttributesKey,
+						   final int seqNo,
+						   @Nullable final UserId plannerId,
+						   final boolean isCreatePlan,
+						   final int transferTimeDays,
+						   final int leadTimeDays,
+						   final boolean isDocComplete,
 			final boolean isLotForLot,
-			final boolean isManufactured,
-			final boolean isMatured,
-			@Nullable final ProductBOMVersionsId bomVersionsId,
-			@Nullable final PPRoutingId workflowId,
-			@Nullable final Quantity maxManufacturedQtyPerOrderDispo,
+						   final boolean isManufactured,
+						   final boolean isMatured,
+						   @Nullable final ProductBOMVersionsId bomVersionsId,
+						   @Nullable final PPRoutingId workflowId,
+						   @Nullable final Quantity maxManufacturedQtyPerOrderDispo,
 			@Nullable final BigDecimal qtyProcessedOnDate,
-			@Nullable final MaturingConfigId maturingConfigId,
-			@Nullable final MaturingConfigLineId maturingConfigLineId,
-			final boolean isPickingOrder,
-			final boolean isPickDirectlyIfFeasible,
-			final boolean isPurchased,
-			@Nullable final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse,
-			@Nullable final DistributionNetworkId distributionNetworkId)
+						   @Nullable final MaturingConfigId maturingConfigId,
+						   @Nullable final MaturingConfigLineId maturingConfigLineId,
+						   final boolean isPickingOrder,
+						   final boolean isPickDirectlyIfFeasible,
+						   final boolean isPurchased,
+						   @Nullable final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse,
+						   @Nullable final DistributionNetworkId distributionNetworkId)
 	{
 		this.isLotForLot = isLotForLot;
 		qtyProcessed_OnDate = qtyProcessedOnDate;
@@ -147,7 +147,7 @@ public class ProductPlanning
 		this.orgId = coalesceNotNull(orgId, OrgId.ANY);
 		this.plantId = plantId;
 		this.isAttributeDependant = isAttributeDependant;
-		this.attributeSetInstanceId = coalesceNotNull(attributeSetInstanceId,AttributeSetInstanceId.NONE);
+		this.attributeSetInstanceId = coalesceNotNull(attributeSetInstanceId, AttributeSetInstanceId.NONE);
 		this.storageAttributesKey = storageAttributesKey;
 		this.seqNo = seqNo;
 		this.plannerId = plannerId;
@@ -173,4 +173,6 @@ public class ProductPlanning
 	{
 		return Check.assumeNotNull(id, "product planning is saved: {}", this);
 	}
+
+	public WarehouseId getWarehouseIdNotNull() {return Check.assumeNotNull(getWarehouseId(), "warehouse shal be set: {}", this);}
 }

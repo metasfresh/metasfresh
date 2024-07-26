@@ -24,12 +24,11 @@ package de.metas.material.planning.ppordercandidate;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent.PPOrderCandidateAdvisedEventBuilder;
-import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.MaterialRequest;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
@@ -66,34 +65,34 @@ public class PPOrderCandidateAdvisedEventCreator
 	@NonNull
 	public ImmutableList<PPOrderCandidateAdvisedEvent> createPPOrderCandidateAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final IMaterialPlanningContext mrpContext)
+			@NonNull final MaterialPlanningContext context)
 	{
-		if (!ppOrderCandidateDemandMatcher.matches(mrpContext))
+		if (!ppOrderCandidateDemandMatcher.matches(context))
 		{
 			return ImmutableList.of();
 		}
 
-		final ProductPlanning productPlanning = mrpContext.getProductPlanning();
+		final ProductPlanning productPlanning = context.getProductPlanning();
 		final BigDecimal requiredQty = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
-		if(!productPlanning.isLotForLot() && requiredQty.signum() <= 0)
+		if (!productPlanning.isLotForLot() && requiredQty.signum() <= 0)
 		{
 			Loggables.addLog("Didn't create PPOrderCandidateAdvisedEvent because LotForLot=false and requiredQty={}", requiredQty);
 			return ImmutableList.of();
 		}
 
 		final SupplyRequiredDescriptor supplyRequiredDescriptorToUse;
-		if(productPlanning.isLotForLot())
+		if (productPlanning.isLotForLot())
 		{
 			final BigDecimal usedQty;
 			final BigDecimal fullDemandQty = supplyRequiredDescriptor.getFullDemandQty();
 			final BigDecimal deltaQty = supplyRequiredDescriptor.getDeltaQuantity() != null ? supplyRequiredDescriptor.getDeltaQuantity() : BigDecimal.ZERO;
-			if(!supplyRequiredDescriptor.isUpdated())
+			if (!supplyRequiredDescriptor.isUpdated())
 			{
 				usedQty = fullDemandQty;
 				Loggables.addLog("Using fullDemandQty={}, because of LotForLot=true and updated=false", fullDemandQty);
 			}
 			// we don't reduce Quantity of PPOrders and PPOrderCandidates atm
-			else if(deltaQty.signum() > 0 && deltaQty.compareTo(fullDemandQty) != 0)
+			else if (deltaQty.signum() > 0 && deltaQty.compareTo(fullDemandQty) != 0)
 			{
 				usedQty = deltaQty;
 				Loggables.addLog("Using deltaQty={}, because of LotForLot=true and updated=true", deltaQty);
@@ -115,16 +114,16 @@ public class PPOrderCandidateAdvisedEventCreator
 		}
 
 		final BigDecimal finalQtyUsed = supplyRequiredDescriptorToUse.getMaterialDescriptor().getQuantity();
-		if(requiredQty.compareTo(finalQtyUsed) != 0)
+		if (requiredQty.compareTo(finalQtyUsed) != 0)
 		{
 			final BigDecimal deltaToApply = finalQtyUsed.subtract(requiredQty);
 			SupplyRequiredHandlerUtils.updateMainDataWithQty(supplyRequiredDescriptorToUse, deltaToApply);
 		}
 
-		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptorToUse, mrpContext);
+		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptorToUse, context);
 
 		final Quantity maxQtyPerOrder = extractMaxQuantityPerOrder(productPlanning);
-		final Quantity maxQtyPerOrderConv = convertQtyToRequestUOM(mrpContext, completeRequest, maxQtyPerOrder);
+		final Quantity maxQtyPerOrderConv = convertQtyToRequestUOM(context, completeRequest, maxQtyPerOrder);
 		final ImmutableList<MaterialRequest> partialRequests = createMaterialRequests(completeRequest, maxQtyPerOrderConv);
 
 		final ImmutableList.Builder<PPOrderCandidateAdvisedEvent> result = ImmutableList.builder();
@@ -135,7 +134,7 @@ public class PPOrderCandidateAdvisedEventCreator
 
 			final PPOrderCandidateAdvisedEventBuilder eventBuilder = PPOrderCandidateAdvisedEvent.builder()
 					.supplyRequiredDescriptor(supplyRequiredDescriptorToUse)
-					.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptorToUse.getEventDescriptor()))
+					.eventDescriptor(supplyRequiredDescriptorToUse.getEventDescriptor().withNewEventId())
 					.ppOrderCandidate(ppOrderCandidate)
 					.directlyCreatePPOrder(productPlanning.isCreatePlan());
 
@@ -166,7 +165,7 @@ public class PPOrderCandidateAdvisedEventCreator
 
 	@Nullable
 	private Quantity convertQtyToRequestUOM(
-			@NonNull final IMaterialPlanningContext mrpContext,
+			@NonNull final MaterialPlanningContext context,
 			@NonNull final MaterialRequest completeRequest,
 			@Nullable final Quantity maxQtyPerOrder)
 	{
@@ -175,7 +174,7 @@ public class PPOrderCandidateAdvisedEventCreator
 		{
 			maxQtyPerOrderConv = uomConversionBL.convertQuantityTo(
 					maxQtyPerOrder,
-					mrpContext.getProductId(),
+					context.getProductId(),
 					completeRequest.getQtyToSupply().getUomId());
 		}
 		else

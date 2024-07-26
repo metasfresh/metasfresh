@@ -23,6 +23,7 @@
 package org.eevolution.productioncandidate.model.dao;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.process.PInstanceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
@@ -62,6 +63,8 @@ public interface IPPOrderCandidateDAO extends ISingletonService
 
 	@NonNull
 	ImmutableList<I_PP_OrderCandidate_PP_Order> getOrderAllocations(@NonNull final PPOrderCandidateId ppOrderCandidateId);
+
+	ImmutableSet<PPOrderId> getPPOrderIds(@NonNull PPOrderCandidateId ppOrderCandidateId);
 
 	@NonNull ImmutableList<I_PP_Order_Candidate> getByOrderId(@NonNull PPOrderId ppOrderId);
 

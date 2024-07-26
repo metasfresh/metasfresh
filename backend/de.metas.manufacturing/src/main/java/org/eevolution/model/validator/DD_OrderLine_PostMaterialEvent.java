@@ -31,9 +31,13 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DDOrderUtil;
+import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
+import de.metas.material.planning.ddorder.DistributionNetworkLine;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -45,26 +49,21 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 import static de.metas.distribution.ddorder.lowlevel.interceptor.DD_Order_PostMaterialEvent.createAndInitPPOrderPojoBuilder;
 import static de.metas.distribution.ddorder.lowlevel.interceptor.DD_Order_PostMaterialEvent.createDDOrderLinePojo;
 
 @Interceptor(I_DD_OrderLine.class)
 @Component
+@RequiredArgsConstructor
 public class DD_OrderLine_PostMaterialEvent
 {
-	private final ReplenishInfoRepository replenishInfoRepository;
-	private final PostMaterialEventService postMaterialEventService;
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-
-	public DD_OrderLine_PostMaterialEvent(
-			@NonNull final ReplenishInfoRepository replenishInfoRepository,
-			@NonNull final PostMaterialEventService postMaterialEventService)
-	{
-		this.replenishInfoRepository = replenishInfoRepository;
-		this.postMaterialEventService = postMaterialEventService;
-	}
+	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
+	@NonNull private final PostMaterialEventService postMaterialEventService;
+	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 	@ModelChange(
 			timings = { ModelValidator.TYPE_AFTER_CHANGE },
@@ -85,15 +84,18 @@ public class DD_OrderLine_PostMaterialEvent
 		final I_DD_Order ddOrder = ddOrderLineRecord.getDD_Order();
 		final DDOrder.DDOrderBuilder ddOrderBuilder = createAndInitPPOrderPojoBuilder(ddOrder);
 
+		final DistributionNetworkLine distributionNetworkLine = extractDistributionNetworkAndLineId(oldDDOrderLine)
+				.map(distributionNetworkRepository::getLineById)
+				.orElse(null);
+
 		final ProductPlanning productPlanning = getProductPlanning(ddOrder);
-		final int durationDays = DDOrderUtil.calculateDurationDays(
-				productPlanning, oldDDOrderLine.getDD_NetworkDistributionLine());
+		final int durationDays = DDOrderUtil.calculateDurationDays(productPlanning, distributionNetworkLine);
 
 		ddOrderBuilder.lines(ImmutableList.of(createDDOrderLinePojo(replenishInfoRepository, oldDDOrderLine, ddOrder, durationDays)));
 
 		final WarehouseId warehouseId = warehouseDAO.getWarehouseIdByLocatorRepoId(oldDDOrderLine.getM_Locator_ID());
 		final WarehouseId warehouseToId = warehouseDAO.getWarehouseIdByLocatorRepoId(oldDDOrderLine.getM_LocatorTo_ID());
-		
+
 		final DDOrderDeletedEvent event = DDOrderDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrder.getAD_Client_ID(), ddOrder.getAD_Org_ID()))
 				.ddOrder(ddOrderBuilder.build())
@@ -102,6 +104,11 @@ public class DD_OrderLine_PostMaterialEvent
 				.build();
 
 		postMaterialEventService.enqueueEventNow(event);
+	}
+
+	private static Optional<DistributionNetworkAndLineId> extractDistributionNetworkAndLineId(final I_DD_OrderLine oldDDOrderLine)
+	{
+		return DistributionNetworkAndLineId.optionalOfRepoIds(oldDDOrderLine.getDD_NetworkDistribution_ID(), oldDDOrderLine.getDD_NetworkDistributionLine_ID());
 	}
 
 	@Nullable

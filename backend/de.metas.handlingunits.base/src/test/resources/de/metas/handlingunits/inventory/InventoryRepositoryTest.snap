@@ -4,7 +4,7 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
       "docBaseType": "MMI",
       "docSubType": "ISH"
     },
-    "docStatus": "Drafted",
+    "docStatus": "DR",
     "documentNo": "documentNo",
     "id": 1000000,
     "inventoryType": "PHYSICAL",

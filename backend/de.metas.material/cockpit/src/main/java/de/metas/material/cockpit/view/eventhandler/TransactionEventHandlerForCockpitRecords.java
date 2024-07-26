@@ -74,7 +74,7 @@ public class TransactionEventHandlerForCockpitRecords
 
 	private UpdateMainDataRequest createDataUpdateRequestForEvent(@NonNull final AbstractTransactionEvent event)
 	{
-		final OrgId orgId = event.getEventDescriptor().getOrgId();
+		final OrgId orgId = event.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier

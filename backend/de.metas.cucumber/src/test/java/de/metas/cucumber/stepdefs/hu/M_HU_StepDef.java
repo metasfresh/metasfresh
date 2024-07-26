@@ -37,6 +37,7 @@ import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -535,12 +536,9 @@ public class M_HU_StepDef
 	}
 
 	@Given("M_HU are disposed:")
-	public void dispose_HU(@NonNull final DataTable table)
+	public void disposeHUs(@NonNull final DataTable table)
 	{
-		for (final Map<String, String> row : table.asMaps())
-		{
-			disposeHU(row);
-		}
+		DataTableRows.of(table).forEach(this::disposeHU);
 	}
 
 	@And("store JsonSetClearanceStatusRequest in context")
@@ -845,27 +843,21 @@ public class M_HU_StepDef
 				.build();
 	}
 
-	private void disposeHU(@NonNull final Map<String, String> row)
+	private void disposeHU(@NonNull final DataTableRow row)
 	{
-		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_M_HU huRecord = row.getAsIdentifier(COLUMNNAME_M_HU_ID).lookupIn(huTable);
+		final ZonedDateTime movementDate = row.getAsInstant(COLUMNNAME_MovementDate).atZone(SystemTime.zoneId());
 
-		final ZonedDateTime movementDate = DataTableUtil.extractZonedDateTimeForColumnName(row, COLUMNNAME_MovementDate);
+		final HUInternalUseInventoryCreateResponse result = inventoryService.moveToGarbage(
+				HUInternalUseInventoryCreateRequest.builder()
+						.hus(ImmutableList.of(huRecord))
+						.movementDate(movementDate)
+						.completeInventory(true)
+						.moveEmptiesToEmptiesWarehouse(true)
+						.build()
+		);
 
-		final I_M_HU huRecord = huTable.get(huIdentifier);
-
-		assertThat(huRecord).isNotNull();
-
-		final HUInternalUseInventoryCreateRequest huInternalUseInventoryCreateRequest = HUInternalUseInventoryCreateRequest.builder()
-				.hus(ImmutableList.of(huRecord))
-				.movementDate(movementDate)
-				.completeInventory(true)
-				.moveEmptiesToEmptiesWarehouse(true)
-				.build();
-
-		final HUInternalUseInventoryCreateResponse result = inventoryService.moveToGarbage(huInternalUseInventoryCreateRequest);
-
-		final boolean somethingWasProcessed = !result.getInventories().isEmpty();
-		assertThat(somethingWasProcessed).isTrue();
+		assertThat(result.getInventories()).isNotEmpty();
 	}
 
 	private void returnHUFromCustomer(@NonNull final Map<String, String> tableRow)

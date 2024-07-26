@@ -79,9 +79,9 @@ Feature: Modular contract log for proForma Sales Order
       | M_Locator_ID.Identifier | Value         | M_Warehouse_ID.Identifier |
       | locatorModularContract  | locator_S0315 | warehouseModularContract  |
 
-    And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
-      | ownTransport            | 1000000          |
+    And contains M_Shippers
+      | Identifier   |
+      | ownTransport |
     And load DD_NetworkDistribution:
       | DD_NetworkDistribution_ID.Identifier | Value   |
       | ddNetwork_isHUDestroyed              | Gebinde |

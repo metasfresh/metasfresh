@@ -10,17 +10,17 @@ Feature: Order to delivery instructions
 
 
     Given metasfresh contains M_PricingSystems
-      | Identifier    | Name                              | Value                              | OPT.IsActive |
-      | pricingSystem | PricingSystemNameOrderDI_03022023 | PricingSystemValueOrderDI_03022023 | true         |
+      | Identifier    |
+      | pricingSystem |
     And metasfresh contains M_PriceLists
-      | Identifier   | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                            | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | priceList_SO | pricingSystem                 | DE                        | EUR                 | PriceListNameSOOrderDI_03022023 | true  | false         | 2              | true         |
+      | Identifier   | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | priceList_SO | pricingSystem      | DE                    | EUR                 | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier          | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | priceListVersion_SO | priceList_SO              | SalesOrder-PLV | 2023-02-01 |
+      | Identifier          | M_PriceList_ID |
+      | priceListVersion_SO | priceList_SO   |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name                     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | customer   | CustomerOrderDI_03022023 | N            | Y              | pricingSystem                 |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | customer   | N        | Y          | pricingSystem      |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | customerLocation | 1234567090599 | customer                 | true                | true                |
@@ -33,10 +33,10 @@ Feature: Order to delivery instructions
     And update M_Product_Category:
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standardCategory                 | attributeSetConvenienceSalate    |
-    And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.Name      |
-      | shipper_DHL             | Dhl           |
-      | shipper_DPD             | DPD - Classic |
+    And contains M_Shippers
+      | Identifier  |
+      | shipper_DHL |
+      | shipper_DPD |
 
   Scenario: Order to delivery instructions.
   _Given initial SO with 2 order lines : QtyEntered = 2, different delivery dates in the future and attributes assigned
@@ -60,24 +60,24 @@ Feature: Order to delivery instructions
       | C_Currency_ID.Identifier | ISO_Code |
       | currency                 | EUR      |
     And metasfresh contains M_PriceLists
-      | Identifier     | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                            | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | priceList_PO_6 | pricingSystem                 | DE                        | EUR                 | PriceListNamePOOrderDI_03022023 | false | false         | 2              | true         |
+      | Identifier     | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | priceList_PO_6 | pricingSystem      | DE                    | EUR                 | false |
     And metasfresh contains M_PriceList_Versions
-      | Identifier            | M_PriceList_ID.Identifier | Name               | ValidFrom  |
-      | priceListVersion_PO_6 | priceList_PO_6            | PurchaseOrder-PLV6 | 2023-02-01 |
+      | Identifier            | M_PriceList_ID |
+      | priceListVersion_PO_6 | priceList_PO_6 |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | vendor     | VendorOrderDI_03022023 | Y            | N              | pricingSystem                 |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | vendor     | Y        | N          | pricingSystem      |
     And metasfresh contains C_BPartner_Locations:
       | Identifier     | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | vendorLocation | 1234567899346 | vendor                   | true                | true                |
     And metasfresh contains M_Products:
-      | Identifier | Name                        | OPT.M_Product_Category_ID.Identifier |
-      | product    | ProductNameOrderDI_03022023 | standardCategory                     |
+      | Identifier | M_Product_Category_ID |
+      | product    | standardCategory      |
     And metasfresh contains M_ProductPrices
-      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | productPrice_PO_6 | priceListVersion_PO_6             | product                 | 5.0      | PCE               | Normal                        |
-      | productPrice_SO_6 | priceListVersion_SO               | product                 | 10.0     | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_PO_6  | product      | 5.0      | PCE               | Normal                        |
+      | priceListVersion_SO    | product      | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.IsCurrentVendor |
       | vendor                   | product                 | true                |
@@ -175,7 +175,7 @@ Feature: Order to delivery instructions
       | deliveryInstructionSO_1               | shipper_DHL             | customer                       | customerLocation               | customerLocation                               | dropShipWarehouseLocation                     | 2023-05-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionSO_1
       | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
-      | packageLineSO_1         | product                 |
+      | packageLineSO_1         | product                     |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
       | packageLineSO_1         | shipper_DHL             | customer                     | customerLocation                      | 2023-02-01   |
@@ -195,7 +195,7 @@ Feature: Order to delivery instructions
       | deliveryInstructionSO_2               | shipper_DPD             | customer                       | customerLocation               | customerLocation                               | dropShipWarehouseLocation                     | 2023-04-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionSO_2
       | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
-      | packageLineSO_2         | product                 |
+      | packageLineSO_2         | product                     |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
       | packageLineSO_2         | shipper_DPD             | customer                     | customerLocation                      | 2023-02-01   |
@@ -215,7 +215,7 @@ Feature: Order to delivery instructions
       | deliveryInstructionPO_1               | shipper_DHL             | vendor                         | dropShipWarehouseLocation      | dropShipWarehouseLocation                      | vendorLocation                                | 2023-05-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionPO_1
       | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
-      | packageLinePO_1         | product                 |
+      | packageLinePO_1         | product                     |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
       | packageLinePO_1         | shipper_DHL             | vendor                       | dropShipWarehouseLocation             | 2023-02-01   |
@@ -235,7 +235,7 @@ Feature: Order to delivery instructions
       | deliveryInstructionPO_2               | shipper_DPD             | vendor                         | dropShipWarehouseLocation      | dropShipWarehouseLocation                      | vendorLocation                                | 2023-04-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionPO_2
       | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
-      | packageLinePO_2         | product                 |
+      | packageLinePO_2         | product                     |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
       | packageLinePO_2         | shipper_DPD             | vendor                       | dropShipWarehouseLocation             | 2023-02-01   |
@@ -273,24 +273,24 @@ Feature: Order to delivery instructions
       | C_Currency_ID.Identifier | ISO_Code |
       | currency                 | EUR      |
     And metasfresh contains M_PriceLists
-      | Identifier     | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                            | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | priceList_PO_7 | pricingSystem                 | DE                        | EUR                 | PriceListNamePOOrderDI_09022023 | false | false         | 2              | true         |
+      | Identifier     | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | priceList_PO_7 | pricingSystem      | DE                    | EUR                 | false |
     And metasfresh contains M_PriceList_Versions
-      | Identifier            | M_PriceList_ID.Identifier | Name               | ValidFrom  |
-      | priceListVersion_PO_7 | priceList_PO_7            | PurchaseOrder-PLV7 | 2023-02-01 |
+      | Identifier            | M_PriceList_ID |
+      | priceListVersion_PO_7 | priceList_PO_7 |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | vendor_7   | VendorOrderDI_09022023 | Y            | N              | pricingSystem                 |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | vendor_7   | Y        | N          | pricingSystem      |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | vendorLocation_7 | 1232067899346 | vendor_7                 | true                | true                |
     And metasfresh contains M_Products:
-      | Identifier | Name                        | OPT.M_Product_Category_ID.Identifier |
-      | product_7  | ProductNameOrderDI_09022023 | standardCategory                     |
+      | Identifier | M_Product_Category_ID |
+      | product_7  | standardCategory      |
     And metasfresh contains M_ProductPrices
-      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | productPrice_PO_7 | priceListVersion_PO_7             | product_7               | 5.0      | PCE               | Normal                        |
-      | productPrice_SO_7 | priceListVersion_SO               | product_7               | 10.0     | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_PO_7  | product_7    | 5.0      | PCE               | Normal                        |
+      | priceListVersion_SO    | product_7    | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.IsCurrentVendor |
       | vendor_7                 | product_7               | true                |
@@ -386,8 +386,8 @@ Feature: Order to delivery instructions
       | deliveryPlanningPO_7.2             | orderLinePO_7.2           |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | IsB2B | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.PlannedDeliveryDate | OPT.IsClosed | OPT.Processed | OPT.M_Warehouse_ID.Identifier | OPT.PlannedLoadedQuantity |
-      | deliveryPlanningPO_7.1            | 2          | 2            | true  | Incoming                 | orderPO_7                 | orderLinePO_7.1               | vendor_7                     | product_7                   | dropShipWarehouseLocation             | 2023-05-10              | false        | false         | dropShipWarehouse_7           | 2                  |
-      | deliveryPlanningPO_7.2            | 4          | 4            | true  | Incoming                 | orderPO_7                 | orderLinePO_7.2               | vendor_7                     | product_7                   | dropShipWarehouseLocation             | 2023-04-10              | false        | false         | dropShipWarehouse_7           | 4                  |
+      | deliveryPlanningPO_7.1            | 2          | 2            | true  | Incoming                 | orderPO_7                 | orderLinePO_7.1               | vendor_7                     | product_7                   | dropShipWarehouseLocation             | 2023-05-10              | false        | false         | dropShipWarehouse_7           | 2                         |
+      | deliveryPlanningPO_7.2            | 4          | 4            | true  | Incoming                 | orderPO_7                 | orderLinePO_7.2               | vendor_7                     | product_7                   | dropShipWarehouseLocation             | 2023-04-10              | false        | false         | dropShipWarehouse_7           | 4                         |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |
@@ -398,7 +398,7 @@ Feature: Order to delivery instructions
       | deliveryInstructionSO_7.1             | shipper_DHL             | customer                       | customerLocation               | customerLocation                               | dropShipWarehouseLocation                     | 2023-05-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionSO_7.1
       | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
-      | packageLineSO_7.1       | product_7               |
+      | packageLineSO_7.1       | product_7                   |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
       | packageLineSO_7.1       | shipper_DHL             | customer                     | customerLocation                      | 2023-02-01   |
@@ -418,7 +418,7 @@ Feature: Order to delivery instructions
       | deliveryInstructionSO_7.2             | shipper_DPD             | customer                       | customerLocation               | customerLocation                               | dropShipWarehouseLocation                     | 2023-04-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionSO_7.2
       | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
-      | packageLineSO_7.2       | product_7               |
+      | packageLineSO_7.2       | product_7                   |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
       | packageLineSO_7.2       | shipper_DPD             | customer                     | customerLocation                      | 2023-02-01   |
@@ -442,7 +442,7 @@ Feature: Order to delivery instructions
       | deliveryInstructionPO_7.1             | shipper_DHL             | vendor_7                       | dropShipWarehouseLocation      | dropShipWarehouseLocation                      | vendorLocation_7                              | 2023-05-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionPO_7.1
       | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
-      | packageLinePO_7.1       | product_7               |
+      | packageLinePO_7.1       | product_7                   |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
       | packageLinePO_7.1       | shipper_DHL             | vendor_7                     | dropShipWarehouseLocation             | 2023-02-01   |
@@ -462,7 +462,7 @@ Feature: Order to delivery instructions
       | deliveryInstructionPO_7.2             | shipper_DPD             | vendor_7                       | dropShipWarehouseLocation      | dropShipWarehouseLocation                      | vendorLocation_7                              | 2023-04-10       | CO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionPO_7.2
       | M_Package_ID.Identifier | OPT.M_Product_ID.Identifier |
-      | packageLinePO_7.2       | product_7               |
+      | packageLinePO_7.2       | product_7                   |
     And validate M_Package:
       | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.ShipDate |
       | packageLinePO_7.2       | shipper_DPD             | vendor_7                     | dropShipWarehouseLocation             | 2023-02-01   |

@@ -1,8 +1,6 @@
 package de.metas.material.dispo.commons.repository.repohelpers;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
-import org.adempiere.mm.attributes.keys.AttributesKeyQueryHelper;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
@@ -30,6 +28,8 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
+import org.adempiere.mm.attributes.keys.AttributesKeyQueryHelper;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
@@ -422,28 +422,23 @@ public class RepositoryCommons
 		}
 	}
 
-	public CandidateId candidateIdOf(@NonNull final I_MD_Candidate candidateRecord)
-	{
-		return CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID());
-	}
-
 	public <T> T retrieveSingleCandidateDetail(
-			@NonNull final I_MD_Candidate candidateRecord,
+			@NonNull final CandidateId candidateId,
 			@NonNull final Class<T> modelClass)
 	{
-		final IQuery<T> candidateDetailQueryBuilder = createCandidateDetailQueryBuilder(candidateRecord, modelClass);
+		final IQuery<T> candidateDetailQueryBuilder = createCandidateDetailQueryBuilder(candidateId, modelClass);
 		return candidateDetailQueryBuilder
 				.firstOnly(modelClass);
 	}
 
 	public <T> IQuery<T> createCandidateDetailQueryBuilder(
-			@NonNull final I_MD_Candidate candidateRecord,
+			@NonNull final CandidateId candidateId,
 			@NonNull final Class<T> modelClass)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(modelClass)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidateRecord.getMD_Candidate_ID())
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidateId)
 				.create();
 	}
 

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -58,7 +59,7 @@ public class DDOrderLine
 	 */
 	int durationDays;
 
-	int networkDistributionLineId;
+	@Nullable DistributionNetworkAndLineId distributionNetworkAndLineId;
 
 	int ddOrderLineId;
 
@@ -74,7 +75,7 @@ public class DDOrderLine
 			@JsonProperty("qty") @NonNull final BigDecimal qty,
 			@JsonProperty("qtyPending") final @Nullable BigDecimal qtyPending,
 			@JsonProperty("durationDays") final int durationDays,
-			@JsonProperty("networkDistributionLineId") final int networkDistributionLineId,
+			@JsonProperty("distributionNetworkAndLineId") @Nullable final DistributionNetworkAndLineId distributionNetworkAndLineId,
 			@JsonProperty("ddOrderLineId") final int ddOrderLineId)
 	{
 		Preconditions.checkArgument(durationDays >= 0, "The Given parameter durationDays=%s needs to be > 0", "durationDays");
@@ -90,7 +91,7 @@ public class DDOrderLine
 
 		this.durationDays = durationDays;
 
-		this.networkDistributionLineId = networkDistributionLineId; // can be <= 0 if the DD_Order was created "manually"
+		this.distributionNetworkAndLineId = distributionNetworkAndLineId; // can be null if the DD_Order was created "manually"
 
 		this.ddOrderLineId = ddOrderLineId;
 

@@ -77,7 +77,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID;
 import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_S_ExternalReference_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_Location_ID;
@@ -153,7 +153,7 @@ public class S_ExternalReference_StepDef
 			assertThat(externalReferenceRecord).as("S_ExternalReference with [ExternalSystem=%s, Type=%s, ExternalReference=%s]", externalSystem, type, externalReference).isNotNull();
 
 			final SoftAssertions softly = new SoftAssertions();
-			
+
 			final String orgCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(orgCodeIdentifier))
 			{
@@ -199,7 +199,7 @@ public class S_ExternalReference_StepDef
 					softly.assertThat(externalReferenceRecord.getExternalSystem_Config_ID()).as("ExternalSystem_Config_ID").isEqualTo(Integer.parseInt(externalSystemParentConfigId));
 				}
 			}
-			
+
 			softly.assertAll();
 		}
 	}
@@ -330,9 +330,9 @@ public class S_ExternalReference_StepDef
 			final String expectedExternalReference = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_ExternalReference);
 
 			final JsonExternalReferenceResponseItem item = Check.singleElement(referenceItems
-																					   .stream()
-																					   .filter(referenceItem -> referenceItem.getLookupItem().getExternalReference().equals(expectedExternalReference))
-																					   .collect(ImmutableList.toImmutableList()));
+					.stream()
+					.filter(referenceItem -> referenceItem.getLookupItem().getExternalReference().equals(expectedExternalReference))
+					.collect(ImmutableList.toImmutableList()));
 
 			final String externalReferenceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_ExternalReference_ID + "." + TABLECOLUMN_IDENTIFIER);
 

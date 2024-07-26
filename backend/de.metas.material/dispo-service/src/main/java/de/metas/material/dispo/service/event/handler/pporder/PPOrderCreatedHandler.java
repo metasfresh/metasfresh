@@ -2,7 +2,6 @@ package de.metas.material.dispo.service.event.handler.pporder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
-import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -10,6 +9,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateSaveResult;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
@@ -17,12 +17,10 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderData;
-import de.metas.organization.IOrgDAO;
-import de.metas.util.Services;
+import de.metas.material.event.pporder.PPOrderRef;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -88,7 +86,8 @@ public final class PPOrderCreatedHandler
 
 	private void handlePPOrderCreatedEvent(@NonNull final PPOrderCreatedEvent ppOrderEvent)
 	{
-		final Candidate headerCandidate = createHeaderCandidate(ppOrderEvent);
+		final Candidate headerCandidate = createHeaderCandidate(ppOrderEvent)
+				.getCandidate();
 
 		final DemandDetail headerDemandDetail = headerCandidate.getDemandDetail();
 		final ProductionDetail headerProductionDetail = ProductionDetail.cast(headerCandidate.getBusinessCaseDetail());
@@ -106,7 +105,7 @@ public final class PPOrderCreatedHandler
 	}
 
 	@NonNull
-	private Candidate createHeaderCandidate(@NonNull final PPOrderCreatedEvent ppOrderEvent)
+	private CandidateSaveResult createHeaderCandidate(@NonNull final PPOrderCreatedEvent ppOrderEvent)
 	{
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 
@@ -153,7 +152,7 @@ public final class PPOrderCreatedHandler
 				.plantId(ppOrder.getPpOrderData().getPlantId())
 				.workstationId(ppOrder.getPpOrderData().getWorkstationId())
 				.productPlanningId(ppOrder.getPpOrderData().getProductPlanningId())
-				.ppOrderId(ppOrder.getPpOrderId())
+				.ppOrderRef(PPOrderRef.ofPPOrderId(ppOrder.getPpOrderId()))
 				.ppOrderDocStatus(ppOrder.getDocStatus())
 				.build();
 	}
