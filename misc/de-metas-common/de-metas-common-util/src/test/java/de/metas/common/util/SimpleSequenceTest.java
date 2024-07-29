@@ -22,46 +22,25 @@
 
 package de.metas.common.util;
 
-import lombok.Data;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-@Data
-public class SimpleSequence
+class SimpleSequenceTest
 {
-	//this field might be useful to know when debugging.
-	final int initial;
 
-	final int increment;
-
-	int current;
-
-	/**
-	 * The first invocation of {@link #next()} will return 10, the second will return 20 and so on.
-	 */
-	public static SimpleSequence create()
+	@Test
+	void create()
 	{
-		return new SimpleSequence(0, 10);
+		final SimpleSequence simpleSequence = SimpleSequence.create();
+		Assertions.assertThat(simpleSequence.next()).isEqualTo(10);
+		Assertions.assertThat(simpleSequence.next()).isEqualTo(20);
 	}
 
-	/**
-	 * The first invocation of {@link #next()} will return {code initial + 10}.
-	 */
-	public static SimpleSequence createWithInitial(final int initial)
+	@Test
+	void createWithInitial()
 	{
-		return new SimpleSequence(initial, 10);
-	}
-
-	private SimpleSequence(final int initial, final int increment)
-	{
-
-		this.initial = initial;
-		this.increment = increment;
-
-		current = initial;
-	}
-
-	public int next()
-	{
-		current = current + increment;
-		return current;
+		final SimpleSequence simpleSequence = SimpleSequence.createWithInitial(20);
+		Assertions.assertThat(simpleSequence.next()).isEqualTo(30);
+		Assertions.assertThat(simpleSequence.next()).isEqualTo(40);
 	}
 }
