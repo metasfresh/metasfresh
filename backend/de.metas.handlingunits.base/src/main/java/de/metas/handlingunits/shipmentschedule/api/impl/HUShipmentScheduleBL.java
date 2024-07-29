@@ -52,6 +52,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBuilder;
+import de.metas.inoutcandidate.split.ShipmentScheduleSplit;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -178,7 +179,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty,
 			@NonNull final I_M_HU tuOrVHU,
 			@NonNull final ShipmentScheduleWithHUFactory factory,
-			final boolean anonymousHuPickedOnTheFly)
+			final boolean anonymousHuPickedOnTheFly,
+			@Nullable final ShipmentScheduleSplit split)
 	{
 		// Retrieve VHU, TU and LU
 		final LUTUCUPair husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(tuOrVHU);
@@ -195,7 +197,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		setHUs(schedQtyPickedHU, husPair);
 
 		factory
-				.ofQtyPickedRecord(schedQtyPickedHU)
+				.ofQtyPickedRecord(schedQtyPickedHU, split)
 				.updateQtyTUAndQtyLU();
 		saveRecord(schedQtyPickedHU);
 
@@ -207,7 +209,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		handlingUnitsDAO.saveHU(topLevelHU);
 		factory.getHuContext().flush();
 
-		return factory.ofQtyPickedRecord(schedQtyPickedHU);
+		return factory.ofQtyPickedRecord(schedQtyPickedHU, split);
 	}
 
 	private static void setHUs(final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord, final LUTUCUPair husPair)

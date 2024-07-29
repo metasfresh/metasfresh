@@ -128,14 +128,15 @@ public class ShipmentScheduleWithHU
 			@NonNull ShipmentScheduleWithHUSupportingServices services,
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule_QtyPicked allocRecord,
-			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse,
+			@Nullable final ShipmentScheduleSplit split)
 	{
 		this.services = services;
 		this.huContext = huContext;
 
 		this.shipmentScheduleQtyPicked = allocRecord;
 		this.shipmentSchedule = InterfaceWrapperHelper.create(allocRecord.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
-		this.split = null;
+		this.split = split;
 
 		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 		final UomId catchUomIdOrNull = UomId.ofRepoIdOrNull(allocRecord.getCatch_UOM_ID());
