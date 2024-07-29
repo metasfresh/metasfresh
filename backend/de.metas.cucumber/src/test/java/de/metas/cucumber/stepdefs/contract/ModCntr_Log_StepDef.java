@@ -266,6 +266,9 @@ public class ModCntr_Log_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
+		final String modCntrTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_ModCntr_Type modCntrTypeRecord = modCntrTypeTable.get(modCntrTypeIdentifier);
+
 		final ItemProvider<I_ModCntr_Log> locateLog = () -> queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, tableId)
@@ -273,6 +276,7 @@ public class ModCntr_Log_StepDef
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermRecord.getC_Flatrate_Term_ID())
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Qty, quantity)
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID, modCntrTypeRecord.getModCntr_Type_ID())
 				.create()
 				.firstOnlyOptional()
 				.map(ItemProvider.ProviderResult::resultWasFound)
@@ -318,13 +322,6 @@ public class ModCntr_Log_StepDef
 		{
 			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandidateTable.get(invoiceCandidateIdentifier);
 			softly.assertThat(modCntrLogRecord.getC_Invoice_Candidate_ID()).as(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID).isEqualTo(invoiceCandidateRecord.getC_Invoice_Candidate_ID());
-		}
-
-		final String modCntrTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(modCntrTypeIdentifier))
-		{
-			final I_ModCntr_Type modCntrTypeRecord = modCntrTypeTable.get(modCntrTypeIdentifier);
-			softly.assertThat(modCntrLogRecord.getModCntr_Type_ID()).as(I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID).isEqualTo(modCntrTypeRecord.getModCntr_Type_ID());
 		}
 
 		final Boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_Processed);
@@ -428,6 +425,18 @@ public class ModCntr_Log_StepDef
 				final I_ModCntr_InvoicingGroup invoicingGroupRecord = invoicingGroupTable.get(invoicingGroupIdentifier);
 				softly.assertThat(modCntrLogRecord.getModCntr_InvoicingGroup_ID()).as(I_ModCntr_Log.COLUMNNAME_ModCntr_InvoicingGroup_ID).isEqualTo(invoicingGroupRecord.getModCntr_InvoicingGroup_ID());
 			}
+		}
+
+		final String productName = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_ProductName);
+		if (Check.isNotBlank(productName))
+		{
+			softly.assertThat(modCntrLogRecord.getProductName()).as(I_ModCntr_Log.COLUMNNAME_ProductName).isEqualTo(productName);
+		}
+
+		final Boolean isBillable = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_IsBillable);
+		if (isBillable != null)
+		{
+			softly.assertThat(modCntrLogRecord.isBillable()).as(I_ModCntr_Log.COLUMNNAME_IsBillable).isEqualTo(isBillable);
 		}
 
 		softly.assertAll();

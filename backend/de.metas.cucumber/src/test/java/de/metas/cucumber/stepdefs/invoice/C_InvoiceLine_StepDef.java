@@ -35,6 +35,7 @@ import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.invoice.service.IInvoiceLineBL;
+import de.metas.logging.LogManager;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -54,10 +55,12 @@ import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_IsManualPrice;
 import static de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_Price_UOM_ID;
@@ -78,6 +81,8 @@ import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
 public class C_InvoiceLine_StepDef
 {
+	private final static Logger logger = LogManager.getLogger(C_InvoiceLine_StepDef.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -195,6 +200,57 @@ public class C_InvoiceLine_StepDef
 																				   .collect(ImmutableList.toImmutableList()));
 
 			validateInvoiceLine(currentInvoiceLine, row);
+		}
+	}
+
+	@And("validate created modular invoice lines")
+	public void validate_created_modular_invoice_lines(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> row : dataTable)
+		{
+			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final int expectedProductId = productTable.getOptional(productIdentifier)
+					.map(I_M_Product::getM_Product_ID)
+					.orElseGet(() -> Integer.parseInt(productIdentifier));
+
+			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
+
+			final String productName = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_ProductName);
+
+			//dev-note: we assume the tests are not using the same product, qty and product name on different lines
+			final Optional<I_C_InvoiceLine> invoiceLineRecord = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceRecord.getC_Invoice_ID())
+					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, expectedProductId)
+					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced, qtyinvoiced)
+					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_ProductName, productName)
+					.create()
+					.firstOnlyOptional(I_C_InvoiceLine.class);
+
+			if (invoiceLineRecord.isEmpty())
+			{
+				final StringBuilder message = new StringBuilder();
+
+				message.append("C_InvoiceLine records:").append("\n");
+
+				queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+						.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceRecord.getC_Invoice_ID())
+						.create()
+						.stream(I_C_InvoiceLine.class)
+						.forEach(line -> message
+								.append(COLUMNNAME_M_Product_ID).append(" : ").append(line.getM_Product_ID()).append(" ; ")
+								.append(COLUMNNAME_QtyInvoiced).append(" : ").append(line.getQtyInvoiced()).append(" ; ")
+								.append(I_C_InvoiceLine.COLUMNNAME_ProductName).append(" : ").append(line.getProductName()).append(" ; ")
+								.append("\n"));
+
+				logger.error("*** Error while looking for C_InvoiceLine, see all lines: \n" + message);
+			}
+
+			validateInvoiceLine(invoiceLineRecord.get(), row);
 		}
 	}
 

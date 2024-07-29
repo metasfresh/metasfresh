@@ -155,6 +155,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_N
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceActual;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Processed;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ProductName;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyDeliveredInUOM;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyEntered;
@@ -207,6 +208,7 @@ public class C_Invoice_Candidate_StepDef
 	private final C_Calendar_StepDefData calendarTable;
 	private final C_Year_StepDefData yearTable;
 	private final C_Aggregation_StepDefData aggregationTable;
+	private final C_Flatrate_Term_StepDefData flatrateTermTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -232,7 +234,8 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final C_Calendar_StepDefData calendarTable,
 			@NonNull final C_Year_StepDefData yearTable,
-			@NonNull final C_Aggregation_StepDefData aggregationTable)
+			@NonNull final C_Aggregation_StepDefData aggregationTable,
+			@NonNull final C_Flatrate_Term_StepDefData flatrateTermTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -258,6 +261,7 @@ public class C_Invoice_Candidate_StepDef
 		this.calendarTable = calendarTable;
 		this.yearTable = yearTable;
 		this.aggregationTable = aggregationTable;
+		this.flatrateTermTable = flatrateTermTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -848,6 +852,12 @@ public class C_Invoice_Candidate_StepDef
 					softly.assertThat(updatedInvoiceCandidate.getPriceActual()).as(COLUMNNAME_PriceActual).isEqualByComparingTo(priceActual);
 				}
 
+				final BigDecimal netAmtInvoiced = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_NetAmtInvoiced);
+				if (netAmtInvoiced != null)
+				{
+					softly.assertThat(updatedInvoiceCandidate.getNetAmtInvoiced()).as(COLUMNNAME_NetAmtInvoiced).isEqualTo(netAmtInvoiced);
+				}
+
 				softly.assertAll();
 			}
 			catch (final Throwable e)
@@ -1303,6 +1313,44 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+	@And("^after not more than (.*)s, modular C_Invoice_Candidates are found:$")
+	public void thereAreModularInvoiceCandidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadModularInvoiceCandidate(row));
+		}
+	}
+
+
+	private boolean loadModularInvoiceCandidate(@NonNull final Map<String, String> row)
+	{
+		final String modularContractIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final int modularContractId = flatrateTermTable.get(modularContractIdentifier).getC_Flatrate_Term_ID();
+
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Flatrate_Term.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final int productId = productTable.get(productIdentifier).getM_Product_ID();
+
+		final String productName = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_ProductName);
+
+		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Flatrate_Term_ID, modularContractId)
+				.addEqualsFilter(COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(COLUMNNAME_ProductName, productName)
+				.create()
+				.firstOnlyOptional(I_C_Invoice_Candidate.class);
+
+		if (invoiceCandidate.isEmpty())
+		{
+			return false;
+		}
+
+		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate.get());
+
+		return true;
+	}
+	
 	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> retrieveInvoiceCandidate(
 			final @NonNull IQuery<I_C_Invoice_Candidate> candidateIQuery)
 	{

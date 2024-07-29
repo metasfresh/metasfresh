@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,29 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.reflist;
 
-import de.metas.user.UserId;
-import lombok.NonNull;
-import org.compiere.model.I_AD_User;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_AD_Ref_List;
 
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
-public class AD_User_StepDefData extends StepDefData<I_AD_User>
+public class AD_Ref_List_StepDefData extends StepDefData<I_AD_Ref_List>
 {
-	public AD_User_StepDefData()
+	public AD_Ref_List_StepDefData()
 	{
-		super(I_AD_User.class);
-	}
-
-	public UserId getUserId(@NonNull final String userIdentifier)
-	{
-		return UserId.ofRepoId(get(userIdentifier).getAD_User_ID());
-	}
-
-	public UserId getUserId(@NonNull final StepDefDataIdentifier userIdentifier)
-	{
-		return UserId.ofRepoId(get(userIdentifier).getAD_User_ID());
+		super(I_AD_Ref_List.class);
 	}
 }
