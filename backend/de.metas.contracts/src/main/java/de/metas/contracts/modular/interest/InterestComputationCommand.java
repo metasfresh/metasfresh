@@ -183,17 +183,17 @@ public class InterestComputationCommand
 			@NonNull final FlatrateTermId contractId)
 	{
 		final Iterator<ModularContractLogEntry> shippingNotificationIterator = streamShippingNotificationLogEntries(request, contractId).iterator();
-		final ModularContractLogEntry modularContractLogEntry = getModularContractLogEntry(contractId, request).orElse(null);
+		final Iterator<ModularContractLogEntry> modularContractLogEntryIterator = streamModularContractLogEntries(contractId, request).iterator();
 		final ModularContractSettings settings = modularContractService.getModularSettingsForContract(contractId);
 
 		BigDecimal totalInterestScore = BigDecimal.ZERO;
 
 		ModularContractAllocations.AllocationItem currentShippingNotification = null;
-		if (modularContractLogEntry != null)
+		while (modularContractLogEntryIterator.hasNext())
 		{
 			final ModularContractAllocations currentModularContractAllocations = initModularContractAllocations(request,
 																												settings.getAdditionalInterestDays(),
-																												modularContractLogEntry);
+																												modularContractLogEntryIterator.next());
 
 			while (currentModularContractAllocations.openAmountSignum() > 0)
 			{
@@ -285,7 +285,7 @@ public class InterestComputationCommand
 	}
 
 	@NonNull
-	private Optional<ModularContractLogEntry> getModularContractLogEntry(
+	private Stream<ModularContractLogEntry> streamModularContractLogEntries(
 			@Nullable final FlatrateTermId contractId,
 			@NonNull final InterestComputationRequest request)
 	{
@@ -301,7 +301,7 @@ public class InterestComputationCommand
 				.orderBy(ModularContractLogQuery.OrderBy.TRANSACTION_DATE_ASC)
 				.build();
 
-		return modularContractLogService.getModularContractLogEntry(query);
+		return modularContractLogService.getModularContractLogEntries(query).stream();
 	}
 
 	private boolean interimInvoiceLogExists(
