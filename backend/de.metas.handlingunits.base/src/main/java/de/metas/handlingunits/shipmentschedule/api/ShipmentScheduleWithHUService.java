@@ -1069,12 +1069,13 @@ public class ShipmentScheduleWithHUService
 			@NonNull final ShipmentScheduleWithHUFactory factory)
 	{
 		final HUsToPickOnTheFly hUsToPickOnTheFly = retrievePickAvailableHUsOntheFly(factory.getHuContext());
+		final ShipmentScheduleSplit split = null;
 		return pickHUsOnTheFly(scheduleRecord,
 				qtyToDeliver,
 				pickAccordingToPackingInstruction,
 				factory,
 				hUsToPickOnTheFly,
-				null);
+				split);
 	}
 
 	@NonNull
