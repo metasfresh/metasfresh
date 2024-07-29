@@ -50,6 +50,8 @@ public class CreateEDIDesadvPackRequest
 	@NonNull
 	EDIDesadvId ediDesadvId;
 
+	int line;
+	
 	@NonNull
 	String sscc18;
 
