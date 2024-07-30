@@ -854,6 +854,7 @@
     </xsd:complexType>
     <xsd:complexType name="EDI_Exp_Desadv_PackType">
         <xsd:sequence>
+            <xsd:element name="Line" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="GTIN_LU_PackingMaterial" type="xsd:string"/>
             <xsd:element minOccurs="0" name="IPA_SSCC18" type="xsd:string"/>
             <xsd:element minOccurs="0" name="M_HU_PackagingCode_LU_Text" type="xsd:string"/>
