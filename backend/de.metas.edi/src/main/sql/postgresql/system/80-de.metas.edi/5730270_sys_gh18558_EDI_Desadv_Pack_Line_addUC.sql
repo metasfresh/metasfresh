@@ -10,10 +10,6 @@ INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTrans
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,588875,541415,540799,0,TO_TIMESTAMP('2024-07-29 12:54:33','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi','Y',10,TO_TIMESTAMP('2024-07-29 12:54:33','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2024-07-29T10:54:44.737Z
-CREATE UNIQUE INDEX UC_EDI_Desadv_Pack_Line ON EDI_Desadv_Pack (Line)
-;
-
 -- 2024-07-29T10:55:43.203Z
 UPDATE AD_Index_Column SET SeqNo=20,Updated=TO_TIMESTAMP('2024-07-29 12:55:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Column_ID=541415
 ;
