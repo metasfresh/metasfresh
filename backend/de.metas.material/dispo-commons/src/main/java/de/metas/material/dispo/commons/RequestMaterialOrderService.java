@@ -265,7 +265,7 @@ public class RequestMaterialOrderService
 				//
 				.durationDays(TimeUtil.getDaysBetween(demandCandidate.getDate(), supplyCandidate.getDate()))
 				.simulated(supplyCandidate.isSimulated())
-				.materialDispoGroupId(MaterialDispoGroupId.ofInt(10))
+				.materialDispoGroupId(group.getEffectiveGroupId())
 				.build();
 	}
 

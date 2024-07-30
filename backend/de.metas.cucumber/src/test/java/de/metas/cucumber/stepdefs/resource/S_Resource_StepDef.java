@@ -20,10 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.resource;
 
 import de.metas.common.util.Check;
-import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.material.planning.ManufacturingResourceType;
+import de.metas.material.planning.ResourceTypeId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -40,7 +45,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_S_Resource.COLUMNNAME_S_Resource_ID;
 
 public class S_Resource_StepDef
@@ -99,4 +104,44 @@ public class S_Resource_StepDef
 			resourceTable.putOrReplace(resourceIdentifier, resource);
 		}
 	}
+
+	@And("create S_Resource:")
+	public void createResources(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::createResource);
+	}
+
+	private void createResource(@NonNull final DataTableRow row)
+	{
+		final ResourceTypeId resourceTypeId = row.getAsIdentifier(I_S_Resource.COLUMNNAME_S_ResourceType_ID).getAsId(ResourceTypeId.class);
+		final ValueAndName valueAndName = row.suggestValueAndName();
+
+		final I_S_Resource record = InterfaceWrapperHelper.newInstance(I_S_Resource.class);
+		record.setValue(valueAndName.getValue());
+		record.setName(valueAndName.getName());
+		record.setS_ResourceType_ID(resourceTypeId.getRepoId());
+		record.setIsAvailable(true);
+		record.setPercentUtilization(BigDecimal.valueOf(100));
+
+		row.getAsOptionalBoolean(I_S_Resource.COLUMNNAME_IsManufacturingResource).ifPresent(record::setIsManufacturingResource);
+		row.getAsOptionalEnum(I_S_Resource.COLUMNNAME_ManufacturingResourceType, ManufacturingResourceType.class)
+				.map(ManufacturingResourceType::getCode)
+				.ifPresent(record::setManufacturingResourceType);
+		row.getAsOptionalInt(I_S_Resource.COLUMNNAME_PlanningHorizon).ifPresent(record::setPlanningHorizon);
+
+		row.getAsOptionalQuantity(
+						I_S_Resource.COLUMNNAME_CapacityPerProductionCycle,
+						I_S_Resource.COLUMNNAME_CapacityPerProductionCycle_UOM_ID,
+						uomString -> uomDao.getByX12DE355(X12DE355.ofCode(uomString))
+				)
+				.ifPresent(capacityPerProductionCycle -> {
+					record.setCapacityPerProductionCycle(capacityPerProductionCycle.toBigDecimal());
+					record.setCapacityPerProductionCycle_UOM_ID(capacityPerProductionCycle.getUomId().getRepoId());
+				});
+
+		InterfaceWrapperHelper.save(record);
+
+		resourceTable.put(row.getAsIdentifier(), record);
+	}
+
 }

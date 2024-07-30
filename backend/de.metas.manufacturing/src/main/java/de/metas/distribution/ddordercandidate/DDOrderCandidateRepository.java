@@ -30,6 +30,8 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Repository
@@ -217,7 +219,32 @@ public class DDOrderCandidateRepository
 		{
 			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_IsSimulated, query.getIsSimulated());
 		}
+		if (query.getExcludePPOrderId() != null)
+		{
+			queryBuilder.addNotEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_Forward_PP_Order_ID, query.getExcludePPOrderId());
+		}
+		if (query.getPpOrderCandidateId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_Forward_PP_Order_Candidate_ID, query.getPpOrderCandidateId());
+		}
 
 		return queryBuilder;
+	}
+
+	public void updateByQuery(@NonNull final DDOrderCandidateQuery query, @NonNull UnaryOperator<DDOrderCandidate> updater)
+	{
+		final List<I_DD_Order_Candidate> records = toSqlQuery(query).create().list();
+		for (final I_DD_Order_Candidate record : records)
+		{
+			final DDOrderCandidate candidate = fromRecord(record);
+			final DDOrderCandidate changedCandidate = updater.apply(candidate);
+			if (Objects.equals(candidate, changedCandidate))
+			{
+				continue;
+			}
+
+			updateRecord(record, changedCandidate);
+			InterfaceWrapperHelper.save(record);
+		}
 	}
 }

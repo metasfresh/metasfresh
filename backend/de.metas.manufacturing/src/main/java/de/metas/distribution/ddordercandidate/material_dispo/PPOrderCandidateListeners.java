@@ -3,6 +3,8 @@ package de.metas.distribution.ddordercandidate.material_dispo;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateQuery;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
@@ -39,6 +41,7 @@ public class PPOrderCandidateListeners
 		@NonNull private final PPOrderCandidateDAO ppOrderCandidateDAO;
 		@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 		@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
+		@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository;
 
 		@Override
 		public Collection<Class<? extends PPOrderCandidateUpdatedEvent>> getHandledEventType() {return ImmutableList.of(PPOrderCandidateUpdatedEvent.class);}
@@ -53,6 +56,7 @@ public class PPOrderCandidateListeners
 
 			updateProductionDetailsByPPOrderCandidateId(ppOrderCandidateId, ppOrderId);
 			updateDistributionDetailsByPPOrderCandidateId(ppOrderCandidateId, ppOrderId);
+			updateDistributionCandidatesByPPOrderCandidateId(ppOrderCandidateId, ppOrderId);
 		}
 
 		private void updateProductionDetailsByPPOrderCandidateId(@NonNull final PPOrderCandidateId ppOrderCandidateId, @Nullable final PPOrderId newPPOrderId)
@@ -98,6 +102,13 @@ public class PPOrderCandidateListeners
 				}
 			}
 		}
-	}
 
+		private void updateDistributionCandidatesByPPOrderCandidateId(@NonNull final PPOrderCandidateId ppOrderCandidateId, @Nullable final PPOrderId newPPOrderId)
+		{
+			ddOrderCandidateRepository.updateByQuery(
+					DDOrderCandidateQuery.builder().ppOrderCandidateId(ppOrderCandidateId).excludePPOrderId(newPPOrderId).build(),
+					candidate -> candidate.withPPOrderId(newPPOrderId)
+			);
+		}
+	}
 }
