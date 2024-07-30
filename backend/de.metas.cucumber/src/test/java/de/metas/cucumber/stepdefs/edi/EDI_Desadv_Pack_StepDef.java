@@ -49,6 +49,7 @@ import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_Pac
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_GTIN_LU_PackingMaterial;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_IPA_SSCC18;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_IsManual_IPA_SSCC18;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_Line;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_M_HU_PackagingCode_LU_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -166,6 +167,12 @@ public class EDI_Desadv_Pack_StepDef
 			queryBuilder.addEqualsFilter(COLUMNNAME_GTIN_LU_PackingMaterial, DataTableUtil.nullToken2Null(gtinLuPackingMaterial));
 		}
 
+		final int line = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_Line);
+		if (line >= 0)
+		{
+			queryBuilder.addEqualsFilter(COLUMNNAME_Line, line);
+		}
+		
 		final Supplier<Boolean> packIsFound = () -> queryBuilder
 				.orderByDescending(COLUMNNAME_EDI_Desadv_Pack_ID)
 				.create()
