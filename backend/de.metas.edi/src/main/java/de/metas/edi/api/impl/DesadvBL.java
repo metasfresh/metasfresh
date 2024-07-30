@@ -9,6 +9,8 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.SimpleSequence;
+import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
@@ -291,7 +293,7 @@ public class DesadvBL implements IDesadvBL
 				InterfaceWrapperHelper.save(order);
 			}
 		}
-		else if (!Check.isEmpty(inOut.getPOReference(), true))
+		else if (Check.isNotBlank(inOut.getPOReference()))
 		{
 			desadv = desadvDAO.retrieveMatchingDesadvOrNull(inOut.getPOReference(), InterfaceWrapperHelper.getContextAware(inOut));
 		}
@@ -308,7 +310,9 @@ public class DesadvBL implements IDesadvBL
 		inOut.setEDI_Desadv(desadv);
 
 		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
-
+		final int maxDesadvPackLine = desadvDAO.retrieveMaxDesadvPackLine(EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID()));
+		final SimpleSequence packLineSequence = SimpleSequence.createWithInitial(maxDesadvPackLine);
+		
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : inOutLines)
 		{
@@ -316,12 +320,15 @@ public class DesadvBL implements IDesadvBL
 			{
 				continue;
 			}
-			addInOutLine(inOutLine, recipientBPartnerId);
+			addInOutLine(inOutLine, recipientBPartnerId, packLineSequence);
 		}
 		return desadv;
 	}
 
-	private void addInOutLine(@NonNull final I_M_InOutLine inOutLineRecord, @NonNull final BPartnerId recipientBPartnerId)
+	private void addInOutLine(
+			@NonNull final I_M_InOutLine inOutLineRecord, 
+			@NonNull final BPartnerId recipientBPartnerId,
+			@NonNull final SimpleSequence packLineSequence)
 	{
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLineRecord.getC_OrderLine(), I_C_OrderLine.class);
 
@@ -347,7 +354,7 @@ public class DesadvBL implements IDesadvBL
 		inOutLineRecord.setEDI_DesadvLine_ID(desadvLineRecord.getEDI_DesadvLine_ID());
 		InterfaceWrapperHelper.save(inOutLineRecord);
 
-		ediDesadvPackService.createPacks(inOutLineRecord, recipientBPartnerId);
+		ediDesadvPackService.createPacks(inOutLineRecord, recipientBPartnerId, packLineSequence);
 	}
 
 	@Override

@@ -22,7 +22,6 @@
 
 package de.metas.edi.api;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
@@ -121,4 +120,9 @@ public interface IDesadvDAO extends ISingletonService
 	void save(@NonNull I_EDI_Desadv ediDesadv);
 
 	I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId);
+
+	/**
+	 * @return the max {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack#COLUMNNAME_Line} value for the given desadvId.
+	 */
+	int retrieveMaxDesadvPackLine(@NonNull EDIDesadvId desadvId);
 }

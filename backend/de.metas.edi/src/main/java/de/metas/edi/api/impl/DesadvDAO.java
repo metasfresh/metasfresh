@@ -32,6 +32,7 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -116,6 +117,16 @@ public class DesadvDAO implements IDesadvDAO
 	public I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId)
 	{
 		return InterfaceWrapperHelper.load(ediDesadvLineId, I_EDI_DesadvLine.class);
+	}
+
+	@Override
+	public int retrieveMaxDesadvPackLine(@NonNull final EDIDesadvId desadvId)
+	{
+		return queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
+				.create()
+				.maxInt(I_EDI_Desadv_Pack.COLUMNNAME_Line);
 	}
 
 	@Override
