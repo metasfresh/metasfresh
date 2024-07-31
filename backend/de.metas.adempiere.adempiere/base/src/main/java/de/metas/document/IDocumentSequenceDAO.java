@@ -32,6 +32,8 @@ public interface IDocumentSequenceDAO extends ISingletonService
 
 	String retrieveDocumentNoByYearAndMonth(int AD_Sequence_ID, Date date);
 
+	String retrieveDocumentNoByYearMonthAndDay(final int AD_Sequence_ID, java.util.Date date);
+
 	/** @return document type sequence map */
 	DocTypeSequenceList retrieveDocTypeSequenceList(I_C_DocType docType);
 

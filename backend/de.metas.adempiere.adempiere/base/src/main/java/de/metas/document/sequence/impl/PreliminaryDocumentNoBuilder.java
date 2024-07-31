@@ -154,15 +154,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		else
 		{
 			final DocumentSequenceInfo newDocumentSeqInfo = documentSequenceDAO.retriveDocumentSequenceInfo(docSequenceId);
-			final boolean isStartNewYear = newDocumentSeqInfo != null && newDocumentSeqInfo.isStartNewYear();
-			if (isStartNewYear)
+			final boolean isRestartFrequency = newDocumentSeqInfo != null && newDocumentSeqInfo.getRestartFrequency() != null;
+			if (isRestartFrequency)
 			{
 				final String dateColumnName = newDocumentSeqInfo.getDateColumn();
 				final Date date = getDocumentDate(dateColumnName);
 
-				final boolean isStartNewMonth = newDocumentSeqInfo.isStartNewMonth();
 				final String documentNo;
-				if (isStartNewMonth)
+				if (newDocumentSeqInfo.isStartNewDay())
+				{
+					documentNo = documentSequenceDAO.retrieveDocumentNoByYearMonthAndDay(docSequenceId.getRepoId(), date);
+				}
+				else if (newDocumentSeqInfo.isStartNewMonth())
 				{
 					documentNo = documentSequenceDAO.retrieveDocumentNoByYearAndMonth(docSequenceId.getRepoId(), date);
 				}
