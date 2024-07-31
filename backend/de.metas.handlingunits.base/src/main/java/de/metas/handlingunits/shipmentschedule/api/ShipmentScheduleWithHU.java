@@ -124,7 +124,7 @@ public class ShipmentScheduleWithHU
 	@Getter private final boolean adviseManualPackingMaterial;
 
 	ShipmentScheduleWithHU(
-			@NonNull ShipmentScheduleWithHUSupportingServices services,
+			@NonNull final ShipmentScheduleWithHUSupportingServices services,
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule_QtyPicked allocRecord,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse,
@@ -159,7 +159,7 @@ public class ShipmentScheduleWithHU
 	 * Creates a HU-"empty" instance that just references the given shipment schedule.
 	 */
 	ShipmentScheduleWithHU(
-			@NonNull ShipmentScheduleWithHUSupportingServices services, 
+			@NonNull final ShipmentScheduleWithHUSupportingServices services,
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty,
@@ -187,14 +187,15 @@ public class ShipmentScheduleWithHU
 			@NonNull final ShipmentScheduleWithHUSupportingServices services,
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final ShipmentScheduleSplit split)
+			@NonNull final ShipmentScheduleSplit split,
+			@NonNull final Quantity qtyToAllocate)
 	{
 		this.services = services;
 		this.huContext = huContext;
 		this.shipmentSchedule = shipmentSchedule;
 		this.split = split;
 
-		this.pickedQty = split.getQtyToDeliver();
+		this.pickedQty = qtyToAllocate;
 		this.catchQty = Optional.empty();
 
 		this.vhu = null; // no VHU
@@ -534,6 +535,7 @@ public class ShipmentScheduleWithHU
 		return dimension;
 	}
 
+	@Nullable
 	public ShipmentScheduleSplitId getSplitId() {return split != null ? split.getIdNotNull() : null;}
 
 	public Optional<LocalDate> getDeliveryDate()
