@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Sequence extends org.compiere.model.PO implements I_AD_Sequence, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1692385967L;
+	private static final long serialVersionUID = 989560965L;
 
     /** Standard Constructor */
     public X_AD_Sequence (final Properties ctx, final int AD_Sequence_ID, @Nullable final String trxName)
@@ -196,28 +196,27 @@ public class X_AD_Sequence extends org.compiere.model.PO implements I_AD_Sequenc
 		return get_ValueAsString(COLUMNNAME_Prefix);
 	}
 
+	/** 
+	 * RestartFrequency AD_Reference_ID=541879
+	 * Reference name: AD_SequenceRestart Frequency 
+	 */
+	public static final int RESTARTFREQUENCY_AD_Reference_ID=541879;
+	/** Year = Y */
+	public static final String RESTARTFREQUENCY_Year = "Y";
+	/** Month = M */
+	public static final String RESTARTFREQUENCY_Month = "M";
+	/** Day = D */
+	public static final String RESTARTFREQUENCY_Day = "D";
 	@Override
-	public void setStartNewMonth (final boolean StartNewMonth)
+	public void setRestartFrequency (final @Nullable java.lang.String RestartFrequency)
 	{
-		set_Value (COLUMNNAME_StartNewMonth, StartNewMonth);
+		set_Value (COLUMNNAME_RestartFrequency, RestartFrequency);
 	}
 
 	@Override
-	public boolean isStartNewMonth() 
+	public java.lang.String getRestartFrequency() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_StartNewMonth);
-	}
-
-	@Override
-	public void setStartNewYear (final boolean StartNewYear)
-	{
-		set_Value (COLUMNNAME_StartNewYear, StartNewYear);
-	}
-
-	@Override
-	public boolean isStartNewYear() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_StartNewYear);
+		return get_ValueAsString(COLUMNNAME_RestartFrequency);
 	}
 
 	@Override
