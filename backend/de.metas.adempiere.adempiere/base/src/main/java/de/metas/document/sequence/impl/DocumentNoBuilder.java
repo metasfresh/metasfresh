@@ -30,8 +30,8 @@ import de.metas.document.DocTypeSequenceList;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
-import de.metas.document.sequence.ICountryIdProvider;
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.document.sequence.ICountryIdProvider;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
@@ -406,14 +406,14 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 		final IMutable<Integer> currentSeq = new Mutable<>(-1);
 		DB.executeUpdateAndThrowExceptionOnFail(sql,
-						   sqlParams.toArray(),
-						   trxName,
-						   QUERY_TIME_OUT,
-						   rs -> currentSeq.setValue(rs.getInt(1)));
+												sqlParams.toArray(),
+												trxName,
+												QUERY_TIME_OUT,
+												rs -> currentSeq.setValue(rs.getInt(1)));
 
 		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(
 				trxName,
-				CacheInvalidateMultiRequest.rootRecord(I_AD_Sequence.Table_Name,docSeqInfo.getAdSequenceId()));
+				CacheInvalidateMultiRequest.rootRecord(I_AD_Sequence.Table_Name, docSeqInfo.getAdSequenceId()));
 
 		return currentSeq.getValue();
 	}
@@ -579,10 +579,10 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		{
 
 			ICountryIdProvider.ProviderResult providerResult = ICountryIdProvider.ProviderResult.EMPTY;
-			for(final ICountryIdProvider countryIdProvider : countryIdProviders)
+			for (final ICountryIdProvider countryIdProvider : countryIdProviders)
 			{
 				providerResult = countryIdProvider.computeValueInfo(_evalContext);
-				if(providerResult.hasCountryId())
+				if (providerResult.hasCountryId())
 				{
 					break;
 				}

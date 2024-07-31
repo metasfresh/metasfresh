@@ -4,9 +4,8 @@ import de.metas.document.sequence.DocSequenceId;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_DocType;
 
-import java.util.Date;
-
 import javax.annotation.Nullable;
+import java.util.Date;
 
 /**
  * DAO methods for retrieving DocumentNo sequence informations.

@@ -78,7 +78,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 	private final CCache<BySequenceNameCacheKey, DocumentSequenceInfo> bySequenceNameCache = CCache.<BySequenceNameCacheKey, DocumentSequenceInfo>builder()
 			.tableName(I_AD_Sequence.Table_Name)
 			.build();
-	
+
 	@Override
 	public DocumentSequenceInfo getOrCreateDocumentSequenceInfo(final String sequenceName, final int adClientId, final int adOrgId)
 	{
