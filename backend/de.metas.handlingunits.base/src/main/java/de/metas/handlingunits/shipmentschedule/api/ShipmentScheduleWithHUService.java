@@ -122,7 +122,6 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
@@ -198,33 +197,6 @@ public class ShipmentScheduleWithHUService
 				new InventoryService(new InventoryRepository(), new SourceHUsService()),
 				new ModularContractProvider()
 		);
-	}
-
-	@Value
-	@Builder
-	public static class CreateCandidatesRequest
-	{
-		@NonNull
-		IHUContext huContext;
-
-		@NonNull
-		ShipmentScheduleId shipmentScheduleId;
-
-		@NonNull
-		M_ShipmentSchedule_QuantityTypeToUse quantityType;
-
-		/**
-		 * If {@code false} and HUs are picked on-the-fly, then those HUs are created as CUs that are taken from bigger LUs, TUs or CUs (the default).
-		 * If {@code true}, then the on-the-fly picked HUs are created as TUs, using the respective shipment schedules' packing instructions.
-		 */
-		@Builder.Default
-		boolean onTheFlyPickToPackingInstructions = false;
-
-		/**
-		 * If set and {@link #quantityType} is TYPE_QTY_TO_DELIVER (or _BOTH), then the respective M_ShipmentSchedule's current QtyToDeliver and QtyToDeliver_Override will be ignored.
-		 */
-		@Nullable
-		Quantity quantityToDeliverOverride;
 	}
 
 	/**
@@ -391,9 +363,9 @@ public class ShipmentScheduleWithHUService
 
 		final String pickAvailableHUsOntheFlyConfig = Services.get(ISysConfigBL.class)
 				.getValue(SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY,
-						HUsToPickOnTheFly.OnlySourceHUs.getCode(),
-						adClientId,
-						adOrgId);
+						  HUsToPickOnTheFly.OnlySourceHUs.getCode(),
+						  adClientId,
+						  adOrgId);
 
 		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("SysConfig {}={} for AD_Client_ID={} and AD_Org_ID={}",
@@ -410,14 +382,16 @@ public class ShipmentScheduleWithHUService
 	 * <p>
 	 * Note that we don't use the picked HUs' catch weights since we don't know which HUs were actually picked in the real world.
 	 */
-	private ImmutableList<ShipmentScheduleWithHU> pickHUsOnTheFly(
-			@NonNull final I_M_ShipmentSchedule scheduleRecord,
-			@NonNull final Quantity qtyToDeliver,
-			final boolean pickAccordingToPackingInstruction,
-			@NonNull final ShipmentScheduleWithHUFactory factory,
-			@NonNull final HUsToPickOnTheFly hUsToPickOnTheFly,
-			@Nullable final ShipmentScheduleSplit shipmentScheduleSplit)
+	private ImmutableList<ShipmentScheduleWithHU> pickHUsOnTheFly(final PickHUsOnTheFlyRequest pickHUsOnTheFlyRequest)
 	{
+		final HUsToPickOnTheFly hUsToPickOnTheFly = pickHUsOnTheFlyRequest.getHUsToPickOnTheFly();
+		final Quantity qtyToDeliver = pickHUsOnTheFlyRequest.getQtyToDeliver();
+		final I_M_ShipmentSchedule scheduleRecord = pickHUsOnTheFlyRequest.getScheduleRecord();
+		final ShipmentScheduleSplit shipmentScheduleSplit = pickHUsOnTheFlyRequest.getShipmentScheduleSplit();
+		final ShipmentScheduleWithHUFactory factory = pickHUsOnTheFlyRequest.getFactory();
+		final boolean pickAccordingToPackingInstruction = pickHUsOnTheFlyRequest.isPickAccordingToPackingInstruction();
+		final List<HuId> huIdsToExclude = pickHUsOnTheFlyRequest.getHuIdsToExclude();
+
 		if (hUsToPickOnTheFly == HUsToPickOnTheFly.None)
 		{
 			return ImmutableList.of();
@@ -431,11 +405,11 @@ public class ShipmentScheduleWithHUService
 			return ImmutableList.of();
 		}
 
-		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
-
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(scheduleRecord.getM_ShipmentSchedule_ID());
-		final List<ShipmentScheduleWithHU> alreadyPickedOnTheFlyButNotDelivered = shipmentScheduleSplit != null ? Collections.emptyList() : getAlreadyPickedOnTheFlyButNotDelivered(shipmentScheduleId, factory);
+		final List<ShipmentScheduleWithHU> alreadyPickedOnTheFlyButNotDelivered = shipmentScheduleSplit != null ?
+				Collections.emptyList() : getAlreadyPickedOnTheFlyButNotDelivered(shipmentScheduleId, factory);
 
+		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
 		result.addAll(alreadyPickedOnTheFlyButNotDelivered);
 
 		Quantity remainingQtyToAllocate = getQtyToAllocate(alreadyPickedOnTheFlyButNotDelivered, qtyToDeliver);
@@ -452,6 +426,10 @@ public class ShipmentScheduleWithHUService
 
 		for (final I_M_HU sourceHURecord : husToPick)
 		{
+			if (huIdsToExclude.contains(HuId.ofRepoId(sourceHURecord.getM_HU_ID())))
+			{
+				continue;
+			}
 			final ProductId productId = ProductId.ofRepoId(scheduleRecord.getM_Product_ID());
 
 			final I_C_UOM uomRecord = remainingQtyToAllocate.getUOM();
@@ -471,10 +449,6 @@ public class ShipmentScheduleWithHUService
 
 			final List<I_M_HU> newHURecords = createNewlyPickedHUs(scheduleRecord, sourceHURecord, quantityToSplit, pickAccordingToPackingInstruction);
 
-			if(!newHURecords.isEmpty() && remainingQtyToAllocate.isGreaterThan(qtyOfSourceHU))
-			{
-				handlingUnitsBL.setHUStatus(sourceHURecord, PlainContextAware.newWithThreadInheritedTrx(), X_M_HU.HUSTATUS_Picked);
-			}
 			// we stumbled over HUs with null-trx, which caused some trouble down the line
 			InterfaceWrapperHelper.setThreadInheritedTrxName(newHURecords);
 
@@ -779,6 +753,7 @@ public class ShipmentScheduleWithHUService
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
 		final HUsToPickOnTheFly hUsToPickOnTheFly = retrievePickAvailableHUsOntheFly(factory.getHuContext());
+		final List<HuId> alreadyPickedHUs = new ArrayList<>();
 
 		if (productBL.isStocked(productId))
 		{
@@ -786,29 +761,39 @@ public class ShipmentScheduleWithHUService
 			{
 				final Quantity qtyToDeliver = split.getQtyToDeliver();
 
-				final ImmutableList<ShipmentScheduleWithHU> shipmentScheduleWithHUS = pickHUsOnTheFly(schedule,
-																									  qtyToDeliver,
-																									  false,
-																									  factory,
-																									  hUsToPickOnTheFly,
-																									  split);
+				final PickHUsOnTheFlyRequest pickHUsOnTheFlyRequest = new PickHUsOnTheFlyRequest(schedule,
+																								 qtyToDeliver,
+																								 false,
+																								 factory,
+																								 hUsToPickOnTheFly,
+																								 split,
+																								 alreadyPickedHUs);
+				final ImmutableList<ShipmentScheduleWithHU> shipmentScheduleWithHUS = pickHUsOnTheFly(pickHUsOnTheFlyRequest);
 
 				result.addAll(shipmentScheduleWithHUS);
-
-				final Quantity allocatedQty = shipmentScheduleWithHUS
-						.stream()
-						.map(ShipmentScheduleWithHU::getQtyPicked)
-						.reduce(qtyToDeliver.toZero(), Quantity::add);
-
-				Loggables.withLogger(logger, Level.DEBUG).addLog("QtyToDeliver={}; Qty picked on-the-fly from available HUs: {}", qtyToDeliver, allocatedQty);
-
-				final Quantity remainingQtyToAllocate = qtyToDeliver.subtract(allocatedQty);
-				if (remainingQtyToAllocate.isPositive())
+				for (final ShipmentScheduleWithHU shipmentScheduleWithHU : shipmentScheduleWithHUS)
 				{
-					result.add(factory.ofSplit(schedule, split, remainingQtyToAllocate));
-				}
-			}
+					final I_M_HU vhu = shipmentScheduleWithHU.getVHU();
+					if (vhu != null)
+					{
+						alreadyPickedHUs.add(HuId.ofRepoIdOrNull(vhu.getM_HU_ID()));
+					}
 
+					final Quantity allocatedQty = shipmentScheduleWithHUS
+							.stream()
+							.map(ShipmentScheduleWithHU::getQtyPicked)
+							.reduce(qtyToDeliver.toZero(), Quantity::add);
+
+					Loggables.withLogger(logger, Level.DEBUG).addLog("QtyToDeliver={}; Qty picked on-the-fly from available HUs: {}", qtyToDeliver, allocatedQty);
+
+					final Quantity remainingQtyToAllocate = qtyToDeliver.subtract(allocatedQty);
+					if (remainingQtyToAllocate.isPositive())
+					{
+						result.add(factory.ofSplit(schedule, split, remainingQtyToAllocate));
+					}
+				}
+
+			}
 		}
 		else
 		{
@@ -1098,12 +1083,16 @@ public class ShipmentScheduleWithHUService
 	{
 		final HUsToPickOnTheFly hUsToPickOnTheFly = retrievePickAvailableHUsOntheFly(factory.getHuContext());
 		final ShipmentScheduleSplit split = null;
-		return pickHUsOnTheFly(scheduleRecord,
-							   qtyToDeliver,
-							   pickAccordingToPackingInstruction,
-							   factory,
-							   hUsToPickOnTheFly,
-							   split);
+
+		@NonNull final List<HuId> huIdsToExclude = Collections.emptyList();
+		final PickHUsOnTheFlyRequest pickHUsOnTheFlyRequest = new PickHUsOnTheFlyRequest(scheduleRecord,
+																						 qtyToDeliver,
+																						 pickAccordingToPackingInstruction,
+																						 factory,
+																						 hUsToPickOnTheFly,
+																						 split,
+																						 huIdsToExclude);
+		return pickHUsOnTheFly(pickHUsOnTheFlyRequest);
 	}
 
 	@NonNull
@@ -1154,5 +1143,44 @@ public class ShipmentScheduleWithHUService
 		final HuId createdHuId = inventoryService.createInventoryForMissingQty(req);
 
 		return handlingUnitsDAO.getById(createdHuId);
+	}
+
+	@Value
+	@Builder
+	public static class CreateCandidatesRequest
+	{
+		@NonNull
+		IHUContext huContext;
+
+		@NonNull
+		ShipmentScheduleId shipmentScheduleId;
+
+		@NonNull
+		M_ShipmentSchedule_QuantityTypeToUse quantityType;
+
+		/**
+		 * If {@code false} and HUs are picked on-the-fly, then those HUs are created as CUs that are taken from bigger LUs, TUs or CUs (the default).
+		 * If {@code true}, then the on-the-fly picked HUs are created as TUs, using the respective shipment schedules' packing instructions.
+		 */
+		@Builder.Default
+		boolean onTheFlyPickToPackingInstructions = false;
+
+		/**
+		 * If set and {@link #quantityType} is TYPE_QTY_TO_DELIVER (or _BOTH), then the respective M_ShipmentSchedule's current QtyToDeliver and QtyToDeliver_Override will be ignored.
+		 */
+		@Nullable
+		Quantity quantityToDeliverOverride;
+	}
+
+	@Value
+	private static class PickHUsOnTheFlyRequest
+	{
+		@NonNull I_M_ShipmentSchedule scheduleRecord;
+		@NonNull Quantity qtyToDeliver;
+		boolean pickAccordingToPackingInstruction;
+		@NonNull ShipmentScheduleWithHUFactory factory;
+		@NonNull HUsToPickOnTheFly hUsToPickOnTheFly;
+		@Nullable ShipmentScheduleSplit shipmentScheduleSplit;
+		@NonNull List<HuId> huIdsToExclude;
 	}
 }
