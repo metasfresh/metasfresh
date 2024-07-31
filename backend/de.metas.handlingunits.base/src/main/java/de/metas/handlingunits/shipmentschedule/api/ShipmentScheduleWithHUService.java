@@ -122,6 +122,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
@@ -470,6 +471,10 @@ public class ShipmentScheduleWithHUService
 
 			final List<I_M_HU> newHURecords = createNewlyPickedHUs(scheduleRecord, sourceHURecord, quantityToSplit, pickAccordingToPackingInstruction);
 
+			if(!newHURecords.isEmpty() && remainingQtyToAllocate.isGreaterThan(qtyOfSourceHU))
+			{
+				handlingUnitsBL.setHUStatus(sourceHURecord, PlainContextAware.newWithThreadInheritedTrx(), X_M_HU.HUSTATUS_Picked);
+			}
 			// we stumbled over HUs with null-trx, which caused some trouble down the line
 			InterfaceWrapperHelper.setThreadInheritedTrxName(newHURecords);
 
