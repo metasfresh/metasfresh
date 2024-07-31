@@ -199,6 +199,33 @@ public class ShipmentScheduleWithHUService
 		);
 	}
 
+	@Value
+	@Builder
+	public static class CreateCandidatesRequest
+	{
+		@NonNull
+		IHUContext huContext;
+
+		@NonNull
+		ShipmentScheduleId shipmentScheduleId;
+
+		@NonNull
+		M_ShipmentSchedule_QuantityTypeToUse quantityType;
+
+		/**
+		 * If {@code false} and HUs are picked on-the-fly, then those HUs are created as CUs that are taken from bigger LUs, TUs or CUs (the default).
+		 * If {@code true}, then the on-the-fly picked HUs are created as TUs, using the respective shipment schedules' packing instructions.
+		 */
+		@Builder.Default
+		boolean onTheFlyPickToPackingInstructions = false;
+
+		/**
+		 * If set and {@link #quantityType} is TYPE_QTY_TO_DELIVER (or _BOTH), then the respective M_ShipmentSchedule's current QtyToDeliver and QtyToDeliver_Override will be ignored.
+		 */
+		@Nullable
+		Quantity quantityToDeliverOverride;
+	}
+
 	/**
 	 * Create {@link ShipmentScheduleWithHU} (i.e. candidates) for given <code>schedule</code>.
 	 * <p>
@@ -382,7 +409,7 @@ public class ShipmentScheduleWithHUService
 	 * <p>
 	 * Note that we don't use the picked HUs' catch weights since we don't know which HUs were actually picked in the real world.
 	 */
-	private ImmutableList<ShipmentScheduleWithHU> pickHUsOnTheFly(final PickHUsOnTheFlyRequest pickHUsOnTheFlyRequest)
+	private ImmutableList<ShipmentScheduleWithHU> pickHUsOnTheFly(@NonNull final PickHUsOnTheFlyRequest pickHUsOnTheFlyRequest)
 	{
 		final HUsToPickOnTheFly hUsToPickOnTheFly = pickHUsOnTheFlyRequest.getHUsToPickOnTheFly();
 		final Quantity qtyToDeliver = pickHUsOnTheFlyRequest.getQtyToDeliver();
@@ -768,10 +795,10 @@ public class ShipmentScheduleWithHUService
 																								 hUsToPickOnTheFly,
 																								 split,
 																								 alreadyPickedHUs);
-				final ImmutableList<ShipmentScheduleWithHU> shipmentScheduleWithHUS = pickHUsOnTheFly(pickHUsOnTheFlyRequest);
+				final ImmutableList<ShipmentScheduleWithHU> shipmentScheduleWithHUs = pickHUsOnTheFly(pickHUsOnTheFlyRequest);
 
-				result.addAll(shipmentScheduleWithHUS);
-				for (final ShipmentScheduleWithHU shipmentScheduleWithHU : shipmentScheduleWithHUS)
+				result.addAll(shipmentScheduleWithHUs);
+				for (final ShipmentScheduleWithHU shipmentScheduleWithHU : shipmentScheduleWithHUs)
 				{
 					final I_M_HU vhu = shipmentScheduleWithHU.getVHU();
 					if (vhu != null)
@@ -779,7 +806,7 @@ public class ShipmentScheduleWithHUService
 						alreadyPickedHUs.add(HuId.ofRepoIdOrNull(vhu.getM_HU_ID()));
 					}
 
-					final Quantity allocatedQty = shipmentScheduleWithHUS
+					final Quantity allocatedQty = shipmentScheduleWithHUs
 							.stream()
 							.map(ShipmentScheduleWithHU::getQtyPicked)
 							.reduce(qtyToDeliver.toZero(), Quantity::add);
@@ -1143,33 +1170,6 @@ public class ShipmentScheduleWithHUService
 		final HuId createdHuId = inventoryService.createInventoryForMissingQty(req);
 
 		return handlingUnitsDAO.getById(createdHuId);
-	}
-
-	@Value
-	@Builder
-	public static class CreateCandidatesRequest
-	{
-		@NonNull
-		IHUContext huContext;
-
-		@NonNull
-		ShipmentScheduleId shipmentScheduleId;
-
-		@NonNull
-		M_ShipmentSchedule_QuantityTypeToUse quantityType;
-
-		/**
-		 * If {@code false} and HUs are picked on-the-fly, then those HUs are created as CUs that are taken from bigger LUs, TUs or CUs (the default).
-		 * If {@code true}, then the on-the-fly picked HUs are created as TUs, using the respective shipment schedules' packing instructions.
-		 */
-		@Builder.Default
-		boolean onTheFlyPickToPackingInstructions = false;
-
-		/**
-		 * If set and {@link #quantityType} is TYPE_QTY_TO_DELIVER (or _BOTH), then the respective M_ShipmentSchedule's current QtyToDeliver and QtyToDeliver_Override will be ignored.
-		 */
-		@Nullable
-		Quantity quantityToDeliverOverride;
 	}
 
 	@Value
