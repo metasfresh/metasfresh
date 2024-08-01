@@ -52,7 +52,6 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
@@ -879,7 +878,7 @@ public final class EMail implements Serializable
 	/**
 	 * Set the message content and attachments.
 	 */
-	private void setContent(final MimeMessage msg) throws MessagingException, IOException
+	private void setContent(final MimeMessage msg) throws MessagingException
 	{
 		final String subject = getSubject();
 		msg.setSubject(subject, getCharsetName());
@@ -971,7 +970,7 @@ public final class EMail implements Serializable
 
 	/**
 	 * Checks if the email is valid and can be sent.
-	 *
+	 * <p>
 	 * NOTE: this method is NOT setting the {@link #isValid()} flag.
 	 *
 	 * @return true if email is valid and can be sent
