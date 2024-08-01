@@ -31,7 +31,10 @@ import de.metas.money.Money;
 import de.metas.process.PInstanceId;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import de.metas.util.lang.UIDStringUtil;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -50,6 +53,7 @@ import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -252,7 +256,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		final List<ET> resultCasted = new ArrayList<>(result.size());
 		for (final T model : result)
 		{
-			if(limit.isLimitHitOrExceeded(resultCasted))
+			if (limit.isLimitHitOrExceeded(resultCasted))
 			{
 				break;
 			}
@@ -326,8 +330,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public <ET extends T> ET first() throws DBException
 	{
-		@SuppressWarnings("unchecked")
-		final ET result = (ET)first(modelClass);
+		@SuppressWarnings("unchecked") final ET result = (ET)first(modelClass);
 		return result;
 	}
 
@@ -505,8 +508,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			return null;
 		}
 
-		@SuppressWarnings("unchecked")
-		final OT value = (OT)options.get(name);
+		@SuppressWarnings("unchecked") final OT value = (OT)options.get(name);
 
 		return value;
 	}
@@ -575,8 +577,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 	@Override
 	public <AT> AT aggregate(final String columnName,
-			@NonNull final Aggregate aggregateType,
-			final Class<AT> returnType) throws DBException
+							 @NonNull final Aggregate aggregateType,
+							 final Class<AT> returnType) throws DBException
 	{
 		AT result = null;
 		final BiFunction<Object, Object, AT> aggregateOperator;
@@ -585,8 +587,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			aggregateOperator = getSumOperator(returnType);
 
 			// Setup initial result
-			@SuppressWarnings("unchecked")
-			final AT result0 = (AT)BigDecimal.ZERO;
+			@SuppressWarnings("unchecked") final AT result0 = (AT)BigDecimal.ZERO;
 			result = result0;
 		}
 		else if (Aggregate.MAX.equals(aggregateType))
@@ -640,8 +641,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			return (result, value) -> {
 				final BigDecimal resultBD = toBigDecimal(result);
 				final BigDecimal valueBD = toBigDecimal(value);
-				@SuppressWarnings("unchecked")
-				final R newResult = (R)(resultBD == null ? valueBD : resultBD.add(valueBD));
+				@SuppressWarnings("unchecked") final R newResult = (R)(resultBD == null ? valueBD : resultBD.add(valueBD));
 				return newResult;
 			};
 		}
@@ -658,8 +658,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			return (result, value) -> {
 				final BigDecimal resultBD = toBigDecimal(result);
 				final BigDecimal valueBD = toBigDecimal(value);
-				@SuppressWarnings("unchecked")
-				final R newResult = (R)(resultBD == null ? valueBD : resultBD.max(valueBD));
+				@SuppressWarnings("unchecked") final R newResult = (R)(resultBD == null ? valueBD : resultBD.max(valueBD));
 				return newResult;
 			};
 		}
@@ -668,8 +667,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			return (result, value) -> {
 				final Integer resultInt = (Integer)result;
 				final Integer valueInt = (Integer)value;
-				@SuppressWarnings("unchecked")
-				final R newResult = (R)(resultInt == null ? valueInt : (Integer)Math.max(resultInt, valueInt));
+				@SuppressWarnings("unchecked") final R newResult = (R)(resultInt == null ? valueInt : (Integer)Math.max(resultInt, valueInt));
 				return newResult;
 			};
 		}
@@ -680,14 +678,12 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 				final Timestamp valueTS = (Timestamp)value;
 				if (resultTS == null)
 				{
-					@SuppressWarnings("unchecked")
-					final R newResult = (R)valueTS;
+					@SuppressWarnings("unchecked") final R newResult = (R)valueTS;
 					return newResult;
 				}
 				else
 				{
-					@SuppressWarnings("unchecked")
-					final R newResult = (R)(resultTS.compareTo(valueTS) >= 0 ? resultTS : valueTS);
+					@SuppressWarnings("unchecked") final R newResult = (R)(resultTS.compareTo(valueTS) >= 0 ? resultTS : valueTS);
 					return newResult;
 				}
 			};
@@ -699,14 +695,12 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 				final Comparable valueCmp = (Comparable)value;
 				if (resultCmp == null)
 				{
-					@SuppressWarnings("unchecked")
-					final R newResult = (R)valueCmp;
+					@SuppressWarnings("unchecked") final R newResult = (R)valueCmp;
 					return newResult;
 				}
 				else
 				{
-					@SuppressWarnings("unchecked")
-					final R newResult = (R)(resultCmp.compareTo(valueCmp) >= 0 ? resultCmp : valueCmp);
+					@SuppressWarnings("unchecked") final R newResult = (R)(resultCmp.compareTo(valueCmp) >= 0 ? resultCmp : valueCmp);
 					return newResult;
 				}
 			};
@@ -717,7 +711,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		}
 	}
 
-	private static final BigDecimal toBigDecimal(final Object value)
+	private static BigDecimal toBigDecimal(final Object value)
 	{
 		if (value == null)
 		{
@@ -873,11 +867,11 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public final <AT> List<AT> listDistinct(final String columnName, final Class<AT> valueType)
+	public final <AT> ImmutableList<AT> listDistinct(final String columnName, final Class<AT> valueType)
 	{
 		final List<T> records = list();
 
-		final List<AT> result = new ArrayList<>();
+		final ArrayList<AT> result = new ArrayList<>();
 
 		for (final T record : records)
 		{
@@ -885,18 +879,45 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 					.getValue(record, columnName)
 					.orElseGet(() -> DB.retrieveDefaultValue(valueType));
 
-			@SuppressWarnings("unchecked")
-			final AT value = (AT)valueObj;
-
-			if (result.contains(value))
+			final AT value = convertPOValueToType(valueObj, valueType);
+			if (value != null && !result.contains(value))
 			{
-				continue;
+				result.add(value);
 			}
-
-			result.add(value);
 		}
 
-		return result;
+		return ImmutableList.copyOf(result);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> T convertPOValueToType(@Nullable final Object valueObj, @NonNull final Class<T> valueType)
+	{
+		if (valueObj == null)
+		{
+			return null;
+		}
+
+		if (valueType.isAssignableFrom(Integer.class))
+		{
+			return (T)NumberUtils.asIntegerOrNull(valueObj);
+		}
+		else if (valueType.isAssignableFrom(String.class))
+		{
+			return (T)valueObj.toString();
+		}
+		else if (valueType.isAssignableFrom(BigDecimal.class))
+		{
+			return (T)NumberUtils.asBigDecimal(valueObj);
+		}
+		else if (RepoIdAware.class.isAssignableFrom(valueType))
+		{
+			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)valueType;
+			return (T)RepoIdAwares.ofObjectOrNull(valueObj, repoIdAwareType);
+		}
+		else
+		{
+			return (T)valueObj;
+		}
 	}
 
 	@Override
@@ -912,8 +933,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName).orElse(null);
 
-		@SuppressWarnings("unchecked")
-		final AT value = (AT)valueObj;
+		@SuppressWarnings("unchecked") final AT value = (AT)valueObj;
 		return value;
 	}
 
