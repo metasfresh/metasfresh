@@ -34,6 +34,7 @@ import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.Param;
+import de.metas.process.RunOutOfTrx;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -50,7 +51,6 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 {
 	private final HUTraceRepository huTraceRepository = SpringContextHolder.instance.getBean(HUTraceRepository.class);
 	private final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Param(parameterName = I_M_HU_Trace.COLUMNNAME_M_Product_ID)
 	private ProductId p_M_Product_ID;
@@ -62,7 +62,8 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 	private HuId p_VHU_ID;
 
 	@Override
-	protected String doIt() throws Exception
+	@RunOutOfTrx
+	protected String doIt()
 	{
 		final HUTraceEventQuery.HUTraceEventQueryBuilder huTraceEventQueryBuilder = HUTraceEventQuery.builder();
 
@@ -82,8 +83,7 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 				.recursionMode(HUTraceEventQuery.RecursionMode.BOTH)
 				.build();
 
-		final PInstanceId pInstanceId = trxManager.callInNewTrx(() -> huTraceRepository.queryToSelection(huTraceEventQuery));
-
+		final PInstanceId pInstanceId = huTraceRepository.queryToSelection(huTraceEventQuery);
 		if (pInstanceId == null)
 		{
 			throw new AdempiereException("@NotFound@: " + huTraceEventQuery);
@@ -107,7 +107,6 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 
 	private static String getSql(@NonNull final PInstanceId pinstanceId)
 	{
-
 		final StringBuilder sqlBuilder = new StringBuilder().append(" SELECT  * FROM M_HU_Trace_Report(")
 				.append(pinstanceId.getRepoId())
 				.append(")");
