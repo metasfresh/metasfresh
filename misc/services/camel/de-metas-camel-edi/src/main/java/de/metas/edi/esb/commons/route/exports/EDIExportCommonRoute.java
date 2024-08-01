@@ -76,7 +76,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 					// INVOIC - figure out which clearing center we shall use
 					.when(body().isInstanceOf(EDICctopInvoicVType.class))
 						.process(exchange -> {
-							final String receiverGLN = exchange.getIn().getBody(EDICctopInvoicVType.class).getReceivergln();
+							final String receiverGLN = exchange.getIn().getBody(EDICctopInvoicVType.class).getReceiverGLN();
 							final ClearingCenter clearingCenter = InvoicSettings.forReceiverGLN(exchange.getContext(), receiverGLN).getClearingCenter();
 							exchange.getIn().setHeader("ClearingCenter", clearingCenter.toString());
 						})
