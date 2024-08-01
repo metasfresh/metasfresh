@@ -4,6 +4,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.split.ShipmentScheduleSplit;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import lombok.Builder;
 import lombok.Getter;
@@ -65,9 +66,10 @@ public class ShipmentScheduleWithHUFactory
 
 	public ShipmentScheduleWithHU ofSplit(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final ShipmentScheduleSplit split)
+			@NonNull final ShipmentScheduleSplit split,
+			@NonNull final Quantity qtyToAllocate)
 	{
-		return new ShipmentScheduleWithHU(supportingServices, huContext, shipmentSchedule, split);
+		return new ShipmentScheduleWithHU(supportingServices, huContext, shipmentSchedule, split, qtyToAllocate);
 	}
 
 }
