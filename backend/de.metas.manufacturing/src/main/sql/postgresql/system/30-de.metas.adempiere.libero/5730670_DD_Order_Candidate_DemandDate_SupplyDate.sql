@@ -54,3 +54,6 @@ UPDATE AD_Column SET AD_Reference_ID=16,Updated=TO_TIMESTAMP('2024-08-02 08:48:2
 INSERT INTO t_alter_column values('dd_order_candidate','SupplyDate','TIMESTAMP WITH TIME ZONE',null,null)
 ;
 
+-- 2024-08-02T11:52:47.944Z
+/* DDL */ SELECT public.db_alter_table('DD_Order_Candidate','ALTER TABLE public.DD_Order_Candidate ADD COLUMN DemandDate TIMESTAMP WITH TIME ZONE')
+;
