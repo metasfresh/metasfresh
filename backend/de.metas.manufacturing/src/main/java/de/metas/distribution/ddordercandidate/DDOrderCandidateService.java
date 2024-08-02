@@ -74,6 +74,7 @@ public class DDOrderCandidateService
 	public void saveAndUpdateCandidates(@NonNull final DDOrderCandidateAllocList list)
 	{
 		ddOrderCandidateAllocRepository.save(list);
+		updateCandidatesOnAllocationChanges(list.getDDOrderCandidateIds());
 	}
 
 	private void updateCandidatesOnAllocationChanges(final Set<DDOrderCandidateId> ddOrderCandidateIds)
