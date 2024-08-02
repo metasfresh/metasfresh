@@ -93,7 +93,7 @@ public class RepositoryCommons
 
 		if (query.getBusinessCase() != null)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_BusinessCase, query.getBusinessCase().toString());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_BusinessCase, query.getBusinessCase());
 		}
 
 		if (!query.getParentId().isUnspecified())

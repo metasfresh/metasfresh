@@ -228,6 +228,7 @@ public class DemandCandiateHandlerTest
 		assertThat(stockCandidate.getQty()).isEqualByComparingTo("-10");
 		assertThat(stockCandidate.getMD_Candidate_Parent_ID()).isEqualTo(unrelatedTransactionCandidate.getMD_Candidate_ID());
 
+		//noinspection deprecation
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
 				.postEventNow(Mockito.any(), Mockito.any());
 	}

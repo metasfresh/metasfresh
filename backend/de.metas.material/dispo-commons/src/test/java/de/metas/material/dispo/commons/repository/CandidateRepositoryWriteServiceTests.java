@@ -1,6 +1,6 @@
 package de.metas.material.dispo.commons.repository;
 
-import de.metas.document.dimension.DimensionFactory;
+import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.ForecastLineDimensionFactory;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
@@ -43,7 +43,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
@@ -89,8 +88,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CandidateRepositoryWriteServiceTests
 {
 	private RepositoryTestHelper repositoryTestHelper;
-	private DimensionService dimensionService;
-	private StockChangeDetailRepo stockChangeDetailRepo;
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	/**
@@ -103,13 +100,13 @@ public class CandidateRepositoryWriteServiceTests
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionFactories.add(new ForecastLineDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(
+				new MDCandidateDimensionFactory(),
+				new ForecastLineDimensionFactory()
+		));
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
-		stockChangeDetailRepo = new StockChangeDetailRepo();
+		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);

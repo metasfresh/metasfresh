@@ -182,10 +182,7 @@ public interface IOrderLineBL extends ISingletonService
 	Quantity convertQtyEnteredToStockUOM(org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
-	 * Is Tax Included in Amount. Calls {@link IOrderBL#isTaxIncluded(org.compiere.model.I_C_Order, org.compiere.model.I_C_Tax)} for the given <code>orderLine</code>'s <code>C_Tax</code> and
-	 * <code>C_Order</code>.
-	 *
-	 * @return true if tax calculated
+	 * @return true if tax is included in amount
 	 */
 	boolean isTaxIncluded(org.compiere.model.I_C_OrderLine orderLine);
 

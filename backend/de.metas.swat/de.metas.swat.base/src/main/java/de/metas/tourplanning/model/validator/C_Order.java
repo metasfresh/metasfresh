@@ -55,8 +55,6 @@ public class C_Order
 
 	/**
 	 * Search for matching {@link I_M_DeliveryDay} and set order's preparation date from it.
-	 *
-	 * @param order
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_Location_ID, I_C_Order.COLUMNNAME_DatePromised, I_C_Order.COLUMNNAME_PreparationDate })
 	public void setPreparationDate(final I_C_Order order)
@@ -79,8 +77,6 @@ public class C_Order
 
 	/**
 	 * Make sure the PreparationDate is set
-	 * 
-	 * @param order
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_PREPARE })
 	public void assertValidPreparationDate(final I_C_Order order)
