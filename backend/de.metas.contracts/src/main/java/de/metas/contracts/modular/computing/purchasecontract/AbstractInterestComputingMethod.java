@@ -27,11 +27,13 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.interest.log.ModularLogInterest;
 import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
+import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
@@ -47,6 +49,7 @@ import de.metas.quantity.Quantity;
 import de.metas.shippingnotification.ShippingNotificationLineId;
 import de.metas.shippingnotification.ShippingNotificationRepository;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -69,6 +72,10 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 	@NonNull private final ModCntrInvoicingGroupRepository invoicingGroupRepository;
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final ModularLogInterestRepository modularLogInterestRepository;
+	@NonNull private final ComputingMethodService computingMethodService;
+
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
 
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
@@ -132,6 +139,11 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 		final ImmutableSet<ModularContractLogEntryId> logEntryIds = logEntryIdsCollector.build();
 
 		final ModularContractLogEntriesList logs = logEntryIds.isEmpty() ? ModularContractLogEntriesList.EMPTY : getModularContractLogEntries(request, logEntryIds);
+		final ModularContractLogEntriesList receiptLogs = computingMethodService.retrieveLogsForCalculation(request).subsetOf(LogEntryDocumentType.MATERIAL_RECEIPT);
+
+		final UomId stockUOMId = UomId.ofRepoId(stockUOM.getC_UOM_ID());
+		final Quantity receivedQty = receiptLogs.getQtySum(stockUOMId, uomConversionBL);
+
 
 		splitLogsIfNeeded(reconciledAmount.get(), initialInterimContractId.get());
 		return ComputingResponse.builder()
@@ -140,7 +152,7 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 				.price(ProductPrice.builder()
 							   .productId(request.getProductId())
 							   .money(amount.negate())
-							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+							   .uomId(stockUOMId)
 							   .build())
 				.qty(qty)
 				.build();
