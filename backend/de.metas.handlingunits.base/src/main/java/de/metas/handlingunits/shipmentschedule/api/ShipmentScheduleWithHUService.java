@@ -848,21 +848,20 @@ public class ShipmentScheduleWithHUService
 					{
 						alreadyPickedHUs.add(HuId.ofRepoIdOrNull(vhu.getM_HU_ID()));
 					}
-
-					final Quantity allocatedQty = shipmentScheduleWithHUs
-							.stream()
-							.map(ShipmentScheduleWithHU::getQtyPicked)
-							.reduce(qtyToDeliver.toZero(), Quantity::add);
-
-					Loggables.withLogger(logger, Level.DEBUG).addLog("QtyToDeliver={}; Qty picked on-the-fly from available HUs: {}", qtyToDeliver, allocatedQty);
-
-					final Quantity remainingQtyToAllocate = qtyToDeliver.subtract(allocatedQty);
-					if (remainingQtyToAllocate.isPositive())
-					{
-						result.add(factory.ofSplit(schedule, split, remainingQtyToAllocate));
-					}
 				}
 
+				final Quantity allocatedQty = shipmentScheduleWithHUs
+						.stream()
+						.map(ShipmentScheduleWithHU::getQtyPicked)
+						.reduce(qtyToDeliver.toZero(), Quantity::add);
+
+				Loggables.withLogger(logger, Level.DEBUG).addLog("QtyToDeliver={}; Qty picked on-the-fly from available HUs: {}", qtyToDeliver, allocatedQty);
+
+				final Quantity remainingQtyToAllocate = qtyToDeliver.subtract(allocatedQty);
+				if (remainingQtyToAllocate.isPositive())
+				{
+					result.add(factory.ofSplit(schedule, split, remainingQtyToAllocate));
+				}
 			}
 		}
 		else
