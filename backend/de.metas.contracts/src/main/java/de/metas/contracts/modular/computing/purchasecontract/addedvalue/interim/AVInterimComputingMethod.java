@@ -167,6 +167,7 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 
 		final Money reconciledAmountInInterimContractCurrencyWithSignApplied = reconciledInInterimContractCurrency.negateIf(interimLogAmount.isNegative());
 
+		// TODO: I think the create and update qtys should be the other way around
 		final LogEntryCreateRequest createInterimLogForOpenAmt = LogEntryCreateRequest.ofEntry(interimContractEntry)
 				.toBuilder()
 				.amount(interimLogAmount.subtract(reconciledAmountInInterimContractCurrencyWithSignApplied))
