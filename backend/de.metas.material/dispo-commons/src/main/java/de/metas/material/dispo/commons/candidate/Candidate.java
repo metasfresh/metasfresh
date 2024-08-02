@@ -18,8 +18,10 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.ToString;
 import lombok.Value;
 import lombok.With;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 
@@ -27,7 +29,9 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 /*
  * #%L
@@ -53,6 +57,7 @@ import java.util.Optional;
 
 @Value
 @EqualsAndHashCode(doNotUseGetters = true)
+@ToString(doNotUseGetters = true)
 public class Candidate
 {
 	public static CandidateBuilder builderForEventDescriptor(@NonNull final EventDescriptor eventDescriptor)
@@ -276,6 +281,11 @@ public class Candidate
 		}
 	}
 
+	public MaterialDispoGroupId getGroupIdNotNull()
+	{
+		return Check.assumeNotNull(getGroupId(), "candidate has groupId set: {}", this);
+	}
+
 	public Instant getDate() {return getMaterialDescriptor().getDate();}
 
 	public int getProductId() {return getMaterialDescriptor().getProductId();}
@@ -327,6 +337,30 @@ public class Candidate
 	public <T extends BusinessCaseDetail> Optional<T> getBusinessCaseDetail(@NonNull final Class<T> type)
 	{
 		return type.isInstance(businessCaseDetail) ? Optional.of(type.cast(businessCaseDetail)) : Optional.empty();
+	}
+
+	public <T extends BusinessCaseDetail> T getBusinessCaseDetailNotNull(@NonNull final Class<T> type)
+	{
+		if (type.isInstance(businessCaseDetail))
+		{
+			return type.cast(businessCaseDetail);
+		}
+		else
+		{
+			throw new AdempiereException("businessCaseDetail is not matching " + type.getSimpleName() + ": " + this);
+		}
+	}
+
+	public <T extends BusinessCaseDetail> Candidate withBusinessCaseDetail(@NonNull final Class<T> type, @NonNull UnaryOperator<T> mapper)
+	{
+		final T businessCaseDetail = getBusinessCaseDetailNotNull(type);
+		final T businessCaseDetailChanged = mapper.apply(businessCaseDetail);
+		if (Objects.equals(businessCaseDetail, businessCaseDetailChanged))
+		{
+			return this;
+		}
+
+		return withBusinessCaseDetail(businessCaseDetailChanged);
 	}
 
 	@Nullable
