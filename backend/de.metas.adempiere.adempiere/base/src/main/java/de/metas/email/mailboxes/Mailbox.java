@@ -1,14 +1,9 @@
 package de.metas.email.mailboxes;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.email.EMailAddress;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -17,6 +12,9 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -48,35 +46,35 @@ import org.slf4j.Logger;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 @ToString(exclude = "password")
-public final class Mailbox
+public class Mailbox
 {
-	private final static transient Logger logger = LogManager.getLogger(Mailbox.class);
+	private final static Logger logger = LogManager.getLogger(Mailbox.class);
 
 	private static final int DEFAULT_SMTP_PORT = 25;
 	private static final int DEFAULT_SMTPS_PORT = 587;
 
 	@JsonProperty("smtpHost")
-	private final String smtpHost;
+	String smtpHost;
 	@JsonProperty("smtpPort")
-	private final int smtpPort;
+	int smtpPort;
 
 	@JsonProperty("email")
-	private final EMailAddress email;
+	EMailAddress email;
 
 	@JsonProperty("username")
-	private final String username;
+	String username;
 	@JsonProperty("password")
-	private final String password;
+	String password;
 	@JsonProperty("smtpAuthorization")
-	private final boolean smtpAuthorization;
+	boolean smtpAuthorization;
 
 	@JsonProperty("startTLS")
-	private final boolean startTLS;
+	boolean startTLS;
 
 	@JsonProperty("sendEmailsFromServer")
-	private final boolean sendEmailsFromServer;
+	boolean sendEmailsFromServer;
 	@JsonProperty("userToColumnName")
-	private final String userToColumnName;
+	String userToColumnName;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
