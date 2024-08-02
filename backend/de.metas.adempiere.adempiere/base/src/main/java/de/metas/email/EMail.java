@@ -361,7 +361,7 @@ public final class EMail implements Serializable
 		final Properties props = new Properties(System.getProperties());
 		props.put("mail.store.protocol", "smtp");
 		props.put("mail.transport.protocol", "smtp");
-		props.put("mail.smtp.host", smtpHost);
+		props.put("mail.host", smtpHost);
 		props.put("mail.smtp.port", mailbox.getSmtpPort());
 		if (mailbox.isStartTLS())
 		{
