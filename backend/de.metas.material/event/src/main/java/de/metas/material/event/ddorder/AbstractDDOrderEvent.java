@@ -1,10 +1,10 @@
 package de.metas.material.event.ddorder;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
-import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -13,7 +13,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 /*
  * #%L
@@ -48,47 +47,28 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 @ToString
 public abstract class AbstractDDOrderEvent implements MaterialEvent
 {
-	@NonNull
-	private final EventDescriptor eventDescriptor;
-
-	@NonNull
-	private final DDOrder ddOrder;
-
-	/**
-	 * Note: this field is a bit redundant because the {@link #getDdOrder()}'s lines contain a network distribution line with this info.<br>
-	 * However, the material-dispo code doesn't know or care about how to get to that information.
-	 */
-	private final WarehouseId fromWarehouseId;
-
-	/**
-	 * Also check the note about {@link #getFromWarehouseId()}.
-	 */
-	private final WarehouseId toWarehouseId;
+	@NonNull private final EventDescriptor eventDescriptor;
+	@NonNull private final DDOrder ddOrder;
 
 	/**
 	 * Set to not-null mainly if this event is about and "advise" that was created due to a {@link SupplyRequiredEvent}, but also<br>
 	 * if this event is about a "wild" DDOrder that was somehow created and has a sales order line ID
 	 */
-	private final SupplyRequiredDescriptor supplyRequiredDescriptor;
+	@Nullable private final SupplyRequiredDescriptor supplyRequiredDescriptor;
 
 	public AbstractDDOrderEvent(
 			@NonNull final EventDescriptor eventDescriptor,
 			@NonNull final DDOrder ddOrder,
-			final WarehouseId fromWarehouseId,
-			final WarehouseId toWarehouseId,
 			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		this.eventDescriptor = eventDescriptor;
 		this.ddOrder = ddOrder;
-		this.fromWarehouseId = fromWarehouseId;
-		this.toWarehouseId = toWarehouseId;
 		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
 	}
 
-	@OverridingMethodsMustInvokeSuper
-	public void validate()
-	{
-		Check.assumeNotNull(fromWarehouseId, "Parameter fromWarehouseId is not null");
-		Check.assumeNotNull(toWarehouseId, "Parameter toWarehouseId is not null");
-	}
+	@JsonIgnore
+	public WarehouseId getFromWarehouseId() {return ddOrder.getSourceWarehouseId();}
+
+	@JsonIgnore
+	public WarehouseId getToWarehouseId() {return ddOrder.getTargetWarehouseId();}
 }

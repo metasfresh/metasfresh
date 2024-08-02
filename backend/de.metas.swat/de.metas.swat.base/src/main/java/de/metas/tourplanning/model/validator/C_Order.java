@@ -104,7 +104,7 @@ public class C_Order
 		//
 		// Make sure the PreparationDate not equals DatePromised,
 		// because in that case, for sure it's an error which will strike the user later.
-//		final Timestamp datePromised = order.getDatePromised();
+//		final Timestamp datePromised = order.getSupplyDate();
 //		if (Check.equals(preparationDate, datePromised))
 //		{
 //			throw new AdempiereException("@Invalid@ @DatePromised@ = @PreparationDate@");

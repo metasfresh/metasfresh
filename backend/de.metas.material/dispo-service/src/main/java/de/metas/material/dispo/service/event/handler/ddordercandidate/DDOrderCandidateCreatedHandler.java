@@ -50,7 +50,7 @@ public class DDOrderCandidateCreatedHandler
 	}
 
 	@Override
-	public void handleEvent(DDOrderCandidateCreatedEvent event)
+	public void handleEvent(@NonNull final DDOrderCandidateCreatedEvent event)
 	{
 		createAndProcessCandidates(event);
 	}

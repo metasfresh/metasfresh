@@ -75,7 +75,7 @@ public class RepositoryCommons
 		final IQueryBuilder<I_MD_Candidate> builder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter();
 
-		if (CandidatesQuery.FALSE.equals(query))
+		if (query.isFalse())
 		{
 			builder.filter(ConstantQueryFilter.of(false));
 			return builder;

@@ -8,7 +8,6 @@ import de.metas.event.log.EventLogUserService.InvokeHandlerAndLogRequest;
 import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.DispoTestUtils;
-import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
@@ -40,13 +39,16 @@ import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
-import de.metas.order.OrderLineRepository;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -61,7 +63,6 @@ import java.util.Collection;
 import java.util.Optional;
 
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /*
@@ -93,7 +94,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class MaterialEventHandlerRegistryTests
 {
 	public static final WarehouseId fromWarehouseId = WarehouseId.ofRepoId(10);
-	public static final WarehouseId intermediateWarehouseId = WarehouseId.ofRepoId(20);
 	public static final WarehouseId toWarehouseId = WarehouseId.ofRepoId(30);
 
 	private MaterialEventHandlerRegistry materialEventListener;
@@ -119,7 +119,7 @@ public class MaterialEventHandlerRegistryTests
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
@@ -143,9 +143,9 @@ public class MaterialEventHandlerRegistryTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService, new OrderLineRepository()),
 				new DDOrderDetailRequestHandler(),
-				new MainDataRequestHandler());
+				new MainDataRequestHandler(),
+				postMaterialEventService);
 
 		final ForecastCreatedHandler forecastCreatedEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
 
@@ -169,6 +169,17 @@ public class MaterialEventHandlerRegistryTests
 		materialEventListener = new MaterialEventHandlerRegistry(handlers, eventLogUserService, new MaterialEventObserver());
 	}
 
+	private void createDbData(@NonNull final MaterialDescriptor materialDescriptor)
+	{
+		final I_C_UOM uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(uom);
+
+		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product.setM_Product_ID(materialDescriptor.getProductId());
+		product.setC_UOM_ID(uom.getC_UOM_ID());
+		InterfaceWrapperHelper.save(product);
+	}
+
 	/**
 	 * For these tests, {@link EventLogUserService} shall not do any actual logging.
 	 */
@@ -190,6 +201,7 @@ public class MaterialEventHandlerRegistryTests
 		// given
 		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedHandlerTests.createShipmentScheduleTestEvent();
 		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getMaterialDescriptor();
+		createDbData(orderedMaterial);
 
 		final Instant shipmentScheduleEventTime = orderedMaterial.getDate();
 
@@ -214,10 +226,10 @@ public class MaterialEventHandlerRegistryTests
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.ddOrderCandidate(DDOrderCandidateData.builder()
+						.clientAndOrgId(CLIENT_AND_ORG_ID)
 						.productPlanningId(ProductPlanningId.ofRepoId(810))
 						.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(900, 901))
 						//
-						.orgId(ORG_ID)
 						.sourceWarehouseId(fromWarehouseId)
 						.targetWarehouseId(toWarehouseId)
 						.targetPlantId(ResourceId.ofRepoId(800))
@@ -225,12 +237,12 @@ public class MaterialEventHandlerRegistryTests
 						//
 						.productDescriptor(orderedMaterial)
 						//
-						.datePromised(shipmentScheduleEventTime)
+						.supplyDate(shipmentScheduleEventTime)
+						.demandDate(shipmentScheduleEventTime)
 						//
 						.qty(new BigDecimal("10"))
 						.uomId(830)
 						//
-						.durationDays(0)
 						.build())
 				.build();
 

@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 
@@ -23,15 +22,25 @@ public class DDOrderCreatedEvent extends AbstractDDOrderEvent
 	public DDOrderCreatedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("ddOrder") @NonNull final DDOrder ddOrder,
-			@JsonProperty("fromWarehouseId") final WarehouseId fromWarehouseId,
-			@JsonProperty("toWarehouseId") final WarehouseId toWarehouseId,
 			@JsonProperty("supplyRequiredDescriptor") @Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		super(
 				eventDescriptor,
 				ddOrder,
-				fromWarehouseId,
-				toWarehouseId,
 				supplyRequiredDescriptor);
 	}
+
+	public static DDOrderCreatedEvent of(@NonNull final DDOrder ddOrder, @Nullable final String traceId)
+	{
+		return builder()
+				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(ddOrder.getClientAndOrgId(), traceId))
+				.ddOrder(ddOrder)
+				.build();
+	}
+
+	public static DDOrderCreatedEvent cast(@NonNull final AbstractDDOrderEvent ddOrderEvent)
+	{
+		return (DDOrderCreatedEvent)ddOrderEvent;
+	}
+
 }

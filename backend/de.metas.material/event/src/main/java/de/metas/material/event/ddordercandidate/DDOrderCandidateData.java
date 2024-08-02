@@ -2,6 +2,7 @@ package de.metas.material.event.ddordercandidate;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -9,7 +10,7 @@ import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
@@ -26,18 +27,16 @@ import java.time.Instant;
 import java.util.Objects;
 
 @Value
-@Builder(toBuilder = true)
-@Jacksonized
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class DDOrderCandidateData
 {
-	@NonNull ProductPlanningId productPlanningId;
+	@Nullable ProductPlanningId productPlanningId;
 	@Nullable DistributionNetworkAndLineId distributionNetworkAndLineId;
 
-	@NonNull OrgId orgId;
+	@NonNull ClientAndOrgId clientAndOrgId;
 	@NonNull WarehouseId sourceWarehouseId;
 	@NonNull WarehouseId targetWarehouseId;
-	@NonNull ResourceId targetPlantId;
+	@Nullable ResourceId targetPlantId;
 	@NonNull ShipperId shipperId;
 
 	int customerId;
@@ -45,14 +44,14 @@ public class DDOrderCandidateData
 	@Nullable PPOrderRef ppOrderRef;
 
 	@NonNull ProductDescriptor productDescriptor;
+	@NonNull HUPIItemProductId hupiItemProductId;
 	@Nullable MinMaxDescriptor fromWarehouseMinMaxDescriptor;
 
-	@NonNull Instant datePromised;
+	@NonNull Instant supplyDate;
+	@NonNull Instant demandDate;
 
 	@NonNull BigDecimal qty;
 	int uomId;
-
-	int durationDays;
 
 	boolean simulated;
 
@@ -62,6 +61,54 @@ public class DDOrderCandidateData
 	 * and the respective {@link DDOrderCandidateCreatedEvent} contains the same group-ID.
 	 */
 	@Nullable MaterialDispoGroupId materialDispoGroupId;
+
+	int exitingDDOrderCandidateId;
+
+	@Builder(toBuilder = true)
+	@Jacksonized
+	private DDOrderCandidateData(
+			@Nullable final ProductPlanningId productPlanningId,
+			@Nullable final DistributionNetworkAndLineId distributionNetworkAndLineId,
+			@NonNull final ClientAndOrgId clientAndOrgId,
+			@NonNull final WarehouseId sourceWarehouseId,
+			@NonNull final WarehouseId targetWarehouseId,
+			@Nullable final ResourceId targetPlantId,
+			@NonNull final ShipperId shipperId,
+			final int customerId,
+			final int salesOrderLineId,
+			@Nullable final PPOrderRef ppOrderRef,
+			@NonNull final ProductDescriptor productDescriptor,
+			@Nullable final HUPIItemProductId hupiItemProductId,
+			@Nullable final MinMaxDescriptor fromWarehouseMinMaxDescriptor,
+			@NonNull final Instant supplyDate,
+			@NonNull final Instant demandDate,
+			@NonNull final BigDecimal qty,
+			final int uomId,
+			final boolean simulated,
+			@Nullable final MaterialDispoGroupId materialDispoGroupId,
+			final int exitingDDOrderCandidateId)
+	{
+		this.productPlanningId = productPlanningId;
+		this.distributionNetworkAndLineId = distributionNetworkAndLineId;
+		this.clientAndOrgId = clientAndOrgId;
+		this.sourceWarehouseId = sourceWarehouseId;
+		this.targetWarehouseId = targetWarehouseId;
+		this.targetPlantId = targetPlantId;
+		this.shipperId = shipperId;
+		this.customerId = customerId;
+		this.salesOrderLineId = salesOrderLineId;
+		this.ppOrderRef = ppOrderRef;
+		this.productDescriptor = productDescriptor;
+		this.hupiItemProductId = hupiItemProductId != null ? hupiItemProductId : HUPIItemProductId.VIRTUAL_HU;
+		this.fromWarehouseMinMaxDescriptor = fromWarehouseMinMaxDescriptor;
+		this.supplyDate = supplyDate;
+		this.demandDate = demandDate;
+		this.qty = qty;
+		this.uomId = uomId;
+		this.simulated = simulated;
+		this.materialDispoGroupId = materialDispoGroupId;
+		this.exitingDDOrderCandidateId = exitingDDOrderCandidateId;
+	}
 
 	@JsonIgnore
 	public int getProductId() {return getProductDescriptor().getProductId();}

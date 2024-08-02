@@ -9,11 +9,13 @@ import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -60,7 +62,7 @@ import java.time.Instant;
 public abstract class AbstractDDOrderCandidateEvent implements MaterialEvent
 {
 	@NonNull private final EventDescriptor eventDescriptor;
-	@NonNull private final DDOrderCandidateData ddOrderCandidate;
+	@NonNull @Getter(AccessLevel.PROTECTED) private final DDOrderCandidateData ddOrderCandidate;
 	@Nullable private final SupplyRequiredDescriptor supplyRequiredDescriptor;
 
 	public AbstractDDOrderCandidateEvent(
@@ -86,10 +88,10 @@ public abstract class AbstractDDOrderCandidateEvent implements MaterialEvent
 	public BigDecimal getQty() {return getDdOrderCandidate().getQty();}
 
 	@JsonIgnore
-	public Instant getDatePromised() {return getDdOrderCandidate().getDatePromised();}
+	public Instant getSupplyDate() {return getDdOrderCandidate().getSupplyDate();}
 
 	@JsonIgnore
-	public int getDurationDays() {return getDdOrderCandidate().getDurationDays();}
+	public Instant getDemandDate() {return getDdOrderCandidate().getDemandDate();}
 
 	@JsonIgnore
 	public boolean isSimulated() {return getDdOrderCandidate().isSimulated();}
@@ -98,7 +100,7 @@ public abstract class AbstractDDOrderCandidateEvent implements MaterialEvent
 	@JsonIgnore
 	public MinMaxDescriptor getFromWarehouseMinMaxDescriptor() {return getDdOrderCandidate().getFromWarehouseMinMaxDescriptor();}
 
-	@NonNull
+	@Nullable
 	@JsonIgnore
 	public ResourceId getTargetPlantId() {return getDdOrderCandidate().getTargetPlantId();}
 
@@ -118,7 +120,7 @@ public abstract class AbstractDDOrderCandidateEvent implements MaterialEvent
 	@JsonIgnore
 	public SupplyRequiredDescriptor getSupplyRequiredDescriptorNotNull() {return Check.assumeNotNull(getSupplyRequiredDescriptor(), "supplyRequiredDescriptor shall be set for " + this);}
 
-	@NonNull
+	@Nullable
 	@JsonIgnore
 	public ProductPlanningId getProductPlanningId() {return getDdOrderCandidate().getProductPlanningId();}
 
@@ -129,4 +131,8 @@ public abstract class AbstractDDOrderCandidateEvent implements MaterialEvent
 	@Nullable
 	@JsonIgnore
 	public MaterialDispoGroupId getMaterialDispoGroupId() {return getDdOrderCandidate().getMaterialDispoGroupId();}
+
+	@Nullable
+	@JsonIgnore
+	public PPOrderRef getPpOrderRef() {return getDdOrderCandidate().getPpOrderRef();}
 }

@@ -54,7 +54,7 @@ public class DDOrderCandidateAdvisedEvent extends AbstractDDOrderCandidateEvent
 	/**
 	 * If {@code true}, then this event advises the recipient to directly request an actual DD_Order_Candidate to be created.
 	 */
-	private final boolean advisedToCreateDDOrderCandidate;
+	private final boolean advisedToCreateDDOrder;
 	private final boolean pickIfFeasible;
 
 	@JsonCreator
@@ -63,12 +63,12 @@ public class DDOrderCandidateAdvisedEvent extends AbstractDDOrderCandidateEvent
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("ddOrderCandidate") final DDOrderCandidateData ddOrderCandidate,
 			@JsonProperty("supplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@JsonProperty("advisedToCreateDDOrderCandidate") final boolean advisedToCreateDDOrderCandidate,
+			@JsonProperty("advisedToCreateDDOrderCandidate") final boolean advisedToCreateDDOrder,
 			@JsonProperty("pickIfFeasible") final boolean pickIfFeasible)
 	{
 		super(eventDescriptor, ddOrderCandidate, supplyRequiredDescriptor);
 
-		this.advisedToCreateDDOrderCandidate = advisedToCreateDDOrderCandidate;
+		this.advisedToCreateDDOrder = advisedToCreateDDOrder;
 		this.pickIfFeasible = pickIfFeasible;
 	}
 
@@ -88,7 +88,7 @@ public class DDOrderCandidateAdvisedEvent extends AbstractDDOrderCandidateEvent
 				getEventDescriptor(),
 				getDdOrderCandidate().withPPOrderId(newPPOrderId),
 				getSupplyRequiredDescriptorNotNull(),
-				advisedToCreateDDOrderCandidate,
+				advisedToCreateDDOrder,
 				pickIfFeasible
 		);
 	}

@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 
@@ -28,6 +29,7 @@ public class DistributionDetail implements BusinessCaseDetail
 	@Nullable DistributionNetworkAndLineId distributionNetworkAndLineId;
 	@Nullable ShipperId shipperId;
 
+	@With int ddOrderCandidateId;
 	int ddOrderId;
 	int ddOrderLineId;
 	DocStatus ddOrderDocStatus;
@@ -49,6 +51,7 @@ public class DistributionDetail implements BusinessCaseDetail
 				.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIdsOrNull(distributionDetailRecord.getDD_NetworkDistribution_ID(), distributionDetailRecord.getDD_NetworkDistributionLine_ID()))
 				.productPlanningId(ProductPlanningId.ofRepoIdOrNull(distributionDetailRecord.getPP_Product_Planning_ID()))
 				.plantId(ResourceId.ofRepoIdOrNull(distributionDetailRecord.getPP_Plant_ID()))
+				.ddOrderCandidateId(distributionDetailRecord.getDD_Order_Candidate_ID())
 				.ddOrderId(distributionDetailRecord.getDD_Order_ID())
 				.ddOrderLineId(distributionDetailRecord.getDD_OrderLine_ID())
 				.ddOrderDocStatus(DocStatus.ofNullableCode(distributionDetailRecord.getDD_Order_DocStatus()))

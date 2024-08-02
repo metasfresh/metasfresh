@@ -6,12 +6,12 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
-import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -20,7 +20,6 @@ import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -35,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -57,7 +57,7 @@ class DDOrderCandidateAdvisedEventCreatorTest
 
 		demandMatcher = Mockito.mock(DDOrderCandidateDemandMatcher.class);
 		//ddOrderCandidateDataFactory = Mockito.mock(DDOrderCandidateDataFactory.class);
-		ddOrderCandidateDataFactory = new DDOrderCandidateDataFactory(new DistributionNetworkRepository(), new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory());
+		ddOrderCandidateDataFactory = new DDOrderCandidateDataFactory(new DistributionNetworkRepository(), new ReplenishInfoRepository());
 		this.advisedEventCreator = new DDOrderCandidateAdvisedEventCreator(demandMatcher, ddOrderCandidateDataFactory);
 
 		createMasterData();
@@ -155,7 +155,7 @@ class DDOrderCandidateAdvisedEventCreatorTest
 						.warehouseId(WarehouseId.ofRepoId(9999999)) // does not matter
 						.customerId(EventTestHelper.BPARTNER_ID)
 						.quantity(new BigDecimal("123"))
-						.date(EventTestHelper.NOW)
+						.date(Instant.parse("2024-04-15T00:00:00Z"))
 						.build())
 				.build();
 
@@ -171,20 +171,19 @@ class DDOrderCandidateAdvisedEventCreatorTest
 		assertThat(eventDescriptor.getClientId()).isEqualTo(ClientId.METASFRESH);
 		assertThat(eventDescriptor.getOrgId()).isEqualTo(OrgId.MAIN);
 
-		final DDOrderCandidateData ddOrderCandidate = event.getDdOrderCandidate();
-		System.out.println(ddOrderCandidate);
-		assertThat(ddOrderCandidate.getProductPlanningId()).isEqualTo(productPlanning.getId());
-		assertThat(ddOrderCandidate.getDistributionNetworkAndLineId()).isEqualTo(distributionNetworkAndLineId);
-		assertThat(ddOrderCandidate.getOrgId()).isEqualTo(OrgId.MAIN);
-		assertThat(ddOrderCandidate.getSourceWarehouseId()).isEqualTo(sourceWarehouseId);
-		assertThat(ddOrderCandidate.getTargetWarehouseId()).isEqualTo(targetWarehouseId);
-		assertThat(ddOrderCandidate.getTargetPlantId()).isEqualTo(context.getPlantId());
-		assertThat(ddOrderCandidate.getShipperId()).isEqualTo(shipperId);
-		assertThat(ddOrderCandidate.getProductId()).isEqualTo(productId.getRepoId());
-		assertThat(ddOrderCandidate.getQty()).isEqualTo("123");
-		assertThat(ddOrderCandidate.getDatePromised()).isEqualTo(EventTestHelper.NOW);
-		assertThat(ddOrderCandidate.getDurationDays()).isEqualTo(12);
-		// assertThat(ddOrderCandidate.).isEqualTo();
+		System.out.println(event);
+		assertThat(event.getProductPlanningId()).isEqualTo(productPlanning.getId());
+		assertThat(event.getDistributionNetworkAndLineId()).isEqualTo(distributionNetworkAndLineId);
+		assertThat(event.getOrgId()).isEqualTo(OrgId.MAIN);
+		assertThat(event.getSourceWarehouseId()).isEqualTo(sourceWarehouseId);
+		assertThat(event.getTargetWarehouseId()).isEqualTo(targetWarehouseId);
+		assertThat(event.getTargetPlantId()).isEqualTo(context.getPlantId());
+		assertThat(event.getShipperId()).isEqualTo(shipperId);
+		assertThat(event.getProductId()).isEqualTo(productId.getRepoId());
+		assertThat(event.getQty()).isEqualTo("123");
+		assertThat(event.getSupplyDate()).isEqualTo(Instant.parse("2024-04-15T00:00:00Z"));
+		assertThat(event.getDemandDate()).isEqualTo(Instant.parse("2024-04-03T00:00:00Z")); // -12 days
+		// assertThat(event.).isEqualTo();
 
 		assertThat(event.getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
 	}

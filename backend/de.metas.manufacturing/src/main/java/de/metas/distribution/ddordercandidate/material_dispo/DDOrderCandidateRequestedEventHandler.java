@@ -4,19 +4,18 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.distribution.ddordercandidate.DDOrderCandidate;
-import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateId;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
 import de.metas.logging.LogManager;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
-import de.metas.order.OrderLineId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,8 @@ public class DDOrderCandidateRequestedEventHandler
 		implements MaterialEventHandler<DDOrderCandidateRequestedEvent>
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(DDOrderCandidateRequestedEventHandler.class);
-	@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository;
+	@NonNull private final DDOrderCandidateService ddOrderCandidateService;
+	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	@Override
 	public Collection<Class<? extends DDOrderCandidateRequestedEvent>> getHandledEventType()
@@ -42,42 +42,36 @@ public class DDOrderCandidateRequestedEventHandler
 	public void handleEvent(@NonNull final DDOrderCandidateRequestedEvent event)
 	{
 		final DDOrderCandidate ddOrderCandidate = toDDOrderCandidate(event);
-		ddOrderCandidateRepository.save(ddOrderCandidate);
-
+		ddOrderCandidateService.save(ddOrderCandidate);
+		final DDOrderCandidateId ddOrderCandidateId = ddOrderCandidate.getIdNotNull();
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Created DD Order candidate: {}", ddOrderCandidate);
+
+		if (ddOrderCandidate.getMaterialDispoGroupId() != null)
+		{
+			candidateRepositoryWriteService.updateCandidatesByQuery(
+					CandidatesQuery.builder()
+							.groupId(ddOrderCandidate.getMaterialDispoGroupId())
+							.businessCase(CandidateBusinessCase.DISTRIBUTION)
+							.build(),
+					candidate -> candidate.withBusinessCaseDetail(DistributionDetail.class, dispoDetail -> dispoDetail.withDdOrderCandidateId(ddOrderCandidateId.getRepoId()))
+			);
+		}
+
+		if (event.isCreateDDOrder())
+		{
+			ddOrderCandidateService.enqueueToProcess(ddOrderCandidate);
+		}
+		else
+		{
+			Loggables.addLog("Skip creating DD_Order because isCreateDDOrder=false (maybe because PP_Product_Planning.IsCreatePlan=false?)");
+		}
 	}
 
 	private static DDOrderCandidate toDDOrderCandidate(@NonNull final DDOrderCandidateRequestedEvent event)
 	{
-		final DDOrderCandidateData data = event.getDdOrderCandidateData();
-
-		return DDOrderCandidate.builder()
-				.orgId(data.getOrgId())
+		return DDOrderCandidate.from(event.getDdOrderCandidateData())
 				.dateOrdered(event.getDateOrdered())
-				.datePromised(data.getDatePromised())
-				//
-				.productId(ProductId.ofRepoId(data.getProductId()))
-				//.hupiItemProductId(...) // TODO
-				.qty(Quantitys.create(data.getQty(), UomId.ofRepoId(data.getUomId())))
-				//.qtyTUs(...) // TODO
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(data.getAttributeSetInstanceId()))
-				//
-				.sourceWarehouseId(data.getSourceWarehouseId())
-				.targetWarehouseId(data.getTargetWarehouseId())
-				.targetPlantId(data.getTargetPlantId())
-				.shipperId(data.getShipperId())
-				//
-				.isSimulated(data.isSimulated())
-				//
-				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(data.getSalesOrderLineId()))
-				.ppOrderRef(data.getPpOrderRef())
-				//
-				.distributionNetworkAndLineId(data.getDistributionNetworkAndLineId())
-				.productPlanningId(data.getProductPlanningId())
-				//
 				.traceId(event.getTraceId())
-				.materialDispoGroupId(data.getMaterialDispoGroupId())
 				.build();
 	}
-
 }

@@ -57,7 +57,6 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -67,6 +66,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
@@ -130,11 +130,8 @@ public class MaterialEventSerializerTests
 		final DDOrderCreatedEvent event = DDOrderCreatedEvent.builder()
 				.supplyRequiredDescriptor(newSupplyRequiredDescriptor())
 				.ddOrder(createDdOrder(20))
-				.fromWarehouseId(WarehouseId.ofRepoId(30))
-				.toWarehouseId(WarehouseId.ofRepoId(40))
 				.eventDescriptor(newEventDescriptor())
 				.build();
-		event.validate();
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
@@ -153,23 +150,26 @@ public class MaterialEventSerializerTests
 	@SuppressWarnings("SameParameterValue")
 	private DDOrder createDdOrder(final int ddOrderId)
 	{
+		final Instant supplyDate = SystemTime.asInstant();
 		return DDOrder.builder()
-				.datePromised(SystemTime.asInstant())
+				.supplyDate(supplyDate)
 				.ddOrderId(ddOrderId)
 				.docStatus(DocStatus.InProgress)
 				.materialDispoGroupId(MaterialDispoGroupId.ofInt(35))
 				.line(DDOrderLine.builder()
 						.productDescriptor(createProductDescriptor())
 						.ddOrderLineId(21)
-						.durationDays(31)
+						.demandDate(supplyDate.minus(10, ChronoUnit.DAYS))
 						.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(40, 41))
 						.qty(TEN)
 						.salesOrderLineId(61)
 						.fromWarehouseMinMaxDescriptor(createSampleMinMaxDescriptor())
 						.build())
-				.orgId(OrgId.ofRepoId(40))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(39, 40))
 				.plantId(ResourceId.ofRepoId(50))
 				.productPlanningId(ProductPlanningId.ofRepoId(60))
+				.sourceWarehouseId(WarehouseId.ofRepoId(30))
+				.targetWarehouseId(WarehouseId.ofRepoId(40))
 				.shipperId(ShipperId.ofRepoId(70))
 				.build();
 	}

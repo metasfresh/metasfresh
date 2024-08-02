@@ -95,7 +95,7 @@ abstract class PPOrderCandidateEventHandler
 				// .groupId(null) // will be set after save
 				.build();
 
-		final boolean attemptUpdate = !CandidatesQuery.FALSE.equals(preExistingSupplyQuery);
+		final boolean attemptUpdate = !preExistingSupplyQuery.isFalse();
 
 		return candidateChangeService.onCandidateNewOrChange(
 						headerCandidate,
