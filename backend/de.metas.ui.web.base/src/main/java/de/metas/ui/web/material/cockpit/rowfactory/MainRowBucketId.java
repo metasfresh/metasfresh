@@ -75,6 +75,8 @@ public class MainRowBucketId
 
 	private BigDecimal qtyOnHand = BigDecimal.ZERO;
 
+	String packingInfo = "";
+
 	private MainRowBucketId(
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate date)
