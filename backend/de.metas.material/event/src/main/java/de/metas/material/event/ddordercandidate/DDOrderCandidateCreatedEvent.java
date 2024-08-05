@@ -23,16 +23,16 @@ public class DDOrderCandidateCreatedEvent extends AbstractDDOrderCandidateEvent
 	@Builder
 	public DDOrderCandidateCreatedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("ddOrderCandidateData") @NonNull final DDOrderCandidateData ddOrderCandidateData)
+			@JsonProperty("ddOrderCandidate") @NonNull final DDOrderCandidateData ddOrderCandidate)
 	{
-		super(eventDescriptor, ddOrderCandidateData, null);
+		super(eventDescriptor, ddOrderCandidate, null);
 	}
 
 	public static DDOrderCandidateCreatedEvent of(@NonNull final DDOrderCandidateData data)
 	{
 		return builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(data.getClientAndOrgId()))
-				.ddOrderCandidateData(data)
+				.ddOrderCandidate(data)
 				.build();
 	}
 

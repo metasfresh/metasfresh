@@ -6,6 +6,7 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddordercandidate.async.DDOrderCandidateEnqueueService;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.organization.IOrgDAO;
@@ -31,6 +32,7 @@ public class DDOrderCandidateService
 	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -59,6 +61,7 @@ public class DDOrderCandidateService
 				.ddOrderCandidateService(this)
 				.orgDAO(orgDAO)
 				.docTypeDAO(docTypeDAO)
+				.documentBL(documentBL)
 				.productPlanningDAO(productPlanningDAO)
 				.bpartnerOrgBL(bpartnerOrgBL)
 				.warehouseBL(warehouseBL)
