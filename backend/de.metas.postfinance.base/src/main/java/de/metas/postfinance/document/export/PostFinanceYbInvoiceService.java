@@ -638,7 +638,7 @@ public class PostFinanceYbInvoiceService
 
 		final BankAccount bankAccount = bankAccountOptional.get();
 		final BankAccountId invoiceBankAccountId = BankAccountId.ofRepoIdOrNull(invoiceRecord.getOrg_BP_Account_ID());
-		if(invoiceBankAccountId != null && BankAccountId.equals(invoiceBankAccountId, bankAccount.getId()))
+		if(invoiceBankAccountId != null && !BankAccountId.equals(invoiceBankAccountId, bankAccount.getId()))
 		{
 			throw new PostFinanceExportException("Only OrgBPartner default esr bank account is supported");
 		}
