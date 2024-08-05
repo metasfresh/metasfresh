@@ -1,7 +1,7 @@
 -- Run mode: SWING_CLIENT
 
 -- 2024-07-19T08:27:11.532Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,583191,0,'Org_BP_Account',TO_TIMESTAMP('2024-07-19 11:27:11.325','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Organization Bank account','Organization Bank account',TO_TIMESTAMP('2024-07-19 11:27:11.325','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,583191,0,'Org_BP_Account',TO_TIMESTAMP('2024-07-19 11:27:11.325','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Organisation Bank Account','Organisation Bank Account',TO_TIMESTAMP('2024-07-19 11:27:11.325','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2024-07-19T08:27:11.546Z
@@ -63,22 +63,22 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(583191)
 ;
 
+-- Column: C_Invoice_Candidate.Org_BP_Account_ID
+-- 2024-07-26T13:33:57.674Z
+UPDATE AD_Column SET AD_Reference_Value_ID=540069,Updated=TO_TIMESTAMP('2024-07-26 15:33:57.674','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588862
+;
+
+-- Column: C_Invoice_Candidate.Org_BP_Account_ID
+-- 2024-07-26T13:35:49.981Z
+UPDATE AD_Column SET AD_Val_Rule_ID=540276,Updated=TO_TIMESTAMP('2024-07-26 15:35:49.981','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588862
+;
+
 -- 2024-07-19T08:30:15.609Z
 /* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate ADD COLUMN Org_BP_Account_ID NUMERIC(10)')
 ;
 
 -- 2024-07-19T08:30:16.095Z
-ALTER TABLE C_Invoice_Candidate ADD CONSTRAINT OrgBPAccount_CInvoiceCandidate FOREIGN KEY (Org_BP_Account_ID) REFERENCES public.C_BankAccount DEFERRABLE INITIALLY DEFERRED
-;
-
--- Name: C_BankAccount of AD_Org
--- 2024-07-19T08:37:07.046Z
-INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540685,'C_BankAccount.AD_Org_ID IN (@AD_Org_ID@, 0)',TO_TIMESTAMP('2024-07-19 11:37:06.927','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','C_BankAccount of AD_Org','S',TO_TIMESTAMP('2024-07-19 11:37:06.927','YYYY-MM-DD HH24:MI:SS.US'),100)
-;
-
--- Column: C_Invoice_Candidate.Org_BP_Account_ID
--- 2024-07-19T08:37:15.846Z
-UPDATE AD_Column SET AD_Val_Rule_ID=540685,Updated=TO_TIMESTAMP('2024-07-19 11:37:15.846','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588862
+ALTER TABLE C_Invoice_Candidate ADD CONSTRAINT OrgBPAccount_CInvoiceCandidate FOREIGN KEY (Org_BP_Account_ID) REFERENCES public.C_BP_BankAccount DEFERRABLE INITIALLY DEFERRED
 ;
 
 -- Column: C_Invoice.Org_BP_Account_ID
@@ -95,8 +95,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- Column: C_Invoice.Org_BP_Account_ID
--- 2024-07-19T08:50:29.512Z
-UPDATE AD_Column SET AD_Val_Rule_ID=540685,Updated=TO_TIMESTAMP('2024-07-19 11:50:29.512','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588863
+-- 2024-07-26T13:32:48.914Z
+UPDATE AD_Column SET AD_Reference_Value_ID=540069, AD_Val_Rule_ID=540276,Updated=TO_TIMESTAMP('2024-07-26 15:32:48.914','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588863
 ;
 
 -- 2024-07-19T08:50:37.221Z
@@ -104,7 +104,7 @@ UPDATE AD_Column SET AD_Val_Rule_ID=540685,Updated=TO_TIMESTAMP('2024-07-19 11:5
 ;
 
 -- 2024-07-19T08:50:38.176Z
-ALTER TABLE C_Invoice ADD CONSTRAINT OrgBPAccount_CInvoice FOREIGN KEY (Org_BP_Account_ID) REFERENCES public.C_BankAccount DEFERRABLE INITIALLY DEFERRED
+ALTER TABLE C_Invoice ADD CONSTRAINT OrgBPAccount_CInvoice FOREIGN KEY (Org_BP_Account_ID) REFERENCES public.C_BP_BankAccount DEFERRABLE INITIALLY DEFERRED
 ;
 
 
@@ -168,5 +168,12 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=729136
 -- Column: C_Invoice.Org_BP_Account_ID
 -- 2024-07-19T12:07:46.042Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,729136,0,263,541214,625025,'F',TO_TIMESTAMP('2024-07-19 15:07:45.931','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','Y','N','Y','N','N','N',0,'Sektion Bankkonto',120,0,0,TO_TIMESTAMP('2024-07-19 15:07:45.931','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- Reference: C_BP_BankAccount
+-- Table: C_BP_BankAccount
+-- Key: C_BP_BankAccount.C_BP_BankAccount_ID
+-- 2024-08-05T13:29:08.582Z
+UPDATE AD_Ref_Table SET AD_Display=NULL,Updated=TO_TIMESTAMP('2024-08-05 15:29:08.582','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Reference_ID=540069
 ;
 
