@@ -102,6 +102,7 @@ public class DDOrderCandidateRepository
 		// Flags
 		record.setIsActive(true);
 		record.setIsSimulated(from.isSimulated());
+		record.setProcessed(from.isProcessed());
 
 		//
 		// Forward document references
@@ -156,6 +157,7 @@ public class DDOrderCandidateRepository
 				.isSimulated(record.isSimulated())
 				// isAllowPush
 				// isKeepTargetPlant
+				.processed(record.isProcessed())
 				//
 				.customerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()))

@@ -16,6 +16,7 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddordercandidate.AbstractDDOrderCandidateEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateCreatedEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
@@ -145,17 +146,20 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 						.warehouseId(extractWarehouseId(event, candidateType))
 						.build())
 				.businessCaseDetail(toDistributionDetail(event, candidateType))
-				.additionalDemandDetail(DemandDetail.forSupplyRequiredDescriptor(event.getSupplyRequiredDescriptorNotNull()).withTraceId(event.getTraceId()))
-				.simulated(event.isSimulated())
-				.build();
+				.simulated(event.isSimulated());
+
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
+		if (supplyRequiredDescriptor != null)
+		{
+			builder.additionalDemandDetail(DemandDetail.forSupplyRequiredDescriptor(supplyRequiredDescriptor).withTraceId(event.getTraceId()));
+		}
 
 		if (updater != null)
 		{
 			updater.accept(builder);
 		}
 
-		return candidateChangeHandler.onCandidateNewOrChange(builder.build())
-				.getCandidate();
+		return candidateChangeHandler.onCandidateNewOrChange(builder.build()).getCandidate();
 	}
 
 	protected abstract CandidatesQuery createPreExistingCandidatesQuery(AbstractDDOrderCandidateEvent event, CandidateType candidateType);

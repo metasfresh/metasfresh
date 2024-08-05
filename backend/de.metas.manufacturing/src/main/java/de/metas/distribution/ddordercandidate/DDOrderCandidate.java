@@ -62,6 +62,7 @@ public class DDOrderCandidate
 	private final boolean isSimulated;
 	private final boolean isAllowPush;
 	private final boolean isKeepTargetPlant;
+	private boolean processed;
 
 	@Nullable private final BPartnerId customerId;
 	@Nullable private final OrderLineId salesOrderLineId;
@@ -94,6 +95,7 @@ public class DDOrderCandidate
 			final boolean isSimulated,
 			final boolean isAllowPush,
 			final boolean isKeepTargetPlant,
+			final boolean processed,
 			@Nullable final BPartnerId customerId,
 			@Nullable final OrderLineId salesOrderLineId,
 			@Nullable final PPOrderRef ppOrderRef,
@@ -122,6 +124,7 @@ public class DDOrderCandidate
 		this.isSimulated = isSimulated;
 		this.isAllowPush = isAllowPush;
 		this.isKeepTargetPlant = isKeepTargetPlant;
+		this.processed = processed;
 		this.customerId = customerId;
 		this.salesOrderLineId = salesOrderLineId;
 		this.ppOrderRef = ppOrderRef;
@@ -214,5 +217,12 @@ public class DDOrderCandidate
 	{
 		Quantity.assertSameUOM(this.qty, qtyProcessed);
 		this.qtyProcessed = qtyProcessed;
+
+		updateProcessed();
+	}
+
+	private void updateProcessed()
+	{
+		this.processed = getQtyToProcess().signum() == 0;
 	}
 }

@@ -59,13 +59,17 @@ public class DD_Order_Candidate_StepDef
 
 	private ItemProvider.ProviderResult<DDOrderCandidate> validateDDOrderLineCandidate(final DataTableRow row)
 	{
-		final List<DDOrderCandidate> candidates = ddOrderCandidateRepository.list(toDDOrderCandidateQuery(row));
+		final DDOrderCandidateQuery query = toDDOrderCandidateQuery(row);
+		SharedTestContext.put("query", query);
+
+		final List<DDOrderCandidate> candidates = ddOrderCandidateRepository.list(query);
 		SharedTestContext.put("candidates", candidates);
 
 		if (candidates.isEmpty())
 		{
 			return ItemProvider.ProviderResult.resultWasNotFound("No candidate found"
-					+ "\n\trow=" + row);
+					+ "\n\trow=" + row
+					+ "\n\tquery=" + query);
 		}
 		else if (candidates.size() > 1)
 		{

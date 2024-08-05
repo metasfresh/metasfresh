@@ -24,28 +24,39 @@ package de.metas.cucumber.stepdefs.distributionorder;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_DD_Order_MoveSchedule;
+import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -54,30 +65,22 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 
+@RequiredArgsConstructor
 public class DD_OrderLine_StepDef
 {
+	private static final Logger logger = LogManager.getLogger(DD_OrderLine_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
-	private final M_Product_StepDefData productTable;
-	private final DD_Order_StepDefData ddOrderTable;
-	private final DD_OrderLine_StepDefData ddOrderLineTable;
-	private final M_Locator_StepDefData locatorTable;
-
-	public DD_OrderLine_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final DD_Order_StepDefData ddOrderTable,
-			@NonNull final DD_OrderLine_StepDefData ddOrderLineTable,
-			@NonNull final M_Locator_StepDefData locatorTable)
-	{
-		this.productTable = productTable;
-		this.ddOrderTable = ddOrderTable;
-		this.ddOrderLineTable = ddOrderLineTable;
-		this.locatorTable = locatorTable;
-	}
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final DD_Order_StepDefData ddOrderTable;
+	@NonNull private final DD_OrderLine_StepDefData ddOrderLineTable;
+	@NonNull private final M_Locator_StepDefData locatorTable;
+	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
+	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 
 	@Given("metasfresh contains DD_OrderLines:")
 	public void metasfresh_contains_dd_order_lines(@NonNull final DataTable dataTable)
@@ -147,5 +150,76 @@ public class DD_OrderLine_StepDef
 			assertThat(moveSchedule.getQtyToPick()).isEqualTo(qtyPicked);
 
 		}
+	}
+
+	@And("^no DD_OrderLine found for orderLine (.*)$")
+	public void validate_no_DD_OrderLine_found(@NonNull final String orderLineIdentifier)
+	{
+		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
+
+		try
+		{
+			assertThat(queryByOrderLineId(orderLineId).count()).isZero();
+		}
+		catch (final Throwable throwable)
+		{
+			logCurrentContextExpectedNoRecords(orderLineId);
+		}
+	}
+
+	@And("^after not more than (.*)s, DD_OrderLine found for orderLine (.*)$")
+	public void validate_DD_OrderLines_found_for_OrderLine(
+			final int timeoutSec,
+			@NonNull final String orderLineIdentifier,
+			@NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+
+		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
+
+		final I_DD_OrderLine ddOrderLineRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, queryByOrderLineId(orderLineId));
+
+		row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderLineTable.putOrReplace(identifier, ddOrderLineRecord));
+	}
+
+	private void logCurrentContextExpectedNoRecords(@NonNull final OrderLineId orderLineId)
+	{
+		final StringBuilder message = new StringBuilder();
+
+		message.append("Validating no records found for orderLineID :").append("\n")
+				.append(I_DD_OrderLine.COLUMNNAME_C_OrderLineSO_ID).append(" : ").append(orderLineId).append("\n");
+
+		message.append("DD_OrderLine records:").append("\n");
+
+		queryByOrderLineId(orderLineId)
+				.stream(I_DD_OrderLine.class)
+				.forEach(ddOrderLine -> message
+						.append(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID).append(" : ").append(ddOrderLine.getDD_OrderLine_ID()).append(" ; ")
+						.append("\n"));
+
+		logger.error("*** Error while validating no DD_OrderLine found for orderLineId: {}, see found records: \n{}", orderLineId, message);
+	}
+
+	@NonNull
+	private IQuery<I_DD_OrderLine> queryByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		return queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addEqualsFilter(I_DD_OrderLine.COLUMN_C_OrderLineSO_ID, orderLineId)
+				.create();
+	}
+
+	@NonNull
+	private OrderLineId getOrderLineIdByIdentifier(@NonNull final String identifierStr)
+	{
+		final StepDefDataIdentifier identifier = StepDefDataIdentifier.ofString(identifierStr);
+
+		final OrderLineId orderLineId = identifierIdsTable.getOptional(identifier, OrderLineId.class)
+				.orElseGet(() -> orderLineTable.getId(identifier));
+		if (orderLineId == null)
+		{
+			throw new AdempiereException("No orderLineId found for " + identifierStr);
+		}
+
+		return orderLineId;
 	}
 }
