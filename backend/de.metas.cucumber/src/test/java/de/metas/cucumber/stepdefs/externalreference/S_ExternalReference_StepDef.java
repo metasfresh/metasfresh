@@ -32,6 +32,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -47,6 +48,7 @@ import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
+import de.metas.externalreference.bankaccount.BPBankAccountType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
@@ -69,6 +71,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
@@ -90,6 +93,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
 
@@ -105,6 +109,7 @@ public class S_ExternalReference_StepDef
 	private final C_BPartner_Location_StepDefData bpLocationTable;
 	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
 	private final AD_Org_StepDefData orgTable;
+	private final C_BP_BankAccount_StepDefData bankAccountTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -123,6 +128,7 @@ public class S_ExternalReference_StepDef
 			@NonNull final C_BPartner_Location_StepDefData bpLocationTable,
 			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable,
 			@NonNull final AD_Org_StepDefData orgTable,
+			@NonNull final C_BP_BankAccount_StepDefData bankAccountTable,
 			@NonNull final TestContext testContext)
 	{
 		this.externalSystems = externalSystems;
@@ -134,6 +140,7 @@ public class S_ExternalReference_StepDef
 		this.bpLocationTable = bpLocationTable;
 		this.externalSystemConfigTable = externalSystemConfigTable;
 		this.orgTable = orgTable;
+		this.bankAccountTable = bankAccountTable;
 		this.testContext = testContext;
 		this.externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
 		this.externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
@@ -274,6 +281,17 @@ public class S_ExternalReference_StepDef
 						.orElseGet(() -> Integer.parseInt(productIdentifier));
 
 				externalReferenceRecord.setRecord_ID(productId);
+			}
+			else if (BPBankAccountType.BPBankAccount.getCode().equals(type.getCode()))
+			{
+				final String bpBankAccountIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BP_BankAccount_ID + "." + TABLECOLUMN_IDENTIFIER);
+				assertThat(bpBankAccountIdentifier).isNotNull();
+
+				final int bankAccountId = bankAccountTable.getOptional(bpBankAccountIdentifier)
+						.map(I_C_BP_BankAccount::getC_BP_BankAccount_ID)
+						.orElseGet(() -> Integer.parseInt(bpBankAccountIdentifier));
+
+				externalReferenceRecord.setRecord_ID(bankAccountId);
 			}
 			else
 			{
