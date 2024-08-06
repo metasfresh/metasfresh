@@ -7,10 +7,11 @@ CREATE OR REPLACE VIEW edi_cctop_901_991_v AS
 SELECT i.c_invoice_id                                                                                       AS edi_cctop_901_991_v_id,
        i.c_invoice_id,
        i.c_invoice_id                                                                                       AS edi_cctop_invoic_v_id,
-       SUM(it.taxamt + it.taxbaseamt)                                                                       AS totalamt,
-       SUM(it.taxamt)                                                                                       AS taxamt,
-       SUM(it.taxbaseamt)                                                                                   AS taxbaseamt,
-       t.rate /* we support the case of having two different C_Tax_IDs with the same tax-rate */,
+       SUM(it.taxamt + it.taxbaseamt)                                                                       AS TotalAmt,
+       SUM(it.taxamt)                                                                                       AS TaxAmt,
+       SUM(it.taxbaseamt)                                                                                   AS TaxBaseAmt,
+       t.Rate /* we support the case of having two different C_Tax_IDs with the same tax-rate */,
+       t.IsTaxExempt,
        i.ad_client_id,
        i.ad_org_id,
        i.created,
@@ -21,7 +22,16 @@ SELECT i.c_invoice_id                                                           
        REGEXP_REPLACE(rn.referenceno, '\s+$', '')                                                           AS ESRReferenceNumber,
        ROUND(SUM(it.TaxBaseAmt) * -pterm.discount / 100, 2)                                                 AS SurchargeAmt, -- may be be positve or negative
        ROUND(SUM(it.TaxBaseAmt) * -pterm.discount / 100, 2) + SUM(it.TaxBaseAmt)                            AS TaxBaseAmtWithSurchargeAmt,
-       ROUND((ROUND(SUM(it.TaxBaseAmt) * -pterm.discount / 100, 2) + SUM(it.TaxBaseAmt)) * t.rate / 100, 2) AS TaxAmtWithSurchargeAmt
+       ROUND((ROUND(SUM(it.TaxBaseAmt) * -pterm.discount / 100, 2) + SUM(it.TaxBaseAmt)) * t.rate / 100, 2) AS TaxAmtWithSurchargeAmt,
+       CASE
+           WHEN EXISTS (SELECT 1
+                        FROM c_invoicetax it_bigger
+                        WHERE it_bigger.isactive = 'Y'
+                          AND it_bigger.c_invoice_id = i.c_invoice_id
+                          AND it_bigger.taxbaseamt > it.taxbaseamt)
+               THEN 'Y'
+               ELSE 'N'
+       END                                                                                                  AS IsMainVAT     -- we mark the tax with the biggest baseAmt as the invoice's main-tax
 FROM c_invoice i
          LEFT JOIN c_invoicetax it ON it.c_invoice_id = i.c_invoice_id
          LEFT JOIN c_tax t ON t.c_tax_id = it.c_tax_id
@@ -41,7 +51,7 @@ WHERE it.IsActive = 'Y'
     ) /* c_referenceno_type_id = 540005 (ESRReferenceNumber) */
 GROUP BY i.c_invoice_id, i.ad_client_id,
          t.rate,
-         pterm.discount,
+         t.IsTaxExempt,
          i.ad_org_id,
          i.created,
          i.createdby,

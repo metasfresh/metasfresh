@@ -1,7 +1,5 @@
-DROP VIEW IF EXISTS edi_cctop_901_991_v
-;
 
-CREATE OR REPLACE VIEW edi_cctop_901_991_v AS
+select db_alter_view('edi_cctop_901_991_v','
 SELECT i.c_invoice_id                                                                                       AS edi_cctop_901_991_v_id,
        i.c_invoice_id,
        i.c_invoice_id                                                                                       AS edi_cctop_invoic_v_id,
@@ -16,7 +14,7 @@ SELECT i.c_invoice_id                                                           
        i.updated,
        i.updatedby,
        i.isactive,
-       REGEXP_REPLACE(rn.referenceno, '\s+$', '')                                                           AS ESRReferenceNumber,
+       REGEXP_REPLACE(rn.referenceno, ''\s+$'', '''')                                                           AS ESRReferenceNumber,
        ROUND(SUM(it.TaxBaseAmt) * -pterm.discount / 100, 2)                                                 AS SurchargeAmt, -- may be be positve or negative
        ROUND(SUM(it.TaxBaseAmt) * -pterm.discount / 100, 2) + SUM(it.TaxBaseAmt)                            AS TaxBaseAmtWithSurchargeAmt,
        ROUND((ROUND(SUM(it.TaxBaseAmt) * -pterm.discount / 100, 2) + SUM(it.TaxBaseAmt)) * t.rate / 100, 2) AS TaxAmtWithSurchargeAmt
@@ -32,7 +30,7 @@ FROM c_invoice i
          LEFT JOIN c_referenceno_doc rnd ON rnd.record_id = i.c_invoice_id AND rnd.ad_table_id = 318 /* C_Invoice DocumentType */
          LEFT JOIN c_referenceno rn ON rn.c_referenceno_id = rnd.c_referenceno_id
          LEFT JOIN C_PaymentTerm pterm ON i.c_paymentterm_id = pterm.c_paymentterm_id
-WHERE it.IsActive = 'Y'
+WHERE it.IsActive = ''Y''
   AND tc.tax_count > 0
   -- can either be an ESRReferenceNumber, or we may not have it at all. Regardless, both cases should work.
   AND (rn.c_referenceno_type_id = 540005 OR rnd.c_referenceno_doc_id IS NULL
@@ -47,7 +45,10 @@ GROUP BY i.c_invoice_id, i.ad_client_id,
          i.updatedby,
          i.isactive,
          rn.referenceno
-;
+;                                           
+');
+
+
 
 -- View: EDI_Cctop_INVOIC_v
 
@@ -112,7 +113,6 @@ SELECT i.C_Invoice_ID                                                          A
      , (SELECT CASE
                    WHEN ARRAY_LENGTH(ARRAY_AGG(DISTINCT ol.invoicableqtybasedon), 1) = 1
                        THEN (ARRAY_AGG(DISTINCT ol.invoicableqtybasedon))[1]
-                       ELSE NULL
                END
         FROM c_orderline ol
         WHERE ol.c_order_id = o.c_order_id)                                    AS invoicableqtybasedon
