@@ -28,7 +28,9 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
@@ -50,7 +52,6 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
@@ -61,20 +62,21 @@ import java.util.Properties;
 
 /**
  * EMail builder and sender.
- *
+ * <p>
  * To create a new email, please use {@link MailService}'s createMail methods.
- *
+ * <p>
  * To send the message, please use {@link #send()}.
- *
+ * <p>
  * NOTE: This is basically a reimplementation of the class <code>org.compiere.util.EMail</code> which was authored (according to the javadoc) by author Joerg Janke.
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@SuppressWarnings("serial")
 @JsonAutoDetect(getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class EMail implements Serializable
 {
-	private static final transient Logger logger = LogManager.getLogger(EMail.class);
+	private static final String SYSCFG_DEBUG = "de.metas.email.Debug";
+	
+	private static final Logger logger = LogManager.getLogger(EMail.class);
 
 	@JsonProperty("mailbox")
 	private final Mailbox _mailbox;
@@ -103,6 +105,7 @@ public final class EMail implements Serializable
 	private InternetAddress _replyToAddress;
 
 	@JsonIgnore
+	@Nullable
 	private InternetAddress _debugMailToAddress;
 
 	/** Mail Subject */
@@ -371,13 +374,14 @@ public final class EMail implements Serializable
 		{
 			props.put("mail.smtp.auth", "true");
 		}
-		if (logger.isTraceEnabled())
+		final boolean mailDebugMode = Services.get(ISysConfigBL.class).getBooleanValue(SYSCFG_DEBUG, false);
+		if (mailDebugMode)
 		{
 			props.put("mail.debug", "true");
 		}
 
 		final Session session = Session.getInstance(props, auth);
-		session.setDebug(logger.isDebugEnabled());
+		session.setDebug(mailDebugMode);
 		return session;
 	}
 
@@ -404,7 +408,7 @@ public final class EMail implements Serializable
 
 	/**
 	 * Sets recipients.
-	 *
+	 * <b>
 	 * <b>NOTE: If {@link #getDebugMailToAddress()} returns a valid mail address, it will send to that instead!</b>
 	 */
 	private void setRecipients(
@@ -424,7 +428,7 @@ public final class EMail implements Serializable
 		}
 		else
 		{
-			final Address[] addressesArr = addresses.toArray(new Address[addresses.size()]);
+			final Address[] addressesArr = addresses.toArray(new Address[0]);
 			message.setRecipients(Message.RecipientType.TO, addressesArr);
 		}
 	}
@@ -478,7 +482,6 @@ public final class EMail implements Serializable
 		if (from == null)
 		{
 			markInvalid();
-			return;
 		}
 		else
 		{
@@ -524,7 +527,7 @@ public final class EMail implements Serializable
 	 */
 	public EMailAddress getTo()
 	{
-		if (_to == null || _to.isEmpty())
+		if (_to.isEmpty())
 		{
 			return null;
 		}
@@ -771,19 +774,18 @@ public final class EMail implements Serializable
 	public void setMessageHTML(final String subject, final String message)
 	{
 		_subject = subject;
-		final StringBuilder sb = new StringBuilder("<HTML>\n")
-				.append("<HEAD>\n")
-				.append("<TITLE>\n")
-				.append(subject + "\n")
-				.append("</TITLE>\n")
-				.append("</HEAD>\n");
-		sb.append("<BODY>\n")
-				.append("<H2>" + subject + "</H2>" + "\n")
-				.append(message)
-				.append("\n")
-				.append("</BODY>\n");
-		sb.append("</HTML>\n");
-		_messageHTML = sb.toString();
+		_messageHTML = "<HTML>\n"
+				+ "<HEAD>\n"
+				+ "<TITLE>\n"
+				+ subject + "\n"
+				+ "</TITLE>\n"
+				+ "</HEAD>\n"
+				+ "<BODY>\n"
+				+ "<H2>" + subject + "</H2>" + "\n"
+				+ message
+				+ "\n"
+				+ "</BODY>\n"
+				+ "</HTML>\n";
 	}
 
 	/**
@@ -870,12 +872,8 @@ public final class EMail implements Serializable
 
 	/**
 	 * Set the message content and attachments.
-	 *
-	 * @param msg
-	 * @throws MessagingException
-	 * @throws IOException
 	 */
-	private void setContent(final MimeMessage msg) throws MessagingException, IOException
+	private void setContent(final MimeMessage msg) throws MessagingException
 	{
 		final String subject = getSubject();
 		msg.setSubject(subject, getCharsetName());
@@ -967,7 +965,7 @@ public final class EMail implements Serializable
 
 	/**
 	 * Checks if the email is valid and can be sent.
-	 *
+	 * <p>
 	 * NOTE: this method is NOT setting the {@link #isValid()} flag.
 	 *
 	 * @return true if email is valid and can be sent
@@ -986,10 +984,9 @@ public final class EMail implements Serializable
 
 	/**
 	 * Checks if the email is valid and can be sent.
-	 *
+	 * <p>
 	 * NOTE: this method is NOT setting the {@link #isValid()} flag.
 	 *
-	 * @param notValidReasonCollector
 	 * @return true if email is valid and can be sent
 	 */
 	private boolean checkValid(final StringBuilder notValidReasonCollector)
@@ -1079,7 +1076,7 @@ public final class EMail implements Serializable
 		{
 			return isValidAddress(emailAddress.toInternetAddress());
 		}
-		catch (AddressException e)
+		catch (final AddressException e)
 		{
 			return false;
 		}
@@ -1094,7 +1091,7 @@ public final class EMail implements Serializable
 
 		final String addressStr = emailAddress.getAddress();
 		return addressStr != null
-				&& addressStr.length() > 0
+				&& !addressStr.isEmpty()
 				&& addressStr.indexOf(' ') < 0;
 	}
 
