@@ -161,7 +161,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.materialDescriptor(demandMaterialDescriptor)
 				.minMaxDescriptor(ddOrderLine.getFromWarehouseMinMaxDescriptor())
 				.businessCaseDetail(distributionDetail)
-				.additionalDemandDetail(demanddetail.withTraceId(ddOrderEvent.getTraceId()))
+				.additionalDemandDetail(demanddetail != null ? demanddetail.withTraceId(ddOrderEvent.getTraceId()) : null)
 				.seqNo(expectedSeqNoForDemandCandidate)
 				.simulated(ddOrder.isSimulated())
 				.build();

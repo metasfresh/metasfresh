@@ -52,7 +52,7 @@ Feature: create distribution simulation
       | ddNetworkLine_1               | ddNetwork_1               | warehouseStd   | warehouse_2          | shipper_1    |
     And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID | IsCreatePlan | DD_NetworkDistribution_ID | M_Warehouse_ID |
-      | ppln_1     | p_1          | true         | ddNetwork_1               | warehouseStd   |
+      | ppln_1     | p_1          | false        | ddNetwork_1               | warehouseStd   |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  | OPT.M_Warehouse_ID.Identifier |
       | o_1        | true    | bpartner_1               | 2022-07-04  | 2022-07-04T00:00:00Z | warehouseStd                  |

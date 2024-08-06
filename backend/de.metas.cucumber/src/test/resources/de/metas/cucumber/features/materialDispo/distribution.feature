@@ -172,9 +172,9 @@ Feature: create distribution to balance demand
       | ddNetwork_1               | sourceWH2      | sourceWH3            | shipper      |
     And metasfresh contains PP_Product_Plannings
       | M_Product_ID | IsCreatePlan | DD_NetworkDistribution_ID | M_Warehouse_ID |
-      | p_1          | true         | ddNetwork_1               | targetWH       |
-      | p_1          | true         | ddNetwork_1               | sourceWH       |
-      | p_1          | true         | ddNetwork_1               | sourceWH2      |
+      | p_1          | false        | ddNetwork_1               | targetWH       |
+      | p_1          | false        | ddNetwork_1               | sourceWH       |
+      | p_1          | false        | ddNetwork_1               | sourceWH2      |
     And metasfresh initially has this MD_Candidate data
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID |
       | stock1     | INVENTORY_UP      |                           | p_1          | 2021-07-01T21:00:00Z | 3   | 3                      | targetWH       |
@@ -233,8 +233,8 @@ Feature: create distribution to balance demand
       | ddNetwork_1               | sourceWH       | targetWH             | shipper      |
     And metasfresh contains PP_Product_Plannings
       | M_Product_ID | IsCreatePlan | DD_NetworkDistribution_ID | M_Warehouse_ID |
-      | p_1          | true         | ddNetwork_1               | targetWH       |
-      | p_1          | true         | ddNetwork_1               | sourceWH       |
+      | p_1          | false        | ddNetwork_1               | targetWH       |
+      | p_1          | false        | ddNetwork_1               | sourceWH       |
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  | OPT.M_Warehouse_ID.Identifier |
       | SO         | true    | bpartner_1               | 2022-07-04  | 2022-07-04T00:00:00Z | targetWH                      |
@@ -272,10 +272,10 @@ Feature: create distribution to balance demand
       | ddNetwork_1               | sourceWH3      | targetWH             | shipper      |
     And metasfresh contains PP_Product_Plannings
       | M_Product_ID | IsCreatePlan | DD_NetworkDistribution_ID | M_Warehouse_ID |
-      | p_1          | true         | ddNetwork_1               | targetWH       |
-      | p_1          | true         | ddNetwork_1               | sourceWH       |
-      | p_1          | true         | ddNetwork_1               | sourceWH2      |
-      | p_1          | true         | ddNetwork_1               | sourceWH3      |
+      | p_1          | false        | ddNetwork_1               | targetWH       |
+      | p_1          | false        | ddNetwork_1               | sourceWH       |
+      | p_1          | false        | ddNetwork_1               | sourceWH2      |
+      | p_1          | false        | ddNetwork_1               | sourceWH3      |
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  | OPT.M_Warehouse_ID.Identifier |
       | SO         | true    | bpartner_1               | 2022-07-04  | 2022-07-04T00:00:00Z | targetWH                      |
