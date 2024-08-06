@@ -71,7 +71,7 @@ public class InvoiceCandidateUpsertRequest
 
 	ProductId productId;
 
-	BankAccountId bankAccountId;
+	@Nullable BankAccountId bankAccountId;
 
 	InvoiceRule invoiceRuleOverride;
 
@@ -175,7 +175,7 @@ public class InvoiceCandidateUpsertRequest
 		this.poReference = poReference;
 		this.billPartnerInfo = billPartnerInfo;
 		this.productId = productId;
-		this.bankAccountId=bankAccountId;
+		this.bankAccountId = bankAccountId;
 		this.invoiceRuleOverride = invoiceRuleOverride;
 		this.soTrx = soTrx;
 		this.dateOrdered = dateOrdered;

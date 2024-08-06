@@ -3,6 +3,7 @@ package de.metas.payment.esr.api.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -27,6 +28,8 @@ import java.util.Properties;
 
 public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 {
+	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
+
 	@Override
 	public final List<I_C_BP_BankAccount> retrieveESRBPBankAccounts(
 			@NonNull final String postAccountNo,
@@ -220,7 +223,7 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 	@Override
 	public I_C_BP_BankAccount getById(@NonNull final BankAccountId bankAccountId)
 	{
-		return InterfaceWrapperHelper.load(bankAccountId, I_C_BP_BankAccount.class);
+		return bankAccountDAO.getById(bankAccountId, I_C_BP_BankAccount.class);
 	}
 
 }

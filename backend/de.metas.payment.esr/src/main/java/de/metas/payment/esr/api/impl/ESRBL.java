@@ -32,6 +32,8 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRBL;
 import de.metas.payment.esr.api.IESRBPBankAccountBL;
@@ -49,7 +51,6 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.MOrg;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -69,6 +70,7 @@ public class ESRBL implements IESRBL
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
     private	final IESRBPBankAccountDAO esrBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
 	private final IReferenceNoDAO referenceNoDAO = Services.get(IReferenceNoDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public void createESRPaymentRequest(@NonNull final I_C_Invoice invoiceRecord)
@@ -121,17 +123,17 @@ public class ESRBL implements IESRBL
 	private boolean isReversal(final I_C_Invoice invoice) {return invoice.getReversal_ID() > 0;}
 
 
-	@Nullable
+	@NonNull
 	private I_C_BP_BankAccount retrieveEsrBankAccount(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		// check if we have a bank account in invoice already
-		final I_C_BP_BankAccount bankAccount = retrieveEsrInvoiceCandidateBankAccountOrNull(invoiceRecord);
+		final I_C_BP_BankAccount bankAccount = retrieveEsrInvoiceBankAccountOrNull(invoiceRecord);
 
 		if (bankAccount == null)
 		{
 			// get the account number for the org of the invoice
-			final int orgID = invoiceRecord.getAD_Org_ID();
-			final I_AD_Org org = MOrg.get(Env.getCtx(), orgID);
+			final OrgId orgID = OrgId.ofRepoId(invoiceRecord.getAD_Org_ID());
+			final I_AD_Org org = orgDAO.getById(orgID);
 
 			final List<I_C_BP_BankAccount> bankAccounts = esrBankAccountDAO.fetchOrgEsrAccounts(org);
 
@@ -147,7 +149,7 @@ public class ESRBL implements IESRBL
 
 
 	@Nullable
-	private I_C_BP_BankAccount retrieveEsrInvoiceCandidateBankAccountOrNull(@NonNull final I_C_Invoice invoiceRecord)
+	private I_C_BP_BankAccount retrieveEsrInvoiceBankAccountOrNull(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(invoiceRecord.getOrg_BP_Account_ID());
 		return bankAccountId != null ? esrBankAccountDAO.getById(bankAccountId) : null;

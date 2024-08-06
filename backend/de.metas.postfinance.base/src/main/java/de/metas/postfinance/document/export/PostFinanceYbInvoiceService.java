@@ -633,7 +633,7 @@ public class PostFinanceYbInvoiceService
 		final Optional<BankAccount> bankAccountOptional = bankAccountDAO.getDefaultESRBankAccount(bPartnerId);
 		if(bankAccountOptional.isEmpty())
 		{
-			throw new PostFinanceExportException("Missing default esr bank account for OrgBPartner " + bPartnerId);
+			throw new PostFinanceExportException("Missing default ESR bank account for OrgBPartner " + bPartnerId);
 		}
 
 		final BankAccount bankAccount = bankAccountOptional.get();
