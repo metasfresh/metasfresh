@@ -117,7 +117,7 @@ public class CreateInvoiceCandidatesService
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	@NonNull public final IBPartnerOrgBL orgBL = Services.get(IBPartnerOrgBL.class);
+	@NonNull private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	@NonNull private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
 	@NonNull private final InvoiceCandidateRepository invoiceCandidateRepository;
@@ -491,7 +491,7 @@ public class CreateInvoiceCandidatesService
 		if (Check.isNotBlank(item.getBankAccountIdentifier()))
 		{
 
-			final Optional<BPartnerId> orgBPartnerIdOptional = orgBL.retrieveLinkedBPartnerId(orgId);
+			final Optional<BPartnerId> orgBPartnerIdOptional = partnerOrgBL.retrieveLinkedBPartnerId(orgId);
 			if (orgBPartnerIdOptional.isPresent())
 			{
 				final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(String.valueOf(BPartnerId.toRepoId(orgBPartnerIdOptional.get())));
