@@ -141,6 +141,7 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 
 		splitLogsIfNeeded(reconciledAmount.get(), modularContractLogEntryIdAtomicReference.get(), qty);
 
+		// TODO get pricelist precision
 		final Money price = qty.isZero() ? Money.zero(request.getCurrencyId()) : amount.divide(qty.toBigDecimal(), currencyBL.getStdPrecision(request.getCurrencyId()));
 
 		return ComputingResponse.builder()

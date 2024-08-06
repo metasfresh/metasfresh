@@ -37,6 +37,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
@@ -125,6 +126,9 @@ public interface IFlatrateBL extends ISingletonService
 	void prepareForDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
 
 	void reverseDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
+
+	// TODO finish this method and use it every time we compute prices and amounts for modular contract logs and interests!
+	CurrencyPrecision getCurrencyPrecisionForModularContract(@NonNull FlatrateTermId modularContractId);
 
 	/**
 	 * term to extend

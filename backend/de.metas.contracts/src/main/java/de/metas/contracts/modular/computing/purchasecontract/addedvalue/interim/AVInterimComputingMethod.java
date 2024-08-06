@@ -175,7 +175,7 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 		final ProductPrice priceActualNewLog = ProductPrice.builder()
 				.productId(modularContractLogEntry.getProductId())
 				.uomId(interimLogQtyUomId)
-				.money(amountNewLog.divide(qtyNewLog.toBigDecimal(), currencyBL.getStdPrecision(amountNewLog.getCurrencyId())))
+				.money(amountNewLog.divide(qtyNewLog.toBigDecimal(), currencyBL.getCostingPrecision(amountNewLog.getCurrencyId())))
 				.build();
 
 
@@ -190,7 +190,7 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 		final ProductPrice priceActualUpdateLog = ProductPrice.builder()
 				.productId(modularContractLogEntry.getProductId())
 				.uomId(interimLogQtyUomId)
-				.money(reconciledAmountInInterimContractCurrencyWithSignApplied.divide(shippingNotificationQty.toBigDecimal(), currencyBL.getStdPrecision(reconciledAmountInInterimContractCurrencyWithSignApplied.getCurrencyId())))
+				.money(reconciledAmountInInterimContractCurrencyWithSignApplied.divide(shippingNotificationQty.toBigDecimal(), currencyBL.getCostingPrecision(reconciledAmountInInterimContractCurrencyWithSignApplied.getCurrencyId())))
 				.build();
 
 		final ModularContractLogEntry interimLogEntryToUpdate = modularContractLogEntry.toBuilder()
