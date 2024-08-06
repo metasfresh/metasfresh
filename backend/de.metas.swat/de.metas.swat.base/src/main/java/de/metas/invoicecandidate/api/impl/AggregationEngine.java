@@ -134,7 +134,6 @@ public final class AggregationEngine
 			OrderEmailPropagationSysConfigRepository.class);
 
 	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	private final transient IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	//
