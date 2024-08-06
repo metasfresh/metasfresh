@@ -72,9 +72,8 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final ModularLogInterestRepository modularLogInterestRepository;
 
-
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	@Override
@@ -130,21 +129,19 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 				.filter(amt -> !amt.isZero())
 				.reduce(Money.zero(request.getCurrencyId()), Money::add);
 
-		splitLogsIfNeeded(reconciledAmount.get(), modularContractLogEntryIdAtomicReference.get());
-
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
 
 		final ImmutableSet<ModularContractLogEntryId> logEntryIds = logEntryIdsCollector.build();
 
 		final ModularContractLogEntriesList logs = logEntryIds.isEmpty() ? ModularContractLogEntriesList.EMPTY : getModularContractLogEntries(request, logEntryIds);
 
-
-
 		final UomId stockUOMId = UomId.ofRepoId(stockUOM.getC_UOM_ID());
 
 		final Quantity qty = logs.subsetOf(LogEntryDocumentType.SHIPPING_NOTIFICATION).getQtySum(stockUOMId, uomConversionBL);
 
-		final Money price = qty.isZero()? Money.zero(request.getCurrencyId()) : amount.divide(qty.toBigDecimal(), currencyBL.getStdPrecision(request.getCurrencyId()));
+		splitLogsIfNeeded(reconciledAmount.get(), modularContractLogEntryIdAtomicReference.get(), qty);
+
+		final Money price = qty.isZero() ? Money.zero(request.getCurrencyId()) : amount.divide(qty.toBigDecimal(), currencyBL.getStdPrecision(request.getCurrencyId()));
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
@@ -158,10 +155,13 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 				.build();
 	}
 
-	protected void splitLogsIfNeeded(final @NonNull Money reconciledAmount, final @Nullable ModularContractLogEntryId modularContractLogEntryId)
+	protected void splitLogsIfNeeded(final @NonNull Money reconciledAmount,
+			final @Nullable ModularContractLogEntryId modularContractLogEntryId,
+			final @NonNull Quantity shippingNotificationQty)
 	{
 
 	}
+
 
 	private @NonNull ModularContractLogEntriesList getModularContractLogEntries(final @NonNull ComputingRequest request, final ImmutableSet<ModularContractLogEntryId> logEntryIds)
 	{
@@ -195,6 +195,5 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 
 		return modularLogInterestRepository.streamInterestEntries(logInterestQuery);
 	}
-
 
 }

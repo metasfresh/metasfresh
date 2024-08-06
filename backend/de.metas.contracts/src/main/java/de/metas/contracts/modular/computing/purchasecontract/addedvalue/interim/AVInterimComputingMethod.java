@@ -38,6 +38,7 @@ import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.ICurrencyBL;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -47,9 +48,11 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.shippingnotification.ShippingNotificationLineId;
 import de.metas.shippingnotification.ShippingNotificationRepository;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -57,15 +60,16 @@ import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
+import java.math.BigDecimal;
 
 @Component
 public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 {
 
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	@NonNull private final ShippingNotificationRepository shippingNotificationRepository;
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final MoneyService moneyService;
@@ -129,9 +133,11 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 	}
 
 	@Override
-	protected void splitLogsIfNeeded(final @NonNull Money reconciledAmount, final @Nullable ModularContractLogEntryId modularContractLogEntryId)
+	protected void splitLogsIfNeeded(final @NonNull Money reconciledAmount,
+			final @Nullable ModularContractLogEntryId modularContractLogEntryId,
+			final @NonNull Quantity shippingNotificationQty)
 	{
-		if (modularContractLogEntryId == null || reconciledAmount.isZero())
+		if (modularContractLogEntryId == null || reconciledAmount.isZero() || shippingNotificationQty.isZero())
 		{
 			// no log split is needed
 			return;
@@ -146,6 +152,7 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 			// no log split is needed
 			return;
 		}
+		final UomId interimLogQtyUomId = interimLogQty.getUomId();
 
 		final CurrencyConversionContext context = modularContractLogService.getCurrencyConversionContext(modularContractLogEntry);
 		final Money reconciledInInterimContractCurrency = moneyService.convertMoneyToCurrency(reconciledAmount,
@@ -158,30 +165,38 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 			return;
 		}
 
-		final ProductPrice priceActual = modularContractLogEntry.getPriceActual();
-
-		if (priceActual == null)
-		{
-			// no log split is needed
-			return;
-		}
-		// TODO delete?
-		//	final Quantity reconciledAmountQty = priceActual.computeQtyInTotalAmt(reconciledInInterimContractCurrency,
-		//	moneyService.getStdPrecision(reconciledInInterimContractCurrency.getCurrencyId()));
 
 		final Money reconciledAmountInInterimContractCurrencyWithSignApplied = reconciledInInterimContractCurrency.negateIf(interimLogAmount.isNegative());
 
-		// TODO: I think the create and update qtys should be the other way around
+		final Money amountNewLog = interimLogAmount.subtract(reconciledAmountInInterimContractCurrencyWithSignApplied);
+		final Quantity qtyLeft = interimLogQty.subtract(shippingNotificationQty).toZeroIfNegative();
+
+		final Quantity qtyNewLog = qtyLeft.isZero()? Quantitys.of(BigDecimal.ONE, interimLogQtyUomId) : qtyLeft;
+		final ProductPrice priceActualNewLog = ProductPrice.builder()
+				.productId(modularContractLogEntry.getProductId())
+				.uomId(interimLogQtyUomId)
+				.money(amountNewLog.divide(qtyNewLog.toBigDecimal(), currencyBL.getStdPrecision(amountNewLog.getCurrencyId())))
+				.build();
+
+
 		final LogEntryCreateRequest createInterimLogForOpenAmt = LogEntryCreateRequest.ofEntry(modularContractLogEntry)
 				.toBuilder()
-				.amount(interimLogAmount.subtract(reconciledAmountInInterimContractCurrencyWithSignApplied))
-				.quantity(Optional.ofNullable(modularContractLogEntry.getQuantity()).map(qty -> qty.subtract(interimLogQty)).orElse(null))
+				.amount(amountNewLog)
+				.quantity(interimLogQty.subtract(shippingNotificationQty))
+				.priceActual(priceActualNewLog)
 				.build();
 		modularContractLogService.create(createInterimLogForOpenAmt);
 
+		final ProductPrice priceActualUpdateLog = ProductPrice.builder()
+				.productId(modularContractLogEntry.getProductId())
+				.uomId(interimLogQtyUomId)
+				.money(reconciledAmountInInterimContractCurrencyWithSignApplied.divide(shippingNotificationQty.toBigDecimal(), currencyBL.getStdPrecision(reconciledAmountInInterimContractCurrencyWithSignApplied.getCurrencyId())))
+				.build();
+
 		final ModularContractLogEntry interimLogEntryToUpdate = modularContractLogEntry.toBuilder()
 				.amount(reconciledAmountInInterimContractCurrencyWithSignApplied)
-				.quantity(interimLogQty)
+				.priceActual(priceActualUpdateLog)
+				.quantity(shippingNotificationQty)
 				.build();
 
 		modularContractLogService.updateModularLog(interimLogEntryToUpdate);
