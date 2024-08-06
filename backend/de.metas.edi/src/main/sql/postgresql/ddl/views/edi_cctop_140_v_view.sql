@@ -27,6 +27,7 @@ FROM c_invoice i
 GROUP BY i.c_invoice_id,
          pterm.discount,
          pterm.discountdays,
+         pterm.Name,
          i.dateinvoiced,
          pterm.discountdays,
          t.rate,
@@ -37,5 +38,6 @@ GROUP BY i.c_invoice_id,
          i.createdby,
          i.updated,
          i.updatedby,
-         i.isactive
+         i.isactive,
+         it.TaxBaseAmt
 ;

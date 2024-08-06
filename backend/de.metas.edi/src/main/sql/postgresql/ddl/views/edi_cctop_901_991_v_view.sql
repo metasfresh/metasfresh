@@ -24,14 +24,16 @@ SELECT i.c_invoice_id                                                           
        ROUND(SUM(it.TaxBaseAmt) * -pterm.discount / 100, 2) + SUM(it.TaxBaseAmt)                            AS TaxBaseAmtWithSurchargeAmt,
        ROUND((ROUND(SUM(it.TaxBaseAmt) * -pterm.discount / 100, 2) + SUM(it.TaxBaseAmt)) * t.rate / 100, 2) AS TaxAmtWithSurchargeAmt,
        CASE
-           WHEN EXISTS (SELECT 1
+           WHEN EXISTS (SELECT SUM(it_bigger.taxbaseamt), t.rate
                         FROM c_invoicetax it_bigger
+                                 JOIN c_tax t_bigger ON it_bigger.c_tax_id = t_bigger.c_tax_id
                         WHERE it_bigger.isactive = 'Y'
                           AND it_bigger.c_invoice_id = i.c_invoice_id
-                          AND it_bigger.taxbaseamt > it.taxbaseamt)
+                        GROUP BY t_bigger.rate
+                        HAVING SUM(it_bigger.taxbaseamt) > SUM(it.taxbaseamt))
                THEN 'Y'
                ELSE 'N'
-       END                                                                                                  AS IsMainVAT     -- we mark the tax with the biggest baseAmt as the invoice's main-tax
+       END                                                                                                  AS IsMainVAT     -- we mark the tax-rate with the biggest baseAmt as the invoice's main-tax
 FROM c_invoice i
          LEFT JOIN c_invoicetax it ON it.c_invoice_id = i.c_invoice_id
          LEFT JOIN c_tax t ON t.c_tax_id = it.c_tax_id
@@ -58,5 +60,6 @@ GROUP BY i.c_invoice_id, i.ad_client_id,
          i.updated,
          i.updatedby,
          i.isactive,
+         pterm.discount,
          rn.referenceno
 ;
