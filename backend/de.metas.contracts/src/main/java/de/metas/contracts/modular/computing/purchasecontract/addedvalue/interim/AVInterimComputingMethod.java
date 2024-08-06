@@ -129,23 +129,25 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 	}
 
 	@Override
-	protected void splitLogsIfNeeded(final @NonNull Money reconciledAmount, final @Nullable ModularContractLogEntryId initialInterimContractId)
+	protected void splitLogsIfNeeded(final @NonNull Money reconciledAmount, final @Nullable ModularContractLogEntryId modularContractLogEntryId)
 	{
-		if (initialInterimContractId == null || reconciledAmount.isZero())
+		if (modularContractLogEntryId == null || reconciledAmount.isZero())
 		{
 			// no log split is needed
 			return;
 		}
-		final ModularContractLogEntry interimContractEntry = modularContractLogService.getById(initialInterimContractId);
+		final ModularContractLogEntry modularContractLogEntry = modularContractLogService.getById(modularContractLogEntryId);
 
-		final Money interimLogAmount = interimContractEntry.getAmount();
+		final Money interimLogAmount = modularContractLogEntry.getAmount();
+
+		final Quantity interimLogQty = modularContractLogEntry.getQuantity();
 		if (interimLogAmount == null || interimLogAmount.isZero())
 		{
 			// no log split is needed
 			return;
 		}
 
-		final CurrencyConversionContext context = modularContractLogService.getCurrencyConversionContext(interimContractEntry);
+		final CurrencyConversionContext context = modularContractLogService.getCurrencyConversionContext(modularContractLogEntry);
 		final Money reconciledInInterimContractCurrency = moneyService.convertMoneyToCurrency(reconciledAmount,
 																							  interimLogAmount.getCurrencyId(),
 																							  context);
@@ -156,28 +158,30 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 			return;
 		}
 
-		final ProductPrice priceActual = interimContractEntry.getPriceActual();
+		final ProductPrice priceActual = modularContractLogEntry.getPriceActual();
 
-		if(priceActual == null)
+		if (priceActual == null)
 		{
 			// no log split is needed
 			return;
 		}
-		final Quantity reconciledAmountQty = priceActual.computeQtyInTotalAmt(reconciledInInterimContractCurrency, moneyService.getStdPrecision(reconciledInInterimContractCurrency.getCurrencyId()));
+		// TODO delete?
+		//	final Quantity reconciledAmountQty = priceActual.computeQtyInTotalAmt(reconciledInInterimContractCurrency,
+		//	moneyService.getStdPrecision(reconciledInInterimContractCurrency.getCurrencyId()));
 
 		final Money reconciledAmountInInterimContractCurrencyWithSignApplied = reconciledInInterimContractCurrency.negateIf(interimLogAmount.isNegative());
 
 		// TODO: I think the create and update qtys should be the other way around
-		final LogEntryCreateRequest createInterimLogForOpenAmt = LogEntryCreateRequest.ofEntry(interimContractEntry)
+		final LogEntryCreateRequest createInterimLogForOpenAmt = LogEntryCreateRequest.ofEntry(modularContractLogEntry)
 				.toBuilder()
 				.amount(interimLogAmount.subtract(reconciledAmountInInterimContractCurrencyWithSignApplied))
-				.quantity(Optional.ofNullable(interimContractEntry.getQuantity()).map(qty -> qty.subtract(reconciledAmountQty)).orElse(null))
+				.quantity(Optional.ofNullable(modularContractLogEntry.getQuantity()).map(qty -> qty.subtract(interimLogQty)).orElse(null))
 				.build();
 		modularContractLogService.create(createInterimLogForOpenAmt);
 
-		final ModularContractLogEntry interimLogEntryToUpdate = interimContractEntry.toBuilder()
+		final ModularContractLogEntry interimLogEntryToUpdate = modularContractLogEntry.toBuilder()
 				.amount(reconciledAmountInInterimContractCurrencyWithSignApplied)
-				.quantity(reconciledAmountQty)
+				.quantity(interimLogQty)
 				.build();
 
 		modularContractLogService.updateModularLog(interimLogEntryToUpdate);

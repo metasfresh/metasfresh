@@ -27,7 +27,6 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
-import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.interest.log.ModularLogInterest;
@@ -39,6 +38,7 @@ import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
@@ -59,7 +59,6 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -72,12 +71,11 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 	@NonNull private final ModCntrInvoicingGroupRepository invoicingGroupRepository;
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final ModularLogInterestRepository modularLogInterestRepository;
-	@NonNull private final ComputingMethodService computingMethodService;
-
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
@@ -114,15 +112,15 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 	{
 		final ImmutableSet.Builder<ModularContractLogEntryId> logEntryIdsCollector = ImmutableSet.builder();
 		final AtomicReference<Money> reconciledAmount = new AtomicReference<>(Money.zero(request.getCurrencyId()));
-		final AtomicReference<ModularContractLogEntryId> initialInterimContractId = new AtomicReference<>();
+		final AtomicReference<ModularContractLogEntryId> modularContractLogEntryIdAtomicReference = new AtomicReference<>();
 		final Money amount = streamInterestRecords(request)
 				.peek(interestLog -> {
 					logEntryIdsCollector.add(interestLog.getShippingNotificationLogId());
-					final ModularContractLogEntryId interimContractLogId = interestLog.getInterimContractLogId();
+					final ModularContractLogEntryId interimContractLogId = interestLog.getModularContractLogEntryId();
 					if (interimContractLogId != null)
 					{
 						logEntryIdsCollector.add(interimContractLogId);
-						initialInterimContractId.set(interimContractLogId);
+						modularContractLogEntryIdAtomicReference.set(interimContractLogId);
 						reconciledAmount.set(reconciledAmount.get().add(interestLog.getAllocatedAmt()));
 					}
 
@@ -132,33 +130,35 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 				.filter(amt -> !amt.isZero())
 				.reduce(Money.zero(request.getCurrencyId()), Money::add);
 
+		splitLogsIfNeeded(reconciledAmount.get(), modularContractLogEntryIdAtomicReference.get());
+
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final Quantity qty = amount.signum() == 0
-				? Quantity.of(BigDecimal.ZERO, stockUOM)
-				: Quantity.of(BigDecimal.ONE, stockUOM);
+
 		final ImmutableSet<ModularContractLogEntryId> logEntryIds = logEntryIdsCollector.build();
 
 		final ModularContractLogEntriesList logs = logEntryIds.isEmpty() ? ModularContractLogEntriesList.EMPTY : getModularContractLogEntries(request, logEntryIds);
-		final ModularContractLogEntriesList receiptLogs = computingMethodService.retrieveLogsForCalculation(request).subsetOf(LogEntryDocumentType.MATERIAL_RECEIPT);
+
+
 
 		final UomId stockUOMId = UomId.ofRepoId(stockUOM.getC_UOM_ID());
-		final Quantity receivedQty = receiptLogs.getQtySum(stockUOMId, uomConversionBL);
 
+		final Quantity qty = logs.subsetOf(LogEntryDocumentType.SHIPPING_NOTIFICATION).getQtySum(stockUOMId, uomConversionBL);
 
-		splitLogsIfNeeded(reconciledAmount.get(), initialInterimContractId.get());
+		final Money price = qty.isZero()? Money.zero(request.getCurrencyId()) : amount.divide(qty.toBigDecimal(), currencyBL.getStdPrecision(request.getCurrencyId()));
+
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
 				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.price(ProductPrice.builder()
 							   .productId(request.getProductId())
-							   .money(amount.negate())
+							   .money(price.negate())
 							   .uomId(stockUOMId)
 							   .build())
 				.qty(qty)
 				.build();
 	}
 
-	protected void splitLogsIfNeeded(final @NonNull Money reconciledAmount, final @Nullable ModularContractLogEntryId initialInterimContractId)
+	protected void splitLogsIfNeeded(final @NonNull Money reconciledAmount, final @Nullable ModularContractLogEntryId modularContractLogEntryId)
 	{
 
 	}

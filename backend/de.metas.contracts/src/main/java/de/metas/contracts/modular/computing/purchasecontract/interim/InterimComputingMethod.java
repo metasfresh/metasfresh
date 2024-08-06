@@ -43,7 +43,6 @@ import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
-import de.metas.money.MoneyService;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
@@ -52,7 +51,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
-import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -153,19 +151,32 @@ public class InterimComputingMethod extends AbstractComputingMethodHandler
 
 		// TODO: Check if the numbers are OK or we should rather divide the amount by the qty
 		// final Money amount = logs.getAmount().orElseGet(() -> Money.zero(request.getCurrencyId()));
-		final Quantity qtySumInStockUOM = computingMethodService.getQtySumInStockUOM(logs);
+		final Quantity qtySumInStockUOM = logs.isEmpty() ? Quantitys.zero(stockUOMId): computingMethodService.getQtySumInStockUOM(logs);
 
-		final ModularContractLogEntry modularContractLogEntry = logs.getFirstEntry();
+		final ProductPrice productPrice;
 
-		final ProductPrice productPrice = Check.assumeNotNull(modularContractLogEntry.getPriceActual(), "productPrice shouldn't be null");
-		final ProductPrice productPriceToInvoice = productPrice.convertToUom(stockUOMId,
-																			 currencyBL.getStdPrecision(productPrice.getCurrencyId()),
-																			 uomConversionBL);
+		if (logs.isEmpty())
+		{
+			productPrice = ProductPrice.builder()
+					.productId(request.getProductId())
+					.uomId(stockUOMId)
+					.money(Money.zero(request.getCurrencyId()))
+					.build();
+		}
+		else
+		{
+			final ModularContractLogEntry modularContractLogEntry = logs.getFirstEntry();
+			final ProductPrice priceActual = Check.assumeNotNull(modularContractLogEntry.getPriceActual(), "productPrice shouldn't be null");
+			productPrice = priceActual.convertToUom(stockUOMId,
+															 currencyBL.getStdPrecision(priceActual.getCurrencyId()),
+															 uomConversionBL);
+
+		}
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
 				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
-				.price(productPriceToInvoice)
+				.price(productPrice)
 				.qty(qtySumInStockUOM.negate())
 				.build();
 	}
