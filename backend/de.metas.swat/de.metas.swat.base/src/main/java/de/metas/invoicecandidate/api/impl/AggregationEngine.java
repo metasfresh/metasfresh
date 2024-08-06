@@ -453,7 +453,7 @@ public final class AggregationEngine
 			invoiceHeader.setDateAcct(dateAcct);
 
 			final LocalDate overrideDueDate = computeOverrideDueDate(icRecord);
-			logger.debug("Setting invoiceHeader's OverrideDueDate={}", dateAcct);
+			logger.debug("Setting invoiceHeader's OverrideDueDate={}", overrideDueDate);
 			invoiceHeader.setOverrideDueDate(overrideDueDate);
 
 			// #367 Invoice candidates invoicing Pricelist not found

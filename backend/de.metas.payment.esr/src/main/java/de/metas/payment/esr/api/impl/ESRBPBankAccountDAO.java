@@ -217,4 +217,10 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 		return bpBankAccount.isEsrAccount();
 	}
 
+	@Override
+	public I_C_BP_BankAccount getById(@NonNull final BankAccountId bankAccountId)
+	{
+		return InterfaceWrapperHelper.load(bankAccountId, I_C_BP_BankAccount.class);
+	}
+
 }

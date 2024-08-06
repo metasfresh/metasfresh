@@ -23,6 +23,7 @@ package de.metas.payment.esr.api.impl;
  * #L%
  */
 
+import de.metas.banking.BankAccountId;
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.currency.Amount;
 import de.metas.document.refid.api.IReferenceNoDAO;
@@ -56,7 +57,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -107,27 +107,27 @@ public class ESRBL implements IESRBL
 		linkEsrStringsToInvoiceRecord(invoiceReferenceString, renderedCodeStr, invoiceRecord);
 	}
 
-	private boolean isEligibleForESRPaymentRequestCreation(I_C_Invoice invoice) {return !isReversal(invoice) && (isPurchaseCreditMemo(invoice) || isSalesInvoice(invoice));}
+	private boolean isEligibleForESRPaymentRequestCreation(final I_C_Invoice invoice) {return !isReversal(invoice) && (isPurchaseCreditMemo(invoice) || isSalesInvoice(invoice));}
 
-	private boolean isPurchaseCreditMemo(I_C_Invoice invoice)
+	private boolean isPurchaseCreditMemo(final I_C_Invoice invoice)
 	{
 		return !invoice.isSOTrx() && isCreditMemo(invoice);
 	}
 
-	private boolean isSalesInvoice(I_C_Invoice invoice) {return invoice.isSOTrx() && !isCreditMemo(invoice);}
+	private boolean isSalesInvoice(final I_C_Invoice invoice) {return invoice.isSOTrx() && !isCreditMemo(invoice);}
 
-	private boolean isCreditMemo(I_C_Invoice invoice) {return invoiceBL.isCreditMemo(invoice);}
+	private boolean isCreditMemo(final I_C_Invoice invoice) {return invoiceBL.isCreditMemo(invoice);}
 
-	private boolean isReversal(I_C_Invoice invoice) {return invoice.getReversal_ID() > 0;}
+	private boolean isReversal(final I_C_Invoice invoice) {return invoice.getReversal_ID() > 0;}
 
 
 	@Nullable
 	private I_C_BP_BankAccount retrieveEsrBankAccount(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		// check if we have a bank account in invoice already
-		Optional<I_C_BP_BankAccount> optionalBankAccount = retrieveEsrInvoiceCadidateBankAccountIfExists(invoiceRecord);
+		final I_C_BP_BankAccount bankAccount = retrieveEsrInvoiceCandidateBankAccountOrNull(invoiceRecord);
 
-		if (optionalBankAccount.isEmpty())
+		if (bankAccount == null)
 		{
 			// get the account number for the org of the invoice
 			final int orgID = invoiceRecord.getAD_Org_ID();
@@ -140,16 +140,17 @@ public class ESRBL implements IESRBL
 		}
 		else
 		{
-			return optionalBankAccount.get();
+			return bankAccount;
 		}
 
 	}
 
 
-	private Optional<I_C_BP_BankAccount> retrieveEsrInvoiceCadidateBankAccountIfExists(@NonNull final I_C_Invoice invoiceRecord)
+	@Nullable
+	private I_C_BP_BankAccount retrieveEsrInvoiceCandidateBankAccountOrNull(@NonNull final I_C_Invoice invoiceRecord)
 	{
-		final I_C_BP_BankAccount orgBankAccount = (I_C_BP_BankAccount)invoiceRecord.getOrg_BP_Account();
-		return Optional.ofNullable(orgBankAccount);
+		final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(invoiceRecord.getOrg_BP_Account_ID());
+		return bankAccountId != null ? esrBankAccountDAO.getById(bankAccountId) : null;
 	}
 
 	/**
