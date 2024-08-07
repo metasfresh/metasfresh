@@ -2684,7 +2684,6 @@ public class FlatrateBL implements IFlatrateBL
 		flatrateDAO.reverseDefinitiveInvoice(contractIds);
 	}
 
-	// TODO finish this method and use it every time we compute prices and amounts for modular contract logs and interests!
 	@Override
 	@NonNull
 	public CurrencyPrecision getPricePrecisionForModularContract(@NonNull final FlatrateTermId modularContractId)
