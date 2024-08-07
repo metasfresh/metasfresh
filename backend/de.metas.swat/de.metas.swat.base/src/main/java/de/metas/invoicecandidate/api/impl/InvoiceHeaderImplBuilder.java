@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.auction.AuctionId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
@@ -121,6 +122,8 @@ public class InvoiceHeaderImplBuilder
 
 	private int auctionId;
 
+	private int orgBankAccountId;
+
 	private int C_Harvesting_Calendar_ID = REPO_ID_UNSET_VALUE;
 	private int Harvesting_Year_ID = REPO_ID_UNSET_VALUE;
 	private int M_Warehouse_ID = REPO_ID_UNSET_VALUE;
@@ -192,6 +195,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setYearId(YearId.ofRepoIdOrNull(getHarvesting_Year_ID()));
 		invoiceHeader.setWarehouseId(WarehouseId.ofRepoIdOrNull(getM_Warehouse_ID()));
 		invoiceHeader.setAuctionId(AuctionId.ofRepoIdOrNull(auctionId));
+		invoiceHeader.setOrgBankAccountId(BankAccountId.ofRepoIdOrNull(getOrgBankAccount_ID()));
 		invoiceHeader.setCreditedInvoiceReinvoicable(isCreditedInvoiceReinvoicable());
 
 		return invoiceHeader;
@@ -794,5 +798,15 @@ public class InvoiceHeaderImplBuilder
 		{
 			M_Warehouse_ID = -1;
 		}
+	}
+
+	public void setOrgBankAccountId(final int orgBankAccountId)
+	{
+		this.orgBankAccountId = checkOverrideID("Org_BP_Account_ID", this.orgBankAccountId, orgBankAccountId);
+	}
+
+	public int getOrgBankAccount_ID()
+	{
+		return orgBankAccountId;
 	}
 }

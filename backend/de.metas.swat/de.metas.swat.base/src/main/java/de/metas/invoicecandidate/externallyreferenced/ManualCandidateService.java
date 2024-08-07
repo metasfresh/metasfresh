@@ -165,6 +165,8 @@ public class ManualCandidateService
 		candidate.descriptionBottom(newIC.getDescriptionBottom());
 		candidate.userInChargeId(newIC.getUserInChargeId());
 
+		candidate.bankAccountId(newIC.getBankAccountId());
+
 		return candidate.build();
 
 	}

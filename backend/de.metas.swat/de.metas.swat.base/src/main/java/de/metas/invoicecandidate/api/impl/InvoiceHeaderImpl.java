@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.auction.AuctionId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.CalendarId;
@@ -149,6 +150,9 @@ import java.util.Optional;
 
 	@Getter @Setter @Nullable
 	private AuctionId auctionId;
+
+	@Getter @Setter @Nullable
+	private BankAccountId orgBankAccountId;
 
 	/* package */ InvoiceHeaderImpl()
 	{
