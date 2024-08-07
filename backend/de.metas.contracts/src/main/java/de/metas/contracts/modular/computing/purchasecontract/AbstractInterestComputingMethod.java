@@ -38,6 +38,7 @@ import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
@@ -139,7 +140,9 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 
 		splitLogsIfNeeded(reconciledAmount.get(), modularContractLogEntryIdAtomicReference.get(), qty);
 
-		final Money price = qty.isZero() ? Money.zero(request.getCurrencyId()) : amount.divide(qty.toBigDecimal(), request.getPricePrecision());
+		// Use a high precision when dividing, so we avoid errors in the future invoice
+		final CurrencyPrecision pricePrecision = CurrencyPrecision.TEN;
+		final Money price = qty.isZero() ? Money.zero(request.getCurrencyId()) : amount.divide(qty.toBigDecimal(),pricePrecision);
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())

@@ -246,7 +246,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 		invoiceCandidate.setModCntr_Module_ID(moduleConfig.getId().getModularContractModuleId().getRepoId());
 		invoiceCandBL.setPaymentTermIfMissing(invoiceCandidate);
 
-		setPriceAndQty(invoiceCandidate, computingResponse, createInvoiceCandidateRequest);
+		setPriceAndQty(invoiceCandidate, computingResponse);
 
 		processModCntrLogs(computingResponse, invoiceCandidate);
 
@@ -264,12 +264,12 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 
 	private void setPriceAndQty(
 			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
-			@NonNull final ComputingResponse computingResponse,
-			@NonNull final CreateInvoiceCandidateRequest request)
+			@NonNull final ComputingResponse computingResponse)
 	{
-		final CurrencyPrecision precision = flatrateBL.getPricePrecisionForModularContract(FlatrateTermId.ofRepoId(request.getModularContract().getC_Flatrate_Term_ID()));
+		// Use a high precision when dividing, so we avoid errors in the future invoice
+		final CurrencyPrecision pricePrecision = CurrencyPrecision.TEN;
 
-		final ProductPrice productPrice = computingResponse.getPrice().round(precision);
+		final ProductPrice productPrice = computingResponse.getPrice().round(pricePrecision);
 
 		invoiceCandidate.setC_Currency_ID(CurrencyId.toRepoId(productPrice.getCurrencyId()));
 		invoiceCandidate.setPriceActual(productPrice.toBigDecimal());
@@ -296,14 +296,12 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 
 		final IComputingMethodHandler computingMethodHandler = modularContractComputingMethods.getApplicableHandlerFor(computingMethodType);
 
-		final CurrencyPrecision currencyPrecision = flatrateBL.getPricePrecisionForModularContract(flatrateTermId);
 		final ComputingRequest request = ComputingRequest.builder()
 				.flatrateTermId(flatrateTermId)
 				.productId(moduleConfig.getProductId())
 				.currencyId(currencyId)
 				.lockOwner(createInvoiceCandidateRequest.getLockOwner())
 				.moduleConfig(moduleConfig)
-				.pricePrecision(currencyPrecision)
 				.build();
 
 		final ComputingResponse response = computingMethodHandler.compute(request);
