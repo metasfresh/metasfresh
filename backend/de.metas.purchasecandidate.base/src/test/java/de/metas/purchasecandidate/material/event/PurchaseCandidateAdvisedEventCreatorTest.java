@@ -8,8 +8,8 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.pricing.conditions.BreakValueType;
 import de.metas.product.ProductId;
@@ -24,11 +24,11 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_DiscountSchema;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
-import java.util.Optional;
+import java.util.List;
 
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -61,7 +61,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 {
 	private ProductPlanning productPlanning;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -106,15 +106,15 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 				new VendorProductInfoService(new BPartnerBL(new UserRepository())));
 
 		// invoke the method under test
-		final Optional<PurchaseCandidateAdvisedEvent> purchaseAdvisedEvent = purchaseCandidateAdvisedEventCreator
-				.createPurchaseAdvisedEvent(
+		final List<PurchaseCandidateAdvisedEvent> purchaseAdvisedEvents = purchaseCandidateAdvisedEventCreator
+				.createAdvisedEvents(
 						supplyRequiredDescriptor,
 						context);
 
-		assertThat(purchaseAdvisedEvent).isPresent();
-		assertThat(purchaseAdvisedEvent.get().getProductPlanningId()).isEqualTo(productPlanning.getIdNotNull().getRepoId());
-		assertThat(purchaseAdvisedEvent.get().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
-		assertThat(purchaseAdvisedEvent.get().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
+		assertThat(purchaseAdvisedEvents).hasSize(1);
+		assertThat(purchaseAdvisedEvents.get(0).getProductPlanningId()).isEqualTo(productPlanning.getIdNotNull().getRepoId());
+		assertThat(purchaseAdvisedEvents.get(0).getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
+		assertThat(purchaseAdvisedEvents.get(0).getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
 	}
 
 	static MaterialDescriptor createMaterialDescriptor()

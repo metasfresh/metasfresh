@@ -1,18 +1,22 @@
 package de.metas.purchasecandidate.material.event;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.event.SupplyRequiredAdvisor;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.util.Loggables;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 /*
@@ -37,27 +41,20 @@ import java.util.Optional;
  * #L%
  */
 
-@Service
-public class PurchaseCandidateAdvisedEventCreator
+@Component
+@RequiredArgsConstructor
+public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvisor
 {
-	private final PurchaseOrderDemandMatcher purchaseOrderDemandMatcher;
-	private final VendorProductInfoService vendorProductInfoService;
+	@NonNull private final PurchaseOrderDemandMatcher purchaseOrderDemandMatcher;
+	@NonNull private final VendorProductInfoService vendorProductInfoService;
 
-	public PurchaseCandidateAdvisedEventCreator(
-			@NonNull final PurchaseOrderDemandMatcher purchaseOrderDemandMatcher,
-			@NonNull final VendorProductInfoService vendorProductInfoService)
-	{
-		this.vendorProductInfoService = vendorProductInfoService;
-		this.purchaseOrderDemandMatcher = purchaseOrderDemandMatcher;
-	}
-
-	public Optional<PurchaseCandidateAdvisedEvent> createPurchaseAdvisedEvent(
+	public List<PurchaseCandidateAdvisedEvent> createAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final MaterialPlanningContext context)
 	{
 		if (!purchaseOrderDemandMatcher.matches(context))
 		{
-			return Optional.empty();
+			return ImmutableList.of();
 		}
 
 		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getProductId());
@@ -67,7 +64,7 @@ public class PurchaseCandidateAdvisedEventCreator
 		if (!defaultVendorProductInfo.isPresent())
 		{
 			Loggables.addLog("Found no VendorProductInfo for productId={} and orgId={}", productId.getRepoId(), orgId.getRepoId());
-			return Optional.empty();
+			return ImmutableList.of();
 		}
 
 		final ProductPlanning productPlanning = context.getProductPlanning();
@@ -81,6 +78,6 @@ public class PurchaseCandidateAdvisedEventCreator
 				.build();
 
 		Loggables.addLog("Created PurchaseCandidateAdvisedEvent");
-		return Optional.of(event);
+		return ImmutableList.of(event);
 	}
 }

@@ -194,6 +194,20 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final int productRepoId,
 			final int attributeSetInstanceRepoId)
 	{
+		final OrgId orgId = OrgId.ofRepoIdOrAny(orgRepoId);
+		final ProductId productId = ProductId.ofRepoId(productRepoId);
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstanceRepoId);
+		return findPlantIfExists(orgId, warehouse, productId, attributeSetInstanceId)
+				.orElseThrow(() -> new NoPlantForWarehouseException(orgId, WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()), productId));
+	}
+
+	@Override
+	public Optional<ResourceId> findPlantIfExists(
+			final OrgId orgId,
+			final I_M_Warehouse warehouse,
+			final ProductId productId,
+			final AttributeSetInstanceId attributeSetInstanceId)
+	{
 		//
 		// First: get the plant directly from Warehouse
 		if (warehouse != null)
@@ -201,21 +215,19 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final ResourceId plantId = ResourceId.ofRepoIdOrNull(warehouse.getPP_Plant_ID());
 			if (plantId != null)
 			{
-				return plantId;
+				return Optional.of(plantId);
 			}
 		}
 
 		//
 		// Try searching for a product planning file and get the warehouse from there
 		{
-			final OrgId orgId = OrgId.ofRepoIdOrAny(orgRepoId);
 			final WarehouseId warehouseId = warehouse != null ? WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()) : null;
-			final ProductId productId = ProductId.ofRepoId(productRepoId);
 			final IQueryBuilder<I_PP_Product_Planning> queryBuilder = toSql(ProductPlanningQuery.builder()
 					.orgId(orgId)
 					.warehouseId(warehouseId)
 					.plantId(null) // any plant
-					.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstanceRepoId))
+					.attributeSetInstanceId(attributeSetInstanceId)
 					.productId(productId)
 					.build());
 
@@ -229,16 +241,16 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 					.collect(ImmutableList.toImmutableList());
 			if (plantIds.isEmpty())
 			{
-				throw new NoPlantForWarehouseException(orgId, warehouseId, productId);
+				return Optional.empty();
 			}
 			else if (plantIds.size() > 1)
 			{
 				// we found more than one Plant => consider it as no plant was found
-				throw new NoPlantForWarehouseException(orgId, warehouseId, productId);
+				return Optional.empty();
 			}
 			else
 			{
-				return plantIds.get(0);
+				return Optional.of(plantIds.get(0));
 			}
 		}
 	}
@@ -272,7 +284,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		{
 			sqlQueryBuilder.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_Line_ID, query.getMaturingConfigLineId());
 		}
-		
+
 		// Filter by ASI
 		sqlQueryBuilder.filter(createAttributesFilter(query.getAttributeSetInstanceId()));
 

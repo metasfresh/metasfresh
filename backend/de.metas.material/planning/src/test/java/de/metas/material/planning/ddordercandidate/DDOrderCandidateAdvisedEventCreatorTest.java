@@ -58,7 +58,7 @@ class DDOrderCandidateAdvisedEventCreatorTest
 		demandMatcher = Mockito.mock(DDOrderCandidateDemandMatcher.class);
 		//ddOrderCandidateDataFactory = Mockito.mock(DDOrderCandidateDataFactory.class);
 		ddOrderCandidateDataFactory = new DDOrderCandidateDataFactory(new DistributionNetworkRepository(), new ReplenishInfoRepository());
-		this.advisedEventCreator = new DDOrderCandidateAdvisedEventCreator(demandMatcher, ddOrderCandidateDataFactory);
+		advisedEventCreator = new DDOrderCandidateAdvisedEventCreator(demandMatcher, ddOrderCandidateDataFactory);
 
 		createMasterData();
 	}
@@ -160,7 +160,7 @@ class DDOrderCandidateAdvisedEventCreatorTest
 				.build();
 
 		Mockito.when(demandMatcher.matches(Mockito.any(MaterialPlanningContext.class))).thenReturn(true);
-		final List<DDOrderCandidateAdvisedEvent> events = advisedEventCreator.createDDOrderCandidateAdvisedEvents(supplyRequiredDescriptor, context);
+		final List<DDOrderCandidateAdvisedEvent> events = advisedEventCreator.createAdvisedEvents(supplyRequiredDescriptor, context);
 
 		assertThat(events).hasSize(1);
 
