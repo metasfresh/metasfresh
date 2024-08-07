@@ -24,6 +24,7 @@ package de.metas.invoicecandidate.externallyreferenced;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.auction.AuctionId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
@@ -200,6 +201,9 @@ public class InvoiceCandidate
 	@Nullable
 	private final FlatrateTermId flatrateTermId;
 
+	@Nullable
+	private final BankAccountId bankAccountId;
+
 	@Builder
 	private InvoiceCandidate(
 			@NonNull final OrgId orgId,
@@ -241,7 +245,8 @@ public class InvoiceCandidate
 			final boolean isManual,
 			final boolean processed,
 			final boolean isActive,
-			@Nullable final AuctionId auctionId)
+			@Nullable final AuctionId auctionId,
+			@Nullable final BankAccountId bankAccountId)
 	{
 		this.orgId = orgId;
 		this.id = id;
@@ -283,6 +288,7 @@ public class InvoiceCandidate
 		this.flatrateTermId = flatrateTermId;
 		this.processed = processed;
 		this.isActive = isActive;
+		this.bankAccountId = bankAccountId;
 
 		final CurrencyId currencyId = CollectionUtils
 				.extractSingleElement(

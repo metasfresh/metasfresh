@@ -152,5 +152,8 @@ public interface IInvoiceHeader
 	@Nullable
 	AuctionId getAuctionId();
 
+	@Nullable
+	BankAccountId getOrgBankAccountId();
+
 	boolean isCreditedInvoiceReinvoicable();
 }

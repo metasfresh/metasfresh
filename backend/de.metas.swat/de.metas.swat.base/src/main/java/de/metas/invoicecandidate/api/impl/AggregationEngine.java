@@ -473,7 +473,7 @@ public final class AggregationEngine
 			invoiceHeader.setDateAcct(dateAcct);
 
 			final LocalDate overrideDueDate = computeOverrideDueDate(icRecord);
-			logger.debug("Setting invoiceHeader's OverrideDueDate={}", dateAcct);
+			logger.debug("Setting invoiceHeader's OverrideDueDate={}", overrideDueDate);
 			invoiceHeader.setOverrideDueDate(overrideDueDate);
 
 			// #367 Invoice candidates invoicing Pricelist not found
@@ -575,6 +575,7 @@ public final class AggregationEngine
 			invoiceHeader.setHarvesting_Year_ID(icRecord.getHarvesting_Year_ID());
 			invoiceHeader.setM_Warehouse_ID(icRecord.getM_Warehouse_ID());
 			invoiceHeader.setAuctionId(icRecord.getC_Auction_ID());
+			invoiceHeader.setOrgBankAccountId(icRecord.getOrg_BP_Account_ID());
 		}
 		catch (final RuntimeException rte)
 		{

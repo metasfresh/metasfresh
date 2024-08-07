@@ -41,12 +41,19 @@ Feature: create invoice candidate via API
     And metasfresh contains AD_Users:
       | AD_User_ID.Identifier | OPT.C_BPartner_ID.Identifier | Name         | OPT.C_BPartner_Locations.Identifier |
       | IC_User_05012023      | IC_Customer_05012023         | user1_1_name | IC_Customer_Location_05012023       |
+    And load C_BPartner:
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | orgBPartner              | 2155894           |
+    And metasfresh contains C_BP_BankAccount
+      | Identifier          | C_BPartner_ID.Identifier | C_Currency.ISO_Code |
+      | org_bp_bank_account | orgBPartner              | EUR                 |
     And metasfresh contains S_ExternalReference:
-      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference     | Type             | OPT.M_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier |
-      | productExternalRef                | Other          | productExternalRef    | Product          | product_05012023            |                              |                                       |                           |
-      | bpartnerExternalRef               | Other          | bpartnerExternalRef   | BPartner         |                             | IC_Customer_05012023         |                                       |                           |
-      | bpLocationExternalRef             | Other          | bpLocationExternalRef | BPartnerLocation |                             |                              | IC_Customer_Location_05012023         |                           |
-      | userExternalRef                   | Other          | userExternalRef       | UserID           |                             |                              |                                       | IC_User_05012023          |
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference      | Type             | OPT.M_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier |
+      | productExternalRef                | Other          | productExternalRef     | Product          | product_05012023            |                              |                                       |                           |                                    |
+      | bpartnerExternalRef               | Other          | bpartnerExternalRef    | BPartner         |                             | IC_Customer_05012023         |                                       |                           |                                    |
+      | bpLocationExternalRef             | Other          | bpLocationExternalRef  | BPartnerLocation |                             |                              | IC_Customer_Location_05012023         |                           |                                    |
+      | userExternalRef                   | Other          | userExternalRef        | UserID           |                             |                              |                                       | IC_User_05012023          |                                    |
+      | bankAccountExternalRef            | Other          | bankAccountExternalRef | BankAccount      |                             |                              |                                       |                           | org_bp_bank_account                |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/invoices/createCandidates' and fulfills with '200' status code
 """
@@ -56,6 +63,7 @@ Feature: create invoice candidate via API
   "billContactIdentifier": "ext-Other-userExternalRef",
   "billLocationIdentifier": "ext-Other-bpLocationExternalRef",
   "billPartnerIdentifier": "ext-Other-bpartnerExternalRef",
+  "bankAccountIdentifier": "ext-Other-bankAccountExternalRef",
   "dateOrdered": "2023-01-05",
   "discountOverride": 0,
   "externalHeaderId": "IC_Header_05012023",
@@ -117,8 +125,8 @@ Feature: create invoice candidate via API
       | invoice_1               | i_c_1                             |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus |
-      | invoice_1               | IC_Customer_05012023     | IC_Customer_Location_05012023     | testICByExtRef  | 30 Tage netto | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.Org_BP_Account_ID.Identifier |
+      | invoice_1               | IC_Customer_05012023     | IC_Customer_Location_05012023     | testICByExtRef  | 30 Tage netto | true      | CO        | org_bp_bank_account              |
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
