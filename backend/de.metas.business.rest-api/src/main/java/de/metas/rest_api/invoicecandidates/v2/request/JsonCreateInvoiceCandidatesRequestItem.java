@@ -41,6 +41,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.BANK_ACCOUNT_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
@@ -82,6 +83,10 @@ public class JsonCreateInvoiceCandidatesRequestItem
 	@Schema(required = true, //
 			description = PRODUCT_IDENTIFIER_DOC)
 	String productIdentifier;
+
+	@Schema(required = false, //
+			description = BANK_ACCOUNT_IDENTIFIER_DOC)
+	String bankAccountIdentifier;
 
 	@Schema(required = false, //
 			description = "Unit of measurement for the ordered, delivered and invoiced quantites\n"
@@ -147,6 +152,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 			@JsonProperty("billLocationIdentifier") @Nullable final String billLocationIdentifier,
 			@JsonProperty("billContactIdentifier") @Nullable final String billContactIdentifier,
 			@JsonProperty("productIdentifier") @NonNull final String productIdentifier,
+			@JsonProperty("bankAccountIdentifier") @Nullable final String bankAccountIdentifier,
 			@JsonProperty("soTrx") @NonNull final JsonSOTrx soTrx,
 			@JsonProperty("invoiceDocType") @Nullable final JsonDocTypeInfo invoiceDocType,
 			@JsonProperty("invoiceRuleOverride") @Nullable final JsonInvoiceRule invoiceRuleOverride,
@@ -168,6 +174,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 		this.billLocationIdentifier = billLocationIdentifier;
 		this.billContactIdentifier = billContactIdentifier;
 		this.productIdentifier = productIdentifier;
+		this.bankAccountIdentifier = bankAccountIdentifier;
 		this.soTrx = soTrx;
 		this.invoiceDocType = invoiceDocType;
 		this.invoiceRuleOverride = invoiceRuleOverride;

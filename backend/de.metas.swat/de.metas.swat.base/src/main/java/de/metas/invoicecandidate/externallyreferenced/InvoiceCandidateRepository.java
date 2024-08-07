@@ -24,6 +24,7 @@ package de.metas.invoicecandidate.externallyreferenced;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.auction.AuctionId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -201,6 +202,8 @@ public class InvoiceCandidateRepository
 		}
 
 		icRecord.setC_Activity_ID(ActivityId.toRepoId(ic.getActivityId()));
+
+		icRecord.setOrg_BP_Account_ID(BankAccountId.toRepoId(ic.getBankAccountId()));
 
 		saveRecord(icRecord);
 		final InvoiceCandidateId persistedInvoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
