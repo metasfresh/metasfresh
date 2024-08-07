@@ -82,7 +82,7 @@ Feature: Production + Distribution material dispo scenarios
     When update existing PP_Product_Plannings
       | Identifier           | IsCreatePlan |
       | bom_product_planning | N            |
-      | component_planning   | Y            |
+      | component_planning   | N            |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  | OPT.M_Warehouse_ID.Identifier |
       | SO         | true    | customer                 | 2021-04-17  | 2021-04-16T21:00:00Z | production_WH                 |
@@ -124,7 +124,7 @@ Feature: Production + Distribution material dispo scenarios
     When update existing PP_Product_Plannings
       | Identifier           | IsCreatePlan |
       | bom_product_planning | Y            |
-      | component_planning   | Y            |
+      | component_planning   | N            |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  | OPT.M_Warehouse_ID.Identifier |
       | SO         | true    | customer                 | 2021-04-17  | 2021-04-16T21:00:00Z | production_WH                 |
@@ -184,7 +184,7 @@ Feature: Production + Distribution material dispo scenarios
     When update existing PP_Product_Plannings
       | Identifier           | IsCreatePlan |
       | bom_product_planning | N            |
-      | component_planning   | Y            |
+      | component_planning   | N            |
     And metasfresh initially has this MD_Candidate data
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID  |
       | stock1     | INVENTORY_UP      |                           | bom_product  | 2021-04-01T21:00:00Z | 3   | 3                      | production_WH   |
