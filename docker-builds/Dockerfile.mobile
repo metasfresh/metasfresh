@@ -1,6 +1,4 @@
-FROM node:20 as build
-
-ENV NODE_OPTIONS=--openssl-legacy-provider
+FROM node:14 as build
 
 RUN npm install -g webpack webpack-cli
 
