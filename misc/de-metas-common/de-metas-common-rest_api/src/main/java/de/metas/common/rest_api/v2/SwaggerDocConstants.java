@@ -113,4 +113,10 @@ public class SwaggerDocConstants
 			+ "* a plain `<M_Warehouse_ID>`\n"
 			+ "* or something like `val-<M_Warehouse.Value>`\n"
 			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>` where `<ExternalReference>` translates to an identifier of the warehouse within the given `<ExternalSystem>`";
+
+	public static final String BANK_ACCOUNT_IDENTIFIER_DOC = "Identifier of the C_BP_BankAccount in question. Can be\n"
+			+ "* a plain `<C_BP_BankAccount_ID>`\n"
+			+ "* or `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n"
+			+ "* or `iban-<IBAN>`\n"
+			+ "* or `qr_iban-<QR-IBAN>`\n";
 }

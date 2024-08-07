@@ -1528,6 +1528,33 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public org.compiere.model.I_C_BP_BankAccount getOrg_BP_Account()
+	{
+		return get_ValueAsPO(COLUMNNAME_Org_BP_Account_ID, org.compiere.model.I_C_BP_BankAccount.class);
+	}
+
+	@Override
+	public void setOrg_BP_Account(final org.compiere.model.I_C_BP_BankAccount Org_BP_Account)
+	{
+		set_ValueFromPO(COLUMNNAME_Org_BP_Account_ID, org.compiere.model.I_C_BP_BankAccount.class, Org_BP_Account);
+	}
+
+	@Override
+	public void setOrg_BP_Account_ID (final int Org_BP_Account_ID)
+	{
+		if (Org_BP_Account_ID < 1)
+			set_Value (COLUMNNAME_Org_BP_Account_ID, null);
+		else
+			set_Value (COLUMNNAME_Org_BP_Account_ID, Org_BP_Account_ID);
+	}
+
+	@Override
+	public int getOrg_BP_Account_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Org_BP_Account_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_C_Invoice getRef_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_Ref_Invoice_ID, org.compiere.model.I_C_Invoice.class);
