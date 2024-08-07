@@ -248,7 +248,8 @@ public class InterestComputationCommand
 		final Percent bonusInterestRate = saveSubtractedValueRequest.getBonusInterestRate();
 
 		final long interestDays = interestComputationRequest.getBonusAndInterestTimeInterval().getBonusInterestDays();
-		final CurrencyPrecision pricePrecision = modularContractLogService.getPricePrecision(shippingNotification.getShippingNotificationEntry().getId());
+		// Use a high precision when dividing, so we avoid errors in the future invoice
+		final CurrencyPrecision pricePrecision = CurrencyPrecision.TEN;
 
 		final BigDecimal bonusAmountAsBD = bonusInterestRate.computePercentageOf(shippingNotification.getOpenAmount().toBigDecimal(),
 																				 pricePrecision.toInt())
@@ -348,7 +349,8 @@ public class InterestComputationCommand
 				.stream()
 				.map(interestLog -> {
 					final BigDecimal interestScore = interestLog.getInterestScoreEnsuringCurrency(request.getInterestToDistribute().getCurrencyId());
-					final CurrencyPrecision pricePrecision = modularContractLogService.getPricePrecision(interestLog.getShippingNotificationLogId());
+					// Use a high precision when dividing, so we avoid errors in the future invoice
+					final CurrencyPrecision pricePrecision = CurrencyPrecision.TEN;
 					final BigDecimal finalInterest = request.getInterestToDistribute().toBigDecimal()
 							.multiply(interestScore)
 							.divide(result.getTotalInterestScore(), pricePrecision.toInt(), RoundingMode.HALF_UP);

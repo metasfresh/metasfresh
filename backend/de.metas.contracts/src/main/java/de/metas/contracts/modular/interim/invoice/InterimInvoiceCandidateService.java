@@ -29,6 +29,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
@@ -90,6 +91,7 @@ public class InterimInvoiceCandidateService
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
 	@NonNull private final ManualCandidateService manualCandidateService = SpringContextHolder.instance.getBean(ManualCandidateService.class);
 	@NonNull private final InvoiceCandidateRepository invoiceCandidateRepository = SpringContextHolder.instance.getBean(InvoiceCandidateRepository.class);
@@ -169,7 +171,7 @@ public class InterimInvoiceCandidateService
 		final ModularContractLogEntry modularContractLogEntry = interimLogsToInvoice.getFirstEntry();
 
 		final ProductPrice productPrice = Check.assumeNotNull(modularContractLogEntry.getPriceActual(), "productPrice shouldn't be null");
-		final CurrencyPrecision currencyPrecision = modularContractLogService.getPricePrecision(modularContractLogEntry.getId());
+		final CurrencyPrecision currencyPrecision = flatrateBL.getPricePrecisionForModularContract(flatrateTermId);
 		final ProductPrice productPriceToInvoice = productPrice.convertToUom(stockUOM, currencyPrecision, uomConversionBL);
 
 		final TaxCategoryId taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(ContractSpecificPriceRequest.builder()

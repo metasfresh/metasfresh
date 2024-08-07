@@ -38,7 +38,7 @@ import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.ICurrencyBL;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -69,7 +69,6 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	@NonNull private final ShippingNotificationRepository shippingNotificationRepository;
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final MoneyService moneyService;
@@ -172,10 +171,11 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 		final Quantity qtyLeft = interimLogQty.subtract(shippingNotificationQty).toZeroIfNegative();
 
 		final Quantity qtyNewLog = qtyLeft.isZero()? Quantitys.of(BigDecimal.ONE, interimLogQtyUomId) : qtyLeft;
+		final CurrencyPrecision pricePrecision = flatrateBL.getPricePrecisionForModularContract(modularContractLogEntry.getContractId());
 		final ProductPrice priceActualNewLog = ProductPrice.builder()
 				.productId(modularContractLogEntry.getProductId())
 				.uomId(interimLogQtyUomId)
-				.money(amountNewLog.divide(qtyNewLog.toBigDecimal(), currencyBL.getCostingPrecision(amountNewLog.getCurrencyId())))
+				.money(amountNewLog.divide(qtyNewLog.toBigDecimal(), pricePrecision))
 				.build();
 
 
@@ -190,7 +190,7 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 		final ProductPrice priceActualUpdateLog = ProductPrice.builder()
 				.productId(modularContractLogEntry.getProductId())
 				.uomId(interimLogQtyUomId)
-				.money(reconciledAmountInInterimContractCurrencyWithSignApplied.divide(shippingNotificationQty.toBigDecimal(), currencyBL.getCostingPrecision(reconciledAmountInInterimContractCurrencyWithSignApplied.getCurrencyId())))
+				.money(reconciledAmountInInterimContractCurrencyWithSignApplied.divide(shippingNotificationQty.toBigDecimal(), pricePrecision ))
 				.build();
 
 		final ModularContractLogEntry interimLogEntryToUpdate = modularContractLogEntry.toBuilder()
