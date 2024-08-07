@@ -88,6 +88,22 @@ public class DD_Order_Candidate_StepDef
 					+ "\n\tcandidate=" + candidate);
 		}
 
+		final BigDecimal qtyProcessed = row.getAsOptionalBigDecimal("QtyProcessed").orElse(null);
+		if (qtyProcessed != null && qtyProcessed.compareTo(candidate.getQtyProcessed().toBigDecimal()) != 0)
+		{
+			return ItemProvider.ProviderResult.resultWasNotFound("qtyProcessed not matching, expected " + qtyProcessed + " but found " + candidate.getQtyProcessed().toBigDecimal()
+					+ "\n\trow=" + row
+					+ "\n\tcandidate=" + candidate);
+		}
+
+		final BigDecimal qtyToProcess = row.getAsOptionalBigDecimal("QtyToProcess").orElse(null);
+		if (qtyToProcess != null && qtyToProcess.compareTo(candidate.getQtyToProcess().toBigDecimal()) != 0)
+		{
+			return ItemProvider.ProviderResult.resultWasNotFound("qtyToProcess not matching, expected " + qtyToProcess + " but found " + candidate.getQtyToProcess().toBigDecimal()
+					+ "\n\trow=" + row
+					+ "\n\tcandidate=" + candidate);
+		}
+
 		final Boolean isSimulated = row.getAsOptionalBoolean("IsSimulated").toBooleanOrNull();
 		if (isSimulated != null && isSimulated != candidate.isSimulated())
 		{
