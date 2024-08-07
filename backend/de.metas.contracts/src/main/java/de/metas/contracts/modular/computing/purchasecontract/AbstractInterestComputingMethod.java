@@ -38,7 +38,6 @@ import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
@@ -74,7 +73,6 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
@@ -141,8 +139,7 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 
 		splitLogsIfNeeded(reconciledAmount.get(), modularContractLogEntryIdAtomicReference.get(), qty);
 
-		// TODO get pricelist precision
-		final Money price = qty.isZero() ? Money.zero(request.getCurrencyId()) : amount.divide(qty.toBigDecimal(), currencyBL.getStdPrecision(request.getCurrencyId()));
+		final Money price = qty.isZero() ? Money.zero(request.getCurrencyId()) : amount.divide(qty.toBigDecimal(), request.getPricePrecision());
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())

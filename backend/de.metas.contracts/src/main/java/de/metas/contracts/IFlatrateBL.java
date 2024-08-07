@@ -128,7 +128,8 @@ public interface IFlatrateBL extends ISingletonService
 	void reverseDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
 
 	// TODO finish this method and use it every time we compute prices and amounts for modular contract logs and interests!
-	CurrencyPrecision getCurrencyPrecisionForModularContract(@NonNull FlatrateTermId modularContractId);
+	@NonNull
+	CurrencyPrecision getPricePrecisionForModularContract(@NonNull FlatrateTermId modularContractId);
 
 	/**
 	 * term to extend

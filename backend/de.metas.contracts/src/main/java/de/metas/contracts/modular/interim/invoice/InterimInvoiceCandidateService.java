@@ -39,7 +39,7 @@ import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.currency.ICurrencyBL;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -89,7 +89,6 @@ public class InterimInvoiceCandidateService
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
 	@NonNull private final ManualCandidateService manualCandidateService = SpringContextHolder.instance.getBean(ManualCandidateService.class);
@@ -170,10 +169,8 @@ public class InterimInvoiceCandidateService
 		final ModularContractLogEntry modularContractLogEntry = interimLogsToInvoice.getFirstEntry();
 
 		final ProductPrice productPrice = Check.assumeNotNull(modularContractLogEntry.getPriceActual(), "productPrice shouldn't be null");
-		final ProductPrice productPriceToInvoice = productPrice.convertToUom(stockUOM,
-																			 currencyBL.getStdPrecision(productPrice.getCurrencyId()),
-																			 uomConversionBL
-		);
+		final CurrencyPrecision currencyPrecision = modularContractLogService.getPricePrecision(modularContractLogEntry.getId());
+		final ProductPrice productPriceToInvoice = productPrice.convertToUom(stockUOM, currencyPrecision, uomConversionBL);
 
 		final TaxCategoryId taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(ContractSpecificPriceRequest.builder()
 						.modularContractModuleId(modularContractLogEntry.getModularContractModuleId())

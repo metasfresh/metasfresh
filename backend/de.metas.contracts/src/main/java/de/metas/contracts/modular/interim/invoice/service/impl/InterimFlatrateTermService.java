@@ -25,16 +25,15 @@ package de.metas.contracts.modular.interim.invoice.service.impl;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.interim.invoice.command.InterimInvoiceFlatrateTermCreateCommand;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -51,7 +50,7 @@ public class InterimFlatrateTermService
 {
 	private final ModularContractSettingsRepository modularContractSettingsRepository;
 	private final ModularContractSettingsService modularContractSettingsService;
-	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IFlatrateBL flatrateBL = Services.get((IFlatrateBL.class));
 
 	private static final Logger logger = LogManager.getLogger(InterimFlatrateTermService.class);
 
@@ -72,7 +71,7 @@ public class InterimFlatrateTermService
 		final ModularContractSettings modularContractSettings = modularContractSettingsRepository.getByFlatrateTermId(flatrateTermId);
 		final ConditionsId interimConditionsId = modularContractSettingsService.retrieveFlatrateConditionId(modularContractSettings, TypeConditions.INTERIM_INVOICE);
 
-		final CurrencyPrecision currencyPrecision = currencyBL.getStdPrecision(CurrencyId.ofRepoId(modularFlatrateTermRecord.getC_Currency_ID()));
+		final CurrencyPrecision currencyPrecision = flatrateBL.getPricePrecisionForModularContract(flatrateTermId);
 
 		InterimInvoiceFlatrateTermCreateCommand.builder()
 				.modulareFlatrateTermId(flatrateTermId)

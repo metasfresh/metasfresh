@@ -24,8 +24,6 @@ package de.metas.contracts.finalinvoice.invoicecandidate;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
@@ -44,12 +42,10 @@ import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
-import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
@@ -63,10 +59,8 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.LockOwner;
 import de.metas.money.CurrencyId;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.service.IPriceListBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -88,12 +82,10 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_PriceList;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 import java.util.Iterator;
 import java.util.List;
 
@@ -109,10 +101,6 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
-	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	private final ModularContractSettingsService modularContractSettingsService = SpringContextHolder.instance.getBean(ModularContractSettingsService.class);
 	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
@@ -279,18 +267,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 			@NonNull final ComputingResponse computingResponse,
 			@NonNull final CreateInvoiceCandidateRequest request)
 	{
-		final I_C_Flatrate_Term contract = request.getModularContract();
-		final ZonedDateTime date = TimeUtil.asZonedDateTime(contract.getStartDate(), orgDAO.getTimeZone(OrgId.ofRepoId(contract.getAD_Org_ID())));
-		final ModularContractSettings settings = modularContractSettingsService.getByFlatrateTermId(FlatrateTermId.ofRepoId(contract.getC_Flatrate_Term_ID()));
-		final I_M_PriceList priceList = priceListBL.getCurrentPricelistOrNull(
-				request.getPricingSystemId(),
-				bPartnerDAO.getCountryId(BPartnerLocationId.ofRepoId(contract.getBill_BPartner_ID(), contract.getBill_Location_ID())),
-				date,
-				settings.getSoTrx()
-		);
-
-		final CurrencyPrecision currencyPrecision = currencyBL.getStdPrecision(computingResponse.getPrice().getCurrencyId());
-		final CurrencyPrecision precision = priceList != null ? CurrencyPrecision.ofInt(priceList.getPricePrecision()) : currencyPrecision;
+		final CurrencyPrecision precision = flatrateBL.getPricePrecisionForModularContract(FlatrateTermId.ofRepoId(request.getModularContract().getC_Flatrate_Term_ID()));
 
 		final ProductPrice productPrice = computingResponse.getPrice().round(precision);
 
@@ -318,12 +295,15 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 		final ComputingMethodType computingMethodType = moduleConfig.getComputingMethodType();
 
 		final IComputingMethodHandler computingMethodHandler = modularContractComputingMethods.getApplicableHandlerFor(computingMethodType);
+
+		final CurrencyPrecision currencyPrecision = flatrateBL.getPricePrecisionForModularContract(flatrateTermId);
 		final ComputingRequest request = ComputingRequest.builder()
 				.flatrateTermId(flatrateTermId)
 				.productId(moduleConfig.getProductId())
 				.currencyId(currencyId)
 				.lockOwner(createInvoiceCandidateRequest.getLockOwner())
 				.moduleConfig(moduleConfig)
+				.pricePrecision(currencyPrecision)
 				.build();
 
 		final ComputingResponse response = computingMethodHandler.compute(request);

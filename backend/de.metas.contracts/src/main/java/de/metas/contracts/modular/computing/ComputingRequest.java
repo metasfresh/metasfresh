@@ -25,6 +25,7 @@ package de.metas.contracts.modular.computing;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.lock.api.LockOwner;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
@@ -41,6 +42,7 @@ public class ComputingRequest
 	@NonNull CurrencyId currencyId;
 	@NonNull LockOwner lockOwner;
 	@NonNull ModuleConfig moduleConfig;
+	@NonNull CurrencyPrecision pricePrecision;
 
 	public ModularContractModuleId getModularContractModuleId() {return moduleConfig.getId().getModularContractModuleId();}
 

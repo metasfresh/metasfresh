@@ -35,7 +35,7 @@ import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
-import de.metas.currency.ICurrencyBL;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -76,7 +76,6 @@ public class InterimComputingMethod extends AbstractComputingMethodHandler
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	@NonNull private final ComputingMethodService computingMethodService;
 	@NonNull private final ModularContractProvider contractProvider;
@@ -167,9 +166,8 @@ public class InterimComputingMethod extends AbstractComputingMethodHandler
 		{
 			final ModularContractLogEntry modularContractLogEntry = logs.getFirstEntry();
 			final ProductPrice priceActual = Check.assumeNotNull(modularContractLogEntry.getPriceActual(), "productPrice shouldn't be null");
-			productPrice = priceActual.convertToUom(stockUOMId,
-															 currencyBL.getStdPrecision(priceActual.getCurrencyId()),
-															 uomConversionBL);
+			final CurrencyPrecision pricePrecision = flatrateBL.getPricePrecisionForModularContract(request.getFlatrateTermId());
+			productPrice = priceActual.convertToUom(stockUOMId, pricePrecision, uomConversionBL);
 
 		}
 

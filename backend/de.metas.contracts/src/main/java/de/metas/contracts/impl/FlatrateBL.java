@@ -2686,7 +2686,8 @@ public class FlatrateBL implements IFlatrateBL
 
 	// TODO finish this method and use it every time we compute prices and amounts for modular contract logs and interests!
 	@Override
-	public CurrencyPrecision getCurrencyPrecisionForModularContract(@NonNull final FlatrateTermId modularContractId)
+	@NonNull
+	public CurrencyPrecision getPricePrecisionForModularContract(@NonNull final FlatrateTermId modularContractId)
 	{
 		final I_C_Flatrate_Term term = getById(modularContractId);
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());

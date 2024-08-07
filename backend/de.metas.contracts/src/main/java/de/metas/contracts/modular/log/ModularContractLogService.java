@@ -31,6 +31,7 @@
  import de.metas.contracts.modular.ComputingMethodType;
  import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
  import de.metas.currency.CurrencyConversionContext;
+ import de.metas.currency.CurrencyPrecision;
  import de.metas.currency.ICurrencyBL;
  import de.metas.document.DocTypeId;
  import de.metas.document.IDocTypeBL;
@@ -354,5 +355,14 @@
 		 return currencyBL.createCurrencyConversionContext(conversionDate,
 														   logEntry.getClientAndOrgId().getClientId(),
 														   logEntry.getClientAndOrgId().getOrgId());
+	 }
+
+	 @NonNull
+	 public CurrencyPrecision getPricePrecision(@NonNull final ModularContractLogEntryId modularContractLogEntryId)
+	 {
+		 final ModularContractLogEntry modularContractLogEntry = getById(modularContractLogEntryId);
+		 final FlatrateTermId contractId = modularContractLogEntry.getContractId();
+
+		 return flatrateBL.getPricePrecisionForModularContract(contractId);
 	 }
  }

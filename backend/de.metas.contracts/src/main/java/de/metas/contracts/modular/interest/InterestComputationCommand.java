@@ -38,6 +38,7 @@ import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -247,9 +248,10 @@ public class InterestComputationCommand
 		final Percent bonusInterestRate = saveSubtractedValueRequest.getBonusInterestRate();
 
 		final long interestDays = interestComputationRequest.getBonusAndInterestTimeInterval().getBonusInterestDays();
+		final CurrencyPrecision pricePrecision = modularContractLogService.getPricePrecision(shippingNotification.getShippingNotificationEntry().getId());
 
 		final BigDecimal bonusAmountAsBD = bonusInterestRate.computePercentageOf(shippingNotification.getOpenAmount().toBigDecimal(),
-																				 interestComputationRequest.getInterestCurrencyPrecision().toInt())
+																				 pricePrecision.toInt())
 				.multiply(BigDecimal.valueOf(interestDays))
 				.divide(BigDecimal.valueOf(TOTAL_DAYS_OF_FISCAL_YEAR), RoundingMode.HALF_UP)
 				.negate();
@@ -346,9 +348,10 @@ public class InterestComputationCommand
 				.stream()
 				.map(interestLog -> {
 					final BigDecimal interestScore = interestLog.getInterestScoreEnsuringCurrency(request.getInterestToDistribute().getCurrencyId());
+					final CurrencyPrecision pricePrecision = modularContractLogService.getPricePrecision(interestLog.getShippingNotificationLogId());
 					final BigDecimal finalInterest = request.getInterestToDistribute().toBigDecimal()
 							.multiply(interestScore)
-							.divide(result.getTotalInterestScore(), request.getInterestCurrencyPrecision().toInt(), RoundingMode.HALF_UP);
+							.divide(result.getTotalInterestScore(), pricePrecision.toInt(), RoundingMode.HALF_UP);
 
 					return interestLog.withFinalInterest(Money.of(finalInterest, request.getInterestToDistribute().getCurrencyId()));
 				})
@@ -437,13 +440,11 @@ public class InterestComputationCommand
 			@NonNull final InterestRunId runId)
 	{
 		return InterestComputationRequest.builder()
-				.interestCurrencyPrecision(currencyBL.getStdPrecision(request.getInterestToDistribute().getCurrencyId()))
 				.interestRunId(runId)
 				.interestToDistribute(request.getInterestToDistribute())
 				.invoicingGroupId(request.getInvoicingGroupId())
 				.bonusAndInterestTimeInterval(request.getBonusAndInterestTimeInterval())
 				.lockOwner(request.getLockOwner());
-
 	}
 
 	@Value(staticConstructor = "of")
