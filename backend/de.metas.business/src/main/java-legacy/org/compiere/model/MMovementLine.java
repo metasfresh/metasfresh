@@ -6,11 +6,7 @@ import de.metas.uom.UOMPrecision;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.DB;
-import org.eevolution.model.MDDOrderLine;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -207,62 +203,6 @@ public class MMovementLine extends X_M_MovementLine
 
 		return true;
 	}	// beforeSave
-
-	/**
-	 * Set Distribution Order Line.
-	 * Does not set Quantity!
-	 */
-	public void setOrderLine(MDDOrderLine oLine, BigDecimal Qty, boolean isReceipt)
-	{
-		setDD_OrderLine_ID(oLine.getDD_OrderLine_ID());
-		setLine(oLine.getLine());
-		// setC_UOM_ID(oLine.getC_UOM_ID());
-		final ProductId productId = ProductId.ofRepoIdOrNull(oLine.getM_Product_ID());
-		if (productId == null)
-		{
-			set_ValueNoCheck(COLUMNNAME_M_Product_ID, null);
-			set_ValueNoCheck(COLUMNNAME_M_AttributeSetInstance_ID, null);
-			set_ValueNoCheck(COLUMNNAME_M_AttributeSetInstanceTo_ID, null);
-			set_ValueNoCheck(COLUMNNAME_M_Locator_ID, null);
-			set_ValueNoCheck(COLUMNNAME_M_LocatorTo_ID, null);
-		}
-		else
-		{
-			setM_Product_ID(productId.getRepoId());
-			setM_AttributeSetInstance_ID(oLine.getM_AttributeSetInstance_ID());
-			setM_AttributeSetInstanceTo_ID(oLine.getM_AttributeSetInstanceTo_ID());
-			//
-
-			if (Services.get(IProductBL.class).getProductType(productId).isItem())
-			{
-				final WarehouseId warehouseInTransitId = WarehouseId.ofRepoId(oLine.getDD_Order().getM_Warehouse_ID());
-				LocatorId locator_inTransit = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseInTransitId);
-				if (locator_inTransit == null)
-				{
-					throw new AdempiereException("Do not exist Locator for the  Warehouse in transit");
-				}
-
-				if (isReceipt)
-				{
-					setM_Locator_ID(locator_inTransit.getRepoId());
-					setM_LocatorTo_ID(oLine.getM_LocatorTo_ID());
-				}
-				else
-				{
-					setM_Locator_ID(oLine.getM_Locator_ID());
-					setM_LocatorTo_ID(locator_inTransit.getRepoId());
-				}
-			}
-			else
-			{
-				set_ValueNoCheck(COLUMNNAME_M_Locator_ID, null);
-				set_ValueNoCheck(COLUMNNAME_M_LocatorTo_ID, null);
-			}
-		}
-
-		setDescription(oLine.getDescription());
-		this.setMovementQty(Qty);
-	}       // setOrderLine
 
 	/**
 	 * Set M_Locator_ID

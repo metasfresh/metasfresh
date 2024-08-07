@@ -243,7 +243,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		return MaterialDescriptor.builder()
 				.productDescriptor(ddOrderLine.getProductDescriptor())
 				// .customerId(ddOrderLine.getBPartnerId()) // the ddOrder line's bpartner is not the customer, but probably the shipper
-				.quantity(ddOrderLine.getQty());
+				.quantity(ddOrderLine.getQtyToMove());
 	}
 
 	protected abstract CandidatesQuery createPreExistingCandidatesQuery(
@@ -262,7 +262,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.ddOrderId(ddOrder.getDdOrderId())
 				.ddOrderLineId(ddOrderLine.getDdOrderLineId())
 				.distributionNetworkAndLineId(ddOrderLine.getDistributionNetworkAndLineId())
-				.qty(ddOrderLine.getQty())
+				.qty(ddOrderLine.getQtyToMove())
 				.plantId(ddOrder.getPlantId())
 				.productPlanningId(ddOrder.getProductPlanningId())
 				.shipperId(ddOrder.getShipperId())

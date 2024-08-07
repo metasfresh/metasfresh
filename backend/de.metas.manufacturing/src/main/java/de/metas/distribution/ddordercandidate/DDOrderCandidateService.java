@@ -7,7 +7,10 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddordercandidate.async.DDOrderCandidateEnqueueService;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.order.IOrderLineBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
@@ -30,6 +33,9 @@ public class DDOrderCandidateService
 	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
 	@NonNull private final DDOrderCandidateEnqueueService ddOrderCandidateEnqueueService;
 	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
+	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
+	@NonNull private final PostMaterialEventService materialEventService;
+	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
@@ -61,9 +67,19 @@ public class DDOrderCandidateService
 
 	public void process(@NonNull final DDOrderCandidateProcessRequest request)
 	{
-		DDOrderCandidateProcessCommand.builder()
+		newProcessCommand()
+				.request(request)
+				.build().execute();
+	}
+
+	private DDOrderCandidateProcessCommand.DDOrderCandidateProcessCommandBuilder newProcessCommand()
+	{
+		return DDOrderCandidateProcessCommand.builder()
 				.ddOrderLowLevelService(ddOrderLowLevelService)
 				.ddOrderCandidateService(this)
+				.distributionNetworkRepository(distributionNetworkRepository)
+				.materialEventService(materialEventService)
+				.replenishInfoRepository(replenishInfoRepository)
 				.orgDAO(orgDAO)
 				.docTypeDAO(docTypeDAO)
 				.documentBL(documentBL)
@@ -71,12 +87,7 @@ public class DDOrderCandidateService
 				.bpartnerOrgBL(bpartnerOrgBL)
 				.warehouseBL(warehouseBL)
 				.uomConversionBL(uomConversionBL)
-				.orderLineBL(orderLineBL)
-				//
-				.request(request)
-				//
-				.build()
-				.execute();
+				.orderLineBL(orderLineBL);
 	}
 
 	public void saveAndUpdateCandidates(@NonNull final DDOrderCandidateAllocList list)

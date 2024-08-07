@@ -35,7 +35,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_DD_OrderLine;
 import org.springframework.stereotype.Component;
@@ -45,7 +44,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DD_OrderLine_PostMaterialEvent
 {
-	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	@NonNull final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
@@ -56,7 +54,6 @@ public class DD_OrderLine_PostMaterialEvent
 	{
 		return DDOrderLoader.builder()
 				.productPlanningDAO(productPlanningDAO)
-				.warehouseDAO(warehouseDAO)
 				.distributionNetworkRepository(distributionNetworkRepository)
 				.ddOrderLowLevelService(ddOrderLowLevelService)
 				.replenishInfoRepository(replenishInfoRepository)

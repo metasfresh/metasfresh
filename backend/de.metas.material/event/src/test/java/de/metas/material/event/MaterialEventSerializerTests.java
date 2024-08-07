@@ -129,7 +129,7 @@ public class MaterialEventSerializerTests
 	{
 		final DDOrderCreatedEvent event = DDOrderCreatedEvent.builder()
 				.supplyRequiredDescriptor(newSupplyRequiredDescriptor())
-				.ddOrder(createDdOrder(20))
+				.ddOrder(newDDOrder())
 				.eventDescriptor(newEventDescriptor())
 				.build();
 		assertEventEqualAfterSerializeDeserialize(event);
@@ -147,13 +147,12 @@ public class MaterialEventSerializerTests
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
-	@SuppressWarnings("SameParameterValue")
-	private DDOrder createDdOrder(final int ddOrderId)
+	private static DDOrder newDDOrder()
 	{
 		final Instant supplyDate = SystemTime.asInstant();
 		return DDOrder.builder()
 				.supplyDate(supplyDate)
-				.ddOrderId(ddOrderId)
+				.ddOrderId(20)
 				.docStatus(DocStatus.InProgress)
 				.materialDispoGroupId(MaterialDispoGroupId.ofInt(35))
 				.line(DDOrderLine.builder()
@@ -161,7 +160,8 @@ public class MaterialEventSerializerTests
 						.ddOrderLineId(21)
 						.demandDate(supplyDate.minus(10, ChronoUnit.DAYS))
 						.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(40, 41))
-						.qty(TEN)
+						.qtyMoved(new BigDecimal("10"))
+						.qtyToMove(new BigDecimal("3"))
 						.salesOrderLineId(61)
 						.fromWarehouseMinMaxDescriptor(createSampleMinMaxDescriptor())
 						.build())

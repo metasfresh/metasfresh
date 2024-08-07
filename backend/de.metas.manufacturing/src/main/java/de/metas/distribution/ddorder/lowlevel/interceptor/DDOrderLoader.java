@@ -29,11 +29,11 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -43,10 +43,9 @@ import java.util.Optional;
 import static de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO.ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID;
 
 @Builder
-class DDOrderLoader
+public class DDOrderLoader
 {
 	@NonNull private final IProductPlanningDAO productPlanningDAO;
-	@NonNull private final IWarehouseDAO warehouseDAO;
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
 	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
@@ -115,12 +114,15 @@ class DDOrderLoader
 				WarehouseId.ofRepoId(headerRecord.getM_Warehouse_From_ID()), // both from-warehouse and product are mandatory DB-columns
 				ProductId.ofRepoId(lineRecord.getM_Product_ID()));
 
+		final BigDecimal qtyToMoveTotal = lineRecord.getQtyOrdered();
+		final BigDecimal qtyMoved = lineRecord.getQtyDelivered();
+
 		return DDOrderLine.builder()
 				.productDescriptor(createProductDescriptor(lineRecord))
 				.bpartnerId(bpartnerId)
 				.ddOrderLineId(lineRecord.getDD_OrderLine_ID())
-				.qty(lineRecord.getQtyDelivered())
-				.qtyPending(lineRecord.getQtyOrdered().subtract(lineRecord.getQtyDelivered()))
+				.qtyMoved(qtyMoved)
+				.qtyToMove(qtyToMoveTotal.subtract(qtyMoved))
 				.distributionNetworkAndLineId(extractDistributionNetworkAndLineId(lineRecord).orElse(null))
 				.salesOrderLineId(lineRecord.getC_OrderLineSO_ID())
 				.demandDate(demandDate)

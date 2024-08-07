@@ -1,21 +1,30 @@
 package de.metas.distribution.ddordercandidate;
 
+import com.google.common.collect.ArrayListMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.distribution.ddorder.DDOrderAndLineId;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.distribution.ddorder.lowlevel.interceptor.DDOrderLoader;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
@@ -33,6 +42,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -54,13 +64,14 @@ import java.util.LinkedHashMap;
 /**
  * Process {@link DDOrderCandidate}s and creates DD Order(s).
  */
-@Builder
 class DDOrderCandidateProcessCommand
 {
 	//
 	// services
 	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
 	@NonNull private final DDOrderCandidateService ddOrderCandidateService;
+	@NonNull private final PostMaterialEventService materialEventService;
+	@NonNull private final DDOrderLoader ddOrderLoader;
 	@NonNull private final IOrgDAO orgDAO;
 	@NonNull private final IDocTypeDAO docTypeDAO;
 	@NonNull final IDocumentBL documentBL;
@@ -77,6 +88,46 @@ class DDOrderCandidateProcessCommand
 	//
 	// State
 	private final LinkedHashMap<HeaderAggregationKey, HeaderAggregate> aggregates = new LinkedHashMap<>();
+	private final LinkedHashMap<DDOrderId, I_DD_Order> ddOrderHeaderRecords = new LinkedHashMap<>();
+	private final ArrayListMultimap<DDOrderId, I_DD_OrderLine> ddOrderLineRecords = ArrayListMultimap.create();
+
+	@Builder
+	private DDOrderCandidateProcessCommand(
+			@NonNull final DDOrderLowLevelService ddOrderLowLevelService,
+			@NonNull final DDOrderCandidateService ddOrderCandidateService,
+			@NonNull final DistributionNetworkRepository distributionNetworkRepository,
+			@NonNull final PostMaterialEventService materialEventService,
+			@NonNull final ReplenishInfoRepository replenishInfoRepository,
+			@NonNull final IOrgDAO orgDAO,
+			@NonNull final IDocTypeDAO docTypeDAO,
+			@NonNull final IDocumentBL documentBL,
+			@NonNull final IProductPlanningDAO productPlanningDAO,
+			@NonNull final IBPartnerOrgBL bpartnerOrgBL,
+			@NonNull final IWarehouseBL warehouseBL,
+			@NonNull final IUOMConversionBL uomConversionBL,
+			@NonNull final IOrderLineBL orderLineBL,
+			@NonNull final DDOrderCandidateProcessRequest request)
+	{
+		this.ddOrderLowLevelService = ddOrderLowLevelService;
+		this.ddOrderCandidateService = ddOrderCandidateService;
+		this.materialEventService = materialEventService;
+		this.orgDAO = orgDAO;
+		this.docTypeDAO = docTypeDAO;
+		this.documentBL = documentBL;
+		this.productPlanningDAO = productPlanningDAO;
+		this.bpartnerOrgBL = bpartnerOrgBL;
+		this.warehouseBL = warehouseBL;
+		this.uomConversionBL = uomConversionBL;
+		this.orderLineBL = orderLineBL;
+		this.ddOrderLoader = DDOrderLoader.builder()
+				.productPlanningDAO(productPlanningDAO)
+				.distributionNetworkRepository(distributionNetworkRepository)
+				.ddOrderLowLevelService(ddOrderLowLevelService)
+				.replenishInfoRepository(replenishInfoRepository)
+				.build();
+
+		this.request = request;
+	}
 
 	public void execute()
 	{
@@ -121,6 +172,9 @@ class DDOrderCandidateProcessCommand
 			return;
 		}
 
+		final DDOrderId ddOrderId = DDOrderId.ofRepoId(headerRecord.getDD_Order_ID());
+		fireDDOrderCreatedEvent(ddOrderId, headerAggregate.getKey().getTraceId());
+
 		documentBL.processEx(headerRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
@@ -131,8 +185,8 @@ class DDOrderCandidateProcessCommand
 		final BPartnerLocationId orgBPartnerLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(key.getOrgId());
 
 		final I_DD_Order record = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
-		// DDOrderLowLevelDAO.ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.setValue(record, key.getMaterialDispoGroupId());
-		// DDOrderLowLevelDAO.ATTR_DDORDER_REQUESTED_EVENT_TRACE_ID.setValue(record, ddOrderRequestedEventTrace);
+		//DDOrderLowLevelDAO.ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.setValue(record, key.getMaterialDispoGroupId());
+		DDOrderLowLevelDAO.ATTR_DDORDER_REQUESTED_EVENT_TRACE_ID.setValue(record, key.getTraceId());
 
 		record.setAD_Org_ID(key.getOrgId().getRepoId());
 		record.setMRP_Generated(true);
@@ -167,6 +221,7 @@ class DDOrderCandidateProcessCommand
 		record.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(productPlanning.getId()));
 
 		ddOrderLowLevelService.save(record);
+		ddOrderHeaderRecords.put(DDOrderId.ofRepoId(record.getDD_Order_ID()), record);
 
 		return record;
 	}
@@ -240,6 +295,7 @@ class DDOrderCandidateProcessCommand
 		// Save DD Order Line
 		ddOrderLowLevelService.save(lineRecord);
 		final DDOrderAndLineId ddOrderAndLineId = DDOrderAndLineId.ofRepoIds(lineRecord.getDD_Order_ID(), lineRecord.getDD_OrderLine_ID());
+		ddOrderLineRecords.put(ddOrderAndLineId.getDdOrderId(), lineRecord);
 
 		final DDOrderCandidateAllocList allocations = lineAggregate.getAllocations()
 				.stream()
@@ -249,6 +305,23 @@ class DDOrderCandidateProcessCommand
 				.collect(DDOrderCandidateAllocList.collect());
 
 		ddOrderCandidateService.saveAndUpdateCandidates(allocations);
+	}
+
+	private void fireDDOrderCreatedEvent(@NonNull final DDOrderId ddOrderId, @Nullable final String traceId)
+	{
+		@NonNull final DDOrder ddOrder = getCreatedDDOrder(ddOrderId);
+		materialEventService.postEventAfterNextCommit(DDOrderCreatedEvent.of(ddOrder, traceId));
+	}
+
+	private DDOrder getCreatedDDOrder(final DDOrderId ddOrderId)
+	{
+		final I_DD_Order ddOrderRecord = ddOrderHeaderRecords.get(ddOrderId);
+		if (ddOrderRecord == null)
+		{
+			throw new AdempiereException("No DDOrder was created for " + ddOrderId);
+		}
+
+		return ddOrderLoader.load(ddOrderRecord, ddOrderLineRecords.get(ddOrderId));
 	}
 
 	//
@@ -277,6 +350,8 @@ class DDOrderCandidateProcessCommand
 
 		@Nullable ProductPlanningId productPlanningId;
 
+		@Nullable String traceId;
+
 		public static HeaderAggregationKey of(@NonNull final DDOrderCandidate candidate)
 		{
 			return builder()
@@ -290,6 +365,7 @@ class DDOrderCandidateProcessCommand
 					.isSimulated(candidate.isSimulated())
 					.ppOrderRef(candidate.getPpOrderRef())
 					.productPlanningId(candidate.getProductPlanningId())
+					.traceId(candidate.getTraceId())
 					.build();
 		}
 	}

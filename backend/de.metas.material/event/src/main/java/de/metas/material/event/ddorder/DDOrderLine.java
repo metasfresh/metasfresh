@@ -46,11 +46,12 @@ public class DDOrderLine
 
 	@NonNull ProductDescriptor productDescriptor;
 	@Nullable MinMaxDescriptor fromWarehouseMinMaxDescriptor;
-	@NonNull BigDecimal qty;
-	@Nullable BigDecimal qtyPending;
+	@NonNull BigDecimal qtyMoved;
+	@NonNull BigDecimal qtyToMove;
 
 	@NonNull Instant demandDate;
 	@Nullable DistributionNetworkAndLineId distributionNetworkAndLineId;
 	int ddOrderLineId;
 	@Nullable BPartnerId bpartnerId;
+
 }
