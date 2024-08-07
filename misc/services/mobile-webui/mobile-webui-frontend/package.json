@@ -78,12 +78,11 @@
     ]
   },
   "devDependencies": {
-    "@babel/core": "7.15.0",
+    "@babel/core": "^7.16.0",
     "@babel/eslint-parser": "7.15.0",
     "@babel/plugin-syntax-dynamic-import": "7.8.3",
-    "@babel/plugin-transform-regenerator": "7.14.5",
-    "@babel/preset-env": "7.15.0",
-    "@babel/preset-react": "7.14.5",
+    "@babel/plugin-transform-regenerator": "^7.14.5",
+    "@babel/preset-env": "^7.15.0",
     "@babel/register": "7.15.3",
     "@babel/runtime": "7.15.3",
     "babel-plugin-dynamic-import-node": "2.3.3",
@@ -96,6 +95,9 @@
     "prettier": "2.3.2",
     "react-hot-loader": "4.13.0",
     "sass": "^1.46.0"
+  },
+  "resolutions": {
+    "@babel/core": "^7.16.0"
   },
   "homepage": "/mobile"
 }
