@@ -44,16 +44,17 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class EDI_Desadv_Pack_Item_StepDef
 {
@@ -254,7 +255,8 @@ public class EDI_Desadv_Pack_Item_StepDef
 			}
 			else
 			{
-				softly.assertThat(desadvPackItemRecord.getBestBeforeDate()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - BestBeforeDate", packIdentifier, packItemId).isEqualTo(TimeUtil.parseTimestamp(nullableBestBeforeDateString));
+				final Timestamp bestBeforeDateExpected = Timestamp.valueOf(LocalDate.parse(nullableBestBeforeDateString).atStartOfDay());
+				softly.assertThat(desadvPackItemRecord.getBestBeforeDate()).as("EDI_Desadv_Pack_ID.Identifier=%s; EDI_Desadv_Pack_Item_ID=%s - BestBeforeDate", packIdentifier, packItemId).isEqualTo(bestBeforeDateExpected);
 			}
 		}
 

@@ -25,7 +25,10 @@ package de.metas.cucumber.stepdefs.edi;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ZebraConfigId;
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.ResourceReader;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.edi.api.ZebraConfigRepository;
@@ -39,12 +42,20 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.expression.api.IExpressionEvaluator;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.Evaluatees;
+
+import java.util.HashMap;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_Pack_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class EDI_DesadvPackGenerateCSV_FileForSSCC_Labels_StepDef
 {
 	private final EDIDesadvPackRepository EDIDesadvPackRepository = SpringContextHolder.instance.getBean(EDIDesadvPackRepository.class);
@@ -53,12 +64,9 @@ public class EDI_DesadvPackGenerateCSV_FileForSSCC_Labels_StepDef
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
-	private final EDI_Desadv_Pack_StepDefData ediDesadvPackTable;
-
-	public EDI_DesadvPackGenerateCSV_FileForSSCC_Labels_StepDef(@NonNull final EDI_Desadv_Pack_StepDefData ediDesadvPackTable)
-	{
-		this.ediDesadvPackTable = ediDesadvPackTable;
-	}
+	@NonNull private final EDI_Desadv_Pack_StepDefData ediDesadvPackTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final C_Order_StepDefData orderTable;
 
 	@And("generate csv file for sscc labels for {string}")
 	public void generateCSV_FileForSSCC_Labels(
@@ -68,8 +76,10 @@ public class EDI_DesadvPackGenerateCSV_FileForSSCC_Labels_StepDef
 		final ImmutableList<EDIDesadvPackId> desadvPackIDsToPrint = getDesadvPackIDSToPrint(packIdentifiersParam);
 		final String reportDataContent = generateCSVFileForSSCCLabels(desadvPackIDsToPrint);
 
-		dataTable.asMaps()
-				.forEach(tableRow -> assertThat(reportDataContent).contains(DataTableUtil.extractStringForColumnName(tableRow, "ReportDataLine")));
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String reportDataLine = extractReportDataLine(row);
+			assertThat(reportDataContent).contains(reportDataLine);
+		});
 	}
 
 	@NonNull
@@ -106,5 +116,16 @@ public class EDI_DesadvPackGenerateCSV_FileForSSCC_Labels_StepDef
 
 		return zebraPrinterService
 				.createCSV_FileForSSCC18_Labels(desadvPackIDsToPrint, zebraConfigId, adPInstanceDAO.createSelectionId());
+	}
+
+	private String extractReportDataLine(final DataTableRow row)
+	{
+		final IStringExpression reportDataLine = StringExpressionCompiler.instance.compile(row.getAsString("ReportDataLine"));
+
+		final HashMap<String, String> context = new HashMap<>();
+		productTable.forEach((identifier, product) -> context.put(identifier.getAsString() + ".productName", product.getName()));
+		orderTable.forEach((identifier, order) -> context.put(identifier.getAsString() + ".orderPOReference", order.getPOReference()));
+
+		return reportDataLine.evaluate(Evaluatees.ofMap(context), IExpressionEvaluator.OnVariableNotFound.Fail);
 	}
 }

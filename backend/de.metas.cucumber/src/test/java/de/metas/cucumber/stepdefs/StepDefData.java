@@ -42,6 +42,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -229,6 +230,11 @@ public abstract class StepDefData<T>
 	public Stream<T> streamRecords()
 	{
 		return records.values().stream().map(RecordDataItem::getRecord);
+	}
+
+	public void forEach(@NonNull final BiConsumer<StepDefDataIdentifier, T> consumer)
+	{
+		records.forEach((identifier, item) -> consumer.accept(identifier, item.getRecord()));
 	}
 
 	/**
