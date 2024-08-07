@@ -194,29 +194,43 @@ import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXT
 
 public class FlatrateBL implements IFlatrateBL
 {
+	private static final Logger logger = LogManager.getLogger(FlatrateBL.class);
+
+	private static final AdMessageKey MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P = AdMessageKey.of("FlatrateBL_InvoicingEntry_Not_CO");
+
+	private static final AdMessageKey MSG_FLATRATEBL_INVOICE_CANDIDATE_TO_RECOMPUTE_1P = AdMessageKey.of("FlatrateBL_InvoicingCand_ToRecompute");
+
+	private static final AdMessageKey MSG_FLATRATEBL_INVOICE_CANDIDATE_QTY_TO_INVOICE_1P = AdMessageKey.of("FlatrateBL_InvoicingCand_QtyToInvoice");
+
+	private static final AdMessageKey MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P = AdMessageKey.of("DataEntry_Create_FlatFee");
+
+	private static final AdMessageKey MSG_DATA_ENTRY_CREATE_HOLDING_FEE_3P = AdMessageKey.of("DataEntry_Create_HoldingFee");
+
+	private static final AdMessageKey MSG_TERM_NEW_UNCOMPLETED_0P = AdMessageKey.of("FlatrateTerm_New_Uncompleted_Term");
+	private static final AdMessageKey MSG_TERM_NEW_COMPLETED_0P = AdMessageKey.of("FlatrateTerm_New_Completed_Term");
+	private static final AdMessageKey MSG_TERM_NO_NEW_0P = AdMessageKey.of("FlatrateTerm_No_New_Term");
+
+	private static final AdMessageKey MSG_ORG_WAREHOUSE_MISSING = AdMessageKey.of("de.metas.flatrate.Org.Warehouse_Missing");
+
 	/**
 	 * Message for announcing the user that there are overlapping terms for the term they want to complete
 	 */
 	public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm");
+
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
+
 	public final static String MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS = "@MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS@";
-	public static final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
-	private static final Logger logger = LogManager.getLogger(FlatrateBL.class);
-	private static final AdMessageKey MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P = AdMessageKey.of("FlatrateBL_InvoicingEntry_Not_CO");
-	private static final AdMessageKey MSG_FLATRATEBL_INVOICE_CANDIDATE_TO_RECOMPUTE_1P = AdMessageKey.of("FlatrateBL_InvoicingCand_ToRecompute");
-	private static final AdMessageKey MSG_FLATRATEBL_INVOICE_CANDIDATE_QTY_TO_INVOICE_1P = AdMessageKey.of("FlatrateBL_InvoicingCand_QtyToInvoice");
-	private static final AdMessageKey MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P = AdMessageKey.of("DataEntry_Create_FlatFee");
-	private static final AdMessageKey MSG_DATA_ENTRY_CREATE_HOLDING_FEE_3P = AdMessageKey.of("DataEntry_Create_HoldingFee");
-	private static final AdMessageKey MSG_TERM_NEW_UNCOMPLETED_0P = AdMessageKey.of("FlatrateTerm_New_Uncompleted_Term");
-	private static final AdMessageKey MSG_TERM_NEW_COMPLETED_0P = AdMessageKey.of("FlatrateTerm_New_Completed_Term");
-	private static final AdMessageKey MSG_TERM_NO_NEW_0P = AdMessageKey.of("FlatrateTerm_No_New_Term");
-	private static final AdMessageKey MSG_ORG_WAREHOUSE_MISSING = AdMessageKey.of("de.metas.flatrate.Org.Warehouse_Missing");
+
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+
 	private final transient ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -230,10 +244,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
-	private static FlatrateTermId extractId(final I_C_Flatrate_Term record)
-	{
-		return FlatrateTermId.ofRepoId(record.getC_Flatrate_Term_ID());
-	}
+	public static final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 
 	@Override
 	public I_C_Flatrate_Conditions getConditionsById(final ConditionsId flatrateConditionsId)
@@ -2468,6 +2479,14 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setIsTaxIncluded(computed.isTaxIncluded());
 	}
 
+	@Value
+	private static class PricingSystemTaxCategoryAndIsTaxIncluded
+	{
+		PricingSystemId pricingSystemId;
+		TaxCategoryId taxCategoryId;
+		boolean isTaxIncluded;
+	}
+
 	private PricingSystemTaxCategoryAndIsTaxIncluded computePricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final I_C_Flatrate_Conditions cond = flatrateDAO.getConditionsById(ol.getC_Flatrate_Conditions_ID());
@@ -2599,6 +2618,11 @@ public class FlatrateBL implements IFlatrateBL
 		return streamModularFlatrateTermsByQuery(query).map(FlatrateBL::extractId);
 	}
 
+	private static FlatrateTermId extractId(final I_C_Flatrate_Term record)
+	{
+		return FlatrateTermId.ofRepoId(record.getC_Flatrate_Term_ID());
+	}
+
 	@Nullable
 	@Override
 	public FlatrateTermId getInterimContractIdByModularContractIdAndDate(@NonNull final FlatrateTermId modularFlatrateTermId, @NonNull final Instant date)
@@ -2664,13 +2688,10 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public CurrencyPrecision getCurrencyPrecisionForModularContract(@NonNull final FlatrateTermId modularContractId)
 	{
-
 		final I_C_Flatrate_Term term = getById(modularContractId);
-		ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
-		if (!isModularContract(conditionsId) && !isInterimContract(conditionsId))
-		{
-			return null;
-		}
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
+
+		Check.assume(isModularContract(conditionsId) || isInterimContract(conditionsId), "The contract must be modular on interim.");
 
 		final ZonedDateTime date = TimeUtil.asZonedDateTime(term.getStartDate(), orgDAO.getTimeZone(OrgId.ofRepoId(term.getAD_Org_ID())));
 		final ModularContractSettings settings = modularContractSettingsRepository.getByFlatrateTermId(modularContractId);
@@ -2681,17 +2702,8 @@ public class FlatrateBL implements IFlatrateBL
 				settings.getSoTrx()
 		);
 
-		final CurrencyPrecision currencyPrecision = currencyBL.getStdPrecision(CurrencyId.ofRepoIdOrNull(term.getC_Currency_ID()));
-		final CurrencyPrecision precision = priceList != null ? CurrencyPrecision.ofInt(priceList.getPricePrecision()) : currencyPrecision;
-
-		return precision;
+		final CurrencyPrecision currencyPrecision = currencyBL.getStdPrecision(CurrencyId.ofRepoId(term.getC_Currency_ID()));
+		return priceList != null ? CurrencyPrecision.ofInt(priceList.getPricePrecision()) : currencyPrecision;
 	}
 
-	@Value
-	private static class PricingSystemTaxCategoryAndIsTaxIncluded
-	{
-		PricingSystemId pricingSystemId;
-		TaxCategoryId taxCategoryId;
-		boolean isTaxIncluded;
-	}
 }
