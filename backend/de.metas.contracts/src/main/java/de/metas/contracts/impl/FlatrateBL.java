@@ -30,6 +30,7 @@ import de.metas.ad_reference.ReferenceId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -75,9 +76,12 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -107,6 +111,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListBL;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductDAO;
@@ -157,6 +162,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.PO;
@@ -171,6 +177,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -234,6 +241,8 @@ public class FlatrateBL implements IFlatrateBL
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final ModularContractSettingsRepository modularContractSettingsRepository = SpringContextHolder.instance.getBean(ModularContractSettingsRepository.class);
 	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
+	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	public static final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 
@@ -2674,4 +2683,31 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		flatrateDAO.reverseDefinitiveInvoice(contractIds);
 	}
+
+	@Override
+	@NonNull
+	public CurrencyPrecision getPricePrecisionForModularContract(@NonNull final FlatrateTermId modularContractId)
+	{
+		final I_C_Flatrate_Term term = getById(modularContractId);
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
+
+		Check.assume(isModularContract(conditionsId) || isInterimContract(conditionsId), "The contract must be modular on interim.");
+
+		final ZonedDateTime date = TimeUtil.asZonedDateTime(term.getStartDate(), orgDAO.getTimeZone(OrgId.ofRepoId(term.getAD_Org_ID())));
+		final ModularContractSettings settings = modularContractSettingsRepository.getByFlatrateTermId(modularContractId);
+		final I_M_PriceList priceList = priceListBL.getCurrentPricelistOrNull(
+				settings.getPricingSystemId(),
+				bPartnerDAO.getCountryId(BPartnerLocationId.ofRepoId(term.getBill_BPartner_ID(), term.getBill_Location_ID())),
+				date,
+				settings.getSoTrx()
+		);
+
+		if(priceList != null)
+		{
+			return CurrencyPrecision.ofInt(priceList.getPricePrecision());
+		}
+
+		return currencyBL.getStdPrecision(CurrencyId.ofRepoId(term.getC_Currency_ID()));
+	}
+
 }

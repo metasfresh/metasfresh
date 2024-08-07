@@ -43,7 +43,7 @@ public class ModularLogInterest
 	@NonNull Money allocatedAmt;
 	@NonNull Long interestDays;
 
-	@Nullable ModularContractLogEntryId interimContractLogId;
+	@Nullable ModularContractLogEntryId modularContractLogEntryId;
 	@Nullable Money finalInterest;
 
 	@Builder(toBuilder = true)
@@ -53,7 +53,7 @@ public class ModularLogInterest
 			@NonNull final InterestRunId interestRunId,
 			@NonNull final Money allocatedAmt,
 			@NonNull final Long interestDays,
-			@Nullable final ModularContractLogEntryId interimContractLogId,
+			@Nullable final ModularContractLogEntryId modularContractLogEntryId,
 			@Nullable final Money finalInterest)
 	{
 		if (finalInterest != null)
@@ -66,7 +66,7 @@ public class ModularLogInterest
 		this.interestRunId = interestRunId;
 		this.allocatedAmt = allocatedAmt;
 		this.interestDays = interestDays;
-		this.interimContractLogId = interimContractLogId;
+		this.modularContractLogEntryId = modularContractLogEntryId;
 		this.finalInterest = finalInterest;
 	}
 

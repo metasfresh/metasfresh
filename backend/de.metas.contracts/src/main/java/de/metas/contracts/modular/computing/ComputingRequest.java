@@ -43,6 +43,5 @@ public class ComputingRequest
 	@NonNull ModuleConfig moduleConfig;
 
 	public ModularContractModuleId getModularContractModuleId() {return moduleConfig.getId().getModularContractModuleId();}
-	
-	public boolean isCostInvoicingGroup() { return moduleConfig.getInvoicingGroup().isCostsType(); }
+
 }
