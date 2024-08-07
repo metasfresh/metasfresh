@@ -54,17 +54,12 @@ import static de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvis
 @Builder
 public class DDOrderMainDataHandler
 {
-	@NonNull
-	ZoneId orgZone;
-	@NonNull
-	AbstractDDOrderEvent abstractDDOrderEvent;
-	@NonNull
-	DDOrderLine ddOrderLine;
+	@NonNull DDOrderDetailRequestHandler ddOrderDetailRequestHandler;
+	@NonNull MainDataRequestHandler mainDataRequestHandler;
 
-	@NonNull
-	DDOrderDetailRequestHandler ddOrderDetailRequestHandler;
-	@NonNull
-	MainDataRequestHandler mainDataRequestHandler;
+	@NonNull ZoneId orgZone;
+	@NonNull AbstractDDOrderEvent abstractDDOrderEvent;
+	@NonNull DDOrderLine ddOrderLine;
 
 	public void handleDelete()
 	{

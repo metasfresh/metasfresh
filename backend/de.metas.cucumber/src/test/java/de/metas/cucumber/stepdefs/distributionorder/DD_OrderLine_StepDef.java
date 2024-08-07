@@ -34,13 +34,17 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_DD_Order_MoveSchedule;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -48,8 +52,10 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Locator;
@@ -59,8 +65,10 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -78,6 +86,7 @@ public class DD_OrderLine_StepDef
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final DD_Order_StepDefData ddOrderTable;
 	@NonNull private final DD_OrderLine_StepDefData ddOrderLineTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseData;
 	@NonNull private final M_Locator_StepDefData locatorTable;
 	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
@@ -171,15 +180,85 @@ public class DD_OrderLine_StepDef
 	public void validate_DD_OrderLines_found_for_OrderLine(
 			final int timeoutSec,
 			@NonNull final String orderLineIdentifier,
-			@NonNull final DataTable dataTable) throws InterruptedException
+			@NonNull final DataTable dataTable)
 	{
-		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
-
 		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
 
-		final I_DD_OrderLine ddOrderLineRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, queryByOrderLineId(orderLineId));
+		final HashSet<DDOrderLineId> alreadyMatchedLineIds = new HashSet<>();
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_DD_OrderLine ddOrderLineRecord = StepDefUtil.tryAndWaitForItem(
+					timeoutSec,
+					500,
+					toDDOrderLineQuery(orderLineId, alreadyMatchedLineIds),
+					ddOrderLine -> checkDDOrderLineMatching(ddOrderLine, row)
+			);
 
-		row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderLineTable.putOrReplace(identifier, ddOrderLineRecord));
+			alreadyMatchedLineIds.add(DDOrderLineId.ofRepoId(ddOrderLineRecord.getDD_OrderLine_ID()));
+
+			row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderLineTable.putOrReplace(identifier, ddOrderLineRecord));
+		});
+	}
+
+	private IQuery<I_DD_OrderLine> toDDOrderLineQuery(
+			@NonNull final OrderLineId orderLineId,
+			@NonNull final Set<DDOrderLineId> excludeDDOrderLineIds)
+	{
+		final IQueryBuilder<I_DD_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_DD_Order_ID)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_Line)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID)
+				.addEqualsFilter(I_DD_OrderLine.COLUMN_C_OrderLineSO_ID, orderLineId);
+
+		if (!excludeDDOrderLineIds.isEmpty())
+		{
+			queryBuilder.addNotInArrayFilter(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID, excludeDDOrderLineIds);
+		}
+
+		return queryBuilder.create();
+	}
+
+	private BooleanWithReason checkDDOrderLineMatching(@NonNull final I_DD_OrderLine actual, @NonNull final DataTableRow expected)
+	{
+		final BigDecimal qtyEntered = expected.getAsOptionalBigDecimal(I_DD_OrderLine.COLUMNNAME_QtyEntered).orElse(null);
+		if (qtyEntered != null && qtyEntered.compareTo(actual.getQtyEntered()) != 0)
+		{
+			return BooleanWithReason.falseBecause("qtyEntered not matching, expected " + qtyEntered + " but got " + actual.getQtyEntered());
+		}
+
+		final StepDefDataIdentifier productIdentifier = expected.getAsOptionalIdentifier(I_DD_OrderLine.COLUMNNAME_M_Product_ID).orElse(null);
+		if (productIdentifier != null)
+		{
+			final ProductId productIdExpected = productTable.getId(productIdentifier);
+			final ProductId productIdActual = ProductId.ofRepoId(actual.getM_Product_ID());
+			if (!ProductId.equals(productIdExpected, productIdActual))
+			{
+				return BooleanWithReason.falseBecause("M_Product_ID not matching, expected " + productIdExpected + " but got " + productIdActual);
+			}
+		}
+
+		final StepDefDataIdentifier fromWarehouseIdentifier = expected.getAsOptionalIdentifier(I_DD_Order.COLUMNNAME_M_Warehouse_From_ID).orElse(null);
+		if (fromWarehouseIdentifier != null)
+		{
+			final WarehouseId fromWarehouseIdExpected = warehouseData.getId(fromWarehouseIdentifier);
+			final WarehouseId fromWarehouseIdActual = WarehouseId.ofRepoId(actual.getM_Warehouse_ID());
+			if (!WarehouseId.equals(fromWarehouseIdExpected, fromWarehouseIdActual))
+			{
+				return BooleanWithReason.falseBecause("M_Warehouse_From_ID not matching, expected " + fromWarehouseIdExpected + " but got " + fromWarehouseIdActual);
+			}
+		}
+
+		final StepDefDataIdentifier toWarehouseIdentifier = expected.getAsOptionalIdentifier(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID).orElse(null);
+		if (toWarehouseIdentifier != null)
+		{
+			final WarehouseId toWarehouseIdExpected = warehouseData.getId(toWarehouseIdentifier);
+			final WarehouseId toWarehouseIdActual = WarehouseId.ofRepoId(actual.getM_WarehouseTo_ID());
+			if (!WarehouseId.equals(toWarehouseIdExpected, toWarehouseIdActual))
+			{
+				return BooleanWithReason.falseBecause("M_Warehouse_To_ID not matching, expected " + toWarehouseIdExpected + " but got " + toWarehouseIdActual);
+			}
+		}
+
+		return BooleanWithReason.TRUE;
 	}
 
 	private void logCurrentContextExpectedNoRecords(@NonNull final OrderLineId orderLineId)

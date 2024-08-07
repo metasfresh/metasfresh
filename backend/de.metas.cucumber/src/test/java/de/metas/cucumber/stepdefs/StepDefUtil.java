@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -40,6 +41,7 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -158,14 +160,40 @@ public class StepDefUtil
 			final long checkingIntervalMs,
 			@NonNull final IQuery<T> query) throws InterruptedException
 	{
-		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, toItemProvider(query));
+		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, toItemProvider(query, null));
 	}
 
-	private static <T> @NonNull ItemProvider<T> toItemProvider(final @NonNull IQuery<T> query)
+	public <T> T tryAndWaitForItem(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final IQuery<T> query,
+			@NonNull final Function<T, BooleanWithReason> validator) throws InterruptedException
 	{
-		return () -> query.firstOnlyOptional()
-				.map(ItemProvider.ProviderResult::resultWasFound)
-				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound("No item found for " + query));
+		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, toItemProvider(query, validator));
+	}
+
+	private static <T> @NonNull ItemProvider<T> toItemProvider(
+			@NonNull final IQuery<T> query,
+			@Nullable final Function<T, BooleanWithReason> validator)
+	{
+		return () -> {
+			final T item = query.firstOnlyOptional().orElse(null);
+			if (item == null)
+			{
+				return ItemProvider.ProviderResult.resultWasNotFound("No item found for " + query);
+			}
+
+			if (validator != null)
+			{
+				final BooleanWithReason valid = validator.apply(item);
+				if (valid.isFalse())
+				{
+					return ItemProvider.ProviderResult.resultWasNotFound(valid.getReasonAsString());
+				}
+			}
+
+			return ItemProvider.ProviderResult.resultWasFound(item);
+		};
 	}
 
 	public void tryAndWait(

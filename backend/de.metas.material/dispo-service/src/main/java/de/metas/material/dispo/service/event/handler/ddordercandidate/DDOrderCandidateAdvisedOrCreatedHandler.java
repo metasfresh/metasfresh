@@ -9,7 +9,6 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.CandidatesGroup;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
@@ -177,18 +176,13 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 
 	protected abstract CandidatesQuery createPreExistingCandidatesQuery(AbstractDDOrderCandidateEvent event, CandidateType candidateType);
 
-	protected abstract Flag extractIsAdviseEvent(@NonNull final AbstractDDOrderCandidateEvent event);
-
 	private static DistributionDetail updateDistributionDetail(
 			@NonNull final DistributionDetail.DistributionDetailBuilder builder,
 			@NonNull final AbstractDDOrderCandidateEvent event,
 			@NonNull final CandidateType candidateType)
 	{
 		return builder
-				//.ddOrderDocStatus(event.getDocStatus())
-				//.ddOrderId(event.getDdOrderId())
-				//.ddOrderLineId(event.getDdOrderLineId())
-				//.ddOrderCandidateId(event.getExistingDDOrderCandidateId())
+				.ddOrderCandidateId(event.getExistingDDOrderCandidateId())
 				.distributionNetworkAndLineId(event.getDistributionNetworkAndLineId())
 				.qty(event.getQty())
 				.plantId(extractPlantId(event, candidateType))

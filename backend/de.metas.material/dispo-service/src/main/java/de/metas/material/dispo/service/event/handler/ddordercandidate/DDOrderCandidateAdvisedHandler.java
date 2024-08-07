@@ -14,7 +14,6 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.CandidatesGroup;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
@@ -104,12 +103,6 @@ public class DDOrderCandidateAdvisedHandler
 						.demandDetail(DemandDetail.forSupplyRequiredDescriptor(event.getSupplyRequiredDescriptorNotNull()))
 						.build()
 		);
-	}
-
-	@Override
-	protected Flag extractIsAdviseEvent(@NonNull final AbstractDDOrderCandidateEvent ddOrderEvent)
-	{
-		return Flag.TRUE;
 	}
 
 	@Override

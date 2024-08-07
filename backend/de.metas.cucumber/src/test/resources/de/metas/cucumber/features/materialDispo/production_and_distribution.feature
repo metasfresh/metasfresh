@@ -212,8 +212,8 @@ Feature: Production + Distribution material dispo scenarios
       | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | QtyProcessed | QtyToProcess | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID | Forward_PP_Order_ID |
       | component    | rawMaterials_WH     | production_WH    | 10  | 10           | 0            | Y         | oc_1                          | ocl_1                             | ppOrder             |
     And after not more than 60s, DD_OrderLine found for orderLine SO_L1
-      | Identifier |
-      | ddol1      |
+      | Identifier | M_Product_ID | QtyEntered | M_Warehouse_From_ID | M_Warehouse_To_ID |
+      | ddol1      | component    | 10         | rawMaterials_WH     | production_WH     |
 
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID  |
