@@ -135,4 +135,7 @@ public abstract class AbstractDDOrderCandidateEvent implements MaterialEvent
 	@Nullable
 	@JsonIgnore
 	public PPOrderRef getPpOrderRef() {return getDdOrderCandidate().getPpOrderRef();}
+
+	@JsonIgnore
+	public int getExistingDDOrderCandidateId() {return getDdOrderCandidate().getExitingDDOrderCandidateId();}
 }

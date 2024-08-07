@@ -44,9 +44,14 @@ public class DDOrderCandidateService
 		ddOrderCandidateRepository.save(ddOrderCandidate);
 	}
 
-	public void enqueueToProcess(@NonNull final DDOrderCandidate ddOrderCandidate)
+	public void enqueueToProcess(@NonNull final DDOrderCandidateId ddOrderCandidateId)
 	{
-		ddOrderCandidateEnqueueService.enqueueId(ddOrderCandidate.getIdNotNull());
+		ddOrderCandidateEnqueueService.enqueueId(ddOrderCandidateId);
+	}
+
+	public void enqueueToProcess(@NonNull final PInstanceId selectionId)
+	{
+		ddOrderCandidateEnqueueService.enqueueSelection(selectionId);
 	}
 
 	public List<DDOrderCandidate> getBySelectionId(@NonNull final PInstanceId selectionId)

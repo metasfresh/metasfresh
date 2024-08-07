@@ -49,6 +49,11 @@ public class DDOrderCandidateEnqueueService
 		enqueueSelection(DDOrderCandidateEnqueueRequest.ofSelectionId(selectionId));
 	}
 
+	public void enqueueSelection(@NonNull final PInstanceId selectionId)
+	{
+		enqueueSelection(DDOrderCandidateEnqueueRequest.ofSelectionId(selectionId));
+	}
+
 	public void enqueueSelection(@NonNull final DDOrderCandidateEnqueueRequest request)
 	{
 		getQueue().newWorkPackage()

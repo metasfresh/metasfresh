@@ -41,10 +41,22 @@ public class DDOrderCandidateRequestedEventHandler
 	@Override
 	public void handleEvent(@NonNull final DDOrderCandidateRequestedEvent event)
 	{
-		final DDOrderCandidate ddOrderCandidate = toDDOrderCandidate(event);
-		ddOrderCandidateService.save(ddOrderCandidate);
+		final DDOrderCandidate ddOrderCandidate = createAndSaveDDOrderCandidate(event);
+		updateMDCandidatesFromDDOrderCandidate(ddOrderCandidate);
+
+		if (event.isCreateDDOrder())
+		{
+			ddOrderCandidateService.enqueueToProcess(ddOrderCandidate.getIdNotNull());
+		}
+		else
+		{
+			Loggables.addLog("Skip creating DD_Order because isCreateDDOrder=false (maybe because PP_Product_Planning.IsCreatePlan=false?)");
+		}
+	}
+
+	private void updateMDCandidatesFromDDOrderCandidate(final DDOrderCandidate ddOrderCandidate)
+	{
 		final DDOrderCandidateId ddOrderCandidateId = ddOrderCandidate.getIdNotNull();
-		Loggables.withLogger(logger, Level.DEBUG).addLog("Created DD Order candidate: {}", ddOrderCandidate);
 
 		if (ddOrderCandidate.getMaterialDispoGroupId() != null)
 		{
@@ -56,15 +68,14 @@ public class DDOrderCandidateRequestedEventHandler
 					candidate -> candidate.withBusinessCaseDetail(DistributionDetail.class, dispoDetail -> dispoDetail.withDdOrderCandidateId(ddOrderCandidateId.getRepoId()))
 			);
 		}
+	}
 
-		if (event.isCreateDDOrder())
-		{
-			ddOrderCandidateService.enqueueToProcess(ddOrderCandidate);
-		}
-		else
-		{
-			Loggables.addLog("Skip creating DD_Order because isCreateDDOrder=false (maybe because PP_Product_Planning.IsCreatePlan=false?)");
-		}
+	private DDOrderCandidate createAndSaveDDOrderCandidate(@NonNull final DDOrderCandidateRequestedEvent event)
+	{
+		final DDOrderCandidate ddOrderCandidate = toDDOrderCandidate(event);
+		ddOrderCandidateService.save(ddOrderCandidate);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Created DD Order candidate: {}", ddOrderCandidate);
+		return ddOrderCandidate;
 	}
 
 	private static DDOrderCandidate toDDOrderCandidate(@NonNull final DDOrderCandidateRequestedEvent event)

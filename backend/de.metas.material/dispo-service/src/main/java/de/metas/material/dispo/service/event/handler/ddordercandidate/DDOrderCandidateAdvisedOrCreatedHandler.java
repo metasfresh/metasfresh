@@ -132,9 +132,11 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 			@NonNull final CandidateType candidateType,
 			@Nullable final Consumer<CandidateBuilder> updater)
 	{
-		final CandidateBuilder builder = candidateRepositoryRetrieval.retrieveLatestMatch(createPreExistingCandidatesQuery(event, candidateType))
-				.map(Candidate::toBuilder)
-				.orElseGet(() -> Candidate.builderForEventDescriptor(event.getEventDescriptor()));
+		final Candidate existingCandidate = candidateRepositoryRetrieval.retrieveLatestMatch(createPreExistingCandidatesQuery(event, candidateType)).orElse(null);
+
+		final CandidateBuilder builder = existingCandidate != null
+				? existingCandidate.toBuilder()
+				: Candidate.builderForEventDescriptor(event.getEventDescriptor());
 
 		builder.type(candidateType)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
@@ -145,7 +147,7 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 						.date(computeDate(event, candidateType))
 						.warehouseId(extractWarehouseId(event, candidateType))
 						.build())
-				.businessCaseDetail(toDistributionDetail(event, candidateType))
+				.businessCaseDetail(updateDistributionDetail(toDistributionDetailBuilder(existingCandidate), event, candidateType))
 				.simulated(event.isSimulated());
 
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
@@ -162,16 +164,31 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 		return candidateChangeHandler.onCandidateNewOrChange(builder.build()).getCandidate();
 	}
 
+	private static DistributionDetail.DistributionDetailBuilder toDistributionDetailBuilder(@Nullable final Candidate existingCandidate)
+	{
+		final DistributionDetail existingDistributionDetail = existingCandidate != null
+				? existingCandidate.getBusinessCaseDetail(DistributionDetail.class).orElse(null)
+				: null;
+
+		return existingDistributionDetail != null
+				? existingDistributionDetail.toBuilder()
+				: DistributionDetail.builder();
+	}
+
 	protected abstract CandidatesQuery createPreExistingCandidatesQuery(AbstractDDOrderCandidateEvent event, CandidateType candidateType);
 
 	protected abstract Flag extractIsAdviseEvent(@NonNull final AbstractDDOrderCandidateEvent event);
 
-	private static DistributionDetail toDistributionDetail(@NonNull final AbstractDDOrderCandidateEvent event, @NonNull final CandidateType candidateType)
+	private static DistributionDetail updateDistributionDetail(
+			@NonNull final DistributionDetail.DistributionDetailBuilder builder,
+			@NonNull final AbstractDDOrderCandidateEvent event,
+			@NonNull final CandidateType candidateType)
 	{
-		return DistributionDetail.builder()
+		return builder
 				//.ddOrderDocStatus(event.getDocStatus())
 				//.ddOrderId(event.getDdOrderId())
 				//.ddOrderLineId(event.getDdOrderLineId())
+				//.ddOrderCandidateId(event.getExistingDDOrderCandidateId())
 				.distributionNetworkAndLineId(event.getDistributionNetworkAndLineId())
 				.qty(event.getQty())
 				.plantId(extractPlantId(event, candidateType))

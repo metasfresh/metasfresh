@@ -65,6 +65,7 @@ public class DistributionDetailsQuery
 
 	@Nullable ProductPlanningId productPlanningId;
 	@Nullable DistributionNetworkAndLineId distributionNetworkAndLineId;
+	int ddOrderCandidateId;
 	int ddOrderLineId;
 	int ddOrderId;
 	int ppOrderCandidateId;
@@ -77,6 +78,7 @@ public class DistributionDetailsQuery
 		return DistributionDetail.builder()
 				.productPlanningId(productPlanningId)
 				.distributionNetworkAndLineId(distributionNetworkAndLineId)
+				.ddOrderCandidateId(ddOrderCandidateId)
 				.ddOrderId(ddOrderId)
 				.ddOrderLineId(ddOrderLineId);
 	}
@@ -120,11 +122,11 @@ public class DistributionDetailsQuery
 				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_OrderLine_ID, ddOrderLineId);
 				doFilter = true;
 			}
-			// if (ddOrderCandidateId > 0)
-			// {
-			// 	distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_Order_Candidate_ID, ddOrderCandidateId);
-			// 	doFilter = true;
-			// }
+			if (ddOrderCandidateId > 0)
+			{
+				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_Order_Candidate_ID, ddOrderCandidateId);
+				doFilter = true;
+			}
 			if (ppOrderCandidateId > 0)
 			{
 				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId);

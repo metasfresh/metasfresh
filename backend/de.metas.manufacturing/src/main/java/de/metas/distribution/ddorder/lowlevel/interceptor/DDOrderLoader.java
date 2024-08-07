@@ -94,7 +94,7 @@ class DDOrderLoader
 				.plantId(ResourceId.ofRepoIdOrNull(record.getPP_Plant_ID()))
 				.productPlanningId(ProductPlanningId.ofRepoIdOrNull(record.getPP_Product_Planning_ID()))
 				.sourceWarehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_From_ID()))
-				.targetWarehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
+				.targetWarehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_To_ID()))
 				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
 				.simulated(record.isSimulated())
 				.materialDispoGroupId(getMaterialDispoGroupId(record));

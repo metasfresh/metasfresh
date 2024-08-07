@@ -51,6 +51,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 
+/**
+ * Process {@link DDOrderCandidate}s and creates DD Order(s).
+ */
 @Builder
 class DDOrderCandidateProcessCommand
 {
@@ -142,9 +145,6 @@ class DDOrderCandidateProcessCommand
 
 		record.setC_DocType_ID(getDocTypeId(key.getOrgId()).getRepoId());
 
-		final WarehouseId inTransitWarehouseId = warehouseBL.getInTransitWarehouseId(key.getOrgId());
-		record.setM_Warehouse_ID(inTransitWarehouseId.getRepoId());
-
 		record.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		record.setDocAction(X_DD_Order.DOCACTION_Complete);
 		record.setDateOrdered(Timestamp.from(key.getDateOrdered()));
@@ -159,6 +159,8 @@ class DDOrderCandidateProcessCommand
 			record.setProcessed(true);
 		}
 
+		final WarehouseId inTransitWarehouseId = warehouseBL.getInTransitWarehouseId(key.getOrgId());
+		record.setM_Warehouse_ID(inTransitWarehouseId.getRepoId());
 		record.setM_Warehouse_From_ID(key.getSourceWarehouseId().getRepoId());
 		record.setM_Warehouse_To_ID(key.getTargetWarehouseId().getRepoId());
 
@@ -202,14 +204,10 @@ class DDOrderCandidateProcessCommand
 		lineRecord.setDD_NetworkDistribution_ID(distributionNetworkAndLineId != null ? distributionNetworkAndLineId.getNetworkId().getRepoId() : -1);
 		lineRecord.setDD_NetworkDistributionLine_ID(distributionNetworkAndLineId != null ? distributionNetworkAndLineId.getLineId().getRepoId() : -1);
 
-		// get supply source warehouse and locator
-		final LocatorId locatorFromId = warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(header.getM_Warehouse_From_ID()));
-
-		// get supply target warehouse and locator
-		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(header.getM_Warehouse_ID()));
-
 		//
 		// Locator From/To
+		final LocatorId locatorFromId = warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(header.getM_Warehouse_From_ID()));
+		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(header.getM_Warehouse_To_ID()));
 		lineRecord.setM_Locator_ID(locatorFromId.getRepoId());
 		lineRecord.setM_LocatorTo_ID(locatorToId.getRepoId());
 
@@ -395,7 +393,7 @@ class DDOrderCandidateProcessCommand
 		{
 			add(DDOrderCandidateAllocCandidate.builder()
 					.ddOrderCandidateId(candidate.getIdNotNull())
-					.qty(candidate.getQty())
+					.qty(candidate.getQtyToProcess())
 					.build());
 		}
 

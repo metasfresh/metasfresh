@@ -19,6 +19,7 @@ import de.metas.material.event.ddordercandidate.AbstractDDOrderCandidateEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateUpdatedEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -62,29 +63,23 @@ public class DDOrderCandidateUpdatedHandler
 	@Override
 	protected CandidatesQuery createPreExistingCandidatesQuery(@NonNull final AbstractDDOrderCandidateEvent event, @NonNull final CandidateType candidateType)
 	{
-		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
-		if (supplyRequiredDescriptor != null && supplyRequiredDescriptor.getSupplyCandidateId() > 0)
+		final int ddOrderCandidateId = event.getExistingDDOrderCandidateId();
+		if (ddOrderCandidateId <= 0)
 		{
-			return CandidatesQuery.fromId(CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId()));
-		}
-
-		final MaterialDispoGroupId groupId = event.getMaterialDispoGroupId();
-		if (groupId == null)
-		{
-			// returned false, but don't write another log message; we already logged in the other createQuery() method
-			return CandidatesQuery.FALSE;
+			throw new AdempiereException("existing DD_Order_Candidate_ID should be provided")
+					.setParameter("event", event)
+					.appendParametersToMessage();
 		}
 
 		return CandidatesQuery.builder()
 				.type(candidateType)
-				.businessCase(CandidateBusinessCase.DISTRIBUTION)
-				.groupId(groupId)
 				.materialDescriptorQuery(MaterialDescriptorQuery.builder()
 						.productId(event.getProductId())
 						.storageAttributesKey(event.getStorageAttributesKey())
 						.build())
-				.distributionDetailsQuery(DistributionDetailsQuery.builder()
-						.build())
+				.groupId(event.getMaterialDispoGroupId())
+				.businessCase(CandidateBusinessCase.DISTRIBUTION)
+				.distributionDetailsQuery(DistributionDetailsQuery.builder().ddOrderCandidateId(ddOrderCandidateId).build())
 				.build();
 	}
 }
