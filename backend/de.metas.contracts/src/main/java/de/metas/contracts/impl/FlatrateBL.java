@@ -2702,8 +2702,12 @@ public class FlatrateBL implements IFlatrateBL
 				settings.getSoTrx()
 		);
 
-		final CurrencyPrecision currencyPrecision = currencyBL.getStdPrecision(CurrencyId.ofRepoId(term.getC_Currency_ID()));
-		return priceList != null ? CurrencyPrecision.ofInt(priceList.getPricePrecision()) : currencyPrecision;
+		if(priceList != null)
+		{
+			return CurrencyPrecision.ofInt(priceList.getPricePrecision());
+		}
+
+		return currencyBL.getStdPrecision(CurrencyId.ofRepoId(term.getC_Currency_ID()));
 	}
 
 }
