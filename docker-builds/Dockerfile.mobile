@@ -1,4 +1,4 @@
-FROM node:14 as build
+FROM node:20 as build
 
 RUN npm install -g webpack webpack-cli
 
