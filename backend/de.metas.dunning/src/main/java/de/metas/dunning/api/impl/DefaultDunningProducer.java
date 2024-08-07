@@ -159,7 +159,7 @@ public class DefaultDunningProducer implements IDunningProducer
 
 		doc.setC_BPartner_ID(candidate.getC_BPartner_ID());
 		doc.setC_BPartner_Location_ID(candidate.getC_BPartner_Location_ID());
-		// because things might have changed between the moment
+		// because things might have changed between the moment when the dunning candidate was created and when the actual dunning doc is created
 		doc.setC_Dunning_Contact_ID(bPartnerBL.getDefaultDunningContact(BPartnerId.ofRepoId(candidate.getC_BPartner_ID()))
 				.map(UserId::getRepoId)
 				.orElse(candidate.getC_Dunning_Contact_ID()));
