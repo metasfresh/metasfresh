@@ -1,7 +1,11 @@
 name: cicd
-on: [push, workflow_dispatch]
+on:
+  push:
+    paths-ignore:
+      - '**/README.md'
+  workflow_dispatch:
 env:
-  PIPELINE_VERSION: '0.3.8'
+  PIPELINE_VERSION: '0.3.9'
 jobs:
 
   init:
