@@ -435,6 +435,9 @@
             <xsd:element minOccurs="0" name="DiscountDays" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="EDI_cctop_140_v_ID" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="Rate" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="Name" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DiscountAmt" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="DiscountBaseAmt" type="xsd:decimal"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="EDI_cctop_invoic_500_vType">
@@ -445,6 +448,7 @@
             <xsd:element minOccurs="0" name="ISO_Code" type="xsd:string"/>
             <xsd:element minOccurs="0" name="Line" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="LineNetAmt" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="Discount" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="Name" type="xsd:string"/>
             <xsd:element minOccurs="0" name="Name2" type="xsd:string"/>
             <xsd:element minOccurs="0" name="PriceActual" type="xsd:decimal"/>
@@ -452,6 +456,7 @@
             <xsd:element minOccurs="0" name="QtyInvoiced" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="Rate" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="taxfree" type="YES-NO"/>
+            <xsd:element minOccurs="0" name="IsTaxExempt" type="YES-NO"/>
             <xsd:element minOccurs="0" name="Value" type="xsd:string"/>
             <xsd:element minOccurs="0" name="CustomerProductNo" type="xsd:string"/>
             <xsd:element minOccurs="0" name="EDI_cctop_invoic_v_ID" type="xsd:integer"/>
@@ -480,16 +485,18 @@
     </xsd:complexType>
     <xsd:complexType name="EDI_cctop_901_991_vType">
         <xsd:sequence>
-            <xsd:element minOccurs="0" name="C_Invoice_ID" type="xsd:integer"/>
-            <xsd:element minOccurs="0" name="EDI_cctop_901_991_v_ID" type="xsd:integer"/>
-            <xsd:element minOccurs="0" name="Rate" type="xsd:decimal"/>
-            <xsd:element minOccurs="0" name="TaxAmt" type="xsd:decimal"/>
-            <xsd:element minOccurs="0" name="TaxBaseAmt" type="xsd:decimal"/>
-            <xsd:element minOccurs="0" name="TotalAmt" type="xsd:decimal"/>
+            <xsd:element name="C_Invoice_ID" type="xsd:integer"/>
+            <xsd:element name="EDI_cctop_901_991_v_ID" type="xsd:integer"/>
+            <xsd:element name="Rate" type="xsd:decimal"/>
+            <xsd:element name="TaxAmt" type="xsd:decimal"/>
+            <xsd:element name="IsTaxExempt" type="YES-NO"/>
+            <xsd:element name="TaxBaseAmt" type="xsd:decimal"/>
+            <xsd:element name="TotalAmt" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="ReferenceNo" type="xsd:string"/>
             <xsd:element name="SurchargeAmt" type="xsd:decimal"/>
             <xsd:element name="TaxBaseAmtWithSurchargeAmt" type="xsd:decimal"/>
             <xsd:element name="TaxAmtWithSurchargeAmt" type="xsd:decimal"/>
+            <xsd:element name="IsMainVAT" type="YES-NO"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="EDI_cctop_invoic_vType">
