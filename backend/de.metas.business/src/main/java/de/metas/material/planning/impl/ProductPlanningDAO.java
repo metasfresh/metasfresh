@@ -195,7 +195,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final int attributeSetInstanceRepoId)
 	{
 		final OrgId orgId = OrgId.ofRepoIdOrAny(orgRepoId);
-		final ProductId productId = ProductId.ofRepoId(productRepoId);
+		final ProductId productId = ProductId.ofRepoIdOrNull(productRepoId);
 		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstanceRepoId);
 		return findPlantIfExists(orgId, warehouse, productId, attributeSetInstanceId)
 				.orElseThrow(() -> new NoPlantForWarehouseException(orgId, WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()), productId));
@@ -203,10 +203,10 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 
 	@Override
 	public Optional<ResourceId> findPlantIfExists(
-			final OrgId orgId,
-			final I_M_Warehouse warehouse,
-			final ProductId productId,
-			final AttributeSetInstanceId attributeSetInstanceId)
+			@Nullable final OrgId orgId,
+			@Nullable final I_M_Warehouse warehouse,
+			@Nullable final ProductId productId,
+			@Nullable final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		//
 		// First: get the plant directly from Warehouse
