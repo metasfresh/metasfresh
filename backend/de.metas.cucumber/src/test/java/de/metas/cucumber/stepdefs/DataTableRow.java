@@ -395,9 +395,19 @@ public class DataTableRow
 		return Timestamp.from(getAsInstant(columnName));
 	}
 
+	public Optional<Timestamp> getAsOptionalInstantTimestamp(@NonNull final String columnName)
+	{
+		return getAsOptionalInstant(columnName).map(Timestamp::from);
+	}
+
 	public Instant getAsInstant(@NonNull final String columnName)
 	{
 		return parseInstant(getAsString(columnName), columnName);
+	}
+
+	public Optional<Instant> getAsOptionalInstant(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(valueStr -> parseInstant(valueStr, columnName));
 	}
 
 	@NonNull
