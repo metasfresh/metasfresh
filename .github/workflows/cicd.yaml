@@ -774,6 +774,11 @@ jobs:
         if: success() || failure()
         run: |
           ./containerHealthCheck.sh mobile
+      - name: edi health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh edi
       - name: run api health checks
         working-directory: docker-builds/health/
         if: success() || failure()
@@ -792,6 +797,7 @@ jobs:
           docker inspect --format "{{json .State.Health }}" compose-webui-1 | jq
           docker inspect --format "{{json .State.Health }}" compose-external-1 | jq
           docker inspect --format "{{json .State.Health }}" compose-mobile-1 | jq
+          docker inspect --format "{{json .State.Health }}" compose-edi-1 | jq
       - name: stop docker compose
         working-directory: docker-builds/compose/
         env:
