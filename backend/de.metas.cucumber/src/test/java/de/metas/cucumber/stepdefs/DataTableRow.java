@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.i18n.ExplainedOptional;
 import de.metas.quantity.Quantity;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.OptionalBoolean;

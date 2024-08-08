@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -30,107 +29,84 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.product.ProductId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class MaterialDispoRecordRepository
 {
-	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-
-	public MaterialDispoRecordRepository(@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
-	{
-		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
-	}
+	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	@NonNull
 	public MaterialDispoDataItem getBy(@NonNull final CandidatesQuery query)
 	{
 		assertNotStockQuery(query);
 
-		final Candidate candidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
-		if (candidate == null)
-		{
-			throw new AdempiereException("The given candidatesQuery does not match any candidate").appendParametersToMessage()
-					.setParameter("candidatesQuery", query);
-		}
-		return extractMaterialDispoItem(query, candidate);
+		return candidateRepositoryRetrieval.retrieveLatestMatch(query)
+				.map(this::asMaterialDispoDataItem)
+				.orElseThrow(() -> new AdempiereException("The given candidatesQuery does not match any candidate")
+						.appendParametersToMessage()
+						.setParameter("candidatesQuery", query));
 	}
 
 	@NonNull
 	public ImmutableList<MaterialDispoDataItem> getAllBy(@NonNull final CandidatesQuery query)
 	{
-		assertNotStockQuery(query);
-		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
-		return asMaterialDispoDataItem(query, candidates);
+		final List<Candidate> candidates = getAllByQuery(query);
+		return asMaterialDispoDataItems(candidates);
 	}
 
-	@NonNull
-	@VisibleForTesting
-	public String getAllByQueryAsString(@NonNull final CandidatesQuery query)
+	public List<Candidate> getAllByQuery(final @NonNull CandidatesQuery query)
 	{
 		assertNotStockQuery(query);
-
-		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
-		return asString(query, candidates);
+		return candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 	}
 
-	@NonNull
-	@VisibleForTesting
-	public String getAllAsString(@NonNull final ProductId productId)
+	public List<Candidate> getAllByProduct(final @NonNull ProductId productId)
 	{
-		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveAllNotStockOrderedByDateAndSeqNoFor(productId);
-		return asString(null, candidates);
+		return candidateRepositoryRetrieval.retrieveAllNotStockOrderedByDateAndSeqNoFor(productId);
 	}
 
-	@NonNull
-	private String asString(final @Nullable CandidatesQuery query, final @NonNull List<Candidate> candidates)
+	private ImmutableList<MaterialDispoDataItem> asMaterialDispoDataItems(final @NonNull List<Candidate> candidates)
 	{
-		final StringBuilder sb = new StringBuilder();
-		asMaterialDispoDataItem(query, candidates).forEach(item -> sb.append(item + "\n"));
-		return sb.toString();
+		return candidates.stream()
+				.map(this::asMaterialDispoDataItem)
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	private ImmutableList<MaterialDispoDataItem> asMaterialDispoDataItem(
-			final @Nullable CandidatesQuery query,
-			final @NonNull List<Candidate> candidates)
+	private MaterialDispoDataItem asMaterialDispoDataItem(final @NonNull Candidate candidate)
 	{
-		final ImmutableList.Builder<MaterialDispoDataItem> result = ImmutableList.builder();
+		final Candidate stockCandidate = getStockCandidate(candidate)
+				.orElseThrow(() -> new AdempiereException("No stock candidate found for " + candidate));
 
-		for (final Candidate candidate : candidates)
-		{
-			result.add(extractMaterialDispoItem(query, candidate));
-		}
-		return result.build();
+		return MaterialDispoDataItem.of(candidate, stockCandidate);
 	}
 
-	private MaterialDispoDataItem extractMaterialDispoItem(final @Nullable CandidatesQuery query, final @NonNull Candidate candidate)
+	public Optional<Candidate> getStockCandidate(final @NonNull Candidate candidate)
 	{
-		final Candidate stockCandidate;
 		switch (candidate.getType())
 		{
 			case DEMAND:
 			case INVENTORY_DOWN:
 			case UNEXPECTED_DECREASE:
-				stockCandidate = candidateRepositoryRetrieval
-						.retrieveSingleChild(candidate.getId())
-						.orElseThrow(() -> new AdempiereException("").appendParametersToMessage()
-								.setParameter("candidatesQuery", query)
-								.setParameter("candidate", candidate)
-						);
-				return MaterialDispoDataItem.of(candidate, stockCandidate);
+			{
+				return candidateRepositoryRetrieval.retrieveSingleChild(candidate.getId());
+			}
 			case SUPPLY:
 			case INVENTORY_UP:
 			case UNEXPECTED_INCREASE:
-				stockCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(candidate.getParentId()));
-				return MaterialDispoDataItem.of(candidate, stockCandidate);
+			{
+				return candidateRepositoryRetrieval.retrieveLatestMatch(CandidatesQuery.fromId(candidate.getParentId()));
+			}
 			default:
-				throw new AdempiereException("The CandidateType=" + candidate.getType() + " is not yet supported! Please add").appendParametersToMessage()
-						.setParameter("candidatesQuery", query)
-						.setParameter("candidate", candidate);
+			{
+				return Optional.empty();
+			}
 		}
 	}
 

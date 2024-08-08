@@ -89,6 +89,8 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 				.ppOrderId(row.getAsOptionalIdentifier(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_ID).orElse(null))
 				.ppOrderBOMLineId(row.getAsOptionalIdentifier(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_BOMLine_ID).orElse(null))
 				//
+				.rawValues(row)
+				//
 				.build();
 	}
 

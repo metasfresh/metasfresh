@@ -25,9 +25,9 @@ package de.metas.cucumber.stepdefs.material.dispo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
-import de.metas.distribution.ddordercandidate.DDOrderCandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
@@ -109,19 +109,22 @@ public class MD_Candidate_StepDefTable
 		@Nullable StepDefDataIdentifier attributeSetInstanceId;
 		boolean simulated;
 		@Nullable WarehouseId warehouseId;
-		
+
 		//
 		// Distribution
 		@Nullable StepDefDataIdentifier ddOrderCandidateId;
 		@Nullable StepDefDataIdentifier ddOrderId;
 		@Nullable StepDefDataIdentifier ddOrderLineId;
-		
+
 		//
 		// Production
 		@Nullable StepDefDataIdentifier ppOrderCandidateId;
 		@Nullable StepDefDataIdentifier ppOrderLineCandidateId;
 		@Nullable StepDefDataIdentifier ppOrderId;
 		@Nullable StepDefDataIdentifier ppOrderBOMLineId;
+
+		//
+		@NonNull DataTableRow rawValues;
 
 		public CandidatesQuery toCandidatesQuery()
 		{

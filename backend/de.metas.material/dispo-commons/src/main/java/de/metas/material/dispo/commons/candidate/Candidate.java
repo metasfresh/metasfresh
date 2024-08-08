@@ -13,6 +13,7 @@ import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -22,6 +23,7 @@ import lombok.ToString;
 import lombok.Value;
 import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 
@@ -288,7 +290,9 @@ public class Candidate
 
 	public Instant getDate() {return getMaterialDescriptor().getDate();}
 
-	public int getProductId() {return getMaterialDescriptor().getProductId();}
+	public ProductId getProductId() {return ProductId.ofRepoId(getMaterialDescriptor().getProductId());}
+
+	public AttributeSetInstanceId getAttributeSetInstanceId() {return AttributeSetInstanceId.ofRepoIdOrNone(getMaterialDescriptor().getAttributeSetInstanceId());}
 
 	public WarehouseId getWarehouseId() {return getMaterialDescriptor().getWarehouseId();}
 

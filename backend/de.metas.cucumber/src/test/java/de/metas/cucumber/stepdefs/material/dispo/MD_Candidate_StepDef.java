@@ -24,12 +24,12 @@ package de.metas.cucumber.stepdefs.material.dispo;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -62,6 +62,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
@@ -111,8 +112,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
+import static de.metas.cucumber.stepdefs.material.dispo.CandidatesToTabularStringConverter.toTabularStringFromCandidateRows;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_DateProjected;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_ID;
@@ -392,22 +393,33 @@ public class MD_Candidate_StepDef
 	{
 		validate_md_candidates(timeoutSec, table);
 
-		final ImmutableSet<ProductId> productIdSet = table.getProductIds();
+		StepDefUtil.tryAndWaitForItem(
+				timeoutSec,
+				500,
+				() -> {
+					final int expectedCandidatesCount = table.size();
 
-		final int storedCandidatesSize = queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addInArrayFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, productIdSet)
-				.create()
-				.count();
+					final List<I_MD_Candidate> actualCandidates = queryBL.createQueryBuilder(I_MD_Candidate.class)
+							.addInArrayFilter(COLUMNNAME_M_Product_ID, table.getProductIds())
+							.addNotEqualsFilter(COLUMNNAME_MD_Candidate_Type, CandidateType.STOCK) // skip STOCK candidates
+							.orderBy(COLUMNNAME_MD_Candidate_ID)
+							.create()
+							.list();
+					final int actualCandidatesCount = actualCandidates.size();
 
-		// expected count is twice the number of rows bc we integrated the stock md_candidate as a column in step def
-		final int expectedCandidateAndStocks = table.size() * 2;
+					if (actualCandidatesCount != expectedCandidatesCount)
+					{
+						return ItemProvider.ProviderResult.resultWasNotFound(
+								"Expected " + expectedCandidatesCount + " MD_Candidate(s) but found " + actualCandidatesCount + " MD_Candidate(s)"
+										+ "\nActual MD_Candidate(s) - " + actualCandidatesCount + " records:"
+										+ "\n" + toCandidatesTabularStringFromRecords(actualCandidates)
+										+ "\nExpected Row(s) - " + expectedCandidatesCount + " rows:"
+										+ "\n" + toTabularStringFromCandidateRows(table)
+						);
+					}
 
-		if (expectedCandidateAndStocks != storedCandidatesSize)
-		{
-			logCandidateRecords(productIdSet, table);
-		}
-
-		assertThat(storedCandidatesSize).isEqualTo(expectedCandidateAndStocks);
+					return ItemProvider.ProviderResult.resultWasFound(true);
+				});
 	}
 
 	@And("^after not more than (.*)s, MD_Candidates are found$")
@@ -543,10 +555,12 @@ public class MD_Candidate_StepDef
 			final int timeoutSec,
 			final @NonNull MaterialDispoTableRow row) throws InterruptedException
 	{
+
 		final CandidatesQuery candidatesQuery = row.toCandidatesQuery();
 		SharedTestContext.put("candidatesQuery", candidatesQuery);
-		SharedTestContext.put("query result candidates", () -> materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery));
-		SharedTestContext.put("all product related candidates", () -> materialDispoRecordRepository.getAllAsString(row.getProductId()));
+		SharedTestContext.put("candidatesQuery SQL", () -> RepositoryCommons.mkQueryBuilder(candidatesQuery).create());
+		SharedTestContext.put("query result candidates", () -> toCandidatesTabularString(candidatesQuery));
+		SharedTestContext.put("all product related candidates", () -> toCandidatesTabularString(row.getProductId()));
 
 		return StepDefUtil.tryAndWaitForItem(
 				timeoutSec,
@@ -808,35 +822,30 @@ public class MD_Candidate_StepDef
 		}
 	}
 
-	private void logCandidateRecords(
-			@NonNull final ImmutableSet<ProductId> productIds,
-			@NonNull final MD_Candidate_StepDefTable table)
+	private String toCandidatesTabularString(@NonNull final CandidatesQuery candidatesQuery)
 	{
-		final List<I_MD_Candidate> actualCandidates = queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addInArrayFilter(COLUMNNAME_M_Product_ID, productIds)
-				.orderBy(COLUMNNAME_MD_Candidate_ID)
-				.create()
-				.list();
-
-		final String mdCandidateRecordsStr = actualCandidates.stream().map(MD_Candidate_StepDef::toString).collect(Collectors.joining("\n"));
-		final String rowsStr = table.stream().map(MaterialDispoTableRow::toString).collect(Collectors.joining("\n"));
-
-		//noinspection StringConcatenationArgumentToLogCall
-		logger.error("*** Error while looking for MD_Candidate records, see current context:"
-				+ "\nActual MD_Candidate(s) - " + actualCandidates.size() + " records:"
-				+ "\n" + mdCandidateRecordsStr
-				+ "\nExpected Row(s) - " + table.size() + " rows:"
-				+ "\n" + rowsStr);
+		final List<Candidate> candidates = materialDispoRecordRepository.getAllByQuery(candidatesQuery);
+		return getTabularConverter().toTabularStringFromCandidates(candidates);
 	}
 
-	private static String toString(I_MD_Candidate candidateRecord)
+	private String toCandidatesTabularString(@NonNull final ProductId productId)
 	{
-		return COLUMNNAME_MD_Candidate_ID + " : " + candidateRecord.getMD_Candidate_ID() + " ; "
-				+ COLUMNNAME_MD_Candidate_Type + " : " + candidateRecord.getMD_Candidate_Type() + " ; "
-				+ COLUMNNAME_M_Product_ID + " : " + candidateRecord.getM_Product_ID() + " ; "
-				+ COLUMNNAME_DateProjected + " : " + candidateRecord.getDateProjected() + " ; "
-				+ COLUMNNAME_Qty + " : " + candidateRecord.getQty() + " ; "
-				+ COLUMNNAME_Qty_AvailableToPromise + " : " + candidateRecord.getQty_AvailableToPromise() + " ; "
-				+ COLUMNNAME_MD_Candidate_BusinessCase + " : " + candidateRecord.getMD_Candidate_BusinessCase() + " ; ";
+		final List<Candidate> candidates = materialDispoRecordRepository.getAllByProduct(productId);
+		return getTabularConverter().toTabularStringFromCandidates(candidates);
+	}
+
+	private String toCandidatesTabularStringFromRecords(@NonNull final List<I_MD_Candidate> candidates)
+	{
+		return getTabularConverter().toTabularStringFromCandidateRecords(candidates);
+	}
+
+	private CandidatesToTabularStringConverter getTabularConverter()
+	{
+		return CandidatesToTabularStringConverter.builder()
+				.materialDispoRecordRepository(materialDispoRecordRepository)
+				.mdCandidateTable(stockCandidateTable)
+				.productTable(productTable)
+				.attributeSetInstanceTable(attributeSetInstanceTable)
+				.build();
 	}
 }
