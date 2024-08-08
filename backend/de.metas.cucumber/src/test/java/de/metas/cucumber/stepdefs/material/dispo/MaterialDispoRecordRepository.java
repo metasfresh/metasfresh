@@ -20,10 +20,12 @@
  * #L%
  */
 
-package de.metas.material.dispo.commons.candidate;
+package de.metas.cucumber.stepdefs.material.dispo;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.product.ProductId;

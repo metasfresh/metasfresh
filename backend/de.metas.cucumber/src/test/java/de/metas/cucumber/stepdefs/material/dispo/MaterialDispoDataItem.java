@@ -20,8 +20,12 @@
  * #L%
  */
 
-package de.metas.material.dispo.commons.candidate;
+package de.metas.cucumber.stepdefs.material.dispo;
 
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;

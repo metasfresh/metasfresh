@@ -46,8 +46,6 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.MaterialDispoDataItem;
-import de.metas.material.dispo.commons.candidate.MaterialDispoRecordRepository;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
