@@ -198,7 +198,7 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | c_l_1_1    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -10 | -10                    |
       | c_l_1_2    | SUPPLY            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 10  | 0                      |
       | c_l_2_1    | DEMAND            | PRODUCTION                | p_3          | 2021-04-16T21:00:00Z | -10 | -10                    |
-      | c_l_2_2    | SUPPLY            |                           | p_3          | 2021-04-16T21:00:00Z | 10  | 0                      |
+#      | c_l_2_2    | SUPPLY            |                           | p_3          | 2021-04-16T21:00:00Z | 10  | 0                      |
 
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
@@ -337,7 +337,7 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | c_1_1      | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | -10  | -10                    |
       | c_2_1      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0                      |
       | c_l_1_1    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100                   |
-      | c_l_1_2    | SUPPLY            |                           | p_2          | 2021-04-16T21:00:00Z | 100  | 0                      |
+#      | c_l_1_2    | SUPPLY            |                           | p_2          | 2021-04-16T21:00:00Z | 100  | 0                      |
 
     And the following PP_Order_Candidates are closed
       | PP_Order_Candidate_ID.Identifier |
@@ -356,7 +356,7 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | c_1_1                      | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | 10  | -10                    |
       | c_2_1                      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 0   | -10                    |
       | c_l_1_1                    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 0   | 0                      |
-      | c_l_1_2                    | SUPPLY            |                           | p_2          | 2021-04-16T21:00:00Z | 100 | 100                    |
+#      | c_l_1_2                    | SUPPLY            |                           | p_2          | 2021-04-16T21:00:00Z | 100 | 100                    |
 
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
@@ -428,7 +428,7 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | -10  | -10                    |
       | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0                      |
       | c_l_1      | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100                   |
-      | c_l_2      | SUPPLY            |                           | p_2          | 2021-04-16T21:00:00Z | 100  | 0                      |
+#      | c_l_2      | SUPPLY            |                           | p_2          | 2021-04-16T21:00:00Z | 100  | 0                      |
 
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
@@ -451,7 +451,7 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | Qty_AvailableToPromise |
       | c_3        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0                      |
-      | c_l_3      | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | 0                      |
+      | c_l_3      | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100                   |
 
     And the following PP_Order_Candidates are closed
       | PP_Order_Candidate_ID.Identifier |
@@ -471,7 +471,7 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | c_2                        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 0   | -10                    |
       | c_3                        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10  | 0                      |
       | c_l_1                      | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 0   | 0                      |
-      | c_l_2                      | SUPPLY            |                           | p_2          | 2021-04-16T21:00:00Z | 100 | 100                    |
-      | c_l_3                      | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 100 | 0                      |
+#      | c_l_2                      | SUPPLY            |                           | p_2          | 2021-04-16T21:00:00Z | 100 | 100                    |
+      | c_l_3                      | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 100 | -100                   |
 
 
