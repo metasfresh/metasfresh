@@ -80,7 +80,7 @@ public class M_HU_Item_StepDef
 
 		final I_M_HU_Item huItemRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_Item.class);
 		huItemRecord.setM_HU_ID(huId);
-		huItemRecord.setM_HU_Item_ID(huPiItemId);
+		huItemRecord.setM_HU_PI_Item_ID(huPiItemId);
 		huItemRecord.setQty(qty);
 		huItemRecord.setM_HU_PackingMaterial_ID(huPackingMaterialId);
 
