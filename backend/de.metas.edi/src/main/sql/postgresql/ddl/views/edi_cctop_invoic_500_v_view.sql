@@ -4,7 +4,7 @@ DROP VIEW IF EXISTS public.edi_cctop_invoic_500_v
 ;
 
 CREATE OR REPLACE VIEW public.edi_cctop_invoic_500_v AS
-SELECT SUM(il.qtyEntered)                                                                                                            AS QtyInvoiced,
+SELECT SUM(il.qtyEntered)                                                        AS QtyInvoiced,
        CASE
            WHEN u.x12de355 = 'TU' THEN 'PCE'
                                               ELSE u.x12de355
@@ -21,6 +21,7 @@ SELECT SUM(il.qtyEntered)                                                       
        il.c_invoice_id                                                                                                                                                         AS edi_cctop_invoic_v_id,
        il.priceactual,
        il.pricelist,
+       il.discount,
        ol.invoicableqtybasedon,
        REGEXP_REPLACE(pp.UPC, '\s+$', '')                                        AS UPC_CU,
        REGEXP_REPLACE(pp.EAN_CU, '\s+$', '')                                     AS EAN_CU, -- Deprecated: superseded by buyer_ean_cu
@@ -37,6 +38,7 @@ SELECT SUM(il.qtyEntered)                                                       
            WHEN t.rate = 0 THEN 'Y'
                            ELSE ''
        END                                                                                                                                                                     AS taxfree,
+       t.IsTaxExempt,
        c.iso_code,
        il.ad_client_id,
        il.ad_org_id,
@@ -88,6 +90,7 @@ WHERE TRUE
 GROUP BY il.c_invoice_id,
          il.priceactual,
          il.pricelist,
+         il.discount,
          ol.InvoicableQtyBasedOn,
          pp.UPC,
          pp.EAN_CU,
@@ -96,6 +99,7 @@ GROUP BY il.c_invoice_id,
          (SUBSTR(p.name, 1, 35)),
          (SUBSTR(p.name, 36, 70)),
          t.rate,
+         t.IsTaxExempt,
          (CASE
               WHEN u.x12de355 = 'TU' THEN 'PCE'
                                                     ELSE u.x12de355
@@ -128,7 +132,8 @@ GROUP BY il.c_invoice_id,
          il.c_orderline_id,
          pip.UPC, pip.GTIN, pip.EAN_TU, pp.GTIN, p.GTIN,
          il.QtyEnteredInBPartnerUOM, il.C_UOM_BPartner_ID, ol.externalseqno
-ORDER BY COALESCE(ol.line, il.line);
+ORDER BY COALESCE(ol.line, il.line)
+;
 
 COMMENT ON VIEW edi_cctop_invoic_500_v IS 'Notes:
 we output the Qty in the customer''s UOM (i.e. QtyEntered), but we call it QtyInvoiced for historical reasons.
