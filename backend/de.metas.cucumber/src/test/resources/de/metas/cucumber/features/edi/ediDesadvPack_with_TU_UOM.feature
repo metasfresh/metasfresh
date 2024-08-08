@@ -56,15 +56,15 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | huPackagingCode_1_S0317_010      | ISO1          | LU          |
       | huPackagingCode_2_S0317_010      | CART          | TU          |
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier        |
+      | Identifier                   |
       | huPackingLU_S0317_010        |
       | huPackingTU_S0317_010        |
       | huPackingVirtualPI_S0317_010 |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier        | Name                       | HU_UnitType | IsCurrent | OPT.M_HU_PackagingCode_ID.Identifier |
-      | packingVersionLU_S0317_010    | huPackingLU_S0317_010        | packingVersionLU_S0317_010 | LU          | Y         |                                      |
-      | packingVersionTU_S0317_010    | huPackingTU_S0317_010        | packingVersionTU_S0317_010 | TU          | Y         | huPackagingCode_2_S0317_010          |
-      | packingVersionCU_S0317_010    | huPackingVirtualPI_S0317_010 | No Packing Item_S0317_010  | V           | Y         |                                      |
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier        | HU_UnitType | IsCurrent | OPT.M_HU_PackagingCode_ID.Identifier |
+      | packingVersionLU_S0317_010    | huPackingLU_S0317_010        | LU          | Y         |                                      |
+      | packingVersionTU_S0317_010    | huPackingTU_S0317_010        | TU          | Y         | huPackagingCode_2_S0317_010          |
+      | packingVersionCU_S0317_010    | huPackingVirtualPI_S0317_010 | V           | Y         |                                      |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier | OPT.M_HU_PackingMaterial_ID.Identifier |
       | huPiItemLU_S0317_010       | packingVersionLU_S0317_010    | 10  | HU       | huPackingTU_S0317_010            |                                        |
@@ -142,15 +142,15 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | Identifier      | M_PriceList_ID |
       | plv_1_S0317_020 | pl_1_S0317_020 |
     And metasfresh contains M_ProductPrices
-      | Identifier     | M_PriceList_Version_ID.Identifier | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1_S0317_020 | plv_1_S0317_020                   | p_1_S0317_020 | 10.0     | PCE               | Normal                        |
-      | pp_2_S0317_020 | plv_1_S0317_020                   | p_2_S0317_020 | 10.0     | PCE               | Normal                        |
-      | pp_3_S0317_020 | plv_1_S0317_020                   | p_3_S0317_020 | 10.0     | PCE               | Normal                        |
-      | pp_4_S0317_020 | plv_1_S0317_020                   | p_4_S0317_020 | 10.0     | PCE               | Normal                        |
+      | Identifier     | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1_S0317_020 | plv_1_S0317_020        | p_1_S0317_020 | 10.0     | PCE               | Normal                        |
+      | pp_2_S0317_020 | plv_1_S0317_020        | p_2_S0317_020 | 10.0     | PCE               | Normal                        |
+      | pp_3_S0317_020 | plv_1_S0317_020        | p_3_S0317_020 | 10.0     | PCE               | Normal                        |
+      | pp_4_S0317_020 | plv_1_S0317_020        | p_4_S0317_020 | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners:
-      | Identifier              | IsVendor | OPT.IsCustomer | M_PricingSystem_ID |
-      | endcustomer_1_S0317_020 | N        | Y              | ps_1_S0317_020     |
+      | Identifier              | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | endcustomer_1_S0317_020 | N        | Y          | ps_1_S0317_020     |
 
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
