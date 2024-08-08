@@ -2,11 +2,20 @@ package de.metas.util.text.tabular;
 
 import com.google.common.base.Strings;
 import de.metas.common.util.CoalesceUtil;
+import lombok.Builder;
+import lombok.NonNull;
 
 class TabularStringWriter
 {
+	@NonNull private final String identString;
 	private final StringBuilder result = new StringBuilder();
 	private StringBuilder line = null;
+
+	@Builder
+	private TabularStringWriter(final int ident)
+	{
+		this.identString = ident > 0 ? Strings.repeat("\t", ident) : "";
+	}
 
 	public String getAsString()
 	{
@@ -21,6 +30,7 @@ class TabularStringWriter
 		if (line == null)
 		{
 			line = new StringBuilder();
+			line.append(identString);
 		}
 		if (line.length() == 0)
 		{

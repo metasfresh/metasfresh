@@ -1,23 +1,21 @@
 package de.metas.util.text.tabular;
 
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
 
 @EqualsAndHashCode
-@ToString
 public class Table
 {
-	private final ArrayList<String> header = new ArrayList<>();
-	private final ArrayList<Row> rowsList = new ArrayList<>();
-	private final HashMap<String, Integer> columnWidths = new HashMap<>(); // lazy
+	@Getter(AccessLevel.PACKAGE) private final ArrayList<String> header = new ArrayList<>();
+	@Getter(AccessLevel.PACKAGE) private final ArrayList<Row> rowsList = new ArrayList<>();
 
 	public void addHeaderFromStrings(final Collection<String> columnNames)
 	{
@@ -52,7 +50,6 @@ public class Table
 		}
 
 		rowsList.get(rowIndex).put(columnName, value);
-		columnWidths.clear();
 	}
 
 	public boolean isEmpty() {return header.isEmpty() || rowsList.isEmpty();}
@@ -60,13 +57,11 @@ public class Table
 	public void addRow(@NonNull final Row row)
 	{
 		rowsList.add(row);
-		columnWidths.clear();
 	}
 
 	public void addRows(@NonNull final Collection<Row> rows)
 	{
 		rowsList.addAll(rows);
-		columnWidths.clear();
 	}
 
 	public void removeColumnsWithBlankValues()
@@ -122,23 +117,6 @@ public class Table
 		}
 	}
 
-	private int getColumnWidth(final String columnName)
-	{
-		return columnWidths.computeIfAbsent(columnName, this::computeColumnWidth);
-	}
-
-	private int computeColumnWidth(final String columnName)
-	{
-		int maxWidth = columnName.length();
-
-		for (final Row row : rowsList)
-		{
-			maxWidth = Math.max(maxWidth, row.getColumnWidth(columnName));
-		}
-
-		return maxWidth;
-	}
-
 	public Optional<Table> removeColumnsWithSameValue()
 	{
 		if (rowsList.isEmpty())
@@ -188,43 +166,17 @@ public class Table
 		return Optional.of(firstValue);
 	}
 
+	public TablePrinter toPrint()
+	{
+		return new TablePrinter(this);
+	}
+
 	public String toTabularString()
 	{
-		if (header.isEmpty() || rowsList.isEmpty())
-		{
-			return "";
-		}
-
-		final TabularStringWriter writer = new TabularStringWriter();
-
-		//
-		// Header
-		{
-			for (final String columnName : header)
-			{
-				writer.appendCell(columnName, getColumnWidth(columnName));
-			}
-
-			writer.lineEnd();
-		}
-
-		//
-		// Rows
-		{
-			for (final Row row : rowsList)
-			{
-				writer.lineEnd();
-
-				for (final String columnName : header)
-				{
-					writer.appendCell(row.getCellValue(columnName), getColumnWidth(columnName));
-				}
-
-				writer.lineEnd();
-			}
-		}
-
-		return writer.getAsString();
-
+		return toPrint().toString();
 	}
+
+	@Override
+	@Deprecated
+	public String toString() {return toTabularString();}
 }

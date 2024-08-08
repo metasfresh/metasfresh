@@ -71,6 +71,11 @@ public abstract class StepDefData<T>
 				.toString();
 	}
 
+	public boolean isPresent(@NonNull final StepDefDataIdentifier identifier)
+	{
+		return records.get(identifier) != null;
+	}
+
 	public void put(
 			@NonNull final String identifier,
 			@NonNull final T record)
@@ -126,7 +131,6 @@ public abstract class StepDefData<T>
 			@NonNull final T record)
 	{
 		final RecordDataItem<T> oldRecord = records.get(identifier);
-
 		if (oldRecord == null)
 		{
 			put(identifier, record);
@@ -153,7 +157,6 @@ public abstract class StepDefData<T>
 			@NonNull final T record)
 	{
 		final RecordDataItem<T> oldRecord = records.get(identifier);
-
 		if (oldRecord != null)
 		{
 			return;

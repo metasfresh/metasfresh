@@ -60,8 +60,6 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
-import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -377,7 +375,7 @@ public class PP_Order_StepDef
 	private void validatePP_Order_BomLine(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
 	{
 		final I_PP_Order_BOMLine ppOrderBOMLine = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, toPPOrderBOMLineQuery(row));
-		
+
 		row.getAsOptionalIdentifier(I_PP_Order_BOMLine.COLUMNNAME_M_AttributeSetInstance_ID)
 				.map(attributeSetInstanceTable::getId)
 				.ifPresent(expectedAsiId -> {
@@ -393,18 +391,16 @@ public class PP_Order_StepDef
 	{
 		final ProductId productId = row.getAsIdentifier(I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
 		final PPOrderId ppOrderId = row.getAsIdentifier(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID).lookupIdIn(ppOrderTable);
-		final int qtyRequired = row.getAsInt(I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered);
 		final boolean isQtyPercentage = row.getAsOptionalBoolean(I_PP_Order_BOMLine.COLUMNNAME_IsQtyPercentage).orElseFalse();
-		final String x12de355Code = row.getAsString(I_PP_Order_BOMLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+		final Quantity qtyRequired = row.getAsQuantity(I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered, I_PP_Order_BOMLine.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
 		final BOMComponentType componentType = row.getAsEnum(I_PP_Order_BOMLine.COLUMNNAME_ComponentType, BOMComponentType.class);
 
 		return queryBL.createQueryBuilder(I_PP_Order_BOMLine.class)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, ppOrderId)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered, qtyRequired)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_IsQtyPercentage, isQtyPercentage)
-				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_C_UOM_ID, uomId.getRepoId())
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered, qtyRequired.toBigDecimal())
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_C_UOM_ID, qtyRequired.getUomId())
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_ComponentType, componentType)
 				.create();
 	}
@@ -440,10 +436,8 @@ public class PP_Order_StepDef
 
 		final StepDefDataIdentifier plantIdentifier = row.getAsIdentifier(I_PP_Order.COLUMNNAME_S_Resource_ID);
 		final ResourceId plantId = resourceTable.getIdOptional(plantIdentifier).orElseGet(() -> plantIdentifier.getAsId(ResourceId.class));
-		final int qtyEntered = row.getAsInt(I_PP_Order.COLUMNNAME_QtyEntered);
-		final int qtyOrdered = row.getAsInt(I_PP_Order.COLUMNNAME_QtyOrdered);
-		final String x12de355Code = row.getAsString(I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+		final Quantity qtyEntered = row.getAsQuantity(I_PP_Order.COLUMNNAME_QtyEntered, I_PP_Order.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
+		final BigDecimal qtyOrdered = row.getAsBigDecimal(I_PP_Order.COLUMNNAME_QtyOrdered);
 		final Instant datePromised = row.getAsInstant(I_PP_Order_Candidate.COLUMNNAME_DatePromised);
 
 		final IQueryBuilder<I_PP_Order> queryBuilder = queryBL.createQueryBuilder(I_PP_Order.class)
@@ -451,9 +445,9 @@ public class PP_Order_StepDef
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID, bomId)
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_Planning_ID, productPlanningId)
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_S_Resource_ID, plantId)
-				.addEqualsFilter(I_PP_Order.COLUMNNAME_QtyEntered, qtyEntered)
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_QtyEntered, qtyEntered.toBigDecimal())
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_QtyOrdered, qtyOrdered)
-				.addEqualsFilter(I_PP_Order.COLUMNNAME_C_UOM_ID, uomId.getRepoId())
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_C_UOM_ID, qtyEntered.getUomId())
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, datePromised);
 
 		row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_C_BPartner_ID)

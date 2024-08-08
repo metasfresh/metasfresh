@@ -2,23 +2,24 @@ package de.metas.cucumber.stepdefs.material.dispo;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.product.ProductId;
+import de.metas.util.lang.RepoIdAware;
 import de.metas.util.text.tabular.Cell;
 import de.metas.util.text.tabular.Row;
 import de.metas.util.text.tabular.Table;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
-@RequiredArgsConstructor
 @Builder
 public class CandidatesToTabularStringConverter
 {
@@ -69,32 +70,24 @@ public class CandidatesToTabularStringConverter
 		return row;
 	}
 
-	private Cell toCell(@NonNull final CandidateId candidateId)
-	{
-		final String value = mdCandidateTable.getFirstIdentifierById(candidateId)
-				.map(StepDefDataIdentifier::getAsString)
-				.orElseGet(() -> String.valueOf(candidateId.getRepoId()));
-		return Cell.ofNullable(value);
-	}
+	private Cell toCell(@NonNull final CandidateId candidateId) {return toCell(candidateId, mdCandidateTable);}
 
-	private Cell toCell(@NonNull final ProductId productId)
-	{
-		final String value = productTable.getFirstIdentifierById(productId)
-				.map(StepDefDataIdentifier::getAsString)
-				.orElseGet(() -> String.valueOf(productId.getRepoId()));
-		return Cell.ofNullable(value);
-	}
+	private Cell toCell(@NonNull final ProductId productId) {return toCell(productId, productTable);}
 
-	private Cell toCell(@NonNull final AttributeSetInstanceId asiId)
+	private Cell toCell(@NonNull final AttributeSetInstanceId asiId) {return asiId.isNone() ? Cell.NULL : toCell(asiId, attributeSetInstanceTable);}
+
+	private static <T extends RepoIdAware> Cell toCell(
+			@Nullable final T id,
+			@NonNull StepDefDataGetIdAware<T, ?> lookupTable)
 	{
-		if (asiId.isNone())
+		if (id == null)
 		{
 			return Cell.NULL;
 		}
 
-		final String value = attributeSetInstanceTable.getFirstIdentifierById(asiId)
+		final String value = lookupTable.getFirstIdentifierById(id)
 				.map(StepDefDataIdentifier::getAsString)
-				.orElseGet(() -> String.valueOf(asiId.getRepoId()));
+				.orElseGet(() -> String.valueOf(id.getRepoId()));
 		return Cell.ofNullable(value);
 	}
 
@@ -142,6 +135,13 @@ public class CandidatesToTabularStringConverter
 		return toTableFromCandidateRows(table).toTabularString();
 	}
 
+	@NonNull
+	public static Table toTable(@NonNull final MD_Candidate_StepDefTable.MaterialDispoTableRow from)
+	{
+		final Row row = toRow(from);
+		return toTableFromRows(ImmutableList.of(row));
+	}
+
 	private static Table toTableFromCandidateRows(@NonNull final MD_Candidate_StepDefTable table)
 	{
 		final ImmutableList<Row> rows = table.stream().map(CandidatesToTabularStringConverter::toRow).collect(ImmutableList.toImmutableList());
@@ -152,6 +152,34 @@ public class CandidatesToTabularStringConverter
 	{
 		final Row row = new Row();
 		row.putAll(from.getRawValues().asMap());
+		return row;
+	}
+
+	//
+	//
+	//
+	//
+	//
+	//
+
+	public Table toTableFromItems(final List<MaterialDispoDataItem> items)
+	{
+		final ImmutableList<Row> rows = items.stream().map(this::toRow).collect(ImmutableList.toImmutableList());
+		return toTableFromRows(rows);
+	}
+
+	private Row toRow(@NonNull final MaterialDispoDataItem item)
+	{
+		final Row row = new Row();
+		row.put("Identifier", toCell(item.getCandidateId()));
+		row.put("MD_Candidate_Type", item.getType());
+		row.put("MD_Candidate_BusinessCase", item.getBusinessCase());
+		row.put("M_Product_ID", toCell(item.getProductId()));
+		row.put("DateProjected", item.getDate());
+		row.put("Qty", item.getQuantity());
+		row.put("ATP", item.getAtp());
+		row.put("M_AttributeSetInstance_ID", toCell(item.getAttributeSetInstanceId()));
+
 		return row;
 	}
 

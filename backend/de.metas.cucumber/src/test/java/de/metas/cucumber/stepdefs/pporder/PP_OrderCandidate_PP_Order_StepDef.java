@@ -28,9 +28,8 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
-import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -80,14 +79,12 @@ public class PP_OrderCandidate_PP_Order_StepDef
 	{
 		final PPOrderId ppOrderId = row.getAsIdentifier(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_ID).lookupIdIn(ppOrderTable);
 		final PPOrderCandidateId ppOrderCandidateId = row.getAsIdentifier(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID).lookupIdIn(ppOrderCandidateTable);
-		final int qtyEntered = row.getAsInt(I_PP_OrderCandidate_PP_Order.COLUMNNAME_QtyEntered);
-		final String x12de355Code = row.getAsString(I_PP_OrderCandidate_PP_Order.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+		final Quantity qtyEntered = row.getAsQuantity(I_PP_OrderCandidate_PP_Order.COLUMNNAME_QtyEntered, I_PP_OrderCandidate_PP_Order.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
 		return queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
 				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderId)
 				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId)
-				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_QtyEntered, qtyEntered)
-				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_C_UOM_ID, uomId)
+				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_QtyEntered, qtyEntered.toBigDecimal())
+				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_C_UOM_ID, qtyEntered.getUomId())
 				.create();
 	}
 

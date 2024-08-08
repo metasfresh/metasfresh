@@ -31,9 +31,8 @@ import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMLine_StepDefData;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
-import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -47,8 +46,6 @@ import org.eevolution.api.ProductBOMLineId;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -120,16 +117,15 @@ public class PP_OrderLine_Candidate_StepDef
 	{
 		final PPOrderCandidateId ppOrderCandidateId = row.getAsIdentifier(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID).lookupIdIn(ppOrderCandidateTable);
 		final ProductId productId = row.getAsIdentifier(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
-		final BigDecimal qtyEntered = row.getAsBigDecimal(I_PP_OrderLine_Candidate.COLUMNNAME_QtyEntered);
-		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(row.getAsString(I_PP_OrderLine_Candidate.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName())));
+		final Quantity qtyEntered = row.getAsQuantity(I_PP_OrderLine_Candidate.COLUMNNAME_QtyEntered, I_PP_OrderLine_Candidate.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
 		final BOMComponentType componentType = row.getAsEnum(I_PP_OrderLine_Candidate.COLUMNNAME_ComponentType, BOMComponentType.class);
 		final ProductBOMLineId productBOMLineId = row.getAsIdentifier(I_PP_OrderLine_Candidate.COLUMNNAME_PP_Product_BOMLine_ID).lookupIdIn(productBOMLineTable);
 
 		return queryBL.createQueryBuilder(I_PP_OrderLine_Candidate.class)
 				.addEqualsFilter(I_PP_OrderLine_Candidate.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId)
 				.addEqualsFilter(I_PP_OrderLine_Candidate.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_PP_OrderLine_Candidate.COLUMNNAME_QtyEntered, qtyEntered)
-				.addEqualsFilter(I_PP_OrderLine_Candidate.COLUMNNAME_C_UOM_ID, uomId.getRepoId())
+				.addEqualsFilter(I_PP_OrderLine_Candidate.COLUMNNAME_QtyEntered, qtyEntered.toBigDecimal())
+				.addEqualsFilter(I_PP_OrderLine_Candidate.COLUMNNAME_C_UOM_ID, qtyEntered.getUomId())
 				.addEqualsFilter(I_PP_OrderLine_Candidate.COLUMNNAME_ComponentType, componentType)
 				.addEqualsFilter(I_PP_OrderLine_Candidate.COLUMNNAME_PP_Product_BOMLine_ID, productBOMLineId)
 				.create();

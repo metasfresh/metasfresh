@@ -78,6 +78,7 @@ import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.text.tabular.Table;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -107,6 +108,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -604,46 +606,45 @@ public class MD_Candidate_StepDef
 		}
 
 		return ProviderResult.resultWasNotFound(resultNotFoundLog
-				+ "\n\t tableRow=" + tableRow);
+				+ "\n\t tableRow:"
+				+ "\n" + toCandidatesTabularFromRow(tableRow).toPrint().ident(2)
+				+ "\n\t Checked items, retrieved using query: " + candidatesQuery
+				+ "\n" + toCandidatesTabularFromItems(items).toPrint().ident(2)
+		);
 	}
 
 	private BooleanWithReason checkMatching(final MaterialDispoDataItem item, final @NonNull MaterialDispoTableRow tableRow)
 	{
+		final ArrayList<String> notMatchingReasons = new ArrayList<>();
+
 		if (item.getMaterialDescriptor().getQuantity().abs().compareTo(tableRow.getQty().abs()) != 0) // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
 		{
-			return BooleanWithReason.falseBecause("item with id=" + item.getCandidateId().getRepoId()
-					+ " does not match tableRow with Identifier " + tableRow.getIdentifier()
-					+ " because the qty values are different"
-					+ " Expected=" + tableRow.getQty().abs() + " (abs), Actual= " + item.getMaterialDescriptor().getQuantity().abs() + " (abs)"
-			);
+			notMatchingReasons.add("Qty (" + " Expected=abs(" + tableRow.getQty() + "), Actual=abs(" + item.getMaterialDescriptor().getQuantity() + "))");
 		}
 		if (item.getAtp().compareTo(tableRow.getAtp()) != 0)
 		{
-			return BooleanWithReason.falseBecause("item with id=" + item.getCandidateId().getRepoId()
-					+ " does not match tableRow with Identifier " + tableRow.getIdentifier()
-					+ " because the atp values are different"
-					+ " Expected=" + tableRow.getAtp() + ", Actual= " + item.getAtp()
-			);
+			notMatchingReasons.add("ATP (" + " Expected=" + tableRow.getAtp() + ", Actual= " + item.getAtp() + ")");
 		}
 		if (!item.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
 		{
-			return BooleanWithReason.falseBecause("item with id=" + item.getCandidateId().getRepoId()
-					+ " does not match tableRow with Identifier " + tableRow.getIdentifier()
-					+ " because the time (resp. materialDecription.date) values are different"
-					+ " Expected=" + tableRow.getTime() + ", Actual= " + item.getMaterialDescriptor().getDate()
-			);
+			notMatchingReasons.add("Date (" + " Expected=" + tableRow.getTime() + ", Actual= " + item.getMaterialDescriptor().getDate() + ")");
 		}
-
 		if (!Objects.equals(item.getBusinessCase(), tableRow.getBusinessCase()))
 		{
-			return BooleanWithReason.falseBecause("item with id=" + item.getCandidateId().getRepoId()
-					+ " does not match tableRow with Identifier " + tableRow.getIdentifier()
-					+ " because the business case values are different"
-					+ " Expected=" + tableRow.getBusinessCase() + ", Actual= " + item.getBusinessCase()
-			);
+			notMatchingReasons.add("BusinessCase (" + " Expected=" + tableRow.getBusinessCase() + ", Actual= " + item.getBusinessCase() + ")");
 		}
 
-		return BooleanWithReason.TRUE;
+		if (!notMatchingReasons.isEmpty())
+		{
+			return BooleanWithReason.falseBecause(
+					"item with id `" + item.getCandidateId().getRepoId() + "` does not match tableRow with Identifier `" + tableRow.getIdentifier() + "`"
+							+ " because following values are not matching: " + notMatchingReasons
+			);
+		}
+		else
+		{
+			return BooleanWithReason.TRUE;
+		}
 	}
 
 	@And("post DeactivateAllSimulatedCandidatesEvent and wait for processing")
@@ -839,6 +840,16 @@ public class MD_Candidate_StepDef
 		return getTabularConverter().toTabularStringFromCandidateRecords(candidates);
 	}
 
+	private Table toCandidatesTabularFromRow(@NonNull final MaterialDispoTableRow tableRow)
+	{
+		return CandidatesToTabularStringConverter.toTable(tableRow);
+	}
+
+	public Table toCandidatesTabularFromItems(final List<MaterialDispoDataItem> items)
+	{
+		return getTabularConverter().toTableFromItems(items);
+	}
+
 	private CandidatesToTabularStringConverter getTabularConverter()
 	{
 		return CandidatesToTabularStringConverter.builder()
@@ -848,4 +859,5 @@ public class MD_Candidate_StepDef
 				.attributeSetInstanceTable(attributeSetInstanceTable)
 				.build();
 	}
+
 }

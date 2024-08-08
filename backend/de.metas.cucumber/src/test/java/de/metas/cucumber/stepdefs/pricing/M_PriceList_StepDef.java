@@ -318,8 +318,7 @@ public class M_PriceList_StepDef
 		final TaxCategoryId taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName)
 				.orElseThrow(() -> new AdempiereException("Missing taxCategory for internalName: " + taxCategoryInternalName));
 
-		final String x12de355Code = row.getAsString("C_UOM_ID.X12DE355");
-		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(row.getAsUOMCode("C_UOM_ID"));
 
 		final @NonNull StepDefDataIdentifier plvIdentifier = row.getAsIdentifier(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID);
 		final Optional<I_M_PriceList_Version> priceListVersionOptional = priceListVersionTable.getOptional(plvIdentifier);
@@ -395,7 +394,6 @@ public class M_PriceList_StepDef
 				.orElse(null);
 	}
 
-	@NonNull
 	private boolean filterProductPriceByASI(@NonNull final DataTableRow row, @NonNull final I_M_ProductPrice productPrice)
 	{
 		final AttributesKey expectedAttributesKey = row.getAsOptionalIdentifier(I_M_ProductPrice.COLUMNNAME_M_AttributeSetInstance_ID)

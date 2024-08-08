@@ -28,12 +28,15 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Optional;
 
 /**
@@ -44,22 +47,12 @@ import java.util.Optional;
 @Builder
 public class MaterialDispoDataItem
 {
-	@NonNull
-	CandidateId candidateId;
-
-	@NonNull
-	CandidateType type;
-
-	@Nullable
-	CandidateBusinessCase businessCase;
-
-	@NonNull
-	MaterialDescriptor materialDescriptor;
-
+	@NonNull CandidateId candidateId;
+	@NonNull CandidateType type;
+	@Nullable CandidateBusinessCase businessCase;
+	@NonNull MaterialDescriptor materialDescriptor;
 	BigDecimal atp;
-
 	BusinessCaseDetail businessCaseDetail;
-
 	boolean simulated;
 
 	public static MaterialDispoDataItem of(
@@ -81,4 +74,12 @@ public class MaterialDispoDataItem
 	{
 		return type.isInstance(businessCaseDetail) ? Optional.of(type.cast(businessCaseDetail)) : Optional.empty();
 	}
+
+	public ProductId getProductId() {return ProductId.ofRepoId(materialDescriptor.getProductId());}
+
+	public AttributeSetInstanceId getAttributeSetInstanceId() {return AttributeSetInstanceId.ofRepoIdOrNone(materialDescriptor.getAttributeSetInstanceId());}
+
+	public Instant getDate() {return materialDescriptor.getDate();}
+
+	public BigDecimal getQuantity() {return materialDescriptor.getQuantity();}
 }

@@ -41,6 +41,7 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -160,7 +161,7 @@ public class StepDefUtil
 			final long checkingIntervalMs,
 			@NonNull final IQuery<T> query) throws InterruptedException
 	{
-		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, toItemProvider(query, null));
+		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, toItemProvider(query));
 	}
 
 	public <T> T tryAndWaitForItem(
@@ -170,6 +171,31 @@ public class StepDefUtil
 			@NonNull final Function<T, BooleanWithReason> validator) throws InterruptedException
 	{
 		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, toItemProvider(query, validator));
+	}
+
+	private static <T> @NonNull ItemProvider<T> toItemProvider(@NonNull final IQuery<T> query)
+	{
+		return toItemProvider(query, (Function<T, BooleanWithReason>)null);
+	}
+
+	private static <T> @NonNull ItemProvider<T> toItemProvider(
+			@NonNull final IQuery<T> query,
+			@Nullable final Consumer<T> validator)
+	{
+		final Function<T, BooleanWithReason> validatorFunction;
+		if (validator == null)
+		{
+			validatorFunction = null;
+		}
+		else
+		{
+			validatorFunction = (item) -> {
+				validator.accept(item);
+				return BooleanWithReason.TRUE;
+			};
+		}
+
+		return toItemProvider(query, validatorFunction);
 	}
 
 	private static <T> @NonNull ItemProvider<T> toItemProvider(
@@ -185,10 +211,17 @@ public class StepDefUtil
 
 			if (validator != null)
 			{
-				final BooleanWithReason valid = validator.apply(item);
-				if (valid.isFalse())
+				try
 				{
-					return ItemProvider.ProviderResult.resultWasNotFound(valid.getReasonAsString());
+					final BooleanWithReason valid = validator.apply(item);
+					if (valid.isFalse())
+					{
+						return ItemProvider.ProviderResult.resultWasNotFound(valid.getReasonAsString());
+					}
+				}
+				catch (final Exception ex)
+				{
+					return ItemProvider.ProviderResult.resultWasNotFound(ex.getLocalizedMessage());
 				}
 			}
 
@@ -303,6 +336,16 @@ public class StepDefUtil
 			@NonNull final Supplier<Optional<T>> worker) throws InterruptedException
 	{
 		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, (Supplier<String>)null);
+	}
+
+	public <T> T tryAndWaitForItem(
+			final long maxWaitSecondsParam,
+			final long checkingIntervalMs,
+			@NonNull final IQuery<T> query,
+			@Nullable final Consumer<T> validator,
+			@Nullable final Supplier<String> logContext) throws InterruptedException
+	{
+		return tryAndWaitForItem(maxWaitSecondsParam, checkingIntervalMs, toItemProvider(query, validator), logContext);
 	}
 
 	/**

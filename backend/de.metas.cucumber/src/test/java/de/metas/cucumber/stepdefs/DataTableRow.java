@@ -341,26 +341,67 @@ public class DataTableRow
 		return OptionalBoolean.ofNullableString(valueString);
 	}
 
+	public Quantity getAsQuantity(
+			@NonNull final String valueColumnName,
+			@Nullable final String uomColumnName,
+			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
+	{
+		return getAsOptionalQuantity(valueColumnName, uomColumnName, uomMapper)
+				.orElseThrow(() -> new AdempiereException("No value found for " + valueColumnName));
+	}
+
 	public Optional<Quantity> getAsOptionalQuantity(
 			@NonNull final String valueColumnName,
-			@NonNull final String uomColumnName,
-			@NonNull final Function<String, I_C_UOM> uomMapper)
+			@Nullable final String uomColumnName,
+			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
 	{
-		final BigDecimal valueBD = getAsOptionalBigDecimal(valueColumnName).orElse(null);
-		if (valueBD == null)
+		final String valueStr = getAsOptionalString(valueColumnName).map(StringUtils::trimBlankToNull).orElse(null);
+		if (valueStr == null)
 		{
 			return Optional.empty();
 		}
 
-		final String uomString = getAsOptionalString(uomColumnName).orElse(null);
-		if (uomString == null)
+		final int spaceIdx = valueStr.indexOf(" ");
+		final BigDecimal valueBD;
+		X12DE355 uomCode;
+		if (spaceIdx <= 0)
 		{
-			return Optional.empty();
+			valueBD = parseBigDecimal(valueStr, valueColumnName);
+			uomCode = null;
+		}
+		else
+		{
+			valueBD = parseBigDecimal(valueStr.substring(0, spaceIdx), valueColumnName);
+			uomCode = X12DE355.ofNullableCode(valueStr.substring(spaceIdx).trim());
 		}
 
-		final I_C_UOM uom = uomMapper.apply(uomString);
+		if (uomCode == null)
+		{
+			if (uomColumnName == null)
+			{
+				throw new AdempiereException("When UOM is not incorporated in `" + valueColumnName + "` then an UOM column name shall be provided");
+			}
 
+			uomCode = getAsUOMCode(uomColumnName);
+		}
+
+		final I_C_UOM uom = uomMapper.apply(uomCode);
 		return Optional.of(Quantity.of(valueBD, uom));
+	}
+
+	@NonNull
+	public X12DE355 getAsUOMCode(@NonNull final String columnName)
+	{
+		String valueStr = getAsOptionalString(columnName).orElse(null);
+		if (valueStr == null && !columnName.endsWith("X12DE355"))
+		{
+			valueStr = getAsOptionalString(columnName + ".X12DE355").orElse(null);
+		}
+		if (valueStr == null)
+		{
+			throw new AdempiereException("No value found for " + columnName);
+		}
+		return X12DE355.ofCode(valueStr);
 	}
 
 	public LocalDate getAsLocalDate(@NonNull final String columnName)
@@ -391,6 +432,7 @@ public class DataTableRow
 		return Timestamp.valueOf(getAsLocalDate(columnName).atStartOfDay());
 	}
 
+	@SuppressWarnings("unused")
 	public Timestamp getAsInstantTimestamp(@NonNull final String columnName)
 	{
 		return Timestamp.from(getAsInstant(columnName));
