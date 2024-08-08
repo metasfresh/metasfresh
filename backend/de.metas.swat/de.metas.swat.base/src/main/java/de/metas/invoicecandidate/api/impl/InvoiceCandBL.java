@@ -110,6 +110,9 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -281,6 +284,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);	
 	private final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
@@ -747,6 +751,27 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.setContext(ctx, trxName)
 				.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule)
 				.generateInvoices(candidates);
+	}
+
+
+	@Override
+	public void setPaymentTermIfMissing(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		if (icRecord.getC_PaymentTerm_ID() > 0)
+		{
+			return;
+		}
+
+		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()), SOTrx.ofBoolean(icRecord.isSOTrx()));
+
+		final PaymentTermId paymentTermIdToUse = paymentTermRepository
+				.retrievePaymentTermId(paymentTermQuery)
+				.orElseThrow(() -> new AdempiereException("Found neither a payment-term for bpartner nor a default payment term.")
+						.appendParametersToMessage()
+						.setParameter("C_BPartner_ID", paymentTermQuery.getBPartnerId().getRepoId())
+						.setParameter("SOTrx", paymentTermQuery.getSoTrx()));
+
+		icRecord.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermIdToUse));
 	}
 
 	@Override

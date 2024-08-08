@@ -12,7 +12,6 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.DocStatus;
@@ -43,7 +42,6 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.security.IUserRolePermissions;
@@ -1362,84 +1360,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				false, // updateOnlyIfNull
 				selectionId // selectionId
 		);
-	}
-
-	@Override
-	public void updateMissingPaymentTermIds(final PInstanceId selectionId)
-	{
-		final PInstanceId selectionToUpdateId = retrieveIcsToUpdateSelectionId(selectionId);
-		if (selectionToUpdateId == null)
-		{
-			return;
-		}
-		final PaymentTermId paymentTermId = retrievePaymentTermId(selectionId);
-		if (paymentTermId == null)
-		{
-			return;
-		}
-
-		final int updateCount = queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setOnlySelection(selectionToUpdateId)
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_Override_ID, paymentTermId)
-				.execute();
-
-		Loggables.withLogger(logger, Level.INFO)
-				.addLog("updateMissingPaymentTermIds - {} C_Invoice_Candidates were updated; selectionId={}, paymentTermId={}",
-						updateCount, selectionId, paymentTermId);
-
-		// Invalidate the candidates which we updated
-		invalidateCandsForSelection(selectionToUpdateId);
-
-	}
-
-	private PInstanceId retrieveIcsToUpdateSelectionId(final PInstanceId selectionId)
-	{
-		final PInstanceId selectionToUpdateId = queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setOnlySelection(selectionId)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID, null)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_Override_ID, null)
-				.create()
-				.createSelection();
-
-		if (selectionToUpdateId == null)
-		{
-			Loggables.withLogger(logger, Level.INFO)
-					.addLog("updateMissingPaymentTermIds - No C_Invoice_Candidate needs to be updated; selectionId={}",
-							selectionId);
-		}
-		return selectionToUpdateId;
-	}
-
-	private PaymentTermId retrievePaymentTermId(final PInstanceId selectionId)
-	{
-		final ICompositeQueryFilter<I_C_Invoice_Candidate> paymentTermSetFilter = queryBL
-				.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
-				.setJoinOr()
-				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID, null)
-				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_Override_ID, null);
-
-		final I_C_Invoice_Candidate firstInvoiceCandidateWithPaymentTermId = queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setOnlySelection(selectionId)
-				.filter(paymentTermSetFilter)
-				.orderBy()
-				.addColumnAscending(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID).endOrderBy()
-				.create()
-				.first();
-		if (firstInvoiceCandidateWithPaymentTermId == null)
-		{
-			Loggables.withLogger(logger, Level.INFO)
-					.addLog("updateMissingPaymentTermIds - No C_Invoice_Candidate selected by selectionId={} has a C_PaymentTerm_ID; nothing to update", selectionId);
-			return null;
-		}
-
-		return CoalesceUtil.coalesceSuppliers(
-				() -> PaymentTermId.ofRepoIdOrNull(firstInvoiceCandidateWithPaymentTermId.getC_PaymentTerm_Override_ID()),
-				() -> PaymentTermId.ofRepoIdOrNull(firstInvoiceCandidateWithPaymentTermId.getC_PaymentTerm_ID()));
 	}
 
 	/**
