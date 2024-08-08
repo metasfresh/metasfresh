@@ -12,7 +12,7 @@ SELECT i.c_invoice_id                                                AS edi_ccto
        t.rate,
        pterm.name,
        ROUND(SUM(it.TaxBaseAmt), 2)                                  AS DiscountBaseAmt,
-       ROUND(SUM(it.TaxBaseAmt) * -pterm.discount / 100, 2)          AS DiscountAmt,
+       ROUND(SUM(it.TaxBaseAmt) * pterm.discount / 100, 2)           AS DiscountAmt,
        i.ad_client_id,
        i.ad_org_id,
        i.created,

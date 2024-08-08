@@ -31,8 +31,8 @@ SELECT i.c_invoice_id                                                           
                           AND it_bigger.c_invoice_id = i.c_invoice_id
                         GROUP BY t_bigger.rate
                         HAVING SUM(it_bigger.taxbaseamt) > SUM(it.taxbaseamt))
-               THEN 'Y'
-               ELSE 'N'
+               THEN 'N' /*If there is a bigger tax-base-amount, then this is not the main tax*/
+               ELSE 'Y'
        END                                                                                                  AS IsMainVAT     -- we mark the tax-rate with the biggest baseAmt as the invoice's main-tax
 FROM c_invoice i
          LEFT JOIN c_invoicetax it ON it.c_invoice_id = i.c_invoice_id

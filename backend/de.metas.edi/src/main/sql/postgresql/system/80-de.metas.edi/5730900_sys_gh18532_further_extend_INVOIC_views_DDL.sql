@@ -8,7 +8,7 @@ select db_alter_view('edi_cctop_140_v',
        t.rate,
        pterm.name,
        ROUND(SUM(it.TaxBaseAmt), 2)                                  AS DiscountBaseAmt,
-       ROUND(SUM(it.TaxBaseAmt) * -pterm.discount / 100, 2)          AS DiscountAmt,
+       ROUND(SUM(it.TaxBaseAmt) * pterm.discount / 100, 2)           AS DiscountAmt,
        i.ad_client_id,
        i.ad_org_id,
        i.created,
@@ -67,8 +67,8 @@ select db_alter_view('edi_cctop_901_991_v',
                           AND it_bigger.c_invoice_id = i.c_invoice_id
                         GROUP BY t_bigger.rate
                         HAVING SUM(it_bigger.taxbaseamt) > SUM(it.taxbaseamt))
-               THEN ''Y''
-               ELSE ''N''
+               THEN ''N''  /*If there is a bigger tax-base-amount, then this is not the main tax*/
+               ELSE ''Y''
        END                                                                                                  AS IsMainVAT     /* we mark the tax-rate with the biggest baseAmt as the invoice''s main-tax */
 FROM c_invoice i
          LEFT JOIN c_invoicetax it ON it.c_invoice_id = i.c_invoice_id
@@ -124,6 +124,7 @@ select db_alter_view('edi_cctop_invoic_500_v',
        il.c_invoice_id                                                           AS edi_cctop_invoic_v_id,
        il.priceactual,
        il.pricelist,
+       il.discount,
        ol.invoicableqtybasedon,
        REGEXP_REPLACE(pp.UPC, ''\s+$'', '''')                                        AS UPC_CU,
        REGEXP_REPLACE(pp.EAN_CU, ''\s+$'', '''')                                     AS EAN_CU, -- Deprecated: superseded by buyer_ean_cu
@@ -190,6 +191,7 @@ WHERE TRUE
 GROUP BY il.c_invoice_id,
          il.priceactual,
          il.pricelist,
+         il.discount,
          ol.InvoicableQtyBasedOn,
          pp.UPC,
          pp.EAN_CU,
