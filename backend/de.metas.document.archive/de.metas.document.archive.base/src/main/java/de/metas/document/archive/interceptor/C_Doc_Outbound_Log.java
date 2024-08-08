@@ -1,11 +1,15 @@
 package de.metas.document.archive.interceptor;
 
+import de.metas.document.DocTypeId;
 import de.metas.document.archive.api.impl.DocOutboundService;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Check;
@@ -18,9 +22,14 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -54,14 +63,18 @@ public class C_Doc_Outbound_Log
 	private final DocOutBoundRecipientRepository docOutBoundRecipientRepository;
 	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 	private final DocOutboundService docOutBoundService;
+	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry ;
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	public C_Doc_Outbound_Log(@NonNull final DocOutBoundRecipientRepository docOutBoundRecipientRepository,
 			@NonNull final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo,
-			@NonNull final DocOutboundService docOutboundService)
+			@NonNull final DocOutboundService docOutboundService,
+			@NonNull final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry)
 	{
 		this.docOutBoundRecipientRepository = docOutBoundRecipientRepository;
 		this.orderEmailPropagationSysConfigRepository = orderEmailPropagationSysConfigRepo;
 		this.docOutBoundService = docOutboundService;
+		this.docOutboundLogMailRecipientRegistry = docOutboundLogMailRecipientRegistry;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
@@ -72,36 +85,52 @@ public class C_Doc_Outbound_Log
 			ifColumnsChanged = I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailRecipient_ID)
 	public void updateFromRecipientId(@NonNull final I_C_Doc_Outbound_Log docOutboundlogRecord)
 	{
+		final TableRecordReference recordRef = TableRecordReference.of(docOutboundlogRecord.getAD_Table_ID(), docOutboundlogRecord.getRecord_ID());
+
+		final Optional<DocOutBoundRecipient> providerRecipient = docOutboundLogMailRecipientRegistry.getRecipient(
+			DocOutboundLogMailRecipientRequest.builder()
+					.recordRef(recordRef)
+					.clientId(InterfaceWrapperHelper.getClientId(docOutboundlogRecord).orElseThrow(() -> new AdempiereException("Cannot get AD_Client_ID from " + docOutboundlogRecord)))
+					.orgId(InterfaceWrapperHelper.getOrgId(docOutboundlogRecord).orElseThrow(() -> new AdempiereException("Cannot get AD_Org_ID from " + docOutboundlogRecord)))
+					.docTypeId(DocTypeId.ofRepoIdOrNull(docOutboundlogRecord.getC_DocType_ID()))
+					.build());
+
 		final DocOutBoundRecipientId userId = DocOutBoundRecipientId.ofRepoIdOrNull(docOutboundlogRecord.getCurrentEMailRecipient_ID());
-		if (userId == null)
+
+		// if set recipient is the same as provider recipient, then use provider logic
+		final DocOutBoundRecipient providerUser = providerRecipient.orElse(null);
+		if ((providerUser != null &&  DocOutBoundRecipientId.equals(providerUser.getId(), userId))
+				|| (userId == null))
 		{
-			docOutboundlogRecord.setCurrentEMailAddress(null);
-			return;
-		}
-
-		final DocOutBoundRecipient user = docOutBoundRecipientRepository.getById(userId);
-
-		final String documentEmail = docOutBoundService.getDocumentEmail(docOutboundlogRecord);
-		final String userEmailAddress = user.getEmailAddress();
-
-		final boolean propagateToDocOutboundLog = orderEmailPropagationSysConfigRepository.isPropagateToDocOutboundLog(
-				ClientAndOrgId.ofClientAndOrg(docOutboundlogRecord.getAD_Client_ID(), docOutboundlogRecord.getAD_Org_ID()));
-
-		if (propagateToDocOutboundLog && (Check.isNotBlank(documentEmail)))
-		{
-			docOutboundlogRecord.setCurrentEMailAddress(documentEmail);
-		}
-		else if (!Check.isBlank(userEmailAddress))
-		{
-			docOutboundlogRecord.setCurrentEMailAddress(userEmailAddress);
+			docOutboundlogRecord.setCurrentEMailAddress(providerUser.getEmailAddress());
+			docOutboundlogRecord.setIsInvoiceEmailEnabled(providerUser.isInvoiceAsEmail());
 		}
 		else
 		{
-			final String locationEmail = docOutBoundService.getLocationEmail(docOutboundlogRecord);
-			docOutboundlogRecord.setCurrentEMailAddress(locationEmail);
-		}
+			final DocOutBoundRecipient user = docOutBoundRecipientRepository.getById(userId);
 
-		docOutboundlogRecord.setIsInvoiceEmailEnabled(user.isInvoiceAsEmail()); // might be true even if the mailaddress is empty!
+			final String documentEmail = docOutBoundService.getDocumentEmail(docOutboundlogRecord);
+			final String userEmailAddress = user.getEmailAddress();
+
+			final boolean propagateToDocOutboundLog = orderEmailPropagationSysConfigRepository.isPropagateToDocOutboundLog(
+					ClientAndOrgId.ofClientAndOrg(docOutboundlogRecord.getAD_Client_ID(), docOutboundlogRecord.getAD_Org_ID()));
+
+			if (propagateToDocOutboundLog && (Check.isNotBlank(documentEmail)))
+			{
+				docOutboundlogRecord.setCurrentEMailAddress(documentEmail);
+			}
+			else if (!Check.isBlank(userEmailAddress))
+			{
+				docOutboundlogRecord.setCurrentEMailAddress(userEmailAddress);
+			}
+			else
+			{
+				final String locationEmail = docOutBoundService.getLocationEmail(docOutboundlogRecord);
+				docOutboundlogRecord.setCurrentEMailAddress(locationEmail);
+			}
+
+			docOutboundlogRecord.setIsInvoiceEmailEnabled(user.isInvoiceAsEmail()); // might be true even if the mailaddress is empty!
+		}
 	}
 
 	// this column is not user-editable, so we don't need it to be a callout
