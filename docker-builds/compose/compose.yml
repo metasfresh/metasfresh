@@ -119,7 +119,7 @@ services:
   external:
     image: $mfregistry/metas-externalsystems:$mfversion
     healthcheck:
-      test: "curl localhost:8095 || exit 1"
+      test: "curl --fail --silent localhost:8095 || exit 1"
       interval: 10s
       timeout: 10s
       start_period: 60s
@@ -187,7 +187,7 @@ services:
   edi:
     image: $mfregistry/metas-edi:$mfversion
     healthcheck:
-      test: "curl localhost:8795 || exit 1"
+      test: "curl --fail --silent localhost:8184 || exit 1"
       interval: 10s
       timeout: 10s
       start_period: 60s
