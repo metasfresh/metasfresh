@@ -81,7 +81,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -95,7 +94,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -148,11 +146,9 @@ public class PP_Order_Candidate_StepDef
 	@And("update PP_Order_Candidates")
 	public void updatePPOrderCandidate(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			updatePPOrderCandidate(row);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_PP_Order_Candidate_ID)
+				.forEach(this::updatePPOrderCandidate);
 	}
 
 	@And("the following PP_Order_Candidates are enqueued for generating PP_Orders")
@@ -287,37 +283,14 @@ public class PP_Order_Candidate_StepDef
 		assertThat(result.getEnqueuedPackagesCount()).isOne();
 	}
 
-	private void updatePPOrderCandidate(@NonNull final Map<String, String> tableRow)
+	private void updatePPOrderCandidate(@NonNull final DataTableRow row)
 	{
-		final String ppOrderCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_PP_Order_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_PP_Order_Candidate ppOrderCandidateRecord = ppOrderCandidateTable.get(ppOrderCandidateIdentifier);
-
-		final ZonedDateTime dateStartSchedule = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule);
-		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_QtyEntered);
-		final BigDecimal openQty = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_PP_Order_Candidate.COLUMNNAME_QtyToProcess);
-
-		if (dateStartSchedule != null)
-		{
-			ppOrderCandidateRecord.setDateStartSchedule(TimeUtil.asTimestampNotNull(dateStartSchedule));
-		}
-
-		if (qtyEntered != null)
-		{
-			ppOrderCandidateRecord.setQtyEntered(qtyEntered);
-		}
-
-		if (openQty != null)
-		{
-			ppOrderCandidateRecord.setQtyToProcess(openQty);
-		}
-
-		final Integer seqNo = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_PP_Order_Candidate.COLUMNNAME_SeqNo);
-		if (seqNo != null)
-		{
-			ppOrderCandidateRecord.setSeqNo(seqNo);
-		}
-
-		saveRecord(ppOrderCandidateRecord);
+		final I_PP_Order_Candidate record = row.getAsIdentifier().lookupIn(ppOrderCandidateTable);
+		row.getAsOptionalInstantTimestamp(I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule).ifPresent(record::setDateStartSchedule);
+		row.getAsOptionalBigDecimal(I_PP_Order_Candidate.COLUMNNAME_QtyEntered).ifPresent(record::setQtyEntered);
+		row.getAsOptionalBigDecimal(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess).ifPresent(record::setQtyToProcess);
+		row.getAsOptionalInt(I_PP_Order_Candidate.COLUMNNAME_SeqNo).ifPresent(record::setSeqNo);
+		saveRecord(record);
 	}
 
 	private I_PP_Order_Candidate getPPOrderCandidate(@NonNull final DataTableRow row)
