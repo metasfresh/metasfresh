@@ -46,7 +46,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_
 import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_Name;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class M_HU_PI_Version_StepDef
 {
@@ -76,7 +76,10 @@ public class M_HU_PI_Version_StepDef
 			final I_M_HU_PI huPi = huPiTable.get(huPiIdentifier);
 			assertThat(huPi).isNotNull();
 
-			final String name = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Name);
+			final String name = CoalesceUtil.coalesceSuppliersNotNull(
+					() -> DataTableUtil.extractNullableStringForColumnName(row, COLUMNNAME_Name),
+					huPi::getName
+			);
 			final String huUnitType = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_HU_UnitType); //dev-note: HU_UNITTYPE_AD_Reference_ID=540472;
 			final boolean isCurrent = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsCurrent);
 			final boolean active = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsActive, true);
@@ -90,7 +93,7 @@ public class M_HU_PI_Version_StepDef
 					.firstOnly(I_M_HU_PI_Version.class);
 
 			final I_M_HU_PI_Version piVersion = CoalesceUtil.coalesceSuppliers(() -> existingPiVersion,
-																			   () -> InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI_Version.class));
+					() -> InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI_Version.class));
 
 			assertThat(piVersion).isNotNull();
 

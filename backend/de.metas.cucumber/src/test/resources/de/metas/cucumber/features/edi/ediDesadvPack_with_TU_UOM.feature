@@ -168,7 +168,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | pm_3_S0317_020                     | p_4_S0317_020               | name_S0317_020    |
 
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier          |
+      | Identifier                     |
       | huPackingLU_S0317_020          |
       | huPackingTU_S0317_020          |
       | huPackingVirtualPI_S0317_020   |
@@ -176,13 +176,13 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | huPackingTU_2_S0317_020        |
       | huPackingVirtualPI_2_S0317_020 |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier          | Name                         | HU_UnitType | IsCurrent | OPT.M_HU_PackagingCode_ID.Identifier |
-      | packingVersionLU_S0317_020    | huPackingLU_S0317_020          | packingVersionLU_S0317_020_2 | LU          | Y         | huPackagingCode_1_S0317_020          |
-      | packingVersionTU_S0317_020    | huPackingTU_S0317_020          | packingVersionTU_S0317_020_2 | TU          | Y         | huPackagingCode_2_S0317_020          |
-      | packingVersionCU_S0317_020    | huPackingVirtualPI_S0317_020   | No Packing Item_S0317_020_2  | V           | Y         |                                      |
-      | packingVersionLU_2_S0317_020  | huPackingLU_2_S0317_020        | packingVersionLU_S0317_020_3 | LU          | Y         |                                      |
-      | packingVersionTU_2_S0317_020  | huPackingTU_2_S0317_020        | packingVersionTU_S0317_020_3 | TU          | Y         | huPackagingCode_2_S0317_020          |
-      | packingVersionCU_2_S0317_020  | huPackingVirtualPI_2_S0317_020 | No Packing Item_S0317_020_3  | V           | Y         |                                      |
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier          | HU_UnitType | IsCurrent | OPT.M_HU_PackagingCode_ID.Identifier |
+      | packingVersionLU_S0317_020    | huPackingLU_S0317_020          | LU          | Y         | huPackagingCode_1_S0317_020          |
+      | packingVersionTU_S0317_020    | huPackingTU_S0317_020          | TU          | Y         | huPackagingCode_2_S0317_020          |
+      | packingVersionCU_S0317_020    | huPackingVirtualPI_S0317_020   | V           | Y         |                                      |
+      | packingVersionLU_2_S0317_020  | huPackingLU_2_S0317_020        | LU          | Y         |                                      |
+      | packingVersionTU_2_S0317_020  | huPackingTU_2_S0317_020        | TU          | Y         | huPackagingCode_2_S0317_020          |
+      | packingVersionCU_2_S0317_020  | huPackingVirtualPI_2_S0317_020 | V           | Y         |                                      |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier | OPT.M_HU_PackingMaterial_ID.Identifier |
       | huPiItemLU_S0317_020       | packingVersionLU_S0317_020    | 10  | HU       | huPackingTU_S0317_020            |                                        |

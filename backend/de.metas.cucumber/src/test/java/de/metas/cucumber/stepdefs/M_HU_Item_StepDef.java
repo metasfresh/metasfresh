@@ -78,7 +78,7 @@ public class M_HU_Item_StepDef
 		final String huPackingMaterialIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Item.COLUMNNAME_M_HU_PackingMaterial_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final int huPackingMaterialId = huPackingMaterialTable.get(huPackingMaterialIdentifier).getM_HU_PackingMaterial_ID();
 
-		final I_M_HU_Item huItemRecord = InterfaceWrapperHelper.newInstance(I_M_HU_Item.class);
+		final I_M_HU_Item huItemRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_Item.class);
 		huItemRecord.setM_HU_ID(huId);
 		huItemRecord.setM_HU_Item_ID(huPiItemId);
 		huItemRecord.setQty(qty);
