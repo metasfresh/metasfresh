@@ -1,7 +1,11 @@
 name: cicd
-on: [push, workflow_dispatch]
+on:
+  push:
+    paths-ignore:
+      - '**/README.md'
+  workflow_dispatch:
 env:
-  PIPELINE_VERSION: '0.3.8'
+  PIPELINE_VERSION: '0.3.9'
 jobs:
 
   init:
@@ -493,10 +497,17 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           .
-      - name: retag db-image
+      - name: tag images
         run: |
           docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
           docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
+          docker tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
+          docker tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
+          docker tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
+
       - name: push-images
         uses: nick-fields/retry@v3
         with:
@@ -519,6 +530,9 @@ jobs:
             docker push metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
+
       - name: produce-summary
         run: |
           echo 'compatibility images are available under the following tag: `${{ needs.init.outputs.tag-fixed }}-compat`' >> $GITHUB_STEP_SUMMARY
@@ -528,6 +542,8 @@ jobs:
           echo '* metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
 
   junit:
     name: test (java)
@@ -758,6 +774,11 @@ jobs:
         if: success() || failure()
         run: |
           ./containerHealthCheck.sh mobile
+      - name: edi health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh edi
       - name: run api health checks
         working-directory: docker-builds/health/
         if: success() || failure()
@@ -776,6 +797,7 @@ jobs:
           docker inspect --format "{{json .State.Health }}" compose-webui-1 | jq
           docker inspect --format "{{json .State.Health }}" compose-external-1 | jq
           docker inspect --format "{{json .State.Health }}" compose-mobile-1 | jq
+          docker inspect --format "{{json .State.Health }}" compose-edi-1 | jq
       - name: stop docker compose
         working-directory: docker-builds/compose/
         env:
