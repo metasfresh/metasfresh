@@ -99,16 +99,16 @@ Feature: Production + Distribution material dispo scenarios
       | ocl_1      | oc_1                  | component    | 10         | PCE               | CO            | boml_1                |
 
     And after not more than 60s, following DD_Order_Candidates are found
-      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID |
-      | component    | rawMaterials_WH     | production_WH    | 10  | N         | oc_1                          | ocl_1                             |
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID |
+      | ddoc1      | component    | rawMaterials_WH     | production_WH    | 10  | N         | oc_1                          | ocl_1                             |
 
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID  |
-      | 1          | DEMAND            | SHIPMENT                  | bom_product  | 2021-04-16T21:00:00Z | -10 | -10                    | production_WH   |
-      | 2          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 10  | 0                      | production_WH   |
-      | 3          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | -10 | -10                    | production_WH   |
-      | 4          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | 0                      | production_WH   |
-      | 5          | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -10 | -10                    | rawMaterials_WH |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID  | DD_Order_Candidate_ID | PP_Order_Candidate_ID | PP_OrderLine_Candidate_ID |
+      | 1          | DEMAND            | SHIPMENT                  | bom_product  | 2021-04-16T21:00:00Z | -10 | -10                    | production_WH   | -                     | -                     | -                         |
+      | 2          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 10  | 0                      | production_WH   | -                     | oc_1                  | -                         |
+      | 3          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | -10 | -10                    | production_WH   | -                     | oc_1                  | ocl_1                     |
+      | 4          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | 0                      | production_WH   | ddoc1                 | -                     | -                         |
+      | 5          | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -10 | -10                    | rawMaterials_WH | ddoc1                 | -                     | -                         |
 
     
     

@@ -34,6 +34,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 /**
  * Candidate model that consolidates a supply/demand candidate with the corresponding stock-candidate.
@@ -74,5 +75,10 @@ public class MaterialDispoDataItem
 				.atp(stockCandidate.getMaterialDescriptor().getQuantity())
 				.simulated(dataCandidate.isSimulated())
 				.build();
+	}
+
+	public <T extends BusinessCaseDetail> Optional<T> getBusinessCaseDetail(@NonNull final Class<T> type)
+	{
+		return type.isInstance(businessCaseDetail) ? Optional.of(type.cast(businessCaseDetail)) : Optional.empty();
 	}
 }
