@@ -29,7 +29,6 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.impl.FlatrateTermOverlapCriteria;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
@@ -42,7 +41,6 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
-import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -59,8 +57,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
-
 @Service
 public class CallOrderContractService
 {
@@ -70,8 +66,6 @@ public class CallOrderContractService
 	private static final AdMessageKey MSG_PRODUCTS_DO_NOT_MATCH = AdMessageKey.of("PRODUCTS_DO_NOT_MATCH");
 	private static final AdMessageKey MSG_SALES_CALL_ORDER_CONTRACT_TRX_NOT_MATCH = AdMessageKey.of("SALES_CALL_ORDER_CONTRACT_TRX_NOT_MATCH");
 	private static final AdMessageKey MSG_PURCHASE_CALL_ORDER_CONTRACT_TRX_NOT_MATCH = AdMessageKey.of("PURCHASE_CALL_ORDER_CONTRACT_TRX_NOT_MATCH");
-
-	public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("C_OrderLine_OverlappingTerms");
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
@@ -267,27 +261,5 @@ public class CallOrderContractService
 									 contract.getDocumentNo(),
 									 documentLineSeqNo)
 				.markAsUserValidationError();
-	}
-
-	public void forbidOverlappingTerms(@NonNull final I_C_OrderLine orderLine)
-	{
-		final ConditionsId conditionsId = ConditionsId.ofRepoId(orderLine.getC_Flatrate_Conditions_ID());
-		final FlatrateTermOverlapCriteria flatrateTermOverlapCriteria = FlatrateTermOverlapCriteria
-				.builder()
-				.orgId(OrgId.ofRepoId(orderLine.getAD_Org_ID()))
-				.bPartnerId(BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()))
-				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
-				.conditionsId(conditionsId)
-				.datePromised(Objects.requireNonNull(orderLine.getDatePromised()))
-				.build();
-
-		final boolean hasOverlappingTerms = flatrateDAO.hasOverlappingTerms(flatrateTermOverlapCriteria);
-
-		if (hasOverlappingTerms)
-		{
-			final I_C_Flatrate_Conditions conditionsRecord = flatrateDAO.getConditionsById(conditionsId);
-			throw new AdempiereException(MSG_HasOverlapping_Term, conditionsRecord.getName())
-					.markAsUserValidationError();
-		}
 	}
 }
