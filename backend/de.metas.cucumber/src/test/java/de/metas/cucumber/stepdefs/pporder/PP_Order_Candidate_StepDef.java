@@ -43,7 +43,7 @@ import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefDat
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.HuId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -138,9 +138,7 @@ public class PP_Order_Candidate_StepDef
 	private static final AdMessageKey MSG_QTY_TO_PROCESS_GREATER_THAN_QTY_LEFT = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyToProcessGreaterThanQtyLeftToBeProcessed");
 
 	@And("^after not more than (.*)s, PP_Order_Candidates are found$")
-	public void validatePP_Order_Candidate(
-			final int timeoutSec,
-			@NonNull final DataTable dataTable)
+	public void validatePP_Order_Candidate(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName("PP_Order_Candidate_ID")
@@ -263,26 +261,15 @@ public class PP_Order_Candidate_StepDef
 			final boolean autoProcessCandidate,
 			@NonNull final DataTable table)
 	{
-		final Set<PPOrderCandidateId> ppOrderCandidatesId = DataTableRows.of(table)
-				.stream()
-				.map(this::getPPOrderCandidateId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final PInstanceId pInstanceId = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidatesId)
-				.create()
-				.createSelection();
-
-		final EnqueuePPOrderCandidateRequest enqueuePPOrderCandidateRequest = EnqueuePPOrderCandidateRequest.builder()
-				.adPInstanceId(pInstanceId)
-				.ctx(Env.getCtx())
-				.isCompleteDocOverride(isDocComplete)
-				.autoProcessCandidatesAfterProduction(autoProcessCandidate)
-				.build();
-
-		final PPOrderCandidateEnqueuer.Result result = ppOrderCandidateEnqueuer
-				.enqueueSelection(enqueuePPOrderCandidateRequest);
+		final PInstanceId selectionId = ppOrderCandidateEnqueuer.createSelection(getPPOrderCandidateIds(table));
+		final PPOrderCandidateEnqueuer.Result result = ppOrderCandidateEnqueuer.enqueueSelection(
+				EnqueuePPOrderCandidateRequest.builder()
+						.adPInstanceId(selectionId)
+						.ctx(Env.getCtx())
+						.isCompleteDocOverride(isDocComplete)
+						.autoProcessCandidatesAfterProduction(autoProcessCandidate)
+						.build()
+		);
 
 		assertThat(result.getEnqueuedPackagesCount()).isOne();
 	}
@@ -302,26 +289,25 @@ public class PP_Order_Candidate_StepDef
 		return row.getAsIdentifier(COLUMNNAME_PP_Order_Candidate_ID).lookupIn(ppOrderCandidateTable);
 	}
 
+	private Set<PPOrderCandidateId> getPPOrderCandidateIds(final @NonNull DataTable table)
+	{
+		return DataTableRows.of(table).stream().map(this::getPPOrderCandidateId).collect(ImmutableSet.toImmutableSet());
+	}
+
 	private PPOrderCandidateId getPPOrderCandidateId(@NonNull final DataTableRow row)
 	{
 		return row.getAsIdentifier(COLUMNNAME_PP_Order_Candidate_ID).lookupIdIn(ppOrderCandidateTable);
 	}
 
-	private void validatePP_Order_Candidate(
-			final int timeoutSec,
-			@NonNull final DataTableRow row) throws InterruptedException
+	private void validatePP_Order_Candidate(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
 	{
+		final I_PP_Order_Candidate ppOrderCandidate = StepDefUtil.tryAndWaitForItem(toSqlQuery(row))
+				.validateUsingConsumer((record) -> validatePP_Order_Candidate(record, row))
+				.logContext(() -> toTabularStringForProductIdentifier(row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID)))
+				.maxWaitSeconds(timeoutSec)
+				.execute();
 
-		final I_PP_Order_Candidate ppOrderCandidate = StepDefUtil.tryAndWaitForItem(
-				timeoutSec,
-				500,
-				toSqlQuery(row),
-				(record) -> validatePP_Order_Candidate(record, row),
-				() -> toTabularStringForProductIdentifier(row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID))
-		);
-
-		row.getAsOptionalIdentifier()
-				.ifPresent(identifier -> ppOrderCandidateTable.putOrReplace(identifier, ppOrderCandidate));
+		row.getAsOptionalIdentifier().ifPresent(identifier -> ppOrderCandidateTable.putOrReplace(identifier, ppOrderCandidate));
 	}
 
 	private void validatePP_Order_Candidate(@NonNull final I_PP_Order_Candidate actual, @NonNull final DataTableRow row)
@@ -426,7 +412,7 @@ public class PP_Order_Candidate_StepDef
 		if (identifier != null && ppOrderCandidateTable.isPresent(identifier))
 		{
 			final PPOrderCandidateId id = ppOrderCandidateTable.getId(identifier);
-			queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+			return queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 					.addEqualsFilter(COLUMNNAME_PP_Order_Candidate_ID, id)
 					.create();
 		}
@@ -445,22 +431,23 @@ public class PP_Order_Candidate_StepDef
 
 		final Instant datePromised = row.getAsInstant(I_PP_Order_Candidate.COLUMNNAME_DatePromised);
 		final Instant dateStartSchedule = row.getAsInstant(I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule);
-		final boolean isProcessed = row.getAsBoolean(I_PP_Order_Candidate.COLUMNNAME_Processed);
-		final boolean isClosed = row.getAsBoolean(I_PP_Order_Candidate.COLUMNNAME_IsClosed);
+		// final boolean isProcessed = row.getAsBoolean(I_PP_Order_Candidate.COLUMNNAME_Processed);
+		// final boolean isClosed = row.getAsBoolean(I_PP_Order_Candidate.COLUMNNAME_IsClosed);
 
 		final IQueryBuilder<I_PP_Order_Candidate> builder = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, productId)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_BOM_ID, bomId)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanningId)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_S_Resource_ID, resourceId)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyEntered, qtyEntered.toBigDecimal())
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, qtyToProcess.toBigDecimal())
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed, qtyProcessed.toBigDecimal())
+				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyEntered, qtyEntered.toBigDecimal())
+				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, qtyToProcess.toBigDecimal())
+				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed, qtyProcessed.toBigDecimal())
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_C_UOM_ID, uomId)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_DatePromised, datePromised)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule, dateStartSchedule)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Processed, isProcessed)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsClosed, isClosed);
+				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Processed, isProcessed)
+				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsClosed, isClosed)
+				;
 
 		row.getAsOptionalBoolean(I_PP_Order_Candidate.COLUMNNAME_IsMaturing)
 				.ifPresent(isMaturing -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsMaturing, isMaturing));
@@ -473,9 +460,9 @@ public class PP_Order_Candidate_StepDef
 				.map(maturingConfigLineTable::get)
 				.ifPresent(maturingConfigLine -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Maturing_Configuration_Line_ID, maturingConfigLine.getM_Maturing_Configuration_Line_ID()));
 
-		row.getAsOptionalIdentifier(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID)
-				.map(huTable::get)
-				.ifPresent(hu -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID, hu.getM_HU_ID()));
+		// row.getAsOptionalIdentifier(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID)
+		// 		.map(huTable::get)
+		// 		.ifPresent(hu -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID, hu.getM_HU_ID()));
 
 		return builder.create();
 	}
@@ -650,12 +637,17 @@ public class PP_Order_Candidate_StepDef
 			final int timeoutSec,
 			final String issueHuIdentifier) throws InterruptedException
 	{
-		final I_M_HU hu = huTable.get(issueHuIdentifier);
+		final HuId huId = huTable.getId(issueHuIdentifier);
 
 		final IQuery<I_PP_Order_Candidate> query = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID, hu.getM_HU_ID())
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID, huId)
 				.create();
-		StepDefUtil.tryAndWait(timeoutSec, 500, () -> !query.anyMatch());
+
+		StepDefUtil.tryAndWaitForItem()
+				.workerFromBooleanSupplier(query::noneMatch)
+				.logContextUsingRunnable(null)
+				.maxWaitSeconds(timeoutSec)
+				.execute();
 	}
 
 	private String toTabularStringForProductIdentifier(@NonNull final StepDefDataIdentifier productIdentifier)

@@ -558,10 +558,11 @@ public class MD_Candidate_StepDef
 	{
 
 		final CandidatesQuery candidatesQuery = row.toCandidatesQuery();
-		SharedTestContext.put("candidatesQuery", candidatesQuery);
-		SharedTestContext.put("candidatesQuery SQL", () -> RepositoryCommons.mkQueryBuilder(candidatesQuery).create());
-		SharedTestContext.put("query result candidates", () -> toCandidatesTabularString(candidatesQuery));
-		SharedTestContext.put("all product related candidates", () -> toCandidatesTabularString(row.getProductId()));
+		SharedTestContext.put("expected", () -> toCandidatesTabularFromRow(row).toTabularString());
+		SharedTestContext.put("actual candidates", () -> toCandidatesTabularString(candidatesQuery));
+		SharedTestContext.put("all actual candidates related to product", () -> toCandidatesTabularString(row.getProductId()));
+		SharedTestContext.put("actual candidates query", candidatesQuery);
+		SharedTestContext.put("actual candidates query SQL", () -> RepositoryCommons.mkQueryBuilder(candidatesQuery).create());
 
 		return StepDefUtil.tryAndWaitForItem(
 				timeoutSec,

@@ -91,7 +91,7 @@ public class EDI_Desadv_Pack_StepDef
 	}
 
 	@Then("^after not more than (.*)s, EDI_Desadv_Pack records are found:$")
-	public void packsAreFound(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
+	public void packsAreFound(final int timeoutSec, @NonNull final DataTable table)
 	{
 		DataTableRows.of(table)
 				.setAdditionalRowIdentifierColumnName(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_Pack_ID)

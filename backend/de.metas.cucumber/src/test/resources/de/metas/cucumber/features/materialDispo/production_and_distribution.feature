@@ -102,7 +102,7 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID |
       | ddoc1      | component    | rawMaterials_WH     | production_WH    | 10 PCE | N         | oc_1                          | ocl_1                             |
 
-    And after not more than 60s, MD_Candidates are found
+    And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID  | DD_Order_Candidate_ID | PP_Order_Candidate_ID | PP_OrderLine_Candidate_ID |
       | 1          | DEMAND            | SHIPMENT                  | bom_product  | 2021-04-16T21:00:00Z | -10 | -10                    | production_WH   | -                     | -                     | -                         |
       | 2          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 10  | 0                      | production_WH   | -                     | oc_1                  | -                         |
@@ -153,7 +153,7 @@ Feature: Production + Distribution material dispo scenarios
       | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID | Forward_PP_Order_ID |
       | component    | rawMaterials_WH     | production_WH    | 10 PCE | N         | oc_1                          | ocl_1                             | ppOrder             |
 
-    And after not more than 60s, MD_Candidates are found
+    And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID  |
       # Sales Order / Shipment Schedule:
       | 1          | DEMAND            | SHIPMENT                  | bom_product  | 2021-04-16T21:00:00Z | -10 | -10                    | production_WH   |
@@ -215,7 +215,7 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | M_Product_ID | QtyEntered | M_Warehouse_From_ID | M_Warehouse_To_ID |
       | ddol1      | component    | 10         | rawMaterials_WH     | production_WH     |
 
-    And after not more than 60s, MD_Candidates are found
+    And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  |
       # Sales Order / Shipment Schedule:
       | 1          | DEMAND            | SHIPMENT                  | bom_product  | 2021-04-16T21:00:00Z | -10 | -10 | production_WH   |
@@ -276,7 +276,7 @@ Feature: Production + Distribution material dispo scenarios
       | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty   | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID |
       | component    | rawMaterials_WH     | production_WH    | 5 PCE | N         | oc_1                          | ocl_1                             |
 
-    And after not more than 60s, MD_Candidates are found
+    And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  |
       # Already existing stock (see above):
       | stock1     | INVENTORY_UP      |                           | bom_product  | 2021-04-01T21:00:00Z | 3   | 3   | production_WH   |
