@@ -80,6 +80,12 @@ public final class StepDefDataIdentifier
 		return valueNorm != null ? ofString(valueNorm) : null;
 	}
 
+	public static List<StepDefDataIdentifier> ofCommaSeparatedString(@Nullable String value)
+	{
+		final StepDefDataIdentifier identifier = ofNullableString(value);
+		return identifier == null ? ImmutableList.of() : identifier.toCommaSeparatedList();
+	}
+
 	public static StepDefDataIdentifier nextUnnamed()
 	{
 		return ofString(PREFIX_Unnamed + nextUnnamedIdentifierId.getAndIncrement());
@@ -96,14 +102,39 @@ public final class StepDefDataIdentifier
 
 	public <T extends RepoIdAware> T getAsId(@NonNull final Class<T> idType) {return RepoIdAwares.ofObject(value, idType);}
 
-	public int getAsInt() {return NumberUtils.asInt(value);}
+	public int getAsInt()
+	{
+		if (isNullPlaceholder())
+		{
+			return -1;
+		}
+		return NumberUtils.asInt(value);
+	}
 
-	public <T> T lookupIn(@NonNull final StepDefData<T> table) {return table.get(this);}
+	public <T> T lookupIn(@NonNull final StepDefData<T> table)
+	{
+		if (isNullPlaceholder())
+		{
+			return null;
+		}
+		return table.get(this);
+	}
 
-	public <ID extends RepoIdAware> ID lookupIdIn(@NonNull final StepDefDataGetIdAware<ID, ?> table) {return table.getId(this);}
+	public <ID extends RepoIdAware> ID lookupIdIn(@NonNull final StepDefDataGetIdAware<ID, ?> table)
+	{
+		if (isNullPlaceholder())
+		{
+			return null;
+		}
+		return table.getId(this);
+	}
 
 	public <T> T lookupOrLoadById(@NonNull final StepDefData<T> table, @NonNull IntFunction<T> loader)
 	{
+		if (isNullPlaceholder())
+		{
+			return null;
+		}
 		return table.getOptional(this)
 				.orElseGet(() -> loader.apply(getAsInt()));
 	}

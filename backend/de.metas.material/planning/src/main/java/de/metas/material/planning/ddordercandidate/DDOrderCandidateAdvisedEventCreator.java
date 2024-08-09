@@ -6,20 +6,21 @@ import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.event.SupplyRequiredAdvisor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Service
+@Component
 @RequiredArgsConstructor
-public class DDOrderCandidateAdvisedEventCreator
+public class DDOrderCandidateAdvisedEventCreator implements SupplyRequiredAdvisor
 {
 	@NonNull private final DDOrderCandidateDemandMatcher demandMatcher;
 	@NonNull private final DDOrderCandidateDataFactory ddOrderCandidateDataFactory;
 
-	public List<DDOrderCandidateAdvisedEvent> createDDOrderCandidateAdvisedEvents(
+	public List<DDOrderCandidateAdvisedEvent> createAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final MaterialPlanningContext context)
 	{
@@ -41,11 +42,11 @@ public class DDOrderCandidateAdvisedEventCreator
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final ProductPlanning productPlanningData)
 	{
-				return DDOrderCandidateAdvisedEvent.builder()
+		return DDOrderCandidateAdvisedEvent.builder()
 				.eventDescriptor(supplyRequiredDescriptor.newEventDescriptor())
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.ddOrderCandidate(ddOrderCandidate)
-				.advisedToCreateDDOrderCandidate(productPlanningData.isCreatePlan())
+				.advisedToCreateDDOrder(productPlanningData.isCreatePlan())
 				.pickIfFeasible(productPlanningData.isPickDirectlyIfFeasible())
 				.build();
 	}

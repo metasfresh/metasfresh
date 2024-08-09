@@ -38,7 +38,6 @@ import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.SimulatedQueryQualifier;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.organization.IOrgDAO;
-import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -155,7 +154,7 @@ public class ProductionSimulationRowsLoader
 
 		final ProductionSimulationRow.ProductionSimulationRowBuilder productionSimulationRowBuilder = ProductionSimulationRow.builder()
 				.rowId(buildRowId(candidate))
-				.product(productLookup.findById(ProductId.ofRepoId(candidate.getProductId())))
+				.product(productLookup.findById(candidate.getProductId()))
 				.attributeSetInstance(attributeSetInstanceLookup.findById(AttributeSetInstanceId.ofRepoIdOrNone(candidate.getMaterialDescriptor().getAttributeSetInstanceId())))
 				.warehouse(warehouseLookup.findById(candidate.getWarehouseId()))
 				.qty(candidate.getQuantity())

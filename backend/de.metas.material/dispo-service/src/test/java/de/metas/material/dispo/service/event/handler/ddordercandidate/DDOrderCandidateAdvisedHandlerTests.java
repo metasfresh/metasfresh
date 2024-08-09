@@ -6,7 +6,6 @@ import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.DispoTestUtils;
-import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
@@ -22,19 +21,20 @@ import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
-import de.metas.order.OrderLineRepository;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -86,12 +86,12 @@ public class DDOrderCandidateAdvisedHandlerTests
 	private static final Instant t1 = t0.plus(10, ChronoUnit.MINUTES);
 
 	/**
-	 * {@link #t1} plus one day, so that we can work/test with {@link DDOrderLine#getDurationDays()}.
+	 * {@link #t1} plus one day.
 	 */
 	private static final Instant t2 = t1.plus(1, ChronoUnit.DAYS);
 
 	/**
-	 * {@link #t2} plus two days so that we can work/test with {@link DDOrderLine#getDurationDays()}.
+	 * {@link #t2} plus two days.
 	 */
 	private static final Instant t3 = t2.plus(2, ChronoUnit.DAYS);
 
@@ -114,6 +114,12 @@ public class DDOrderCandidateAdvisedHandlerTests
 	{
 		AdempiereTestHelper.get().init();
 
+		setupServices();
+		setupMasterData();
+	}
+
+	private void setupServices()
+	{
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(
 				new MDCandidateDimensionFactory()
 		));
@@ -124,7 +130,7 @@ public class DDOrderCandidateAdvisedHandlerTests
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepository);
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		final AvailableToPromiseRepository availableToPromiseRepository = new AvailableToPromiseRepository();
@@ -150,9 +156,20 @@ public class DDOrderCandidateAdvisedHandlerTests
 				candidateRepositoryCommands,
 				candidateChangeService,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepository, postMaterialEventService, new OrderLineRepository()),
 				new DDOrderDetailRequestHandler(),
-				new MainDataRequestHandler());
+				new MainDataRequestHandler(),
+				postMaterialEventService);
+	}
+
+	private void setupMasterData()
+	{
+		final I_C_UOM uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(uom);
+
+		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product.setM_Product_ID(PRODUCT_ID);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
+		InterfaceWrapperHelper.save(product);
 	}
 
 	/**
@@ -169,10 +186,10 @@ public class DDOrderCandidateAdvisedHandlerTests
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor(50))
 				.ddOrderCandidate(DDOrderCandidateData.builder()
+						.clientAndOrgId(CLIENT_AND_ORG_ID)
 						.productPlanningId(productPlanningId)
 						.distributionNetworkAndLineId(distributionNetworkAndLineId)
 						//
-						.orgId(ORG_ID)
 						.sourceWarehouseId(fromWarehouseId)
 						.targetWarehouseId(toWarehouseId)
 						.targetPlantId(plantId)
@@ -183,12 +200,12 @@ public class DDOrderCandidateAdvisedHandlerTests
 						//
 						.productDescriptor(createProductDescriptor())
 						//
-						.datePromised(t2)
+						.supplyDate(t2)
+						.demandDate(t2.minus(1, ChronoUnit.DAYS))
 						//
 						.qty(BigDecimal.TEN)
 						.uomId(1234)
 						//
-						.durationDays(1)
 						.build())
 				.build();
 		ddOrderCandidateAdvisedHandler.handleEvent(event);
@@ -366,20 +383,20 @@ public class DDOrderCandidateAdvisedHandlerTests
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.ddOrderCandidate(DDOrderCandidateData.builder()
+						.clientAndOrgId(CLIENT_AND_ORG_ID)
 						.productPlanningId(productPlanningId)
 						.distributionNetworkAndLineId(distributionNetworkAndLineId)
 						//
-						.orgId(ORG_ID)
 						.sourceWarehouseId(fromWarehouseId)
 						.targetWarehouseId(toWarehouseId)
 						.targetPlantId(plantId)
 						.shipperId(shipperId)
 						.salesOrderLineId(supplyRequiredDescriptor.getOrderLineId())
 						.productDescriptor(createProductDescriptor())
-						.datePromised(start)
+						.supplyDate(start)
+						.demandDate(start.minus(durationDays, ChronoUnit.DAYS))
 						.qty(BigDecimal.TEN)
 						.uomId(12345)
-						.durationDays(durationDays)
 						.build())
 				.build();
 		ddOrderAdvisedHandler.handleEvent(event);

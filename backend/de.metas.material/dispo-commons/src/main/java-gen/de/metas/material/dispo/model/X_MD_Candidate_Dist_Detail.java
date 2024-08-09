@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements I_MD_Candidate_Dist_Detail, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -771226452L;
+	private static final long serialVersionUID = 1372895224L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Dist_Detail (final Properties ctx, final int MD_Candidate_Dist_Detail_ID, @Nullable final String trxName)
@@ -100,6 +100,33 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	public int getDD_NetworkDistributionLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_DD_NetworkDistributionLine_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_DD_Order_Candidate getDD_Order_Candidate()
+	{
+		return get_ValueAsPO(COLUMNNAME_DD_Order_Candidate_ID, org.eevolution.model.I_DD_Order_Candidate.class);
+	}
+
+	@Override
+	public void setDD_Order_Candidate(final org.eevolution.model.I_DD_Order_Candidate DD_Order_Candidate)
+	{
+		set_ValueFromPO(COLUMNNAME_DD_Order_Candidate_ID, org.eevolution.model.I_DD_Order_Candidate.class, DD_Order_Candidate);
+	}
+
+	@Override
+	public void setDD_Order_Candidate_ID (final int DD_Order_Candidate_ID)
+	{
+		if (DD_Order_Candidate_ID < 1) 
+			set_Value (COLUMNNAME_DD_Order_Candidate_ID, null);
+		else 
+			set_Value (COLUMNNAME_DD_Order_Candidate_ID, DD_Order_Candidate_ID);
+	}
+
+	@Override
+	public int getDD_Order_Candidate_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DD_Order_Candidate_ID);
 	}
 
 	/** 

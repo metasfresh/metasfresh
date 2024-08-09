@@ -52,6 +52,26 @@ public interface I_DD_Order_Candidate
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_ID();
+
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
 	 * Set Sales Orderline.
 	 *
 	 * <br>Type: Search
@@ -147,29 +167,6 @@ public interface I_DD_Order_Candidate
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
-	 * Set Date Promised.
-	 * Date Order was promised
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setDatePromised (java.sql.Timestamp DatePromised);
-
-	/**
-	 * Get Date Promised.
-	 * Date Order was promised
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getDatePromised();
-
-	ModelColumn<I_DD_Order_Candidate, Object> COLUMN_DatePromised = new ModelColumn<>(I_DD_Order_Candidate.class, "DatePromised", null);
-	String COLUMNNAME_DatePromised = "DatePromised";
-
-	/**
 	 * Set Network Distribution.
 	 * Identifies a distribution network, distribution networks are used to establish the source and target of the materials in the supply chain
 	 *
@@ -222,7 +219,7 @@ public interface I_DD_Order_Candidate
 	String COLUMNNAME_DD_NetworkDistributionLine_ID = "DD_NetworkDistributionLine_ID";
 
 	/**
-	 * Set Distribution Order Candidate.
+	 * Set Distribution Candidate.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -231,7 +228,7 @@ public interface I_DD_Order_Candidate
 	void setDD_Order_Candidate_ID (int DD_Order_Candidate_ID);
 
 	/**
-	 * Get Distribution Order Candidate.
+	 * Get Distribution Candidate.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -241,6 +238,27 @@ public interface I_DD_Order_Candidate
 
 	ModelColumn<I_DD_Order_Candidate, Object> COLUMN_DD_Order_Candidate_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "DD_Order_Candidate_ID", null);
 	String COLUMNNAME_DD_Order_Candidate_ID = "DD_Order_Candidate_ID";
+
+	/**
+	 * Set Demand Date.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDemandDate (java.sql.Timestamp DemandDate);
+
+	/**
+	 * Get Demand Date.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getDemandDate();
+
+	ModelColumn<I_DD_Order_Candidate, Object> COLUMN_DemandDate = new ModelColumn<>(I_DD_Order_Candidate.class, "DemandDate", null);
+	String COLUMNNAME_DemandDate = "DemandDate";
 
 	/**
 	 * Set Forward Manufacturing Order BOM Line.
@@ -260,11 +278,11 @@ public interface I_DD_Order_Candidate
 	 */
 	int getForward_PP_Order_BOMLine_ID();
 
-	@Nullable org.eevolution.model.I_PP_Product_BOMLine getForward_PP_Order_BOMLine();
+	@Nullable org.eevolution.model.I_PP_Order_BOMLine getForward_PP_Order_BOMLine();
 
-	void setForward_PP_Order_BOMLine(@Nullable org.eevolution.model.I_PP_Product_BOMLine Forward_PP_Order_BOMLine);
+	void setForward_PP_Order_BOMLine(@Nullable org.eevolution.model.I_PP_Order_BOMLine Forward_PP_Order_BOMLine);
 
-	ModelColumn<I_DD_Order_Candidate, org.eevolution.model.I_PP_Product_BOMLine> COLUMN_Forward_PP_Order_BOMLine_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "Forward_PP_Order_BOMLine_ID", org.eevolution.model.I_PP_Product_BOMLine.class);
+	ModelColumn<I_DD_Order_Candidate, org.eevolution.model.I_PP_Order_BOMLine> COLUMN_Forward_PP_Order_BOMLine_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "Forward_PP_Order_BOMLine_ID", org.eevolution.model.I_PP_Order_BOMLine.class);
 	String COLUMNNAME_Forward_PP_Order_BOMLine_ID = "Forward_PP_Order_BOMLine_ID";
 
 	/**
@@ -720,6 +738,69 @@ public interface I_DD_Order_Candidate
 
 	ModelColumn<I_DD_Order_Candidate, Object> COLUMN_QtyOrdered = new ModelColumn<>(I_DD_Order_Candidate.class, "QtyOrdered", null);
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
+
+	/**
+	 * Set Quantity Processed.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQtyProcessed (BigDecimal QtyProcessed);
+
+	/**
+	 * Get Quantity Processed.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyProcessed();
+
+	ModelColumn<I_DD_Order_Candidate, Object> COLUMN_QtyProcessed = new ModelColumn<>(I_DD_Order_Candidate.class, "QtyProcessed", null);
+	String COLUMNNAME_QtyProcessed = "QtyProcessed";
+
+	/**
+	 * Set Quantity To Process.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQtyToProcess (BigDecimal QtyToProcess);
+
+	/**
+	 * Get Quantity To Process.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyToProcess();
+
+	ModelColumn<I_DD_Order_Candidate, Object> COLUMN_QtyToProcess = new ModelColumn<>(I_DD_Order_Candidate.class, "QtyToProcess", null);
+	String COLUMNNAME_QtyToProcess = "QtyToProcess";
+
+	/**
+	 * Set Supply Date.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSupplyDate (java.sql.Timestamp SupplyDate);
+
+	/**
+	 * Get Supply Date.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getSupplyDate();
+
+	ModelColumn<I_DD_Order_Candidate, Object> COLUMN_SupplyDate = new ModelColumn<>(I_DD_Order_Candidate.class, "SupplyDate", null);
+	String COLUMNNAME_SupplyDate = "SupplyDate";
 
 	/**
 	 * Get Updated.

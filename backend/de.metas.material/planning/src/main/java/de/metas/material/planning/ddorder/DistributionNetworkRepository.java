@@ -72,7 +72,7 @@ public class DistributionNetworkRepository
 
 	public DistributionNetworkLine getLineById(@NonNull final DistributionNetworkAndLineId networkAndLineId)
 	{
-		return getMap().getLineById(networkAndLineId);
+		return getMap().getById(networkAndLineId.getNetworkId()).getLineById(networkAndLineId.getLineId());
 	}
 
 	public DistributionNetwork getEmptiesDistributionNetwork()
@@ -201,11 +201,6 @@ public class DistributionNetworkRepository
 				throw new AdempiereException("No line found with id " + lineId);
 			}
 			return pair.getRight();
-		}
-
-		public DistributionNetworkLine getLineById(@NonNull final DistributionNetworkAndLineId networkAndLineId)
-		{
-			return getById(networkAndLineId.getNetworkId()).getLineById(networkAndLineId.getLineId());
 		}
 	}
 }

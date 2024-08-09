@@ -87,7 +87,7 @@ public class SupplyProposalEvaluatorTests
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		this.candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		this.candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 		this.supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 	}
 

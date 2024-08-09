@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -14642095L;
+	private static final long serialVersionUID = 2080912459L;
 
     /** Standard Constructor */
     public X_DD_Order_Candidate (final Properties ctx, final int DD_Order_Candidate_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+	}
+
+	@Override
+	public int getC_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
 	@Override
@@ -87,18 +102,6 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	public java.sql.Timestamp getDateOrdered() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateOrdered);
-	}
-
-	@Override
-	public void setDatePromised (final java.sql.Timestamp DatePromised)
-	{
-		set_Value (COLUMNNAME_DatePromised, DatePromised);
-	}
-
-	@Override
-	public java.sql.Timestamp getDatePromised() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_DatePromised);
 	}
 
 	@Override
@@ -171,15 +174,27 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Product_BOMLine getForward_PP_Order_BOMLine()
+	public void setDemandDate (final java.sql.Timestamp DemandDate)
 	{
-		return get_ValueAsPO(COLUMNNAME_Forward_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Product_BOMLine.class);
+		set_Value (COLUMNNAME_DemandDate, DemandDate);
 	}
 
 	@Override
-	public void setForward_PP_Order_BOMLine(final org.eevolution.model.I_PP_Product_BOMLine Forward_PP_Order_BOMLine)
+	public java.sql.Timestamp getDemandDate() 
 	{
-		set_ValueFromPO(COLUMNNAME_Forward_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Product_BOMLine.class, Forward_PP_Order_BOMLine);
+		return get_ValueAsTimestamp(COLUMNNAME_DemandDate);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order_BOMLine getForward_PP_Order_BOMLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_Forward_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Order_BOMLine.class);
+	}
+
+	@Override
+	public void setForward_PP_Order_BOMLine(final org.eevolution.model.I_PP_Order_BOMLine Forward_PP_Order_BOMLine)
+	{
+		set_ValueFromPO(COLUMNNAME_Forward_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Order_BOMLine.class, Forward_PP_Order_BOMLine);
 	}
 
 	@Override
@@ -552,5 +567,43 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyProcessed (final BigDecimal QtyProcessed)
+	{
+		set_Value (COLUMNNAME_QtyProcessed, QtyProcessed);
+	}
+
+	@Override
+	public BigDecimal getQtyProcessed() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyToProcess (final BigDecimal QtyToProcess)
+	{
+		set_Value (COLUMNNAME_QtyToProcess, QtyToProcess);
+	}
+
+	@Override
+	public BigDecimal getQtyToProcess() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToProcess);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setSupplyDate (final java.sql.Timestamp SupplyDate)
+	{
+		set_Value (COLUMNNAME_SupplyDate, SupplyDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getSupplyDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_SupplyDate);
 	}
 }

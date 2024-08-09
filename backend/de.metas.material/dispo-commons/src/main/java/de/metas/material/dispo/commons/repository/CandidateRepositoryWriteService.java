@@ -81,8 +81,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 import static de.metas.common.util.IdConstants.toRepoId;
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
@@ -100,6 +102,7 @@ public class CandidateRepositoryWriteService
 	private final IForecastDAO forecastDAO = Services.get(IForecastDAO.class);
 	@NonNull private final DimensionService dimensionService;
 	@NonNull private final StockChangeDetailRepo stockChangeDetailRepo;
+	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	/**
 	 * Stores the given {@code candidate}.
@@ -481,6 +484,7 @@ public class CandidateRepositoryWriteService
 		detailRecordToUpdate.setDD_NetworkDistributionLine_ID(distributionDetail.getDistributionNetworkAndLineId() != null ? distributionDetail.getDistributionNetworkAndLineId().getLineId().getRepoId() : -1);
 		detailRecordToUpdate.setPP_Plant_ID(ResourceId.toRepoId(distributionDetail.getPlantId()));
 		detailRecordToUpdate.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(distributionDetail.getProductPlanningId()));
+		detailRecordToUpdate.setDD_Order_Candidate_ID(distributionDetail.getDdOrderCandidateId());
 		detailRecordToUpdate.setDD_Order_ID(distributionDetail.getDdOrderId());
 		detailRecordToUpdate.setDD_OrderLine_ID(distributionDetail.getDdOrderLineId());
 		detailRecordToUpdate.setDD_Order_DocStatus(distributionDetail.getDdOrderDocStatus() != null ? distributionDetail.getDdOrderDocStatus().getCode() : null);
@@ -771,6 +775,20 @@ public class CandidateRepositoryWriteService
 				.execute();
 	}
 
+	public void updateCandidatesByQuery(@NonNull final CandidatesQuery query, @NonNull final UnaryOperator<Candidate> updater)
+	{
+		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
+
+		for (final Candidate candidate : candidates)
+		{
+			final Candidate changedCandidate = updater.apply(candidate);
+			if (!Objects.equals(candidate, changedCandidate))
+			{
+				updateCandidateById(changedCandidate);
+			}
+		}
+	}
+
 	@Value
 	public static class DeleteResult
 	{
@@ -783,5 +801,4 @@ public class CandidateRepositoryWriteService
 		@NonNull
 		BigDecimal previousQty;
 	}
-
 }

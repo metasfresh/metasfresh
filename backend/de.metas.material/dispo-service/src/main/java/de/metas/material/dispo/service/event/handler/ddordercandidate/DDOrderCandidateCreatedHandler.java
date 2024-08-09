@@ -7,7 +7,6 @@ import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
@@ -50,13 +49,10 @@ public class DDOrderCandidateCreatedHandler
 	}
 
 	@Override
-	public void handleEvent(DDOrderCandidateCreatedEvent event)
+	public void handleEvent(@NonNull final DDOrderCandidateCreatedEvent event)
 	{
 		createAndProcessCandidates(event);
 	}
-
-	@Override
-	protected Flag extractIsAdviseEvent(final @NonNull AbstractDDOrderCandidateEvent event) {return Flag.FALSE_DONT_UPDATE;}
 
 	@Override
 	protected CandidatesQuery createPreExistingCandidatesQuery(@NonNull final AbstractDDOrderCandidateEvent event, @NonNull final CandidateType candidateType)

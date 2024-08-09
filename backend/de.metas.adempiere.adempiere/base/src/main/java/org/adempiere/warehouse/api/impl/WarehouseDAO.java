@@ -226,6 +226,10 @@ public class WarehouseDAO implements IWarehouseDAO
 	{
 		final I_M_Warehouse warehouse = getById(warehouseId);
 		final I_M_Locator locatorNew = newInstance(I_M_Locator.class, warehouse);
+		
+		// for some reason, in case warehouse has trxName=null then locatorNew will use thread inherited?!
+		// so to avoid this case we are setting it the trxName again
+		InterfaceWrapperHelper.setTrxName(locatorNew, InterfaceWrapperHelper.getTrxName(warehouse));
 
 		locatorNew.setAD_Org_ID(warehouse.getAD_Org_ID());
 		locatorNew.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());

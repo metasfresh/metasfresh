@@ -74,12 +74,6 @@ public class DDOrderCreatedHandler extends DDOrderAdvisedOrCreatedHandler<DDOrde
 	}
 
 	@Override
-	public void validateEvent(@NonNull final DDOrderCreatedEvent event)
-	{
-		event.validate();
-	}
-
-	@Override
 	public void handleEvent(DDOrderCreatedEvent event)
 	{
 		createAndProcessCandidates(event);
@@ -103,7 +97,7 @@ public class DDOrderCreatedHandler extends DDOrderAdvisedOrCreatedHandler<DDOrde
 			return CandidatesQuery.fromId(CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId()));
 		}
 
-		final DDOrderCreatedEvent ddOrderCreatedEvent = cast(ddOrderEvent);
+		final DDOrderCreatedEvent ddOrderCreatedEvent = DDOrderCreatedEvent.cast(ddOrderEvent);
 
 		final DDOrder ddOrder = ddOrderCreatedEvent.getDdOrder();
 		final MaterialDispoGroupId groupId = ddOrder.getMaterialDispoGroupId();
@@ -117,19 +111,11 @@ public class DDOrderCreatedHandler extends DDOrderAdvisedOrCreatedHandler<DDOrde
 				.type(candidateType)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.groupId(groupId)
-				.materialDescriptorQuery(
-						createMaterialDescriptorQuery(
-								ddOrderLine.getProductDescriptor()))
+				.materialDescriptorQuery(toMaterialDescriptorQuery(ddOrderLine.getProductDescriptor()))
 				.build();
 	}
 
-	private DDOrderCreatedEvent cast(@NonNull final AbstractDDOrderEvent ddOrderEvent)
-	{
-		return (DDOrderCreatedEvent)ddOrderEvent;
-	}
-
-	private static MaterialDescriptorQuery createMaterialDescriptorQuery(
-			@NonNull final ProductDescriptor productDescriptor)
+	private static MaterialDescriptorQuery toMaterialDescriptorQuery(@NonNull final ProductDescriptor productDescriptor)
 	{
 		return MaterialDescriptorQuery.builder()
 				.productId(productDescriptor.getProductId())

@@ -132,7 +132,7 @@ public class S_Resource_StepDef
 		row.getAsOptionalQuantity(
 						I_S_Resource.COLUMNNAME_CapacityPerProductionCycle,
 						I_S_Resource.COLUMNNAME_CapacityPerProductionCycle_UOM_ID,
-						uomString -> uomDao.getByX12DE355(X12DE355.ofCode(uomString))
+						uomDao::getByX12DE355
 				)
 				.ifPresent(capacityPerProductionCycle -> {
 					record.setCapacityPerProductionCycle(capacityPerProductionCycle.toBigDecimal());

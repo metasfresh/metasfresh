@@ -5,11 +5,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateQuery;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
-import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
@@ -27,9 +25,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 public class PPOrderCandidateListeners
 {
@@ -39,7 +34,6 @@ public class PPOrderCandidateListeners
 	public static class PPOrderCandidateUpdatedEventHandler implements MaterialEventHandler<PPOrderCandidateUpdatedEvent>
 	{
 		@NonNull private final PPOrderCandidateDAO ppOrderCandidateDAO;
-		@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 		@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 		@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository;
 
@@ -61,7 +55,7 @@ public class PPOrderCandidateListeners
 
 		private void updateProductionDetailsByPPOrderCandidateId(@NonNull final PPOrderCandidateId ppOrderCandidateId, @Nullable final PPOrderId newPPOrderId)
 		{
-			updateCandidatesByQuery(
+			candidateRepositoryWriteService.updateCandidatesByQuery(
 					CandidatesQuery.builder()
 							.businessCase(CandidateBusinessCase.PRODUCTION)
 							.productionDetailsQuery(ProductionDetailsQuery.builder().ppOrderCandidateId(ppOrderCandidateId.getRepoId()).build())
@@ -76,7 +70,7 @@ public class PPOrderCandidateListeners
 
 		private void updateDistributionDetailsByPPOrderCandidateId(@NonNull final PPOrderCandidateId ppOrderCandidateId, @Nullable final PPOrderId newPPOrderId)
 		{
-			updateCandidatesByQuery(
+			candidateRepositoryWriteService.updateCandidatesByQuery(
 					CandidatesQuery.builder()
 							.businessCase(CandidateBusinessCase.DISTRIBUTION)
 							.distributionDetailsQuery(DistributionDetailsQuery.builder().ppOrderCandidateId(ppOrderCandidateId.getRepoId()).build())
@@ -87,20 +81,6 @@ public class PPOrderCandidateListeners
 
 						return candidate.withBusinessCaseDetail(distributionDetail.withPPOrderId(newPPOrderId));
 					});
-		}
-
-		private void updateCandidatesByQuery(@NonNull final CandidatesQuery query, @NonNull final UnaryOperator<Candidate> updater)
-		{
-			final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
-
-			for (final Candidate candidate : candidates)
-			{
-				final Candidate changedCandidate = updater.apply(candidate);
-				if (!Objects.equals(candidate, changedCandidate))
-				{
-					candidateRepositoryWriteService.updateCandidateById(changedCandidate);
-				}
-			}
 		}
 
 		private void updateDistributionCandidatesByPPOrderCandidateId(@NonNull final PPOrderCandidateId ppOrderCandidateId, @Nullable final PPOrderId newPPOrderId)

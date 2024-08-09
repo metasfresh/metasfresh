@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.location.ILocationBL;
 import de.metas.util.Check;
@@ -65,11 +66,7 @@ public class C_BPartner_Location_StepDef
 	@Given("metasfresh contains C_BPartner_Locations:")
 	public void createC_BPartner_Location(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createC_BPartner_Location(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::createC_BPartner_Location);
 	}
 
 	@Given("update C_BPartner_Location:")
@@ -92,15 +89,14 @@ public class C_BPartner_Location_StepDef
 		}
 	}
 
-	private void createC_BPartner_Location(@NonNull final Map<String, String> tableRow)
+	private void createC_BPartner_Location(@NonNull final DataTableRow tableRow)
 	{
-		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+		final BPartnerId bpartnerId = tableRow.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).lookupIdIn(bPartnerTable);
 		final String gln = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner_Location.COLUMNNAME_GLN);
 
 		final I_C_BPartner_Location bPartnerLocationRecord = CoalesceUtil.coalesceSuppliers(
 				() -> queryBL.createQueryBuilder(I_C_BPartner_Location.class)
-						.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
+						.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId)
 						.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_GLN, gln)
 						.create()
 						.firstOnlyOrNull(I_C_BPartner_Location.class),
@@ -108,7 +104,7 @@ public class C_BPartner_Location_StepDef
 
 		assertThat(bPartnerLocationRecord).isNotNull();
 
-		bPartnerLocationRecord.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+		bPartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bPartnerLocationRecord.setGLN(gln);
 
 		final boolean isShipToDefault = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, false);

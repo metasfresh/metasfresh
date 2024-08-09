@@ -150,6 +150,31 @@ public interface I_MD_Candidate_Dist_Detail
 	String COLUMNNAME_DD_NetworkDistributionLine_ID = "DD_NetworkDistributionLine_ID";
 
 	/**
+	 * Set Distribution Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDD_Order_Candidate_ID (int DD_Order_Candidate_ID);
+
+	/**
+	 * Get Distribution Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDD_Order_Candidate_ID();
+
+	@Nullable org.eevolution.model.I_DD_Order_Candidate getDD_Order_Candidate();
+
+	void setDD_Order_Candidate(@Nullable org.eevolution.model.I_DD_Order_Candidate DD_Order_Candidate);
+
+	ModelColumn<I_MD_Candidate_Dist_Detail, org.eevolution.model.I_DD_Order_Candidate> COLUMN_DD_Order_Candidate_ID = new ModelColumn<>(I_MD_Candidate_Dist_Detail.class, "DD_Order_Candidate_ID", org.eevolution.model.I_DD_Order_Candidate.class);
+	String COLUMNNAME_DD_Order_Candidate_ID = "DD_Order_Candidate_ID";
+
+	/**
 	 * Set Status.
 	 *
 	 * <br>Type: List
