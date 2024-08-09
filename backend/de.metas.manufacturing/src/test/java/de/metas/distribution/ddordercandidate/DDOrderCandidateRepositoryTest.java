@@ -72,7 +72,7 @@ class DDOrderCandidateRepositoryTest
 				//
 				.customerId(BPartnerId.ofRepoId(94))
 				.salesOrderLineId(OrderLineId.ofRepoId(95))
-				.ppOrderRef(PPOrderRef.builder()
+				.forwardPPOrderRef(PPOrderRef.builder()
 						.ppOrderCandidateId(96)
 						.ppOrderLineCandidateId(97)
 						.ppOrderId(PPOrderId.ofRepoId(98))

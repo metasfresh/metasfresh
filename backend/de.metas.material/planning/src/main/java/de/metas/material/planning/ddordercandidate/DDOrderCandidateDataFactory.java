@@ -153,7 +153,7 @@ class DDOrderCandidateDataFactory
 					.shipperId(networkLine.getShipperId())
 					.customerId(BPartnerId.toRepoId(supplyRequiredDescriptor.getCustomerId()))
 					.salesOrderLineId(supplyRequiredDescriptor.getOrderLineId())
-					.ppOrderRef(supplyRequiredDescriptor.getPpOrderRef())
+					.forwardPPOrderRef(supplyRequiredDescriptor.getPpOrderRef())
 					.productDescriptor(createProductDescriptor(context))
 					.fromWarehouseMinMaxDescriptor(replenishInfoRepository.getBy(sourceWarehouseId, context.getProductId()).toMinMaxDescriptor())
 					.qty(qtyToMoveInProductUOM.toBigDecimal())

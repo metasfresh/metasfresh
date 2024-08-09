@@ -50,6 +50,8 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.X_C_DocType;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
@@ -220,6 +222,13 @@ class DDOrderCandidateProcessCommand
 
 		record.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(productPlanning.getId()));
 
+		final PPOrderRef forwardPPOrderRef = key.getForwardPPOrderRef();
+		if (forwardPPOrderRef != null)
+		{
+			record.setForward_PP_Order_ID(PPOrderId.toRepoId(forwardPPOrderRef.getPpOrderId()));
+			record.setForward_PP_Order_BOMLine_ID(PPOrderBOMLineId.toRepoId(forwardPPOrderRef.getPpOrderBOMLineId()));
+		}
+
 		ddOrderLowLevelService.save(record);
 		ddOrderHeaderRecords.put(DDOrderId.ofRepoId(record.getDD_Order_ID()), record);
 
@@ -346,7 +355,7 @@ class DDOrderCandidateProcessCommand
 
 		boolean isSimulated;
 
-		@Nullable PPOrderRef ppOrderRef;
+		@Nullable PPOrderRef forwardPPOrderRef;
 
 		@Nullable ProductPlanningId productPlanningId;
 
@@ -363,7 +372,7 @@ class DDOrderCandidateProcessCommand
 					.targetPlantId(candidate.getTargetPlantId())
 					.shipperId(candidate.getShipperId())
 					.isSimulated(candidate.isSimulated())
-					.ppOrderRef(candidate.getPpOrderRef())
+					.forwardPPOrderRef(candidate.getForwardPPOrderRef())
 					.productPlanningId(candidate.getProductPlanningId())
 					.traceId(candidate.getTraceId())
 					.build();

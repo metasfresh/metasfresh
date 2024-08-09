@@ -254,7 +254,7 @@ public class RequestMaterialOrderService
 				//
 				.customerId(BPartnerId.toRepoId(supplyCandidate.getCustomerId()))
 				.salesOrderLineId(OrderLineId.toRepoId(demandCandidate.getSalesOrderLineId()))
-				.ppOrderRef(getPpOrderRef(supplyCandidate))
+				.forwardPPOrderRef(getPpOrderRef(supplyCandidate))
 				//
 				.productDescriptor(supplyCandidate.getMaterialDescriptor())
 				.fromWarehouseMinMaxDescriptor(demandCandidate.getMinMaxDescriptor().toNullIfZero())

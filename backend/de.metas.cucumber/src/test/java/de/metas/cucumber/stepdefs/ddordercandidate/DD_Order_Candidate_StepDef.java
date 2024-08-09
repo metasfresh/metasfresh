@@ -174,7 +174,7 @@ public class DD_Order_Candidate_StepDef
 		if (ppOrderCandidateIdentifier != null)
 		{
 			final PPOrderCandidateId expectedPPOrderCandidateId = ppOrderCandidateIdentifier.lookupIdIn(ppOrderCandidateTable);
-			final PPOrderRef ppOrderRef = actual.getPpOrderRef();
+			final PPOrderRef ppOrderRef = actual.getForwardPPOrderRef();
 			final PPOrderCandidateId actualPPOrderCandidateId = ppOrderRef != null ? PPOrderCandidateId.ofRepoIdOrNull(ppOrderRef.getPpOrderCandidateId()) : null;
 			if (!PPOrderCandidateId.equals(actualPPOrderCandidateId, expectedPPOrderCandidateId))
 			{
@@ -188,7 +188,7 @@ public class DD_Order_Candidate_StepDef
 		if (ppOrderLineCandidateIdentifier != null)
 		{
 			final PPOrderLineCandidateId expectedPPOrderLineCandidateId = ppOrderLineCandidateIdentifier.lookupIdIn(ppOrderLineCandidateTable);
-			final PPOrderRef ppOrderRef = actual.getPpOrderRef();
+			final PPOrderRef ppOrderRef = actual.getForwardPPOrderRef();
 			final PPOrderLineCandidateId actualPPOrderLineCandidateId = ppOrderRef != null ? PPOrderLineCandidateId.ofRepoIdOrNull(ppOrderRef.getPpOrderLineCandidateId()) : null;
 			if (!PPOrderLineCandidateId.equals(actualPPOrderLineCandidateId, expectedPPOrderLineCandidateId))
 			{
@@ -202,7 +202,7 @@ public class DD_Order_Candidate_StepDef
 		if (ppOrderIdentifier != null)
 		{
 			final PPOrderId expectedPPOrderId = ppOrderIdentifier.lookupIdIn(ppOrderTable);
-			final PPOrderRef ppOrderRef = actual.getPpOrderRef();
+			final PPOrderRef ppOrderRef = actual.getForwardPPOrderRef();
 			final PPOrderId actualPPOrderId = ppOrderRef != null ? ppOrderRef.getPpOrderId() : null;
 			if (!PPOrderId.equals(actualPPOrderId, expectedPPOrderId))
 			{
@@ -216,7 +216,7 @@ public class DD_Order_Candidate_StepDef
 		if (ppOrderBOMLineIdentifier != null)
 		{
 			final PPOrderBOMLineId expectedPPOrderBOMLineId = ppOrderBOMLineIdentifier.lookupIdIn(ppOrderBOMLineTable);
-			final PPOrderRef ppOrderRef = actual.getPpOrderRef();
+			final PPOrderRef ppOrderRef = actual.getForwardPPOrderRef();
 			final PPOrderBOMLineId actualPPOrderBOMLineId = ppOrderRef != null ? ppOrderRef.getPpOrderBOMLineId() : null;
 			if (!PPOrderBOMLineId.equals(actualPPOrderBOMLineId, expectedPPOrderBOMLineId))
 			{

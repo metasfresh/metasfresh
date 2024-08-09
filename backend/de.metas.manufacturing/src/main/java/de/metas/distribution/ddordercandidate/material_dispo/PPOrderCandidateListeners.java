@@ -87,7 +87,7 @@ public class PPOrderCandidateListeners
 		{
 			ddOrderCandidateRepository.updateByQuery(
 					DDOrderCandidateQuery.builder().ppOrderCandidateId(ppOrderCandidateId).excludePPOrderId(newPPOrderId).build(),
-					candidate -> candidate.withPPOrderId(newPPOrderId)
+					candidate -> candidate.withForwardPPOrderId(newPPOrderId)
 			);
 		}
 	}

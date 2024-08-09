@@ -41,7 +41,7 @@ public class DDOrderCandidateData
 
 	int customerId;
 	int salesOrderLineId;
-	@Nullable PPOrderRef ppOrderRef;
+	@Nullable PPOrderRef forwardPPOrderRef;
 
 	@NonNull ProductDescriptor productDescriptor;
 	@NonNull HUPIItemProductId hupiItemProductId;
@@ -76,7 +76,7 @@ public class DDOrderCandidateData
 			@NonNull final ShipperId shipperId,
 			final int customerId,
 			final int salesOrderLineId,
-			@Nullable final PPOrderRef ppOrderRef,
+			@Nullable final PPOrderRef forwardPPOrderRef,
 			@NonNull final ProductDescriptor productDescriptor,
 			@Nullable final HUPIItemProductId hupiItemProductId,
 			@Nullable final MinMaxDescriptor fromWarehouseMinMaxDescriptor,
@@ -97,7 +97,7 @@ public class DDOrderCandidateData
 		this.shipperId = shipperId;
 		this.customerId = customerId;
 		this.salesOrderLineId = salesOrderLineId;
-		this.ppOrderRef = ppOrderRef;
+		this.forwardPPOrderRef = forwardPPOrderRef;
 		this.productDescriptor = productDescriptor;
 		this.hupiItemProductId = hupiItemProductId != null ? hupiItemProductId : HUPIItemProductId.VIRTUAL_HU;
 		this.fromWarehouseMinMaxDescriptor = fromWarehouseMinMaxDescriptor;
@@ -127,15 +127,15 @@ public class DDOrderCandidateData
 		}
 	}
 
-	public DDOrderCandidateData withPPOrderId(@Nullable final PPOrderId newPPOrderId)
+	public DDOrderCandidateData withPPOrderId(@Nullable final PPOrderId forwardPPOrderIdNew)
 	{
-		final PPOrderRef ppOrderRefNew = PPOrderRef.withPPOrderId(ppOrderRef, newPPOrderId);
-		if (Objects.equals(this.ppOrderRef, ppOrderRefNew))
+		final PPOrderRef forwardPPOrderRefNew = PPOrderRef.withPPOrderId(forwardPPOrderRef, forwardPPOrderIdNew);
+		if (Objects.equals(this.forwardPPOrderRef, forwardPPOrderRefNew))
 		{
 			return this;
 		}
 
-		return toBuilder().ppOrderRef(ppOrderRefNew).build();
+		return toBuilder().forwardPPOrderRef(forwardPPOrderRefNew).build();
 	}
 
 }

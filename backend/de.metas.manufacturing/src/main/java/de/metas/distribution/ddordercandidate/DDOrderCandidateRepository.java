@@ -108,7 +108,7 @@ public class DDOrderCandidateRepository
 		// Forward document references
 		record.setC_BPartner_ID(BPartnerId.toRepoId(from.getCustomerId()));
 		record.setC_OrderLineSO_ID(OrderLineId.toRepoId(from.getSalesOrderLineId()));
-		updateRecord(record, from.getPpOrderRef());
+		updateRecord(record, from.getForwardPPOrderRef());
 
 		//
 		// Planning master data references
@@ -167,13 +167,13 @@ public class DDOrderCandidateRepository
 				//
 				.traceId(DYNATTR_TraceId.getValue(record))
 				.materialDispoGroupId(DYNATTR_GroupId.getValue(record))
-				.ppOrderRef(extractPPOrderRef(record))
+				.forwardPPOrderRef(extractForwardPPOrderRef(record))
 				//
 				.build();
 	}
 
 	@Nullable
-	private static PPOrderRef extractPPOrderRef(final I_DD_Order_Candidate record)
+	private static PPOrderRef extractForwardPPOrderRef(final I_DD_Order_Candidate record)
 	{
 		final int ppOrderCandidateId = record.getForward_PP_Order_Candidate_ID();
 		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(record.getForward_PP_Order_ID());

@@ -66,7 +66,7 @@ public class DDOrderCandidate
 
 	@Nullable private final BPartnerId customerId;
 	@Nullable private final OrderLineId salesOrderLineId;
-	@Nullable private final PPOrderRef ppOrderRef;
+	@Nullable private final PPOrderRef forwardPPOrderRef;
 
 	@Nullable private final DistributionNetworkAndLineId distributionNetworkAndLineId;
 	@Nullable private final ProductPlanningId productPlanningId;
@@ -98,7 +98,7 @@ public class DDOrderCandidate
 			final boolean processed,
 			@Nullable final BPartnerId customerId,
 			@Nullable final OrderLineId salesOrderLineId,
-			@Nullable final PPOrderRef ppOrderRef,
+			@Nullable final PPOrderRef forwardPPOrderRef,
 			@Nullable final DistributionNetworkAndLineId distributionNetworkAndLineId,
 			@Nullable final ProductPlanningId productPlanningId,
 			@Nullable final String traceId,
@@ -127,7 +127,7 @@ public class DDOrderCandidate
 		this.processed = processed;
 		this.customerId = customerId;
 		this.salesOrderLineId = salesOrderLineId;
-		this.ppOrderRef = ppOrderRef;
+		this.forwardPPOrderRef = forwardPPOrderRef;
 		this.distributionNetworkAndLineId = distributionNetworkAndLineId;
 		this.productPlanningId = productPlanningId;
 		this.traceId = traceId;
@@ -157,7 +157,7 @@ public class DDOrderCandidate
 				//
 				.customerId(BPartnerId.ofRepoIdOrNull(data.getCustomerId()))
 				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(data.getSalesOrderLineId()))
-				.ppOrderRef(data.getPpOrderRef())
+				.forwardPPOrderRef(data.getForwardPPOrderRef())
 				//
 				.distributionNetworkAndLineId(data.getDistributionNetworkAndLineId())
 				.productPlanningId(data.getProductPlanningId())
@@ -183,7 +183,7 @@ public class DDOrderCandidate
 				.shipperId(shipperId)
 				.customerId(BPartnerId.toRepoId(customerId))
 				.salesOrderLineId(OrderLineId.toRepoId(salesOrderLineId))
-				.ppOrderRef(ppOrderRef)
+				.forwardPPOrderRef(forwardPPOrderRef)
 				.productDescriptor(productDescriptor)
 				.hupiItemProductId(hupiItemProductId)
 				.fromWarehouseMinMaxDescriptor(null) // N/A
@@ -200,15 +200,15 @@ public class DDOrderCandidate
 
 	public OrgId getOrgId() {return getClientAndOrgId().getOrgId();}
 
-	public DDOrderCandidate withPPOrderId(@Nullable final PPOrderId newPPOrderId)
+	public DDOrderCandidate withForwardPPOrderId(@Nullable final PPOrderId newPPOrderId)
 	{
-		final PPOrderRef ppOrderRefNew = PPOrderRef.withPPOrderId(ppOrderRef, newPPOrderId);
-		if (Objects.equals(this.ppOrderRef, ppOrderRefNew))
+		final PPOrderRef forwardPPOrderRefNew = PPOrderRef.withPPOrderId(forwardPPOrderRef, newPPOrderId);
+		if (Objects.equals(this.forwardPPOrderRef, forwardPPOrderRefNew))
 		{
 			return this;
 		}
 
-		return toBuilder().ppOrderRef(ppOrderRefNew).build();
+		return toBuilder().forwardPPOrderRef(forwardPPOrderRefNew).build();
 	}
 
 	public Quantity getQtyToProcess() {return getQty().subtract(getQtyProcessed());}
