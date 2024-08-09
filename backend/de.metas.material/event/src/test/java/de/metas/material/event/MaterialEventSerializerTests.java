@@ -31,6 +31,7 @@ import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderLineData;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
@@ -62,6 +63,8 @@ import de.metas.shipping.ShipperId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderAndBOMLineId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -155,22 +158,38 @@ public class MaterialEventSerializerTests
 				.ddOrderId(20)
 				.docStatus(DocStatus.InProgress)
 				.materialDispoGroupId(MaterialDispoGroupId.ofInt(35))
-				.line(DDOrderLine.builder()
-						.productDescriptor(createProductDescriptor())
-						.ddOrderLineId(21)
-						.demandDate(supplyDate.minus(10, ChronoUnit.DAYS))
-						.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(40, 41))
-						.qtyMoved(new BigDecimal("10"))
-						.qtyToMove(new BigDecimal("3"))
-						.salesOrderLineId(61)
-						.fromWarehouseMinMaxDescriptor(createSampleMinMaxDescriptor())
-						.build())
+				.line(newDDOrderLine(supplyDate))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(39, 40))
 				.plantId(ResourceId.ofRepoId(50))
 				.productPlanningId(ProductPlanningId.ofRepoId(60))
 				.sourceWarehouseId(WarehouseId.ofRepoId(30))
 				.targetWarehouseId(WarehouseId.ofRepoId(40))
 				.shipperId(ShipperId.ofRepoId(70))
+				.forwardPPOrderRef(newPPOrderRef())
+				.build();
+	}
+
+	private static DDOrderLine newDDOrderLine(final Instant supplyDate)
+	{
+		return DDOrderLine.builder()
+				.productDescriptor(createProductDescriptor())
+				.ddOrderLineId(21)
+				.demandDate(supplyDate.minus(10, ChronoUnit.DAYS))
+				.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(40, 41))
+				.qtyMoved(new BigDecimal("10"))
+				.qtyToMove(new BigDecimal("3"))
+				.salesOrderLineId(61)
+				.fromWarehouseMinMaxDescriptor(createSampleMinMaxDescriptor())
+				.build();
+	}
+
+	private static PPOrderRef newPPOrderRef()
+	{
+		return PPOrderRef.builder()
+				.ppOrderCandidateId(1)
+				.ppOrderLineCandidateId(2)
+				.ppOrderId(PPOrderId.ofRepoId(3))
+				.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoId(4))
 				.build();
 	}
 

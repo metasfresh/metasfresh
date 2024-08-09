@@ -382,6 +382,22 @@ Feature: Production + Distribution material dispo scenarios
     And after not more than 60s, following DD_Orders are found
       | Identifier | Forward_PP_Order_ID |
       | ddo        | ppOrder             |
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  | Forward_PP_Order_ID |
+      # Sales Order / Shipment Schedule:
+      | 1          | DEMAND            | SHIPMENT                  | bom_product  | 2021-04-16T21:00:00Z | -10 | -10 | production_WH   | -                   |
+      # PP_Order_Candidate:
+      | 2          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 0   | -10 | production_WH   | -                   |
+      | 3          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | 0   | 0   | production_WH   | -                   |
+      # DD_Order_Candidate:
+      | 4          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | 0   | production_WH   | ppOrder             |
+      | 5          | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | 0   | rawMaterials_WH | ppOrder             |
+      # PP_Order:
+      | 6          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 10  | 0   | production_WH   | -                   |
+      | 7          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | -10 | -10 | production_WH   | -                   |
+      # DD_Order:
+      | 8          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | 0   | production_WH   | ppOrder             |
+      | 9          | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -10 | -10 | rawMaterials_WH | ppOrder             |
     
 
     

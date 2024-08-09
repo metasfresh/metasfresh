@@ -4,6 +4,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail.DistributionDetailBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
+import de.metas.material.event.ddorder.DDOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.util.Services;
@@ -55,12 +56,18 @@ public class DistributionDetailsQuery
 			return null;
 		}
 
-		return builder()
+		final DistributionDetailsQueryBuilder builder = builder()
 				.productPlanningId(distributionDetail.getProductPlanningId())
-				.distributionNetworkAndLineId(distributionDetail.getDistributionNetworkAndLineId())
-				.ddOrderId(distributionDetail.getDdOrderId())
-				.ddOrderLineId(distributionDetail.getDdOrderLineId())
-				.build();
+				.distributionNetworkAndLineId(distributionDetail.getDistributionNetworkAndLineId());
+
+		final DDOrderRef ddOrderRef = distributionDetail.getDdOrderRef();
+		if (ddOrderRef != null)
+		{
+			builder.ddOrderId(ddOrderRef.getDdOrderId())
+					.ddOrderLineId(ddOrderRef.getDdOrderLineId());
+		}
+
+		return builder.build();
 	}
 
 	@Nullable ProductPlanningId productPlanningId;
@@ -78,9 +85,17 @@ public class DistributionDetailsQuery
 		return DistributionDetail.builder()
 				.productPlanningId(productPlanningId)
 				.distributionNetworkAndLineId(distributionNetworkAndLineId)
+				.ddOrderRef(toDDOrderRef());
+	}
+
+	@Nullable
+	private DDOrderRef toDDOrderRef()
+	{
+		return DDOrderRef.builder()
 				.ddOrderCandidateId(ddOrderCandidateId)
 				.ddOrderId(ddOrderId)
-				.ddOrderLineId(ddOrderLineId);
+				.ddOrderLineId(ddOrderLineId)
+				.buildOrNull();
 	}
 
 	public void augmentQueryBuilder(@NonNull final IQueryBuilder<I_MD_Candidate> builder)

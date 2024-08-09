@@ -148,7 +148,7 @@ public class DDOrderCandidateAdvisedHandler
 
 	private Optional<PPOrderId> findPPOrderId(@NonNull final DDOrderCandidateAdvisedEvent event)
 	{
-		final PPOrderRef ppOrderRef = event.getPpOrderRef();
+		final PPOrderRef ppOrderRef = event.getForwardPPOrderRef();
 		if (ppOrderRef == null)
 		{
 			return Optional.empty();
@@ -250,7 +250,7 @@ public class DDOrderCandidateAdvisedHandler
 		final DistributionDetail distributionDetail = candidate.getBusinessCaseDetail(DistributionDetail.class).orElse(null);
 		if (distributionDetail != null)
 		{
-			return distributionDetail.getPpOrderRef();
+			return distributionDetail.getForwardPPOrderRef();
 		}
 
 		return null;

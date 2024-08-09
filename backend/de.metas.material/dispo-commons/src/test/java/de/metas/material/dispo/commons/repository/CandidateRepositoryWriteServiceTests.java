@@ -25,6 +25,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.ddorder.DDOrderRef;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
@@ -365,9 +366,11 @@ public class CandidateRepositoryWriteServiceTests
 						.productPlanningId(ProductPlanningId.ofRepoId(80))
 						.plantId(ResourceId.ofRepoId(85))
 						.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(90, 91))
-						.ddOrderCandidateId(99)
-						.ddOrderId(100)
-						.ddOrderLineId(110)
+						.ddOrderRef(DDOrderRef.builder()
+								.ddOrderCandidateId(99)
+								.ddOrderId(100)
+								.ddOrderLineId(110)
+								.build())
 						.shipperId(ShipperId.ofRepoId(120))
 						.ddOrderDocStatus(DocStatus.Completed)
 						.qty(TEN)

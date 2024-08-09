@@ -389,9 +389,10 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(distributionDetail).isNotNull();
 		assertThat(distributionDetail.getDistributionNetworkAndLineId()).isEqualTo(DistributionNetworkAndLineId.ofRepoIds(70, 71));
 		assertThat(distributionDetail.getProductPlanningId()).isEqualTo(ProductPlanningId.ofRepoId(81));
-		assertThat(distributionDetail.getDdOrderCandidateId()).isEqualTo(99);
-		assertThat(distributionDetail.getDdOrderId()).isEqualTo(101);
-		assertThat(distributionDetail.getDdOrderLineId()).isEqualTo(111);
+		assertThat(distributionDetail.getDdOrderRef()).isNotNull();
+		assertThat(distributionDetail.getDdOrderRef().getDdOrderCandidateId()).isEqualTo(99);
+		assertThat(distributionDetail.getDdOrderRef().getDdOrderId()).isEqualTo(101);
+		assertThat(distributionDetail.getDdOrderRef().getDdOrderLineId()).isEqualTo(111);
 		assertThat(distributionDetail.getShipperId()).isEqualTo(ShipperId.ofRepoId(121));
 		assertThat(distributionDetail.getDdOrderDocStatus()).isEqualTo(DocStatus.Completed);
 

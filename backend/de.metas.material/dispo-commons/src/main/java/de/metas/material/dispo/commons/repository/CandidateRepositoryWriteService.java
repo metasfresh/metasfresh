@@ -54,6 +54,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.ddorder.DDOrderRef;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.stock.ResetStockPInstanceId;
@@ -484,22 +485,30 @@ public class CandidateRepositoryWriteService
 		detailRecordToUpdate.setDD_NetworkDistributionLine_ID(distributionDetail.getDistributionNetworkAndLineId() != null ? distributionDetail.getDistributionNetworkAndLineId().getLineId().getRepoId() : -1);
 		detailRecordToUpdate.setPP_Plant_ID(ResourceId.toRepoId(distributionDetail.getPlantId()));
 		detailRecordToUpdate.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(distributionDetail.getProductPlanningId()));
-		detailRecordToUpdate.setDD_Order_Candidate_ID(distributionDetail.getDdOrderCandidateId());
-		detailRecordToUpdate.setDD_Order_ID(distributionDetail.getDdOrderId());
-		detailRecordToUpdate.setDD_OrderLine_ID(distributionDetail.getDdOrderLineId());
+		updateRecord(detailRecordToUpdate, distributionDetail.getDdOrderRef());
 		detailRecordToUpdate.setDD_Order_DocStatus(distributionDetail.getDdOrderDocStatus() != null ? distributionDetail.getDdOrderDocStatus().getCode() : null);
-
-		final PPOrderRef ppOrderRef = distributionDetail.getPpOrderRef();
-		detailRecordToUpdate.setPP_Order_ID(ppOrderRef != null ? PPOrderId.toRepoId(ppOrderRef.getPpOrderId()) : -1);
-		detailRecordToUpdate.setPP_Order_BOMLine_ID(ppOrderRef != null ? PPOrderBOMLineId.toRepoId(ppOrderRef.getPpOrderBOMLineId()) : -1);
-		detailRecordToUpdate.setPP_Order_Candidate_ID(ppOrderRef != null ? ppOrderRef.getPpOrderCandidateId() : -1);
-		detailRecordToUpdate.setPP_OrderLine_Candidate_ID(ppOrderRef != null ? ppOrderRef.getPpOrderLineCandidateId() : -1);
+		updateRecord(detailRecordToUpdate, distributionDetail.getForwardPPOrderRef());
 
 		detailRecordToUpdate.setM_Shipper_ID(ShipperId.toRepoId(distributionDetail.getShipperId()));
 		detailRecordToUpdate.setPlannedQty(distributionDetail.getQty());
 		detailRecordToUpdate.setActualQty(candidate.computeActualQty());
 
 		save(detailRecordToUpdate);
+	}
+
+	private static void updateRecord(@NonNull final I_MD_Candidate_Dist_Detail record, @Nullable DDOrderRef from)
+	{
+		record.setDD_Order_Candidate_ID(from != null ? from.getDdOrderCandidateId() : -1);
+		record.setDD_Order_ID(from != null ? from.getDdOrderId() : -1);
+		record.setDD_OrderLine_ID(from != null ? from.getDdOrderLineId() : -1);
+	}
+
+	private static void updateRecord(@NonNull final I_MD_Candidate_Dist_Detail record, @Nullable final PPOrderRef from)
+	{
+		record.setPP_Order_ID(from != null ? PPOrderId.toRepoId(from.getPpOrderId()) : -1);
+		record.setPP_Order_BOMLine_ID(from != null ? PPOrderBOMLineId.toRepoId(from.getPpOrderBOMLineId()) : -1);
+		record.setPP_Order_Candidate_ID(from != null ? from.getPpOrderCandidateId() : -1);
+		record.setPP_OrderLine_Candidate_ID(from != null ? from.getPpOrderLineCandidateId() : -1);
 	}
 
 	@VisibleForTesting

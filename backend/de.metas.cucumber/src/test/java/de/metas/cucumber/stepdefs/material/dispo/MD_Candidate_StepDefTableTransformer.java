@@ -28,6 +28,10 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.material.dispo.MaterialDispoTableRow.DDOrderRefIdentifiers;
+import de.metas.cucumber.stepdefs.material.dispo.MaterialDispoTableRow.Distribution;
+import de.metas.cucumber.stepdefs.material.dispo.MaterialDispoTableRow.PPOrderRefIdentifiers;
+import de.metas.cucumber.stepdefs.material.dispo.MaterialDispoTableRow.Production;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -41,6 +45,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -66,9 +71,9 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 				.collect(MD_Candidate_StepDefTable.collect());
 	}
 
-	private MD_Candidate_StepDefTable.MaterialDispoTableRow toMaterialDispoTableRow(final DataTableRow row)
+	private MaterialDispoTableRow toMaterialDispoTableRow(final DataTableRow row)
 	{
-		return MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()
+		return MaterialDispoTableRow.builder()
 				.identifier(extractIdentifier(row))
 				.type(extractType(row))
 				.businessCase(row.getAsOptionalEnum(I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase, CandidateBusinessCase.class).orElse(null))
@@ -79,15 +84,8 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 				.attributeSetInstanceId(row.getAsOptionalIdentifier("M_AttributeSetInstance_ID").orElse(null))
 				.simulated(row.getAsOptionalBoolean("simulated").orElseFalse())
 				.warehouseId(row.getAsOptionalIdentifier("M_Warehouse_ID").map(warehouseTable::getId).orElse(null))
-				//
-				.ddOrderCandidateId(row.getAsOptionalIdentifier(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_Order_Candidate_ID).orElse(null))
-				.ddOrderId(row.getAsOptionalIdentifier(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_Order_ID).orElse(null))
-				.ddOrderLineId(row.getAsOptionalIdentifier(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_OrderLine_ID).orElse(null))
-				//
-				.ppOrderCandidateId(row.getAsOptionalIdentifier(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_Candidate_ID).orElse(null))
-				.ppOrderLineCandidateId(row.getAsOptionalIdentifier(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_OrderLine_Candidate_ID).orElse(null))
-				.ppOrderId(row.getAsOptionalIdentifier(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_ID).orElse(null))
-				.ppOrderBOMLineId(row.getAsOptionalIdentifier(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_BOMLine_ID).orElse(null))
+				.distribution(extractDistribution(row))
+				.production(extractProduction(row))
 				//
 				.rawValues(row)
 				//
@@ -140,4 +138,59 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 		return productTable.getIdOptional(productIdentifier)
 				.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
 	}
+
+	@Nullable
+	private static Distribution extractDistribution(final DataTableRow row)
+	{
+		return Distribution.builder()
+				.ddOrderRef(extractDistribution_DDOrderRef(row))
+				.forwardPPOrderRef(extractDistribution_ForwardPPOrderRef(row))
+				.build()
+				.toNullIfEmpty();
+	}
+
+	@Nullable
+	private static DDOrderRefIdentifiers extractDistribution_DDOrderRef(final DataTableRow row)
+	{
+		return DDOrderRefIdentifiers.builder()
+				.ddOrderCandidateId(row.getAsOptionalIdentifier(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_Order_Candidate_ID).orElse(null))
+				.ddOrderId(row.getAsOptionalIdentifier(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_Order_ID).orElse(null))
+				.ddOrderLineId(row.getAsOptionalIdentifier(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_OrderLine_ID).orElse(null))
+				.build()
+				.toNullIfEmpty();
+	}
+
+	@Nullable
+	private static PPOrderRefIdentifiers extractDistribution_ForwardPPOrderRef(final DataTableRow row)
+	{
+		return PPOrderRefIdentifiers.builder()
+				.ppOrderCandidateId(row.getAsOptionalIdentifier("Forward_PP_Order_Candidate_ID").orElse(null))
+				.ppOrderLineCandidateId(row.getAsOptionalIdentifier("Forward_PP_OrderLine_Candidate_ID").orElse(null))
+				.ppOrderId(row.getAsOptionalIdentifier("Forward_PP_Order_ID").orElse(null))
+				.ppOrderBOMLineId(row.getAsOptionalIdentifier("Forward_PP_Order_BOMLine_ID").orElse(null))
+				.build()
+				.toNullIfEmpty();
+	}
+
+	@Nullable
+	private static Production extractProduction(final DataTableRow row)
+	{
+		return Production.builder()
+				.ppOrderRef(extractProduction_PPOrderRef(row))
+				.build()
+				.toNullIfEmpty();
+	}
+
+	@Nullable
+	private static PPOrderRefIdentifiers extractProduction_PPOrderRef(final DataTableRow row)
+	{
+		return PPOrderRefIdentifiers.builder()
+				.ppOrderCandidateId(row.getAsOptionalIdentifier(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_Candidate_ID).orElse(null))
+				.ppOrderLineCandidateId(row.getAsOptionalIdentifier(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_OrderLine_Candidate_ID).orElse(null))
+				.ppOrderId(row.getAsOptionalIdentifier(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_ID).orElse(null))
+				.ppOrderBOMLineId(row.getAsOptionalIdentifier(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_BOMLine_ID).orElse(null))
+				.build()
+				.toNullIfEmpty();
+	}
+
 }

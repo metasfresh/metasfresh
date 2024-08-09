@@ -16,6 +16,7 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.ddorder.DDOrderRef;
 import de.metas.material.event.ddordercandidate.AbstractDDOrderCandidateEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateCreatedEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
@@ -182,13 +183,13 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 			@NonNull final CandidateType candidateType)
 	{
 		return builder
-				.ddOrderCandidateId(event.getExistingDDOrderCandidateId())
+				.ddOrderRef(DDOrderRef.ofNullableDDOrderCandidateId(event.getExistingDDOrderCandidateId()))
 				.distributionNetworkAndLineId(event.getDistributionNetworkAndLineId())
 				.qty(event.getQty())
 				.plantId(extractPlantId(event, candidateType))
 				.productPlanningId(event.getProductPlanningId())
 				.shipperId(event.getShipperId())
-				.ppOrderRef(event.getPpOrderRef())
+				.forwardPPOrderRef(event.getForwardPPOrderRef())
 				.build();
 	}
 

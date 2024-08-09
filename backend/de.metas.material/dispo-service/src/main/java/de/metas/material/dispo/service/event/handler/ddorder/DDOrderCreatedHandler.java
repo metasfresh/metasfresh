@@ -7,7 +7,6 @@ import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
@@ -77,12 +76,6 @@ public class DDOrderCreatedHandler extends DDOrderAdvisedOrCreatedHandler<DDOrde
 	public void handleEvent(DDOrderCreatedEvent event)
 	{
 		createAndProcessCandidates(event);
-	}
-
-	@Override
-	protected Flag extractIsAdviseEvent(@NonNull final AbstractDDOrderEvent ddOrderEvent)
-	{
-		return Flag.FALSE_DONT_UPDATE;
 	}
 
 	@Override

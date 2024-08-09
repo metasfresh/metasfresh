@@ -11,6 +11,7 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
@@ -96,7 +97,15 @@ public class DDOrderLoader
 				.targetWarehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_To_ID()))
 				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
 				.simulated(record.isSimulated())
-				.materialDispoGroupId(getMaterialDispoGroupId(record));
+				.materialDispoGroupId(getMaterialDispoGroupId(record))
+				.forwardPPOrderRef(extractForwardPPOrderRef(record))
+				;
+	}
+
+	@Nullable
+	private static PPOrderRef extractForwardPPOrderRef(@NonNull final I_DD_Order record)
+	{
+		return PPOrderRef.ofPPOrderAndLineIdOrNull(record.getForward_PP_Order_ID(), record.getForward_PP_Order_BOMLine_ID());
 	}
 
 	private DDOrderLine fromRecord(

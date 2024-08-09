@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons.candidate.businesscase;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
+import de.metas.material.event.ddorder.DDOrderRef;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
@@ -12,7 +13,6 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 
@@ -29,40 +29,53 @@ public class DistributionDetail implements BusinessCaseDetail
 	@Nullable DistributionNetworkAndLineId distributionNetworkAndLineId;
 	@Nullable ShipperId shipperId;
 
-	@With int ddOrderCandidateId;
-	int ddOrderId;
-	int ddOrderLineId;
+	@Nullable DDOrderRef ddOrderRef;
 	DocStatus ddOrderDocStatus;
 
 	//
 	// Forward manufacturing
-	@Nullable PPOrderRef ppOrderRef;
+	@Nullable PPOrderRef forwardPPOrderRef;
 
 	boolean advised;
 
 	@NonNull @Default Flag pickDirectlyIfFeasible = Flag.FALSE;
 	@NonNull BigDecimal qty;
 
-	public static DistributionDetail ofRecord(@NonNull final I_MD_Candidate_Dist_Detail distributionDetailRecord)
+	public static DistributionDetail ofRecord(@NonNull final I_MD_Candidate_Dist_Detail record)
 	{
 		return DistributionDetail.builder()
-				.advised(distributionDetailRecord.isAdvised())
-				.pickDirectlyIfFeasible(Flag.of(distributionDetailRecord.isPickDirectlyIfFeasible()))
-				.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIdsOrNull(distributionDetailRecord.getDD_NetworkDistribution_ID(), distributionDetailRecord.getDD_NetworkDistributionLine_ID()))
-				.productPlanningId(ProductPlanningId.ofRepoIdOrNull(distributionDetailRecord.getPP_Product_Planning_ID()))
-				.plantId(ResourceId.ofRepoIdOrNull(distributionDetailRecord.getPP_Plant_ID()))
-				.ddOrderCandidateId(distributionDetailRecord.getDD_Order_Candidate_ID())
-				.ddOrderId(distributionDetailRecord.getDD_Order_ID())
-				.ddOrderLineId(distributionDetailRecord.getDD_OrderLine_ID())
-				.ddOrderDocStatus(DocStatus.ofNullableCode(distributionDetailRecord.getDD_Order_DocStatus()))
-				.ppOrderRef(extractPPOrderRef(distributionDetailRecord))
-				.qty(distributionDetailRecord.getPlannedQty())
-				.shipperId(ShipperId.ofRepoIdOrNull(distributionDetailRecord.getM_Shipper_ID()))
+				.advised(record.isAdvised())
+				.pickDirectlyIfFeasible(Flag.of(record.isPickDirectlyIfFeasible()))
+				.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIdsOrNull(record.getDD_NetworkDistribution_ID(), record.getDD_NetworkDistributionLine_ID()))
+				.productPlanningId(ProductPlanningId.ofRepoIdOrNull(record.getPP_Product_Planning_ID()))
+				.plantId(ResourceId.ofRepoIdOrNull(record.getPP_Plant_ID()))
+				.ddOrderRef(extractDDOrderRef(record))
+				.ddOrderDocStatus(DocStatus.ofNullableCode(record.getDD_Order_DocStatus()))
+				.forwardPPOrderRef(extractForwardPPOrderRef(record))
+				.qty(record.getPlannedQty())
+				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
 				.build();
 	}
 
 	@Nullable
-	private static PPOrderRef extractPPOrderRef(final I_MD_Candidate_Dist_Detail record)
+	private static DDOrderRef extractDDOrderRef(final I_MD_Candidate_Dist_Detail record)
+	{
+		final int ddOrderCandidateId = record.getDD_Order_Candidate_ID();
+		final int ddOrderId = record.getDD_Order_ID();
+		if (ddOrderCandidateId <= 0 && ddOrderId <= 0)
+		{
+			return null;
+		}
+
+		return DDOrderRef.builder()
+				.ddOrderCandidateId(ddOrderCandidateId)
+				.ddOrderId(ddOrderId)
+				.ddOrderLineId(record.getDD_OrderLine_ID())
+				.build();
+	}
+
+	@Nullable
+	private static PPOrderRef extractForwardPPOrderRef(final I_MD_Candidate_Dist_Detail record)
 	{
 		final int ppOrderCandidateId = record.getPP_Order_Candidate_ID();
 		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(record.getPP_Order_ID());
@@ -102,12 +115,24 @@ public class DistributionDetail implements BusinessCaseDetail
 
 	public BusinessCaseDetail withPPOrderId(@Nullable final PPOrderId newPPOrderId)
 	{
-		final PPOrderRef ppOrderRefNew = PPOrderRef.withPPOrderId(ppOrderRef, newPPOrderId);
-		if (Objects.equals(this.ppOrderRef, ppOrderRefNew))
+		final PPOrderRef ppOrderRefNew = PPOrderRef.withPPOrderId(forwardPPOrderRef, newPPOrderId);
+		if (Objects.equals(this.forwardPPOrderRef, ppOrderRefNew))
 		{
 			return this;
 		}
 
-		return toBuilder().ppOrderRef(ppOrderRefNew).build();
+		return toBuilder().forwardPPOrderRef(ppOrderRefNew).build();
+	}
+
+	public DistributionDetail withDdOrderCandidateId(final int ddOrderCandidateIdNew)
+	{
+		return withDDOrderRef(DDOrderRef.withDdOrderCandidateId(ddOrderRef, ddOrderCandidateIdNew));
+	}
+
+	private DistributionDetail withDDOrderRef(final DDOrderRef ddOrderRefNew)
+	{
+		return Objects.equals(this.ddOrderRef, ddOrderRefNew)
+				? this
+				: toBuilder().ddOrderRef(ddOrderRefNew).build();
 	}
 }

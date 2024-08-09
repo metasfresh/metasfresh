@@ -364,7 +364,7 @@ public class RequestMaterialOrderService
 		final DistributionDetail distributionDetail = candidate.getBusinessCaseDetail(DistributionDetail.class).orElse(null);
 		if (distributionDetail != null)
 		{
-			return distributionDetail.getPpOrderRef();
+			return distributionDetail.getForwardPPOrderRef();
 		}
 
 		return null;

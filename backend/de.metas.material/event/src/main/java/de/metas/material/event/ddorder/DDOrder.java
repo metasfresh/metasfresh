@@ -3,6 +3,7 @@ package de.metas.material.event.ddorder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -58,6 +59,8 @@ public class DDOrder
 	@NonNull DocStatus docStatus;
 	@Nullable MaterialDispoGroupId materialDispoGroupId;
 	boolean simulated;
+
+	@Nullable PPOrderRef forwardPPOrderRef;
 
 	@JsonIgnore
 	public OrgId getOrgId() {return clientAndOrgId.getOrgId();}

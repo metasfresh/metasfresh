@@ -8,7 +8,6 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
@@ -20,6 +19,7 @@ import de.metas.material.event.ddorder.AbstractDDOrderEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.ddorder.DDOrderRef;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -251,16 +251,14 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 			DDOrderLine ddOrderLine,
 			CandidateType candidateType);
 
-	protected abstract Flag extractIsAdviseEvent(@NonNull final AbstractDDOrderEvent ddOrderEvent);
-
 	private DistributionDetail createCandidateDetailFromDDOrderAndLine(
 			@NonNull final DDOrder ddOrder,
 			@NonNull final DDOrderLine ddOrderLine)
 	{
 		return DistributionDetail.builder()
 				.ddOrderDocStatus(ddOrder.getDocStatus())
-				.ddOrderId(ddOrder.getDdOrderId())
-				.ddOrderLineId(ddOrderLine.getDdOrderLineId())
+				.ddOrderRef(DDOrderRef.ofNullableDDOrderAndLineId(ddOrder.getDdOrderId(), ddOrderLine.getDdOrderLineId()))
+				.forwardPPOrderRef(ddOrder.getForwardPPOrderRef())
 				.distributionNetworkAndLineId(ddOrderLine.getDistributionNetworkAndLineId())
 				.qty(ddOrderLine.getQtyToMove())
 				.plantId(ddOrder.getPlantId())

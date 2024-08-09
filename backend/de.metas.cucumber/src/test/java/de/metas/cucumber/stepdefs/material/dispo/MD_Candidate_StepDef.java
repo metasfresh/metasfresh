@@ -29,7 +29,6 @@ import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -41,15 +40,10 @@ import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.ddordercandidate.DD_Order_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.distributionorder.DD_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.distributionorder.DD_Order_StepDefData;
-import de.metas.cucumber.stepdefs.material.dispo.MD_Candidate_StepDefTable.MaterialDispoTableRow;
 import de.metas.cucumber.stepdefs.pporder.PP_OrderLine_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
-import de.metas.distribution.ddorder.DDOrderId;
-import de.metas.distribution.ddorder.DDOrderLineId;
-import de.metas.distribution.ddordercandidate.DDOrderCandidateId;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.SimulatedCandidateService;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -58,8 +52,6 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
@@ -98,20 +90,14 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.eevolution.productioncandidate.model.PPOrderLineCandidateId;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -394,10 +380,8 @@ public class MD_Candidate_StepDef
 	{
 		validate_md_candidates(timeoutSec, table);
 
-		StepDefUtil.tryAndWaitForItem(
-				timeoutSec,
-				500,
-				() -> {
+		StepDefUtil.<Boolean>tryAndWaitForItem()
+				.worker(() -> {
 					final int expectedCandidatesCount = table.size();
 
 					final List<I_MD_Candidate> actualCandidates = queryBL.createQueryBuilder(I_MD_Candidate.class)
@@ -410,7 +394,7 @@ public class MD_Candidate_StepDef
 
 					if (actualCandidatesCount != expectedCandidatesCount)
 					{
-						return ItemProvider.ProviderResult.resultWasNotFound(
+						return ProviderResult.resultWasNotFound(
 								"Expected " + expectedCandidatesCount + " MD_Candidate(s) but found " + actualCandidatesCount + " MD_Candidate(s)"
 										+ "\nActual MD_Candidate(s) - " + actualCandidatesCount + " records:"
 										+ "\n" + toCandidatesTabularStringFromRecords(actualCandidates)
@@ -419,26 +403,26 @@ public class MD_Candidate_StepDef
 						);
 					}
 
-					return ItemProvider.ProviderResult.resultWasFound(true);
-				});
+					return ProviderResult.resultWasFound(true);
+				})
+				.maxWaitSeconds(timeoutSec)
+				.execute();
 	}
 
 	@And("^after not more than (.*)s, MD_Candidates are found$")
-	public void validate_md_candidates(
-			final int timeoutSec,
-			@NonNull final MD_Candidate_StepDefTable table) throws Throwable
+	public void validate_md_candidates(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
-		table.forEach((tableRow) -> {
+		table.forEach((row) -> {
 			// make sure the given md_candidate has been created
-			final MaterialDispoDataItem materialDispoRecord = tryAndWaitForCandidate(timeoutSec, tableRow);
+			final MaterialDispoDataItem materialDispoRecord = tryAndWaitForCandidate(timeoutSec, row);
 			SharedTestContext.put("candidateId", materialDispoRecord.getCandidateId().getRepoId());
 			SharedTestContext.put("materialDispoRecord", materialDispoRecord);
 
-			validate_md_candidate(tableRow, materialDispoRecord);
+			validate_md_candidate(row, materialDispoRecord);
 
-			materialDispoDataItemStepDefData.putOrReplace(tableRow.getIdentifier(), materialDispoRecord);
+			materialDispoDataItemStepDefData.putOrReplace(row.getIdentifier(), materialDispoRecord);
 		});
 
 		stopwatch.stop();
@@ -447,90 +431,23 @@ public class MD_Candidate_StepDef
 
 	private void validate_md_candidate(final MaterialDispoTableRow expected, final MaterialDispoDataItem actual)
 	{
-		final SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(actual.getType()).as("type").isEqualTo(expected.getType());
-		softly.assertThat(actual.getBusinessCase()).as("businessCase").isEqualTo(expected.getBusinessCase());
-		softly.assertThat(actual.getMaterialDescriptor().getProductId()).as("productId").isEqualTo(expected.getProductId().getRepoId());
-		softly.assertThat(actual.getMaterialDescriptor().getDate()).as("date").isEqualTo(expected.getTime());
-		softly.assertThat(actual.getMaterialDescriptor().getQuantity().abs()).as("quantity.abs").isEqualByComparingTo(expected.getQty().abs()); // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
-		softly.assertThat(actual.getAtp()).as("atp").isEqualByComparingTo(expected.getAtp());
-		softly.assertThat(actual.isSimulated()).isEqualTo(expected.isSimulated());
-
-		final StepDefDataIdentifier attributeSetInstanceIdentifier = expected.getAttributeSetInstanceId();
-		if (attributeSetInstanceIdentifier != null)
-		{
-			final AttributeSetInstanceId expectedAsiId = attributeSetInstanceTable.getId(attributeSetInstanceIdentifier);
-			final AttributesKey expectedAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(expectedAsiId).orElse(AttributesKey.NONE);
-
-			final AttributeSetInstanceId actualAsiId = AttributeSetInstanceId.ofRepoId(actual.getMaterialDescriptor().getAttributeSetInstanceId());
-			final AttributesKey actualAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(actualAsiId).orElse(AttributesKey.NONE);
-
-			softly.assertThat(actualAttributesKeys).as("asi").isEqualTo(expectedAttributesKey);
-		}
-
-		if (expected.getWarehouseId() != null)
-		{
-			softly.assertThat(actual.getMaterialDescriptor().getWarehouseId()).as("warehouseId").isEqualTo(expected.getWarehouseId());
-		}
-
-		validate_md_candidate_distribution(softly, expected, actual);
-		validate_md_candidate_production(softly, expected, actual);
-
-		softly.assertAll();
+		newValidator().validate(expected, actual);
 	}
 
-	private void validate_md_candidate_distribution(final SoftAssertions softly, final MaterialDispoTableRow expected, final MaterialDispoDataItem actual)
+	private MaterialDispoTableRowValidator newValidator()
 	{
-		final DistributionDetail distributionDetail = actual.getBusinessCaseDetail(DistributionDetail.class).orElse(null);
-
-		if (expected.getDdOrderCandidateId() != null)
-		{
-			final DDOrderCandidateId idExpected = ddOrderCandidateTable.getIdOfNullable(expected.getDdOrderCandidateId());
-			final DDOrderCandidateId idActual = distributionDetail != null ? DDOrderCandidateId.ofRepoIdOrNull(distributionDetail.getDdOrderCandidateId()) : null;
-			softly.assertThat(idActual).as("DD_Order_Candidate_ID").isEqualTo(idExpected);
-		}
-		if (expected.getDdOrderId() != null)
-		{
-			final DDOrderId idExpected = ddOrderTable.getIdOfNullable(expected.getDdOrderId());
-			final DDOrderId idActual = distributionDetail != null ? DDOrderId.ofRepoIdOrNull(distributionDetail.getDdOrderId()) : null;
-			softly.assertThat(idActual).as("DD_Order_ID").isEqualTo(idExpected);
-		}
-		if (expected.getDdOrderLineId() != null)
-		{
-			final DDOrderLineId idExpected = ddOrderLineTable.getIdOfNullable(expected.getDdOrderLineId());
-			final DDOrderLineId idActual = distributionDetail != null ? DDOrderLineId.ofRepoIdOrNull(distributionDetail.getDdOrderLineId()) : null;
-			softly.assertThat(idActual).as("DD_OrderLine_ID").isEqualTo(idExpected);
-		}
-	}
-
-	private void validate_md_candidate_production(final SoftAssertions softly, final MaterialDispoTableRow expected, final MaterialDispoDataItem actual)
-	{
-		final ProductionDetail productionDetail = actual.getBusinessCaseDetail(ProductionDetail.class).orElse(null);
-
-		if (expected.getPpOrderCandidateId() != null)
-		{
-			final PPOrderCandidateId idExpected = ppOrderCandidateTable.getIdOfNullable(expected.getPpOrderCandidateId());
-			final PPOrderCandidateId idActual = productionDetail != null ? PPOrderCandidateId.ofRepoIdOrNull(productionDetail.getPpOrderCandidateId()) : null;
-			softly.assertThat(idActual).as("PP_Order_Candidate_ID").isEqualTo(idExpected);
-		}
-		if (expected.getPpOrderLineCandidateId() != null)
-		{
-			final PPOrderLineCandidateId idExpected = ppOrderLineCandidateTable.getIdOfNullable(expected.getPpOrderLineCandidateId());
-			final PPOrderLineCandidateId idActual = productionDetail != null ? PPOrderLineCandidateId.ofRepoIdOrNull(productionDetail.getPpOrderLineCandidateId()) : null;
-			softly.assertThat(idActual).as("PP_OrderLine_Candidate_ID").isEqualTo(idExpected);
-		}
-		if (expected.getPpOrderId() != null)
-		{
-			final PPOrderId idExpected = ppOrderTable.getIdOfNullable(expected.getDdOrderId());
-			final PPOrderId idActual = productionDetail != null ? productionDetail.getPpOrderId() : null;
-			softly.assertThat(idActual).as("PP_Order_ID").isEqualTo(idExpected);
-		}
-		if (expected.getPpOrderBOMLineId() != null)
-		{
-			final PPOrderBOMLineId idExpected = ppOrderBOMLineTable.getIdOfNullable(expected.getDdOrderLineId());
-			final PPOrderBOMLineId idActual = productionDetail != null ? productionDetail.getPpOrderBOMLineId() : null;
-			softly.assertThat(idActual).as("PP_OrderBOMLine_ID").isEqualTo(idExpected);
-		}
+		return MaterialDispoTableRowValidator.builder()
+				.tabularConverter(getTabularConverter())
+				.materialDispoDataItemStepDefData(materialDispoDataItemStepDefData)
+				.attributeSetInstanceTable(attributeSetInstanceTable)
+				.ddOrderCandidateTable(ddOrderCandidateTable)
+				.ddOrderTable(ddOrderTable)
+				.ddOrderLineTable(ddOrderLineTable)
+				.ppOrderCandidateTable(ppOrderCandidateTable)
+				.ppOrderLineCandidateTable(ppOrderLineCandidateTable)
+				.ppOrderTable(ppOrderTable)
+				.ppOrderBOMLineTable(ppOrderBOMLineTable)
+				.build();
 	}
 
 	@And("the following MD_Candidates are validated")
@@ -564,87 +481,18 @@ public class MD_Candidate_StepDef
 		SharedTestContext.put("actual candidates query", candidatesQuery);
 		SharedTestContext.put("actual candidates query SQL", () -> RepositoryCommons.mkQueryBuilder(candidatesQuery).create());
 
-		return StepDefUtil.tryAndWaitForItem(
-				timeoutSec,
-				1000,
-				() -> retrieveMaterialDispoDataItem(row)
-		);
+		return StepDefUtil.<MaterialDispoDataItem>tryAndWaitForItem()
+				.worker(() -> retrieveMaterialDispoDataItem(row))
+				.maxWaitSeconds(timeoutSec)
+				.checkingIntervalMs(1000L)
+				.execute();
 	}
 
-	private ProviderResult<MaterialDispoDataItem> retrieveMaterialDispoDataItem(final @NonNull MaterialDispoTableRow tableRow)
+	private ProviderResult<MaterialDispoDataItem> retrieveMaterialDispoDataItem(final @NonNull MaterialDispoTableRow row)
 	{
-		final CandidatesQuery candidatesQuery = tableRow.toCandidatesQuery();
-
-		final StringBuilder resultNotFoundLog = new StringBuilder();
+		final CandidatesQuery candidatesQuery = row.toCandidatesQuery();
 		final ImmutableList<MaterialDispoDataItem> items = materialDispoRecordRepository.getAllBy(candidatesQuery);
-		if (items.isEmpty())
-		{
-			resultNotFoundLog.append(candidatesQuery).append(" returned no results");
-		}
-		else
-		{
-			for (final MaterialDispoDataItem item : items)
-			{
-				//
-				// Exclude this item if it's already associated to a different identifier.
-				final StepDefDataIdentifier otherIdentifierOfCandidate = materialDispoDataItemStepDefData.getFirstIdentifierById(item.getCandidateId(), tableRow.getIdentifier()).orElse(null);
-				if (otherIdentifierOfCandidate != null)
-				{
-					resultNotFoundLog.append("Excluded ").append(item.getCandidateId().getRepoId()).append(" because it was already loaded for ").append(otherIdentifierOfCandidate).append("\n");
-					continue;
-				}
-
-				final BooleanWithReason matching = checkMatching(item, tableRow);
-				if (matching.isFalse())
-				{
-					resultNotFoundLog.append(matching.getReasonAsString()).append("\n");
-					continue;
-				}
-
-				return ProviderResult.resultWasFound(item);
-			}
-		}
-
-		return ProviderResult.resultWasNotFound(resultNotFoundLog
-				+ "\n\t tableRow:"
-				+ "\n" + toCandidatesTabularFromRow(tableRow).toPrint().ident(2)
-				+ "\n\t Checked items, retrieved using query: " + candidatesQuery
-				+ "\n" + toCandidatesTabularFromItems(items).toPrint().ident(2)
-		);
-	}
-
-	private BooleanWithReason checkMatching(final MaterialDispoDataItem item, final @NonNull MaterialDispoTableRow tableRow)
-	{
-		final ArrayList<String> notMatchingReasons = new ArrayList<>();
-
-		if (item.getMaterialDescriptor().getQuantity().abs().compareTo(tableRow.getQty().abs()) != 0) // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
-		{
-			notMatchingReasons.add("Qty (" + " Expected=abs(" + tableRow.getQty() + "), Actual=abs(" + item.getMaterialDescriptor().getQuantity() + "))");
-		}
-		if (item.getAtp().compareTo(tableRow.getAtp()) != 0)
-		{
-			notMatchingReasons.add("ATP (" + " Expected=" + tableRow.getAtp() + ", Actual= " + item.getAtp() + ")");
-		}
-		if (!item.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
-		{
-			notMatchingReasons.add("Date (" + " Expected=" + tableRow.getTime() + ", Actual= " + item.getMaterialDescriptor().getDate() + ")");
-		}
-		if (!Objects.equals(item.getBusinessCase(), tableRow.getBusinessCase()))
-		{
-			notMatchingReasons.add("BusinessCase (" + " Expected=" + tableRow.getBusinessCase() + ", Actual= " + item.getBusinessCase() + ")");
-		}
-
-		if (!notMatchingReasons.isEmpty())
-		{
-			return BooleanWithReason.falseBecause(
-					"item with id `" + item.getCandidateId().getRepoId() + "` does not match tableRow with Identifier `" + tableRow.getIdentifier() + "`"
-							+ " because following values are not matching: " + notMatchingReasons
-			);
-		}
-		else
-		{
-			return BooleanWithReason.TRUE;
-		}
+		return newValidator().findValidItem(items, row);
 	}
 
 	@And("post DeactivateAllSimulatedCandidatesEvent and wait for processing")
@@ -843,11 +691,6 @@ public class MD_Candidate_StepDef
 	private Table toCandidatesTabularFromRow(@NonNull final MaterialDispoTableRow tableRow)
 	{
 		return CandidatesToTabularStringConverter.toTable(tableRow);
-	}
-
-	public Table toCandidatesTabularFromItems(final List<MaterialDispoDataItem> items)
-	{
-		return getTabularConverter().toTableFromItems(items);
 	}
 
 	private CandidatesToTabularStringConverter getTabularConverter()

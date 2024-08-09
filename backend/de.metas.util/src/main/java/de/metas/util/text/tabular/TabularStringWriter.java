@@ -30,10 +30,10 @@ class TabularStringWriter
 		if (line == null)
 		{
 			line = new StringBuilder();
-			line.append(identString);
 		}
 		if (line.length() == 0)
 		{
+			line.append(identString);
 			line.append("|");
 		}
 

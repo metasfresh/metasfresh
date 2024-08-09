@@ -136,7 +136,7 @@ public class CandidatesToTabularStringConverter
 	}
 
 	@NonNull
-	public static Table toTable(@NonNull final MD_Candidate_StepDefTable.MaterialDispoTableRow from)
+	public static Table toTable(@NonNull final MaterialDispoTableRow from)
 	{
 		final Row row = toRow(from);
 		return toTableFromRows(ImmutableList.of(row));
@@ -148,7 +148,7 @@ public class CandidatesToTabularStringConverter
 		return toTableFromRows(rows);
 	}
 
-	private static Row toRow(@NonNull final MD_Candidate_StepDefTable.MaterialDispoTableRow from)
+	private static Row toRow(@NonNull final MaterialDispoTableRow from)
 	{
 		final Row row = new Row();
 		row.putAll(from.getRawValues().asMap());
