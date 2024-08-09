@@ -35,7 +35,9 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
+import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
@@ -56,6 +58,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Locator;
@@ -64,6 +67,7 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
@@ -79,10 +83,11 @@ import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 @RequiredArgsConstructor
 public class DD_OrderLine_StepDef
 {
-	private static final Logger logger = LogManager.getLogger(DD_OrderLine_StepDef.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
-	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+	@NonNull private static final Logger logger = LogManager.getLogger(DD_OrderLine_StepDef.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
+	@NonNull private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+	@NonNull private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final DD_Order_StepDefData ddOrderTable;
 	@NonNull private final DD_OrderLine_StepDefData ddOrderLineTable;
@@ -186,17 +191,47 @@ public class DD_OrderLine_StepDef
 
 		final HashSet<DDOrderLineId> alreadyMatchedLineIds = new HashSet<>();
 		DataTableRows.of(dataTable).forEach(row -> {
-			final I_DD_OrderLine ddOrderLineRecord = StepDefUtil.tryAndWaitForItem(
-					timeoutSec,
-					500,
-					toDDOrderLineQuery(orderLineId, alreadyMatchedLineIds),
-					ddOrderLine -> checkDDOrderLineMatching(ddOrderLine, row)
-			);
+			final I_DD_OrderLine ddOrderLineRecord = StepDefUtil.tryAndWaitForItem(toDDOrderLineQuery(orderLineId, alreadyMatchedLineIds))
+					.validateUsingFunction(ddOrderLine -> checkDDOrderLineMatching(ddOrderLine, row))
+					.maxWaitSeconds(timeoutSec)
+					.execute();
 
 			alreadyMatchedLineIds.add(DDOrderLineId.ofRepoId(ddOrderLineRecord.getDD_OrderLine_ID()));
-
 			row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderLineTable.putOrReplace(identifier, ddOrderLineRecord));
+
+			row.getAsOptionalIdentifier(I_DD_OrderLine.COLUMNNAME_DD_Order_ID)
+					.ifPresent(ddOrderIdentifier -> {
+						final DDOrderId actualDDOrderId = DDOrderId.ofRepoId(ddOrderLineRecord.getDD_Order_ID());
+						validateDDOrderId(ddOrderIdentifier, actualDDOrderId);
+					});
 		});
+	}
+
+	private void validateDDOrderId(@NonNull final StepDefDataIdentifier expectedDDOrderIdentifier, @Nullable final DDOrderId actualDDOrderId)
+	{
+		final String actualHuIdentifier = actualDDOrderId != null
+				? ddOrderTable.getFirstIdentifierById(actualDDOrderId).map(StepDefDataIdentifier::getAsString).orElse("?NEW?")
+				: null;
+
+		final String description = "expectedDDOrderIdentifier=" + expectedDDOrderIdentifier + ", actualDDOrderId=" + actualDDOrderId + ", actualHuIdentifier=" + actualHuIdentifier;
+
+		if (expectedDDOrderIdentifier.isNullPlaceholder())
+		{
+			assertThat(actualDDOrderId).as(description).isNull();
+		}
+		else
+		{
+			assertThat(actualDDOrderId).as(description).isNotNull();
+			final DDOrderId expectedDDOrderId = ddOrderTable.getIdOptional(expectedDDOrderIdentifier).orElse(null);
+			if (expectedDDOrderId == null)
+			{
+				ddOrderTable.put(expectedDDOrderIdentifier, ddOrderService.getById(actualDDOrderId));
+			}
+			else
+			{
+				assertThat(actualDDOrderId).as(description).isEqualTo(expectedDDOrderId);
+			}
+		}
 	}
 
 	private IQuery<I_DD_OrderLine> toDDOrderLineQuery(

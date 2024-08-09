@@ -249,6 +249,10 @@ public class DDOrderCandidateRepository
 		{
 			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_Forward_PP_Order_Candidate_ID, query.getPpOrderCandidateId());
 		}
+		if (query.getDdOrderCandidateId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_DD_Order_Candidate_ID, query.getDdOrderCandidateId());
+		}
 
 		return queryBuilder;
 	}

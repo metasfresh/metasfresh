@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -50,9 +51,14 @@ public class DDOrderCandidateService
 		ddOrderCandidateRepository.save(ddOrderCandidate);
 	}
 
-	public void enqueueToProcess(@NonNull final DDOrderCandidateId ddOrderCandidateId)
+	public void enqueueToProcess(@NonNull final DDOrderCandidateId id)
 	{
-		ddOrderCandidateEnqueueService.enqueueId(ddOrderCandidateId);
+		ddOrderCandidateEnqueueService.enqueueId(id);
+	}
+
+	public void enqueueToProcess(@NonNull final Collection<DDOrderCandidateId> ids)
+	{
+		ddOrderCandidateEnqueueService.enqueueIds(ids);
 	}
 
 	public void enqueueToProcess(@NonNull final PInstanceId selectionId)
@@ -114,5 +120,10 @@ public class DDOrderCandidateService
 					ddOrderCandidateRepository.save(candidate);
 				});
 
+	}
+
+	public List<DDOrderCandidate> list(@NonNull final DDOrderCandidateQuery query)
+	{
+		return ddOrderCandidateRepository.list(query);
 	}
 }
