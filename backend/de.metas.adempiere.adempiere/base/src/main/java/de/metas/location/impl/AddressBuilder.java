@@ -745,6 +745,22 @@ public class AddressBuilder
 		}
 
 		final boolean isPartnerCompany = bPartner.isCompany();
+
+		final boolean existsContact = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.Contact.getName());
+		if (existsContact && isPartnerCompany && user != null)
+		{
+			final String companyName = StringUtils.cleanWhitespace(bPartner.getCompanyName());
+			final String lastName = StringUtils.cleanWhitespace(user.getLastname());
+			final String firstName = StringUtils.cleanWhitespace(user.getFirstname());
+			final String lfName = StringUtils.nullToEmpty(lastName).concat(StringUtils.nullToEmpty(firstName));
+			final String flName = StringUtils.nullToEmpty(firstName).concat(StringUtils.nullToEmpty(lastName));
+
+			if (companyName.equalsIgnoreCase(lfName) || companyName.equalsIgnoreCase(flName))
+			{
+				return "";
+			}
+		}
+
 		final Language language = Language.optionalOfNullable(bPartner.getAD_Language())
 				.orElseGet(Language::getBaseLanguage);
 
