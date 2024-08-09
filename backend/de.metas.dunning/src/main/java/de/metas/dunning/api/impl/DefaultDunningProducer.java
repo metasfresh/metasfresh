@@ -22,22 +22,13 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.dunning.DunningDocId;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.api.IDunningProducer;
