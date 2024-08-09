@@ -223,8 +223,8 @@ Feature: create multiple production candidates
   and both candidates are marked as processed
 
     Given update existing PP_Product_Plannings
-      | Identifier | MaxManufacturedQtyPerOrderDispo | MaxManufacturedQtyPerOrderDispoUOMCode | SeqNo |
-      | ppln_1     | 10                              | PCE                                    | 10    |
+      | Identifier | MaxManufacturedQtyPerOrderDispo | SeqNo |
+      | ppln_1     | 10 PCE                          | 10    |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  | OPT.M_Warehouse_ID.Identifier |
@@ -310,8 +310,8 @@ Feature: create multiple production candidates
   _And PP_Order_Candidate (for P1) with SeqNo = 20  will be manufactured second
 
     Given update existing PP_Product_Plannings
-      | Identifier | MaxManufacturedQtyPerOrderDispo | MaxManufacturedQtyPerOrderDispoUOMCode | SeqNo |
-      | ppln_1     | 5                               | PCE                                    | 10    |
+      | Identifier | MaxManufacturedQtyPerOrderDispo | SeqNo |
+      | ppln_1     | 5 PCE                           | 10    |
 
     And metasfresh contains M_Products:
       | Identifier  | M_Product_Category_ID |
@@ -331,8 +331,8 @@ Feature: create multiple production candidates
       | boml_4     | bom_4             | component_4  | 10       |
     And the PP_Product_BOM identified by bom_4 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID | S_Resource_ID | PP_Product_BOMVersions_ID | IsCreatePlan | SeqNo | MaxManufacturedQtyPerOrderDispo | MaxManufacturedQtyPerOrderDispoUOMCode |
-      | ppln_4     | product_4    | testResource  | bomVersions_4             | false        | 20    | 5                               | PCE                                    |
+      | Identifier | M_Product_ID | S_Resource_ID | PP_Product_BOMVersions_ID | IsCreatePlan | SeqNo | MaxManufacturedQtyPerOrderDispo |
+      | ppln_4     | product_4    | testResource  | bomVersions_4             | false        | 20    | 5 PCE                           |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  | OPT.M_Warehouse_ID.Identifier |
