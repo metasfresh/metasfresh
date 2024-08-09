@@ -75,7 +75,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 				.productId(extractProductId(row))
 				.time(extractDateProjected(row))
 				.qty(extractQty(row))
-				.atp(row.getAsBigDecimal("Qty_AvailableToPromise"))
+				.atp(extractATP(row))
 				.attributeSetInstanceId(row.getAsOptionalIdentifier("M_AttributeSetInstance_ID").orElse(null))
 				.simulated(row.getAsOptionalBoolean("simulated").orElseFalse())
 				.warehouseId(row.getAsOptionalIdentifier("M_Warehouse_ID").map(warehouseTable::getId).orElse(null))
@@ -92,6 +92,15 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 				.rawValues(row)
 				//
 				.build();
+	}
+
+	public static BigDecimal extractATP(final DataTableRow row)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> row.getAsOptionalBigDecimal("ATP").orElse(null),
+				() -> row.getAsOptionalBigDecimal("Qty_AvailableToPromise").orElse(null),
+				() -> BigDecimal.ZERO
+		);
 	}
 
 	private static @NonNull StepDefDataIdentifier extractIdentifier(final DataTableRow row)

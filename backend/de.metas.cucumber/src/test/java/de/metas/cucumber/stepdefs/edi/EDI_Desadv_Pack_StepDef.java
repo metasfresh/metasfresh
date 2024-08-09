@@ -232,9 +232,14 @@ public class EDI_Desadv_Pack_StepDef
 			return Cell.NULL;
 		}
 
-		final String value = lookupTable.getFirstIdentifierById(id)
-				.map(StepDefDataIdentifier::getAsString)
-				.orElseGet(() -> String.valueOf(id.getRepoId()));
-		return Cell.ofNullable(value);
+		final StepDefDataIdentifier identifier = lookupTable.getFirstIdentifierById(id).orElse(null);
+		if (identifier != null)
+		{
+			return Cell.ofNullable(identifier + "(" + id.getRepoId() + ")");
+		}
+		else
+		{
+			return Cell.ofNullable(id.getRepoId());
+		}
 	}
 }

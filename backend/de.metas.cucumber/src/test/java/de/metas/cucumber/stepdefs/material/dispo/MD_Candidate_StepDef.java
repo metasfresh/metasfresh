@@ -123,7 +123,6 @@ import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candida
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_AttributeSetInstance_ID;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_Product_ID;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty;
-import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty_AvailableToPromise;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -707,7 +706,7 @@ public class MD_Candidate_StepDef
 		final ProductId productId = productTable.getId(row.getAsIdentifier(I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID));
 		final String dateProjected = row.getAsString(COLUMNNAME_DateProjected);
 		final BigDecimal qty = row.getAsBigDecimal(COLUMNNAME_Qty);
-		final BigDecimal atp = row.getAsBigDecimal(COLUMNNAME_Qty_AvailableToPromise);
+		final BigDecimal atp = MD_Candidate_StepDefTableTransformer.extractATP(row);
 		final CandidateType type = row.getAsEnum(COLUMNNAME_MD_Candidate_Type, CandidateType.class);
 
 		final MaterialDispoDataItem materialDispoDataItem = getFreshMaterialDispoItem(materialDispoDataIdentifier, qty, timeoutSec);
@@ -744,7 +743,7 @@ public class MD_Candidate_StepDef
 				.as(description.newWithMessage("Qty.abs"))
 				.isEqualByComparingTo(qty.abs()); // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
 		softly.assertThat(materialDispoDataItem.getAtp())
-				.as(description.newWithMessage("Qty_AvailableToPromise"))
+				.as(description.newWithMessage("ATP"))
 				.isEqualByComparingTo(atp);
 
 		final AttributeSetInstanceId expectedAsiId = row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)

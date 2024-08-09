@@ -26,19 +26,17 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ZebraConfigId;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.ResourceReader;
-import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.edi.api.ZebraConfigRepository;
 import de.metas.edi.api.ZebraPrinterService;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
-import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.report.ReportResultData;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -47,18 +45,20 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_Pack_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class EDI_DesadvPackGenerateCSV_FileForSSCC_Labels_StepDef
 {
-	private final EDIDesadvPackRepository EDIDesadvPackRepository = SpringContextHolder.instance.getBean(EDIDesadvPackRepository.class);
+	private final EDIDesadvPackRepository ediDesadvPackRepository = SpringContextHolder.instance.getBean(EDIDesadvPackRepository.class);
 	private final ZebraPrinterService zebraPrinterService = SpringContextHolder.instance.getBean(ZebraPrinterService.class);
 	private final ZebraConfigRepository zebraConfigRepository = SpringContextHolder.instance.getBean(ZebraConfigRepository.class);
 
@@ -73,59 +73,55 @@ public class EDI_DesadvPackGenerateCSV_FileForSSCC_Labels_StepDef
 			@NonNull final String packIdentifiersParam,
 			@NonNull final DataTable dataTable)
 	{
-		final ImmutableList<EDIDesadvPackId> desadvPackIDsToPrint = getDesadvPackIDSToPrint(packIdentifiersParam);
-		final String reportDataContent = generateCSVFileForSSCCLabels(desadvPackIDsToPrint);
+		final List<String> reportDataContentActual = generateCSVFileForSSCCLabels(ediDesadvPackTable.getIds(packIdentifiersParam));
+		final List<String> reportDataContentExpected = getReportDataLines(dataTable);
 
-		DataTableRows.of(dataTable).forEach(row -> {
-			final String reportDataLine = extractReportDataLine(row);
-			assertThat(reportDataContent).contains(reportDataLine);
-		});
+		assertThat(normalizeReportLinesForComparing(reportDataContentActual))
+				.containsExactlyInAnyOrderElementsOf(normalizeReportLinesForComparing(reportDataContentExpected));
 	}
 
 	@NonNull
-	private String generateCSVFileForSSCCLabels(@NonNull final ImmutableList<EDIDesadvPackId> desadvPackIDsToPrint)
+	private List<String> generateCSVFileForSSCCLabels(@NonNull final ImmutableList<EDIDesadvPackId> desadvPackIds)
 	{
-		final ReportResultData reportResultData = getReportResultDataFor(desadvPackIDsToPrint);
+		assertThat(desadvPackIds).isNotEmpty();
 
-		return ResourceReader.asString(reportResultData.getReportData());
-	}
-
-	@NonNull
-	private ImmutableList<EDIDesadvPackId> getDesadvPackIDSToPrint(@NonNull final String packIdentifierCandidate)
-	{
-		final ImmutableList<EDIDesadvPackId> desadvPackIDsToPrint = StepDefUtil.extractIdentifiers(packIdentifierCandidate)
-				.stream()
-				.map(ediDesadvPackTable::get)
-				.map(I_EDI_Desadv_Pack::getEDI_Desadv_Pack_ID)
-				.map(EDIDesadvPackId::ofRepoId)
-				.collect(ImmutableList.toImmutableList());
-
-		if (desadvPackIDsToPrint.isEmpty())
-		{
-			throw new RuntimeException("No pack identifier present for column: " + COLUMNNAME_EDI_Desadv_Pack_ID + "." + TABLECOLUMN_IDENTIFIER);
-		}
-
-		return desadvPackIDsToPrint;
-	}
-
-	@NonNull
-	private ReportResultData getReportResultDataFor(@NonNull final ImmutableList<EDIDesadvPackId> desadvPackIDsToPrint)
-	{
-		final BPartnerId bPartnerId = EDIDesadvPackRepository.retrieveBPartnerFromEdiDesadvPack(desadvPackIDsToPrint.get(0));
+		final BPartnerId bPartnerId = ediDesadvPackRepository.retrieveBPartnerFromEdiDesadvPack(desadvPackIds.get(0));
 		final ZebraConfigId zebraConfigId = zebraConfigRepository.retrieveZebraConfigId(bPartnerId, zebraConfigRepository.getDefaultZebraConfigId());
-
-		return zebraPrinterService
-				.createCSV_FileForSSCC18_Labels(desadvPackIDsToPrint, zebraConfigId, adPInstanceDAO.createSelectionId());
+		final ReportResultData reportResultData = zebraPrinterService.createCSV_FileForSSCC18_Labels(desadvPackIds, zebraConfigId, adPInstanceDAO.createSelectionId());
+		return ResourceReader.asStringLines(reportResultData.getReportData());
 	}
 
-	private String extractReportDataLine(final DataTableRow row)
+	private List<String> getReportDataLines(final @NonNull DataTable dataTable)
 	{
-		final IStringExpression reportDataLine = StringExpressionCompiler.instance.compile(row.getAsString("ReportDataLine"));
+		final Evaluatee reportParsingContext = newReportParsingContext();
+		final ArrayList<String> lines = new ArrayList<>();
+		DataTableRows.of(dataTable).forEach(row -> {
+			final IStringExpression lineExpr = StringExpressionCompiler.instance.compile(row.getAsString("ReportDataLine"));
+			final String line = lineExpr.evaluate(reportParsingContext, IExpressionEvaluator.OnVariableNotFound.Fail);
+			lines.add(line);
+		});
+		return lines;
+	}
 
-		final HashMap<String, String> context = new HashMap<>();
-		productTable.forEach((identifier, product) -> context.put(identifier.getAsString() + ".productName", product.getName()));
-		orderTable.forEach((identifier, order) -> context.put(identifier.getAsString() + ".orderPOReference", order.getPOReference()));
+	private Evaluatee newReportParsingContext()
+	{
+		final HashMap<String, String> map = new HashMap<>();
+		productTable.forEach((identifier, product) -> {
+			map.put(identifier.getAsString() + ".productName", product.getName());
+			map.put(identifier.getAsString(), product.getName());
+		});
+		orderTable.forEach((identifier, order) -> {
+			map.put(identifier.getAsString() + ".orderPOReference", order.getPOReference());
+			map.put(identifier.getAsString(), order.getPOReference());
+		});
+		return Evaluatees.ofMap(map);
+	}
 
-		return reportDataLine.evaluate(Evaluatees.ofMap(context), IExpressionEvaluator.OnVariableNotFound.Fail);
+	private List<String> normalizeReportLinesForComparing(final List<String> lines)
+	{
+		return lines.stream()
+				.map(StringUtils::trimBlankToNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

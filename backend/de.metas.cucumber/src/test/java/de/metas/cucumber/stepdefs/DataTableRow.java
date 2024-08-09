@@ -48,6 +48,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -161,7 +162,12 @@ public class DataTableRow
 			throw new AdempiereException("Invalid name: `" + name + "`");
 		}
 
-		nameResolved = nameResolved.replace("@Date@", Instant.now().toString());
+		if (nameResolved.contains("@Date@"))
+		{
+			final String timestamp = Instant.now().toString();
+			nameResolved = nameResolved.replace("@Date@", timestamp);
+		}
+
 		return nameResolved;
 	}
 
@@ -348,6 +354,13 @@ public class DataTableRow
 	{
 		return getAsOptionalQuantity(valueColumnName, uomColumnName, uomMapper)
 				.orElseThrow(() -> new AdempiereException("No value found for " + valueColumnName));
+	}
+
+	public Optional<Quantity> getAsOptionalQuantity(
+			@NonNull final String valueColumnName,
+			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
+	{
+		return getAsOptionalQuantity(valueColumnName, null, uomMapper);
 	}
 
 	public Optional<Quantity> getAsOptionalQuantity(

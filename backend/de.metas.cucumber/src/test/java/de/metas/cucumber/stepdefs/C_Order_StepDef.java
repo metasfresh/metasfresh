@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
@@ -58,6 +59,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -68,17 +70,14 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -147,181 +146,173 @@ public class C_Order_StepDef
 	@Given("metasfresh contains C_Orders:")
 	public void metasfresh_contains_c_orders(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final Map<String, String> tableRow = row.asMap();
-			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final String poReference = row.getAsOptionalName(I_C_Order.COLUMNNAME_POReference).orElse(null);
-			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
-			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_C_Order_ID)
+				.forEach(tableRow -> {
+					final String poReference = tableRow.getAsOptionalName(I_C_Order.COLUMNNAME_POReference).orElse(null);
+					final int paymentTermId = tableRow.getAsOptionalInt(I_C_Order.COLUMNNAME_C_PaymentTerm_ID).orElse(-1);
+					final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
 
-			final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
-			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
+					final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
+					final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
 
-			final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER))
-					.map(orgTable::get)
-					.map(I_AD_Org::getAD_Org_ID)
-					.orElse(StepDefConstants.ORG_ID.getRepoId());
+					final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER))
+							.map(orgTable::get)
+							.map(I_AD_Org::getAD_Org_ID)
+							.orElse(StepDefConstants.ORG_ID.getRepoId());
 
-			final Integer bPartnerID = bpartnerTable.getOptional(bpartnerIdentifier)
-					.map(I_C_BPartner::getC_BPartner_ID)
-					.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
+					final StepDefDataIdentifier bpartnerIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
+					final BPartnerId bpartnerId = bpartnerTable.getIdOptional(bpartnerIdentifier)
+							.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
 
-			final I_C_Order order = newInstance(I_C_Order.class);
-			order.setC_BPartner_ID(bPartnerID);
-			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
-			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
-			order.setDropShip_BPartner_ID(dropShipPartnerId);
-			order.setIsDropShip(isDropShip);
-			order.setAD_Org_ID(orgId);
+					final I_C_Order order = newInstance(I_C_Order.class);
+					order.setC_BPartner_ID(bpartnerId.getRepoId());
+					order.setIsSOTrx(tableRow.getAsBoolean(I_C_Order.COLUMNNAME_IsSOTrx));
+					order.setDateOrdered(tableRow.getAsLocalDateTimestamp(I_C_Order.COLUMNNAME_DateOrdered));
+					order.setDropShip_BPartner_ID(dropShipPartnerId);
+					order.setIsDropShip(isDropShip);
+					order.setAD_Org_ID(orgId);
 
-			if (paymentTermId > 0)
-			{
-				order.setC_PaymentTerm_ID(paymentTermId);
-			}
+					if (paymentTermId > 0)
+					{
+						order.setC_PaymentTerm_ID(paymentTermId);
+					}
 
-			final String bpLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bpLocationIdentifier))
-			{
-				final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpLocationIdentifier);
-				order.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
-			}
+					tableRow.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_BPartner_Location_ID)
+							.map(bpartnerLocationTable::getId)
+							.ifPresent(bpLocationId -> order.setC_BPartner_Location_ID(bpLocationId.getRepoId()));
 
-			final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(userIdentifier))
-			{
-				final I_AD_User user = userTable.get(userIdentifier);
-				order.setAD_User_ID(user.getAD_User_ID());
-			}
+					final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+					if (Check.isNotBlank(userIdentifier))
+					{
+						final I_AD_User user = userTable.get(userIdentifier);
+						order.setAD_User_ID(user.getAD_User_ID());
+					}
 
-			final String billBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(billBPartnerIdentifier))
-			{
-				final I_C_BPartner billBPartner = bpartnerTable.get(billBPartnerIdentifier);
-				order.setC_BPartner_ID(billBPartner.getC_BPartner_ID());
-			}
+					final String billBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+					if (Check.isNotBlank(billBPartnerIdentifier))
+					{
+						final I_C_BPartner billBPartner = bpartnerTable.get(billBPartnerIdentifier);
+						order.setC_BPartner_ID(billBPartner.getC_BPartner_ID());
+					}
 
-			final String bpBillLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bpBillLocationIdentifier))
-			{
-				final I_C_BPartner_Location billBPartnerLocation = bpartnerLocationTable.get(bpBillLocationIdentifier);
-				order.setBill_BPartner_ID(billBPartnerLocation.getC_BPartner_ID());
-				order.setBill_Location_ID(billBPartnerLocation.getC_BPartner_Location_ID());
-			}
+					final String bpBillLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+					if (Check.isNotBlank(bpBillLocationIdentifier))
+					{
+						final I_C_BPartner_Location billBPartnerLocation = bpartnerLocationTable.get(bpBillLocationIdentifier);
+						order.setBill_BPartner_ID(billBPartnerLocation.getC_BPartner_ID());
+						order.setBill_Location_ID(billBPartnerLocation.getC_BPartner_Location_ID());
+					}
 
-			final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DeliveryRule);
-			if (Check.isNotBlank(deliveryRule))
-			{
-				order.setDeliveryRule(deliveryRule);
-			}
+					final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DeliveryRule);
+					if (Check.isNotBlank(deliveryRule))
+					{
+						order.setDeliveryRule(deliveryRule);
+					}
 
-			final String deliveryViaRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DeliveryViaRule);
-			if (Check.isNotBlank(deliveryViaRule))
-			{
-				order.setDeliveryViaRule(deliveryViaRule);
-			}
+					final String deliveryViaRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DeliveryViaRule);
+					if (Check.isNotBlank(deliveryViaRule))
+					{
+						order.setDeliveryViaRule(deliveryViaRule);
+					}
 
-			final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_InvoiceRule);
-			if (Check.isNotBlank(invoiceRule))
-			{
-				order.setInvoiceRule(invoiceRule);
-			}
+					final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_InvoiceRule);
+					if (Check.isNotBlank(invoiceRule))
+					{
+						order.setInvoiceRule(invoiceRule);
+					}
 
-			final String paymentTermValue = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID + ".Value");
-			if (de.metas.util.Check.isNotBlank(paymentTermValue))
-			{
-				final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
-						.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, paymentTermValue)
-						.create()
-						.firstOnlyNotNull(I_C_PaymentTerm.class);
+					final String paymentTermValue = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID + ".Value");
+					if (de.metas.util.Check.isNotBlank(paymentTermValue))
+					{
+						final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
+								.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, paymentTermValue)
+								.create()
+								.firstOnlyNotNull(I_C_PaymentTerm.class);
 
-				order.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
-			}
+						order.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+					}
 
-			final String email = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_EMail);
-			if (Check.isNotBlank(email))
-			{
-				order.setEMail(email);
-			}
+					final String email = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_EMail);
+					if (Check.isNotBlank(email))
+					{
+						order.setEMail(email);
+					}
 
-			final ZonedDateTime preparationDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_PreparationDate);
-			final ZonedDateTime datePromised = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DatePromised);
+					final Instant preparationDate = tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_PreparationDate).orElse(null);
+					final Instant datePromised = tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_DatePromised).orElse(null);
 
-			final ZonedDateTime preparationDateToBeSet = CoalesceUtil.coalesce(preparationDate, datePromised);
-			if (preparationDateToBeSet != null)
-			{
-				order.setPreparationDate(TimeUtil.asTimestamp(preparationDateToBeSet));
-			}
+					final Instant preparationDateToBeSet = CoalesceUtil.coalesce(preparationDate, datePromised);
+					if (preparationDateToBeSet != null)
+					{
+						order.setPreparationDate(Timestamp.from(preparationDateToBeSet));
+					}
 
-			final ZonedDateTime datePromisedToBeSet = CoalesceUtil.coalesce(datePromised, preparationDate);
-			if (datePromisedToBeSet != null)
-			{
-				order.setDatePromised(TimeUtil.asTimestamp(datePromisedToBeSet));
-			}
+					final Instant datePromisedToBeSet = CoalesceUtil.coalesce(datePromised, preparationDate);
+					if (datePromisedToBeSet != null)
+					{
+						order.setDatePromised(Timestamp.from(datePromisedToBeSet));
+					}
 
-			if (EmptyUtil.isNotBlank(poReference))
-			{
-				order.setPOReference(poReference);
-			}
+					if (EmptyUtil.isNotBlank(poReference))
+					{
+						order.setPOReference(poReference);
+					}
 
-			if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
-			{
-				final I_M_PricingSystem pricingSystem = pricingSystemDataTable.get(pricingSystemIdentifier);
-				assertThat(pricingSystem).isNotNull();
-				order.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+					if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
+					{
+						final I_M_PricingSystem pricingSystem = pricingSystemDataTable.get(pricingSystemIdentifier);
+						assertThat(pricingSystem).isNotNull();
+						order.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 
-			}
+					}
 
-			if (EmptyUtil.isNotBlank(docBaseType))
-			{
-				final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
+					if (EmptyUtil.isNotBlank(docBaseType))
+					{
+						final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
 
-				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
-						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
-						.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
-						.create()
-						.firstOnlyNotNull(I_C_DocType.class);
+						final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
+								.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
+								.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
+								.create()
+								.firstOnlyNotNull(I_C_DocType.class);
 
-				assertThat(docType).isNotNull();
+						assertThat(docType).isNotNull();
 
-				order.setC_DocType_ID(docType.getC_DocType_ID());
-				order.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
-			}
+						order.setC_DocType_ID(docType.getC_DocType_ID());
+						order.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
+					}
 
-			final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PaymentRule);
-			if (Check.isNotBlank(paymentRule))
-			{
-				order.setPaymentRule(paymentRule);
-			}
+					final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PaymentRule);
+					if (Check.isNotBlank(paymentRule))
+					{
+						order.setPaymentRule(paymentRule);
+					}
 
-			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(warehouseIdentifier))
-			{
-				final int warehouseId = warehouseTable.getOptional(warehouseIdentifier)
-						.map(I_M_Warehouse::getM_Warehouse_ID)
-						.orElseGet(() -> Integer.parseInt(warehouseIdentifier));
-				order.setM_Warehouse_ID(warehouseId);
-			}
+					tableRow.getAsOptionalIdentifier(COLUMNNAME_M_Warehouse_ID)
+							.map(warehouseIdentifier -> warehouseTable.getIdOptional(warehouseIdentifier).orElseGet(() -> warehouseIdentifier.getAsId(WarehouseId.class)))
+							.ifPresent(warehouseId -> order.setM_Warehouse_ID(warehouseId.getRepoId()));
 
-			final String billUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(billUserIdentifier))
-			{
-				final I_AD_User billUser = userTable.get(billUserIdentifier);
-				order.setBill_User_ID(billUser.getAD_User_ID());
-			}
+					final String billUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+					if (Check.isNotBlank(billUserIdentifier))
+					{
+						final I_AD_User billUser = userTable.get(billUserIdentifier);
+						order.setBill_User_ID(billUser.getAD_User_ID());
+					}
 
-			final String dropShipLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(dropShipLocationIdentifier))
-			{
-				final I_C_BPartner_Location dropShipLocation = bpartnerLocationTable.get(dropShipLocationIdentifier);
-				order.setDropShip_Location_ID(dropShipLocation.getC_BPartner_Location_ID());
-				order.setDropShip_BPartner_ID(dropShipLocation.getC_BPartner_ID());
-			}
+					final String dropShipLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+					if (Check.isNotBlank(dropShipLocationIdentifier))
+					{
+						final I_C_BPartner_Location dropShipLocation = bpartnerLocationTable.get(dropShipLocationIdentifier);
+						order.setDropShip_Location_ID(dropShipLocation.getC_BPartner_Location_ID());
+						order.setDropShip_BPartner_ID(dropShipLocation.getC_BPartner_ID());
+					}
 
-			saveRecord(order);
+					saveRecord(order);
 
-			orderTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);
-		});
+					orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
+				});
 	}
 
 	@And("^the order identified by (.*) is (reactivated|completed)$")

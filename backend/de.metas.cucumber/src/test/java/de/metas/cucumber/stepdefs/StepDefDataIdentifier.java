@@ -80,6 +80,12 @@ public final class StepDefDataIdentifier
 		return valueNorm != null ? ofString(valueNorm) : null;
 	}
 
+	public static List<StepDefDataIdentifier> ofCommaSeparatedString(@Nullable String value)
+	{
+		final StepDefDataIdentifier identifier = ofNullableString(value);
+		return identifier == null ? ImmutableList.of() : identifier.toCommaSeparatedList();
+	}
+
 	public static StepDefDataIdentifier nextUnnamed()
 	{
 		return ofString(PREFIX_Unnamed + nextUnnamedIdentifierId.getAndIncrement());

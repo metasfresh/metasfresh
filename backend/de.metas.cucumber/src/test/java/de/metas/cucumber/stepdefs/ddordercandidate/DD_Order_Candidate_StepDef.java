@@ -19,6 +19,9 @@ import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -30,7 +33,6 @@ import org.eevolution.model.I_DD_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.PPOrderLineCandidateId;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class DD_Order_Candidate_StepDef
 {
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository = SpringContextHolder.instance.getBean(DDOrderCandidateRepository.class);
 	@NonNull private final DD_Order_Candidate_StepDefData ddOrderCandidateTable;
 	@NonNull private final M_Product_StepDefData productTable;
@@ -80,26 +83,26 @@ public class DD_Order_Candidate_StepDef
 
 		final DDOrderCandidate candidate = candidates.get(0);
 
-		final BigDecimal qtyEntered = row.getAsOptionalBigDecimal("Qty").orElse(null);
-		if (qtyEntered != null && qtyEntered.compareTo(candidate.getQty().toBigDecimal()) != 0)
+		final Quantity qtyEntered = row.getAsOptionalQuantity("Qty", uomDAO::getByX12DE355).orElse(null);
+		if (qtyEntered != null && qtyEntered.compareTo(candidate.getQty()) != 0)
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("qty not matching, expected " + qtyEntered + " but found " + candidate.getQty().toBigDecimal()
+			return ItemProvider.ProviderResult.resultWasNotFound("qty not matching, expected " + qtyEntered + " but found " + candidate.getQty()
 					+ "\n\trow=" + row
 					+ "\n\tcandidate=" + candidate);
 		}
 
-		final BigDecimal qtyProcessed = row.getAsOptionalBigDecimal("QtyProcessed").orElse(null);
-		if (qtyProcessed != null && qtyProcessed.compareTo(candidate.getQtyProcessed().toBigDecimal()) != 0)
+		final Quantity qtyProcessed = row.getAsOptionalQuantity("QtyProcessed", uomDAO::getByX12DE355).orElse(null);
+		if (qtyProcessed != null && qtyProcessed.compareTo(candidate.getQtyProcessed()) != 0)
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("qtyProcessed not matching, expected " + qtyProcessed + " but found " + candidate.getQtyProcessed().toBigDecimal()
+			return ItemProvider.ProviderResult.resultWasNotFound("qtyProcessed not matching, expected " + qtyProcessed + " but found " + candidate.getQtyProcessed()
 					+ "\n\trow=" + row
 					+ "\n\tcandidate=" + candidate);
 		}
 
-		final BigDecimal qtyToProcess = row.getAsOptionalBigDecimal("QtyToProcess").orElse(null);
-		if (qtyToProcess != null && qtyToProcess.compareTo(candidate.getQtyToProcess().toBigDecimal()) != 0)
+		final Quantity qtyToProcess = row.getAsOptionalQuantity("QtyToProcess", uomDAO::getByX12DE355).orElse(null);
+		if (qtyToProcess != null && qtyToProcess.compareTo(candidate.getQtyToProcess()) != 0)
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("qtyToProcess not matching, expected " + qtyToProcess + " but found " + candidate.getQtyToProcess().toBigDecimal()
+			return ItemProvider.ProviderResult.resultWasNotFound("qtyToProcess not matching, expected " + qtyToProcess + " but found " + candidate.getQtyToProcess()
 					+ "\n\trow=" + row
 					+ "\n\tcandidate=" + candidate);
 		}
