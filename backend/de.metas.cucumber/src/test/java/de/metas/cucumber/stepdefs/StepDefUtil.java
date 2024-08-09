@@ -342,6 +342,15 @@ public class StepDefUtil
 			final long maxWaitSecondsParam,
 			final long checkingIntervalMs,
 			@NonNull final IQuery<T> query,
+			@Nullable final Supplier<String> logContext) throws InterruptedException
+	{
+		return tryAndWaitForItem(maxWaitSecondsParam, checkingIntervalMs, toItemProvider(query), logContext);
+	}
+
+	public <T> T tryAndWaitForItem(
+			final long maxWaitSecondsParam,
+			final long checkingIntervalMs,
+			@NonNull final IQuery<T> query,
 			@Nullable final Consumer<T> validator,
 			@Nullable final Supplier<String> logContext) throws InterruptedException
 	{

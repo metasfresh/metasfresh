@@ -280,6 +280,15 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 2   | 0                      |
       | c_l_1_1    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -2  | 0                      |
 
+
+
+
+
+
+
+
+
+
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
@@ -358,6 +367,15 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | c_l_1_1                    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 0   | 0                      |
 #      | c_l_1_2                    | SUPPLY            |                           | p_2          | 2021-04-16T21:00:00Z | 100 | 100                    |
 
+
+
+
+
+
+
+
+
+
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
@@ -382,11 +400,11 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | plv_1                  | p_1          | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier | Name               |
-      | huPackingTU           | huPackingTU_@Date@ |
+      | M_HU_PI_ID.Identifier |
+      | huPackingTU           |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name                      | HU_UnitType | IsCurrent |
-      | packingVersionTU              | huPackingTU           | packingVersionTU_17062022 | TU          | Y         |
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | HU_UnitType | IsCurrent |
+      | packingVersionTU              | huPackingTU           | TU          | Y         |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
       | huPiItemTU                 | packingVersionTU              | 10  | MI       |                                  |
@@ -395,11 +413,11 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | huProductTU                        | huPiItemTU                 | p_1                     | 10  | 2021-01-01 |
 
     And metasfresh contains PP_Product_BOM
-      | Identifier | M_Product_ID | ValidFrom  | PP_Product_BOMVersions_ID |
-      | bom_1      | p_1          | 2021-04-01 | bomVersions_1             |
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID |
+      | bom_1      | p_1          | bomVersions_1             |
     And metasfresh contains PP_Product_BOMLines
-      | Identifier | PP_Product_BOM_ID | M_Product_ID | ValidFrom  | QtyBatch |
-      | boml_1     | bom_1             | p_2          | 2021-04-01 | 10       |
+      | Identifier | PP_Product_BOM_ID | M_Product_ID | QtyBatch |
+      | boml_1     | bom_1             | p_2          | 10       |
     And the PP_Product_BOM identified by bom_1 is completed
     And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID | PP_Product_BOMVersions_ID | IsCreatePlan |
@@ -417,61 +435,59 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | ol_1       | o_1                   | p_1                     | 10         | huProductTU                            |
     When the order identified by o_1 is completed
     And after not more than 60s, PP_Order_Candidates are found
-      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | oc_1       | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    | huProductTU                            |
+      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | M_HU_PI_Item_Product_ID |
+      | oc_1       | false     | p_1          | bom_1             | ppln_1                 | 540006        | 10 PCE     | 10 PCE       | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    | huProductTU             |
     And after not more than 60s, PP_OrderLine_Candidates are found
-      | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
-      | oc_1                             | olc_1      | p_2                     | 100        | PCE               | CO            | boml_1                           |
+      | PP_Order_Candidate_ID | M_Product_ID.Identifier | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
+      | oc_1                  | p_2                     | 100 PCE    | CO            | boml_1                |
 
-    And after not more than 60s, MD_Candidates are found
+    And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | Qty_AvailableToPromise |
-      | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | -10  | -10                    |
-      | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0                      |
-      | c_l_1      | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100                   |
-#      | c_l_2      | SUPPLY            |                           | p_2          | 2021-04-16T21:00:00Z | 100  | 0                      |
+      | 1/c_1      | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | -10  | -10                    |
+      | 2/c_2      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0                      |
+      | 3/c_l_1    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100                   |
 
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
-      | PP_Order_Candidate_ID.Identifier |
-      | oc_1                             |
+      | PP_Order_Candidate_ID |
+      | oc_1                  |
     And after not more than 60s, PP_Orders are found
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10         | PCE               | endcustomer_1            | 2021-04-16T21:00:00Z | huProductTU                            |
+      | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_BPartner_ID | DatePromised         | M_HU_PI_Item_Product_ID |
+      | ppo_1      | p_1          | bom_1             | ppln_1                 | 540006        | 10 PCE     | 10         | endcustomer_1 | 2021-04-16T21:00:00Z | huProductTU             |
     And after not more than 60s, PP_Order_BomLines are found
-      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | ppOrderBOMLine_1               | ppo_1                  | p_2                     | 100          | false           | PCE               | CO            |
+      | PP_Order_BOMLine_ID | PP_Order_ID | M_Product_ID | QtyRequiered | IsQtyPercentage | ComponentType |
+      | ppOrderBOMLine_1    | ppo_1       | p_2          | 100 PCE      | false           | CO            |
 
     And after not more than 60s, PP_OrderCandidate_PP_Order are found
-      | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
-      | oc_1                             | ppo_1                  | 10         | PCE               |
+      | PP_Order_Candidate_ID | PP_Order_ID | QtyEntered |
+      | oc_1                  | ppo_1       | 10 PCE     |
 
     And after not more than 60s, PP_Order_Candidates are found
-      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_1       | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_1       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 10 PCE     | 0 PCE        | 10 PCE       | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
 
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | Qty_AvailableToPromise |
-      | c_3        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0                      |
-      | c_l_3      | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100                   |
+      | 4/c_3      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0                      |
+      | 5/c_l_3    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100                   |
 
     And the following PP_Order_Candidates are closed
-      | PP_Order_Candidate_ID.Identifier |
-      | oc_1                             |
+      | PP_Order_Candidate_ID |
+      | oc_1                  |
 
     Then after not more than 60s, PP_Order_Candidates are found
-      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_1       | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | true     |
+      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_1       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 10 PCE     | 0 PCE        | 10 PCE       | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | true     |
 
     And after not more than 60s, PP_OrderLine_Candidates are found
-      | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
-      | oc_1                             | olc_1      | p_2                     | 0          | PCE               | CO            | boml_1                           |
+      | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
+      | oc_1                  | p_2          | 0 PCE      | CO            | boml_1                |
 
-    And the following MD_Candidates are validated
-      | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1                        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | 10  | -10                    |
-      | c_2                        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 0   | -10                    |
-      | c_3                        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10  | 0                      |
-      | c_l_1                      | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 0   | 0                      |
-#      | c_l_2                      | SUPPLY            |                           | p_2          | 2021-04-16T21:00:00Z | 100 | 100                    |
-      | c_l_3                      | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 100 | -100                   |
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise |
+      | 1/c_1      | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | 10  | -10                    |
+      | 2/c_2      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 0   | -10                    |
+      | 3/c_l_1    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 0   | 0                      |
+      | 4/c_3      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10  | 0                      |
+      | 5/c_l_3    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 100 | -100                   |
 
 

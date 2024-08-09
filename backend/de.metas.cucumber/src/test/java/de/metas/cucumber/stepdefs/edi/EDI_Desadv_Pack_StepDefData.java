@@ -23,12 +23,21 @@
 package de.metas.cucumber.stepdefs.edi;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 
 public class EDI_Desadv_Pack_StepDefData extends StepDefData<I_EDI_Desadv_Pack>
+		implements StepDefDataGetIdAware<EDIDesadvPackId, I_EDI_Desadv_Pack>
 {
 	public EDI_Desadv_Pack_StepDefData()
 	{
 		super(I_EDI_Desadv_Pack.class);
+	}
+
+	@Override
+	public EDIDesadvPackId extractIdFromRecord(final I_EDI_Desadv_Pack record)
+	{
+		return EDIDesadvPackId.ofRepoId(record.getEDI_Desadv_Pack_ID());
 	}
 }

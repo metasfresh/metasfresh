@@ -281,9 +281,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | s_s_1_S0317_020                  | PD           | true                | false       |
 
     Then after not more than 30s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial | OPT.Line |
-      | p_1_S0317_020                 | true                | null                   | huPackagingCode_1_S0317_020             | gtinPiItemProduct           | 10       |
-      | p_2_S0317_020                 | true                | createdLU_S0317_020    | huPackagingCode_1_S0317_020             | bPartnerProductGTIN_LU      | 20       |
+      | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID             | M_HU_PackagingCode_LU_ID    | GTIN_LU_PackingMaterial |
+      | p_1_S0317_020      | true                | null                | huPackagingCode_1_S0317_020 | gtinPiItemProduct       |
+      | p_2_S0317_020      | true                | createdLU_S0317_020 | huPackagingCode_1_S0317_020 | bPartnerProductGTIN_LU  |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
