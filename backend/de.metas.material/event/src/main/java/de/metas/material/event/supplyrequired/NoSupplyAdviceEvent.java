@@ -29,4 +29,7 @@ public class NoSupplyAdviceEvent implements MaterialEvent
 	{
 		return supplyRequiredDescriptor.getEventDescriptor();
 	}
+
+	@JsonIgnore
+	public int getSupplyCandidateId() {return supplyRequiredDescriptor.getSupplyCandidateId();}
 }

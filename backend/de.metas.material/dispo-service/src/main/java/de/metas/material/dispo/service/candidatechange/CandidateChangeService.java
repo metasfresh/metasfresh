@@ -44,8 +44,7 @@ import java.util.Map;
 public class CandidateChangeService
 {
 	private static final Logger logger = LogManager.getLogger(CandidateChangeService.class);
-
-	private final Map<CandidateType, CandidateHandler> type2handler;
+	private final ImmutableMap<CandidateType, CandidateHandler> type2handler;
 
 	public CandidateChangeService(@NonNull final Collection<CandidateHandler> handlers)
 	{
@@ -93,7 +92,7 @@ public class CandidateChangeService
 	}
 
 	@VisibleForTesting
-	static Map<CandidateType, CandidateHandler> createMapOfHandlers(@NonNull final Collection<CandidateHandler> handlers)
+	static ImmutableMap<CandidateType, CandidateHandler> createMapOfHandlers(@NonNull final Collection<CandidateHandler> handlers)
 	{
 		final ImmutableMap.Builder<CandidateType, CandidateHandler> builder = ImmutableMap.builder();
 		for (final CandidateHandler handler : handlers)
