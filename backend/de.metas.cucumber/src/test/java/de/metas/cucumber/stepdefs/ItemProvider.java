@@ -40,7 +40,7 @@ public interface ItemProvider<T>
 {
 	@Value
 	@AllArgsConstructor(access = AccessLevel.PRIVATE)
-	public class ProviderResult<T>
+	class ProviderResult<T>
 	{
 		boolean resultFound;
 		T result;
