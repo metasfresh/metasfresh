@@ -2,18 +2,22 @@ package de.metas.cucumber.stepdefs;
 
 import com.google.common.base.Stopwatch;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -58,8 +62,8 @@ public class ItemFetcherExecutor<T>
 		{
 			return worker(() -> {
 				final Optional<T> optionalItem = optionalSupplier.get();
-				return optionalItem.map(ItemProvider.ProviderResult::resultWasFound)
-						.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound("item not found"));
+				return optionalItem.map(ProviderResult::resultWasFound)
+						.orElseGet(() -> ProviderResult.resultWasNotFound("item not found"));
 			});
 		}
 
@@ -69,11 +73,11 @@ public class ItemFetcherExecutor<T>
 				final Boolean ok = booleanSupplier.get();
 				if (ok != null && ok)
 				{
-					return ItemProvider.ProviderResult.resultWasFound(null);
+					return ProviderResult.resultWasFound(null);
 				}
 				else
 				{
-					return ItemProvider.ProviderResult.resultWasNotFound("Not valid yet");
+					return ProviderResult.resultWasNotFound("Not valid yet");
 				}
 			});
 		}
@@ -120,7 +124,7 @@ public class ItemFetcherExecutor<T>
 		//
 		// First try, lets be optimistic that we might get the result on first try
 		final ItemProvider<T> worker = createWorker();
-		ItemProvider.ProviderResult<T> lastWorkerResult = worker.execute();
+		ProviderResult<T> lastWorkerResult = worker.execute();
 		if (lastWorkerResult.isResultFound())
 		{
 			return lastWorkerResult.getResult();
@@ -176,7 +180,7 @@ public class ItemFetcherExecutor<T>
 		}
 		else if (query != null)
 		{
-			return createWorkerFromQueryAndValidator(query, validateUsingFunction);
+			return new QueryBasedItemProvider<>(query, validateUsingFunction);
 		}
 		else
 		{
@@ -184,39 +188,92 @@ public class ItemFetcherExecutor<T>
 		}
 	}
 
-	@NonNull
-	private static <T> ItemProvider<T> createWorkerFromQueryAndValidator(
-			@NonNull final IQuery<T> query,
-			@Nullable final Function<T, BooleanWithReason> validateUsingFunction)
+	//
+	//
+	// ----------------------------------------------------------------------------
+	//
+	//
+
+	@RequiredArgsConstructor
+	private static class QueryBasedItemProvider<T> implements ItemProvider<T>
 	{
-		return () -> {
+		@NonNull private final IQuery<T> query;
+		@Nullable private final Function<T, BooleanWithReason> validateUsingFunction;
+
+		@Override
+		public ProviderResult<T> execute()
+		{
 			SharedTestContext.put("query", query);
 
-			final T item = query.firstOnlyOptional().orElse(null);
-			if (item == null)
-			{
-				return ItemProvider.ProviderResult.resultWasNotFound("No item found for " + query);
-			}
+			final List<T> items = query.list();
+			SharedTestContext.put("items", items);
+			
+			return checkValid(items);
+		}
 
+		private ProviderResult<T> checkValid(final List<T> items)
+		{
+			if (items.isEmpty())
+			{
+				return ProviderResult.resultWasNotFound("No item found for " + query);
+			}
+			else if (items.size() == 1)
+			{
+				return checkValid(items.get(0));
+			}
+			else
+			{
+				final ArrayList<T> validItems = new ArrayList<>();
+				final ArrayList<String> notValidErrors = new ArrayList<>();
+				for (T item : items)
+				{
+					final ProviderResult<T> valid = checkValid(item);
+					if (valid.isResultFound())
+					{
+						validItems.add(item);
+					}
+					else
+					{
+						notValidErrors.add(valid.getLog());
+					}
+				}
+
+				if (validItems.isEmpty())
+				{
+					return ProviderResult.resultWasNotFound("No valid items found because "
+							+ "\n\t" + String.join("\n\t", notValidErrors));
+				}
+				else if (validItems.size() == 1)
+				{
+					return ProviderResult.resultWasFound(validItems.get(0));
+				}
+				else
+				{
+					return ProviderResult.resultWasNotFound("Multiple valid items found: " + validItems);
+				}
+			}
+		}
+
+		private ProviderResult<T> checkValid(final T item)
+		{
 			if (validateUsingFunction != null)
 			{
-				SharedTestContext.put("item", item);
-
 				try
 				{
 					final BooleanWithReason valid = validateUsingFunction.apply(item);
 					if (valid.isFalse())
 					{
-						return ItemProvider.ProviderResult.resultWasNotFound(valid.getReasonAsString());
+						return ProviderResult.resultWasNotFound(valid.getReasonAsString());
 					}
 				}
 				catch (final Exception | AssertionError ex)
 				{
-					return ItemProvider.ProviderResult.resultWasNotFound(ex.getLocalizedMessage());
+					return ProviderResult.resultWasNotFound(ex);
 				}
 			}
 
-			return ItemProvider.ProviderResult.resultWasFound(item);
-		};
+			return ProviderResult.resultWasFound(item);
+		}
+
 	}
 }

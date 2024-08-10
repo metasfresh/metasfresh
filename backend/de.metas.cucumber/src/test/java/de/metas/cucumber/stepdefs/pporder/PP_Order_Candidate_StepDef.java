@@ -424,10 +424,10 @@ public class PP_Order_Candidate_StepDef
 		final StepDefDataIdentifier resourceIdentifier = row.getAsIdentifier(I_S_Resource.COLUMNNAME_S_Resource_ID);
 		final ResourceId resourceId = resourceTable.getIdOptional(resourceIdentifier).orElseGet(() -> resourceIdentifier.getAsId(ResourceId.class));
 
-		final Quantity qtyEntered = row.getAsQuantity(I_PP_Order_Candidate.COLUMNNAME_QtyEntered, I_C_UOM.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
-		final Quantity qtyToProcess = row.getAsQuantity(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, I_C_UOM.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
-		final Quantity qtyProcessed = row.getAsQuantity(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed, I_C_UOM.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
-		final UomId uomId = Quantity.getCommonUomIdOfAll(qtyEntered, qtyToProcess, qtyProcessed);
+		// final Quantity qtyEntered = row.getAsQuantity(I_PP_Order_Candidate.COLUMNNAME_QtyEntered, I_C_UOM.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
+		// final Quantity qtyToProcess = row.getAsQuantity(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, I_C_UOM.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
+		// final Quantity qtyProcessed = row.getAsQuantity(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed, I_C_UOM.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
+		// final UomId uomId = Quantity.getCommonUomIdOfAll(qtyEntered, qtyToProcess, qtyProcessed);
 
 		final Instant datePromised = row.getAsInstant(I_PP_Order_Candidate.COLUMNNAME_DatePromised);
 		final Instant dateStartSchedule = row.getAsInstant(I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule);
@@ -442,9 +442,9 @@ public class PP_Order_Candidate_StepDef
 				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyEntered, qtyEntered.toBigDecimal())
 				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, qtyToProcess.toBigDecimal())
 				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed, qtyProcessed.toBigDecimal())
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_C_UOM_ID, uomId)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_DatePromised, datePromised)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule, dateStartSchedule)
+				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_C_UOM_ID, uomId)
+				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_DatePromised, datePromised)
+				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule, dateStartSchedule)
 				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Processed, isProcessed)
 				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsClosed, isClosed)
 				;

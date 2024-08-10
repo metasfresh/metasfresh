@@ -48,24 +48,8 @@ public class PPOrderCandidateListeners
 			final ImmutableSet<PPOrderId> ppOrderIds = ppOrderCandidateDAO.getPPOrderIds(ppOrderCandidateId);
 			final PPOrderId ppOrderId = ppOrderIds.size() == 1 ? ppOrderIds.iterator().next() : null;
 
-			updateProductionDetailsByPPOrderCandidateId(ppOrderCandidateId, ppOrderId);
 			updateDistributionDetailsByPPOrderCandidateId(ppOrderCandidateId, ppOrderId);
 			updateDistributionCandidatesByPPOrderCandidateId(ppOrderCandidateId, ppOrderId);
-		}
-
-		private void updateProductionDetailsByPPOrderCandidateId(@NonNull final PPOrderCandidateId ppOrderCandidateId, @Nullable final PPOrderId newPPOrderId)
-		{
-			candidateRepositoryWriteService.updateCandidatesByQuery(
-					CandidatesQuery.builder()
-							.businessCase(CandidateBusinessCase.PRODUCTION)
-							.productionDetailsQuery(ProductionDetailsQuery.builder().ppOrderCandidateId(ppOrderCandidateId.getRepoId()).build())
-							.build(),
-					candidate -> {
-						final ProductionDetail productionDetail = candidate.getBusinessCaseDetail(ProductionDetail.class)
-								.orElseThrow(() -> new AdempiereException("No ProductionDetail found for " + candidate));
-
-						return candidate.withBusinessCaseDetail(productionDetail.withPPOrderId(newPPOrderId));
-					});
 		}
 
 		private void updateDistributionDetailsByPPOrderCandidateId(@NonNull final PPOrderCandidateId ppOrderCandidateId, @Nullable final PPOrderId newPPOrderId)

@@ -284,16 +284,17 @@ public class PP_Order_StepDef
 	}
 
 	@And("^validate that after not more than (.*)s, PP_Orders are created for PP_Order_Candidate in the following order:$")
-	public void validate_PP_Orders_created_in_the_following_order(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void validate_PP_Orders_created_in_the_following_order(final int timeoutSec, @NonNull final DataTable dataTable0) throws InterruptedException
 	{
-		final Map<String, ArrayList<String>> ppOrderCandidate2PPOrderIdsOrdered = getPPOrderCandIdentifier2PPOrderIdentifiers(dataTable);
+		final DataTableRows dataTableRows = DataTableRows.of(dataTable0);
+		final Map<String, ArrayList<String>> ppOrderCandidate2PPOrderIdsOrdered = getPPOrderCandIdentifier2PPOrderIdentifiers(dataTableRows);
 
 		locateAndLoadPPOrders(timeoutSec, ppOrderCandidate2PPOrderIdsOrdered);
 
-		final List<Integer> ppOrderIdsAsListedInFeatureFile = dataTable.asMaps()
+		final List<Integer> ppOrderIdsAsListedInFeatureFile = dataTableRows
 				.stream()
 				.map(row -> {
-					final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final StepDefDataIdentifier ppOrderIdentifier = row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID);
 					return ppOrderTable.get(ppOrderIdentifier).getPP_Order_ID();
 				})
 				.collect(ImmutableList.toImmutableList());
@@ -555,21 +556,20 @@ public class PP_Order_StepDef
 	}
 
 	@NonNull
-	private static Map<String, ArrayList<String>> getPPOrderCandIdentifier2PPOrderIdentifiers(@NonNull final DataTable dataTable)
+	private static Map<String, ArrayList<String>> getPPOrderCandIdentifier2PPOrderIdentifiers(@NonNull final DataTableRows dataTable)
 	{
 		final Map<String, ArrayList<String>> ppOrderCandidate2PPOrderIdsOrdered = new HashMap<>();
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String ppOrderCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		dataTable.forEach(row -> {
+			final StepDefDataIdentifier ppOrderCandIdentifier = row.getAsIdentifier(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID);
+			final StepDefDataIdentifier ppOrderIdentifier = row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID);
 
 			final ArrayList<String> ppOrderIdentifiers = new ArrayList<>();
-			ppOrderIdentifiers.add(ppOrderIdentifier);
-			ppOrderCandidate2PPOrderIdsOrdered.merge(ppOrderCandIdentifier, ppOrderIdentifiers, (old, newL) -> {
+			ppOrderIdentifiers.add(ppOrderIdentifier.getAsString());
+			ppOrderCandidate2PPOrderIdsOrdered.merge(ppOrderCandIdentifier.getAsString(), ppOrderIdentifiers, (old, newL) -> {
 				old.addAll(newL);
 				return old;
 			});
-		}
+		});
 
 		return ppOrderCandidate2PPOrderIdsOrdered;
 	}

@@ -2,6 +2,7 @@ package de.metas.distribution.ddordercandidate.material_dispo;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.distribution.ddordercandidate.DDOrderCandidate;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateId;
@@ -12,14 +13,20 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 
 @Service
@@ -31,6 +38,7 @@ public class DDOrderCandidateRequestedEventHandler
 	@NonNull private static final Logger logger = LogManager.getLogger(DDOrderCandidateRequestedEventHandler.class);
 	@NonNull private final DDOrderCandidateService ddOrderCandidateService;
 	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
+	@NonNull private final PPOrderCandidateDAO ppOrderCandidateDAO;
 
 	@Override
 	public Collection<Class<? extends DDOrderCandidateRequestedEvent>> getHandledEventType()
@@ -78,11 +86,43 @@ public class DDOrderCandidateRequestedEventHandler
 		return ddOrderCandidate;
 	}
 
-	private static DDOrderCandidate toDDOrderCandidate(@NonNull final DDOrderCandidateRequestedEvent event)
+	private DDOrderCandidate toDDOrderCandidate(@NonNull final DDOrderCandidateRequestedEvent event)
 	{
-		return DDOrderCandidate.from(event.getDdOrderCandidateData())
+		final PPOrderId forwardPPOrderId = findForwardPPOrderId(event);
+		final DDOrderCandidateData ddOrderCandidateData = event.getDdOrderCandidateData().withPPOrderId(forwardPPOrderId);
+
+		return DDOrderCandidate.from(ddOrderCandidateData)
 				.dateOrdered(event.getDateOrdered())
 				.traceId(event.getTraceId())
 				.build();
+	}
+
+	@Nullable
+	private PPOrderId findForwardPPOrderId(@NonNull final DDOrderCandidateRequestedEvent event)
+	{
+		return findForwardPPOrderId(event.getDdOrderCandidateData().getForwardPPOrderRef());
+	}
+
+	@Nullable
+	private PPOrderId findForwardPPOrderId(@Nullable final PPOrderRef forwardPPOrderRef)
+	{
+		if (forwardPPOrderRef == null)
+		{
+			return null;
+		}
+
+		if (forwardPPOrderRef.getPpOrderId() != null)
+		{
+			return forwardPPOrderRef.getPpOrderId();
+		}
+
+		if (forwardPPOrderRef.getPpOrderCandidateId() > 0)
+		{
+			final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoId(forwardPPOrderRef.getPpOrderCandidateId());
+			final ImmutableSet<PPOrderId> forwardPPOrderIds = ppOrderCandidateDAO.getPPOrderIds(ppOrderCandidateId);
+			return forwardPPOrderIds.size() == 1 ? forwardPPOrderIds.iterator().next() : null;
+		}
+
+		return null;
 	}
 }
