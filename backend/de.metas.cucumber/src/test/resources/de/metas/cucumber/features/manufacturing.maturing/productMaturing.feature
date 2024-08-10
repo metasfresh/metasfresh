@@ -73,13 +73,13 @@ Feature: Maturing scenarios
 
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
-      | oc_1       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 10 PCE     | 10 PCE       | 0 PCE        | 2023-05-31T21:00:00Z | 2023-05-31T21:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_10 |
+      | oc_1       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 10 PCE     | 10 PCE       | 0 PCE        | 2023-05-31T22:00:00Z | 2023-05-31T22:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_10 |
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering' is ran once
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
-      | oc_1       | true      | maturedGood  | bom_1             | prodPlanning           | 540006        | 10 PCE     | 0 PCE        | 10 PCE       | 2023-05-31T21:00:00Z | 2023-05-31T21:00:00Z | true     | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_10 |
+      | oc_1       | true      | maturedGood  | bom_1             | prodPlanning           | 540006        | 10 PCE     | 0 PCE        | 10 PCE       | 2023-05-31T22:00:00Z | 2023-05-31T22:00:00Z | true     | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_10 |
 
     And after not more than 60s, load PP_Order by candidate id: oc_1
       | PP_Order_ID | QtyEntered |
@@ -87,7 +87,7 @@ Feature: Maturing scenarios
 
     And after not more than 60s, PP_Orders are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | DatePromised         | DocStatus |
-      | ppOrder_1  | maturedGood  | bom_1             | prodPlanning           | 540006        | 10 PCE     | 10         | 2023-05-31T21:00:00Z | CL        |
+      | ppOrder_1  | maturedGood  | bom_1             | prodPlanning           | 540006        | 10 PCE     | 10         | 2023-05-31T22:00:00Z | CL        |
 
     And load manufactured HU for PP_Order:
       | PP_Order_ID | M_HU_ID           |
