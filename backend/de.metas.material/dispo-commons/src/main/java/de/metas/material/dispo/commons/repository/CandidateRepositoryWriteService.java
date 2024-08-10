@@ -414,11 +414,12 @@ public class CandidateRepositoryWriteService
 		}
 
 		final I_MD_Candidate_Prod_Detail productionDetailRecordToUpdate;
-		final I_MD_Candidate_Prod_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(candidate.getId(), I_MD_Candidate_Prod_Detail.class);
+		final CandidateId candidateId = CandidateId.ofRepoId(synchedRecord.getMD_Candidate_ID());
+		final I_MD_Candidate_Prod_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(candidateId, I_MD_Candidate_Prod_Detail.class);
 		if (existingDetail == null)
 		{
 			productionDetailRecordToUpdate = newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
-			productionDetailRecordToUpdate.setMD_Candidate(synchedRecord);
+			productionDetailRecordToUpdate.setMD_Candidate_ID(candidateId.getRepoId());
 			productionDetailRecordToUpdate.setIsPickDirectlyIfFeasible(productionDetail.getPickDirectlyIfFeasible().isTrue());
 			productionDetailRecordToUpdate.setIsAdvised(productionDetail.getAdvised().isTrue());
 		}
@@ -464,11 +465,12 @@ public class CandidateRepositoryWriteService
 		}
 
 		final I_MD_Candidate_Dist_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Dist_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(candidate.getId(), I_MD_Candidate_Dist_Detail.class);
+		final CandidateId candidateId = CandidateId.ofRepoId(synchedRecord.getMD_Candidate_ID());
+		final I_MD_Candidate_Dist_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(candidateId, I_MD_Candidate_Dist_Detail.class);
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Dist_Detail.class, synchedRecord);
-			detailRecordToUpdate.setMD_Candidate(synchedRecord);
+			detailRecordToUpdate.setMD_Candidate_ID(candidateId.getRepoId());
 			detailRecordToUpdate.setIsPickDirectlyIfFeasible(distributionDetail.getPickDirectlyIfFeasible().isTrue());
 		}
 		else
@@ -520,11 +522,12 @@ public class CandidateRepositoryWriteService
 		}
 
 		final I_MD_Candidate_Demand_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Demand_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(candidate.getId(), I_MD_Candidate_Demand_Detail.class);
+		final CandidateId candidateId = CandidateId.ofRepoId(synchedRecord.getMD_Candidate_ID());
+		final I_MD_Candidate_Demand_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(candidateId, I_MD_Candidate_Demand_Detail.class);
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Demand_Detail.class, synchedRecord);
-			detailRecordToUpdate.setMD_Candidate(synchedRecord);
+			detailRecordToUpdate.setMD_Candidate_ID(candidateId.getRepoId());
 		}
 		else
 		{
