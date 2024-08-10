@@ -139,7 +139,7 @@ Feature: Maturing scenarios
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
-      | oc_2       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 20 PCE     | 20 PCE       | 0 PCE        | 2023-06-30T21:00:00Z | 2023-06-30T21:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_20 |
+      | oc_2       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 20 PCE     | 20 PCE       | 0 PCE        | 2023-06-30T22:00:00Z | 2023-06-30T22:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_20 |
 
     And update M_HU_Storage:
       | M_HU_Storage_ID | Qty |
@@ -149,7 +149,7 @@ Feature: Maturing scenarios
 
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
-      | oc_2       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 15 PCE     | 15 PCE       | 0 PCE        | 2023-06-30T21:00:00Z | 2023-06-30T21:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_20 |
+      | oc_2       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 15 PCE     | 15 PCE       | 0 PCE        | 2023-06-30T22:00:00Z | 2023-06-30T22:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_20 |
 
 
   @from:cucumber
@@ -187,7 +187,7 @@ Feature: Maturing scenarios
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
-      | oc_3       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 30 PCE     | 30 PCE       | 0 PCE        | 2023-06-30T21:00:00Z | 2023-06-30T21:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_30 |
+      | oc_3       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 30 PCE     | 30 PCE       | 0 PCE        | 2023-06-30T22:00:00Z | 2023-06-30T22:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_30 |
 
     And M_HU are disposed:
       | M_HU_ID       | MovementDate         |
