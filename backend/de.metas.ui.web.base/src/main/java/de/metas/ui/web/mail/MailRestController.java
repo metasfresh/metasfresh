@@ -263,7 +263,9 @@ public class MailRestController
 		final EMailSentStatus sentStatus = email.send();
 		if (!sentStatus.isSentOK())
 		{
-			throw new AdempiereException("Failed sending the email: " + sentStatus.getSentMsg());
+			throw new AdempiereException("Failed sending the email: " + sentStatus.getSentMsg()).appendParametersToMessage()
+					.setParameter("UserEMailConfig", userEmailConfig)
+					.setParameter("ClientEMailConfig", tenantEmailConfig);
 		}
 
 		//

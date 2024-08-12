@@ -24,7 +24,6 @@ package de.metas.ui.web.window.controller;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import de.metas.ad_reference.ADRefTable;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
@@ -79,6 +78,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.ui.web.window.model.OrderedDocumentsList;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.util.Services;
@@ -231,7 +231,7 @@ public class WindowRestController
 				.showOnlyFieldsListStr(fieldsListStr)
 				.showAdvancedFields(advanced)
 				.build();
-		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts);
+		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts).toList();
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}")
@@ -266,27 +266,8 @@ public class WindowRestController
 				.showAdvancedFields(advanced)
 				.build();
 
-		final List<JSONDocument> rows = getData(documentPath, orderBys, jsonOpts);
-
-		final Set<DocumentId> missingRowIds;
-		if (!onlyRowIds.isEmpty() && !onlyRowIds.isAll())
-		{
-			final ImmutableSet<DocumentId> foundRowIds = rows.stream()
-					.map(JSONDocument::getRowId)
-					.collect(ImmutableSet.toImmutableSet());
-
-			missingRowIds = Sets.difference(onlyRowIds.toSet(), foundRowIds);
-		}
-		else
-		{
-			missingRowIds = null;
-		}
-
-		return JSONDocumentList.builder()
-				.result(rows)
-				.missingIds(missingRowIds)
-				.build();
-
+		return getData(documentPath, orderBys, jsonOpts)
+				.withMissingIdsUpdatedFromExpectedRowIds(onlyRowIds);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
@@ -317,10 +298,10 @@ public class WindowRestController
 				.showAdvancedFields(advanced)
 				.build();
 
-		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts);
+		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts).toList();
 	}
 
-	private List<JSONDocument> getData(
+	private JSONDocumentList getData(
 			@NonNull final DocumentPath documentPath,
 			@Nullable final DocumentQueryOrderByList orderBys,
 			@NonNull final JSONDocumentOptions jsonOpts)
@@ -328,30 +309,28 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		return documentCollection.forRootDocumentReadonly(documentPath, rootDocument -> {
-			final List<Document> documents;
+			final OrderedDocumentsList documents;
 			if (documentPath.isRootDocument())
 			{
-				documents = ImmutableList.of(rootDocument);
+				documents = OrderedDocumentsList.of(rootDocument);
 			}
 			else if (documentPath.isAnyIncludedDocument())
 			{
-				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), orderBys).toList();
+				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), orderBys);
 			}
 			else if (documentPath.isSingleIncludedDocument())
 			{
 				// IMPORTANT: in case the document was not found, don't fail but return empty.
 				final Document document = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId()).orElse(null);
-				documents = document != null
-						? ImmutableList.of(document)
-						: ImmutableList.of();
+				documents = OrderedDocumentsList.ofNullable(document);
 			}
 			else
 			{
-				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), documentPath.getRowIds()).toList();
+				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), documentPath.getRowIds());
 			}
 
 			final Boolean hasComments = documentPath.isRootDocument() ? commentsService.hasComments(documentPath) : null;
-			return JSONDocument.ofDocumentsList(documents, jsonOpts, hasComments);
+			return JSONDocumentList.ofDocumentsList(documents, jsonOpts, hasComments);
 		});
 	}
 
@@ -781,9 +760,9 @@ public class WindowRestController
 		else if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.Labels)
 		{
 			final LabelsLookup lookup = LabelsLookup.cast(field.getDescriptor()
-																  .getLookupDescriptor()
-																  .orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor")
-																		  .setParameter("field", field)));
+					.getLookupDescriptor()
+					.orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor")
+							.setParameter("field", field)));
 			final String labelsValueColumnName = lookup.getLabelsValueColumnName();
 
 			if (labelsValueColumnName.endsWith("_ID"))
@@ -964,7 +943,7 @@ public class WindowRestController
 			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
 					.getProcessor()
 					.processNewRecordDocument(document,
-											  newRecordContext);
+							newRecordContext);
 		}));
 	}
 

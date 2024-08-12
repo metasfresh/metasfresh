@@ -198,7 +198,7 @@ class DesadvBL_addInOutLine_Test
 		inOutLineRecord.setC_UOM_ID(orderUOMRecord.getC_UOM_ID());
 		saveRecord(inOutLineRecord);
 
-		desadvBL = new DesadvBL(new HURepository());
+		desadvBL = new DesadvBL(new HURepository(), new EDIDesadvInOutLineDAO());
 	}
 
 	@Test
