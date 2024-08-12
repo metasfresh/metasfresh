@@ -5,6 +5,7 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.generichumodel.HURepository;
+import de.metas.inout.InOutLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -63,7 +64,7 @@ class DesadvBLTest
 	{
 		AdempiereTestHelper.get().init();
 
-		desadvBL = new DesadvBL(new HURepository());
+		desadvBL = new DesadvBL(new HURepository(), new EDIDesadvInOutLineDAO());
 
 		eachUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("each", X12DE355.EACH).getC_UOM_ID());
 		coliUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("coli", X12DE355.COLI).getC_UOM_ID());
@@ -74,11 +75,11 @@ class DesadvBLTest
 
 		// one PCE is two KGM
 		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
-				.fromUomId(eachUomId)
-				.toUomId(kiloUomId)
-				.productId(productId)
-				.catchUOMForProduct(true)
-				.fromToMultiplier(new BigDecimal("2")).build());
+													   .fromUomId(eachUomId)
+													   .toUomId(kiloUomId)
+													   .productId(productId)
+													   .catchUOMForProduct(true)
+													   .fromToMultiplier(new BigDecimal("2")).build());
 	}
 
 	// 9 CUs per COLI and 20.5 CUs => 3 COLIs
@@ -143,7 +144,7 @@ class DesadvBLTest
 				.uomQty(Quantitys.create("20", kiloUomId)).build();
 
 		// when
-		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, null, true);
+		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, InOutLineId.ofRepoId(10), null, true);
 
 		// then
 		assertThat(desadvLineRecord).extracting(COLUMNNAME_QtyDeliveredInStockingUOM, COLUMNNAME_QtyDeliveredInUOM, COLUMNNAME_QtyDeliveredInInvoiceUOM)
@@ -178,7 +179,7 @@ class DesadvBLTest
 				.uomQty(Quantitys.create("20", kiloUomId)).build();
 
 		// when
-		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, null,true);
+		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, InOutLineId.ofRepoId(10), null, true);
 
 		// then
 		assertThat(desadvLineRecord).extracting(COLUMNNAME_QtyDeliveredInStockingUOM, COLUMNNAME_QtyDeliveredInUOM, COLUMNNAME_QtyDeliveredInInvoiceUOM)

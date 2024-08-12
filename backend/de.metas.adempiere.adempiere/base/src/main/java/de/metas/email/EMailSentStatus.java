@@ -1,24 +1,22 @@
 package de.metas.email;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.Getter;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import javax.annotation.concurrent.Immutable;
 import javax.mail.Address;
 import javax.mail.AuthenticationFailedException;
 import javax.mail.MessagingException;
 import javax.mail.SendFailedException;
-
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import java.io.Serializable;
 
 /*
  * #%L
@@ -48,7 +46,7 @@ import de.metas.util.Check;
  * @author metas-dev <dev@metasfresh.com>
  * @see EMail#send()
  */
-@SuppressWarnings("serial")
+@Getter
 @Immutable
 public final class EMailSentStatus implements Serializable
 {
@@ -58,29 +56,27 @@ public final class EMailSentStatus implements Serializable
 
 	/** Mail Sent OK Status */
 	@VisibleForTesting
-	/* package */static final String SENT_OK = new String("OK");
+	/* package */static final String SENT_OK = "OK";
 
-	/* package */static final EMailSentStatus ok(final String messageId)
+	/* package */static EMailSentStatus ok(final String messageId)
 	{
 		final boolean sentConnectionError = false;
 		return new EMailSentStatus(SENT_OK, sentConnectionError, messageId);
 	}
 
-	/* package */static final EMailSentStatus invalid(final String errorMessage)
+	/* package */static EMailSentStatus invalid(final String errorMessage)
+	{
+		return error(errorMessage);
+	}
+
+	/* package */static EMailSentStatus error(final String errorMessage)
 	{
 		final boolean sentConnectionError = false;
 		final String messageId = null;
 		return new EMailSentStatus(errorMessage, sentConnectionError, messageId);
 	}
 
-	/* package */static final EMailSentStatus error(final String errorMessage)
-	{
-		final boolean sentConnectionError = false;
-		final String messageId = null;
-		return new EMailSentStatus(errorMessage, sentConnectionError, messageId);
-	}
-
-	/* package */static final EMailSentStatus error(final MessagingException me)
+	/* package */static EMailSentStatus error(final MessagingException me)
 	{
 		Exception ex = me;
 		final StringBuilder errorMsgBuilder = new StringBuilder("(ME)");
@@ -97,9 +93,9 @@ public final class EMailSentStatus implements Serializable
 					if (invalid != null && invalid.length > 0)
 					{
 						errorMsgBuilder.append(" - Invalid:");
-						for (int i = 0; i < invalid.length; i++)
+						for (final Address address : invalid)
 						{
-							errorMsgBuilder.append(" ").append(invalid[i]);
+							errorMsgBuilder.append(" ").append(address);
 						}
 
 					}
@@ -107,18 +103,18 @@ public final class EMailSentStatus implements Serializable
 					if (validUnsent != null && validUnsent.length > 0)
 					{
 						errorMsgBuilder.append(" - ValidUnsent:");
-						for (int i = 0; i < validUnsent.length; i++)
+						for (final Address address : validUnsent)
 						{
-							errorMsgBuilder.append(" ").append(validUnsent[i]);
+							errorMsgBuilder.append(" ").append(address);
 						}
 					}
 					final Address[] validSent = sfex.getValidSentAddresses();
 					if (validSent != null && validSent.length > 0)
 					{
 						errorMsgBuilder.append(" - ValidSent:");
-						for (int i = 0; i < validSent.length; i++)
+						for (final Address address : validSent)
 						{
-							errorMsgBuilder.append(" ").append(validSent[i]);
+							errorMsgBuilder.append(" ").append(address);
 						}
 					}
 					printed = true;
@@ -130,11 +126,11 @@ public final class EMailSentStatus implements Serializable
 			}
 			else if (ex instanceof AuthenticationFailedException)
 			{
-				errorMsgBuilder.append(" - Invalid Username/Password");
+				errorMsgBuilder.append(" - Invalid Username/Password: ").append(ex.getLocalizedMessage());
 			}
 			else if (ex instanceof java.net.ConnectException)
 			{
-				errorMsgBuilder.append(" - Connection error: " + ex.getLocalizedMessage());
+				errorMsgBuilder.append(" - Connection error: ").append(ex.getLocalizedMessage());
 				isSentConnectionError = true;
 			}
 			else
@@ -143,11 +139,11 @@ public final class EMailSentStatus implements Serializable
 				String msg = ex.getLocalizedMessage();
 				if (msg == null)
 				{
-					errorMsgBuilder.append(": ").append(ex.toString());
+					errorMsgBuilder.append(": ").append(ex);
 				}
 				else
 				{
-					if (msg.indexOf("Could not connect to SMTP host:") != -1)
+					if (msg.contains("Could not connect to SMTP host:"))
 					{
 						final int index = msg.indexOf('\n');
 						if (index != -1)
@@ -156,7 +152,7 @@ public final class EMailSentStatus implements Serializable
 						}
 					}
 					final String className = ex.getClass().getName();
-					if (className.indexOf("MessagingException") != -1)
+					if (className.contains("MessagingException"))
 					{
 						errorMsgBuilder.append(": ").append(msg);
 					}
@@ -181,7 +177,7 @@ public final class EMailSentStatus implements Serializable
 		//
 		// Build the final error message
 		String errorMsg = errorMsgBuilder.toString();
-		if (Check.isEmpty(errorMsg, true))
+		if (Check.isBlank(errorMsg))
 		{
 			errorMsg = me.toString();
 		}
@@ -242,24 +238,10 @@ public final class EMailSentStatus implements Serializable
 				.toString();
 	}
 
-	public String getSentMsg()
-	{
-		return sentMsg;
-	}
-
 	@JsonIgnore
 	public boolean isSentOK()
 	{
 		return Util.same(sentMsg, SENT_OK);
 	}
 
-	public boolean isSentConnectionError()
-	{
-		return sentConnectionError;
-	}
-
-	public String getMessageId()
-	{
-		return messageId;
-	}
 }

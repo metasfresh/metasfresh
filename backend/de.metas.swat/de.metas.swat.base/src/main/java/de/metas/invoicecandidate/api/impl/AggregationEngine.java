@@ -5,8 +5,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
+import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.X_C_Aggregation;
@@ -69,6 +71,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -106,6 +109,7 @@ public final class AggregationEngine
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
+	private final transient IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 	private final transient IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -279,6 +283,7 @@ public final class AggregationEngine
 		// Get and parse aggregation key
 		// => resolve last variables, right before invoicing
 		final AggregationKey headerAggregationKey;
+		final Aggregation icAggregationOrNull;
 		{
 			final AggregationKey headerAggregationKeyUnparsed = getHeaderAggregationKey(icRecord);
 			final AggregationKeyEvaluationContext evalCtx = AggregationKeyEvaluationContext.builder()
@@ -286,6 +291,10 @@ public final class AggregationEngine
 					.inoutLine(icInOutLine)
 					.build();
 			headerAggregationKey = headerAggregationKeyUnparsed.parse(evalCtx);
+			icAggregationOrNull = Optional.of(icRecord.getHeaderAggregationKeyBuilder_ID())
+					.filter(aggregationId -> aggregationId > 0)
+					.map(aggregationId -> aggregationDAO.retrieveAggregation(Env.getCtx(), aggregationId))
+					.orElse(null);
 		}
 
 		//
@@ -365,7 +374,8 @@ public final class AggregationEngine
 			// }
 
 			// this is only relevant if iciol != null. Otherwise we allocate the full invoicable Qty anyways.
-			icAggregationRequestBuilder.setAllocateRemainingQty(isLastIcIol);
+			final boolean allocateRemainingQty = isLastIcIol && (icAggregationOrNull == null || !icAggregationOrNull.hasInvoicePerShipmentAttribute());
+			icAggregationRequestBuilder.setAllocateRemainingQty(allocateRemainingQty);
 		}
 
 		//
