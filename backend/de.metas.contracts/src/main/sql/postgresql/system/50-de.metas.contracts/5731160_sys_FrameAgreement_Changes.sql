@@ -328,3 +328,28 @@ UPDATE AD_Val_Rule SET Code='C_Flatrate_Term.Bill_BPartner_ID=@C_BPartner_ID@ AN
 
 
 
+
+-- 2024-08-12T16:31:09.792Z
+UPDATE C_DocType_Trl SET Name='Frame Agreement PO',Updated=TO_TIMESTAMP('2024-08-12 19:31:09.791','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541057
+;
+
+-- 2024-08-12T16:31:21.378Z
+UPDATE C_DocType_Trl SET Name='Frame Agreement PO',Updated=TO_TIMESTAMP('2024-08-12 19:31:21.377','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND C_DocType_ID=541057
+;
+
+-- 2024-08-12T16:31:22.793Z
+UPDATE C_DocType_Trl SET Name='Frame Agreement PO',Updated=TO_TIMESTAMP('2024-08-12 19:31:22.793','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='it_IT' AND C_DocType_ID=541057
+;
+
+-- 2024-08-12T16:31:24.661Z
+UPDATE C_DocType_Trl SET PrintName='Frame Agreement PO',Updated=TO_TIMESTAMP('2024-08-12 19:31:24.661','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='it_IT' AND C_DocType_ID=541057
+;
+
+-- 2024-08-12T16:31:26.658Z
+UPDATE C_DocType_Trl SET PrintName='Frame Agreement PO',Updated=TO_TIMESTAMP('2024-08-12 19:31:26.658','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND C_DocType_ID=541057
+;
+
+-- 2024-08-12T16:31:28.219Z
+UPDATE C_DocType_Trl SET PrintName='Frame Agreement PO',Updated=TO_TIMESTAMP('2024-08-12 19:31:28.219','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541057
+;
+
