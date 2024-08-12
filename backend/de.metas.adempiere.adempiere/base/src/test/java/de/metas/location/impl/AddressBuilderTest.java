@@ -22,7 +22,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
-import org.compiere.model.I_C_Greeting;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeAll;
@@ -34,6 +33,7 @@ import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -135,7 +135,7 @@ public class AddressBuilderTest
 		return bpLoc;
 	}
 
-	@Builder(builderMethodName = "BPartnerBuilder")
+	@Builder(builderMethodName = "bpartner")
 	private I_C_BPartner prepareBPartner(final String name, final String name2, final boolean isCompany, final String AD_Language, final GreetingId greetingId)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_None);
@@ -599,7 +599,7 @@ public class AddressBuilderTest
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "", prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.isCompany(false)
@@ -619,7 +619,7 @@ public class AddressBuilderTest
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "", prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.isCompany(false)
@@ -639,7 +639,7 @@ public class AddressBuilderTest
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "", prepareCountry("Germany", "@BP@ (z.L. @GR@) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.isCompany(false)
@@ -663,7 +663,7 @@ public class AddressBuilderTest
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "", prepareCountry("Germany", "@BP@ (GR) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.isCompany(false)
@@ -688,7 +688,7 @@ public class AddressBuilderTest
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
 					prepareCountry("Germany", "@BP@ (GR @GR@) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.isCompany(false)
@@ -713,7 +713,7 @@ public class AddressBuilderTest
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
 					prepareCountry("Germany", "@BP@ \\(test\\) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.isCompany(false)
@@ -738,7 +738,7 @@ public class AddressBuilderTest
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
 					prepareCountry("Germany", "@BP@ (GR @GR@) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.isCompany(true)
@@ -763,7 +763,7 @@ public class AddressBuilderTest
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
 					prepareCountry("Germany", "@BP@ (GR @GR@) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("CompanyAG")
 					.name2("")
 					.isCompany(true)
@@ -787,7 +787,7 @@ public class AddressBuilderTest
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
 					prepareCountry("Germany", "@BP@ @GR@ @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.isCompany(false)
@@ -811,7 +811,7 @@ public class AddressBuilderTest
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
 					prepareCountry("Germany", "@BP@ (z.L. @GR@) @CON@ @A2@ @A1@ (PF @PB@) @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.isCompany(false)
@@ -835,7 +835,7 @@ public class AddressBuilderTest
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
 					prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.isCompany(false)
@@ -857,7 +857,7 @@ public class AddressBuilderTest
 			final LocationId locationOverrideId = LocationId.ofRepoId(locationOverride.getC_Location_ID());
 
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.isCompany(false)
@@ -880,7 +880,7 @@ public class AddressBuilderTest
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "",
 					prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.isCompany(false)
@@ -907,7 +907,7 @@ public class AddressBuilderTest
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final GreetingId greetingId = prepareGreeting("Frau");
 
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.greetingId(greetingId)
@@ -934,7 +934,7 @@ public class AddressBuilderTest
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final GreetingId greetingId = prepareGreeting("Frau");
 
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.greetingId(greetingId)
@@ -954,12 +954,12 @@ public class AddressBuilderTest
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-														  prepareCountry("Germany", "@BP_GR@ @BP_Name@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
+					prepareCountry("Germany", "@BP_GR@ @BP_Name@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
 
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final GreetingId greetingId = prepareGreeting("Frau");
 
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.isCompany(true)
@@ -974,7 +974,6 @@ public class AddressBuilderTest
 					actual);
 		}
 
-
 		/**
 		 * check if the token CON can be used in case on non company users
 		 */
@@ -983,12 +982,12 @@ public class AddressBuilderTest
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-														  prepareCountry("Germany", "@BP_GR@ @BP_Name@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
+					prepareCountry("Germany", "@BP_GR@ @BP_Name@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
 
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final GreetingId greetingId = prepareGreeting("Frau");
 
-			final I_C_BPartner bPartner = BPartnerBuilder()
+			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
 					.name2("Name2")
 					.isCompany(false)
@@ -1081,181 +1080,149 @@ public class AddressBuilderTest
 		}
 	}
 
+	@Builder(builderMethodName = "prepareFullAddress", builderClassName = "$mkFullAddress")
+	private String mkFullAddress(
+			@NonNull String countryDisplaySequence,
+			@Nullable String bpartnerName,
+			@Nullable String bpartnerName2,
+			boolean isCompany,
+			@Nullable String contactFirstName,
+			@Nullable String contactLastName,
+			@Nullable String contactTitle,
+			@Nullable String contactGreeting)
+	{
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
+				prepareCountry("Germany", countryDisplaySequence));
+
+		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
+		final I_C_BPartner bPartner = bpartner().name(bpartnerName).name2(bpartnerName2).isCompany(isCompany).build();
+		final GreetingId greeting = contactGreeting != null ? prepareGreeting(contactGreeting) : null;
+		final org.compiere.model.I_AD_User user = prepareUser(contactFirstName, contactLastName, contactTitle, greeting);
+
+		return bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user);
+	}
+
 	@Nested
 	public class BPartnerBL_CompanyNameSimilarWithContactName
 	{
 		@Test
-		public void test_CompanyNameSimilarLastName()
+		public void companyName_similarTo_contactLastName()
 		{
-
-			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ @P@ @C@ @CO@"));
-
-			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-
-			final I_C_BPartner bPartner = BPartnerBuilder()
-					.name("Name")
-					.name2("Name2")
+			final String fullAddress = prepareFullAddress()
+					.countryDisplaySequence("@BP@ @CON@ @A2@ @A1@ @A3@ @P@ @C@ @CO@")
+					.bpartnerName("Name")
+					.bpartnerName2("Name2")
 					.isCompany(true)
+					.contactTitle("someTitle")
+					.contactLastName("Name")
 					.build();
 
-			final org.compiere.model.I_AD_User user = prepareUser(null, "Name", "someTitle", null);
-
-			final String actual = bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user);
-
-			assertEquals(
-					"LOCAL: \nName\nName2\naddr2\naddr1\n121212 City1\nGermany",
-					actual);
+			assertThat(fullAddress)
+					.isEqualTo("LOCAL: \nName\nName2\naddr2\naddr1\n121212 City1\nGermany");
 		}
 
 		@Test
-		public void test_CompanyNameSimilarFirstName()
+		public void companyName_similarTo_contactLastNameFirstName_NotCompanyBPartner()
 		{
-
-			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ @P@ @C@ @CO@"));
-
-			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-
-			final I_C_BPartner bPartner = BPartnerBuilder()
-					.name("Name")
-					.name2("Name2")
-					.isCompany(true)
-					.build();
-
-			final org.compiere.model.I_AD_User user = prepareUser("Name", null, "someTitle", null);
-
-			final String actual = bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user);
-
-			assertEquals(
-					"LOCAL: \nName\nName2\naddr2\naddr1\n121212 City1\nGermany",
-					actual);
-		}
-
-
-		@Test
-		public void test_CompanyNameSimilarLastNameFirstName()
-		{
-
-			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ @P@ @C@ @CO@"));
-
-			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-
-			final I_C_BPartner bPartner = BPartnerBuilder()
-					.name("LastName FirstName")
-					.name2("Name2")
-					.isCompany(true)
-					.build();
-
-			final org.compiere.model.I_AD_User user = prepareUser("FirstName  ", "  LastName", "someTitle", null);
-
-			final String actual = bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user);
-
-			assertEquals(
-					"LOCAL: \nLastName FirstName\nName2\naddr2\naddr1\n121212 City1\nGermany",
-					actual);
-		}
-
-
-		@Test
-		public void test_CompanyNameSimilarLastNameFirstNameGreeting()
-		{
-
-			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ @P@ @C@ @CO@"));
-
-			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-
-			final I_C_BPartner bPartner = BPartnerBuilder()
-					.name("LastName FirstName")
-					.name2("Name2")
-					.isCompany(true)
-					.build();
-
-			final GreetingId greeting = prepareGreeting("Frau");
-			final org.compiere.model.I_AD_User user = prepareUser("FirstName", "LastName", "someTitle", greeting);
-
-			final String actual = bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user);
-
-			assertEquals(
-					"LOCAL: \nLastName FirstName\nName2\naddr2\naddr1\n121212 City1\nGermany",
-					actual);
-		}
-
-		@Test
-		public void test_CompanyNameSimilarLastNameFirstName_WithoutCON_Token()
-		{
-
-			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ @GR@ @FN@ @LN@ @A2@ @A1@ @A3@ @P@ @C@ @CO@"));
-
-			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-
-			final I_C_BPartner bPartner = BPartnerBuilder()
-					.name("LastName FirstName")
-					.name2("Name2")
-					.isCompany(true)
-					.build();
-
-			final GreetingId greeting = prepareGreeting("Frau");
-			final org.compiere.model.I_AD_User user = prepareUser("FirstName", "LastName", "someTitle", greeting);
-
-			final String actual = bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user);
-
-			assertEquals(
-					"LOCAL: \nLastName FirstName\nName2\naddr2\naddr1\n121212 City1\nGermany",
-					actual);
-		}
-
-		@Test
-		public void test_CompanyNameSimilarLastNameFirstNameDifferentOrder()
-		{
-
-			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ @P@ @C@ @CO@"));
-
-			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-
-			final I_C_BPartner bPartner = BPartnerBuilder()
-					.name("FirstName LastName")
-					.name2("Name2")
-					.isCompany(true)
-					.build();
-
-			final GreetingId greeting = prepareGreeting("Frau");
-			final org.compiere.model.I_AD_User user = prepareUser("FirstName", "LastName", "someTitle", greeting);
-
-			final String actual = bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user);
-
-			assertEquals(
-					"LOCAL: \nFirstName LastName\nName2\naddr2\naddr1\n121212 City1\nGermany",
-					actual);
-		}
-
-		@Test
-		public void test_CompanyNameSimilarLastNameFirst_NoCompanyUser()
-		{
-
-			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ @P@ @C@ @CO@"));
-
-			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-
-			final I_C_BPartner bPartner = BPartnerBuilder()
-					.name("Name")
-					.name2("Name2")
+			final String fullAddress = prepareFullAddress()
+					.countryDisplaySequence("@BP@ @CON@ @A2@ @A1@ @A3@ @P@ @C@ @CO@")
+					.bpartnerName("Name")
+					.bpartnerName2("Name2")
 					.isCompany(false)
+					.contactTitle("someTitle")
+					.contactGreeting("Frau")
+					.contactLastName("Name")
 					.build();
 
-			final GreetingId greeting = prepareGreeting("Frau");
-			final org.compiere.model.I_AD_User user = prepareUser(null, "Name", "someTitle", greeting);
+			assertThat(fullAddress)
+					.isEqualTo("LOCAL:  \nFrau\nsomeTitle Name\naddr2\naddr1\n121212 City1\nGermany");
+		}
 
-			final String actual = bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user);
+		@Test
+		public void companyName_similarTo_contactFirstName()
+		{
+			final String fullAddress = prepareFullAddress()
+					.countryDisplaySequence("@BP@ @CON@ @A2@ @A1@ @A3@ @P@ @C@ @CO@")
+					.bpartnerName("Name")
+					.bpartnerName2("Name2")
+					.isCompany(true)
+					.contactTitle("someTitle")
+					.contactFirstName("Name")
+					.build();
 
-			assertEquals(
-					"LOCAL:  \nFrau\nsomeTitle Name\naddr2\naddr1\n121212 City1\nGermany",
-					actual);
+			assertThat(fullAddress)
+					.isEqualTo("LOCAL: \nName\nName2\naddr2\naddr1\n121212 City1\nGermany");
+		}
+
+		@Test
+		public void companyName_similarTo_contactLastNamePlusFirstName()
+		{
+			final String fullAddress = prepareFullAddress()
+					.countryDisplaySequence("@BP@ @CON@ @A2@ @A1@ @A3@ @P@ @C@ @CO@")
+					.bpartnerName("LastName FirstName")
+					.bpartnerName2("Name2")
+					.isCompany(true)
+					.contactTitle("someTitle")
+					.contactFirstName("FirstName                                     ")
+					.contactLastName("LastName")
+					.build();
+
+			assertThat(fullAddress)
+					.isEqualTo("LOCAL: \nLastName FirstName\nName2\naddr2\naddr1\n121212 City1\nGermany");
+		}
+
+		@Test
+		public void companyName_similarTo_contactLastNamePlusFirstNamePlusGreeting()
+		{
+			final String fullAddress = prepareFullAddress()
+					.countryDisplaySequence("@BP@ @CON@ @A2@ @A1@ @A3@ @P@ @C@ @CO@")
+					.bpartnerName("LastName FirstName")
+					.bpartnerName2("Name2")
+					.isCompany(true)
+					.contactTitle("someTitle")
+					.contactGreeting("Frau")
+					.contactFirstName("FirstName")
+					.contactLastName("LastName")
+					.build();
+
+			assertThat(fullAddress)
+					.isEqualTo("LOCAL: \nLastName FirstName\nName2\naddr2\naddr1\n121212 City1\nGermany");
+		}
+
+		@Test
+		public void companyName_similarTo_contactFirstNamePlusLastNamePlusGreeting_DifferentOrder()
+		{
+			final String fullAddress = prepareFullAddress()
+					.countryDisplaySequence("@BP@ @CON@ @A2@ @A1@ @A3@ @P@ @C@ @CO@")
+					.bpartnerName("FirstName LastName")
+					.bpartnerName("Name2")
+					.isCompany(true)
+					.contactTitle("someTitle")
+					.contactGreeting("Frau")
+					.contactFirstName("FirstName")
+					.contactLastName("LastName")
+					.build();
+
+			assertThat(fullAddress)
+					.isEqualTo("LOCAL: \nFirstName LastName\nName2\naddr2\naddr1\n121212 City1\nGermany");
+		}
+
+		@Test
+		public void companyName_similarTo_contactLastNameFirstNameGreeting_WithoutCON_Token()
+		{
+			final String fullAddress = prepareFullAddress()
+					.countryDisplaySequence("@BP@ @GR@ @FN@ @LN@ @A2@ @A1@ @A3@ @P@ @C@ @CO@")
+					.bpartnerName("LastName FirstName")
+					.bpartnerName("Name2")
+					.isCompany(true)
+					.contactTitle("someTitle")
+					.contactGreeting("Frau")
+					.contactFirstName("FirstName")
+					.contactLastName("LastName")
+					.build();
+
+			assertThat(fullAddress)
+					.isEqualTo("LOCAL: \nLastName FirstName\nName2\naddr2\naddr1\n121212 City1\nGermany");
 		}
 	}
 }
