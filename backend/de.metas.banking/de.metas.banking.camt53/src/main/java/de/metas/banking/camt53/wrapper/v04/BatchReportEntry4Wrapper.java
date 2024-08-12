@@ -183,21 +183,40 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	protected String getUnstructuredRemittanceInfo(@NonNull final String delimiter)
 	{
-		return String.join(delimiter,
-				getEntryTransaction()
-						.stream()
-						.findFirst()
-						.map(EntryTransaction4::getRmtInf)
-						.map(RemittanceInformation7::getUstrd)
-						.orElseGet(ImmutableList::of));
+		return String.join(delimiter, getUnstructuredRemittanceInfoList());
+	}
+
+	@Override
+	@NonNull
+	protected List<String> getUnstructuredRemittanceInfoList()
+	{
+		return getEntryTransaction()
+				.stream()
+				.findFirst()
+				.map(EntryTransaction4::getRmtInf)
+				.map(RemittanceInformation7::getUstrd)
+				.orElseGet(ImmutableList::of);
 	}
 
 	@Override
 	@NonNull
 	protected String getLineDescription(@NonNull final String delimiter)
 	{
+		return getLineDescriptionList().stream()
+				.filter(Check::isNotBlank)
+				.collect(Collectors.joining(delimiter));
+	}
+
+	@Override
+	@NonNull
+	protected List<String> getLineDescriptionList()
+	{
 		final ArrayList<String> trxDetails = new ArrayList<>();
-		trxDetails.add(entry.getAddtlNtryInf());
+		final String addtlNtryInf = entry.getAddtlNtryInf();
+		if(Check.isNotBlank(addtlNtryInf))
+		{
+			trxDetails.add(entry.getAddtlNtryInf());
+		}
 
 		getEntryTransaction()
 				.forEach(ntryDetails -> {
@@ -208,10 +227,7 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 					}
 				});
 
-
-		return trxDetails.stream()
-				.filter(Check::isNotBlank)
-				.collect(Collectors.joining(delimiter));
+		return trxDetails;
 	}
 
 	@Override
