@@ -775,8 +775,8 @@ public class AddressBuilder
 				userGreeting = greeting.getGreeting(language.getAD_Language());
 			}
 
-			final String userName = user.getLastname();
-			final String userVorname = user.getFirstname();
+			final String userLastName = user.getLastname();
+			final String userFirstName = user.getFirstname();
 			final String userTitle = user.getTitle();
 
 			//
@@ -828,7 +828,7 @@ public class AddressBuilder
 
 			if (Check.isEmpty(sbUser.toString(), true))
 			{
-				if (!Check.isEmpty(userName))
+				if (!Check.isEmpty(userLastName))
 				{
 					addToken(userGreeting, sbUser);
 					if (!Check.isEmpty(userGreeting, true) && !isPartnerCompany)
@@ -836,8 +836,8 @@ public class AddressBuilder
 						sbUser.append("\n");
 					}
 					addToken(userTitle, sbUser);
-					addToken(userVorname, sbUser);
-					addToken(userName, sbUser);
+					addToken(userFirstName, sbUser);
+					addToken(userLastName, sbUser);
 				}
 			}
 
