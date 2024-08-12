@@ -1085,7 +1085,7 @@ public class AddressBuilderTest
 	public class BPartnerBL_CompanyNameSimilarWithContactName
 	{
 		@Test
-		public void test_buildBPartnerAddressStringBPartnerBlock_CompanyName_User_LastName_Only()
+		public void test_CompanyNameSimilarLastName()
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
@@ -1109,7 +1109,7 @@ public class AddressBuilderTest
 		}
 
 		@Test
-		public void test_buildBPartnerAddressStringBPartnerBlock_CompanyName_User_FirstName_Only()
+		public void test_CompanyNameSimilarFirstName()
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
@@ -1134,7 +1134,7 @@ public class AddressBuilderTest
 
 
 		@Test
-		public void test_buildBPartnerAddressStringBPartnerBlock_CompanyName_User_LastName_FirstName()
+		public void test_CompanyNameSimilarLastNameFirstName()
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
@@ -1159,7 +1159,7 @@ public class AddressBuilderTest
 
 
 		@Test
-		public void test_buildBPartnerAddressStringBPartnerBlock_CompanyName_User_LastName_FirstName_Greeting()
+		public void test_CompanyNameSimilarLastNameFirstNameGreeting()
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
@@ -1184,7 +1184,7 @@ public class AddressBuilderTest
 		}
 
 		@Test
-		public void test_buildBPartnerAddressStringBPartnerBlock_CompanyName_User_LastName_FirstName_noCON_Token()
+		public void test_CompanyNameSimilarLastNameFirstName_WithoutCON_Token()
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
@@ -1209,7 +1209,7 @@ public class AddressBuilderTest
 		}
 
 		@Test
-		public void test_buildBPartnerAddressStringBPartnerBlock_CompanyName_User_LastName_FirstName_Different_Order()
+		public void test_CompanyNameSimilarLastNameFirstNameDifferentOrder()
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
@@ -1234,7 +1234,7 @@ public class AddressBuilderTest
 		}
 
 		@Test
-		public void test_buildBPartnerAddressStringBPartnerBlock_CompanyName_User_LastName_FirstName_NotCompanyUser()
+		public void test_CompanyNameSimilarLastNameFirst_NoCompanyUser()
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
