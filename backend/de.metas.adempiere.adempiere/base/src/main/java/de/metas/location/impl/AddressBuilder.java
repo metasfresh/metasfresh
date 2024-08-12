@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -542,7 +543,7 @@ public class AddressBuilder
 		final boolean bpartnerHasGreeting = bPartner.getC_Greeting_ID() > 0;
 
 		//Use Partner name and greeting when rendering address only if there is greeting set
-		if ( (existsBPName || existsBPGReeting) && !bPartner.isCompany() && bpartnerHasGreeting)
+		if ((existsBPName || existsBPGReeting) && !bPartner.isCompany() && bpartnerHasGreeting)
 		{
 			if (existsBPName)
 			{
@@ -739,27 +740,23 @@ public class AddressBuilder
 		final boolean existsBPGreetingTag = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
 		final boolean bpartnerHasGreeting = bPartner.getC_Greeting_ID() > 0;
 
-		if ((existsBPNameTag || existsBPGreetingTag) && !bPartner.isCompany() && bpartnerHasGreeting)
-		{
-			return "";
-		}
-
 		final boolean isPartnerCompany = bPartner.isCompany();
-		final boolean existsContactTag = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.Contact.getName());
-
-		if (existsContactTag && isPartnerCompany && user != null
-				&& isCompanyNameSimilarToUserName(bPartner, user))
+		if ((existsBPNameTag || existsBPGreetingTag) && !isPartnerCompany && bpartnerHasGreeting)
 		{
 			return "";
 		}
 
-		final Language language = Language.optionalOfNullable(bPartner.getAD_Language())
-				.orElseGet(Language::getBaseLanguage);
-
-		String userGreeting = "";
 		if (user != null)
 		{
+			if (isPartnerCompany && isCompanyNameSimilarToUserName(bPartner, user))
+			{
+				return "";
+			}
+
+			final Language language = Language.optionalOfNullable(bPartner.getAD_Language()).orElseGet(Language::getBaseLanguage);
+
 			// Greeting
+			String userGreeting = "";
 			final GreetingId greetingId = GreetingId.ofRepoIdOrNull(user.getC_Greeting_ID());
 			if (greetingId != null)
 			{
@@ -833,6 +830,11 @@ public class AddressBuilder
 				}
 			}
 
+			if (isPartnerCompany && equalsIgnoringWhitespace(bPartner.getCompanyName(), sbUser.toString()))
+			{
+				return "";
+			}
+
 			return sbUser.toString();
 
 		}
@@ -841,21 +843,26 @@ public class AddressBuilder
 
 	}
 
-	private boolean isCompanyNameSimilarToUserName(@NonNull final org.compiere.model.I_C_BPartner bPartner, final I_AD_User user)
+	private static boolean isCompanyNameSimilarToUserName(@NonNull final org.compiere.model.I_C_BPartner bPartner, final I_AD_User user)
 	{
-		final String companyName = StringUtils.cleanWhitespace(bPartner.getCompanyName());
-
+		final String companyName = StringUtils.trimBlankToNull(bPartner.getCompanyName());
 		if (companyName == null)
 		{
 			return false;
 		}
 
-		final String lastName = StringUtils.cleanWhitespace(user.getLastname());
-		final String firstName = StringUtils.cleanWhitespace(user.getFirstname());
-		final String lfName = StringUtils.nullToEmpty(lastName).concat(StringUtils.nullToEmpty(firstName));
-		final String flName = StringUtils.nullToEmpty(firstName).concat(StringUtils.nullToEmpty(lastName));
+		final String lastName = StringUtils.nullToEmpty(user.getLastname());
+		final String firstName = StringUtils.nullToEmpty(user.getFirstname());
 
-		return companyName.equalsIgnoreCase(lfName) || companyName.equalsIgnoreCase(flName);
+		return equalsIgnoringWhitespace(companyName, lastName + firstName)
+				|| equalsIgnoringWhitespace(companyName, firstName + lastName);
+	}
+
+	private static boolean equalsIgnoringWhitespace(@Nullable final String s1, @Nullable final String s2)
+	{
+		final String s1Norm = StringUtils.nullToEmpty(StringUtils.cleanWhitespace(s1));
+		final String s2Norm = StringUtils.nullToEmpty(StringUtils.cleanWhitespace(s2));
+		return Objects.equals(s1Norm, s2Norm);
 	}
 
 	/**
