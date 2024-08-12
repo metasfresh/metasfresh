@@ -20,16 +20,24 @@
  * #L%
  */
 
-package de.metas.material.dispo.commons.candidate;
+package de.metas.cucumber.stepdefs.material.dispo;
 
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Optional;
 
 /**
  * Candidate model that consolidates a supply/demand candidate with the corresponding stock-candidate.
@@ -39,22 +47,12 @@ import java.math.BigDecimal;
 @Builder
 public class MaterialDispoDataItem
 {
-	@NonNull
-	CandidateId candidateId;
-
-	@NonNull
-	CandidateType type;
-
-	@Nullable
-	CandidateBusinessCase businessCase;
-
-	@NonNull
-	MaterialDescriptor materialDescriptor;
-
+	@NonNull CandidateId candidateId;
+	@NonNull CandidateType type;
+	@Nullable CandidateBusinessCase businessCase;
+	@NonNull MaterialDescriptor materialDescriptor;
 	BigDecimal atp;
-
 	BusinessCaseDetail businessCaseDetail;
-
 	boolean simulated;
 
 	public static MaterialDispoDataItem of(
@@ -71,4 +69,17 @@ public class MaterialDispoDataItem
 				.simulated(dataCandidate.isSimulated())
 				.build();
 	}
+
+	public <T extends BusinessCaseDetail> Optional<T> getBusinessCaseDetail(@NonNull final Class<T> type)
+	{
+		return type.isInstance(businessCaseDetail) ? Optional.of(type.cast(businessCaseDetail)) : Optional.empty();
+	}
+
+	public ProductId getProductId() {return ProductId.ofRepoId(materialDescriptor.getProductId());}
+
+	public AttributeSetInstanceId getAttributeSetInstanceId() {return AttributeSetInstanceId.ofRepoIdOrNone(materialDescriptor.getAttributeSetInstanceId());}
+
+	public Instant getDate() {return materialDescriptor.getDate();}
+
+	public BigDecimal getQuantity() {return materialDescriptor.getQuantity();}
 }

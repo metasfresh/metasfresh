@@ -203,7 +203,7 @@ public class CandidateServiceTests
 
 		final DDOrderCandidateData ddOrderCandidateData = distributionOrderEvent.getDdOrderCandidateData();
 		assertThat(ddOrderCandidateData).isNotNull();
-		assertThat(ddOrderCandidateData.getOrgId().getRepoId()).isEqualTo(30);
+		assertThat(ddOrderCandidateData.getClientAndOrgId()).isEqualTo(ClientAndOrgId.ofClientAndOrg(20, 30));
 		assertThat(ddOrderCandidateData.getProductPlanningId().getRepoId()).isEqualTo(220);
 		assertThat(ddOrderCandidateData.getTargetPlantId().getRepoId()).isEqualTo(230);
 		assertThat(ddOrderCandidateData.getShipperId().getRepoId()).isEqualTo(240);

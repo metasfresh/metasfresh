@@ -8,6 +8,7 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -141,6 +142,14 @@ public class CandidateId implements RepoIdAware
 	public static boolean isRegularNonNull(@Nullable final CandidateId candidateId)
 	{
 		return candidateId != null && candidateId.isRegular();
+	}
+
+	public void assertRegular()
+	{
+		if (!isRegular())
+		{
+			throw new AdempiereException("Expected " + this + " to be a regular ID");
+		}
 	}
 
 	public static boolean equals(@Nullable CandidateId id1, @Nullable CandidateId id2) {return Objects.equals(id1, id2);}

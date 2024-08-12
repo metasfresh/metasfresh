@@ -48,6 +48,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -97,6 +98,13 @@ public class CandidateRepositoryRetrieval
 	{
 		this.dimensionService = dimensionService;
 		this.stockChangeDetailRepo = stockChangeDetailRepo;
+	}
+
+	public Candidate retrieveById(@NonNull final CandidateId candidateId)
+	{
+		candidateId.assertRegular();
+		return retrieveLatestMatch(CandidatesQuery.fromId(candidateId))
+				.orElseThrow(() -> new AdempiereException("No candidate found for " + candidateId));
 	}
 
 	/**
@@ -378,7 +386,7 @@ public class CandidateRepositoryRetrieval
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addNotEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
-				.addNotEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, productId);
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, productId);
 
 		return retrieveForQueryBuilder(queryBuilderWithoutOrdering);
 	}

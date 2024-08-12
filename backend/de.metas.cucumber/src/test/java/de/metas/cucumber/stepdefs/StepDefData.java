@@ -42,6 +42,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -68,6 +69,16 @@ public abstract class StepDefData<T>
 				.omitNullValues()
 				.addValue(clazz != null ? clazz.getSimpleName() : null)
 				.toString();
+	}
+
+	public boolean isPresent(@NonNull final StepDefDataIdentifier identifier)
+	{
+		if (identifier.isNullPlaceholder())
+		{
+			return false;
+		}
+		
+		return records.containsKey(identifier);
 	}
 
 	public void put(
@@ -124,8 +135,7 @@ public abstract class StepDefData<T>
 			@NonNull final StepDefDataIdentifier identifier,
 			@NonNull final T record)
 	{
-		final RecordDataItem<T> oldRecord = records.get(identifier);
-
+		final RecordDataItem<T> oldRecord = getRecordDataItemOrNull(identifier);
 		if (oldRecord == null)
 		{
 			put(identifier, record);
@@ -151,8 +161,7 @@ public abstract class StepDefData<T>
 			@NonNull final StepDefDataIdentifier identifier,
 			@NonNull final T record)
 	{
-		final RecordDataItem<T> oldRecord = records.get(identifier);
-
+		final RecordDataItem<T> oldRecord = getRecordDataItemOrNull(identifier);
 		if (oldRecord != null)
 		{
 			return;
@@ -195,12 +204,23 @@ public abstract class StepDefData<T>
 	@NonNull
 	public RecordDataItem<T> getRecordDataItem(@NonNull final StepDefDataIdentifier identifier)
 	{
-		final RecordDataItem<T> recordDataItem = records.get(identifier);
+		final RecordDataItem<T> recordDataItem = getRecordDataItemOrNull(identifier);
 		assertThat(recordDataItem)
 				.as(() -> "Missing item for identifier `" + identifier + "` in " + this + ". Available identifiers are: " + records.keySet())
 				.isNotNull();
 
 		return recordDataItem;
+	}
+
+	@Nullable
+	private RecordDataItem<T> getRecordDataItemOrNull(final @NonNull StepDefDataIdentifier identifier)
+	{
+		if (identifier.isNullPlaceholder())
+		{
+			throw new AdempiereException("null identifier is shall not be used when getting from " + this);
+		}
+
+		return records.get(identifier);
 	}
 
 	@NonNull
@@ -212,7 +232,7 @@ public abstract class StepDefData<T>
 	@NonNull
 	public Optional<T> getOptional(@NonNull final StepDefDataIdentifier identifier)
 	{
-		return Optional.ofNullable(records.get(identifier)).map(RecordDataItem::getRecord);
+		return Optional.ofNullable(getRecordDataItemOrNull(identifier)).map(RecordDataItem::getRecord);
 	}
 
 	public ImmutableSet<StepDefDataIdentifier> getIdentifiers()
@@ -229,6 +249,11 @@ public abstract class StepDefData<T>
 	public Stream<T> streamRecords()
 	{
 		return records.values().stream().map(RecordDataItem::getRecord);
+	}
+
+	public void forEach(@NonNull final BiConsumer<StepDefDataIdentifier, T> consumer)
+	{
+		records.forEach((identifier, item) -> consumer.accept(identifier, item.getRecord()));
 	}
 
 	/**

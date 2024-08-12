@@ -11,6 +11,7 @@ import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateCreatedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateUpdatedEvent;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
@@ -42,6 +43,7 @@ import de.metas.material.event.stockcandidate.MaterialCandidateChangedEvent;
 import de.metas.material.event.stockcandidate.StockCandidateChangedEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
+import de.metas.material.event.supplyrequired.NoSupplyAdviceEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.tracking.AllEventsProcessedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
@@ -72,6 +74,7 @@ import javax.annotation.Nullable;
 
 		@JsonSubTypes.Type(name = DDOrderCandidateAdvisedEvent.TYPE, value = DDOrderCandidateAdvisedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderCandidateCreatedEvent.TYPE, value = DDOrderCandidateCreatedEvent.class),
+		@JsonSubTypes.Type(name = DDOrderCandidateUpdatedEvent.TYPE, value = DDOrderCandidateUpdatedEvent.class),
 		// @JsonSubTypes.Type(name = DDOrderCandidateDocStatusChangedEvent.TYPE, value = DDOrderCandidateDocStatusChangedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderCandidateRequestedEvent.TYPE, value = DDOrderCandidateRequestedEvent.class),
 		// @JsonSubTypes.Type(name = DDOrderCandidateDeletedEvent.TYPE, value = DDOrderCandidateDeletedEvent.class),
@@ -114,6 +117,7 @@ import javax.annotation.Nullable;
 		@JsonSubTypes.Type(name = StockEstimateDeletedEvent.TYPE, value = StockEstimateDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = SupplyRequiredEvent.TYPE, value = SupplyRequiredEvent.class),
+		@JsonSubTypes.Type(name = NoSupplyAdviceEvent.TYPE, value = NoSupplyAdviceEvent.class),
 
 		@JsonSubTypes.Type(name = TransactionCreatedEvent.TYPE, value = TransactionCreatedEvent.class),
 		@JsonSubTypes.Type(name = TransactionDeletedEvent.TYPE, value = TransactionDeletedEvent.class),

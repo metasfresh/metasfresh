@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -24,13 +23,17 @@ public class DDOrderCandidateCreatedEvent extends AbstractDDOrderCandidateEvent
 	@Builder
 	public DDOrderCandidateCreatedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("ddOrder") @NonNull final DDOrderCandidateData ddOrderCandidateData,
-			@JsonProperty("supplyRequiredDescriptor") @Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
+			@JsonProperty("ddOrderCandidate") @NonNull final DDOrderCandidateData ddOrderCandidate)
 	{
-		super(
-				eventDescriptor,
-				ddOrderCandidateData,
-				supplyRequiredDescriptor);
+		super(eventDescriptor, ddOrderCandidate, null);
+	}
+
+	public static DDOrderCandidateCreatedEvent of(@NonNull final DDOrderCandidateData data)
+	{
+		return builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(data.getClientAndOrgId()))
+				.ddOrderCandidate(data)
+				.build();
 	}
 
 	public static Optional<DDOrderCandidateCreatedEvent> castIfApplies(@Nullable final AbstractDDOrderCandidateEvent event)

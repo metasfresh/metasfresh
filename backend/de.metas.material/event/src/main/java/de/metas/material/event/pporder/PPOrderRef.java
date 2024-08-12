@@ -84,6 +84,18 @@ public class PPOrderRef
 		return ofPPOrderBOMLineId(ppOrderAndBOMLineId.getPpOrderId(), ppOrderAndBOMLineId.getLineId());
 	}
 
+	@Nullable
+	public static PPOrderRef ofPPOrderAndLineIdOrNull(final int ppOrderRepoId, final int ppOrderBOMLineRepoId)
+	{
+		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(ppOrderRepoId);
+		if (ppOrderId == null)
+		{
+			return null;
+		}
+
+		return builder().ppOrderId(ppOrderId).ppOrderBOMLineId(PPOrderBOMLineId.ofRepoIdOrNull(ppOrderBOMLineRepoId)).build();
+	}
+
 	public boolean isFinishedGoods()
 	{
 		return !isBOMLine();
