@@ -141,6 +141,10 @@ public class AddressBuilderTest
 		bpartner.setName2(name2);
 		bpartner.setAD_Org_ID(orgId.getRepoId());
 		bpartner.setIsCompany(isCompany);
+		if (bpartner.isCompany())
+		{
+			bpartner.setCompanyName(name);
+		}
 		bpartner.setAD_Language(AD_Language);
 		bpartner.setC_Greeting_ID(greetingId != null ? greetingId.getRepoId() : -1);
 		InterfaceWrapperHelper.save(bpartner);
@@ -990,6 +994,33 @@ public class AddressBuilderTest
 
 			assertEquals(
 					"LOCAL:   \nFrau\nsomeTitle UserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
+					actual);
+		}
+
+		/**
+		 * check if the token CON can be used in case on non company users
+		 */
+		@Test
+		public void test_buildBPartnerAddressStringBPartnerBlock_CompanyNameSimilarWithContactName()
+		{
+
+			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
+					prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ @P@ @C@ @CO@"));
+
+			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
+
+			final I_C_BPartner bPartner = BPartnerBuilder()
+					.name("Name")
+					.name2("Name2")
+					.isCompany(true)
+					.build();
+
+			final org.compiere.model.I_AD_User user = prepareUser("Name", " ", "someTitle", null);
+
+			final String actual = bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user);
+
+			assertEquals(
+					"LOCAL: \nName\nName2\naddr2\naddr1\n121212 City1\nGermany",
 					actual);
 		}
 
