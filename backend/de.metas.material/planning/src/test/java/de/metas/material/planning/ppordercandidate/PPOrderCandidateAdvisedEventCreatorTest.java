@@ -223,7 +223,10 @@ class PPOrderCandidateAdvisedEventCreatorTest
 
 			final List<PPOrderCandidateAdvisedEvent> events = ppOrderCandidateAdvisedCreator.createAdvisedEvents(supplyRequiredDescriptor, context);
 			assertThat(events).hasSize(1);
-			assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
+			assertThat(events.get(0).getSupplyRequiredDescriptor()).usingRecursiveComparison()
+					.isEqualTo(supplyRequiredDescriptor.toBuilder().isLotForLot("N").build());
+			assertThat(events.get(0).getSupplyRequiredDescriptor())
+					.isEqualTo(supplyRequiredDescriptor.toBuilder().isLotForLot("N").build());
 		}
 	}
 }

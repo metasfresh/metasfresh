@@ -227,7 +227,7 @@ public class C_Order_StepDef
 
 					final I_C_Order order = newInstance(I_C_Order.class);
 					order.setC_BPartner_ID(bpartnerId.getRepoId());
-					order.setIsSOTrx(tableRow.getAsBoolean(I_C_Order.COLUMNNAME_IsSOTrx));
+					tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsSOTrx).ifPresent(order::setIsSOTrx);
 					order.setDateOrdered(tableRow.getAsLocalDateTimestamp(I_C_Order.COLUMNNAME_DateOrdered));
 					order.setDropShip_BPartner_ID(dropShipPartnerId);
 					order.setIsDropShip(isDropShip);
