@@ -74,10 +74,9 @@ import java.util.function.Function;
 public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventHandler
 		implements MaterialEventHandler<PPOrderCandidateAdvisedEvent>
 {
-	private final PostMaterialEventService materialEventService;
-	private final ProductPlanningService productPlanningService;
-
-	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull private final PostMaterialEventService materialEventService;
+	@NonNull private final ProductPlanningService productPlanningService;
 
 	private final SupplyCandidateHandler supplyCandidateHandler;
 
@@ -171,7 +170,6 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 	private MaterialDispoGroupId handlePPOrderCandidateAdvisedEvent(@NonNull final PPOrderCandidateAdvisedEvent ppOrderCandidateAdvisedEvent)
 	{
 		final Candidate headerCandidate = createHeaderCandidate(ppOrderCandidateAdvisedEvent);
-
 		return headerCandidate.getGroupId();
 	}
 
@@ -179,7 +177,6 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 	private Candidate createHeaderCandidate(@NonNull final PPOrderCandidateAdvisedEvent event)
 	{
 		final CandidatesQuery preExistingSupplyQuery = createPreExistingSupplyCandidateQuery(event);
-
 		return createHeaderCandidate(event, preExistingSupplyQuery);
 	}
 
@@ -358,7 +355,7 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private boolean willProductionBeReadyInTimeForDemand(
+	private static boolean willProductionBeReadyInTimeForDemand(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final PPOrderData ppOrderData)
 	{
@@ -417,7 +414,7 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 	}
 
 	@NonNull
-	private BigDecimal getQtyRequiredConsideringFutureStock(
+	private static BigDecimal getQtyRequiredConsideringFutureStock(
 			@NonNull final Candidate stockCandidate,
 			@NonNull final BigDecimal initialQtyRequired)
 	{

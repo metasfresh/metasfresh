@@ -1,6 +1,6 @@
 package de.metas.material.dispo.commons.repository;
 
-import de.metas.document.dimension.DimensionFactory;
+import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.ForecastLineDimensionFactory;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
@@ -25,6 +25,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.ddorder.DDOrderRef;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
@@ -43,7 +44,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
@@ -88,25 +88,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(AdempiereTestWatcher.class)
 public class CandidateRepositoryWriteServiceTests
 {
-	private CandidateRepositoryWriteService candidateRepositoryWriteService;
-
 	private RepositoryTestHelper repositoryTestHelper;
+	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
-	private DimensionService dimensionService;
-	private StockChangeDetailRepo stockChangeDetailRepo;
+	/**
+	 * Service under test
+	 */
+	private CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionFactories.add(new ForecastLineDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(
+				new MDCandidateDimensionFactory(),
+				new ForecastLineDimensionFactory()
+		));
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
-		stockChangeDetailRepo = new StockChangeDetailRepo();
+		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);
@@ -220,8 +221,6 @@ public class CandidateRepositoryWriteServiceTests
 	@Test
 	public void addOrReplace_update()
 	{
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-
 		// guard
 		final CandidatesQuery queryForStockUntilDate = repositoryTestHelper.mkQueryForStockUntilDate(NOW);
 		assertThat(candidateRepositoryRetrieval.retrieveLatestMatchOrNull(queryForStockUntilDate))
@@ -366,8 +365,11 @@ public class CandidateRepositoryWriteServiceTests
 						.productPlanningId(ProductPlanningId.ofRepoId(80))
 						.plantId(ResourceId.ofRepoId(85))
 						.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(90, 91))
-						.ddOrderId(100)
-						.ddOrderLineId(110)
+						.ddOrderRef(DDOrderRef.builder()
+								.ddOrderCandidateId(99)
+								.ddOrderId(100)
+								.ddOrderLineId(110)
+								.build())
 						.shipperId(ShipperId.ofRepoId(120))
 						.ddOrderDocStatus(DocStatus.Completed)
 						.qty(TEN)
@@ -390,6 +392,7 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(distributionDetailRecord.getPP_Product_Planning_ID()).isEqualTo(80);
 		assertThat(distributionDetailRecord.getPP_Plant_ID()).isEqualTo(85);
 		assertThat(distributionDetailRecord.getDD_NetworkDistributionLine_ID()).isEqualTo(91);
+		assertThat(distributionDetailRecord.getDD_Order_Candidate_ID()).isEqualTo(99);
 		assertThat(distributionDetailRecord.getDD_Order_ID()).isEqualTo(100);
 		assertThat(distributionDetailRecord.getDD_OrderLine_ID()).isEqualTo(110);
 		assertThat(distributionDetailRecord.getM_Shipper_ID()).isEqualTo(120);

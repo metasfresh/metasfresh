@@ -1,13 +1,15 @@
 package de.metas.distribution.ddordercandidate;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.order.OrderLineId;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantitys;
@@ -18,10 +20,10 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order_Candidate;
@@ -29,8 +31,11 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -47,6 +52,11 @@ public class DDOrderCandidateRepository
 		return fromRecord(record);
 	}
 
+	public Collection<DDOrderCandidate> getByIds(@NonNull final Set<DDOrderCandidateId> ids)
+	{
+		return InterfaceWrapperHelper.loadByRepoIdAwares(ids, I_DD_Order_Candidate.class, DDOrderCandidateRepository::fromRecord);
+	}
+
 	public void save(@NonNull final DDOrderCandidate candidate)
 	{
 		final I_DD_Order_Candidate record = candidate.getId() != null
@@ -61,8 +71,9 @@ public class DDOrderCandidateRepository
 	private static void updateRecord(final I_DD_Order_Candidate record, DDOrderCandidate from)
 	{
 		record.setAD_Org_ID(from.getOrgId().getRepoId());
-		record.setDateOrdered(TimeUtil.asTimestamp(from.getDateOrdered()));
-		record.setDatePromised(TimeUtil.asTimestamp(from.getDatePromised()));
+		record.setDateOrdered(Timestamp.from(from.getDateOrdered()));
+		record.setSupplyDate(Timestamp.from(from.getSupplyDate()));
+		record.setDemandDate(Timestamp.from(from.getDemandDate()));
 
 		record.setM_Warehouse_From_ID(from.getSourceWarehouseId().getRepoId());
 		record.setM_WarehouseTo_ID(from.getTargetWarehouseId().getRepoId());
@@ -76,6 +87,8 @@ public class DDOrderCandidateRepository
 		record.setQtyOrdered(from.getQty().toBigDecimal());
 		record.setQtyEntered(from.getQty().toBigDecimal());
 		record.setQtyEnteredTU(BigDecimal.valueOf(from.getQtyTUs()));
+		record.setQtyProcessed(from.getQtyProcessed().toBigDecimal());
+		record.setQtyToProcess(from.getQtyToProcess().toBigDecimal());
 
 		record.setM_AttributeSetInstance_ID(from.getAttributeSetInstanceId().getRepoId());
 
@@ -89,11 +102,13 @@ public class DDOrderCandidateRepository
 		// Flags
 		record.setIsActive(true);
 		record.setIsSimulated(from.isSimulated());
+		record.setProcessed(from.isProcessed());
 
 		//
 		// Forward document references
+		record.setC_BPartner_ID(BPartnerId.toRepoId(from.getCustomerId()));
 		record.setC_OrderLineSO_ID(OrderLineId.toRepoId(from.getSalesOrderLineId()));
-		updateRecord(record, from.getPpOrderRef());
+		updateRecord(record, from.getForwardPPOrderRef());
 
 		//
 		// Planning master data references
@@ -116,17 +131,21 @@ public class DDOrderCandidateRepository
 
 	public static DDOrderCandidate fromRecord(final I_DD_Order_Candidate record)
 	{
+		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
+
 		return DDOrderCandidate.builder()
 				.id(DDOrderCandidateId.ofRepoId(record.getDD_Order_Candidate_ID()))
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				//
 				.dateOrdered(record.getDateOrdered().toInstant())
-				.datePromised(record.getDatePromised().toInstant())
+				.supplyDate(record.getSupplyDate().toInstant())
+				.demandDate(record.getDemandDate().toInstant())
 				//
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.hupiItemProductId(HUPIItemProductId.ofRepoIdOrNone(record.getM_HU_PI_Item_Product_ID()))
-				.qty(Quantitys.of(record.getQtyEntered(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.qty(Quantitys.of(record.getQtyEntered(), uomId))
 				.qtyTUs(record.getQtyEnteredTU().intValueExact())
+				.qtyProcessed(Quantitys.of(record.getQtyProcessed(), uomId))
 				//
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				//
@@ -138,7 +157,9 @@ public class DDOrderCandidateRepository
 				.isSimulated(record.isSimulated())
 				// isAllowPush
 				// isKeepTargetPlant
+				.processed(record.isProcessed())
 				//
+				.customerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()))
 				//
 				.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIdsOrNull(record.getDD_NetworkDistribution_ID(), record.getDD_NetworkDistributionLine_ID()))
@@ -146,12 +167,13 @@ public class DDOrderCandidateRepository
 				//
 				.traceId(DYNATTR_TraceId.getValue(record))
 				.materialDispoGroupId(DYNATTR_GroupId.getValue(record))
-				.ppOrderRef(extractPPOrderRef(record))
+				.forwardPPOrderRef(extractForwardPPOrderRef(record))
 				//
 				.build();
 	}
 
-	private static PPOrderRef extractPPOrderRef(final I_DD_Order_Candidate record)
+	@Nullable
+	private static PPOrderRef extractForwardPPOrderRef(final I_DD_Order_Candidate record)
 	{
 		final int ppOrderCandidateId = record.getForward_PP_Order_Candidate_ID();
 		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(record.getForward_PP_Order_ID());
@@ -227,6 +249,10 @@ public class DDOrderCandidateRepository
 		{
 			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_Forward_PP_Order_Candidate_ID, query.getPpOrderCandidateId());
 		}
+		if (query.getDdOrderCandidateId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_DD_Order_Candidate_ID, query.getDdOrderCandidateId());
+		}
 
 		return queryBuilder;
 	}
@@ -246,5 +272,30 @@ public class DDOrderCandidateRepository
 			updateRecord(record, changedCandidate);
 			InterfaceWrapperHelper.save(record);
 		}
+	}
+
+	public PInstanceId createSelection(@NonNull final Collection<DDOrderCandidateId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			throw new AdempiereException("no IDs provided");
+		}
+
+		return queryBL.createQueryBuilder(I_DD_Order_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_DD_Order_Candidate.COLUMNNAME_DD_Order_Candidate_ID, ids)
+				.create()
+				.createSelection();
+	}
+
+	public List<DDOrderCandidate> getBySelectionId(@NonNull final PInstanceId selectionId)
+	{
+		return queryBL.createQueryBuilder(I_DD_Order_Candidate.class)
+				.orderBy(I_DD_Order_Candidate.COLUMNNAME_DD_Order_Candidate_ID) // just to have a predictable order
+				.setOnlySelection(selectionId)
+				.create()
+				.stream()
+				.map(DDOrderCandidateRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

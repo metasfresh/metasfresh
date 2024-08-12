@@ -22,87 +22,70 @@
 
 package de.metas.cucumber.stepdefs.resource;
 
-import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.material.planning.IResourceDAO;
+import de.metas.product.ResourceId;
 import de.metas.resource.ManufacturingResourceType;
 import de.metas.resource.ResourceTypeId;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
-import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_S_Resource;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_S_Resource.COLUMNNAME_S_Resource_ID;
 
+@RequiredArgsConstructor
 public class S_Resource_StepDef
 {
-	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-
-	private final S_Resource_StepDefData resourceTable;
-
-	public S_Resource_StepDef(@NonNull final S_Resource_StepDefData resourceTable)
-	{
-		this.resourceTable = resourceTable;
-	}
+	@NonNull private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+	@NonNull private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
+	@NonNull private final S_Resource_StepDefData resourceTable;
 
 	@And("load S_Resource:")
 	public void load_S_Resource(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final String resourceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_S_Resource_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final int resourceId = DataTableUtil.extractIntForColumnName(tableRow, COLUMNNAME_S_Resource_ID);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName("S_Resource_ID.Identifier")
+				.forEach(row -> {
+					final ResourceId resourceId = ResourceId.ofRepoId(row.getAsInt(COLUMNNAME_S_Resource_ID));
+					final I_S_Resource resource = resourceDAO.getById(resourceId);
+					assertThat(resource).isNotNull();
 
-			final I_S_Resource testResource = InterfaceWrapperHelper.load(resourceId, I_S_Resource.class);
-			assertThat(testResource).isNotNull();
-
-			resourceTable.put(resourceIdentifier, testResource);
-		}
+					resourceTable.put(row.getAsIdentifier(), resource);
+				});
 	}
 
 	@And("update S_Resource:")
 	public void update_S_Resource(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final BigDecimal capacityPerProductionCycle = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_S_Resource.COLUMNNAME_CapacityPerProductionCycle);
-			final String capacityPerProductionCycleUOMCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_S_Resource.COLUMNNAME_CapacityPerProductionCycle + "UOMCode");
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_S_Resource_ID)
+				.forEach(row -> {
+					final StepDefDataIdentifier identifier = row.getAsIdentifier();
+					final I_S_Resource resource = resourceTable.get(identifier);
+					assertThat(resource).isNotNull();
 
-			final String resourceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_Resource_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_S_Resource resource = resourceTable.get(resourceIdentifier);
-			assertThat(resource).isNotNull();
+					row.getAsOptionalQuantity(I_S_Resource.COLUMNNAME_CapacityPerProductionCycle, I_S_Resource.COLUMNNAME_CapacityPerProductionCycle + "UOMCode", uomDao::getByX12DE355)
+							.ifPresent(capacityPerProductionCycle -> {
+								resource.setCapacityPerProductionCycle(capacityPerProductionCycle.toBigDecimal());
+								resource.setCapacityPerProductionCycle_UOM_ID(capacityPerProductionCycle.getUomId().getRepoId());
+							});
 
-			if (capacityPerProductionCycle != null)
-			{
-				resource.setCapacityPerProductionCycle(capacityPerProductionCycle);
-			}
+					saveRecord(resource);
 
-			if (Check.isNotBlank(capacityPerProductionCycleUOMCode))
-			{
-				final UomId capacityPerProductionCycleUOMId = uomDao.getUomIdByX12DE355(X12DE355.ofCode(capacityPerProductionCycleUOMCode));
-
-				resource.setCapacityPerProductionCycle_UOM_ID(capacityPerProductionCycleUOMId.getRepoId());
-			}
-
-			saveRecord(resource);
-
-			resourceTable.putOrReplace(resourceIdentifier, resource);
-		}
+					resourceTable.putOrReplace(identifier, resource);
+				});
 	}
 
 	@And("create S_Resource:")
@@ -132,7 +115,7 @@ public class S_Resource_StepDef
 		row.getAsOptionalQuantity(
 						I_S_Resource.COLUMNNAME_CapacityPerProductionCycle,
 						I_S_Resource.COLUMNNAME_CapacityPerProductionCycle_UOM_ID,
-						uomString -> uomDao.getByX12DE355(X12DE355.ofCode(uomString))
+						uomDao::getByX12DE355
 				)
 				.ifPresent(capacityPerProductionCycle -> {
 					record.setCapacityPerProductionCycle(capacityPerProductionCycle.toBigDecimal());

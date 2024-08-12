@@ -1,11 +1,13 @@
 package de.metas.purchasecandidate.material.event;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.event.SupplyRequiredAdvisor;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -13,9 +15,11 @@ import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.util.Loggables;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
@@ -43,27 +47,20 @@ import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
  * #L%
  */
 
-@Service
-public class PurchaseCandidateAdvisedEventCreator
+@Component
+@RequiredArgsConstructor
+public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvisor
 {
-	private final PurchaseOrderDemandMatcher purchaseOrderDemandMatcher;
-	private final VendorProductInfoService vendorProductInfoService;
+	@NonNull private final PurchaseOrderDemandMatcher purchaseOrderDemandMatcher;
+	@NonNull private final VendorProductInfoService vendorProductInfoService;
 
-	public PurchaseCandidateAdvisedEventCreator(
-			@NonNull final PurchaseOrderDemandMatcher purchaseOrderDemandMatcher,
-			@NonNull final VendorProductInfoService vendorProductInfoService)
-	{
-		this.vendorProductInfoService = vendorProductInfoService;
-		this.purchaseOrderDemandMatcher = purchaseOrderDemandMatcher;
-	}
-
-	public Optional<PurchaseCandidateAdvisedEvent> createPurchaseAdvisedEvent(
+	public List<PurchaseCandidateAdvisedEvent> createAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final MaterialPlanningContext context)
 	{
 		if (!purchaseOrderDemandMatcher.matches(context))
 		{
-			return Optional.empty();
+			return ImmutableList.of();
 		}
 
 		// temporary workaround to avoid creating 2 PurchaseCandidates, one for each PPOrderCandidate and PPOrder
@@ -72,7 +69,7 @@ public class PurchaseCandidateAdvisedEventCreator
 		if (!productPlanning.isLotForLot() && requiredQty.signum() <= 0)
 		{
 			Loggables.addLog("Didn't create PurchaseCandidateAdvisedEvent because LotForLot=false and requiredQty={}", requiredQty);
-			return Optional.empty();
+			return ImmutableList.of();
 		}
 
 		final ProductPlanning ppOrderProductPlanning = context.getPpOrderProductPlanning();
@@ -82,7 +79,7 @@ public class PurchaseCandidateAdvisedEventCreator
 				&& ppOrderProductPlanning.isCreatePlan())
 		{
 			Loggables.addLog("Didn't create PurchaseCandidateAdvisedEvent because it should be created by PPOrder");
-			return Optional.empty();
+			return ImmutableList.of();
 		}
 		if (!productPlanning.isLotForLot()
 				&& supplyRequiredDescriptor.getPpOrderId() != null
@@ -90,7 +87,7 @@ public class PurchaseCandidateAdvisedEventCreator
 				&& !ppOrderProductPlanning.isCreatePlan())
 		{
 			Loggables.addLog("Didn't create PurchaseCandidateAdvisedEvent because it should already be created by PPOrderCandidate");
-			return Optional.empty();
+			return ImmutableList.of();
 		}
 
 		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getProductId());
@@ -100,7 +97,7 @@ public class PurchaseCandidateAdvisedEventCreator
 		if (defaultVendorProductInfo.isEmpty())
 		{
 			Loggables.addLog("Found no VendorProductInfo for productId={} and orgId={}", productId.getRepoId(), orgId.getRepoId());
-			return Optional.empty();
+			return ImmutableList.of();
 		}
 
 		final PurchaseCandidateAdvisedEvent.PurchaseCandidateAdvisedEventBuilder eventBuilder = PurchaseCandidateAdvisedEvent.builder()
@@ -126,7 +123,7 @@ public class PurchaseCandidateAdvisedEventCreator
 			else
 			{
 				Loggables.addLog("Didn't create PurchaseCandidateAdvisedEvent because LotForLot=true and updated=true, but deltaQty={}", supplyRequiredDescriptor.getDeltaQuantity());
-				return Optional.empty();
+				return ImmutableList.of();
 			}
 			final MaterialDescriptor updatedMaterialDescriptor = supplyRequiredDescriptor.getMaterialDescriptor().withQuantity(usedQty);
 			eventBuilder.supplyRequiredDescriptor(supplyRequiredDescriptor.toBuilder()
@@ -148,6 +145,6 @@ public class PurchaseCandidateAdvisedEventCreator
 		}
 
 		Loggables.addLog("Created PurchaseCandidateAdvisedEvent");
-		return Optional.of(event);
+		return ImmutableList.of(event);
 	}
 }

@@ -1,14 +1,13 @@
 package de.metas.material.event.supplyrequired;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 /*
  * #%L
@@ -33,19 +32,17 @@ import lombok.Value;
  */
 
 @Value
+@Builder
+@Jacksonized
 public class SupplyRequiredEvent implements MaterialEvent
 {
 	public static final String TYPE = "SupplyRequiredEvent";
 
-	@NonNull
-	SupplyRequiredDescriptor supplyRequiredDescriptor;
+	@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor;
 
-	@JsonCreator
-	@Builder
-	private SupplyRequiredEvent(
-			@JsonProperty("supplyRequiredDescriptor") @NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	public static SupplyRequiredEvent of(@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
-		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
+		return SupplyRequiredEvent.builder().supplyRequiredDescriptor(supplyRequiredDescriptor).build();
 	}
 
 	@JsonIgnore

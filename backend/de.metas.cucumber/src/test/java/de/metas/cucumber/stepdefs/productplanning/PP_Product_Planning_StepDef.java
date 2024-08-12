@@ -44,7 +44,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -84,8 +83,6 @@ public class PP_Product_Planning_StepDef
 	@NonNull private final S_Resource_StepDefData resourceTable;
 
 	private static final ResourceId DEFAULT_PLANT_ID = ResourceId.ofRepoId(540006);
-	
-	
 
 	@Given("metasfresh contains PP_Product_Plannings")
 	public void createOrUpdate(@NonNull final DataTable dataTable)
@@ -171,7 +168,7 @@ public class PP_Product_Planning_StepDef
 		row.getAsOptionalQuantity(
 						I_PP_Product_Planning.COLUMNNAME_MaxManufacturedQtyPerOrderDispo,
 						I_PP_Product_Planning.COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID,
-						uomString -> uomDAO.getByX12DE355(X12DE355.ofCode(uomString))
+						uomDAO::getByX12DE355
 				)
 				.ifPresent(builder::maxManufacturedQtyPerOrderDispo);
 

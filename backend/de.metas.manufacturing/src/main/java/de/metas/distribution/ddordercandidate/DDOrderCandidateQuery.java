@@ -22,4 +22,5 @@ public class DDOrderCandidateQuery
 	@Nullable Boolean isSimulated;
 	@Nullable PPOrderId excludePPOrderId;
 	@Nullable PPOrderCandidateId ppOrderCandidateId;
+	@Nullable DDOrderCandidateId ddOrderCandidateId;
 }

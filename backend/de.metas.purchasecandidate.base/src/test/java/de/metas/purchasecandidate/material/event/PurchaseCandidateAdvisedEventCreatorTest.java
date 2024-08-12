@@ -33,6 +33,7 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -98,7 +99,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		bPartnerVendorRecord.setPO_DiscountSchema(discountSchemaRecord); // note that right now we don't need to have an actual price
 		save(bPartnerVendorRecord);
 		this.bpartnerVendorId = BPartnerId.ofRepoId(bPartnerVendorRecord.getC_BPartner_ID());
-		
+
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setM_Product_Category_ID(60);
 		product.setValue("Value");
@@ -150,7 +151,13 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 					.build();
 
 			// invoke the method under test
-			final PurchaseCandidateAdvisedEvent event = purchaseCandidateAdvisedEventCreator.createPurchaseAdvisedEvent(supplyRequiredDescriptor, context).orElse(null);
+			final List<PurchaseCandidateAdvisedEvent> purchaseAdvisedEvents = purchaseCandidateAdvisedEventCreator
+					.createAdvisedEvents(
+							supplyRequiredDescriptor,
+							context);
+
+			assertThat(purchaseAdvisedEvents).hasSize(1);
+			final PurchaseCandidateAdvisedEvent event = purchaseAdvisedEvents.get(0);
 
 			assertThat(event).isNotNull();
 			assertThat(event.getProductPlanningId()).isEqualTo(productPlanning.getIdNotNull().getRepoId());
@@ -173,7 +180,9 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 					.build();
 
 			// invoke the method under test
-			final PurchaseCandidateAdvisedEvent event = purchaseCandidateAdvisedEventCreator.createPurchaseAdvisedEvent(supplyRequiredDescriptor, context).orElse(null);
+			final List<PurchaseCandidateAdvisedEvent> events = purchaseCandidateAdvisedEventCreator.createAdvisedEvents(supplyRequiredDescriptor, context);
+			assertThat(events).hasSize(1);
+			final PurchaseCandidateAdvisedEvent event = events.get(0);
 
 			assertThat(event).isNotNull();
 			assertThat(event.getProductPlanningId()).isEqualTo(productPlanning.getIdNotNull().getRepoId());

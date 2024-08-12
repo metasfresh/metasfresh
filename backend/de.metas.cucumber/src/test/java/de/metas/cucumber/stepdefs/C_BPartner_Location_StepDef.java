@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -105,13 +106,12 @@ public class C_BPartner_Location_StepDef
 
 	private void createC_BPartner_Location(@NonNull final DataTableRow row)
 	{
-		final String bPartnerIdentifier = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).getAsString();
-		final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+		final BPartnerId bpartnerId = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).lookupIdIn(bPartnerTable);
 		final String gln = row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_GLN).orElse(null);
 
 		final I_C_BPartner_Location bPartnerLocationRecord = CoalesceUtil.coalesceSuppliers(
 				() -> queryBL.createQueryBuilder(I_C_BPartner_Location.class)
-						.addEqualsFilter(COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
+						.addEqualsFilter(COLUMNNAME_C_BPartner_ID, bpartnerId)
 						.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_GLN, gln)
 						.create()
 						.firstOnlyOrNull(I_C_BPartner_Location.class),
@@ -119,7 +119,7 @@ public class C_BPartner_Location_StepDef
 
 		assertThat(bPartnerLocationRecord).isNotNull();
 
-		bPartnerLocationRecord.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+		bPartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bPartnerLocationRecord.setGLN(gln);
 
 		final boolean isShipToDefault = row.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault).orElse(false);
@@ -214,7 +214,7 @@ public class C_BPartner_Location_StepDef
 
 		bPartnerLocationTable.put(bpartnerLocationIdentifier, bpartnerLocation);
 	}
-	
+
 	private void updateCBPartnerLocation(@NonNull final Map<String, String> tableRow)
 	{
 		final String bPartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);

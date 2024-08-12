@@ -36,7 +36,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -244,10 +243,10 @@ public class RequestMaterialOrderService
 		final DistributionDetail supplyDistributionDetail = DistributionDetail.cast(supplyCandidate.getBusinessCaseDetail());
 
 		return DDOrderCandidateData.builder()
+				.clientAndOrgId(supplyCandidate.getClientAndOrgId())
 				.productPlanningId(supplyDistributionDetail.getProductPlanningId())
 				.distributionNetworkAndLineId(supplyDistributionDetail.getDistributionNetworkAndLineId())
 				//
-				.orgId(supplyCandidate.getOrgId())
 				.sourceWarehouseId(demandCandidate.getWarehouseId())
 				.targetWarehouseId(supplyCandidate.getWarehouseId())
 				.targetPlantId(supplyDistributionDetail.getPlantId())
@@ -255,15 +254,16 @@ public class RequestMaterialOrderService
 				//
 				.customerId(BPartnerId.toRepoId(supplyCandidate.getCustomerId()))
 				.salesOrderLineId(OrderLineId.toRepoId(demandCandidate.getSalesOrderLineId()))
-				.ppOrderRef(getPpOrderRef(supplyCandidate))
+				.forwardPPOrderRef(getPpOrderRef(supplyCandidate))
 				//
 				.productDescriptor(supplyCandidate.getMaterialDescriptor())
-				.datePromised(supplyCandidate.getDate())
+				.fromWarehouseMinMaxDescriptor(demandCandidate.getMinMaxDescriptor().toNullIfZero())
+				.supplyDate(supplyCandidate.getDate())
+				.demandDate(demandCandidate.getDate())
 				//
 				.qty(supplyCandidate.getQuantity())
 				.uomId(productBL.getStockUOMId(supplyCandidate.getProductId()).getRepoId())
 				//
-				.durationDays(TimeUtil.getDaysBetween(demandCandidate.getDate(), supplyCandidate.getDate()))
 				.simulated(supplyCandidate.isSimulated())
 				.materialDispoGroupId(group.getEffectiveGroupId())
 				.build();
@@ -364,7 +364,7 @@ public class RequestMaterialOrderService
 		final DistributionDetail distributionDetail = candidate.getBusinessCaseDetail(DistributionDetail.class).orElse(null);
 		if (distributionDetail != null)
 		{
-			return distributionDetail.getPpOrderRef();
+			return distributionDetail.getForwardPPOrderRef();
 		}
 
 		return null;

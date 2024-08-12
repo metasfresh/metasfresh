@@ -23,11 +23,11 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_HU_PackagingCode_StepDefData;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -46,7 +46,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_
 import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_Name;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class M_HU_PI_Version_StepDef
 {
@@ -69,52 +69,53 @@ public class M_HU_PI_Version_StepDef
 	@And("metasfresh contains M_HU_PI_Version:")
 	public void add_M_HU_PI_Version(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			final String huPiIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PI_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_HU_PI huPi = huPiTable.get(huPiIdentifier);
-			assertThat(huPi).isNotNull();
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_HU_PI_Version_ID)
+				.forEach(row -> {
+					final I_M_HU_PI huPi = row.getAsIdentifier(COLUMNNAME_M_HU_PI_ID).lookupIn(huPiTable);
 
-			final String name = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Name);
-			final String huUnitType = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_HU_UnitType); //dev-note: HU_UNITTYPE_AD_Reference_ID=540472;
-			final boolean isCurrent = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsCurrent);
-			final boolean active = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsActive, true);
+					final String name = CoalesceUtil.coalesceSuppliersNotNull(
+							() -> row.getAsOptionalString(COLUMNNAME_Name).orElse(null),
+							huPi::getName
+					);
+					final String huUnitType = row.getAsString(COLUMNNAME_HU_UnitType); //dev-note: HU_UNITTYPE_AD_Reference_ID=540472;
+					final boolean isCurrent = row.getAsBoolean(COLUMNNAME_IsCurrent);
+					final boolean active = row.getAsOptionalBoolean(COLUMNNAME_IsActive).orElseTrue();
 
-			final I_M_HU_PI_Version existingPiVersion = queryBL.createQueryBuilder(I_M_HU_PI_Version.class)
-					.addEqualsFilter(COLUMNNAME_M_HU_PI_ID, huPi.getM_HU_PI_ID())
-					.addStringLikeFilter(COLUMNNAME_Name, name, true)
-					.addEqualsFilter(COLUMNNAME_HU_UnitType, huUnitType)
-					.addEqualsFilter(COLUMNNAME_IsActive, active)
-					.create()
-					.firstOnly(I_M_HU_PI_Version.class);
+					final I_M_HU_PI_Version existingPiVersion = queryBL.createQueryBuilder(I_M_HU_PI_Version.class)
+							.addEqualsFilter(COLUMNNAME_M_HU_PI_ID, huPi.getM_HU_PI_ID())
+							.addStringLikeFilter(COLUMNNAME_Name, name, true)
+							.addEqualsFilter(COLUMNNAME_HU_UnitType, huUnitType)
+							.addEqualsFilter(COLUMNNAME_IsActive, active)
+							.create()
+							.firstOnly(I_M_HU_PI_Version.class);
 
-			final I_M_HU_PI_Version piVersion = CoalesceUtil.coalesceSuppliers(() -> existingPiVersion,
-																			   () -> InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI_Version.class));
+					final I_M_HU_PI_Version piVersion = CoalesceUtil.coalesceSuppliers(
+							() -> existingPiVersion,
+							() -> InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI_Version.class)
+					);
+					assertThat(piVersion).isNotNull();
 
-			assertThat(piVersion).isNotNull();
+					piVersion.setM_HU_PI_ID(huPi.getM_HU_PI_ID());
+					piVersion.setName(name);
+					piVersion.setHU_UnitType(huUnitType);
+					piVersion.setIsCurrent(isCurrent);
+					piVersion.setIsActive(active);
 
-			piVersion.setM_HU_PI_ID(huPi.getM_HU_PI_ID());
-			piVersion.setName(name);
-			piVersion.setHU_UnitType(huUnitType);
-			piVersion.setIsCurrent(isCurrent);
-			piVersion.setIsActive(active);
+					row.getAsOptionalIdentifier(I_M_HU_PI_Version.COLUMNNAME_M_HU_PackagingCode_ID)
+							.ifPresent(huPackagingCodeIdentifier -> {
+								final int huPackagingCodeId = huPackagingCodeIdentifier.isNullPlaceholder()
+										? -1
+										: huPackagingCodeTable.get(huPackagingCodeIdentifier).getM_HU_PackagingCode_ID();
 
-			final String huPackagingCodeIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_HU_PI_Version.COLUMNNAME_M_HU_PackagingCode_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(huPackagingCodeIdentifier))
-			{
-				final int huPackagingCodeId = DataTableUtil.nullToken2Null(huPackagingCodeIdentifier) == null
-						? -1
-						: huPackagingCodeTable.get(huPackagingCodeIdentifier).getM_HU_PackagingCode_ID();
+								piVersion.setM_HU_PackagingCode_ID(huPackagingCodeId);
 
-				piVersion.setM_HU_PackagingCode_ID(huPackagingCodeId);
-			}
+							});
 
-			saveRecord(piVersion);
+					saveRecord(piVersion);
 
-			final String huPIVersionIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PI_Version_ID + "." + TABLECOLUMN_IDENTIFIER);
-			huPiVersionTable.put(huPIVersionIdentifier, piVersion);
-		}
+					huPiVersionTable.put(row.getAsIdentifier(), piVersion);
+				});
 	}
 
 	@And("load M_HU_PI_Version:")

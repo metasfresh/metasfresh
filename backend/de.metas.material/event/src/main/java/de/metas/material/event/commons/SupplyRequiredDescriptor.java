@@ -147,6 +147,13 @@ public class SupplyRequiredDescriptor
 
 	@NonNull
 	@JsonIgnore
+	public SupplyRequiredDescriptor withNewEventId()
+	{
+		return toBuilder().eventDescriptor(newEventDescriptor()).build();
+	}
+
+	@NonNull
+	@JsonIgnore
 	public EventDescriptor newEventDescriptor() {return getEventDescriptor().withNewEventId();}
 
 	@NonNull
