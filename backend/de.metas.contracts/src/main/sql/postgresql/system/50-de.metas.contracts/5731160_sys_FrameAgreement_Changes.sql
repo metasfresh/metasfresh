@@ -353,3 +353,6 @@ UPDATE C_DocType_Trl SET PrintName='Frame Agreement PO',Updated=TO_TIMESTAMP('20
 UPDATE C_DocType_Trl SET PrintName='Frame Agreement PO',Updated=TO_TIMESTAMP('2024-08-12 19:31:28.219','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541057
 ;
 
+-- 2024-08-12T16:41:13.010Z
+UPDATE C_DocType SET AD_PrintFormat_ID=1000011,Updated=TO_TIMESTAMP('2024-08-12 19:41:13.01','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541034
+;
