@@ -40,6 +40,7 @@ import org.compiere.model.I_M_Product_Category;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_AttributeSet_ID;

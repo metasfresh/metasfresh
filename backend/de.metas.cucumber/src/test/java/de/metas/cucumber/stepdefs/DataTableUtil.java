@@ -293,6 +293,12 @@ public class DataTableUtil
 	}
 
 	@Nullable
+	public static ZonedDateTime extractZonedDateTimeOrNullForColumnName(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractZonedDateTimeOrNullForColumnName(dataTableRow.asMap(), columnName);
+	}
+
+	@Nullable
 	public static ZonedDateTime extractZonedDateTimeOrNullForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
@@ -333,6 +339,13 @@ public class DataTableUtil
 	public static Timestamp extractDateTimestampForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
 		return extractLocalDateTimestampForColumnName(dataTableRow, columnName);
+	}
+
+	@Deprecated
+	@Nullable
+	public static Timestamp extractDateTimestampForColumnNameOrNull(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractDateTimestampForColumnNameOrNull(dataTableRow.asMap(), columnName);
 	}
 
 	@Deprecated

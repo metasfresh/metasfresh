@@ -17,11 +17,12 @@ import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class DDOrderCandidateRequestedEventHandler
 	@NonNull private static final Logger logger = LogManager.getLogger(DDOrderCandidateRequestedEventHandler.class);
 	@NonNull private final DDOrderCandidateService ddOrderCandidateService;
 	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
-	@NonNull private final PPOrderCandidateDAO ppOrderCandidateDAO;
+	@NonNull private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
 	@Override
 	public Collection<Class<? extends DDOrderCandidateRequestedEvent>> getHandledEventType()

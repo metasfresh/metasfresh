@@ -85,7 +85,7 @@ class PPOrderCandidateToTabularStringConverter
 			return Cell.ofNullable(valueBD);
 		}
 
-		final Quantity qty = Quantitys.create(valueBD, UomId.ofRepoId(uomRepoId));
+		final Quantity qty = Quantitys.of(valueBD, UomId.ofRepoId(uomRepoId));
 		return Cell.ofNullable(qty);
 	}
 

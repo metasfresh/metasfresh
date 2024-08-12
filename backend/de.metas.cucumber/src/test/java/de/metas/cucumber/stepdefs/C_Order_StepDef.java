@@ -211,7 +211,7 @@ public class C_Order_StepDef
 					final String description = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_Description);
 					final int paymentTermId = tableRow.getAsOptionalInt(I_C_Order.COLUMNNAME_C_PaymentTerm_ID).orElse(-1);
 					final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
-					final String docBaseType = DataTableRow.singleRow(tableRow).getAsOptionalString(COLUMNNAME_DocBaseType).orElse(null);
+					final String docBaseType = tableRow.getAsOptionalString(COLUMNNAME_DocBaseType).orElse(null);
 
 					final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
 					final Boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
@@ -277,7 +277,7 @@ public class C_Order_StepDef
 						order.setDeliveryViaRule(deliveryViaRule);
 					}
 
-					DataTableRow.singleRow(tableRow).getAsOptionalString(I_C_Order.COLUMNNAME_InvoiceRule).ifPresent(order::setInvoiceRule);
+					tableRow.getAsOptionalString(I_C_Order.COLUMNNAME_InvoiceRule).ifPresent(order::setInvoiceRule);
 
 					final String paymentTermValue = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID + ".Value");
 					if (de.metas.util.Check.isNotBlank(paymentTermValue))

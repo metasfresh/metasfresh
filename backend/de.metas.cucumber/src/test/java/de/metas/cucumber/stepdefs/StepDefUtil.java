@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -99,6 +100,21 @@ public class StepDefUtil
 	{
 		final long waitingTimeMillis = waitingTimeSec * 1000L;
 		Thread.sleep(waitingTimeMillis);
+	}
+
+	public static <T> T tryAndWaitForItem(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final ItemProvider<T> worker, 
+			@Nullable final Runnable logContext) throws InterruptedException
+	{
+		return StepDefUtil.<T>tryAndWaitForItem()
+				.worker(worker)
+				.logContextUsingRunnable(logContext)
+				.maxWaitSeconds((int)maxWaitSeconds)
+				.checkingIntervalMs(checkingIntervalMs)
+				.execute();
+
 	}
 
 	public <T> T tryAndWaitForItem(

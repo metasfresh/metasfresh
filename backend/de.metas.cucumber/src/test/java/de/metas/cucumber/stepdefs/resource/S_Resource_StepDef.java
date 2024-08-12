@@ -26,9 +26,9 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
-import de.metas.material.planning.IResourceDAO;
 import de.metas.product.ResourceId;
 import de.metas.resource.ManufacturingResourceType;
+import de.metas.resource.ResourceRepository;
 import de.metas.resource.ResourceTypeId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
@@ -49,7 +49,6 @@ import static org.compiere.model.I_S_Resource.COLUMNNAME_S_Resource_ID;
 public class S_Resource_StepDef
 {
 	@NonNull private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-	@NonNull private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 	@NonNull private final S_Resource_StepDefData resourceTable;
 
 	@And("load S_Resource:")
@@ -59,7 +58,7 @@ public class S_Resource_StepDef
 				.setAdditionalRowIdentifierColumnName("S_Resource_ID.Identifier")
 				.forEach(row -> {
 					final ResourceId resourceId = ResourceId.ofRepoId(row.getAsInt(COLUMNNAME_S_Resource_ID));
-					final I_S_Resource resource = resourceDAO.getById(resourceId);
+					final I_S_Resource resource = ResourceRepository.retrieveRecordById(resourceId);
 					assertThat(resource).isNotNull();
 
 					resourceTable.put(row.getAsIdentifier(), resource);

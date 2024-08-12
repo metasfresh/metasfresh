@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.uom.C_UOM_StepDefData;
@@ -38,8 +39,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -66,9 +65,7 @@ public class M_HU_PackingMaterial_StepDef
 	@And("metasfresh contains M_HU_PackingMaterial:")
 	public void add_M_HU_PackingMaterial(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
+		DataTableRows.of(dataTable).forEach(row -> {
 			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final Optional<I_M_Product> product = Optional.ofNullable(productIdentifier)
 					.map(productTable::get);
@@ -126,6 +123,6 @@ public class M_HU_PackingMaterial_StepDef
 			saveRecord(huPackingMaterial);
 			final String huPackingMaterialIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PackingMaterial_ID + "." + TABLECOLUMN_IDENTIFIER);
 			huPackingMaterialTable.put(huPackingMaterialIdentifier, huPackingMaterial);
-		}
+		});
 	}
 }

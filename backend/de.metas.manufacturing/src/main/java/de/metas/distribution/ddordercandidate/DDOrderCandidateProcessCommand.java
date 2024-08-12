@@ -319,7 +319,7 @@ class DDOrderCandidateProcessCommand
 	private void fireDDOrderCreatedEvent(@NonNull final DDOrderId ddOrderId, @Nullable final String traceId)
 	{
 		@NonNull final DDOrder ddOrder = getCreatedDDOrder(ddOrderId);
-		materialEventService.postEventAfterNextCommit(DDOrderCreatedEvent.of(ddOrder, traceId));
+		materialEventService.enqueueEventAfterNextCommit(DDOrderCreatedEvent.of(ddOrder, traceId));
 	}
 
 	private DDOrder getCreatedDDOrder(final DDOrderId ddOrderId)
@@ -471,7 +471,7 @@ class DDOrderCandidateProcessCommand
 		public LineAggregate(@NonNull final LineAggregationKey key)
 		{
 			this.key = key;
-			this.qty = Quantitys.createZero(key.getUomId());
+			this.qty = Quantitys.zero(key.getUomId());
 		}
 
 		public void add(@NonNull final DDOrderCandidate candidate)
