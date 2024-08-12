@@ -997,9 +997,6 @@ public class AddressBuilderTest
 					actual);
 		}
 
-		/**
-		 * check if the token CON can be used in case on non company users
-		 */
 		@Test
 		public void test_buildBPartnerAddressStringBPartnerBlock_CompanyNameSimilarWithContactName()
 		{
