@@ -272,3 +272,59 @@ UPDATE AD_Column SET MandatoryLogic='',Updated=TO_TIMESTAMP('2024-08-12 16:57:03
 
 
 
+
+
+
+-- 2024-08-12T14:43:46.053Z
+UPDATE C_DocType_Trl SET Name='Call Order SO',Updated=TO_TIMESTAMP('2024-08-12 17:43:46.004','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541062
+;
+
+-- 2024-08-12T14:43:48.116Z
+UPDATE C_DocType_Trl SET Name='Call Order SO',Updated=TO_TIMESTAMP('2024-08-12 17:43:48.116','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_FR' AND C_DocType_ID=541062
+;
+
+-- 2024-08-12T14:43:49.891Z
+UPDATE C_DocType_Trl SET Name='Call Order SO',Updated=TO_TIMESTAMP('2024-08-12 17:43:49.891','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND C_DocType_ID=541062
+;
+
+-- 2024-08-12T14:43:51.884Z
+UPDATE C_DocType_Trl SET Name='Call Order SO',Updated=TO_TIMESTAMP('2024-08-12 17:43:51.884','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='it_IT' AND C_DocType_ID=541062
+;
+
+-- 2024-08-12T14:43:53.442Z
+UPDATE C_DocType_Trl SET PrintName='Call Order SO',Updated=TO_TIMESTAMP('2024-08-12 17:43:53.442','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541062
+;
+
+-- 2024-08-12T14:43:55.494Z
+UPDATE C_DocType_Trl SET PrintName='Call Order SO',Updated=TO_TIMESTAMP('2024-08-12 17:43:55.494','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_FR' AND C_DocType_ID=541062
+;
+
+-- 2024-08-12T14:43:57.746Z
+UPDATE C_DocType_Trl SET PrintName='Call Order SO',Updated=TO_TIMESTAMP('2024-08-12 17:43:57.746','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND C_DocType_ID=541062
+;
+
+-- 2024-08-12T14:43:59.125Z
+UPDATE C_DocType_Trl SET PrintName='Call Order SO',Updated=TO_TIMESTAMP('2024-08-12 17:43:59.125','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='it_IT' AND C_DocType_ID=541062
+;
+
+
+
+
+
+-- Field: Vertrag_OLD(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> Produkt
+-- Column: C_Flatrate_Term.M_Product_ID
+-- 2024-08-12T14:57:10.298Z
+UPDATE AD_Field SET DisplayLogic='@Type_Conditions/''X''@=''Subscr''|@Type_Conditions/''X''@=''QualityBsd''|@Type_Conditions/''X''@=''Procuremnt''|@Type_Conditions/''X''@=''Refund''|@Type_Conditions/''X''@=''Commission''|@Type_Conditions/''X''@=''MediatedCommission''|@Type_Conditions/''X''@=''MarginCommission''|@Type_Conditions/''X''@=''ModularContract''|@Type_Conditions/''X''@=''InterimInvoice''|@Type_Conditions/''X''@=''CallOrder''',Updated=TO_TIMESTAMP('2024-08-12 17:57:10.298','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=559779
+;
+
+
+
+
+
+-- Name: OngoingCallOrderContractForPartnerAndProduct
+-- 2024-08-12T15:39:52.281Z
+UPDATE AD_Val_Rule SET Code='C_Flatrate_Term.Bill_BPartner_ID=@C_BPartner_ID@ AND C_Flatrate_Term.Type_Conditions = ''CallOrder'' AND (C_Flatrate_Term.MasterEndDate > ''@DatePromised@'' OR C_Flatrate_Term.MasterEndDate IS NULL) AND (C_Flatrate_Term.MasterStartDate <= ''@DatePromised@'' OR C_Flatrate_Term.MasterStartDate IS NULL) AND (C_Flatrate_Term.M_Product_ID = @M_Product_ID/-1@ OR C_Flatrate_Term.M_Product_ID IS NULL) AND EXISTS (SELECT 1 from C_Order o WHERE o.IsSOTrx = ''@IsSOTrx@'' AND o.C_Order_ID = C_Flatrate_Term.C_Order_Term_ID)',Updated=TO_TIMESTAMP('2024-08-12 18:39:52.271','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540686
+;
+
+
+
