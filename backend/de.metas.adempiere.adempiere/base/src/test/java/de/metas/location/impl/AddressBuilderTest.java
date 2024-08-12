@@ -1148,7 +1148,7 @@ public class AddressBuilderTest
 					.isCompany(true)
 					.build();
 
-			final org.compiere.model.I_AD_User user = prepareUser("FirstName", "LastName", "someTitle", null);
+			final org.compiere.model.I_AD_User user = prepareUser("FirstName  ", "  LastName", "someTitle", null);
 
 			final String actual = bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user);
 
