@@ -263,8 +263,8 @@ jobs:
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.backend.api \
-#          --cache-to type=inline \
-#          --cache-from metasfresh/metas-api:${{ needs.init.outputs.tag-floating }} \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-api:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-api:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }} \
@@ -273,8 +273,8 @@ jobs:
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.backend.app \
-#          --cache-to type=inline \
-#          --cache-from metasfresh/metas-app:${{ needs.init.outputs.tag-floating }} \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-app:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }} \
@@ -283,8 +283,8 @@ jobs:
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.camel.externalsystems \
-#          --cache-to type=inline \
-#          --cache-from metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} \
@@ -293,8 +293,8 @@ jobs:
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.camel.edi \
-#          --cache-to type=inline \
-#          --cache-from metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} \
@@ -303,8 +303,8 @@ jobs:
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.db-standalone \
-#          --cache-to type=inline \
-#          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
@@ -313,8 +313,8 @@ jobs:
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.db-migrations \
-#          --cache-to type=inline \
-#          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-migrations \
@@ -323,8 +323,8 @@ jobs:
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.db-preloaded \
-#          --cache-to type=inline \
-#          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
