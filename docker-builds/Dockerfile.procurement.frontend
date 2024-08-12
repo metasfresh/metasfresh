@@ -1,4 +1,4 @@
-FROM node:20 as build-step
+FROM node:16 as build-step
 
 LABEL maintainer="info@metasfresh.com"
 LABEL runinfo="Run this image with -e PUBLIC_URL=https://yourdomain.org"
@@ -9,7 +9,6 @@ RUN yarn install
 
 COPY misc/services/procurement-webui/procurement-webui-frontend/ .
 
-ENV NODE_OPTIONS=--openssl-legacy-provider
 RUN yarn build
 
 RUN chmod a+x ./nginx-config/docker-entrypoint.d/*

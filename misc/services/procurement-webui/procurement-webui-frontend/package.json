@@ -21,6 +21,7 @@
     "mobx": "6.0.4",
     "mobx-react": "7.0.5",
     "mobx-state-tree": "4.0.2",
+    "node-sass": "6.0.0",
     "postcss-cli": "9.0.2",
     "prop-types": "^15.7.2",
     "qs": "^6.7.0",
