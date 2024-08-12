@@ -9,6 +9,7 @@ RUN yarn install
 
 COPY misc/services/procurement-webui/procurement-webui-frontend/ .
 
+ENV NODE_OPTIONS=--openssl-legacy-provider
 RUN yarn build
 
 RUN chmod a+x ./nginx-config/docker-entrypoint.d/*
