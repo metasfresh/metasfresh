@@ -73,6 +73,7 @@ public class AddressBuilder
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public static final AdMessageKey MSG_POBox = AdMessageKey.of("MSG_POBox");
+	private static final String TOKEN_NewLine = "CR";
 
 	/**
 	 * org is mandatory; we need it when we retrieve country sequences; needs to be a perfect match
