@@ -22,27 +22,26 @@
 
 package de.metas.edi.esb.commons.route.exports;
 
-import java.text.DecimalFormat;
-
+import de.metas.edi.esb.commons.ClearingCenter;
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.DesadvSettings;
+import de.metas.edi.esb.commons.InvoicSettings;
+import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.desadvexport.compudata.CompuDataDesadvRoute;
 import de.metas.edi.esb.desadvexport.ecosio.EcosioDesadvRoute;
-import de.metas.edi.esb.commons.DesadvSettings;
 import de.metas.edi.esb.desadvexport.stepcom.StepComXMLDesadvRoute;
 import de.metas.edi.esb.invoicexport.compudata.CompuDataInvoicRoute;
 import de.metas.edi.esb.invoicexport.ecosio.EcosioInvoicRoute;
-import de.metas.edi.esb.commons.InvoicSettings;
-import de.metas.edi.esb.commons.ClearingCenter;
 import de.metas.edi.esb.invoicexport.stepcom.StepComXMLInvoicRoute;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import lombok.NonNull;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
-import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
+import java.text.DecimalFormat;
 
 @Component
 public class EDIExportCommonRoute extends AbstractEDIRoute
@@ -76,7 +75,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 					// INVOIC - figure out which clearing center we shall use
 					.when(body().isInstanceOf(EDICctopInvoicVType.class))
 						.process(exchange -> {
-							final String receiverGLN = exchange.getIn().getBody(EDICctopInvoicVType.class).getReceivergln();
+							final String receiverGLN = exchange.getIn().getBody(EDICctopInvoicVType.class).getReceiverGLN();
 							final ClearingCenter clearingCenter = InvoicSettings.forReceiverGLN(exchange.getContext(), receiverGLN).getClearingCenter();
 							exchange.getIn().setHeader("ClearingCenter", clearingCenter.toString());
 						})

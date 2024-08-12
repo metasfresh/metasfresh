@@ -181,8 +181,8 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 
 		final I_DD_NetworkDistributionLine networkDistributionLine = newInstance(I_DD_NetworkDistributionLine.class);
 		networkDistributionLine.setDD_NetworkDistribution(networkDistribution);
-		networkDistributionLine.setM_WarehouseSource(whSource);
-		networkDistributionLine.setM_Warehouse(whTarget);
+		networkDistributionLine.setM_WarehouseSource_ID(whSource.getM_Warehouse_ID());
+		networkDistributionLine.setM_Warehouse_ID(whTarget.getM_Warehouse_ID());
 
 		save(networkDistributionLine);
 

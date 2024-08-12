@@ -68,7 +68,6 @@ public class InterestComputationCommand
 	 * we consider a fiscal year as having 12 months of 30 days
 	 */
 	public static final int TOTAL_DAYS_OF_FISCAL_YEAR = 360;
-	public static final long SUBTRACT_VALUE_NO_INTEREST_DAYS = 0;
 
 	@NonNull private final ModularLogInterestRepository interestRepository;
 	@NonNull private final ModularContractLogService modularContractLogService;
@@ -92,13 +91,11 @@ public class InterestComputationCommand
 
 		deletePreviousProgress(currentLogSelection);
 
-		final InterestComputationRequest interestComputationRequest = getInterestDistributionRequest(request, runId);
+		final InterestComputationRequest.InterestComputationRequestBuilder interestDistributionRequestBuilder = getInterestDistributionRequestBuilder(request, runId);
 
-		computeAndDistributeInterest(interestComputationRequest); // Added Value: interim contracts
+		computeAndDistributeInterest(interestDistributionRequestBuilder.computingMethodType(ComputingMethodType.AddValueOnInterim).build());
 
-		computeAndDistributeBonus(interestComputationRequest.toBuilder() // Subtracted value: shipping notification
-										  .bonusComputationTimeInterval(request.getBonusComputationTimeInterval())
-										  .build());
+		computeAndDistributeBonus(interestDistributionRequestBuilder.computingMethodType(ComputingMethodType.SubtractValueOnInterim).build());
 
 		final boolean anyRecordsCreatedForCurrentRun = queryBL.createQueryBuilder(I_ModCntr_Interest.class)
 				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_ModCntr_Interest_Run_ID, runId)
@@ -156,7 +153,7 @@ public class InterestComputationCommand
 
 		final Iterator<ModularContractLogEntry> shippingNotificationIterator = streamShippingNotificationLogEntries(request, contractId).iterator();
 		final boolean interimInvoiceExists = interimInvoiceLogExists(contractId, request);
-		InterimContractAllocations.AllocationItem currentShippingNotification;
+		ModularContractAllocations.AllocationItem currentShippingNotification;
 		final ModularContractSettings settings = modularContractService.getModularSettingsForContract(contractId);
 		if (interimInvoiceExists)
 		{
@@ -165,7 +162,8 @@ public class InterestComputationCommand
 		while (shippingNotificationIterator.hasNext())
 		{
 			currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
-															 shippingNotificationIterator.next());
+															 shippingNotificationIterator.next(),
+															 request.getBonusAndInterestTimeInterval());
 
 			{
 				final SaveSubtractedValueRequest saveSubtractedValueRequest = SaveSubtractedValueRequest.builder()
@@ -185,29 +183,30 @@ public class InterestComputationCommand
 			@NonNull final FlatrateTermId contractId)
 	{
 		final Iterator<ModularContractLogEntry> shippingNotificationIterator = streamShippingNotificationLogEntries(request, contractId).iterator();
-		final Iterator<ModularContractLogEntry> interimContractIterator = streamInterimContractLogEntries(contractId, request).iterator();
+		final Iterator<ModularContractLogEntry> modularContractLogEntryIterator = streamModularContractLogEntries(contractId, request).iterator();
 		final ModularContractSettings settings = modularContractService.getModularSettingsForContract(contractId);
 
 		BigDecimal totalInterestScore = BigDecimal.ZERO;
 
-		InterimContractAllocations.AllocationItem currentShippingNotification = null;
-		while (interimContractIterator.hasNext())
+		ModularContractAllocations.AllocationItem currentShippingNotification = null;
+		while (modularContractLogEntryIterator.hasNext())
 		{
-			final InterimContractAllocations currentInterimContractAllocations = initInterimContractAllocations(request,
+			final ModularContractAllocations currentModularContractAllocations = initModularContractAllocations(request,
 																												settings.getAdditionalInterestDays(),
-																												interimContractIterator.next());
+																												modularContractLogEntryIterator.next());
 
-			while (currentInterimContractAllocations.openAmountSignum() > 0)
+			while (currentModularContractAllocations.openAmountSignum() > 0)
 			{
-				while (!currentInterimContractAllocations.canAllocate(currentShippingNotification) && shippingNotificationIterator.hasNext())
+				while (!currentModularContractAllocations.canAllocate(currentShippingNotification) && shippingNotificationIterator.hasNext())
 				{
 					currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
-																	 shippingNotificationIterator.next());
+																	 shippingNotificationIterator.next(),
+																	 request.getBonusAndInterestTimeInterval());
 				}
 
-				if (currentInterimContractAllocations.canAllocate(currentShippingNotification))
+				if (currentModularContractAllocations.canAllocate(currentShippingNotification))
 				{
-					currentShippingNotification = currentInterimContractAllocations.allocate(currentShippingNotification);
+					currentShippingNotification = currentModularContractAllocations.allocate(currentShippingNotification);
 				}
 
 				if (!shippingNotificationIterator.hasNext())
@@ -216,8 +215,8 @@ public class InterestComputationCommand
 				}
 			}
 
-			saveAddedValueInterestRecords(currentInterimContractAllocations);
-			totalInterestScore = totalInterestScore.add(currentInterimContractAllocations.getAllocatedInterestScore());
+			saveAddedValueInterestRecords(currentModularContractAllocations);
+			totalInterestScore = totalInterestScore.add(currentModularContractAllocations.getAllocatedInterestScore());
 		}
 
 		return InitialInterestAllocationResult.of(totalInterestScore);
@@ -236,32 +235,18 @@ public class InterestComputationCommand
 																	   .build());
 	}
 
-	private void saveAddedValueInterestRecords(@NonNull final InterimContractAllocations currentInterimContractAllocations)
+	private void saveAddedValueInterestRecords(@NonNull final ModularContractAllocations currentModularContractAllocations)
 	{
-		currentInterimContractAllocations.getAllocatedShippingNotifications().forEach(interestRepository::create);
+		currentModularContractAllocations.getAllocatedShippingNotifications().forEach(interestRepository::create);
 	}
 
 	private void saveSubtractValueInterestRecord(@NonNull final SaveSubtractedValueRequest saveSubtractedValueRequest)
 	{
 		final InterestComputationRequest interestComputationRequest = saveSubtractedValueRequest.getRequest();
-		final InterimContractAllocations.AllocationItem shippingNotification = saveSubtractedValueRequest.getShippingNotification();
+		final ModularContractAllocations.AllocationItem shippingNotification = saveSubtractedValueRequest.getShippingNotification();
 		final Percent bonusInterestRate = saveSubtractedValueRequest.getBonusInterestRate();
 
-		if (interestComputationRequest.getBonusComputationTimeInterval() == null)
-		{
-			final CreateModularLogInterestRequest createInterestRequest = CreateModularLogInterestRequest.builder()
-					.interestRunId(interestComputationRequest.getInterestRunId())
-					.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
-					.allocatedAmt(shippingNotification.getOpenAmount())
-					.interestDays(SUBTRACT_VALUE_NO_INTEREST_DAYS)
-					.finalInterest(Money.zero(interestComputationRequest.getInterestToDistribute().getCurrencyId()))
-					.build();
-
-			interestRepository.create(createInterestRequest);
-			return;
-		}
-
-		final long interestDays = interestComputationRequest.getBonusComputationTimeInterval().getBonusInterestDays();
+		final long interestDays = interestComputationRequest.getBonusAndInterestTimeInterval().getBonusInterestDays();
 
 		final BigDecimal bonusAmountAsBD = bonusInterestRate.computePercentageOf(shippingNotification.getOpenAmount().toBigDecimal(),
 																				 interestComputationRequest.getInterestCurrencyPrecision().toInt())
@@ -300,7 +285,7 @@ public class InterestComputationCommand
 	}
 
 	@NonNull
-	private Stream<ModularContractLogEntry> streamInterimContractLogEntries(
+	private Stream<ModularContractLogEntry> streamModularContractLogEntries(
 			@Nullable final FlatrateTermId contractId,
 			@NonNull final InterestComputationRequest request)
 	{
@@ -312,7 +297,7 @@ public class InterestComputationCommand
 				.flatrateTermId(contractId)
 				.onlyIfAmountIsSet(true)
 				.lockOwner(request.getLockOwner())
-				.logEntryDocumentType(LogEntryDocumentType.CONTRACT_PREFINANCING)
+				.logEntryDocumentType(LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT)
 				.orderBy(ModularContractLogQuery.OrderBy.TRANSACTION_DATE_ASC)
 				.build();
 
@@ -371,39 +356,40 @@ public class InterestComputationCommand
 	}
 
 	@NonNull
-	private InterimContractAllocations initInterimContractAllocations(
+	private ModularContractAllocations initModularContractAllocations(
 			@NonNull final InterestComputationRequest request,
 			final int additionalInterestDays,
-			@NonNull final ModularContractLogEntry interimContractEntry)
+			@NonNull final ModularContractLogEntry modularContractLogEntry)
 	{
-		Check.assume(LogEntryDocumentType.CONTRACT_PREFINANCING == interimContractEntry.getDocumentType(),
-					 "Expecting DocumentType = " + LogEntryDocumentType.CONTRACT_PREFINANCING +
-							 " but got " + interimContractEntry.getDocumentType() + "! LogId=" + interimContractEntry.getId());
-		Check.assumeNotNull(interimContractEntry.getAmount(), "Invoices with no amount should've been skipped already! LogId="
-				+ interimContractEntry.getId());
+		Check.assume(LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT == modularContractLogEntry.getDocumentType(),
+					 "Expecting DocumentType = " + LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT +
+							 " but got " + modularContractLogEntry.getDocumentType() + "! LogId=" + modularContractLogEntry.getId());
+		Check.assumeNotNull(modularContractLogEntry.getAmount(), "Contracts with no amount should've been skipped already! LogId="
+				+ modularContractLogEntry.getId());
 
-		final Money interimAmtToAllocate = interimContractEntry.getAmount().abs();
+		final Money interimAmtToAllocate = modularContractLogEntry.getAmount().abs();
 
-		final CurrencyConversionContext context = modularContractLogService.getCurrencyConversionContext(interimContractEntry);
+		final CurrencyConversionContext context = modularContractLogService.getCurrencyConversionContext(modularContractLogEntry);
 
 		final CurrencyId targetCurrencyId = request.getInterestToDistribute().getCurrencyId();
 		final Money openAmountInTargetCurr = moneyService.convertMoneyToCurrency(interimAmtToAllocate,
 																				 targetCurrencyId,
 																				 context);
 
-		return InterimContractAllocations.builder()
+		return ModularContractAllocations.builder()
 				.interestRunId(request.getInterestRunId())
 				.additionalInterestDays(additionalInterestDays)
 				.orgDAO(orgDAO)
-				.interimContractEntry(interimContractEntry)
+				.modularContractLogEntry(modularContractLogEntry)
 				.openAmount(openAmountInTargetCurr)
 				.build();
 	}
 
 	@NonNull
-	private InterimContractAllocations.AllocationItem initAllocationItem(
+	private ModularContractAllocations.AllocationItem initAllocationItem(
 			@NonNull final CurrencyId targetCurrencyId,
-			@NonNull final ModularContractLogEntry shippingNotification)
+			@NonNull final ModularContractLogEntry shippingNotification,
+			@NonNull final BonusAndInterestTimeInterval bonusAndInterestTimeInterval)
 	{
 		Check.assume(LogEntryDocumentType.SHIPPING_NOTIFICATION == shippingNotification.getDocumentType(),
 					 "Expecting DocumentType = " + LogEntryDocumentType.SHIPPING_NOTIFICATION +
@@ -419,9 +405,10 @@ public class InterestComputationCommand
 																								 targetCurrencyId,
 																								 context);
 
-		return InterimContractAllocations.AllocationItem.builder()
+		return ModularContractAllocations.AllocationItem.builder()
 				.shippingNotificationEntry(shippingNotification)
 				.openAmount(shippingNotificationAmountInTargetCurr)
+				.bonusAndInterestTimeInterval(bonusAndInterestTimeInterval)
 				.build();
 	}
 
@@ -445,8 +432,7 @@ public class InterestComputationCommand
 		createBonusRecords(request);
 	}
 
-	@NonNull
-	public InterestComputationRequest getInterestDistributionRequest(
+	private InterestComputationRequest.InterestComputationRequestBuilder getInterestDistributionRequestBuilder(
 			@NonNull final InterestBonusComputationRequest request,
 			@NonNull final InterestRunId runId)
 	{
@@ -455,8 +441,9 @@ public class InterestComputationCommand
 				.interestRunId(runId)
 				.interestToDistribute(request.getInterestToDistribute())
 				.invoicingGroupId(request.getInvoicingGroupId())
-				.lockOwner(request.getLockOwner())
-				.build();
+				.bonusAndInterestTimeInterval(request.getBonusAndInterestTimeInterval())
+				.lockOwner(request.getLockOwner());
+
 	}
 
 	@Value(staticConstructor = "of")

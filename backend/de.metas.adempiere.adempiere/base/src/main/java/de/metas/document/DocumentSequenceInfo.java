@@ -1,33 +1,34 @@
 package de.metas.document;
 
+import de.metas.document.impl.SequenceRestartFrequencyEnum;
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
 import lombok.Builder;
 import lombok.Value;
 import org.adempiere.ad.expression.api.IStringExpression;
 
+import javax.annotation.Nullable;
+
 /**
  * Immutable DocumentNo sequence definition.
  *
  * @author tsa
- *
  */
 @Value
 public class DocumentSequenceInfo
 {
-	private final int adSequenceId;
-	private final String name;
+	int adSequenceId;
+	String name;
 
 	//
-	private final int incrementNo;
-	private final IStringExpression prefix;
-	private final IStringExpression suffix;
-	private final String decimalPattern;
-	private final boolean autoSequence;
-	private final boolean startNewYear;
-	private final boolean startNewMonth;
-	private final String dateColumn;
+	int incrementNo;
+	IStringExpression prefix;
+	IStringExpression suffix;
+	String decimalPattern;
+	boolean autoSequence;
+	SequenceRestartFrequencyEnum restartFrequency;
+	String dateColumn;
 
-	private final CustomSequenceNoProvider customSequenceNoProvider;
+	CustomSequenceNoProvider customSequenceNoProvider;
 
 	@Builder
 	private DocumentSequenceInfo(
@@ -38,8 +39,7 @@ public class DocumentSequenceInfo
 			final IStringExpression suffix,
 			final String decimalPattern,
 			final boolean autoSequence,
-			final boolean startNewYear,
-			final boolean startNewMonth,
+			@Nullable final SequenceRestartFrequencyEnum restartFrequency,
 			final String dateColumn,
 			final CustomSequenceNoProvider customSequenceNoProvider)
 	{
@@ -50,9 +50,18 @@ public class DocumentSequenceInfo
 		this.suffix = suffix != null ? suffix : IStringExpression.NULL;
 		this.decimalPattern = decimalPattern;
 		this.autoSequence = autoSequence;
-		this.startNewYear = startNewYear;
-		this.startNewMonth = startNewMonth;
+		this.restartFrequency = restartFrequency;
 		this.dateColumn = dateColumn;
 		this.customSequenceNoProvider = customSequenceNoProvider;
+	}
+
+	public boolean isStartNewMonth()
+	{
+		return restartFrequency == SequenceRestartFrequencyEnum.Month;
+	}
+
+	public boolean isStartNewDay()
+	{
+		return restartFrequency == SequenceRestartFrequencyEnum.Day;
 	}
 }

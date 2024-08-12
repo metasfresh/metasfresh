@@ -8,8 +8,8 @@ Feature: Dhl Shipment
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And ensure product accounts exist
     And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.Name |
-      | shipper_DHL             | Dhl      |
+      | Identifier  | Name |
+      | shipper_DHL | Dhl  |
     And load C_UOM:
       | C_UOM_ID.Identifier | X12DE355 |
       | cm                  | CM       |

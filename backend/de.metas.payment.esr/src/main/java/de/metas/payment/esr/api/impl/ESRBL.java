@@ -23,6 +23,7 @@ package de.metas.payment.esr.api.impl;
  * #L%
  */
 
+import de.metas.banking.BankAccountId;
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.currency.Amount;
 import de.metas.document.refid.api.IReferenceNoDAO;
@@ -31,6 +32,8 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRBL;
 import de.metas.payment.esr.api.IESRBPBankAccountBL;
@@ -48,10 +51,10 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.MOrg;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -67,6 +70,7 @@ public class ESRBL implements IESRBL
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
     private	final IESRBPBankAccountDAO esrBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
 	private final IReferenceNoDAO referenceNoDAO = Services.get(IReferenceNoDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public void createESRPaymentRequest(@NonNull final I_C_Invoice invoiceRecord)
@@ -105,30 +109,50 @@ public class ESRBL implements IESRBL
 		linkEsrStringsToInvoiceRecord(invoiceReferenceString, renderedCodeStr, invoiceRecord);
 	}
 
-	private boolean isEligibleForESRPaymentRequestCreation(I_C_Invoice invoice) {return !isReversal(invoice) && (isPurchaseCreditMemo(invoice) || isSalesInvoice(invoice));}
+	private boolean isEligibleForESRPaymentRequestCreation(final I_C_Invoice invoice) {return !isReversal(invoice) && (isPurchaseCreditMemo(invoice) || isSalesInvoice(invoice));}
 
-	private boolean isPurchaseCreditMemo(I_C_Invoice invoice)
+	private boolean isPurchaseCreditMemo(final I_C_Invoice invoice)
 	{
 		return !invoice.isSOTrx() && isCreditMemo(invoice);
 	}
 
-	private boolean isSalesInvoice(I_C_Invoice invoice) {return invoice.isSOTrx() && !isCreditMemo(invoice);}
+	private boolean isSalesInvoice(final I_C_Invoice invoice) {return invoice.isSOTrx() && !isCreditMemo(invoice);}
 
-	private boolean isCreditMemo(I_C_Invoice invoice) {return invoiceBL.isCreditMemo(invoice);}
+	private boolean isCreditMemo(final I_C_Invoice invoice) {return invoiceBL.isCreditMemo(invoice);}
 
-	private boolean isReversal(I_C_Invoice invoice) {return invoice.getReversal_ID() > 0;}
+	private boolean isReversal(final I_C_Invoice invoice) {return invoice.getReversal_ID() > 0;}
 
 
+	@NonNull
 	private I_C_BP_BankAccount retrieveEsrBankAccount(@NonNull final I_C_Invoice invoiceRecord)
 	{
-		// get the account number for the org of the invoice
-		final int orgID = invoiceRecord.getAD_Org_ID();
-		final I_AD_Org org = MOrg.get(Env.getCtx(), orgID);
+		// check if we have a bank account in invoice already
+		final I_C_BP_BankAccount bankAccount = retrieveEsrInvoiceBankAccountOrNull(invoiceRecord);
 
-		final List<I_C_BP_BankAccount> bankAccounts = esrBankAccountDAO.fetchOrgEsrAccounts(org);
+		if (bankAccount == null)
+		{
+			// get the account number for the org of the invoice
+			final OrgId orgID = OrgId.ofRepoId(invoiceRecord.getAD_Org_ID());
+			final I_AD_Org org = orgDAO.getById(orgID);
 
-		Check.assume(!bankAccounts.isEmpty(), "No ESR bank account found.");
-		return bankAccounts.get(0);
+			final List<I_C_BP_BankAccount> bankAccounts = esrBankAccountDAO.fetchOrgEsrAccounts(org);
+
+			Check.assume(!bankAccounts.isEmpty(), "No ESR bank account found.");
+			return bankAccounts.get(0);
+		}
+		else
+		{
+			return bankAccount;
+		}
+
+	}
+
+
+	@Nullable
+	private I_C_BP_BankAccount retrieveEsrInvoiceBankAccountOrNull(@NonNull final I_C_Invoice invoiceRecord)
+	{
+		final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(invoiceRecord.getOrg_BP_Account_ID());
+		return bankAccountId != null ? esrBankAccountDAO.getById(bankAccountId) : null;
 	}
 
 	/**

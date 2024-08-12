@@ -83,7 +83,7 @@ public class ShipmentScheduleUpdatedHandler implements MaterialEventHandler<Ship
 		if (candidate == null)
 		{
 			updatedCandidate = Candidate
-					.builderForEventDescr(event.getEventDescriptor())
+					.builderForEventDescriptor(event.getEventDescriptor())
 					.materialDescriptor(event.getMaterialDescriptor())
 					.minMaxDescriptor(event.getMinMaxDescriptor())
 					.type(CandidateType.DEMAND)
@@ -93,10 +93,11 @@ public class ShipmentScheduleUpdatedHandler implements MaterialEventHandler<Ship
 		}
 		else
 		{
-			updatedCandidate = candidate
-					.withMaterialDescriptor(event.getMaterialDescriptor())
-					.withMinMaxDescriptor(event.getMinMaxDescriptor())
-					.withBusinessCaseDetail(demandDetail);
+			updatedCandidate = candidate.toBuilder()
+					.materialDescriptor(event.getMaterialDescriptor())
+					.minMaxDescriptor(event.getMinMaxDescriptor())
+					.businessCaseDetail(demandDetail)
+					.build();
 		}
 
 		candidateChangeHandler.onCandidateNewOrChange(updatedCandidate);

@@ -435,6 +435,9 @@
             <xsd:element minOccurs="0" name="DiscountDays" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="EDI_cctop_140_v_ID" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="Rate" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="Name" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DiscountAmt" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="DiscountBaseAmt" type="xsd:decimal"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="EDI_cctop_invoic_500_vType">
@@ -445,6 +448,7 @@
             <xsd:element minOccurs="0" name="ISO_Code" type="xsd:string"/>
             <xsd:element minOccurs="0" name="Line" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="LineNetAmt" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="Discount" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="Name" type="xsd:string"/>
             <xsd:element minOccurs="0" name="Name2" type="xsd:string"/>
             <xsd:element minOccurs="0" name="PriceActual" type="xsd:decimal"/>
@@ -452,6 +456,7 @@
             <xsd:element minOccurs="0" name="QtyInvoiced" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="Rate" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="taxfree" type="YES-NO"/>
+            <xsd:element minOccurs="0" name="IsTaxExempt" type="YES-NO"/>
             <xsd:element minOccurs="0" name="Value" type="xsd:string"/>
             <xsd:element minOccurs="0" name="CustomerProductNo" type="xsd:string"/>
             <xsd:element minOccurs="0" name="EDI_cctop_invoic_v_ID" type="xsd:integer"/>
@@ -480,13 +485,18 @@
     </xsd:complexType>
     <xsd:complexType name="EDI_cctop_901_991_vType">
         <xsd:sequence>
-            <xsd:element minOccurs="0" name="C_Invoice_ID" type="xsd:integer"/>
-            <xsd:element minOccurs="0" name="EDI_cctop_901_991_v_ID" type="xsd:integer"/>
-            <xsd:element minOccurs="0" name="Rate" type="xsd:decimal"/>
-            <xsd:element minOccurs="0" name="TaxAmt" type="xsd:decimal"/>
-            <xsd:element minOccurs="0" name="TaxBaseAmt" type="xsd:decimal"/>
-            <xsd:element minOccurs="0" name="TotalAmt" type="xsd:decimal"/>
+            <xsd:element name="C_Invoice_ID" type="xsd:integer"/>
+            <xsd:element name="EDI_cctop_901_991_v_ID" type="xsd:integer"/>
+            <xsd:element name="Rate" type="xsd:decimal"/>
+            <xsd:element name="TaxAmt" type="xsd:decimal"/>
+            <xsd:element name="IsTaxExempt" type="YES-NO"/>
+            <xsd:element name="TaxBaseAmt" type="xsd:decimal"/>
+            <xsd:element name="TotalAmt" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="ReferenceNo" type="xsd:string"/>
+            <xsd:element name="SurchargeAmt" type="xsd:decimal"/>
+            <xsd:element name="TaxBaseAmtWithSurchargeAmt" type="xsd:decimal"/>
+            <xsd:element name="TaxAmtWithSurchargeAmt" type="xsd:decimal"/>
+            <xsd:element name="IsMainVAT" type="YES-NO"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="EDI_cctop_invoic_vType">
@@ -499,32 +509,33 @@
             <xsd:element minOccurs="0" name="eancom_doctype" type="xsd:string"/>
             <xsd:element minOccurs="0" name="EDI_cctop_invoic_v_ID" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="GrandTotal" type="xsd:decimal"/>
-            <xsd:element minOccurs="0" name="PmtDiscount" type="xsd:decimal"/>
-            <xsd:element minOccurs="0" name="GrandTotalMinusPmtDiscount" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="SurchargeAmt" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="TotalLinesWithSurchargeAmt" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="invoice_documentno" type="xsd:string"/>
             <xsd:element minOccurs="0" name="ISO_Code" type="xsd:string"/>
             <xsd:element minOccurs="0" name="MovementDate" type="xsd:date"/>
             <xsd:element minOccurs="0" name="POReference" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="receivergln" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="sendergln" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="ReceiverGLN" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SenderGLN" type="xsd:string"/>
             <xsd:element minOccurs="0" name="shipment_documentno" type="xsd:string"/>
             <xsd:element minOccurs="0" name="EDIDesadvDocumentNo" type="xsd:string"/>
             <xsd:element minOccurs="0" name="TotalLines" type="xsd:decimal"/>
-            <xsd:element minOccurs="0" name="totaltaxbaseamt" type="xsd:decimal"/>
-            <xsd:element minOccurs="0" name="totalvat" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="TotalTaxBaseAmt" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="TotalVat" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="EDI_cctop_000_v" type="EDI_cctop_000_vType"/>
             <xsd:element minOccurs="0" name="EDI_cctop_111_v" type="EDI_cctop_111_vType"/>
             <xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_cctop_119_v" type="EDI_cctop_119_vType"/>
             <xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_cctop_120_v" type="EDI_cctop_120_vType"/>
             <xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_cctop_140_v" type="EDI_cctop_140_vType"/>
-            <xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_cctop_invoic_500_v"
-                         type="EDI_cctop_invoic_500_vType"/>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_cctop_invoic_500_v" type="EDI_cctop_invoic_500_vType"/>
             <xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_cctop_901_991_v" type="EDI_cctop_901_991_vType"/>
             <xsd:element minOccurs="0" name="CountryCode" type="xsd:string"/>
             <xsd:element minOccurs="0" name="CountryCode_3digit" type="xsd:string"/>
             <xsd:element minOccurs="0" name="CreditMemoReasonText" type="xsd:string"/>
             <xsd:element minOccurs="0" name="VATaxID" type="xsd:string"/>
             <xsd:element minOccurs="0" name="InvoicableQtyBasedOn" type="InvoicableQtyBasedOnEnum"/>
+            <xsd:element name="TotalVatWithSurchargeAmt" type="xsd:decimal"/>
+            <xsd:element name="GrandTotalWithSurchargeAmt" type="xsd:decimal"/>
         </xsd:sequence>
         <xsd:attribute ref="AD_Client_Value"/>
         <xsd:attribute ref="ReplicationEvent"/>
@@ -811,8 +822,7 @@
     <xsd:complexType name="EDI_Exp_DesadvLineType">
         <xsd:sequence>
             <xsd:element minOccurs="0" name="C_UOM_ID" type="EDI_Exp_C_UOMType"/>
-            <xsd:element name="EDI_DesadvLine_ID"
-                         type="xsd:integer"/>
+            <xsd:element name="EDI_DesadvLine_ID" type="xsd:integer"/>
             <xsd:element name="Line" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="M_Product_ID" type="EDI_Exp_M_ProductType"/>
             <xsd:element minOccurs="0" name="ProductDescription" type="xsd:string"/>
@@ -855,6 +865,7 @@
     </xsd:complexType>
     <xsd:complexType name="EDI_Exp_Desadv_PackType">
         <xsd:sequence>
+            <xsd:element name="Line" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="GTIN_LU_PackingMaterial" type="xsd:string"/>
             <xsd:element minOccurs="0" name="IPA_SSCC18" type="xsd:string"/>
             <xsd:element minOccurs="0" name="M_HU_PackagingCode_LU_Text" type="xsd:string"/>

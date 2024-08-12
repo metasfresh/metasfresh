@@ -24,14 +24,24 @@ package de.metas.material.planning.ppordercandidate;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
+import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.MaterialRequest;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class PPOrderCandidateAdvisedEventCreatorTest
 {
@@ -44,78 +54,99 @@ class PPOrderCandidateAdvisedEventCreatorTest
 		uomId = UomId.ofRepoId(BusinessTestHelper.createUOM("uom").getC_UOM_ID());
 	}
 
-	@Test
-	void createMaterialRequests_1()
+	@SuppressWarnings("SameParameterValue")
+	private MaterialRequest materialRequest(final String qtyToSupply)
 	{
-		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
-				MaterialRequest.builder()
-						.qtyToSupply(Quantitys.of("31", uomId))
-						.build(),
-				Quantitys.of("15", uomId)
-		);
-
-		assertThat(materialRequests)
-				.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
-				.containsExactly("15", "15", "1");
+		return MaterialRequest.builder()
+				.context(newDummyMaterialPlanningContext())
+				.qtyToSupply(qty(qtyToSupply))
+				.demandDate(SystemTime.asInstant())
+				.build();
 	}
 
-	@Test
-	void createMaterialRequests_2()
+	private static MaterialPlanningContext newDummyMaterialPlanningContext()
 	{
-		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
-				MaterialRequest.builder()
-						.qtyToSupply(Quantitys.of("31", uomId))
-						.build(),
-				null
-		);
-
-		assertThat(materialRequests)
-				.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
-				.containsExactly("31");
+		return MaterialPlanningContext.builder()
+				.productId(ProductId.ofRepoId(1))
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.warehouseId(WarehouseId.MAIN)
+				.productPlanning(ProductPlanning.builder().build())
+				.plantId(ResourceId.ofRepoId(2))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(3, 4))
+				.build();
 	}
 
-	@Test
-	void createMaterialRequests_3()
+	private Quantity qty(final String value)
 	{
-		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
-				MaterialRequest.builder()
-						.qtyToSupply(Quantitys.of("31", uomId))
-						.build(),
-				Quantitys.of("31", uomId)
-		);
-
-		assertThat(materialRequests)
-				.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
-				.containsExactly("31");
+		return Quantitys.of(value, uomId);
 	}
 
-	@Test
-	void createMaterialRequests_4()
+	@Nested
+	class createMaterialRequests
 	{
-		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
-				MaterialRequest.builder()
-						.qtyToSupply(Quantitys.of("31", uomId))
-						.build(),
-				Quantitys.of("32", uomId)
-		);
+		@Test
+		void total31_15perOrder()
+		{
+			final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
+					materialRequest("31"),
+					qty("15")
+			);
 
-		assertThat(materialRequests)
-				.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
-				.containsExactly("31");
-	}
+			assertThat(materialRequests)
+					.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
+					.containsExactly("15", "15", "1");
+		}
 
-	@Test
-	void createMaterialRequests_5()
-	{
-		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
-				MaterialRequest.builder()
-						.qtyToSupply(Quantitys.of("31", uomId))
-						.build(),
-				Quantitys.zero(uomId)
-		);
+		@Test
+		void total31_null_perOrder()
+		{
+			final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
+					materialRequest("31"),
+					null
+			);
 
-		assertThat(materialRequests)
-				.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
-				.containsExactly("31");
+			assertThat(materialRequests)
+					.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
+					.containsExactly("31");
+		}
+
+		@Test
+		void total31_31perOrder()
+		{
+			final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
+					materialRequest("31"),
+					qty("31")
+			);
+
+			assertThat(materialRequests)
+					.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
+					.containsExactly("31");
+		}
+
+		@Test
+		void total31_32perOrder()
+		{
+			final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
+					materialRequest("31"),
+					qty("32")
+			);
+
+			assertThat(materialRequests)
+					.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
+					.containsExactly("31");
+		}
+
+		@Test
+		void total31_0perOrder()
+		{
+			final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
+					materialRequest("31"),
+					qty("0")
+			);
+
+			assertThat(materialRequests)
+					.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
+					.containsExactly("31");
+		}
 	}
 }

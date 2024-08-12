@@ -29,6 +29,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.OptionalBoolean;
+import de.metas.util.Optionals;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -36,6 +37,7 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import io.cucumber.datatable.DataTable;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
@@ -58,7 +60,8 @@ import java.util.function.Function;
 public class DataTableRow
 {
 	private final int lineNo; // introduced to improve logging/debugging
-	private final Map<String, String> map;
+	@NonNull private final Map<String, String> map;
+	@Nullable @Setter private String additionalRowIdentifierColumnName;
 
 	private static final Splitter COMMA_SEPARATED_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
@@ -212,11 +215,21 @@ public class DataTableRow
 	@NonNull
 	public StepDefDataIdentifier getAsIdentifier()
 	{
-		return getAsIdentifier(StepDefDataIdentifier.SUFFIX);
+		return getAsOptionalIdentifier()
+				.orElseThrow(() -> new AdempiereException("No row identifier")
+						.appendParametersToMessage()
+						.setParameter("row", map)
+						.setParameter("additionalRowIdentifierColumnName", additionalRowIdentifierColumnName));
 	}
 
 	@NonNull
-	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier() {return getAsOptionalIdentifier(StepDefDataIdentifier.SUFFIX);}
+	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier()
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> getAsOptionalIdentifier(StepDefDataIdentifier.SUFFIX),
+				() -> additionalRowIdentifierColumnName != null ? getAsOptionalIdentifier(additionalRowIdentifierColumnName) : Optional.empty()
+		);
+	}
 
 	@NonNull
 	public StepDefDataIdentifier getAsIdentifier(@NonNull final String columnName)

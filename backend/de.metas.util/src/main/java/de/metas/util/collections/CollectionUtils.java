@@ -168,7 +168,8 @@ public final class CollectionUtils
 			}
 		}
 
-		Check.assume(result.size() == 1, "One and only one matching element was expected but we got more or none: {}", result);
+		final int size = result.size();
+		Check.assume(size == 1, "One and only one matching element was expected but we got {}: {}", size, result);
 		return result.get(0);
 	}
 

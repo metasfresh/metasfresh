@@ -31,6 +31,7 @@ import de.metas.common.externalreference.v2.JsonExternalReferenceResponseItem;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -45,6 +46,7 @@ import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
+import de.metas.externalreference.bankaccount.BPBankAccountType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
@@ -65,6 +67,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
@@ -77,10 +80,11 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID;
 import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_S_ExternalReference_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
 import static org.glassfish.gmbal.impl.TypeConverterImpl.NULL_STRING;
@@ -97,6 +101,7 @@ public class S_ExternalReference_StepDef
 	private final C_BPartner_Location_StepDefData bpLocationTable;
 	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
 	private final AD_Org_StepDefData orgTable;
+	private final C_BP_BankAccount_StepDefData bankAccountTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -115,6 +120,7 @@ public class S_ExternalReference_StepDef
 			@NonNull final C_BPartner_Location_StepDefData bpLocationTable,
 			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable,
 			@NonNull final AD_Org_StepDefData orgTable,
+			@NonNull final C_BP_BankAccount_StepDefData bankAccountTable,
 			@NonNull final TestContext testContext)
 	{
 		this.externalSystems = externalSystems;
@@ -126,6 +132,7 @@ public class S_ExternalReference_StepDef
 		this.bpLocationTable = bpLocationTable;
 		this.externalSystemConfigTable = externalSystemConfigTable;
 		this.orgTable = orgTable;
+		this.bankAccountTable = bankAccountTable;
 		this.testContext = testContext;
 		this.externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
 		this.externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
@@ -153,7 +160,7 @@ public class S_ExternalReference_StepDef
 			assertThat(externalReferenceRecord).as("S_ExternalReference with [ExternalSystem=%s, Type=%s, ExternalReference=%s]", externalSystem, type, externalReference).isNotNull();
 
 			final SoftAssertions softly = new SoftAssertions();
-			
+
 			final String orgCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(orgCodeIdentifier))
 			{
@@ -199,7 +206,7 @@ public class S_ExternalReference_StepDef
 					softly.assertThat(externalReferenceRecord.getExternalSystem_Config_ID()).as("ExternalSystem_Config_ID").isEqualTo(Integer.parseInt(externalSystemParentConfigId));
 				}
 			}
-			
+
 			softly.assertAll();
 		}
 	}
@@ -298,6 +305,17 @@ public class S_ExternalReference_StepDef
 
 				externalReferenceRecord.setRecord_ID(productId);
 			}
+			else if (BPBankAccountType.BPBankAccount.getCode().equals(type.getCode()))
+			{
+				final String bpBankAccountIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BP_BankAccount_ID + "." + TABLECOLUMN_IDENTIFIER);
+				assertThat(bpBankAccountIdentifier).isNotNull();
+
+				final int bankAccountId = bankAccountTable.getOptional(bpBankAccountIdentifier)
+						.map(I_C_BP_BankAccount::getC_BP_BankAccount_ID)
+						.orElseGet(() -> Integer.parseInt(bpBankAccountIdentifier));
+
+				externalReferenceRecord.setRecord_ID(bankAccountId);
+			}
 			else
 			{
 				throw new AdempiereException("Unknown X_S_ExternalReference.Type! type:" + typeCode);
@@ -330,9 +348,9 @@ public class S_ExternalReference_StepDef
 			final String expectedExternalReference = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_ExternalReference);
 
 			final JsonExternalReferenceResponseItem item = Check.singleElement(referenceItems
-																					   .stream()
-																					   .filter(referenceItem -> referenceItem.getLookupItem().getExternalReference().equals(expectedExternalReference))
-																					   .collect(ImmutableList.toImmutableList()));
+					.stream()
+					.filter(referenceItem -> referenceItem.getLookupItem().getExternalReference().equals(expectedExternalReference))
+					.collect(ImmutableList.toImmutableList()));
 
 			final String externalReferenceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_ExternalReference_ID + "." + TABLECOLUMN_IDENTIFIER);
 

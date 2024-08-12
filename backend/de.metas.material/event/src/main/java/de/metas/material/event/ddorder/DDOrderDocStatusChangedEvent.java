@@ -3,6 +3,7 @@ package de.metas.material.event.ddorder;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
@@ -40,14 +41,14 @@ public class DDOrderDocStatusChangedEvent implements MaterialEvent
 
 	int ddOrderId;
 
-	String newDocStatus;
+	DocStatus newDocStatus;
 
 	@JsonCreator
 	@Builder
 	public DDOrderDocStatusChangedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("ddOrderId") final int ddOrderId,
-			@JsonProperty("newDocStatus") final String newDocStatus)
+			@JsonProperty("newDocStatus") final DocStatus newDocStatus)
 	{
 		this.eventDescriptor = eventDescriptor;
 		this.ddOrderId = ddOrderId;

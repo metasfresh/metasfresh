@@ -138,6 +138,8 @@ public class InvoiceHeaderImplBuilder
 
 	private int auctionId;
 
+	private int orgBankAccountId;
+
 	@Getter
 	private int C_Harvesting_Calendar_ID = REPO_ID_UNSET_VALUE;
 	@Getter
@@ -223,6 +225,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setYearId(YearId.ofRepoIdOrNull(getHarvesting_Year_ID()));
 		invoiceHeader.setWarehouseId(WarehouseId.ofRepoIdOrNull(getM_Warehouse_ID()));
 		invoiceHeader.setAuctionId(AuctionId.ofRepoIdOrNull(auctionId));
+		invoiceHeader.setOrgBankAccountId(BankAccountId.ofRepoIdOrNull(getOrgBankAccount_ID()));
 		invoiceHeader.setCreditedInvoiceReinvoicable(isCreditedInvoiceReinvoicable());
 
 		return invoiceHeader;
@@ -749,5 +752,15 @@ public class InvoiceHeaderImplBuilder
 	public void setBankAccountId(final int bankAccountId)
 	{
 		this.bankAccountId = checkOverrideID("C_BP_BankAccount_ID", this.bankAccountId, bankAccountId);
+	}
+
+	public void setOrgBankAccountId(final int orgBankAccountId)
+	{
+		this.orgBankAccountId = checkOverrideID("Org_BP_Account_ID", this.orgBankAccountId, orgBankAccountId);
+	}
+
+	public int getOrgBankAccount_ID()
+	{
+		return orgBankAccountId;
 	}
 }

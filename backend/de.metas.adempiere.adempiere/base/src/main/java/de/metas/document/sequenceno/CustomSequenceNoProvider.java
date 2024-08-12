@@ -4,7 +4,6 @@ import de.metas.document.DocumentSequenceInfo;
 import lombok.NonNull;
 import org.compiere.util.Evaluatee;
 
-import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 /*

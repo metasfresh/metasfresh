@@ -46,7 +46,6 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.age.AgeAttributesService;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
@@ -69,7 +68,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -80,7 +78,6 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -1161,30 +1158,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.create()
 				.firstOnly(I_M_HU_PI.class);
 
-	}
-
-	@Override
-	public I_DD_NetworkDistribution retrieveEmptiesDistributionNetwork(
-			final @CacheCtx Properties ctx,
-			final I_M_Product product_NOTUSED,
-			final @CacheTrx String trxName)
-	{
-		return retrieveEmptiesDistributionNetwork(ctx, trxName);
-	}
-
-	@Cached(cacheName = I_DD_NetworkDistribution.Table_Name
-			+ "#by"
-			+ "#" + I_DD_NetworkDistribution.COLUMNNAME_IsHUDestroyed)
-	@Nullable
-	I_DD_NetworkDistribution retrieveEmptiesDistributionNetwork(
-			final @CacheCtx Properties ctx,
-			final @CacheTrx String trxName)
-	{
-		return queryBL.createQueryBuilder(I_DD_NetworkDistribution.class, ctx, trxName)
-				.addOnlyActiveRecordsFilter()
-				.filter(new EqualsQueryFilter<>(I_DD_NetworkDistribution.COLUMNNAME_IsHUDestroyed, true))
-				.create()
-				.firstOnly(I_DD_NetworkDistribution.class);
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateSaveResult;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler.OnNewOrChangeAdvise;
 import lombok.NonNull;
@@ -52,7 +53,7 @@ public class CandidateChangeService
 		logger.info("Handlers: {}", type2handler);
 	}
 
-	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
+	public CandidateSaveResult onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
 		return onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 	}
@@ -60,7 +61,7 @@ public class CandidateChangeService
 	/**
 	 * Persists the given candidate and decides if further events shall be fired.
 	 */
-	public Candidate onCandidateNewOrChange(
+	public CandidateSaveResult onCandidateNewOrChange(
 			@NonNull final Candidate candidate,
 			@NonNull final OnNewOrChangeAdvise advise)
 	{

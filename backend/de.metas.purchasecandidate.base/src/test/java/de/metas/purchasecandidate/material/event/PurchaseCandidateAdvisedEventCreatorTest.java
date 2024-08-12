@@ -8,16 +8,18 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
-import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
-import de.metas.material.planning.impl.MaterialPlanningContext;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.pricing.conditions.BreakValueType;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
@@ -31,7 +33,6 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -65,6 +66,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 {
 	private PurchaseCandidateAdvisedEventCreator purchaseCandidateAdvisedEventCreator; // service under test
 
+	private final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(10, 20);
 	private BPartnerId bpartnerVendorId;
 	private ProductId productId;
 
@@ -96,7 +98,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		bPartnerVendorRecord.setPO_DiscountSchema(discountSchemaRecord); // note that right now we don't need to have an actual price
 		save(bPartnerVendorRecord);
 		this.bpartnerVendorId = BPartnerId.ofRepoId(bPartnerVendorRecord.getC_BPartner_ID());
-
+		
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setM_Product_Category_ID(60);
 		product.setValue("Value");
@@ -108,10 +110,10 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 	@Nested
 	class createPurchaseAdvisedEvent
 	{
-		SupplyRequiredDescriptor createSupplyRequiredDescriptor()
+		SupplyRequiredDescriptor newSupplyRequiredDescriptor()
 		{
 			return SupplyRequiredDescriptor.builder()
-					.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
+					.eventDescriptor(EventDescriptor.ofClientAndOrg(clientAndOrgId))
 					.materialDescriptor(MaterialDescriptor.builder()
 							.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(productId.getRepoId()))
 							.warehouseId(WarehouseId.ofRepoId(40))
@@ -124,14 +126,28 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 					.build();
 		}
 
+		private MaterialPlanningContext.MaterialPlanningContextBuilder newMaterialPlanningContext()
+		{
+			return MaterialPlanningContext.builder()
+					.productId(ProductId.ofRepoId(1))
+					.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+					.warehouseId(WarehouseId.MAIN)
+					//.productPlanning(productPlanning)
+					.plantId(ResourceId.ofRepoId(2))
+					.clientAndOrgId(clientAndOrgId)
+					//.build()
+					;
+		}
+
 		@Test
 		void withoutLotForLot()
 		{
-			final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptor();
+			final SupplyRequiredDescriptor supplyRequiredDescriptor = newSupplyRequiredDescriptor();
 			final ProductPlanning productPlanning = ProductPlanning.builder().id(ProductPlanningId.ofRepoId(123)).isPurchased(true).isLotForLot(false).build();
 
-			final IMaterialPlanningContext context = new MaterialPlanningContext();
-			context.setProductPlanning(productPlanning);
+			final MaterialPlanningContext context = newMaterialPlanningContext()
+					.productPlanning(productPlanning)
+					.build();
 
 			// invoke the method under test
 			final PurchaseCandidateAdvisedEvent event = purchaseCandidateAdvisedEventCreator.createPurchaseAdvisedEvent(supplyRequiredDescriptor, context).orElse(null);
@@ -149,11 +165,12 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		@Test
 		void withLotForLot()
 		{
-			final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptor();
+			final SupplyRequiredDescriptor supplyRequiredDescriptor = newSupplyRequiredDescriptor();
 			final ProductPlanning productPlanning = ProductPlanning.builder().id(ProductPlanningId.ofRepoId(123)).isPurchased(true).isLotForLot(true).build();
 
-			final IMaterialPlanningContext context = new MaterialPlanningContext();
-			context.setProductPlanning(productPlanning);
+			final MaterialPlanningContext context = newMaterialPlanningContext()
+					.productPlanning(productPlanning)
+					.build();
 
 			// invoke the method under test
 			final PurchaseCandidateAdvisedEvent event = purchaseCandidateAdvisedEventCreator.createPurchaseAdvisedEvent(supplyRequiredDescriptor, context).orElse(null);

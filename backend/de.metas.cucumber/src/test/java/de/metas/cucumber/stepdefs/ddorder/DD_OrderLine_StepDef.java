@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
@@ -43,7 +44,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DD_OrderLine_StepDef
 {
@@ -72,7 +73,7 @@ public class DD_OrderLine_StepDef
 
 		try
 		{
-			assertThat(getQueryByOrderLineId(orderLineId).count() == 0).isTrue();
+			assertThat(queryByOrderLineId(orderLineId).count()).isZero();
 		}
 		catch (final Throwable throwable)
 		{
@@ -91,8 +92,8 @@ public class DD_OrderLine_StepDef
 		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
 		assertThat(orderLineId).isNotNull();
 
-		final Supplier<Optional<I_DD_OrderLine>> locateDDOrderLine = () -> Optional.ofNullable(getQueryByOrderLineId(orderLineId)
-																									   .firstOnly(I_DD_OrderLine.class));
+		final Supplier<Optional<I_DD_OrderLine>> locateDDOrderLine = () -> Optional.ofNullable(queryByOrderLineId(orderLineId)
+				.firstOnly(I_DD_OrderLine.class));
 
 		final I_DD_OrderLine ddOrderLineRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, locateDDOrderLine);
 
@@ -109,7 +110,7 @@ public class DD_OrderLine_StepDef
 
 		message.append("DD_OrderLine records:").append("\n");
 
-		getQueryByOrderLineId(orderLineId)
+		queryByOrderLineId(orderLineId)
 				.stream(I_DD_OrderLine.class)
 				.forEach(ddOrderLine -> message
 						.append(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID).append(" : ").append(ddOrderLine.getDD_OrderLine_ID()).append(" ; ")
@@ -119,7 +120,7 @@ public class DD_OrderLine_StepDef
 	}
 
 	@NonNull
-	private IQuery<I_DD_OrderLine> getQueryByOrderLineId(@NonNull final OrderLineId orderLineId)
+	private IQuery<I_DD_OrderLine> queryByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		return queryBL.createQueryBuilder(I_DD_OrderLine.class)
 				.addEqualsFilter(I_DD_OrderLine.COLUMN_C_OrderLineSO_ID, orderLineId)
@@ -127,9 +128,11 @@ public class DD_OrderLine_StepDef
 	}
 
 	@Nullable
-	private OrderLineId getOrderLineIdByIdentifier(@NonNull final String orderLineIdentifier)
+	private OrderLineId getOrderLineIdByIdentifier(@NonNull final String identifierStr)
 	{
-		return OrderLineId.ofRepoIdOrNull(identifierIdsTable.getOptional(orderLineIdentifier)
-												  .orElseGet(() -> orderLineTable.get(orderLineIdentifier).getC_OrderLine_ID()));
+		final StepDefDataIdentifier identifier = StepDefDataIdentifier.ofString(identifierStr);
+
+		return identifierIdsTable.getOptional(identifier, OrderLineId.class)
+				.orElseGet(() -> orderLineTable.getId(identifier));
 	}
 }

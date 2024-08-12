@@ -85,5 +85,5 @@ public class OrderLineId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(@Nullable OrderLineId id1, @Nullable OrderLineId id2) {return Objects.equals(id1, id2);}
+	public static boolean equals(@Nullable final OrderLineId id1, @Nullable final OrderLineId id2) {return Objects.equals(id1, id2);}
 }
