@@ -156,8 +156,8 @@ public class AddressBuilderTest
 
 	private GreetingId prepareGreeting(@NonNull final String name)
 	{
-		final Greeting greeting = greetingRepository.createGreeting(
-				CreateGreetingRequest.builder()
+		final Greeting greeting = greetingRepository.upsertGreeting(
+				UpsertGreetingRequest.builder()
 						.name(name)
 						.greeting(name)
 						.orgId(orgId)
@@ -1063,18 +1063,6 @@ public class AddressBuilderTest
 			saveRecord(location);
 
 			return location;
-		}
-
-		private GreetingId prepareGreeting(@NonNull final String name)
-		{
-			final Greeting greeting = greetingRepository.upsertGreeting(
-					UpsertGreetingRequest.builder()
-							.name(name)
-							.greeting(name)
-							.orgId(orgId)
-							.build());
-
-			return greeting.getId();
 		}
 
 		@SuppressWarnings("SameParameterValue")
