@@ -2,7 +2,8 @@ package de.metas.material.planning.ddordercandidate;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.planning.MaterialPlanningContext;
@@ -12,6 +13,8 @@ import de.metas.material.planning.ddorder.DistributionNetwork;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkLine;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -23,12 +26,17 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +48,7 @@ class DDOrderCandidateDataFactory
 	@NonNull final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
-	@NonNull private final ModelProductDescriptorExtractor productDescriptorFactory;
+	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
 
 	public List<DDOrderCandidateData> create(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
@@ -129,22 +137,27 @@ class DDOrderCandidateDataFactory
 
 			final Quantity qtyToMoveInProductUOM = uomConversionBL.convertToProductUOM(qtyToMove, context.getProductId());
 
+			final Instant supplyDate = supplyRequiredDescriptor.getDemandDate();
+			final int durationDays = DDOrderUtil.calculateDurationDays(productPlanning, networkLine);
+			final Instant demandDate = supplyDate.minus(durationDays, ChronoUnit.DAYS);
+
 			final DDOrderCandidateData candidate = DDOrderCandidateData.builder()
+					.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, targetWarehouseOrgId))
 					.productPlanningId(productPlanning.getIdNotNull())
 					.distributionNetworkAndLineId(DistributionNetworkAndLineId.of(network.getId(), networkLine.getId()))
-					.orgId(targetWarehouseOrgId)
 					.sourceWarehouseId(sourceWarehouseId)
 					.targetWarehouseId(targetWarehouseId)
 					.targetPlantId(targetPlantId)
-					.datePromised(supplyRequiredDescriptor.getDemandDate())
+					.supplyDate(supplyDate)
+					.demandDate(demandDate)
 					.shipperId(networkLine.getShipperId())
 					.customerId(BPartnerId.toRepoId(supplyRequiredDescriptor.getCustomerId()))
 					.salesOrderLineId(supplyRequiredDescriptor.getOrderLineId())
-					.ppOrderRef(supplyRequiredDescriptor.getPpOrderRef())
-					.productDescriptor(productDescriptorFactory.createProductDescriptor(context.getProductId().getRepoId(), context.getAttributeSetInstanceId()))
+					.forwardPPOrderRef(supplyRequiredDescriptor.getPpOrderRef())
+					.productDescriptor(createProductDescriptor(context))
+					.fromWarehouseMinMaxDescriptor(replenishInfoRepository.getBy(sourceWarehouseId, context.getProductId()).toMinMaxDescriptor())
 					.qty(qtyToMoveInProductUOM.toBigDecimal())
 					.uomId(qtyToMoveInProductUOM.getUomId().getRepoId())
-					.durationDays(DDOrderUtil.calculateDurationDays(productPlanning, networkLine))
 					.simulated(supplyRequiredDescriptor.isSimulated())
 					.build();
 
@@ -165,6 +178,15 @@ class DDOrderCandidateDataFactory
 		}
 
 		return result;
+	}
+
+	private static ProductDescriptor createProductDescriptor(final @NonNull MaterialPlanningContext context)
+	{
+		final ProductId productId = context.getProductId();
+		final AttributeSetInstanceId asiId = context.getAttributeSetInstanceId();
+
+		final AttributesKey storageAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
+		return ProductDescriptor.forProductAndAttributes(productId.getRepoId(), storageAttributesKey, asiId.getRepoId());
 	}
 
 	private boolean checkWarehouseInTransitExists(final WarehouseId sourceWarehouseId)

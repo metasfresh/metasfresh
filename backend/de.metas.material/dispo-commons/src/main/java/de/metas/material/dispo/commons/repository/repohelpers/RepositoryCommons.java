@@ -75,7 +75,7 @@ public class RepositoryCommons
 		final IQueryBuilder<I_MD_Candidate> builder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter();
 
-		if (CandidatesQuery.FALSE.equals(query))
+		if (query.isFalse())
 		{
 			builder.filter(ConstantQueryFilter.of(false));
 			return builder;
@@ -93,7 +93,7 @@ public class RepositoryCommons
 
 		if (query.getBusinessCase() != null)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_BusinessCase, query.getBusinessCase().toString());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_BusinessCase, query.getBusinessCase());
 		}
 
 		if (!query.getParentId().isUnspecified())

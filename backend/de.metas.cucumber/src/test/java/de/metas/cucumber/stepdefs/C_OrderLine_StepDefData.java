@@ -55,7 +55,7 @@ public class C_OrderLine_StepDefData extends StepDefData<I_C_OrderLine>
 		}
 		else
 		{
-			return OrderLineId.ofRepoId(get(identifier).getC_OrderLine_ID());
+			return StepDefDataGetIdAware.super.getId(identifier);
 		}
 	}
 }

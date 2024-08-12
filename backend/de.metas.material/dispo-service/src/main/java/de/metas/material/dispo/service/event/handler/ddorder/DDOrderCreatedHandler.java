@@ -7,7 +7,6 @@ import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
@@ -74,21 +73,9 @@ public class DDOrderCreatedHandler extends DDOrderAdvisedOrCreatedHandler<DDOrde
 	}
 
 	@Override
-	public void validateEvent(@NonNull final DDOrderCreatedEvent event)
-	{
-		event.validate();
-	}
-
-	@Override
 	public void handleEvent(DDOrderCreatedEvent event)
 	{
 		createAndProcessCandidates(event);
-	}
-
-	@Override
-	protected Flag extractIsAdviseEvent(@NonNull final AbstractDDOrderEvent ddOrderEvent)
-	{
-		return Flag.FALSE_DONT_UPDATE;
 	}
 
 	@Override
@@ -103,7 +90,7 @@ public class DDOrderCreatedHandler extends DDOrderAdvisedOrCreatedHandler<DDOrde
 			return CandidatesQuery.fromId(CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId()));
 		}
 
-		final DDOrderCreatedEvent ddOrderCreatedEvent = cast(ddOrderEvent);
+		final DDOrderCreatedEvent ddOrderCreatedEvent = DDOrderCreatedEvent.cast(ddOrderEvent);
 
 		final DDOrder ddOrder = ddOrderCreatedEvent.getDdOrder();
 		final MaterialDispoGroupId groupId = ddOrder.getMaterialDispoGroupId();
@@ -117,19 +104,11 @@ public class DDOrderCreatedHandler extends DDOrderAdvisedOrCreatedHandler<DDOrde
 				.type(candidateType)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.groupId(groupId)
-				.materialDescriptorQuery(
-						createMaterialDescriptorQuery(
-								ddOrderLine.getProductDescriptor()))
+				.materialDescriptorQuery(toMaterialDescriptorQuery(ddOrderLine.getProductDescriptor()))
 				.build();
 	}
 
-	private DDOrderCreatedEvent cast(@NonNull final AbstractDDOrderEvent ddOrderEvent)
-	{
-		return (DDOrderCreatedEvent)ddOrderEvent;
-	}
-
-	private static MaterialDescriptorQuery createMaterialDescriptorQuery(
-			@NonNull final ProductDescriptor productDescriptor)
+	private static MaterialDescriptorQuery toMaterialDescriptorQuery(@NonNull final ProductDescriptor productDescriptor)
 	{
 		return MaterialDescriptorQuery.builder()
 				.productId(productDescriptor.getProductId())

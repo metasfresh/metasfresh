@@ -261,6 +261,8 @@ public interface IQuery<T>
 	 */
 	boolean anyMatch() throws DBException;
 
+	default boolean noneMatch() {return !anyMatch();}
+
 	/**
 	 * Returns an {@link Iterator} over current query selection.
 	 * <p>

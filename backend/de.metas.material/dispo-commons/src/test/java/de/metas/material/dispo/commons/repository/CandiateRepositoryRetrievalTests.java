@@ -105,7 +105,7 @@ public class CandiateRepositoryRetrievalTests
 
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 
-		repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo));
+		repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval));
 	}
 
 	@Test
@@ -369,6 +369,7 @@ public class CandiateRepositoryRetrievalTests
 		distributionDetailRecord.setDD_NetworkDistributionLine_ID(71);
 		distributionDetailRecord.setPP_Product_Planning_ID(81);
 		distributionDetailRecord.setMD_Candidate(record);
+		distributionDetailRecord.setDD_Order_Candidate_ID(99);
 		distributionDetailRecord.setDD_Order_ID(101);
 		distributionDetailRecord.setDD_OrderLine_ID(111);
 		distributionDetailRecord.setDD_Order_DocStatus(DocStatus.Completed.getCode());
@@ -388,8 +389,10 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(distributionDetail).isNotNull();
 		assertThat(distributionDetail.getDistributionNetworkAndLineId()).isEqualTo(DistributionNetworkAndLineId.ofRepoIds(70, 71));
 		assertThat(distributionDetail.getProductPlanningId()).isEqualTo(ProductPlanningId.ofRepoId(81));
-		assertThat(distributionDetail.getDdOrderId()).isEqualTo(101);
-		assertThat(distributionDetail.getDdOrderLineId()).isEqualTo(111);
+		assertThat(distributionDetail.getDdOrderRef()).isNotNull();
+		assertThat(distributionDetail.getDdOrderRef().getDdOrderCandidateId()).isEqualTo(99);
+		assertThat(distributionDetail.getDdOrderRef().getDdOrderId()).isEqualTo(101);
+		assertThat(distributionDetail.getDdOrderRef().getDdOrderLineId()).isEqualTo(111);
 		assertThat(distributionDetail.getShipperId()).isEqualTo(ShipperId.ofRepoId(121));
 		assertThat(distributionDetail.getDdOrderDocStatus()).isEqualTo(DocStatus.Completed);
 

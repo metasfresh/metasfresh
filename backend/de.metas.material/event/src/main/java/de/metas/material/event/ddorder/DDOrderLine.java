@@ -2,18 +2,18 @@ package de.metas.material.event.ddorder;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 /*
  * #%L
@@ -37,64 +37,21 @@ import java.math.BigDecimal;
  * #L%
  */
 @Value
+@Builder
+@Jacksonized
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class DDOrderLine
 {
 	int salesOrderLineId;
 
-	@NonNull
-	ProductDescriptor productDescriptor;
+	@NonNull ProductDescriptor productDescriptor;
+	@Nullable MinMaxDescriptor fromWarehouseMinMaxDescriptor;
+	@NonNull BigDecimal qtyMoved;
+	@NonNull BigDecimal qtyToMove;
 
-	@Nullable
-	MinMaxDescriptor fromWarehouseMinMaxDescriptor;
-
-	@NonNull
-	BigDecimal qty;
-
-	@Nullable
-	BigDecimal qtyPending;
-
-	/**
-	 * {@link DDOrder#getDatePromised()} minus this number of days tells us when the distribution for this particular line needs to start
-	 */
-	int durationDays;
-
+	@NonNull Instant demandDate;
 	@Nullable DistributionNetworkAndLineId distributionNetworkAndLineId;
-
 	int ddOrderLineId;
+	@Nullable BPartnerId bpartnerId;
 
-	int bPartnerId;
-
-	@JsonCreator
-	@Builder
-	public DDOrderLine(
-			@JsonProperty("salesOrderLineId") final int salesOrderLineId,
-			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
-			@JsonProperty("fromWarehouseMinMaxDescriptor") @Nullable final MinMaxDescriptor fromWarehouseMinMaxDescriptor,
-			@JsonProperty("bPartnerId") final int bPartnerId,
-			@JsonProperty("qty") @NonNull final BigDecimal qty,
-			@JsonProperty("qtyPending") final @Nullable BigDecimal qtyPending,
-			@JsonProperty("durationDays") final int durationDays,
-			@JsonProperty("distributionNetworkAndLineId") @Nullable final DistributionNetworkAndLineId distributionNetworkAndLineId,
-			@JsonProperty("ddOrderLineId") final int ddOrderLineId)
-	{
-		Preconditions.checkArgument(durationDays >= 0, "The Given parameter durationDays=%s needs to be > 0", "durationDays");
-
-		this.salesOrderLineId = salesOrderLineId;
-
-		this.productDescriptor = productDescriptor;
-		this.fromWarehouseMinMaxDescriptor = fromWarehouseMinMaxDescriptor;
-
-		this.bPartnerId = bPartnerId;
-
-		this.qty = qty;
-
-		this.durationDays = durationDays;
-
-		this.distributionNetworkAndLineId = distributionNetworkAndLineId; // can be null if the DD_Order was created "manually"
-
-		this.ddOrderLineId = ddOrderLineId;
-
-		this.qtyPending = qtyPending;
-	}
 }

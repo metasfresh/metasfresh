@@ -1,53 +1,19 @@
 package de.metas.distribution.ddorder.lowlevel.interceptor;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
-import de.metas.distribution.ddorder.material_dispo.DDOrderProducer;
 import de.metas.document.engine.DocStatus;
-import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
-import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
-import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
-import de.metas.material.event.pporder.MaterialDispoGroupId;
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ProductPlanning;
-import de.metas.material.planning.ProductPlanningId;
-import de.metas.material.planning.ddorder.DDOrderUtil;
-import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
-import de.metas.material.planning.ddorder.DistributionNetworkLine;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
-import de.metas.material.replenish.ReplenishInfo;
-import de.metas.material.replenish.ReplenishInfoRepository;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
-import de.metas.shipping.ShipperId;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.validator.PP_Order;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * A dedicated model interceptor whose job it is to fire events on the {@link MetasfreshEventBusService}.<br>
@@ -60,133 +26,18 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DD_Order_PostMaterialEvent
 {
-	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	@NonNull final DistributionNetworkRepository distributionNetworkRepository;
-	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
-	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
 	@NonNull private final PostMaterialEventService materialEventService;
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void fireMaterialEvent(@NonNull final I_DD_Order ddOrder)
-	{
-		// when going with @DocAction, here the ppOrder's docStatus would still be "IP" even if we are invoked on afterComplete.
-		// also, it might still be rolled back
-		// those aren't show-stoppers, but we therefore rather work with @ModelChange
-
-		final List<DDOrderCreatedEvent> events = createEvents(ddOrder);
-
-		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
-		events.forEach(materialEventService::postEventAfterNextCommit);
-	}
-
-	@NonNull
-	public static DDOrderBuilder createAndInitPPOrderPojoBuilder(@NonNull final I_DD_Order ddOrderRecord)
-	{
-		return DDOrder.builder()
-				.datePromised(TimeUtil.asInstantNonNull(ddOrderRecord.getDatePromised()))
-				.ddOrderId(ddOrderRecord.getDD_Order_ID())
-				.docStatus(DocStatus.ofCode(ddOrderRecord.getDocStatus()))
-				.orgId(OrgId.ofRepoId(ddOrderRecord.getAD_Org_ID()))
-				.plantId(ResourceId.ofRepoIdOrNull(ddOrderRecord.getPP_Plant_ID()))
-				.productPlanningId(ProductPlanningId.ofRepoIdOrNull(ddOrderRecord.getPP_Product_Planning_ID()))
-				.shipperId(ShipperId.ofRepoIdOrNull(ddOrderRecord.getM_Shipper_ID()))
-				.simulated(ddOrderRecord.isSimulated());
-	}
-
-	@NonNull
-	private List<DDOrderCreatedEvent> createEvents(@NonNull final I_DD_Order ddOrderRecord)
-	{
-		final DDOrderBuilder ddOrderPojoBuilder = createAndInitPPOrderPojoBuilder(ddOrderRecord);
-
-		final List<DDOrderCreatedEvent> events = new ArrayList<>();
-
-		final MaterialDispoGroupId groupIdFromDDOrderRequestedEvent = DDOrderProducer.ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.getValue(ddOrderRecord);
-		ddOrderPojoBuilder.materialDispoGroupId(groupIdFromDDOrderRequestedEvent);
-
-		final List<I_DD_OrderLine> ddOrderLines = ddOrderLowLevelService.retrieveLines(ddOrderRecord);
-		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
-		{
-			final DistributionNetworkLine distributionNetworkLine = extractDistributionNetworkAndLineId(ddOrderLine)
-					.map(distributionNetworkRepository::getLineById)
-					.orElse(null);
-
-			final ProductPlanning productPlanning = getProductPlanning(ddOrderRecord);
-			final int durationDays = DDOrderUtil.calculateDurationDays(productPlanning, distributionNetworkLine);
-
-			ddOrderPojoBuilder.lines(ImmutableList.of(createDDOrderLinePojo(replenishInfoRepository, ddOrderLine, ddOrderRecord, durationDays)));
-
-			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ddOrderRecord.getAD_Client_ID(), ddOrderRecord.getAD_Org_ID());
-
-			final DDOrder ddOrder = ddOrderPojoBuilder.build();
-
-			final DDOrderCreatedEvent event = DDOrderCreatedEvent.builder()
-					.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, getDDOrderRequestedEventTrace(ddOrderRecord)))
-					.ddOrder(ddOrder)
-					.fromWarehouseId(warehouseDAO.getWarehouseIdByLocatorRepoId(ddOrderLine.getM_Locator_ID()))
-					.toWarehouseId(warehouseDAO.getWarehouseIdByLocatorRepoId(ddOrderLine.getM_LocatorTo_ID()))
-					.build();
-
-			events.add(event);
-		}
-		return events;
-	}
-
-	private static Optional<DistributionNetworkAndLineId> extractDistributionNetworkAndLineId(final I_DD_OrderLine ddOrderLine)
-	{
-		return DistributionNetworkAndLineId.optionalOfRepoIds(ddOrderLine.getDD_NetworkDistribution_ID(), ddOrderLine.getDD_NetworkDistributionLine_ID());
-	}
-
-	@Nullable
-	private ProductPlanning getProductPlanning(final @NonNull I_DD_Order ddOrderRecord)
-	{
-		final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoIdOrNull(ddOrderRecord.getPP_Product_Planning_ID());
-		return productPlanningId != null ? productPlanningDAO.getById(productPlanningId) : null;
-	}
-
-	public static DDOrderLine createDDOrderLinePojo(
-			@NonNull final ReplenishInfoRepository replenishInfoRepository,
-			@NonNull final I_DD_OrderLine ddOrderLine,
-			@NonNull final I_DD_Order ddOrder,
-			final int durationDays)
-	{
-		final ModelProductDescriptorExtractor productDescriptorFactory = SpringContextHolder.instance.getBean(ModelProductDescriptorExtractor.class);
-
-		final int bPartnerId = CoalesceUtil.firstGreaterThanZero(ddOrderLine.getC_BPartner_ID(), ddOrder.getC_BPartner_ID());
-
-		final ReplenishInfo replenishInfo = replenishInfoRepository.getBy(
-				WarehouseId.ofRepoId(ddOrder.getM_Warehouse_From_ID()), // both from-warehouse and product are mandatory DB-columns
-				ProductId.ofRepoId(ddOrderLine.getM_Product_ID()));
-
-		return DDOrderLine.builder()
-				.productDescriptor(productDescriptorFactory.createProductDescriptor(ddOrderLine))
-				.bPartnerId(bPartnerId)
-				.ddOrderLineId(ddOrderLine.getDD_OrderLine_ID())
-				.qty(ddOrderLine.getQtyDelivered())
-				.qtyPending(ddOrderLine.getQtyOrdered().subtract(ddOrderLine.getQtyDelivered()))
-				.distributionNetworkAndLineId(extractDistributionNetworkAndLineId(ddOrderLine).orElse(null))
-				.salesOrderLineId(ddOrderLine.getC_OrderLineSO_ID())
-				.durationDays(durationDays)
-				.fromWarehouseMinMaxDescriptor(replenishInfo.toMinMaxDescriptor())
-				.build();
-	}
-
-	@ModelChange(//
-			timings = ModelValidator.TYPE_AFTER_CHANGE, //
-			ifColumnsChanged = I_DD_Order.COLUMNNAME_DocStatus)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_DD_Order.COLUMNNAME_DocStatus)
 	public void postMaterialEvent_ddOrderDocStatusChange(@NonNull final I_DD_Order ddOrder)
 	{
-		final DDOrderDocStatusChangedEvent event = DDOrderDocStatusChangedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrder.getAD_Client_ID(), ddOrder.getAD_Org_ID()))
-				.ddOrderId(ddOrder.getDD_Order_ID())
-				.newDocStatus(DocStatus.ofCode(ddOrder.getDocStatus()))
-				.build();
-
-		materialEventService.postEventAfterNextCommit(event);
-	}
-
-	private static String getDDOrderRequestedEventTrace(@NonNull final I_DD_Order ddOrderRecord)
-	{
-		return DDOrderProducer.ATTR_DDORDER_REQUESTED_EVENT_TRACE_ID.getValue(ddOrderRecord);
+		materialEventService.postEventAfterNextCommit(
+				DDOrderDocStatusChangedEvent.builder()
+						.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrder.getAD_Client_ID(), ddOrder.getAD_Org_ID()))
+						.ddOrderId(ddOrder.getDD_Order_ID())
+						.newDocStatus(DocStatus.ofCode(ddOrder.getDocStatus()))
+						.build()
+		);
 	}
 }
