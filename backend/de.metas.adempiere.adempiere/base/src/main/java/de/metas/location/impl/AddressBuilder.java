@@ -735,30 +735,22 @@ public class AddressBuilder
 			final I_AD_User user)
 	{
 
-		final boolean existsBPName = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
-		final boolean existsBPGreeting = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
+		final boolean existsBPNameTag = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
+		final boolean existsBPGreetingTag = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
 		final boolean bpartnerHasGreeting = bPartner.getC_Greeting_ID() > 0;
 
-		if ((existsBPName || existsBPGreeting) && !bPartner.isCompany() && bpartnerHasGreeting)
+		if ((existsBPNameTag || existsBPGreetingTag) && !bPartner.isCompany() && bpartnerHasGreeting)
 		{
 			return "";
 		}
 
 		final boolean isPartnerCompany = bPartner.isCompany();
+		final boolean existsContactTag = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.Contact.getName());
 
-		final boolean existsContact = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.Contact.getName());
-		if (existsContact && isPartnerCompany && user != null)
+		if (existsContactTag && isPartnerCompany && user != null
+				&& isCompanyNameSimilarToUserName(bPartner, user))
 		{
-			final String companyName = StringUtils.cleanWhitespace(bPartner.getCompanyName());
-			final String lastName = StringUtils.cleanWhitespace(user.getLastname());
-			final String firstName = StringUtils.cleanWhitespace(user.getFirstname());
-			final String lfName = StringUtils.nullToEmpty(lastName).concat(StringUtils.nullToEmpty(firstName));
-			final String flName = StringUtils.nullToEmpty(firstName).concat(StringUtils.nullToEmpty(lastName));
-
-			if (companyName.equalsIgnoreCase(lfName) || companyName.equalsIgnoreCase(flName))
-			{
-				return "";
-			}
+			return "";
 		}
 
 		final Language language = Language.optionalOfNullable(bPartner.getAD_Language())
@@ -847,6 +839,23 @@ public class AddressBuilder
 
 		return "";
 
+	}
+
+	private boolean isCompanyNameSimilarToUserName(@NonNull final org.compiere.model.I_C_BPartner bPartner, final I_AD_User user)
+	{
+		final String companyName = StringUtils.cleanWhitespace(bPartner.getCompanyName());
+
+		if (companyName == null)
+		{
+			return false;
+		}
+
+		final String lastName = StringUtils.cleanWhitespace(user.getLastname());
+		final String firstName = StringUtils.cleanWhitespace(user.getFirstname());
+		final String lfName = StringUtils.nullToEmpty(lastName).concat(StringUtils.nullToEmpty(firstName));
+		final String flName = StringUtils.nullToEmpty(firstName).concat(StringUtils.nullToEmpty(lastName));
+
+		return companyName.equalsIgnoreCase(lfName) || companyName.equalsIgnoreCase(flName);
 	}
 
 	/**
