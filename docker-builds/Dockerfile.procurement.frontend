@@ -3,7 +3,7 @@ FROM node:16 as build-step
 LABEL maintainer="info@metasfresh.com"
 LABEL runinfo="Run this image with -e PUBLIC_URL=https://yourdomain.org"
 
-COPY misc/services/procurement-webui/procurement-webui-frontend/package.json .
+COPY misc/services/procurement-webui/procurement-webui-frontend/package.json misc/services/procurement-webui/procurement-webui-frontend/yarn.lock* .
 
 RUN yarn install
 
