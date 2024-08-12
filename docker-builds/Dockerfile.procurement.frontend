@@ -1,7 +1,5 @@
 FROM node:20 as build-step
 
-RUN $ npm explore npm/node_modules/@npmcli/run-script -g -- npm_config_global=false npm install node-gyp@latest
-
 LABEL maintainer="info@metasfresh.com"
 LABEL runinfo="Run this image with -e PUBLIC_URL=https://yourdomain.org"
 
