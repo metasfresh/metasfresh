@@ -218,11 +218,15 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	protected List<String> getLineDescriptionList()
 	{
-		final List<String> addtlNtryInf = Arrays.stream(entry.getAddtlNtryInf().split(" "))
-				.filter(Check::isNotBlank)
-				.toList();
+		final List<String> lineDesc = new ArrayList<>();
 
-		final List<String> lineDesc = new ArrayList<>(addtlNtryInf);
+		final String addtlNtryInfStr = entry.getAddtlNtryInf();
+		if( addtlNtryInfStr != null )
+		{
+			lineDesc.addAll( Arrays.stream(addtlNtryInfStr.split(" "))
+									 .filter(Check::isNotBlank)
+									 .toList());
+		}
 
 		final List<String> trxDetails = getEntryTransaction()
 				.stream()
