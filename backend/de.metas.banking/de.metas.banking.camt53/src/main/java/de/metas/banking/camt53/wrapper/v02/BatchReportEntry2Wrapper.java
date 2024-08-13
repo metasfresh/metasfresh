@@ -50,7 +50,9 @@ import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
@@ -178,35 +180,61 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	protected String getUnstructuredRemittanceInfo(@NonNull final String delimiter)
 	{
+		return String.join(delimiter, getUnstructuredRemittanceInfoList());
+	}
+
+	@Override
+	@NonNull
+	protected List<String> getUnstructuredRemittanceInfoList()
+	{
 		return getEntryTransaction()
 				.stream()
+				.findFirst()
 				.map(EntryTransaction2::getRmtInf)
 				.map(RemittanceInformation5::getUstrd)
-				.filter(list -> !list.isEmpty())
+				.orElse(ImmutableList.of())
+				.stream()
+				.map(str -> Arrays.asList(str.split(" ")))
 				.flatMap(List::stream)
 				.filter(Check::isNotBlank)
-				.collect(Collectors.joining(delimiter));
+				.toList();
 	}
 
 	@Override
 	@NonNull
 	protected String getLineDescription(@NonNull final String delimiter)
 	{
-		final List<String> trxDetails = new ArrayList<>();
-		trxDetails.add(entry.getAddtlNtryInf());
-
-		getEntryTransaction()
-				.forEach(ntryDetails -> {
-					final String addtlTxInf = ntryDetails.getAddtlTxInf();
-					if (Check.isNotBlank(addtlTxInf))
-					{
-						trxDetails.add(addtlTxInf);
-					}
-				});
-
-		return trxDetails.stream()
+		return getLineDescriptionList().stream()
 				.filter(Check::isNotBlank)
 				.collect(Collectors.joining(delimiter));
+	}
+
+	@Override
+	@NonNull
+	protected List<String> getLineDescriptionList()
+	{
+		final List<String> lineDesc = new ArrayList<>();
+
+		final String addtlNtryInfStr = entry.getAddtlNtryInf();
+		if( addtlNtryInfStr != null )
+		{
+			lineDesc.addAll( Arrays.stream(addtlNtryInfStr.split(" "))
+									 .filter(Check::isNotBlank)
+									 .toList());
+		}
+
+		final List<String> trxDetails = getEntryTransaction()
+				.stream()
+				.map(EntryTransaction2::getAddtlTxInf)
+				.filter(Objects::nonNull)
+				.map(str -> Arrays.asList(str.split(" ")))
+				.flatMap(List::stream)
+				.filter(Check::isNotBlank)
+				.toList();
+
+		lineDesc.addAll(trxDetails);
+
+		return lineDesc;
 	}
 
 	@Override

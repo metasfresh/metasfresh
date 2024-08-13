@@ -625,7 +625,7 @@ public class BankStatementCamt53Service
 	}
 
 	@NonNull
-	private ICompositeQueryFilter<I_C_Invoice> getInvoiceDocOrEsrReferenceNoFilter(@NonNull final ImmutableSet<String> invoiceDocOrEsrRefNoCandidates, @NonNull OrgId orgId)
+	private ICompositeQueryFilter<I_C_Invoice> getInvoiceDocOrEsrReferenceNoFilter(@NonNull final ImmutableSet<String> invoiceDocOrEsrRefNoCandidates, @NonNull final OrgId orgId)
 	{
 		final ICompositeQueryFilter<I_C_Invoice> invoiceEsrReferenceNumberCandidatesFilter = buildEsrRefNoQueryFilter(invoiceDocOrEsrRefNoCandidates, orgId);
 
