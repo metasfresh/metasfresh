@@ -50,7 +50,9 @@ import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
@@ -191,6 +193,8 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 				.map(RemittanceInformation5::getUstrd)
 				.filter(list -> !list.isEmpty())
 				.flatMap(List::stream)
+				.map(str -> Arrays.asList(str.split(" ")))
+				.flatMap(List::stream)
 				.filter(Check::isNotBlank)
 				.toList();
 	}
@@ -208,23 +212,24 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	protected List<String> getLineDescriptionList()
 	{
-		final ArrayList<String> trxDetails = new ArrayList<>();
-		final String addtlNtryInf = entry.getAddtlNtryInf();
-		if(Check.isNotBlank(addtlNtryInf))
-		{
-			trxDetails.add(entry.getAddtlNtryInf());
-		}
+		final List<String> addtlNtryInf = Arrays.stream(entry.getAddtlNtryInf().split(" "))
+				.filter(Check::isNotBlank)
+				.toList();
 
-		getEntryTransaction()
-				.forEach(ntryDetails -> {
-					final String addtlTxInf = ntryDetails.getAddtlTxInf();
-					if (Check.isNotBlank(addtlTxInf))
-					{
-						trxDetails.add(addtlTxInf);
-					}
-				});
+		final List<String> lineDesc = new ArrayList<>(addtlNtryInf);
 
-		return trxDetails;
+		final List<String> trxDetails = getEntryTransaction()
+				.stream()
+				.map(EntryTransaction2::getAddtlTxInf)
+				.filter(Objects::nonNull)
+				.map(str -> Arrays.asList(str.split(" ")))
+				.flatMap(List::stream)
+				.filter(Check::isNotBlank)
+				.toList();
+
+		lineDesc.addAll(trxDetails);
+
+		return lineDesc;
 	}
 
 	@Override
