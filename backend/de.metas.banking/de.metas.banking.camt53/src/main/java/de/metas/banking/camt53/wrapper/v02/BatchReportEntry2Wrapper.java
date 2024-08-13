@@ -189,10 +189,11 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 	{
 		return getEntryTransaction()
 				.stream()
+				.findFirst()
 				.map(EntryTransaction2::getRmtInf)
 				.map(RemittanceInformation5::getUstrd)
-				.filter(list -> !list.isEmpty())
-				.flatMap(List::stream)
+				.orElse(ImmutableList.of())
+				.stream()
 				.map(str -> Arrays.asList(str.split(" ")))
 				.flatMap(List::stream)
 				.filter(Check::isNotBlank)
