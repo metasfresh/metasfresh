@@ -328,7 +328,7 @@ public class CalloutInvoice extends CalloutEngine
 		// a line with product does not have charge
 		invoiceLine.setC_Charge_ID(-1);
 
-		invoiceBL.setProductAndUOM(invoiceLine, ProductId.ofRepoIdOrNull(productID));
+		invoiceBL.setProductAndUOM(invoiceLine, ProductId.ofRepoId(productID));
 		invoiceLineBL.updatePrices(invoiceLine);
 		//
 		return tax(calloutField);
