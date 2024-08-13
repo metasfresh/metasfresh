@@ -40,8 +40,13 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+<<<<<<< HEAD
 import lombok.ToString;
 import org.adempiere.model.InterfaceWrapperHelper;
+=======
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ObjectUtils;
+>>>>>>> f04b0baee19 (Changes done during the debugging-session)
 import org.compiere.model.I_M_InOutLine;
 
 import java.util.ArrayList;
@@ -94,12 +99,7 @@ public class DefaultAggregator implements IAggregator
 
 		final String aggregationKeyToUse = mkLineAggregationKeyToUse(request);
 
-		List<InvoiceCandidateWithInOutLine> icsPool = aggKey2iciol.get(aggregationKeyToUse);
-		if (icsPool == null)
-		{
-			icsPool = new ArrayList<>();
-			aggKey2iciol.put(aggregationKeyToUse, icsPool);
-		}
+		final List<InvoiceCandidateWithInOutLine> icsPool = aggKey2iciol.computeIfAbsent(aggregationKeyToUse, k -> new ArrayList<>());
 
 		//
 		// Create InvoiceCandidate with InOutLine and add it to the pool
@@ -225,7 +225,7 @@ public class DefaultAggregator implements IAggregator
 	 */
 	private HashMap<InvoiceCandidateId, StockQtyAndUOMQty> createInvoiceableQtysMap()
 	{
-		// ic2QtyInvoiceable keeps track of the stockQty that we have left to invoice, to make sure that we don't invoice more that the invoice candidate allows us to
+		// ic2QtyInvoiceable keeps track of the stockQty that we have left to invoice, to make sure that we don't invoice more than the invoice candidate allows us to
 		final HashMap<InvoiceCandidateId, StockQtyAndUOMQty> ic2QtyInvoicable = new HashMap<>();
 
 		// we initialize the map with all ICs' qtyToInvoice values
@@ -240,7 +240,7 @@ public class DefaultAggregator implements IAggregator
 					// Initialize, if necessary
 
 					// task 08507: ic.getQtyToInvoice() is already the "effective" Qty.
-					// Even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on RnvoiceRule and QtyDelivered)
+					// Even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on InvoiceRule and QtyDelivered)
 					// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override.
 					final StockQtyAndUOMQty qtyToInvoice = StockQtyAndUOMQtys.create(
 							ic.getQtyToInvoice(), ics.getProductId(),

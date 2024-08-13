@@ -12,8 +12,11 @@ import de.metas.material.MovementType;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import lombok.Getter;
 import lombok.NonNull;
@@ -24,7 +27,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Set;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.util.Check.fail;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
@@ -37,10 +40,18 @@ public final class InvoiceCandidateWithInOutLine
 	private final I_C_InvoiceCandidate_InOutLine iciol;
 	
 	@Getter
+<<<<<<< HEAD
 	private final Set<IInvoiceLineAttribute> attributesFromInoutLines;
 	
 	/**
 	 *  Specifies if, when the aggregation is done and if 
+=======
+	private final Set<IInvoiceLineAttribute> invoiceLineAttributes;
+	
+	/**
+	 * -- GETTER --
+	 *  Specify if, when the aggregation is done and if 
+>>>>>>> f04b0baee19 (Changes done during the debugging-session)
 	 *  is not <code>null</code> the full remaining <code>QtyToInvoice</code> of the invoice candidate shall
 	 *  be allocated to the <code>icIol</code>'s invoice line, or not. If <code>false</code>, then the maximum qty to be allocated is the delivered qty.
 	 *  <p>
@@ -62,6 +73,7 @@ public final class InvoiceCandidateWithInOutLine
 
 	@Getter
 	private final InvoiceCandidateId invoicecandidateId;
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public InvoiceCandidateWithInOutLine(
 			@NonNull final MatchInvoiceService matchInvoiceService,
@@ -137,23 +149,27 @@ public final class InvoiceCandidateWithInOutLine
 			switch (invoicableQtyBasedOn)
 			{
 				case CatchWeight:
-					uomQty = coalesce(iciol.getQtyDeliveredInUOM_Catch(), iciol.getQtyDeliveredInUOM_Nominal());
+					uomQty = coalesceNotNull(iciol.getQtyDeliveredInUOM_Catch(), iciol.getQtyDeliveredInUOM_Nominal());
 					break;
 				case NominalWeight:
 					uomQty = iciol.getQtyDeliveredInUOM_Nominal();
 					break;
 				default:
-					fail("Unexpected invoicableQtyBasedOn={}", invoicableQtyBasedOn);
-					uomQty = null;
-					break;
+					throw fail("Unexpected invoicableQtyBasedOn={}", invoicableQtyBasedOn);
 			}
 		}
+
+		final Quantity shippedUomQuantityInIcUOM = uomConversionBL.convertQuantityTo(Quantitys.create(uomQty, UomId.ofRepoId(iciol.getC_UOM_ID())),
+																					 productId,
+																					 icUomId);
 
 		final BigDecimal stockQty = inOutLine.getMovementQty();
 		final StockQtyAndUOMQty deliveredQty = StockQtyAndUOMQtys
 				.create(
-						stockQty, productId,
-						uomQty, UomId.ofRepoId(iciol.getC_UOM_ID()));
+						stockQty, 
+						productId,
+						shippedUomQuantityInIcUOM.toBigDecimal(), 
+						shippedUomQuantityInIcUOM.getUomId());
 
 		if (MovementType.isMaterialReturn(inOutLine.getM_InOut().getMovementType()))
 		{
