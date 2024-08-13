@@ -33,6 +33,8 @@ import lombok.experimental.NonFinal;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @NonFinal
@@ -50,11 +52,11 @@ public abstract class BatchReportEntryWrapper implements IStatementLineWrapper
 	@NonNull
 	public ImmutableSet<String> getDocumentReferenceCandidates()
 	{
-		final String string = getUnstructuredRemittanceInfo(" ")
-				+ " "
-				+ getLineDescription(" ");
+		final List<String> docRefCand = new ArrayList<>();
+		docRefCand.addAll(getUnstructuredRemittanceInfoList());
+		docRefCand.addAll(getLineDescriptionList());
 
-		return ImmutableSet.copyOf(string.split(" "));
+		return ImmutableSet.copyOf(docRefCand);
 	}
 
 	@Override
@@ -101,7 +103,13 @@ public abstract class BatchReportEntryWrapper implements IStatementLineWrapper
 	protected abstract String getUnstructuredRemittanceInfo(@NonNull final String delimiter);
 
 	@NonNull
+	protected abstract List<String> getUnstructuredRemittanceInfoList();
+
+	@NonNull
 	protected abstract String getLineDescription(@NonNull final String delimiter);
+
+	@NonNull
+	protected abstract List<String> getLineDescriptionList();
 
 	@Nullable
 	protected abstract String getCcy();
