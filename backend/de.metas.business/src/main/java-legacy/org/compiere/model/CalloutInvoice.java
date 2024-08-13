@@ -25,6 +25,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.location.adapter.DocumentLocationAdaptersRegistry;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.location.CountryId;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.organization.OrgId;
@@ -35,6 +36,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.VatCodeId;
@@ -83,6 +85,8 @@ public class CalloutInvoice extends CalloutEngine
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final DocumentLocationAdaptersRegistry documentLocationAdaptersRegistry = SpringContextHolder.instance.getBean(DocumentLocationAdaptersRegistry.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 
 	/**
 	 * Invoice Header- BPartner.
@@ -312,9 +316,7 @@ public class CalloutInvoice extends CalloutEngine
 	 */
 	public String product(@NonNull final ICalloutField calloutField)
 	{
-		final I_C_InvoiceLine invoiceLine = calloutField.getModel(I_C_InvoiceLine.class);
-		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-
+		final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine = calloutField.getModel(de.metas.adempiere.model.I_C_InvoiceLine.class);
 		final int productID = invoiceLine.getM_Product_ID();
 
 		if (productID <= 0)
@@ -326,76 +328,8 @@ public class CalloutInvoice extends CalloutEngine
 		// a line with product does not have charge
 		invoiceLine.setC_Charge_ID(-1);
 
-		final int asiID = calloutField.getTabInfoContextAsInt("M_AttributeSetInstance_ID");
-
-		// Set Attribute
-		if (productID == calloutField.getTabInfoContextAsInt("M_Product_ID")
-				&& asiID > 0)
-		{
-			invoiceLine.setM_AttributeSetInstance_ID(asiID);
-		}
-		else
-		{
-			invoiceLine.setM_AttributeSetInstance_ID(-1);
-		}
-
-		/***** Price Calculation see also qty ****/
-		final boolean isSOTrx = invoice.isSOTrx();
-
-		final int bpartnerID = invoice.getC_BPartner_ID();
-			
-		final BigDecimal qty = invoiceLine.getQtyInvoiced();
-		final CountryId countryId = extractCountryIdOrNull(invoice);
-
-		// TODO: Refactoring here in step 2: Use IPricingBL instead
-		final MProductPricing pp = new MProductPricing(OrgId.ofRepoId(invoice.getAD_Org_ID()),
-													   productID,
-													   bpartnerID,
-													   countryId,
-													   qty,
-													   isSOTrx);
-		pp.setConvertPriceToContextUOM(false);
-
-		//
-		final int priceList_ID = invoice.getM_PriceList_ID();
-		pp.setM_PriceList_ID(priceList_ID);
-
-		final int priceListVersionID = calloutField.getTabInfoContextAsInt("M_PriceList_Version_ID");
-		pp.setM_PriceList_Version_ID(priceListVersionID);
-
-		final Timestamp dateInvoiced = invoice.getDateInvoiced();
-		pp.setPriceDate(dateInvoiced);
-
-		pp.setReferencedObject(invoiceLine);
-
-		final de.metas.adempiere.model.I_C_InvoiceLine adInvoiceLine = InterfaceWrapperHelper.create(invoiceLine, de.metas.adempiere.model.I_C_InvoiceLine.class);
-		pp.setManualPrice(adInvoiceLine.isManualPrice());
-
-		// task 08908: Make sure the pricing engine knows about the manualPrice Value
-		// before the price values are set in the invoice line.
-		// In case the price is manual, the values just come from the initial pricing result
-
-		final String columnName = calloutField.getColumnName();
-
-		if (!pp.isManualPrice() || columnName.equals("M_Product_ID"))
-		{
-			invoiceLine.setPriceList(pp.getPriceList());
-			invoiceLine.setPriceLimit(pp.getPriceLimit());
-			// metas us1064
-			invoiceLine.setPriceActual(pp.mkPriceStdMinusDiscount());
-			// metas us1064 end
-			invoiceLine.setPriceEntered(pp.getPriceStd());
-			// mTab.setValue("Discount", pp.getDiscount());
-			adInvoiceLine.setPrice_UOM_ID(pp.getC_UOM_ID());
-
-			calloutField.putWindowContext(CTX_EnforcePriceLimit, pp.isEnforcePriceLimit());
-			calloutField.putWindowContext(CTX_DiscountSchema, pp.isDiscountSchema());
-		}
-
-		// 07216: Correctly set price and product UOM.
-		final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productID);
-		invoiceLine.setC_UOM_ID(uomId.getRepoId());
-
+		invoiceBL.setProductAndUOM(invoiceLine, ProductId.ofRepoIdOrNull(productID));
+		invoiceLineBL.updatePrices(invoiceLine);
 		//
 		return tax(calloutField);
 	}    // product
