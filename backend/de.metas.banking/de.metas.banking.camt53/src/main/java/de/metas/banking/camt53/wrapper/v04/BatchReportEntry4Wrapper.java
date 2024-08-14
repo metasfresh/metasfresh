@@ -221,7 +221,7 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 		final List<String> lineDesc = new ArrayList<>();
 
 		final String addtlNtryInfStr = entry.getAddtlNtryInf();
-		if( addtlNtryInfStr != null )
+		if (addtlNtryInfStr != null)
 		{
 			lineDesc.addAll( Arrays.stream(addtlNtryInfStr.split(" "))
 									 .filter(Check::isNotBlank)
@@ -256,10 +256,7 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 		return entry.getAmt().getValue();
 	}
 
-	public boolean isBatchTransaction()
-	{
-		return getEntryTransaction().size() > 1;
-	}
+	public boolean isBatchTransaction() {return getEntryTransaction().size() > 1;}
 
 	@Override
 	public List<ITransactionDtlsWrapper> getTransactionDtlsWrapper()
