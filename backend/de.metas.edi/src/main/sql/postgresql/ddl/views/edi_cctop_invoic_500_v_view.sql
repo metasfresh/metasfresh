@@ -50,26 +50,29 @@ SELECT SUM(il.qtyEntered)                                                       
        CASE pc.value
            WHEN 'Leergut' THEN 'P'
                           ELSE ''
-       END                                                                       AS leergut,
+       END                                                                   AS leergut,
        COALESCE(NULLIF(pp.productdescription, ''), NULLIF(pp.description, ''), NULLIF(p.description, ''),
                 p.name)::character varying                                       AS productdescription,
        COALESCE(ol.line, il.line)                                                AS orderline,
        COALESCE(NULLIF(o.poreference, ''), i.poreference)::character varying(40) AS orderporeference,
        il.c_orderline_id,
        SUM(il.taxamtinfo)                                                        AS taxamtinfo,
-       REGEXP_REPLACE(pip.GTIN, '\s+$', '')                                      AS GTIN,   -- Deprecated: superseded by buyer_gtin_tu
-       REGEXP_REPLACE(pip.EAN_TU, '\s+$', '')                                    AS EAN_TU,
-       REGEXP_REPLACE(pip.UPC, '\s+$', '')                                       AS UPC_TU,
-       REGEXP_REPLACE(pip.GTIN::text, '\s+$'::text, ''::text)                    AS Buyer_GTIN_TU,
-       REGEXP_REPLACE(pp.GTIN::text, '\s+$'::text, ''::text)                     AS Buyer_GTIN_CU,
-       REGEXP_REPLACE(pp.EAN_CU::text, '\s+$'::text, ''::text)                   AS Buyer_EAN_CU,
-       REGEXP_REPLACE(p.GTIN::text, '\s+$'::text, ''::text)                      AS Supplier_GTIN_CU,
+       REGEXP_REPLACE(pip.GTIN::text, '\s+$'::text, ''::text)                                      AS GTIN,   -- Deprecated: superseded by buyer_gtin_tu
+       REGEXP_REPLACE(pip.EAN_TU::text, '\s+$'::text, ''::text)                                    AS EAN_TU,
+       REGEXP_REPLACE(pip.UPC::text, '\s+$'::text, ''::text)                                       AS UPC_TU,
+       REGEXP_REPLACE(pip.GTIN::text, '\s+$'::text, ''::text)                                      AS Buyer_GTIN_TU,
+       COALESCE( -- if there is no explicit pp.GTIN, then assume that the G from GTIN is respected and thus buyer&supplier work with the same value
+               NULLIF(REGEXP_REPLACE(pp.GTIN::text, '\s+$'::text, ''::text), ''::text),
+               REGEXP_REPLACE(p.GTIN::text, '\s+$'::text, ''::text)
+       )                                                                         AS Buyer_GTIN_CU,
+       REGEXP_REPLACE(pp.EAN_CU::text, '\s+$'::text, ''::text)                                     AS Buyer_EAN_CU,
+       REGEXP_REPLACE(p.GTIN::text, '\s+$'::text, ''::text)                                        AS Supplier_GTIN_CU,
        il.QtyEnteredInBPartnerUOM                                                AS qtyEnteredInBPartnerUOM,
        il.C_UOM_BPartner_ID                                                      AS C_UOM_BPartner_ID,
        ol.externalseqno                                                          AS externalSeqNo
 FROM c_invoiceline il
          LEFT JOIN c_orderline ol ON ol.c_orderline_id = il.c_orderline_id AND ol.isactive = 'Y'
-         LEFT JOIN M_HU_PI_Item_Product pip ON ol.M_HU_PI_Item_Product_ID = pip.M_HU_PI_Item_Product_ID
+         LEFT JOIN m_hu_pi_item_product pip ON COALESCE(ol.m_hu_pi_item_product_id, il.m_hu_pi_item_product_id) = pip.m_hu_pi_item_product_id
          LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
          LEFT JOIN c_uom u_ordered ON u_ordered.c_uom_id = COALESCE(ol.c_uom_id, il.c_uom_id)
          LEFT JOIN m_product p ON p.m_product_id = il.m_product_id
@@ -81,8 +84,7 @@ FROM c_invoiceline il
          LEFT JOIN c_tax t ON t.c_tax_id = il.c_tax_id
          LEFT JOIN c_uom u ON u.c_uom_id = il.c_uom_id
          LEFT JOIN c_uom u_price ON u_price.c_uom_id = il.price_uom_id
-WHERE TRUE
-  AND il.m_product_id IS NOT NULL
+WHERE il.m_product_id IS NOT NULL
   AND il.isactive = 'Y'
   AND il.qtyentered <> 0
 GROUP BY il.c_invoice_id,

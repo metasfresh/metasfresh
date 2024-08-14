@@ -65,7 +65,7 @@ public class DDOrderDeletedEventHandler implements MaterialEventHandler<DDOrderD
 	@Override
 	public void handleEvent(final DDOrderDeletedEvent event)
 	{
-		final OrgId orgId = event.getEventDescriptor().getOrgId();
+		final OrgId orgId = event.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		for (final DDOrderLine ddOrderLine : event.getDdOrder().getLines())

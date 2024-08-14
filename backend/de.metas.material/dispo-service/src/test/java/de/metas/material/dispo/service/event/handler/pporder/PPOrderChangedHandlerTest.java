@@ -16,9 +16,11 @@ import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderLineData;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.PPOrderId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -27,13 +29,13 @@ import org.mockito.Mockito;
 import java.math.BigDecimal;
 
 import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
+import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.valueOf;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -79,17 +81,18 @@ public class PPOrderChangedHandlerTest
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
 				// .status(CandidateStatus.doc_closed)
 				.type(CandidateType.DEMAND)
-				.materialDescriptor(createMaterialDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.businessCaseDetail(ProductionDetail.builder()
 						.qty(TEN)
 						.advised(Flag.FALSE)
 						.pickDirectlyIfFeasible(Flag.FALSE)
+						.ppOrderRef(PPOrderRef.ofPPOrderId(123))
 						.build())
 				.build();
 
 		final PPOrder ppOrder = createPPOrder();
-		final int ppOrderId = ppOrder.getPpOrderId();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPpOrderId());
 
 		when(candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(ppOrderId))
 				.thenReturn(ImmutableList.of(candidateToUpdate));
@@ -134,27 +137,27 @@ public class PPOrderChangedHandlerTest
 	{
 		return PPOrder.builder()
 				.ppOrderData(PPOrderData.builder()
-									 .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(100, 100))
-									 .datePromised(NOW)
-									 .dateStartSchedule(NOW)
-									 .plantId(ResourceId.ofRepoId(110))
-									 .productDescriptor(createProductDescriptor())
-									 .productPlanningId(130)
-									 .qtyRequired(TEN)
-									 .qtyDelivered(ONE)
-									 .warehouseId(WarehouseId.ofRepoId(150))
-									 .build())
+						.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(100, 100))
+						.datePromised(NOW)
+						.dateStartSchedule(NOW)
+						.plantId(ResourceId.ofRepoId(110))
+						.productDescriptor(createProductDescriptor())
+						.productPlanningId(130)
+						.qtyRequired(TEN)
+						.qtyDelivered(ONE)
+						.warehouseId(WarehouseId.ofRepoId(150))
+						.build())
 				.ppOrderId(123)
 				.line(PPOrderLine.builder()
-							  .ppOrderLineData(PPOrderLineData.builder()
-													   .productDescriptor(createProductDescriptorWithOffSet(20))
-													   .issueOrReceiveDate(NOW)
-													   .description("desc2")
-													   .productBomLineId(380)
-													   .qtyRequired(valueOf(320))
-													   .receipt(false)
-													   .build())
-							  .build())
+						.ppOrderLineData(PPOrderLineData.builder()
+								.productDescriptor(createProductDescriptorWithOffSet(20))
+								.issueOrReceiveDate(NOW)
+								.description("desc2")
+								.productBomLineId(380)
+								.qtyRequired(valueOf(320))
+								.receipt(false)
+								.build())
+						.build())
 				.build();
 	}
 

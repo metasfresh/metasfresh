@@ -22,12 +22,18 @@ package de.metas.fresh.invoice.migrateMatchInv.process;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
+import de.metas.util.IProcessor;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -43,18 +49,11 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IMatchInvDAO;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
-import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
-import de.metas.logging.LogManager;
-import de.metas.product.ProductId;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.uom.UomId;
-import de.metas.util.IProcessor;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Helper class used by the processes which are creating/adjusting {@link I_M_MatchInv} records.

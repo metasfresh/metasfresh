@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: create or update Purchase Candidate
   As a user
   I want create a Purchase Candidate record

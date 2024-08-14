@@ -22,22 +22,8 @@
 
 package de.metas.handlingunits.allocation.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_UOM;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
@@ -61,8 +47,19 @@ import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * An Allocation Source/Destination which has a list of HUs in behind. Usually used to load from HUs.
@@ -222,7 +219,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 			});
 		}
 
-		createHUSnapshotsIfRequired(request.getHUContext());
+		createHUSnapshotsIfRequired(request.getHuContext());
 
 		final IMutableAllocationResult result = AllocationUtils.createMutableAllocationResult(request.getQty());
 
@@ -273,7 +270,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 			}
 			else
 			{
-				final IHUStorage storage = request.getHUContext().getHUStorageFactory().getStorage(hu);
+				final IHUStorage storage = request.getHuContext().getHUStorageFactory().getStorage(hu);
 				final BigDecimal storageQty = storage == null ? BigDecimal.ZERO : storage.getQtyForProductStorages(request.getC_UOM()).toBigDecimal();
 
 				// gh #1237: cuQty does *not* have to be a an "integer" number.
@@ -286,7 +283,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 						scale,
 						RoundingMode.FLOOR);
 			}
-			request.getHUContext().setProperty(AggregateHUTrxListener.mkItemCuQtyPropertyKey(haItem), cuQty);
+			request.getHuContext().setProperty(AggregateHUTrxListener.mkItemCuQtyPropertyKey(haItem), cuQty);
 		}
 		else
 		{

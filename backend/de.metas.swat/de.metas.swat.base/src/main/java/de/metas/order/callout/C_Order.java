@@ -25,7 +25,6 @@ package de.metas.order.callout;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
@@ -42,9 +41,9 @@ import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.X_C_Order;
 
 import java.util.Optional;
-import org.compiere.model.X_C_Order;
 
 import static de.metas.common.util.CoalesceUtil.firstNotBlank;
 

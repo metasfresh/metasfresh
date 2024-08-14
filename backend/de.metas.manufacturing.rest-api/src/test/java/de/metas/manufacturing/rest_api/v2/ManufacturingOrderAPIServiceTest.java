@@ -239,6 +239,7 @@ public class ManufacturingOrderAPIServiceTest
 			{
 				order.setDateOrdered(TimeUtil.asTimestamp(dateOrdered));
 				order.setDateStartSchedule(TimeUtil.asTimestamp(dateOrdered));
+				order.setDatePromised(TimeUtil.asTimestamp(dateOrdered));
 			}
 
 			if (salesOrderLineId != null)

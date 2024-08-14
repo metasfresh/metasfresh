@@ -1,14 +1,12 @@
 package de.metas.product;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.product.model.X_M_Product_PlanningSchema;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 

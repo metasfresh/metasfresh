@@ -17,7 +17,9 @@
     <EDI_ExportStatus>D</EDI_ExportStatus>
     <MovementDate>2021-01-19+01:00</MovementDate>
     <POReference>POReference</POReference>
-    <EDI_Exp_DesadvLine>
+    <EDI_Exp_DesadvLineWithNoPack>
+        <EDI_DesadvLine_ID>
+            <EDI_DesadvLine_ID>30</EDI_DesadvLine_ID>
             <C_UOM_ID>
                 <!--Maßeinheit-->
                 <Name>Stück</Name>
@@ -45,30 +47,26 @@
             <QtyDeliveredInInvoiceUOM>0</QtyDeliveredInInvoiceUOM>
             <QtyDeliveredInUOM>0</QtyDeliveredInUOM>
             <OrderLine>30</OrderLine>
-    </EDI_Exp_DesadvLine>
-    <EDI_Exp_DesadvLine>
-        <C_UOM_ID>
-            <!--Maßeinheit-->
-            <Name>Stück</Name>
-            <UOMSymbol>Stk</UOMSymbol>
-            <X12DE355>PCE</X12DE355>
-        </C_UOM_ID>
-        <EDI_Exp_DesadvLine_Pack>
+        </EDI_DesadvLine_ID>
+    </EDI_Exp_DesadvLineWithNoPack>
+    <EDI_Exp_Desadv_Pack>
         <IPA_SSCC18>Line20_Pack_SSCC18</IPA_SSCC18>
-            <QtyCU>6</QtyCU>
+        <M_HU_PackagingCode_LU_Text>EURO</M_HU_PackagingCode_LU_Text>
+        <GTIN_LU_PackingMaterial>Line20_LUGTIN</GTIN_LU_PackingMaterial>
+        <EDI_Exp_Desadv_Pack_Item>
+            <QtyCUsPerTU>6</QtyCUsPerTU>
             <QtyCUsPerLU>82</QtyCUsPerLU>
             <QtyTU>14</QtyTU>
-            <M_HU_PackagingCode_LU_Text>EURO</M_HU_PackagingCode_LU_Text>
             <M_HU_PackagingCode_TU_Text>BOXS</M_HU_PackagingCode_TU_Text>
+            <GTIN_TU_PackingMaterial>Line20_TUGTIN</GTIN_TU_PackingMaterial>
+            <EDI_DesadvLine_ID>
+                <EDI_DesadvLine_ID>10</EDI_DesadvLine_ID>
                 <C_UOM_ID>
                     <!--Maßeinheit-->
                     <Name>Stück</Name>
                     <UOMSymbol>Stk</UOMSymbol>
                     <X12DE355>PCE</X12DE355>
                 </C_UOM_ID>
-            <GTIN_LU_PackingMaterial>Line20_LUGTIN</GTIN_LU_PackingMaterial>
-            <GTIN_TU_PackingMaterial>Line20_TUGTIN</GTIN_TU_PackingMaterial>
-        </EDI_Exp_DesadvLine_Pack>
                 <Line>20</Line>
                 <M_Product_ID>
                     <!--Produkt, Leistung, Artikel-->
@@ -90,30 +88,27 @@
                 <QtyDeliveredInInvoiceUOM>82</QtyDeliveredInInvoiceUOM>
                 <QtyDeliveredInUOM>82</QtyDeliveredInUOM>
                 <OrderLine>20</OrderLine>
-    </EDI_Exp_DesadvLine>
-    <EDI_Exp_DesadvLine>
-        <C_UOM_ID>
-            <!--Maßeinheit-->
-            <Name>Stück</Name>
-            <UOMSymbol>Stk</UOMSymbol>
-            <X12DE355>PCE</X12DE355>
-        </C_UOM_ID>
-        <EDI_Exp_DesadvLine_Pack>
+            </EDI_DesadvLine_ID>
+        </EDI_Exp_Desadv_Pack_Item>
+    </EDI_Exp_Desadv_Pack>
+    <EDI_Exp_Desadv_Pack>
         <IPA_SSCC18>Line10_Pack_SSCC18</IPA_SSCC18>
-            <QtyCU>6</QtyCU>
+        <M_HU_PackagingCode_LU_Text>EURO</M_HU_PackagingCode_LU_Text>
+        <GTIN_LU_PackingMaterial>Line10_LUGTIN</GTIN_LU_PackingMaterial>
+        <EDI_Exp_Desadv_Pack_Item>
+            <QtyCUsPerTU>6</QtyCUsPerTU>
             <QtyCUsPerLU>72</QtyCUsPerLU>
             <QtyTU>12</QtyTU>
-            <M_HU_PackagingCode_LU_Text>EURO</M_HU_PackagingCode_LU_Text>
             <M_HU_PackagingCode_TU_Text>BOXS</M_HU_PackagingCode_TU_Text>
+            <GTIN_TU_PackingMaterial>Line10_TUGTIN</GTIN_TU_PackingMaterial>
+            <EDI_DesadvLine_ID>
+                <EDI_DesadvLine_ID>20</EDI_DesadvLine_ID>
                 <C_UOM_ID>
                     <!--Maßeinheit-->
                     <Name>Stück</Name>
                     <UOMSymbol>Stk</UOMSymbol>
                     <X12DE355>PCE</X12DE355>
                 </C_UOM_ID>
-            <GTIN_LU_PackingMaterial>Line10_LUGTIN</GTIN_LU_PackingMaterial>
-            <GTIN_TU_PackingMaterial>Line10_TUGTIN</GTIN_TU_PackingMaterial>
-        </EDI_Exp_DesadvLine_Pack>
                 <Line>10</Line>
                 <M_Product_ID>
                     <!--Produkt, Leistung, Artikel-->
@@ -135,7 +130,9 @@
                 <QtyDeliveredInInvoiceUOM>72</QtyDeliveredInInvoiceUOM>
                 <QtyDeliveredInUOM>72</QtyDeliveredInUOM>
                 <OrderLine>10</OrderLine>
-    </EDI_Exp_DesadvLine>
+            </EDI_DesadvLine_ID>
+        </EDI_Exp_Desadv_Pack_Item>
+    </EDI_Exp_Desadv_Pack>
     <Bill_Location_ID>
         <!--Standort des Geschäftspartners für die Rechnungsstellung-->
         <GLN>1234567890124</GLN>

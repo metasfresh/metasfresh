@@ -27,7 +27,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.LocationId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -76,7 +75,7 @@ public class DocumentLocation
 		this.bpartnerAddress = bpartnerAddress;
 	}
 
-	public static DocumentLocation ofBPartnerLocationId(@NonNull BPartnerLocationId bpartnerLocationId)
+	public static DocumentLocation ofBPartnerLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		return builder()
 				.bpartnerId(bpartnerLocationId.getBpartnerId())
@@ -113,5 +112,12 @@ public class DocumentLocation
 			throw new AdempiereException("Cannot convert " + this + " to " + BPartnerLocationAndCaptureId.class.getSimpleName() + " because bpartnerLocationId is null");
 		}
 		return BPartnerLocationAndCaptureId.of(bpartnerLocationId, locationId);
+	}
+
+	public DocumentLocation withContactId(@Nullable final BPartnerContactId contactId)
+	{
+		return !Objects.equals(this.contactId, contactId)
+				? toBuilder().contactId(contactId).build()
+				: this;
 	}
 }

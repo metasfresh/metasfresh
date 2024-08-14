@@ -22,7 +22,7 @@
 
 package de.metas.edi.esb.desadvexport;
 
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLinePackType;
+import de.metas.edi.esb.desadvexport.helper.SinglePack;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
 import lombok.NonNull;
 import lombok.ToString;
@@ -36,11 +36,11 @@ public class LineAndPack
 	@NonNull
 	EDIExpDesadvLineType line;
 
-	@Nullable // could be null if nothing is delivered for this line
-	EDIExpDesadvLinePackType pack;
+	@Nullable
+	SinglePack singlePack;
 
 	public boolean hasPack()
 	{
-		return pack != null;
+		return singlePack != null;
 	}
 }

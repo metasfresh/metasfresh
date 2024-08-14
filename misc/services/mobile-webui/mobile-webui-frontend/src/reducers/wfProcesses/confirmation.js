@@ -9,7 +9,6 @@ const COMPONENT_TYPE = 'common/confirmButton';
 export const activityUserConfirmationReducer = ({ draftState, action }) => {
   switch (action.type) {
     case types.SET_ACTIVITY_USER_CONFIRMED: {
-      console.log('SET_ACTIVITY_USER_CONFIRMED: ', action);
       const { wfProcessId, activityId } = action.payload;
 
       const draftWFProcess = draftState[wfProcessId];
@@ -37,9 +36,7 @@ const computeActivityStatus = ({ confirmed }) => {
 registerHandler({
   componentType: COMPONENT_TYPE,
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
-    console.log('fromActivity: ', { fromActivity });
-
-    draftActivityDataStored.isAlwaysAvailableToUser = true;
+    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
     draftActivityDataStored.confirmed = !!fromActivity.componentProps.confirmed;
     draftActivityDataStored.completeStatus = computeActivityStatus({
       confirmed: draftActivityDataStored.confirmed,

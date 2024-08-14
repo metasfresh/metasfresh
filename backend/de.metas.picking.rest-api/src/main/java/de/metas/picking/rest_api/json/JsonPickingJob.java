@@ -24,30 +24,41 @@ package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.i18n.ITranslatableString;
+import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Function;
 
 @Value
 @Builder
 @Jacksonized
 public class JsonPickingJob
 {
+	@NonNull JsonCompleteStatus completeStatus;
+	@Nullable JsonPickingTarget pickTarget;
 	@NonNull List<JsonPickingJobLine> lines;
 	@NonNull List<JsonPickFromAlternative> pickFromAlternatives;
 
 	public static JsonPickingJob of(
 			@NonNull final PickingJob pickingJob,
+			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById,
 			@NonNull final JsonOpts jsonOpts)
 	{
 		return builder()
+				.completeStatus(JsonCompleteStatus.of(pickingJob.getProgress()))
+				.pickTarget(pickingJob.getPickTarget().map(JsonPickingTarget::of).orElse(null))
 				.lines(pickingJob.getLines()
 						.stream()
-						.map(line -> JsonPickingJobLine.of(line, jsonOpts))
+						.map(line -> JsonPickingJobLine.builderFrom(line, getUOMSymbolById, jsonOpts)
+								.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
+								.build())
 						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(pickingJob.getPickFromAlternatives()
 						.stream()

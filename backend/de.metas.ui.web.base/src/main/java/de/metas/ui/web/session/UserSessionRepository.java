@@ -1,7 +1,18 @@
 package de.metas.ui.web.session;
 
-import java.util.Objects;
-
+import com.google.common.base.Strings;
+import de.metas.ui.web.session.json.JSONUserSessionChangesEvent;
+import de.metas.ui.web.session.json.JSONUserSessionChangesEvent.JSONUserSessionChangesEventBuilder;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.websocket.WebsocketTopicName;
+import de.metas.websocket.sender.WebsocketSender;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -9,22 +20,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Strings;
-
-import de.metas.ui.web.session.json.JSONUserSessionChangesEvent;
-import de.metas.ui.web.session.json.JSONUserSessionChangesEvent.JSONUserSessionChangesEventBuilder;
-import de.metas.websocket.sender.WebsocketSender;
-import de.metas.websocket.WebsocketTopicName;
-import de.metas.ui.web.websocket.WebsocketTopicNames;
-import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.AllArgsConstructor;
+import javax.annotation.PostConstruct;
+import java.util.Objects;
 
 /*
  * #%L
@@ -50,19 +50,22 @@ import lombok.AllArgsConstructor;
 
 @Component
 @DependsOn(Adempiere.BEAN_NAME) // NOTE: we need Adempiere as parameter to make sure it was initialized. Else the "addModelInterceptor" will fail.
+@RequiredArgsConstructor
 public class UserSessionRepository
 {
-	@Autowired
-	private WebsocketSender websocketSender;
+	@NonNull private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	@NonNull private final WebsocketSender websocketSender;
 
-	private UserSessionRepository()
+	@PostConstruct
+	public void postConstruct()
 	{
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new AD_User_UserSessionUpdater(this));
+		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
+		modelInterceptorRegistry.addModelInterceptor(new AD_User_UserSessionUpdater(this));
 	}
 
 	public void load(final UserSession userSession)
 	{
-		final org.compiere.model.I_AD_User fromUser = Services.get(IUserDAO.class).getById(userSession.getLoggedUserId());
+		final org.compiere.model.I_AD_User fromUser = userDAO.getById(userSession.getLoggedUserId());
 		loadFromAD_User(userSession, fromUser);
 	}
 
@@ -166,7 +169,7 @@ public class UserSessionRepository
 
 	public void setAD_Language(final UserId adUserId, final String adLanguage)
 	{
-		final org.compiere.model.I_AD_User user = Services.get(IUserDAO.class).getByIdInTrx(adUserId, I_AD_User.class);
+		final org.compiere.model.I_AD_User user = userDAO.getByIdInTrx(adUserId, I_AD_User.class);
 		user.setAD_Language(adLanguage);
 		InterfaceWrapperHelper.save(user);
 	}

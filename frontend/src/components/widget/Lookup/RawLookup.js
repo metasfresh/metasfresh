@@ -83,7 +83,7 @@ export class RawLookup extends Component {
       this.inputSearch.value = computeInputTextFromSelectedItem(defaultValue);
     }
     if (initialFocus && !this.inputSearch.value) {
-      this.inputSearch.focus();
+      this.focus();
     }
   }
 
@@ -106,7 +106,7 @@ export class RawLookup extends Component {
     }
 
     if (autoFocus && !this.inputSearch.value && shouldBeFocused) {
-      this.inputSearch.focus();
+      this.focus();
       this.setState({ shouldBeFocused: false });
     }
 
@@ -253,7 +253,7 @@ export class RawLookup extends Component {
 
     handleInputEmptyStatus && handleInputEmptyStatus(false);
 
-    setTimeout(() => this.focus(), 0);
+    this.focus();
 
     this.handleDropdownBlur(isMouseEvent);
   };
@@ -298,10 +298,8 @@ export class RawLookup extends Component {
         //console.log('handleInputTextBlur - SET TO NULL');
         this.handleSelect(null);
       } else {
-        this.inputSearch.value = computeInputTextFromSelectedItem(
-          defaultValue,
-          inputTextOnFocus
-        );
+        // on focus lost always restore the input text field to last valid value
+        this.inputSearch.value = computeInputTextFromSelectedItem(defaultValue);
         //console.log(`handleInputTextBlur - RESTORED value to "${this.inputSearch.value}"`);
       }
     }
@@ -524,7 +522,9 @@ export class RawLookup extends Component {
    * @summary this is a method called from a top level component to focus the widget field
    */
   focus = () => {
-    this.inputSearch && this.inputSearch.focus();
+    // Because we want to make sure the focus() function is called after the component is rendered and displayed,
+    // we just enqueue a request to be executed after this one
+    setTimeout(() => this.inputSearch && this.inputSearch.focus(), 0);
   };
 
   render() {

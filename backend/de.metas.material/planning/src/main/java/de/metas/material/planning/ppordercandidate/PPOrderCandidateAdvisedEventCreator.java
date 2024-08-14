@@ -24,59 +24,50 @@ package de.metas.material.planning.ppordercandidate;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent.PPOrderCandidateAdvisedEventBuilder;
-import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.MaterialRequest;
+import de.metas.material.planning.event.SupplyRequiredAdvisor;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 
-@Service
-public class PPOrderCandidateAdvisedEventCreator
+@Component
+@RequiredArgsConstructor
+public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdvisor
 {
-	private final PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher;
-
-	private final PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
-	public PPOrderCandidateAdvisedEventCreator(
-			@NonNull final PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher,
-			@NonNull final PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier)
-	{
-		this.ppOrderCandidateDemandMatcher = ppOrderCandidateDemandMatcher;
-		this.ppOrderCandidatePojoSupplier = ppOrderCandidatePojoSupplier;
-	}
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher;
+	@NonNull private final PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
 
 	@NonNull
-	public ImmutableList<PPOrderCandidateAdvisedEvent> createPPOrderCandidateAdvisedEvents(
+	public ImmutableList<PPOrderCandidateAdvisedEvent> createAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final IMutableMRPContext mrpContext)
+			@NonNull final MaterialPlanningContext context)
 	{
-		if (!ppOrderCandidateDemandMatcher.matches(mrpContext))
+		if (!ppOrderCandidateDemandMatcher.matches(context))
 		{
 			return ImmutableList.of();
 		}
 
-		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+		final ProductPlanning productPlanning = context.getProductPlanning();
 
-		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext);
+		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, context);
 
 		final Quantity maxQtyPerOrder = extractMaxQuantityPerOrder(productPlanning);
-		final Quantity maxQtyPerOrderConv = convertQtyToRequestUOM(mrpContext, completeRequest, maxQtyPerOrder);
+		final Quantity maxQtyPerOrderConv = convertQtyToRequestUOM(context, completeRequest, maxQtyPerOrder);
 		final ImmutableList<MaterialRequest> partialRequests = createMaterialRequests(completeRequest, maxQtyPerOrderConv);
 
 		final ImmutableList.Builder<PPOrderCandidateAdvisedEvent> result = ImmutableList.builder();
@@ -87,7 +78,7 @@ public class PPOrderCandidateAdvisedEventCreator
 
 			final PPOrderCandidateAdvisedEventBuilder eventBuilder = PPOrderCandidateAdvisedEvent.builder()
 					.supplyRequiredDescriptor(supplyRequiredDescriptor)
-					.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
+					.eventDescriptor(supplyRequiredDescriptor.newEventDescriptor())
 					.ppOrderCandidate(ppOrderCandidate)
 					.directlyCreatePPOrder(productPlanning.isCreatePlan());
 
@@ -109,25 +100,16 @@ public class PPOrderCandidateAdvisedEventCreator
 	}
 
 	@Nullable
-	private Quantity extractMaxQuantityPerOrder(@NonNull final I_PP_Product_Planning productPlanning)
+	private static Quantity extractMaxQuantityPerOrder(@NonNull final ProductPlanning productPlanning)
 	{
-		final Quantity maxQtyPerOrder;
-		if (productPlanning.getMaxManufacturedQtyPerOrder().signum() > 0 && productPlanning.getMaxManufacturedQtyPerOrder_UOM_ID() > 0)
-		{
-			maxQtyPerOrder = Quantitys.create(
-					productPlanning.getMaxManufacturedQtyPerOrder(),
-					UomId.ofRepoId(productPlanning.getMaxManufacturedQtyPerOrder_UOM_ID()));
-		}
-		else
-		{
-			maxQtyPerOrder = null;
-		}
-		return maxQtyPerOrder;
+		return productPlanning.getMaxManufacturedQtyPerOrderDispo() != null && productPlanning.getMaxManufacturedQtyPerOrderDispo().signum() > 0
+				? productPlanning.getMaxManufacturedQtyPerOrderDispo()
+				: null;
 	}
 
 	@Nullable
 	private Quantity convertQtyToRequestUOM(
-			@NonNull final IMutableMRPContext mrpContext,
+			@NonNull final MaterialPlanningContext context,
 			@NonNull final MaterialRequest completeRequest,
 			@Nullable final Quantity maxQtyPerOrder)
 	{
@@ -136,7 +118,7 @@ public class PPOrderCandidateAdvisedEventCreator
 		{
 			maxQtyPerOrderConv = uomConversionBL.convertQuantityTo(
 					maxQtyPerOrder,
-					mrpContext.getProductId(),
+					context.getProductId(),
 					completeRequest.getQtyToSupply().getUomId());
 		}
 		else

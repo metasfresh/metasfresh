@@ -30,6 +30,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.manufacturing</groupId>
+			<artifactId>de.metas.manufacturing.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.servicerepair</groupId>
 			<artifactId>de.metas.servicerepair.webui</artifactId>
 			<version>${metasfresh.version}</version>

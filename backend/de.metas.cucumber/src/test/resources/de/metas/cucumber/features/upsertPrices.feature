@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: Create or update using prices API
   Using default ad_orgId 1000000
 
@@ -9,8 +10,8 @@ Feature: Create or update using prices API
   @from:cucumber
   Scenario: Create price list version from external ref
     Given metasfresh contains M_PricingSystems
-      | Identifier | Name                | Value                | OPT.Description            | IsActive |
-      | ps_1       | pricing_system_name | pricing_system_value | pricing_system_description | true     |
+      | Identifier | Name                  | Value                  | OPT.Description              | IsActive |
+      | ps_1       | pricing_system_name_9 | pricing_system_value_9 | pricing_system_description_9 | true     |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_1       | ps_1                          | DE                        | CHF                 | price_list_name | null            | true  | false         | 2              | true         |

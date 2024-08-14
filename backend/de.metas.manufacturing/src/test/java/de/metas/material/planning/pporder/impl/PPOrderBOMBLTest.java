@@ -199,7 +199,7 @@ public class PPOrderBOMBLTest
 	private void testExtractUpdateOrderBOMLineQuantities(final OrderBOMLineQuantities qtys)
 	{
 		final I_PP_Order_BOMLine record = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class);
-		PPOrderBOMBL.setQuantities(record, qtys);
+		PPOrderBOMBL.updateRecord(record, qtys);
 
 		final OrderBOMLineQuantities qtysActual = ppOrderBOMBL.getQuantities(record);
 		assertThat(qtysActual).usingRecursiveComparison().isEqualTo(qtys);

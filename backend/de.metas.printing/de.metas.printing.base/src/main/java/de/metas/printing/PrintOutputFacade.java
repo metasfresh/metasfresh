@@ -23,6 +23,8 @@
 package de.metas.printing;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.audit.data.ExternalSystemParentConfigId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.printing.api.IPrintJobBL;
@@ -32,26 +34,40 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.printingdata.PrintingData;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
+import de.metas.printing.printingdata.PrintingSegment;
+import de.metas.printing.spi.impl.ExternalSystemsPrintingNotifier;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.archive.api.ArchivePrintOutStatus;
 import org.adempiere.archive.api.IArchiveEventManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 @Service
 public class PrintOutputFacade
 {
-	private final static transient Logger logger = LogManager.getLogger(PrintOutputFacade.class);
+	private final static Logger logger = LogManager.getLogger(PrintOutputFacade.class);
 
 	private final PrintingDataFactory printingDataFactory;
 	private final PrintingDataToPDFFileStorer printingDataToPDFFileStorer;
 	private final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
 	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
+
+	private final ExternalSystemsPrintingNotifier externalSystemsPrintingNotifier = SpringContextHolder.instance.getBean(ExternalSystemsPrintingNotifier.class);
+
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	private static final AdMessageKey ERROR_MSG_EXTERNAL_SYSTEM_CONFIG = AdMessageKey.of("de.metas.printing.external.system.config.error");
 
 	public PrintOutputFacade(
 			@NonNull final PrintingDataFactory printingDataFactory,
@@ -81,6 +97,7 @@ public class PrintOutputFacade
 					continue;
 				}
 				final ImmutableList<PrintingData> printingData = printingDataFactory.createPrintingDataForQueueItem(item);
+				final List<PrintingData> printingDataForExternalSystems = new ArrayList<>();
 				for (final PrintingData printingDataItem : printingData)
 				{
 					final PrintingData printingDataToStore = printingDataItem.onlyWithType(OutputType.Store);
@@ -92,7 +109,7 @@ public class PrintOutputFacade
 						source.markPrinted(item);
 					}
 
-					// with there is a config with a specific hostKey, then printingData.getSegments() might be empty, but still we might need print-jobs
+					// if there is a config with a specific hostKey, then printingData.getSegments() might be empty, but still we might need print-jobs
 					if (printingDataItem.getSegments().isEmpty() || printingDataItem.getSegments().size() != printingDataToStore.getSegments().size())
 					{
 						logger.debug("Also invoke printJobBL, in case there are also items to be printed");
@@ -104,9 +121,54 @@ public class PrintOutputFacade
 								source.getProcessingInfo());
 						printJobBL.createPrintJobs(plainSource, printJobContext);
 					}
+
+					final PrintingData printingDataToExternalSystem = printingDataItem.onlyQueuedForExternalSystems();
+					if(!printingDataToExternalSystem.getSegments().isEmpty())
+					{
+						printingDataForExternalSystems.add(printingDataItem);
+					}
+				}
+				if(!printingDataForExternalSystems.isEmpty())
+				{
+					if(hasMultipleExternalSystemConfigs(printingDataForExternalSystems))
+					{
+						throw new AdempiereException(ERROR_MSG_EXTERNAL_SYSTEM_CONFIG).markAsUserValidationError();
+					}
+					final ExternalSystemParentConfigId configId = printingDataForExternalSystems.get(0).getSegments().get(0).getPrinter().getExternalSystemParentConfigId();
+					Check.assumeNotNull(configId,"ExternalSystemParentConfigId shouldn't be null");
+					final int firstExternalSystemId = configId.getRepoId();
+					final PrintingClientRequest request = PrintingClientRequest.builder()
+							.printingQueueId(item.getC_Printing_Queue_ID())
+							.orgId(item.getAD_Org_ID())
+							.pInstanceId(printJobContext.getAdPInstanceId() != null ? printJobContext.getAdPInstanceId().getRepoId() : null)
+							.externalSystemParentConfigId(firstExternalSystemId)
+							.build();
+
+					//notify external systems printers *after commit*, because the item need to be in the DB for access via the API
+					trxManager.runAfterCommit(() -> externalSystemsPrintingNotifier.notifyExternalSystemsIfNeeded(request));
 				}
 			}
 		}
+	}
+
+	private boolean hasMultipleExternalSystemConfigs(@NonNull final List<PrintingData> printingDataList)
+	{
+		final ExternalSystemParentConfigId configId = printingDataList.get(0).getSegments().get(0).getPrinter().getExternalSystemParentConfigId();
+		Check.assumeNotNull(configId,"ExternalSystemParentConfigId shouldn't be null");
+		final int firstExternalSystemId = configId.getRepoId();
+		for (final PrintingData printingData : printingDataList)
+		{
+			for (final PrintingSegment segment : printingData.getSegments())
+			{
+				final ExternalSystemParentConfigId segmentConfigId = segment.getPrinter().getExternalSystemParentConfigId();
+				Check.assumeNotNull(segmentConfigId,"ExternalSystemParentConfigId shouldn't be null");
+				if (firstExternalSystemId != segmentConfigId.getRepoId())
+				{
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	private void storePDFAndFireEvent(

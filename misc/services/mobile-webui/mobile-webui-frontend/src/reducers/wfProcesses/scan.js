@@ -3,6 +3,7 @@ import * as CompleteStatus from '../../constants/CompleteStatus';
 
 import { updateUserEditable } from './utils';
 import { registerHandler } from './activityStateHandlers';
+import { COMPONENTTYPE_ScanAndValidateBarcode } from '../../containers/activities/scan/ScanAndValidateActivity';
 
 const COMPONENT_TYPE = 'common/scanBarcode';
 
@@ -44,7 +45,19 @@ registerHandler({
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
     draftActivityDataStored.currentValue = fromActivity.componentProps.currentValue;
     draftActivityDataStored.validOptions = fromActivity.componentProps.validOptions;
-    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.componentProps.isAlwaysAvailableToUser ?? false;
+    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
+    draftActivityDataStored.completeStatus = computeActivityStatus({ draftActivityDataStored });
+    draftActivityDataStored.confirmationModalMsg = fromActivity.componentProps.confirmationModalMsg;
+  },
+});
+
+registerHandler({
+  componentType: COMPONENTTYPE_ScanAndValidateBarcode,
+  normalizeComponentProps: () => {}, // don't add componentProps to state
+  mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
+    draftActivityDataStored.currentValue = fromActivity.componentProps.currentValue;
+    draftActivityDataStored.validOptions = fromActivity.componentProps.validOptions;
+    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
     draftActivityDataStored.completeStatus = computeActivityStatus({ draftActivityDataStored });
   },
 });

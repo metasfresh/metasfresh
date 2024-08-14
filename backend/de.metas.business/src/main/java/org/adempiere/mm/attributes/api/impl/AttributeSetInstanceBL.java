@@ -242,7 +242,6 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		}
 	}
 
-
 	@Override
 	public void cloneOrCreateASI(@Nullable final Object to, @Nullable final Object from)
 	{
@@ -428,13 +427,12 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		for (final I_M_Attribute attributeRecord : attributeSet.getAttributes())
 		{
 			setAttributeInstanceValue(
-					asiId, 
+					asiId,
 					AttributeCode.ofString(attributeRecord.getValue()),
 					attributeSet.getValue(attributeRecord));
 		}
 		asiAware.setM_AttributeSetInstance_ID(asiId.getRepoId());
 	}
-
 
 	@NonNull
 	public AttributeSetInstanceId addAttributes(@NonNull final AddAttributesRequest request)
@@ -453,9 +451,12 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		}
 
 		request.getAttributeInstanceBasicInfos().forEach(attributeValue -> {
-			setAttributeInstanceValue(asiId, attributeValue.getAttributeCode(), attributeValue.getValue() );
+			setAttributeInstanceValue(asiId, attributeValue.getAttributeCode(), attributeValue.getValue());
 		});
 
 		return asiId;
 	}
+
+
+
 }
