@@ -18,6 +18,7 @@ import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateId;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.event.commons.AttributesKey;
@@ -39,6 +40,7 @@ import org.opentest4j.MultipleFailuresError;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Builder
@@ -59,7 +61,10 @@ class MaterialDispoTableRowValidator
 
 	private SoftAssertions softly; // lazy
 
-	public ProviderResult<MaterialDispoDataItem> findValidItem(@NonNull final List<MaterialDispoDataItem> items, @NonNull final MaterialDispoTableRow row)
+	public ProviderResult<MaterialDispoDataItem> findValidItem(
+			@NonNull final List<MaterialDispoDataItem> items,
+			@NonNull final MaterialDispoTableRow row,
+			final Map<CandidateId, StepDefDataIdentifier> candidateIdsToExclude)
 	{
 		final ArrayList<String> resultNotFoundLogs = new ArrayList<>();
 		if (items.isEmpty())
@@ -70,6 +75,12 @@ class MaterialDispoTableRowValidator
 		{
 			for (final MaterialDispoDataItem item : items)
 			{
+				if (candidateIdsToExclude != null && candidateIdsToExclude.containsKey(item.getCandidateId()))
+				{
+					resultNotFoundLogs.add("Excluded " + item.getCandidateId().getRepoId() + " because it was previously matched for identifier `" + candidateIdsToExclude.get(item.getCandidateId()) + "`");
+					continue;
+				}
+
 				//
 				// Exclude this item if it's already associated to a different identifier.
 				final StepDefDataIdentifier otherIdentifierOfCandidate = materialDispoDataItemStepDefData.getFirstIdentifierById(item.getCandidateId(), row.getIdentifier()).orElse(null);

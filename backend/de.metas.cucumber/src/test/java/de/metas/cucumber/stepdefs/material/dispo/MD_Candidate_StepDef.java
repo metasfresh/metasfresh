@@ -96,6 +96,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -408,15 +409,17 @@ public class MD_Candidate_StepDef
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
+		final HashMap<CandidateId, StepDefDataIdentifier> candidateIdsAlreadyMatched = new HashMap<>();
 		table.forEach((row) -> {
 			// make sure the given md_candidate has been created
-			final MaterialDispoDataItem materialDispoRecord = tryAndWaitForCandidate(timeoutSec, row);
+			final MaterialDispoDataItem materialDispoRecord = tryAndWaitForCandidate(timeoutSec, row, candidateIdsAlreadyMatched);
 			SharedTestContext.put("candidateId", materialDispoRecord.getCandidateId().getRepoId());
 			SharedTestContext.put("materialDispoRecord", materialDispoRecord);
 
 			validate_md_candidate(row, materialDispoRecord);
 
 			materialDispoDataItemStepDefData.putOrReplace(row.getIdentifier(), materialDispoRecord);
+			candidateIdsAlreadyMatched.put(materialDispoRecord.getCandidateId(), row.getIdentifier());
 		});
 
 		stopwatch.stop();
@@ -465,7 +468,8 @@ public class MD_Candidate_StepDef
 
 	private MaterialDispoDataItem tryAndWaitForCandidate(
 			final int timeoutSec,
-			final @NonNull MaterialDispoTableRow row) throws InterruptedException
+			final @NonNull MaterialDispoTableRow row,
+			final Map<CandidateId, StepDefDataIdentifier> candidateIdsToExclude) throws InterruptedException
 	{
 
 		final CandidatesQuery candidatesQuery = row.toCandidatesQuery();
@@ -476,17 +480,19 @@ public class MD_Candidate_StepDef
 		SharedTestContext.put("actual candidates query SQL", () -> RepositoryCommons.mkQueryBuilder(candidatesQuery).create());
 
 		return StepDefUtil.<MaterialDispoDataItem>tryAndWaitForItem()
-				.worker(() -> retrieveMaterialDispoDataItem(row))
+				.worker(() -> retrieveMaterialDispoDataItem(row, candidateIdsToExclude))
 				.maxWaitSeconds(timeoutSec)
 				.checkingIntervalMs(1000L)
 				.execute();
 	}
 
-	private ProviderResult<MaterialDispoDataItem> retrieveMaterialDispoDataItem(final @NonNull MaterialDispoTableRow row)
+	private ProviderResult<MaterialDispoDataItem> retrieveMaterialDispoDataItem(
+			final @NonNull MaterialDispoTableRow row, 
+			final Map<CandidateId, StepDefDataIdentifier> candidateIdsToExclude)
 	{
 		final CandidatesQuery candidatesQuery = row.toCandidatesQuery();
 		final ImmutableList<MaterialDispoDataItem> items = materialDispoRecordRepository.getAllBy(candidatesQuery);
-		return newValidator().findValidItem(items, row);
+		return newValidator().findValidItem(items, row, candidateIdsToExclude);
 	}
 
 	@And("post DeactivateAllSimulatedCandidatesEvent and wait for processing")
@@ -496,7 +502,6 @@ public class MD_Candidate_StepDef
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
 
-		//noinspection deprecation
 		postMaterialEventService.enqueueEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
 				.build());

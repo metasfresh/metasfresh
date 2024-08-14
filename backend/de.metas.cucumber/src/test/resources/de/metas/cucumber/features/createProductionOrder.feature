@@ -147,7 +147,7 @@ Feature: create production order
     And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
-      | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
+      | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | -100                           | 0                          | 0                             | 0                             |
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
@@ -403,7 +403,7 @@ Feature: create production order
       | 5          | SUPPLY            | PRODUCTION                | p_3          | 2021-06-16T21:00:00Z | 10  | 0    | bomASI                    |
       | 6          | DEMAND            | PRODUCTION                | p_4          | 2021-06-16T21:00:00Z | 100 | -100 | bomLineASI                |
       | 8          | SUPPLY            | PRODUCTION                | p_3          | 2021-06-16T21:00:00Z | 12  | 12   | bomASI                    |
-      | 9          | DEMAND            | PRODUCTION                | p_4          | 2021-06-16T21:00:00Z | 120 | -120 | bomLineASI                |
+      | 9          | DEMAND            | PRODUCTION                | p_4          | 2021-06-16T21:00:00Z | 120 | -220 | bomLineASI                |
 
     
     
@@ -787,11 +787,11 @@ Feature: create production order
       | oc_1                  | olc_2      | p_comp_2     | 150 PCE    | CO            | boml_2                |
 
 
-    And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference        | ExternalReferenceType.Code | RecordId.Identifier |
-      | GRSSignum           | finishedGoodExternalRef6 | Product                    | p_1                 |
-      | GRSSignum           | component1ExternalRef6   | Product                    | p_comp_1            |
-      | GRSSignum           | component3ExternalRef6   | Product                    | p_comp_3            |
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference        | Type    | OPT.M_Product_ID.Identifier |
+      | finishedGoodExternalRef6          | GRSSignum      | finishedGoodExternalRef6 | Product | p_1                         |
+      | component1ExternalRef6            | GRSSignum      | component1ExternalRef6   | Product | p_comp_1                    |
+      | component3ExternalRef6            | GRSSignum      | component3ExternalRef6   | Product | p_comp_3                    |
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bom/version/001' and fulfills with '200' status code
     """
  {
