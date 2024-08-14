@@ -1,3 +1,5 @@
+@dev:runThisOne
+
 @from:cucumber
 Feature: import bank statement in camt.53.001.04 import format
 
@@ -1343,40 +1345,40 @@ Feature: import bank statement in camt.53.001.04 import format
 	# change the bankaccount of the AD_Org bpartner ("metasfresh") to be an ESR-Account
     And load C_DataImport:
       | C_DataImport_ID.Identifier | OPT.C_DataImport_ID |
-      | di_1_S0337_500             | 540009              |
+      | di_1_S0337_600             | 540009              |
     And metasfresh contains C_Bank:
       | C_Bank_ID.Identifier | Name           | RoutingNo | SwiftCode   | C_DataImport_ID.Identifier | OPT.IsImportAsSingleSummaryLine |
-      | di_1_S0337_500       | bank_S0337_500 | 2234567   | AAAAAAAA82A | di_1_S0337_500             | Y                               |
+      | di_1_S0337_600       | bank_S0337_600 | 2234567   | AAAAAAAA82A | di_1_S0337_600             | Y                               |
     And load C_BP_BankAccount:
       | C_BP_BankAccount_ID.Identifier       | OPT.C_BP_BankAccount_ID | OPT.C_Bank_ID  |
-      | bp_bank_account_metasfresh_S0337_500 | 2000257                 | di_1_S0337_500 |
+      | bp_bank_account_metasfresh_S0337_600 | 2000257                 | di_1_S0337_600 |
 
     And update C_BP_BankAccount:
       | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              | OPT.C_Bank_ID.Identifier |
-      | bp_bank_account_metasfresh_S0337_500 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 | di_1_S0337_500           |
+      | bp_bank_account_metasfresh_S0337_600 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 | di_1_S0337_500           |
 
 	  # create 2 invoices; we expect the sales invoice to end up with the ESR-reference 123456700102156434010001795
     Given metasfresh contains C_Invoice:
       | Identifier      | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo        |
-      | inv_1_S0337_500 | bpartner_1_S0337         | Ausgangsrechnung        | 2022-05-12   | Spot                     | true    | CHF                 | 511004_1_SO_S0337_500 |
-      | inv_2_S0337_500 | bpartner_1_S0337         | Ausgangsrechnung        | 2022-05-12   | Spot                     | true    | CHF                 | 511004_2_SO_S0337_500 |
+      | inv_1_S0337_600 | bpartner_1_S0337         | Ausgangsrechnung        | 2022-05-12   | Spot                     | true    | CHF                 | 511004_1_SO_S0337_600 |
+      | inv_2_S0337_600 | bpartner_1_S0337         | Ausgangsrechnung        | 2022-05-12   | Spot                     | true    | CHF                 | 511004_2_SO_S0337_600 |
 
     And metasfresh contains C_InvoiceLines
       | Identifier       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
-      | invl_1_S0337_500 | inv_1_S0337_500         | p_1_S0337               | 10          | PCE               |
-      | invl_2_S0337_500 | inv_2_S0337_500         | p_1_S0337               | 9           | PCE               |
-    And the invoice identified by inv_1_S0337_500 is completed
-    And the invoice identified by inv_2_S0337_500 is completed
+      | invl_1_S0337_600 | inv_1_S0337_600         | p_1_S0337               | 10          | PCE               |
+      | invl_2_S0337_600 | inv_2_S0337_600         | p_1_S0337               | 9           | PCE               |
+    And the invoice identified by inv_1_S0337_600 is completed
+    And the invoice identified by inv_2_S0337_600 is completed
 
     And load C_ReferenceNo:
       | C_ReferenceNo_ID.Identifier        | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identifier |
-      | ReferenceNo_metasfresh_S0337_500_1 | inv_1_S0337_500      | 540006                           |
-      | ReferenceNo_metasfresh_S0337_500_2 | inv_2_S0337_500      | 540006                           |
+      | ReferenceNo_metasfresh_S0337_600_1 | inv_1_S0337_600      | 540006                           |
+      | ReferenceNo_metasfresh_S0337_600_2 | inv_2_S0337_600      | 540006                           |
 
     And update C_ReferenceNo:
       | C_ReferenceNo_ID.Identifier        | Record_ID.Identifier | C_ReferenceNo_Type_ID.Identifier | OPT.ReferenceNo                    |
-      | ReferenceNo_metasfresh_S0337_500_1 | inv_1_S0337_500      | 540006                           | ReferenceNo_metasfresh_S0337_500_1 |
-      | ReferenceNo_metasfresh_S0337_500_2 | inv_2_S0337_500      | 540006                           | ReferenceNo_metasfresh_S0337_500_2 |
+      | ReferenceNo_metasfresh_S0337_600_1 | inv_1_S0337_600      | 540006                           | ReferenceNo_metasfresh_S0337_600_1 |
+      | ReferenceNo_metasfresh_S0337_600_2 | inv_2_S0337_600      | 540006                           | ReferenceNo_metasfresh_S0337_600_2 |
 
     When bank statement is imported with identifiers bs_1_S0337_500, matching invoice amounts
     """
@@ -1489,7 +1491,7 @@ Feature: import bank statement in camt.53.001.04 import format
 							</TxAmt>
 						</AmtDtls>
 						<RmtInf>
-							<Ustrd>ESR-Referenz ReferenceNo_metasfresh_S0337_500_2</Ustrd>
+							<Ustrd>ESR-Referenz ReferenceNo_metasfresh_S0337_600_2</Ustrd>
 						</RmtInf>
 						<AddtlTxInf>Incoming payment</AddtlTxInf>
 					</TxDtls>
@@ -1533,7 +1535,7 @@ Feature: import bank statement in camt.53.001.04 import format
 							</TxAmt>
 						</AmtDtls>
 						<RmtInf>
-							<Ustrd>511004_1_SO_S0337_500</Ustrd>
+							<Ustrd>511004_1_SO_S0337_600</Ustrd>
 						</RmtInf>
 						<AddtlTxInf>Incoming payment</AddtlTxInf>
 					</TxDtls>
@@ -1547,17 +1549,17 @@ Feature: import bank statement in camt.53.001.04 import format
 
     Then validate C_BankStatement
       | C_BankStatement_ID.Identifier | OPT.BeginningBalance | OPT.EndingBalance | OPT.StatementDifference | OPT.Processed | OPT.C_BP_BankAccount_ID.Identifier   | OPT.StatementDate | OPT.IsReconciled |
-      | bs_1_S0337_500                | 1000.07              | 1226.17           | 226.1                   | false         | bp_bank_account_metasfresh_S0337_500 | 2023-10-27        | false            |
+      | bs_1_S0337_600                | 1000.07              | 1226.17           | 226.1                   | false         | bp_bank_account_metasfresh_S0337_600 | 2023-10-27        | false            |
     And load C_BankStatementLine
       | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
-      | bsl_1_S0337_500                   | bs_1_S0337_500                | 10   |
-      | bsl_2_S0337_500                   | bs_1_S0337_500                | 20   |
-      | bsl_3_S0337_500                   | bs_1_S0337_500                | 30   |
+      | bsl_1_S0337_600                   | bs_1_S0337_600                | 10   |
+      | bsl_2_S0337_600                   | bs_1_S0337_600                | 20   |
+      | bsl_3_S0337_600                   | bs_1_S0337_600                | 30   |
     And validate C_BankStatementLine
       | C_BankStatementLine_ID.Identifier | OPT.ValutaDate | OPT.DateAcct | OPT.C_Currency_ID.ISO_Code | OPT.TrxAmt | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier |
-      | bsl_1_S0337_500                   | 2023-10-27     | 2023-10-27   | CHF                        | 107.1      |                              |                             |
-      | bsl_2_S0337_500                   | 2023-10-24     | 2023-10-24   | CHF                        | 0          | bpartner_1_S0337             | inv_2_S0337_500             |
-      | bsl_3_S0337_500                   | 2023-10-26     | 2023-10-26   | CHF                        | 119        | bpartner_1_S0337             | inv_1_S0337_500             |
+      | bsl_1_S0337_600                   | 2023-10-27     | 2023-10-27   | CHF                        | 107.1      |                              |                             |
+      | bsl_2_S0337_600                   | 2023-10-24     | 2023-10-24   | CHF                        | 0          | bpartner_1_S0337             | inv_2_S0337_600             |
+      | bsl_3_S0337_600                   | 2023-10-26     | 2023-10-26   | CHF                        | 119        | bpartner_1_S0337             | inv_1_S0337_600             |
 
     And the C_BankStatement identified by bs_1_S0337_600 is completed
 
