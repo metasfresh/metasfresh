@@ -107,13 +107,6 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 			supplyRequiredDescriptorToUse = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
 		}
 
-		final BigDecimal finalQtyUsed = supplyRequiredDescriptorToUse.getMaterialDescriptor().getQuantity();
-		if (requiredQty.compareTo(finalQtyUsed) != 0)
-		{
-			final BigDecimal deltaToApply = finalQtyUsed.subtract(requiredQty);
-			SupplyRequiredHandlerUtils.updateMainDataWithQty(supplyRequiredDescriptorToUse, deltaToApply);
-		}
-
 		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptorToUse, context);
 
 		final Quantity maxQtyPerOrder = extractMaxQuantityPerOrder(productPlanning);

@@ -4,9 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
-import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
-import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
@@ -35,7 +33,6 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -90,11 +87,6 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 
 	private void handleSupplyRequiredEvent(@NonNull final SupplyRequiredDescriptor descriptor)
 	{
-		if (descriptor.getMaterialDescriptor().getQuantity().signum() != 0)
-		{
-			SupplyRequiredHandlerUtils.updateMainData(descriptor);
-		}
-
 		final ArrayList<MaterialEvent> events = new ArrayList<>();
 
 		final MaterialPlanningContext context = createContextOrNull(descriptor);
@@ -161,26 +153,5 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 				.plantId(plantId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.build();
-	}
-
-	// TODO maybe it was already deleted on master?
-	private void updateMainData(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
-	{
-		if (supplyRequiredDescriptor.isSimulated())
-		{
-			return;
-		}
-
-		final ZoneId orgTimezone = orgDAO.getTimeZone(supplyRequiredDescriptor.getOrgId());
-
-		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier
-				.createForMaterial(supplyRequiredDescriptor.getMaterialDescriptor(), orgTimezone);
-
-		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
-				.identifier(mainDataRecordIdentifier)
-				.qtySupplyRequired(supplyRequiredDescriptor.getQtyToSupplyBD())
-				.build();
-
-		mainDataRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
 	}
 }

@@ -4,6 +4,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.organization.IOrgDAO;
@@ -43,8 +45,6 @@ import java.time.ZoneId;
 @UtilityClass
 public class SupplyRequiredHandlerUtils
 {
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
 	private final MainDataRequestHandler mainDataRequestHandler = new MainDataRequestHandler();
 
 	@NonNull
@@ -74,28 +74,26 @@ public class SupplyRequiredHandlerUtils
 		return Quantity.of(qtyToSupplyBD, uom);
 	}
 
-	public void updateMainData(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	public void updateQtySupplyRequired(
+			@NonNull final MaterialDescriptor materialDescriptor,
+			@NonNull final EventDescriptor eventDescriptor,
+			@NonNull final BigDecimal qtySupplyRequiredDelta)
 	{
-		updateMainDataWithQty(supplyRequiredDescriptor, supplyRequiredDescriptor.getMaterialDescriptor().getQuantity());
-	}
-
-	public void updateMainDataWithQty(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor, final BigDecimal qty)
-	{
-		if (supplyRequiredDescriptor.isSimulated())
+		if (qtySupplyRequiredDelta.signum() == 0)
 		{
 			return;
 		}
 
-		final ZoneId orgTimezone = orgDAO.getTimeZone(supplyRequiredDescriptor.getEventDescriptor().getOrgId());
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		final ZoneId orgTimezone = orgDAO.getTimeZone(eventDescriptor.getOrgId());
+		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.createForMaterial(materialDescriptor, orgTimezone);
 
-		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier
-				.createForMaterial(supplyRequiredDescriptor.getMaterialDescriptor(), orgTimezone);
-
-		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
-				.identifier(mainDataRecordIdentifier)
-				.qtySupplyRequired(qty)
-				.build();
-
-		mainDataRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
+		mainDataRequestHandler.handleDataUpdateRequest(
+				UpdateMainDataRequest.builder()
+						.identifier(mainDataRecordIdentifier)
+						.qtySupplyRequired(qtySupplyRequiredDelta)
+						.build()
+		);
 	}
+
 }

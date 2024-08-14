@@ -86,7 +86,7 @@ class MaterialDispoTableRowValidator
 				final StepDefDataIdentifier otherIdentifierOfCandidate = materialDispoDataItemStepDefData.getFirstIdentifierById(item.getCandidateId(), row.getIdentifier()).orElse(null);
 				if (otherIdentifierOfCandidate != null)
 				{
-					resultNotFoundLogs.add("Excluded " + item.getCandidateId().getRepoId() + " because it was already loaded for " + otherIdentifierOfCandidate);
+					resultNotFoundLogs.add("Excluded " + item.getCandidateId().getRepoId() + " because it was already loaded for identifier `" + otherIdentifierOfCandidate + "`");
 					continue;
 				}
 

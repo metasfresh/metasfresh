@@ -8,7 +8,6 @@ import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.event.SupplyRequiredAdvisor;
-import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -137,12 +136,6 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 		}
 
 		final PurchaseCandidateAdvisedEvent event = eventBuilder.build();
-		final BigDecimal finalQtyUsed = event.getSupplyRequiredDescriptor().getMaterialDescriptor().getQuantity();
-		if (requiredQty.compareTo(finalQtyUsed) != 0)
-		{
-			final BigDecimal deltaToApply = finalQtyUsed.subtract(requiredQty);
-			SupplyRequiredHandlerUtils.updateMainDataWithQty(supplyRequiredDescriptor, deltaToApply);
-		}
 
 		Loggables.addLog("Created PurchaseCandidateAdvisedEvent");
 		return ImmutableList.of(event);

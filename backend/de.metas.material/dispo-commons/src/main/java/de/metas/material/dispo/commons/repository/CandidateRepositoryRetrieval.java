@@ -175,7 +175,10 @@ public class CandidateRepositoryRetrieval
 		final int hasStockChangeDetail = stockChangeDetailOrNull == null ? 0 : 1;
 
 		Check.errorIf(hasProductionDetail + hasDistributionDetail + hasPurchaseDetail + hasStockChangeDetail > 1,
-				"A candidate may not have both a distribution, production, production detail and a hasStockChangeDetail; candidateRecord={}", candidateRecordOrNull);
+				"A candidate may not have both a distribution, production, production detail and a hasStockChangeDetail; candidateRecord={}, "
+						+ "hasProductionDetail={}, hasDistributionDetail={}, hasPurchaseDetail={}, hasStockChangeDetail={}",
+				candidateRecordOrNull,
+				hasProductionDetail, hasDistributionDetail, hasPurchaseDetail, hasStockChangeDetail);
 
 		final DemandDetail demandDetailOrNull = retrieveDemandDetailOrNull(candidateId);
 

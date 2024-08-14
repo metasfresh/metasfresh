@@ -217,35 +217,35 @@ public class MD_Cockpit_StepDef
 		final BigDecimal qtySupplyPurchaseOrderAtDate = expectedResults.getQtySupplyPurchaseOrderAtDate();
 		if (qtySupplyPurchaseOrderAtDate != null && !cockpitRecord.getQtySupply_PurchaseOrder_AtDate().equals(qtySupplyPurchaseOrderAtDate))
 		{
-			errorCollector.add(MessageFormat.format("Expecting QtySupplyPurchaseOrderAtDate={0} but actual is {1}",
+			errorCollector.add(MessageFormat.format("Expecting QtySupply_PurchaseOrder_AtDate={0} but actual is {1}",
 					qtySupplyPurchaseOrderAtDate, cockpitRecord.getQtySupply_PurchaseOrder_AtDate()));
 		}
 
 		final BigDecimal qtySupplySumAtDate = expectedResults.getQtySupplySumAtDate();
 		if (qtySupplySumAtDate != null && !cockpitRecord.getQtySupplySum_AtDate().equals(qtySupplySumAtDate))
 		{
-			errorCollector.add(MessageFormat.format("Expecting QtySupplySumAtDate={0} but actual is {1}",
+			errorCollector.add(MessageFormat.format("Expecting QtySupplySum_AtDate={0} but actual is {1}",
 					qtySupplySumAtDate, cockpitRecord.getQtySupplySum_AtDate()));
 		}
 
 		final BigDecimal qtySupplyRequiredAtDate = expectedResults.getQtySupplyRequiredAtDate();
 		if (qtySupplyRequiredAtDate != null && !cockpitRecord.getQtySupplyRequired_AtDate().equals(qtySupplyRequiredAtDate))
 		{
-			errorCollector.add(MessageFormat.format("Expecting QtySupplyRequiredAtDate={0} but actual is {1}",
+			errorCollector.add(MessageFormat.format("Expecting QtySupplyRequired_AtDate={0} but actual is {1}",
 					qtySupplyRequiredAtDate, cockpitRecord.getQtySupplyRequired_AtDate()));
 		}
 
 		final BigDecimal qtySupplyToScheduleAtDate = expectedResults.getQtySupplyToScheduleAtDate();
 		if (qtySupplyToScheduleAtDate != null && !cockpitRecord.getQtySupplyToSchedule_AtDate().equals(qtySupplyToScheduleAtDate))
 		{
-			errorCollector.add(MessageFormat.format("Expecting QtySupplyToScheduleAtDate={0} but actual is {1}",
+			errorCollector.add(MessageFormat.format("Expecting QtySupplyToSchedule_AtDate={0} but actual is {1}",
 					qtySupplyToScheduleAtDate, cockpitRecord.getQtySupplyToSchedule_AtDate()));
 		}
 
 		final BigDecimal mdCandidateQtyStockAtDate = expectedResults.getMdCandidateQtyStockAtDate();
 		if (mdCandidateQtyStockAtDate != null && !cockpitRecord.getMDCandidateQtyStock_AtDate().equals(mdCandidateQtyStockAtDate))
 		{
-			errorCollector.add(MessageFormat.format("Expecting MDCandidateQtyStockAtDate={0} but actual is {1}",
+			errorCollector.add(MessageFormat.format("Expecting MDCandidateQtyStock_AtDate={0} but actual is {1}",
 					mdCandidateQtyStockAtDate, cockpitRecord.getMDCandidateQtyStock_AtDate()));
 		}
 
@@ -301,8 +301,8 @@ public class MD_Cockpit_StepDef
 		if (!errorCollector.isEmpty())
 		{
 			final String errorMessages = MessageFormat.format("MD_Cockpit.Identifier={0}, MD_Cockpit_ID={1}:", cockpitIdentifier, cockpitRecord.getMD_Cockpit_ID())
-					+ "\n *"
-					+ String.join("\n *", errorCollector);
+					+ "\n * "
+					+ String.join("\n * ", errorCollector);
 
 			return ItemProvider.ProviderResult.resultWasNotFound(errorMessages);
 		}

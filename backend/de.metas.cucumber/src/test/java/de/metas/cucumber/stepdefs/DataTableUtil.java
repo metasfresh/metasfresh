@@ -100,6 +100,14 @@ public class DataTableUtil
 
 	@Nullable
 	public Integer extractIntegerOrNullForColumnName(
+			@NonNull final DataTableRow dataTableRow,
+			@NonNull final String columnName)
+	{
+		return extractIntegerOrNullForColumnName(dataTableRow.asMap(), columnName);
+	}
+
+	@Nullable
+	public Integer extractIntegerOrNullForColumnName(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
 	{
@@ -419,6 +427,12 @@ public class DataTableUtil
 			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
+	}
+
+	@NonNull
+	public static BigDecimal extractBigDecimalForColumnName(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractBigDecimalForColumnName(dataTableRow.asMap(), columnName);
 	}
 
 	@NonNull
