@@ -15,7 +15,9 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.InvoiceLineAllocId;
@@ -465,6 +467,24 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.orderBy(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
 				.create()
 				.list(I_C_InvoiceCandidate_InOutLine.class);
+	}
+
+	public boolean isCompletedOrClosedInvoice(@NonNull final InOutId inOutId)
+	{
+		final IQuery<I_C_InvoiceCandidate_InOutLine> candidateInOutLine = queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOutId)
+				.addOnlyActiveRecordsFilter()
+				.andCollectChildren(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID, I_C_InvoiceCandidate_InOutLine.class)
+				.create();
+
+		return queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, candidateInOutLine)
+				.andCollect(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID, I_C_InvoiceLine.class)
+				.andCollect(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_C_Invoice.class)
+				.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed) // DocStatus in ('CO', 'CL')
+				.create()
+				.anyMatch();
 	}
 
 	@Override
