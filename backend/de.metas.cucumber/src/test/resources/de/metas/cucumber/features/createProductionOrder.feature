@@ -241,7 +241,7 @@ Feature: create production order
       | 4          | SUPPLY              | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 0    | -10  | bomASI                    |                             |
       | 5          | DEMAND              | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100 | bomLineASI                |                             |
       # PP_Order receipt:
-      | 6          | UNEXPECTED_INCREASE | PRODUCTION                | p_1          | 2021-04-17T21:00:00Z | 10   | 0    | bomASI                    |                             |
+      | 6          | UNEXPECTED_INCREASE | PRODUCTION                | p_1          | 2021-04-16T22:00:00Z | 10   | 0    | bomASI                    |                             |
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 120s, metasfresh has this MD_Cockpit data
