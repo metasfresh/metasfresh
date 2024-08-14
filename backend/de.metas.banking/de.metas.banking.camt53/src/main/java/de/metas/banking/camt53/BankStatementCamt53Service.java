@@ -399,7 +399,7 @@ public class BankStatementCamt53Service
 
 		for (final IStatementLineWrapper entry : accountStatementWrapper.getStatementLines())
 		{
-			if (entry.isQRRTransaction())
+			if (!entry.isQRRTransaction())
 			{
 				continue;
 			}
