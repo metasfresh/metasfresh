@@ -125,22 +125,6 @@ public class AccountStatement2Wrapper extends AccountStatementWrapper
 	}
 
 	@Override
-	public boolean hasNonQRRTransactions()
-	{
-		int count = 0;
-
-		for (final IStatementLineWrapper entry : getStatementLines())
-		{
-			if (entry.isQRRTransaction())
-			{
-				count++;
-			}
-		}
-
-		return getStatementLines().size() > count;
-	}
-
-	@Override
 	@NonNull
 	protected Optional<String> getAccountIBAN()
 	{

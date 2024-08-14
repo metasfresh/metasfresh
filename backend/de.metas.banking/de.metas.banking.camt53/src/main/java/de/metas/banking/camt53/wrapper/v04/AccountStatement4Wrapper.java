@@ -30,7 +30,6 @@ import de.metas.banking.camt53.jaxb.camt053_001_04.CashBalance3;
 import de.metas.banking.camt53.jaxb.camt053_001_04.GenericAccountIdentification1;
 import de.metas.banking.camt53.jaxb.camt053_001_04.ReportEntry4;
 import de.metas.banking.camt53.wrapper.AccountStatementWrapper;
-import de.metas.banking.camt53.wrapper.IAccountStatementWrapper;
 import de.metas.banking.camt53.wrapper.IStatementLineWrapper;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -123,22 +122,6 @@ public class AccountStatement4Wrapper extends AccountStatementWrapper
 	public boolean hasNoBankStatementLines()
 	{
 		return accountStatement4.getNtry().isEmpty();
-	}
-
-	@Override
-	public boolean hasNonQRRTransactions()
-	{
-		int count = 0;
-
-		for (final IStatementLineWrapper entry : getStatementLines())
-		{
-			if (entry.isQRRTransaction())
-			{
-				count++;
-			}
-		}
-
-		return getStatementLines().size() > count;
 	}
 
 	@Override

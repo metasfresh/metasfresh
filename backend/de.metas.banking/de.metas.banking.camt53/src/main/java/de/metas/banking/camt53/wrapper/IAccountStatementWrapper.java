@@ -55,5 +55,5 @@ public interface IAccountStatementWrapper
 
 	boolean hasNoBankStatementLines();
 
-	boolean hasNonQRRTransactions();
+	default boolean hasNonQRRTransactions() {return getStatementLines().stream().anyMatch(entry -> !entry.isQRRTransaction());}
 }
