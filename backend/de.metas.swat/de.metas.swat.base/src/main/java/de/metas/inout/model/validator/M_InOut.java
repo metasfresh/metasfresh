@@ -2,8 +2,10 @@ package de.metas.inout.model.validator;
 
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.event.IEventBusFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.api.IMaterialBalanceDetailBL;
 import de.metas.inout.api.IMaterialBalanceDetailDAO;
@@ -11,13 +13,17 @@ import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
 import de.metas.inout.location.InOutLocationsUpdater;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.logging.TableRecordMDC;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout_Async;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.ModelValidator;
@@ -28,7 +34,12 @@ import java.util.List;
 @Interceptor(I_M_InOut.class)
 public class M_InOut
 {
+	private static final String SYSCONFIG_PreventVoidingShipmentsWhenInvoiceExists = "PreventVoidingShipmentsWhenInvoiceExists";
+	private static final AdMessageKey ERR_PreventVoidingShipmentsWhenInvoiceExists = AdMessageKey.of("de.metas.inout.model.validator.M_InOut.PreventVoidingShipmentsWhenInvoiceExists");
+
 	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Init
 	public void onInit()
@@ -138,6 +149,22 @@ public class M_InOut
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
 			Services.get(IInOutBL.class).invalidateStatistics(inoutRecord);
+		}
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID)
+	public void forbidVoidingWhenInvoiceExists(@NonNull final org.compiere.model.I_M_InOut inout)
+	{
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_PreventVoidingShipmentsWhenInvoiceExists, false))
+		{
+			return;
+		}
+
+		final boolean invoiceExists = invoiceCandDAO.isInvoiceAlreadyCreated(InOutId.ofRepoId(inout.getM_InOut_ID()));
+
+		if (invoiceExists)
+		{
+			throw new AdempiereException(ERR_PreventVoidingShipmentsWhenInvoiceExists);
 		}
 	}
 }

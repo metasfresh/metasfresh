@@ -17,6 +17,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -464,7 +465,22 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.create()
 				.list(I_C_InvoiceCandidate_InOutLine.class);
 	}
-	
+
+	public boolean isInvoiceAlreadyCreated(@NonNull final InOutId inOutId)
+	{
+		final IQuery<I_C_InvoiceCandidate_InOutLine> candidateInOutLine = queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOutId)
+				.addOnlyActiveRecordsFilter()
+				.andCollectChildren(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID, I_C_InvoiceCandidate_InOutLine.class)
+				.create();
+
+		return queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, candidateInOutLine)
+				.create()
+				.anyMatch();
+	}
+
 	@Override
 	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInOutLineInclInactive(final I_M_InOutLine inOutLine)
 	{
