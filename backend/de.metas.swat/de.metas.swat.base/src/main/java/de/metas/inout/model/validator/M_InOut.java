@@ -13,7 +13,6 @@ import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
 import de.metas.inout.location.InOutLocationsUpdater;
 import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_QualityNote;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.logging.TableRecordMDC;
