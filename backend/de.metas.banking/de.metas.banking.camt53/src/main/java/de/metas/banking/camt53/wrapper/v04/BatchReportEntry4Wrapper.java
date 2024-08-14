@@ -40,6 +40,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -256,10 +257,9 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 		return entry.getAmt().getValue();
 	}
 
-	public boolean isBatchTransaction()
-	{
-		return getEntryTransaction().size() > 1;
-	}
+	public boolean isBatchTransaction() {return getEntryTransaction().size() > 1;}
+
+	public boolean isQRRTransaction() {return StringUtils.findIndexOf(getLineDescription(), "QRR") > 0;}
 
 	@Override
 	public List<ITransactionDtlsWrapper> getTransactionDtlsWrapper()

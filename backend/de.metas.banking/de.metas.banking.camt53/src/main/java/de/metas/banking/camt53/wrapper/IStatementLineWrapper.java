@@ -77,4 +77,6 @@ public interface IStatementLineWrapper
 	boolean isBatchTransaction();
 
 	List<ITransactionDtlsWrapper> getTransactionDtlsWrapper();
+
+	boolean isQRRTransaction();
 }

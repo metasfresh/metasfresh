@@ -201,6 +201,22 @@ public class BankStatementCamt53Service
 		}
 	}
 
+
+	private boolean hasNonQRRTransactions(@NonNull final IAccountStatementWrapper accountStatementWrapper)
+	{
+		int count = 0;
+
+		for (final IStatementLineWrapper entry : accountStatementWrapper.getStatementLines())
+		{
+			if (entry.isQRRTransaction())
+			{
+				count++;
+			}
+		}
+
+		return accountStatementWrapper.getStatementLines().size() > count;
+	}
+
 	@NonNull
 	private Optional<BankStatementId> importBankStatement(
 			@NonNull final IAccountStatementWrapper accountStatementWrapper,
@@ -245,6 +261,24 @@ public class BankStatementCamt53Service
 
 			buildBankStatementLineCreateRequestForSummaryLine(summaryRequest)
 					.forEach(bankStatementDAO::createBankStatementLine);
+
+
+			// now, create line for the remaining non QRR transactions
+			if (hasNonQRRTransactions(accountStatementWrapper))
+			{
+				final Function<IStatementLineWrapper, ImportBankStatementLineRequest> getImportBankStatementLineRequest = entry -> ImportBankStatementLineRequest.builder()
+						.entryWrapper(entry)
+						.bankStatementId(bankStatementId)
+						.orgId(bankStatementCreateRequest.getOrgId())
+						.isMatchAmounts(importBankStatementRequest.isMatchAmounts())
+						.build();
+
+				accountStatementWrapper.getStatementLines()
+						.stream().filter(line -> !line.isQRRTransaction())
+						.forEach(entry -> importBankStatementLine(getImportBankStatementLineRequest.apply(entry)));
+
+			}
+
 		}
 		else
 		{
@@ -384,8 +418,14 @@ public class BankStatementCamt53Service
 
 		for (final IStatementLineWrapper entry : accountStatementWrapper.getStatementLines())
 		{
+			if (entry.isQRRTransaction())
+			{
+				continue;
+			}
+
 			// compute totat amount
 			final Money stmtAmount = entry.getStatementAmount().toMoney(moneyService::getCurrencyIdByCurrencyCode);
+
 			summaryAmt = summaryAmt.add(stmtAmount);
 
 			// build the description
