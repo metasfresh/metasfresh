@@ -1378,7 +1378,7 @@ Feature: import bank statement in camt.53.001.04 import format
       | ReferenceNo_metasfresh_S0337_600_1 | inv_1_S0337_600      | 540006                           | ReferenceNo_metasfresh_S0337_600_1 |
       | ReferenceNo_metasfresh_S0337_600_2 | inv_2_S0337_600      | 540006                           | ReferenceNo_metasfresh_S0337_600_2 |
 
-    When bank statement is imported with identifiers bs_1_S0337_500, matching invoice amounts
+    When bank statement is imported with identifiers bs_1_S0337_600, matching invoice amounts
     """
 <?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.04">
