@@ -37,5 +37,26 @@ public class WorkflowLaunchersFacetGroup
 	@NonNull ITranslatableString caption;
 	@NonNull @Singular ImmutableList<WorkflowLaunchersFacet> facets;
 
+<<<<<<< HEAD:backend/de.metas.workflow.rest-api/src/main/java/de/metas/workflow/rest_api/model/facets/WorkflowLaunchersFacetGroup.java
 	public boolean isEmpty() {return facets.isEmpty();}
+=======
+	@NonNull
+	ExplainedOptional<BankAccountId> getBPartnerBankAccountId();
+
+	@NonNull
+	ZonedDateTime getStatementDate(@NonNull ZoneId timeZone);
+
+	@NonNull
+	BigDecimal getBeginningBalance();
+
+	@NonNull
+	Optional<CurrencyCode> getStatementCurrencyCode();
+
+	@NonNull
+	ImmutableList<IStatementLineWrapper> getStatementLines();
+
+	boolean hasNoBankStatementLines();
+
+	default boolean hasNonQRRTransactions() {return getStatementLines().stream().anyMatch(entry -> !entry.isQRRTransaction());}
+>>>>>>> abebb8f713b (Import NonQRR transactions as they are (#18648)):backend/de.metas.banking/de.metas.banking.camt53/src/main/java/de/metas/banking/camt53/wrapper/IAccountStatementWrapper.java
 }
