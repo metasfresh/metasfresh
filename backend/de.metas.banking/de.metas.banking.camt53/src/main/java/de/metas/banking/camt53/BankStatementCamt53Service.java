@@ -244,6 +244,21 @@ public class BankStatementCamt53Service
 
 			buildBankStatementLineCreateRequestForSummaryLine(summaryRequest)
 					.forEach(bankStatementDAO::createBankStatementLine);
+
+			// now, create lines for the remaining non QRR transactions
+			if (accountStatementWrapper.hasNonQRRTransactions())
+			{
+				accountStatementWrapper.getStatementLines()
+						.stream()
+						.filter(line -> !line.isQRRTransaction())
+						.map(entry -> ImportBankStatementLineRequest.builder()
+								.entryWrapper(entry)
+								.bankStatementId(bankStatementId)
+								.orgId(bankStatementCreateRequest.getOrgId())
+								.isMatchAmounts(importBankStatementRequest.isMatchAmounts())
+								.build())
+						.forEach(this::importBankStatementLine);
+			}
 		}
 		else
 		{
@@ -293,13 +308,13 @@ public class BankStatementCamt53Service
 		final ZonedDateTime statementDate = accountStatementWrapper.getStatementDate(timeZone);
 
 		return Optional.of(BankStatementCreateRequest.builder()
-								   .orgId(orgId)
-								   .orgBankAccountId(bankAccountId)
-								   .statementDate(TimeUtil.asLocalDate(statementDate, timeZone))
-								   .name(statementDate.toString())
-								   .beginningBalance(beginningBalance)
-								   .bankStatementImportFileId(bankStatementImportFileId)
-								   .build());
+				.orgId(orgId)
+				.orgBankAccountId(bankAccountId)
+				.statementDate(TimeUtil.asLocalDate(statementDate, timeZone))
+				.name(statementDate.toString())
+				.beginningBalance(beginningBalance)
+				.bankStatementImportFileId(bankStatementImportFileId)
+				.build());
 	}
 
 	private void importBankStatementLine(@NonNull final ImportBankStatementLineRequest importBankStatementLineRequest)
@@ -383,8 +398,14 @@ public class BankStatementCamt53Service
 
 		for (final IStatementLineWrapper entry : accountStatementWrapper.getStatementLines())
 		{
+			if (!entry.isQRRTransaction())
+			{
+				continue;
+			}
+
 			// compute totat amount
 			final Money stmtAmount = entry.getStatementAmount().toMoney(moneyService::getCurrencyIdByCurrencyCode);
+
 			summaryAmt = summaryAmt.add(stmtAmount);
 
 			// build the description
@@ -472,8 +493,8 @@ public class BankStatementCamt53Service
 		if (statementLineDate == null)
 		{
 			final String msg = TranslatableStrings.adMessage(MSG_MISSING_REPORT_ENTRY_DATE,
-															 entryWrapper.getLineReference(),
-															 importBankStatementLineRequest.getBankStatementId())
+							entryWrapper.getLineReference(),
+							importBankStatementLineRequest.getBankStatementId())
 					.getDefaultValue();
 			Loggables.withLogger(logger, Level.INFO).addLog(msg);
 			return Collections.emptyList();
@@ -531,8 +552,8 @@ public class BankStatementCamt53Service
 		}
 
 		final UnpaidInvoiceMatchingAmtQuery unpaidInvoiceMatchingAmtQuery = buildUnpaidInvoiceMatchingAmtQuery(statementLineDate,
-																											   importBankStatementLineRequest,
-																											   documentReferenceCandidates);
+				importBankStatementLineRequest,
+				documentReferenceCandidates);
 
 		return Optional.of(paymentAllocationService.retrieveUnpaidInvoices(unpaidInvoiceMatchingAmtQuery))
 				.flatMap(invoices -> getSingleInvoice(invoices, entryWrapper));
@@ -674,8 +695,7 @@ public class BankStatementCamt53Service
 			final JAXBContext context = JAXBContext.newInstance(de.metas.banking.camt53.jaxb.camt053_001_04.ObjectFactory.class);
 			final Unmarshaller unmarshaller = context.createUnmarshaller();
 
-			@SuppressWarnings("unchecked")
-			final JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_04.Document> docV04 =
+			@SuppressWarnings("unchecked") final JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_04.Document> docV04 =
 					(JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_04.Document>)unmarshaller.unmarshal(xmlStreamReader);
 
 			return BatchBankToCustomerStatementV04Wrapper
@@ -696,8 +716,7 @@ public class BankStatementCamt53Service
 			final JAXBContext context = JAXBContext.newInstance(de.metas.banking.camt53.jaxb.camt053_001_02.ObjectFactory.class);
 			final Unmarshaller unmarshaller = context.createUnmarshaller();
 
-			@SuppressWarnings("unchecked")
-			final JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_02.Document> docV02 =
+			@SuppressWarnings("unchecked") final JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_02.Document> docV02 =
 					(JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_02.Document>)unmarshaller.unmarshal(xmlStreamReader);
 
 			return BatchBankToCustomerStatementV02Wrapper
