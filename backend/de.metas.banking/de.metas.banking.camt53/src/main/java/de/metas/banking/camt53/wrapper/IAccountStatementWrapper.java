@@ -54,4 +54,6 @@ public interface IAccountStatementWrapper
 	ImmutableList<IStatementLineWrapper> getStatementLines();
 
 	boolean hasNoBankStatementLines();
+
+	default boolean hasNonQRRTransactions() {return getStatementLines().stream().anyMatch(entry -> !entry.isQRRTransaction());}
 }
