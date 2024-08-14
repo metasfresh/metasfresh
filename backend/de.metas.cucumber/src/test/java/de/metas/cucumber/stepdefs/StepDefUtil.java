@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -37,7 +36,6 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
-import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -170,38 +168,12 @@ public class StepDefUtil
 			@NonNull final Supplier<Optional<T>> worker,
 			@Nullable final Runnable logContext) throws InterruptedException
 	{
-		final long maxWaitSeconds = getMaxWaitSecondsEffective(maxWaitSecondsParam);
-		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
-
-		try
-		{
-			while (deadLineMillis > System.currentTimeMillis())
-			{
-				//noinspection BusyWait
-				Thread.sleep(checkingIntervalMs);
-				final Optional<T> workerResult = worker.get();
-				if (workerResult.isPresent())
-				{
-					return workerResult.get();
-				}
-			}
-		}
-		catch (final Exception e)
-		{
-			if (logContext != null)
-			{
-				logContext.run();
-			}
-
-			throw e;
-		}
-
-		if (logContext != null)
-		{
-			logContext.run();
-		}
-		Assertions.fail("the given supplier didn't succeed within the " + maxWaitSeconds + "second timeout");
-		return null;
+		return StepDefUtil.<T>tryAndWaitForItem()
+				.workerFromOptionalSupplier(worker)
+				.logContextUsingRunnable(logContext)
+				.maxWaitSeconds((int)maxWaitSecondsParam)
+				.checkingIntervalMs(checkingIntervalMs)
+				.execute();
 	}
 
 	public <T> T tryAndWaitForItem(
