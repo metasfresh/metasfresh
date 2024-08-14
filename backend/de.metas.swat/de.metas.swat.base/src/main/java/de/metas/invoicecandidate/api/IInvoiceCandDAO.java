@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
+import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -418,4 +419,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
 
 	ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull I_C_Invoice_Candidate ic);
+
+	boolean isCompletedOrClosedInvoice(@NonNull InOutId inOutId);
 }
