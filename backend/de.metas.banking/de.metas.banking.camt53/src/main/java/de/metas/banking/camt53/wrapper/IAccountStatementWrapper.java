@@ -54,4 +54,6 @@ public interface IAccountStatementWrapper
 	ImmutableList<IStatementLineWrapper> getStatementLines();
 
 	boolean hasNoBankStatementLines();
+
+	boolean hasNonQRRTransactions();
 }

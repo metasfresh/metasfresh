@@ -201,22 +201,6 @@ public class BankStatementCamt53Service
 		}
 	}
 
-
-	private boolean hasNonQRRTransactions(@NonNull final IAccountStatementWrapper accountStatementWrapper)
-	{
-		int count = 0;
-
-		for (final IStatementLineWrapper entry : accountStatementWrapper.getStatementLines())
-		{
-			if (entry.isQRRTransaction())
-			{
-				count++;
-			}
-		}
-
-		return accountStatementWrapper.getStatementLines().size() > count;
-	}
-
 	@NonNull
 	private Optional<BankStatementId> importBankStatement(
 			@NonNull final IAccountStatementWrapper accountStatementWrapper,
@@ -263,8 +247,8 @@ public class BankStatementCamt53Service
 					.forEach(bankStatementDAO::createBankStatementLine);
 
 
-			// now, create line for the remaining non QRR transactions
-			if (hasNonQRRTransactions(accountStatementWrapper))
+			// now, create lines for the remaining non QRR transactions
+			if (accountStatementWrapper.hasNonQRRTransactions())
 			{
 				final Function<IStatementLineWrapper, ImportBankStatementLineRequest> getImportBankStatementLineRequest = entry -> ImportBankStatementLineRequest.builder()
 						.entryWrapper(entry)
