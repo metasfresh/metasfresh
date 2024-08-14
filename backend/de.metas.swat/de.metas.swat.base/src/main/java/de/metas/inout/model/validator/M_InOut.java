@@ -34,8 +34,8 @@ import java.util.List;
 @Interceptor(I_M_InOut.class)
 public class M_InOut
 {
-	private static final String SYSCONFIG_PreventVoidingShipmentsWhenInvoiceExists = "PreventVoidingShipmentsWhenInvoiceExists";
-	private static final AdMessageKey ERR_PreventVoidingShipmentsWhenInvoiceExists = AdMessageKey.of("de.metas.inout.model.validator.M_InOut.PreventVoidingShipmentsWhenInvoiceExists");
+	private static final String SYSCONFIG_PreventReversingShipmentsWhenInvoiceExists = "PreventReversingShipmentsWhenInvoiceExists";
+	private static final AdMessageKey ERR_PreventReversingShipmentsWhenInvoiceExists = AdMessageKey.of("de.metas.inout.model.validator.M_InOut.PreventReversingShipmentsWhenInvoiceExists");
 
 	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -152,19 +152,19 @@ public class M_InOut
 		}
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID)
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL })
 	public void forbidVoidingWhenInvoiceExists(@NonNull final org.compiere.model.I_M_InOut inout)
 	{
-		if (!sysConfigBL.getBooleanValue(SYSCONFIG_PreventVoidingShipmentsWhenInvoiceExists, false))
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_PreventReversingShipmentsWhenInvoiceExists, false))
 		{
 			return;
 		}
 
-		final boolean invoiceExists = invoiceCandDAO.isInvoiceAlreadyCreated(InOutId.ofRepoId(inout.getM_InOut_ID()));
+		final boolean completedOrClosedInvoiceExists = invoiceCandDAO.isCompletedOrClosedInvoice(InOutId.ofRepoId(inout.getM_InOut_ID()));
 
-		if (invoiceExists)
+		if (completedOrClosedInvoiceExists)
 		{
-			throw new AdempiereException(ERR_PreventVoidingShipmentsWhenInvoiceExists);
+			throw new AdempiereException(ERR_PreventReversingShipmentsWhenInvoiceExists);
 		}
 	}
 }

@@ -16,6 +16,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
@@ -80,6 +81,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
@@ -466,7 +468,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.list(I_C_InvoiceCandidate_InOutLine.class);
 	}
 
-	public boolean isInvoiceAlreadyCreated(@NonNull final InOutId inOutId)
+	public boolean isCompletedOrClosedInvoice(@NonNull final InOutId inOutId)
 	{
 		final IQuery<I_C_InvoiceCandidate_InOutLine> candidateInOutLine = queryBL.createQueryBuilder(I_M_InOutLine.class)
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOutId)
@@ -477,6 +479,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, candidateInOutLine)
+				.andCollect(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID, I_C_InvoiceLine.class)
+				.andCollect(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_C_Invoice.class)
+				.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed) // DocStatus in ('CO', 'CL')
 				.create()
 				.anyMatch();
 	}

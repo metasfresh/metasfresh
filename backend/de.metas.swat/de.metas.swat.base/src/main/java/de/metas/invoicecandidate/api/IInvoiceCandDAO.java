@@ -420,5 +420,5 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull I_C_Invoice_Candidate ic);
 
-	boolean isInvoiceAlreadyCreated(@NonNull InOutId inOutId);
+	boolean isCompletedOrClosedInvoice(@NonNull InOutId inOutId);
 }
