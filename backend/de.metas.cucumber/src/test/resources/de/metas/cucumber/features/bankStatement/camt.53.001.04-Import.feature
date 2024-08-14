@@ -1335,6 +1335,8 @@ Feature: import bank statement in camt.53.001.04 import format
 
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
+
+  @dev:runThisOne
   @from:cucumber
   @Id:S0337_600
   Scenario: Import one statement, identify org-account by IBAN, split QRR transactions from regular transactions and import as only QRR transacations as one summary line
@@ -1353,7 +1355,7 @@ Feature: import bank statement in camt.53.001.04 import format
 
     And update C_BP_BankAccount:
       | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              | OPT.C_Bank_ID.Identifier |
-      | bp_bank_account_metasfresh_S0337_600 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 | di_1_S0337_500           |
+      | bp_bank_account_metasfresh_S0337_600 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 | di_1_S0337_600           |
 
 	  # create 2 invoices; we expect the sales invoice to end up with the ESR-reference 123456700102156434010001795
     Given metasfresh contains C_Invoice:
