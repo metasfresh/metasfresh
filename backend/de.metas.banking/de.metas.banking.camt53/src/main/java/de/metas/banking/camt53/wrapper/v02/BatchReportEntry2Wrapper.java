@@ -197,7 +197,7 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 				.map(str -> Arrays.asList(str.split(" ")))
 				.flatMap(List::stream)
 				.filter(Check::isNotBlank)
-				.toList();
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -220,7 +220,7 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 		{
 			lineDesc.addAll( Arrays.stream(addtlNtryInfStr.split(" "))
 									 .filter(Check::isNotBlank)
-									 .toList());
+									 .collect(Collectors.toList()));
 		}
 
 		final List<String> trxDetails = getEntryTransaction()
@@ -230,7 +230,7 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 				.map(str -> Arrays.asList(str.split(" ")))
 				.flatMap(List::stream)
 				.filter(Check::isNotBlank)
-				.toList();
+				.collect(Collectors.toList());
 
 		lineDesc.addAll(trxDetails);
 
