@@ -221,11 +221,17 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 		final List<String> lineDesc = new ArrayList<>();
 
 		final String addtlNtryInfStr = entry.getAddtlNtryInf();
-		if( addtlNtryInfStr != null )
+		if (addtlNtryInfStr != null)
 		{
+<<<<<<< HEAD
 			lineDesc.addAll( Arrays.stream(addtlNtryInfStr.split(" "))
 									 .filter(Check::isNotBlank)
 									 .collect(Collectors.toList()));
+=======
+			lineDesc.addAll(Arrays.stream(addtlNtryInfStr.split(" "))
+					.filter(Check::isNotBlank)
+					.toList());
+>>>>>>> abebb8f713 (Import NonQRR transactions as they are (#18648))
 		}
 
 		final List<String> trxDetails = getEntryTransaction()
@@ -256,10 +262,7 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 		return entry.getAmt().getValue();
 	}
 
-	public boolean isBatchTransaction()
-	{
-		return getEntryTransaction().size() > 1;
-	}
+	public boolean isBatchTransaction() {return getEntryTransaction().size() > 1;}
 
 	@Override
 	public List<ITransactionDtlsWrapper> getTransactionDtlsWrapper()
