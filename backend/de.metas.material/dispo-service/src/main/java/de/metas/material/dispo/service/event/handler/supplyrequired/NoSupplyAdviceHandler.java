@@ -30,7 +30,13 @@ public class NoSupplyAdviceHandler implements MaterialEventHandler<NoSupplyAdvic
 	@Override
 	public void handleEvent(@NonNull final NoSupplyAdviceEvent event)
 	{
-		final CandidateId candidateId = CandidateId.ofRepoId(event.getSupplyCandidateId());
+		final CandidateId candidateId = CandidateId.ofRepoIdOrNull(event.getSupplyCandidateId());
+		if (candidateId == null)
+		{
+			Loggables.addLog("No candidateId found. Nothing to do.");
+			return;
+		}
+
 		final Candidate candidate = candidateRepositoryRetrieval.retrieveById(candidateId);
 
 		candidateChangeService.onCandidateDelete(candidate);

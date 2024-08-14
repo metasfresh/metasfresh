@@ -682,6 +682,10 @@ public class CandidateRepositoryWriteService
 	public DeleteResult deleteCandidateAndDetailsById(@NonNull final CandidateId candidateId)
 	{
 		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
+		if (candidateRecord == null)
+		{
+			throw new AdempiereException("No candidate found with id " + candidateId);
+		}
 
 		final boolean isStock = MD_CANDIDATE_TYPE_STOCK.equals(candidateRecord.getMD_Candidate_Type());
 
