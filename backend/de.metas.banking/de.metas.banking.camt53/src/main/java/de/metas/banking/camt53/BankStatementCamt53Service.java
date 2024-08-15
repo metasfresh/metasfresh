@@ -82,7 +82,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -653,7 +652,7 @@ public class BankStatementCamt53Service
 	}
 
 	@NonNull
-	private ICompositeQueryFilter<I_C_Invoice> buildEsrRefNoQueryFilter(final @NotNull ImmutableSet<String> invoiceDocOrEsrRefNoCandidates, final @NotNull OrgId orgId)
+	private ICompositeQueryFilter<I_C_Invoice> buildEsrRefNoQueryFilter(final @NonNull ImmutableSet<String> invoiceDocOrEsrRefNoCandidates, final @NonNull OrgId orgId)
 	{
 		final I_C_ReferenceNo_Type refNoType = refNoDAO.retrieveRefNoTypeByName(ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
 
