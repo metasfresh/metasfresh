@@ -6,9 +6,11 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.QtyConvertorService;
 import de.metas.util.Services;
 import lombok.Data;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import java.util.HashSet;
@@ -49,6 +51,7 @@ import static de.metas.util.Check.assumeNotNull;
 public class DimensionGroupSubRowBucket
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final QtyConvertorService qtyConvertorService = SpringContextHolder.instance.getBean(QtyConvertorService.class);
 
 	public static DimensionGroupSubRowBucket create(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
@@ -156,6 +159,7 @@ public class DimensionGroupSubRowBucket
 				.qtyExpectedSurplus(getQtyExpectedSurplus())
 				.allIncludedCockpitRecordIds(cockpitRecordIds)
 				.allIncludedStockRecordIds(stockRecordIds)
+				.qtyConvertor(qtyConvertorService.getQtyTUConvertorIfConfigured(productIdAndDate))
 				.build();
 	}
 }

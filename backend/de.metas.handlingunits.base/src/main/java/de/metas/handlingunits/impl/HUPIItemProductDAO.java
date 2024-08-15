@@ -742,4 +742,19 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		return retrieveDefaultForProduct(productId, bpartnerId, date)
 				.map(huPiItemProduct -> HUPIItemProductId.ofRepoIdOrNull(huPiItemProduct.getM_HU_PI_Item_Product_ID()));
 	}
+
+
+	@Override
+	@Nullable
+	public I_M_HU_PI_Item_Product retrieveDefaultForProduct(
+			@NonNull final ProductId productId,
+			@NonNull final ZonedDateTime date)
+	{
+		final IHUPIItemProductQuery query = createHUPIItemProductQuery();
+		query.setProductId(productId);
+		query.setDate(date);
+		query.setDefaultForProduct(true);
+
+		return retrieveFirst(Env.getCtx(), query, ITrx.TRXNAME_None);
+	}
 }
