@@ -851,7 +851,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 						icQuery.getTrxName());
 				invoiceCandScheduler.scheduleForUpdate(request);
 		}
-		
+
 		return count;
 	}
 

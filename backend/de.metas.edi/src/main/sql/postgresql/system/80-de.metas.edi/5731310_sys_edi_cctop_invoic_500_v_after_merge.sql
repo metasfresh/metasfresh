@@ -79,7 +79,8 @@ FROM c_invoiceline il
          LEFT JOIN m_product_category pc ON pc.m_product_category_id = p.m_product_category_id
          LEFT JOIN c_invoice i ON i.c_invoice_id = il.c_invoice_id
          LEFT JOIN c_currency c ON c.c_currency_id = i.c_currency_id
-         LEFT JOIN c_bpartner_product pp ON pp.c_bpartner_id = i.c_bpartner_id AND pp.m_product_id = il.m_product_id AND pp.isactive = 'Y'
+         LEFT JOIN c_bpartner_product pp
+                   ON pp.c_bpartner_id = i.c_bpartner_id AND pp.m_product_id = il.m_product_id AND pp.isactive = 'Y'
          LEFT JOIN c_tax t ON t.c_tax_id = il.c_tax_id
          LEFT JOIN c_uom u ON u.c_uom_id = il.c_uom_id
          LEFT JOIN c_uom u_price ON u_price.c_uom_id = il.price_uom_id
