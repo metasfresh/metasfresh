@@ -132,7 +132,7 @@ public class CountingSubRowBucket
 				.qtyOnHandStock(qtyOnHandStock)
 				.allIncludedCockpitRecordIds(cockpitRecordIds)
 				.allIncludedStockRecordIds(stockRecordIds)
-				.qtyConvertor(qtyConvertorService.getQtyTUConvertorIfConfigured(productIdAndDate))
+				.qtyConvertor(qtyConvertorService.getQtyConvertorIfConfigured(productIdAndDate))
 				.build();
 	}
 }

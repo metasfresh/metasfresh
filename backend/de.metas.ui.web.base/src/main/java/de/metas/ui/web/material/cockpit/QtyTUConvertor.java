@@ -61,7 +61,7 @@ public class QtyTUConvertor implements QtyConvertor
 		final Capacity capacity = getCapacityForUomId(quantity.getUOM());
 
 		final BigDecimal qtyTUQty = quantity.toBigDecimal()
-				.divide(capacity.toBigDecimal(), 2, RoundingMode.HALF_UP);
+				.divide(capacity.toBigDecimal(), tuUOM.getStdPrecision(), RoundingMode.HALF_UP);
 
 		return Quantity.of(qtyTUQty, tuUOM);
 	}

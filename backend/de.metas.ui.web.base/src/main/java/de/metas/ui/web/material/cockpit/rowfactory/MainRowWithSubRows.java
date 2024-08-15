@@ -264,7 +264,7 @@ public class MainRowWithSubRows
 				.pmmQtyPromised(mainRow.getPmmQtyPromised())
 				.allIncludedCockpitRecordIds(mainRow.getCockpitRecordIds())
 				.allIncludedStockRecordIds(mainRow.getStockRecordIds())
-				.qtyConvertor(qtyConvertorService.getQtyTUConvertorIfConfigured(productIdAndDate));
+				.qtyConvertor(qtyConvertorService.getQtyConvertorIfConfigured(productIdAndDate));
 
 		for (final CountingSubRowBucket subRowBucket : countingSubRows.values())
 		{

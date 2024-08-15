@@ -159,7 +159,7 @@ public class DimensionGroupSubRowBucket
 				.qtyExpectedSurplus(getQtyExpectedSurplus())
 				.allIncludedCockpitRecordIds(cockpitRecordIds)
 				.allIncludedStockRecordIds(stockRecordIds)
-				.qtyConvertor(qtyConvertorService.getQtyTUConvertorIfConfigured(productIdAndDate))
+				.qtyConvertor(qtyConvertorService.getQtyConvertorIfConfigured(productIdAndDate))
 				.build();
 	}
 }

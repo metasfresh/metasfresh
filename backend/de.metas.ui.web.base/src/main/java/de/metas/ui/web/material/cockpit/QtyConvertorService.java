@@ -50,7 +50,7 @@ public class QtyConvertorService
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Nullable
-	public QtyTUConvertor getQtyTUConvertorIfConfigured(@NonNull final MainRowBucketId productIdAndDate)
+	public QtyConvertor getQtyConvertorIfConfigured(@NonNull final MainRowBucketId productIdAndDate)
 	{
 		if (!sysConfigBL.getBooleanValue(SYS_CONFIG_SHOW_QTY_IN_TU_UOM, false))
 		{
@@ -61,7 +61,9 @@ public class QtyConvertorService
 				.getDefaultForProduct(productIdAndDate.getProductId(),
 									  TimeUtil.asZonedDateTime(productIdAndDate.getDate(), orgDAO.getTimeZone(Env.getOrgId())));
 
-		if (packingInstruction == null)
+		if (packingInstruction == null
+				|| packingInstruction.isInfiniteCapacity()
+				|| packingInstruction.getQty().signum() <= 0)
 		{
 			return null;
 		}
