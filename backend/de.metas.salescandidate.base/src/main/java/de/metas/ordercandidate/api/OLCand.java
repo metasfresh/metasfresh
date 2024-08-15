@@ -207,7 +207,7 @@ public final class OLCand implements IProductPriceAware
 		this.pricingSystemId = pricingSystemId;
 
 		this.qty = Quantitys.create(
-				olCandRecord.getQtyEntered(),
+				this.olCandEffectiveValuesBL.getEffectiveQtyEntered(olCandRecord),
 				this.olCandEffectiveValuesBL.getEffectiveUomId(olCandRecord));
 
 		this.qtyItemCapacityEff = qtyItemCapacityEff;
@@ -472,7 +472,7 @@ public final class OLCand implements IProductPriceAware
 
 	public InvoicableQtyBasedOn getInvoicableQtyBasedOn()
 	{
-		return InvoicableQtyBasedOn.fromRecordString(olCandRecord.getInvoicableQtyBasedOn());
+		return InvoicableQtyBasedOn.ofNullableCodeOrNominal(olCandRecord.getInvoicableQtyBasedOn());
 	}
 
 	public BPartnerInfo getBPartnerInfo()

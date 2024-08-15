@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.model;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DataTypes;
@@ -83,7 +82,7 @@ class DocumentField implements IDocumentField
 	private static final LogicExpressionResult DISPLAYED_InitialValue = LogicExpressionResult.namedConstant("displayed-initial", false);
 	private LogicExpressionResult _displayed = DISPLAYED_InitialValue;
 
-	private DocumentValidStatus _validStatus;
+	@NonNull private DocumentValidStatus _validStatus;
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
 	{
@@ -466,7 +465,6 @@ class DocumentField implements IDocumentField
 
 	/**
 	 * Computes field's validStatus.
-	 *
 	 * IMPORTANT: this method is not updating the status, it's only computing it.
 	 */
 	private DocumentValidStatus computeValidStatus()

@@ -6,7 +6,6 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Data;
 import lombok.NonNull;

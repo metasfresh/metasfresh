@@ -20,6 +20,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.Packageable;
+import de.metas.picking.api.PackageableList;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.test.SnapshotFunctionFactory;
@@ -125,6 +126,7 @@ class CreatePickingPlanCommand_UsingCUs_Test
 				.qtyPickedPlanned(zero)
 				.customerId(customerLocationId.getBpartnerId())
 				.customerLocationId(customerLocationId)
+				.handoverLocationId(customerLocationId)
 				.warehouseId(warehouseId)
 				.bestBeforePolicy(Optional.of(ShipmentAllocationBestBeforePolicy.Expiring_First))
 				.productId(productId)
@@ -139,7 +141,7 @@ class CreatePickingPlanCommand_UsingCUs_Test
 				.huReservationService(huReservationService)
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.request(CreatePickingPlanRequest.builder()
-						.packageables(ImmutableList.copyOf(packageables))
+						.packageables(PackageableList.ofCollection(ImmutableList.copyOf(packageables)))
 						.build())
 				.fallbackLotNumberToHUValue(false) // keep lotNumbers null, just to keep our test assertions short
 				.build().execute();

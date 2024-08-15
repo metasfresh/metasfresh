@@ -41,6 +41,9 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
@@ -48,7 +51,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -78,18 +80,32 @@ public class WorkflowRestAPIService
 		this.wfActivityHandlersRegistry = wfActivityHandlersRegistry;
 	}
 
-	public List<MobileApplicationInfo> getMobileApplicationInfos()
+	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(final UserId loggedUserId)
 	{
-		return applications.getApplicationInfos();
+		return applications.stream()
+				.map(application -> {
+					try
+					{
+						return application.getApplicationInfo(loggedUserId);
+					}
+					catch (Exception ex)
+					{
+						logger.warn("Failed getting application info from {}. Skipped", application, ex);
+						return null;
+					}
+				})
+				.filter(Objects::nonNull);
 	}
 
-	public WorkflowLaunchersList getLaunchers(
-			@NonNull final MobileApplicationId applicationId,
-			@NonNull final UserId userId,
-			@NonNull final Duration maxStaleAccepted)
+	public WorkflowLaunchersList getLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
-		return getWorkflowBasedMobileApplication(applicationId)
-				.provideLaunchers(userId, getLaunchersLimit(), maxStaleAccepted);
+		return getWorkflowBasedMobileApplication(query.getApplicationId())
+				.provideLaunchers(query.withLimitIfNotSet(this::getLaunchersLimit));
+	}
+
+	public WorkflowLaunchersFacetGroupList getFacets(@NonNull WorkflowLaunchersFacetQuery query)
+	{
+		return getWorkflowBasedMobileApplication(query.getApplicationId()).getFacets(query);
 	}
 
 	private WorkflowBasedMobileApplication getWorkflowBasedMobileApplication(@NonNull final MobileApplicationId applicationId)
@@ -112,37 +128,6 @@ public class WorkflowRestAPIService
 				.map(app -> (WorkflowBasedMobileApplication)app);
 	}
 
-	@Deprecated
-	public WorkflowLaunchersList getLaunchersFromAllApplications(
-			@NonNull final UserId userId,
-			@NonNull final Duration maxStaleAccepted)
-	{
-		final QueryLimit suggestedLimit = getLaunchersLimit();
-
-		return streamWorkflowBasedMobileApplications()
-				.map(application -> provideLaunchersNoFail(application, userId, suggestedLimit, maxStaleAccepted))
-				.reduce(WorkflowLaunchersList::mergeWith)
-				.orElseGet(WorkflowLaunchersList::emptyNow);
-	}
-
-	private static WorkflowLaunchersList provideLaunchersNoFail(
-			@NonNull final WorkflowBasedMobileApplication application,
-			@NonNull final UserId userId,
-			@NonNull final QueryLimit suggestedLimit,
-			@NonNull final Duration maxStaleAccepted)
-	{
-		try
-		{
-			final WorkflowLaunchersList launchers = application.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
-			return launchers != null ? launchers : WorkflowLaunchersList.emptyNow();
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Failed fetching launchers from {} for {}. Skipped", application, userId, ex);
-			return WorkflowLaunchersList.emptyNow();
-		}
-	}
-
 	private QueryLimit getLaunchersLimit()
 	{
 		final int limitInt = sysConfigBL.getIntValue(SYSCONFIG_LaunchersLimit, -100);
@@ -151,10 +136,31 @@ public class WorkflowRestAPIService
 				: QueryLimit.ofInt(limitInt);
 	}
 
+	public void logout(@NonNull final UserId userId)
+	{
+		applications.stream()
+				.forEach(application -> {
+					try
+					{
+						application.logout(userId);
+					}
+					catch (Exception ex)
+					{
+						logger.warn("Application {} failed to loggout. Skipped", application, ex);
+					}
+				});
+	}
+
 	public WFProcess getWFProcessById(@NonNull final WFProcessId wfProcessId)
 	{
 		return getWorkflowBasedMobileApplication(wfProcessId.getApplicationId())
 				.getWFProcessById(wfProcessId);
+	}
+
+	public WFProcess continueWFProcess(@NonNull final WFProcessId wfProcessId, @NonNull UserId userId)
+	{
+		return getWorkflowBasedMobileApplication(wfProcessId.getApplicationId())
+				.continueWorkflow(wfProcessId, userId);
 	}
 
 	public WFProcess changeWFProcessById(
@@ -195,6 +201,7 @@ public class WorkflowRestAPIService
 		}
 	}
 
+	@NonNull
 	public WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
 	{
 		return getWorkflowBasedMobileApplication(wfProcess.getId().getApplicationId())

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.async.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for RV_Async_batch_statistics
  *  @author metasfresh (generated) 

@@ -1,15 +1,13 @@
 import { produce } from 'immer';
-
-import { NOT_STARTED } from '../../constants/CompleteStatus';
 import { workflowReducer } from './workflow';
 import { scanReducer } from './scan';
 import { activityUserConfirmationReducer } from './confirmation';
-import { pickingReducer } from './picking';
 import { distributionReducer } from './distribution';
 import { manufacturingReducer as manufacturingIssueReducer } from './manufacturing_issue';
 import { reducer as manufacturingIssueAdjustmentReducer } from './manufacturing_issue_adjustment';
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 import { generateHUQRCodesReducer } from './generateHUQRCodes';
+import { toQRCodeString } from '../../utils/qrCode/hu';
 
 export const getWfProcess = (globalState, wfProcessId) => {
   if (!wfProcessId) {
@@ -34,26 +32,39 @@ export const getActivitiesInOrder = (wfProcess) => {
   return activityIdsInOrder.map((activityId) => activitiesById[activityId]);
 };
 
-export const isWorkflowNotStarted = (wfProcess) => {
-  const activitiesById = wfProcess?.activities ?? {};
-  const activities = Object.values(activitiesById);
-
-  for (let i = 0; i < activities.length; i += 1) {
-    const activityStatus = activities[i].dataStored.completeStatus;
-    if (activityStatus !== NOT_STARTED) {
-      return false;
+export const getFirstActivityByComponentType = ({ state, wfProcessId, componentType }) => {
+  const wfProcess = getWfProcess(state, wfProcessId);
+  const activityIdsInOrder = wfProcess.activityIdsInOrder ?? [];
+  const activitiesById = wfProcess.activities ?? {};
+  for (const activityId of activityIdsInOrder) {
+    const activity = activitiesById[activityId];
+    if (activity?.componentType === componentType) {
+      return activity;
     }
   }
 
-  return true;
+  return null;
 };
 
 export const getActivityById = (state, wfProcessId, activityId) => {
-  return getWfProcess(state, wfProcessId)?.activities?.[activityId];
+  const wfProcess = getWfProcess(state, wfProcessId);
+  return getActivityByIdFromWFProcess(wfProcess, activityId);
+};
+
+export const getActivityByIdFromWFProcess = (wfProcess, activityId) => {
+  return wfProcess?.activities?.[activityId] ?? {};
 };
 
 export const getLineByIdFromActivity = (activity, lineId) => {
-  return activity?.dataStored?.lines?.[lineId];
+  return getLinesFromActivity(activity)[lineId];
+};
+
+export const getLinesArrayFromActivity = (activity) => {
+  return Object.values(activity?.dataStored?.lines ?? {});
+};
+
+const getLinesFromActivity = (activity) => {
+  return activity?.dataStored?.lines ?? {};
 };
 
 export const getLineByIdFromWFProcess = (wfProcess, activityId, lineId) => {
@@ -78,12 +89,23 @@ export const getSteps = (state, wfProcessId, activityId, lineId) => {
 
 export const getStepById = (state, wfProcessId, activityId, lineId, stepId) => {
   const line = getLineById(state, wfProcessId, activityId, lineId);
-  return line?.steps?.[stepId];
+  return getStepByIdFromLine(line, stepId);
 };
 
 export const getStepByIdFromActivity = (activity, lineId, stepId) => {
   const line = getLineByIdFromActivity(activity, lineId);
+  return getStepByIdFromLine(line, stepId);
+};
+
+export const getStepByIdFromLine = (line, stepId) => {
   return line?.steps?.[stepId];
+};
+
+export const getStepByQRCodeFromActivity = (activity, lineId, qrCode) => {
+  const qrCodeNorm = toQRCodeString(qrCode);
+  const line = getLineByIdFromActivity(activity, lineId);
+  const steps = getStepsArrayFromLine(line);
+  return steps.find((step) => toQRCodeString(step.huQRCode) === qrCodeNorm);
 };
 
 export const getQtyRejectedReasonsFromActivity = (activity) => {
@@ -98,7 +120,7 @@ const reducer = produce((draftState, action) => {
   draftState = workflowReducer({ draftState, action });
   draftState = scanReducer({ draftState, action });
   draftState = activityUserConfirmationReducer({ draftState, action });
-  draftState = pickingReducer({ draftState, action });
+  //draftState = pickingReducer({ draftState, action });
   draftState = distributionReducer({ draftState, action });
   draftState = generateHUQRCodesReducer({ draftState, action });
   draftState = manufacturingIssueReducer({ draftState, action });

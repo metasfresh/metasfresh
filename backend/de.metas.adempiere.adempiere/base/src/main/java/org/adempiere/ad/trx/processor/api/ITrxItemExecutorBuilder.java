@@ -22,20 +22,17 @@ package org.adempiere.ad.trx.processor.api;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.function.Consumer;
-
+import com.google.common.base.Preconditions;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 
-import com.google.common.base.Preconditions;
-
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.function.Consumer;
 
 /**
  * Helper interface which can assist you configure and execute an {@link ITrxItemProcessor}.<br>

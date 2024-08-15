@@ -10,3 +10,13 @@ update m_matchinv  set m_inout_id= (select iol.m_inout_id
                                     from m_inoutline iol
                                     where iol.m_inoutline_id = m_matchinv.m_inoutline_id)
 where m_inout_id is null;
+
+
+create index if not EXISTS idx_m_matchinv_m_inout_id 
+on
+m_matchinv(m_inout_id);
+
+
+create index if not EXISTS idx_m_matchinv_c_invoice_id 
+on
+m_matchinv(c_invoice_id);

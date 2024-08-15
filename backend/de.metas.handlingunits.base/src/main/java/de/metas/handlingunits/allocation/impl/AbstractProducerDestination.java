@@ -3,6 +3,7 @@ package de.metas.handlingunits.allocation.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUBuilder;
@@ -47,10 +48,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Contains common BL used when loading from an {@link IAllocationRequest} to an {@link IAllocationResult}
+ * Contains common BL used when loading from an {@link de.metas.handlingunits.allocation.IAllocationRequest} to an {@link IAllocationResult}
  *
  * @author al
- *
  */
 public abstract class AbstractProducerDestination implements IHUProducerAllocationDestination
 {
@@ -59,7 +59,9 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	protected final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
-	/** Error message which is thrown when the result of allocating to a new HU is ZERO */
+	/**
+	 * Error message which is thrown when the result of allocating to a new HU is ZERO
+	 */
 	private static final AdMessageKey MSG_QTY_LOAD_ERROR = AdMessageKey.of("AbstractProducerDestination.load_Error");
 
 	/**
@@ -79,16 +81,16 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	private boolean _isHUPlanningReceiptOwnerPM = false; // default false
 
 	/**
-	 *
 	 * <code>true</code> if this producer is in configurable state (i.e. nothing was produced yet)
 	 */
 	private boolean _configurable = true;
 
+	private HUListCursor previouslyCreatedHUs = null;
 	private final HashMap<ArrayKey, HUListCursor> currentHUs = new HashMap<>();
 
 	/**
 	 * Set of created HUs or already existing HUs that need to be considered as "created".
-	 *
+	 * <p>
 	 * NOTE: this set will not accept a HU to be added if there is another one with the same M_HU_ID
 	 */
 	private final Set<I_M_HU> _createdHUs = new TreeSet<>(HUByIdComparator.instance);
@@ -108,8 +110,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * @return {@code true} if we are allowed to create a new HU <b>or allocate to the current aggregate/"bag"-HU</b> in case is needed.
-	 *         Generally, "needed" means that we still have an {@link IAllocationRequest} that is not yet completely fulfilled.
-	 * 
+	 * Generally, "needed" means that we still have an {@link IAllocationRequest} that is not yet completely fulfilled.
 	 */
 	public abstract boolean isAllowCreateNewHU();
 
@@ -125,6 +126,20 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 */
 	protected abstract IAllocationResult loadHU(final I_M_HU hu, final IAllocationRequest request);
 
+	protected final void addPreviouslyCreatedHU(@NonNull final I_M_HU hu)
+	{
+		if (previouslyCreatedHUs == null)
+		{
+			previouslyCreatedHUs = new HUListCursor();
+		}
+		previouslyCreatedHUs.append(hu);
+	}
+
+	protected final void clearPreviouslyCreatedHUs()
+	{
+		previouslyCreatedHUs = null;
+	}
+
 	/**
 	 * Gets current HU to allocate on.
 	 * <ul>
@@ -135,6 +150,24 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 */
 	private HUListCursor getCreateCurrentHU(final IAllocationRequest request)
 	{
+		//
+		// Consider pre-created HUs first
+		if (previouslyCreatedHUs != null)
+		{
+			if (previouslyCreatedHUs.hasCurrent() && previouslyCreatedHUs.current() != null)
+			{
+				return previouslyCreatedHUs;
+			}
+			while (previouslyCreatedHUs.hasNext())
+			{
+				previouslyCreatedHUs.next();
+				if (previouslyCreatedHUs.current() != null)
+				{
+					return previouslyCreatedHUs;
+				}
+			}
+		}
+
 		final HUListCursor currentHUCursor = getCurrentHUCursor(request);
 
 		// If we have a current HU and it's not null
@@ -198,7 +231,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * Creates a new handling unit for given <code>request</code>.
-	 *
+	 * <p>
 	 * The newly created HU will be also added to created HUs list.
 	 *
 	 * @return created handling unit; never return null
@@ -267,15 +300,13 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
 
-		huBuilder.setHUClearanceStatusInfo(getHUClearanceStatusInfo());
+		huBuilder.setHUClearanceStatusInfo(CoalesceUtil.coalesce(getHUClearanceStatusInfo(), request.getClearanceStatusInfo()));
 
 		return huBuilder;
 	}
 
 	/**
-	 *
 	 * @return the parent item to which newly created HUs shall be added. May return <code>null</code>, if the new HU shall have no parent.
-	 *
 	 * @see #createNewHU(IAllocationRequest)
 	 * @see IHUBuilder#setM_HU_Item_Parent(I_M_HU_Item)
 	 */
@@ -357,9 +388,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return true;
 	}
 
-	private boolean addToCreateHUs0(final I_M_HU hu)
+	private boolean addToCreateHUs0(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
 		final boolean added = _createdHUs.add(hu);
 		if (added)
 		{
@@ -387,7 +417,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * Method called after an HU was added to HU created list.
-	 *
+	 * <p>
 	 * To be implemented by extending classes.
 	 */
 	protected void afterHUAddedToCreatedList(final I_M_HU hu)
@@ -422,16 +452,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		{
 			addToCreatedHUsIfAllowCreateNewHU(hu);
 		}
-	}
-
-	/**
-	 * Method called after an HU was removed from HU created list.
-	 *
-	 * To be implemented by extending classes.
-	 */
-	protected void afterHURemovedFromCreatedList(final I_M_HU hu)
-	{
-		// nothing at this level.
 	}
 
 	@Override
@@ -514,7 +534,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 			//
 			// Create current actual request, perform the allocation to current HU and merge the result back
-			prepareToLoad(request.getHUContext(), currentHU);
+			prepareToLoad(request.getHuContext(), currentHU);
 			final IAllocationRequest currentRequest = AllocationUtils.createQtyRequestForRemaining(request, result);
 			final IAllocationResult currentResult = loadHU(currentHU, currentRequest);
 			AllocationUtils.mergeAllocationResult(result, currentResult);
@@ -612,14 +632,14 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		//
 		// Notify that we finished the loading
-		loadFinished(result, request.getHUContext());
+		loadFinished(result, request.getHuContext());
 
 		return result;
 	}
 
 	/**
 	 * Called by {@link #load(IAllocationRequest)} right before actual load is starting.
-	 *
+	 * <p>
 	 * In this method, implementators can do further configurations and loadings if needed.
 	 */
 	protected void loadStarting(final IAllocationRequest request)

@@ -27,8 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
-import de.metas.workflow.rest_api.model.MobileApplicationInfo;
-import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -51,16 +49,11 @@ final class MobileApplicationsMap
 
 	private final ImmutableList<MobileApplication> applications;
 	private final ImmutableMap<MobileApplicationId, MobileApplication> applicationsById;
-	@Getter
-	private final ImmutableList<MobileApplicationInfo> applicationInfos;
 
 	private MobileApplicationsMap(@NonNull final List<MobileApplication> applications)
 	{
 		this.applications = ImmutableList.copyOf(applications);
-		this.applicationsById = Maps.uniqueIndex(applications, application -> application.getApplicationInfo().getId());
-		this.applicationInfos = applications.stream()
-				.map(MobileApplication::getApplicationInfo)
-				.collect(ImmutableList.toImmutableList());
+		this.applicationsById = Maps.uniqueIndex(applications, MobileApplication::getApplicationId);
 	}
 
 	@Override

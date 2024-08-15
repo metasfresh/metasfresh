@@ -48,7 +48,7 @@ import java.util.Objects;
 public class PrintingData
 {
 	// Services
-	private static final transient Logger logger = LogManager.getLogger(PrintingData.class);
+	private static final Logger logger = LogManager.getLogger(PrintingData.class);
 
 	@Getter
 	private final ImmutableList<PrintingSegment> segments;
@@ -302,6 +302,23 @@ public class PrintingData
 	{
 		final ImmutableList<PrintingSegment> filteredSegments = segments.stream()
 				.filter(s -> Objects.equals(s.getPrinter().getOutputType(), outputType))
+				.collect(ImmutableList.toImmutableList());
+
+		return PrintingData.builder()
+				.adjustSegmentPageRanges(false)
+				.data(this.data)
+				.documentFileName(this.documentFileName)
+				.orgId(this.orgId)
+				.printingQueueItemId(this.printingQueueItemId)
+				.segments(filteredSegments)
+				.build();
+	}
+
+	public PrintingData onlyQueuedForExternalSystems()
+	{
+		final ImmutableList<PrintingSegment> filteredSegments = segments.stream()
+				.filter(s -> Objects.equals(s.getPrinter().getOutputType(), OutputType.Queue))
+				.filter(s -> s.getPrinter().getExternalSystemParentConfigId() != null)
 				.collect(ImmutableList.toImmutableList());
 
 		return PrintingData.builder()

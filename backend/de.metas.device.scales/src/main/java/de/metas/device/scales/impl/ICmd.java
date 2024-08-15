@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets;
 
 public interface ICmd
 {
-	Charset SICS_CMD_CHARSET = StandardCharsets.US_ASCII;
+	Charset DEFAULT_CMD_CHARSET = StandardCharsets.US_ASCII;
 
 	String getCmd();
 }

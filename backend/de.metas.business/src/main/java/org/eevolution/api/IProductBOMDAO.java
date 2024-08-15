@@ -65,4 +65,6 @@ public interface IProductBOMDAO extends ISingletonService
 	Optional<I_PP_Product_BOM> getPreviousVersion(I_PP_Product_BOM bomVersion, DocStatus docStatus);
 
 	boolean isComponent(ProductId productId);
+
+	Optional<ProductBOMLineId> getBomLineByProductId(@NonNull ProductBOMId productBOMId, @NonNull ProductId productId);
 }

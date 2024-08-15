@@ -11,8 +11,6 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
-import java.util.List;
-
 @EqualsAndHashCode
 @ToString
 public class HUQRCodeGenerateForExistingHUsResult
@@ -23,8 +21,6 @@ public class HUQRCodeGenerateForExistingHUsResult
 	{
 		this.huQRCodes = ImmutableSetMultimap.copyOf(huQRCodes);
 	}
-
-	public ImmutableSetMultimap<HuId, HUQRCode> toSetMultimap() {return huQRCodes;}
 
 	public HUQRCode getSingleQRCode(@NonNull final HuId huId)
 	{

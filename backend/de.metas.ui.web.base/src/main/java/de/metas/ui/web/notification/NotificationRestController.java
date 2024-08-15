@@ -1,7 +1,13 @@
 package de.metas.ui.web.notification;
 
-import java.util.List;
-
+import com.google.common.base.Splitter;
+import de.metas.notification.UserNotificationsList;
+import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.notification.json.JSONNotificationsList;
+import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.user.UserId;
+import io.swagger.annotations.Api;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,15 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.base.Splitter;
-
-import de.metas.notification.UserNotificationsList;
-import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.notification.json.JSONNotificationsList;
-import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.user.UserId;
-import io.swagger.annotations.Api;
+import java.util.List;
 
 /*
  * #%L

@@ -18,6 +18,7 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.process.CreateProcessInstanceRequest;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstancesRepository;
+import de.metas.ui.web.process.ProcessHandlerType;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.WebuiPreconditionsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
@@ -115,7 +116,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	}
 
 	@Override
-	public String getProcessHandlerType()
+	public ProcessHandlerType getProcessHandlerType()
 	{
 		return ProcessId.PROCESSHANDLERTYPE_AD_Process;
 	}
@@ -466,5 +467,11 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				return result;
 			}
 		}
+	}
+
+
+	public void addProcessParameters(final ProcessId processId, final DocumentEntityDescriptor.Builder parametersDescriptorBuilder)
+	{
+		processDescriptorFactory.addProcessParameters(processId, parametersDescriptorBuilder);
 	}
 }

@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor3
 Feature: create or update BPartner v2
   As a user
   I want create or update a BPartner record
@@ -18,7 +19,7 @@ Feature: create or update BPartner v2
          "externalReferenceUrl":"www.ExternalReferenceURL.com",
          "bpartnerComposite":{
             "bpartner":{
-               "code":"test_code",
+               "code":"test_code1",
                "name":"test_name",
                "companyName":"test_company",
                "parentId":null,
@@ -94,8 +95,8 @@ Feature: create or update BPartner v2
 }
 """
     Then verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code  | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId |
-      | created_bpartner         | ext-ALBERTA-001    | test_code | test_name | test_company    | null         | null      | de           | null    | test-group | null      |
+      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code   | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId |
+      | created_bpartner         | ext-ALBERTA-001    | test_code1 | test_name | test_company    | null         | null      | de           | null    | test-group | null      |
     And verify that location was created for bpartner
       | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal |
       | ext-ALBERTA-001    | gln-l11            | test_address1 | test_address2 | null       | null         | null        | null      | DE          | l11     | null       |

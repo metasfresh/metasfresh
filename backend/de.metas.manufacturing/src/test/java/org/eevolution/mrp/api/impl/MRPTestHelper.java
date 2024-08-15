@@ -17,7 +17,6 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.planning.ErrorCodes;
-import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPRoutingType;
 import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
@@ -71,15 +70,12 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.util.DDNetworkBuilder;
-import org.eevolution.util.PPProductPlanningBuilder;
 import org.eevolution.util.ProductBOMBuilder;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Properties;
@@ -88,7 +84,7 @@ public class MRPTestHelper
 {
 	//
 	// Context
-	private ZonedDateTime _today = ZonedDateTime.now();
+	private final ZonedDateTime _today = ZonedDateTime.now();
 	public Properties ctx;
 	@Nullable private String trxName;
 	public final IContextAware contextProvider = new IContextAware()
@@ -128,7 +124,6 @@ public class MRPTestHelper
 	//
 	public I_S_ResourceType resourceType_Plants;
 	public I_S_ResourceType resourceType_Workcenters;
-	public final I_S_Resource plant_any = null;
 	//
 	public I_AD_Workflow workflow_Standard;
 	//
@@ -268,12 +263,11 @@ public class MRPTestHelper
 		// FIXME: workaround to bypass org.adempiere.document.service.impl.PlainDocActionBL.isDocumentTable(String) failure
 		PlainDocumentBL.isDocumentTableResponse = false;
 
-		final I_AD_Client client = null;
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 
-		modelInterceptorRegistry.addModelInterceptor(new AD_Workflow(), client);
+		modelInterceptorRegistry.addModelInterceptor(new AD_Workflow(), null);
 
-		modelInterceptorRegistry.addModelInterceptor(createLiberoValidator(), client);
+		modelInterceptorRegistry.addModelInterceptor(createLiberoValidator(), null);
 	}
 
 	private org.eevolution.model.LiberoValidator createLiberoValidator()
@@ -301,16 +295,6 @@ public class MRPTestHelper
 	public Timestamp getToday()
 	{
 		return TimeUtil.asTimestamp(_today);
-	}
-
-	public void setToday(
-			final int year,
-			final int month,
-			final int day)
-	{
-		this._today = LocalDate.of(year, month, day)
-				.atStartOfDay()
-				.atZone(ZoneId.systemDefault());
 	}
 
 	public I_AD_Org createOrg(final String name)
@@ -378,8 +362,7 @@ public class MRPTestHelper
 			final String name,
 			final I_AD_Org org)
 	{
-		final I_S_Resource plant = null;
-		return createWarehouse(name, org, plant);
+		return createWarehouse(name, org, null);
 	}
 
 	public I_M_Warehouse createWarehouse(
@@ -466,12 +449,6 @@ public class MRPTestHelper
 		message.setValue(code);
 		message.setMsgText(code);
 		InterfaceWrapperHelper.save(message);
-	}
-
-	public PPProductPlanningBuilder newProductPlanning()
-	{
-		return new PPProductPlanningBuilder()
-				.setContext(contextProvider);
 	}
 
 	public I_M_Shipper createShipper(final String name)
@@ -587,7 +564,7 @@ public class MRPTestHelper
 
 	public final Logger getMRPLogger()
 	{
-		return LogManager.getLogger(IMaterialPlanningContext.LOGGERNAME);
+		return LogManager.getLogger("org.eevolution.mrp.MRP");
 	}
 
 	public I_PP_Order createPP_Order(
