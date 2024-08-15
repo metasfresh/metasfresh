@@ -883,7 +883,7 @@ public class C_Invoice_Candidate_StepDef
 				{
 					softly.assertThat(updatedInvoiceCandidate.isToClear()).as("IsToClear").isEqualTo(isToClear);
 				}
-				
+
 				softly.assertAll();
 			}
 			catch (final Throwable e)
@@ -1559,7 +1559,7 @@ public class C_Invoice_Candidate_StepDef
 			if (invoiceCandidateRecord.getQtyDelivered().compareTo(qtyDelivered) != 0)
 			{
 				errorCollectors.add(MessageFormat.format("C_Invoice_Candidate_ID={0}; Expecting QtyDelivered={1} but actual is {2}",
-						invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyDelivered, invoiceCandidateRecord.getQtyDelivered()));
+														 invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyDelivered, invoiceCandidateRecord.getQtyDelivered()));
 			}
 		}
 
@@ -1570,7 +1570,7 @@ public class C_Invoice_Candidate_StepDef
 			if (invoiceCandidateRecord.getQtyToInvoice().compareTo(qtyToInvoice) != 0)
 			{
 				errorCollectors.add(MessageFormat.format("C_Invoice_Candidate_ID={0}; Expecting QtyToInvoice={1} but actual is {2}",
-						invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyToInvoice, invoiceCandidateRecord.getQtyToInvoice()));
+														 invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyToInvoice, invoiceCandidateRecord.getQtyToInvoice()));
 			}
 		}
 
@@ -1591,7 +1591,7 @@ public class C_Invoice_Candidate_StepDef
 			if (invoiceCandidateRecord.getQtyWithIssues_Effective().compareTo(qtyWithIssuesEffective) != 0)
 			{
 				errorCollectors.add(MessageFormat.format("C_Invoice_Candidate_ID={0}; Expecting QtyWithIssues_Effective={1} but actual is {2}",
-						invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyWithIssuesEffective, invoiceCandidateRecord.getQtyWithIssues_Effective()));
+														 invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyWithIssuesEffective, invoiceCandidateRecord.getQtyWithIssues_Effective()));
 			}
 		}
 
@@ -1947,8 +1947,8 @@ public class C_Invoice_Candidate_StepDef
 		final String rawSQLQuery = "select * from c_invoice_candidate where c_invoice_candidate_id = " + invCandidate.getC_Invoice_Candidate_ID();
 
 		final List<String> invCandidateDetailList = DB.retrieveRows(rawSQLQuery,
-				new ArrayList<>(),
-				(resultSet) -> this.getInvoiceCandidateExceptionDetails(invCandidate, resultSet, invoiceCandidateIdentifier));
+																	new ArrayList<>(),
+																	(resultSet) -> this.getInvoiceCandidateExceptionDetails(invCandidate, resultSet, invoiceCandidateIdentifier));
 
 		//query by id
 		final String invCandDetails = invCandidateDetailList.get(0);

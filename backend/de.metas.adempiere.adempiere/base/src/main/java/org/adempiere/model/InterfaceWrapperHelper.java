@@ -523,6 +523,8 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
+	 * @param model
+	 * @param trxName
 	 * @param ignoreIfNotHandled <code>true</code> and the given model can not be handled (no PO, GridTab etc), then don't throw an exception,
 	 * @throws AdempiereException if the given model is neither handled by {@link POWrapper} nor by {@link POJOWrapper} and ignoreIfNotHandled is <code>false</code>.
 	 */
