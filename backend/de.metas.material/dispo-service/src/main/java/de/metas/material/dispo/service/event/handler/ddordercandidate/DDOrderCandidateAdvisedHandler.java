@@ -35,6 +35,7 @@ import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -85,6 +86,7 @@ public class DDOrderCandidateAdvisedHandler
 	{
 		if (!isAccepted(event))
 		{
+			deleteUnspecificSupplyCandidate(event);
 			return;
 		}
 
@@ -103,6 +105,25 @@ public class DDOrderCandidateAdvisedHandler
 						.demandDetail(DemandDetail.forSupplyRequiredDescriptor(event.getSupplyRequiredDescriptorNotNull()))
 						.build()
 		);
+	}
+
+	private void deleteUnspecificSupplyCandidate(@NonNull final DDOrderCandidateAdvisedEvent event)
+	{
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
+		if (supplyRequiredDescriptor == null)
+		{
+			return;
+		}
+		final CandidateId supplyCandidateId = CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId());
+		if (supplyCandidateId == null)
+		{
+			return;
+		}
+
+		final Candidate supplyCandidate = candidateRepositoryRetrieval.retrieveById(supplyCandidateId);
+
+		candidateChangeHandler.onCandidateDelete(supplyCandidate);
+		Loggables.addLog("Deleted {}", supplyCandidate);
 	}
 
 	@Override

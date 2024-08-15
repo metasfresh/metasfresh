@@ -61,7 +61,10 @@ Feature: create distribution to balance demand
   @from:cucumber
   @Id:S0171.300
   Scenario: One distribution candidate is created to balance the full demand of the sales order
-    When metasfresh contains C_Orders:
+    When update existing PP_Product_Plannings
+      | Identifier      | IsCreatePlan |
+      | productPlanning | N            |
+    And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | SO         | true    | bpartner_1    | 2022-07-04  | 2022-07-04T00:00:00Z | targetWH       |
     And metasfresh contains C_OrderLines:
@@ -100,9 +103,14 @@ Feature: create distribution to balance demand
 
     Then after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID |
-      | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | targetWH       |
-      | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |
-      | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |
+      # Sales order / shipment schedule:
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | targetWH       |
+      # DD_Order_Candidate:
+      | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | -14                    | targetWH       |
+      | 3          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       |
+      # DD_Order:
+      | 4          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |
+      | 5          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
       | c1         | p_1          | sourceWH            | targetWH         | 14 PCE | Y         |
