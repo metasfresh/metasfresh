@@ -152,4 +152,7 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	Optional<I_M_HU_PI_Item_Product> retrieveDefaultForProduct(ProductId productId, BPartnerId bpartnerId, ZonedDateTime date);
 
 	Optional<HUPIItemProductId> retrieveDefaultIdForProduct(ProductId productId, BPartnerId bpartnerId, ZonedDateTime date);
+
+	@Nullable
+	I_M_HU_PI_Item_Product retrieveDefaultForProduct(@NonNull ProductId productId, @NonNull ZonedDateTime date);
 }
