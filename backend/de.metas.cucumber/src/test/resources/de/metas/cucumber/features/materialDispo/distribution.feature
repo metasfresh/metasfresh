@@ -74,7 +74,6 @@ Feature: create distribution to balance demand
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | targetWH       |
       | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |
       | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |
-      | c_4        | SUPPLY            |                           | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | sourceWH       |
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
       | c1         | p_1          | sourceWH            | targetWH         | 14 PCE | N         |
@@ -104,7 +103,6 @@ Feature: create distribution to balance demand
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | targetWH       |
       | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |
       | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |
-      | c_4        | SUPPLY            |                           | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | sourceWH       |
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
       | c1         | p_1          | sourceWH            | targetWH         | 14 PCE | Y         |
@@ -144,7 +142,6 @@ Feature: create distribution to balance demand
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -11 | targetWH       |
       | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 11  | 0   | targetWH       |
       | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -11 | -11 | sourceWH       |
-      | c_4        | SUPPLY            |                           | p_1          | 2022-07-04T00:00:00Z | 11  | 0   | sourceWH       |
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
       | c1         | p_1          | sourceWH            | targetWH         | 11 PCE | N         |
@@ -210,7 +207,6 @@ Feature: create distribution to balance demand
       # DD_Order_Candidate: sourceWH2 <- sourceWH3
       |            | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 88   | 0   | sourceWH2      |
       |            | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -88  | -82 | sourceWH3      |
-      |            | SUPPLY            |                           | p_1          | 2022-07-04T00:00:00Z | 82   | 0   | sourceWH3      |
     And after not more than 60s, following DD_Order_Candidates are found
       | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
       | p_1          | sourceWH            | targetWH         | 97 PCE | N         |
@@ -248,7 +244,6 @@ Feature: create distribution to balance demand
       | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14 | targetWH       |
       | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0   | targetWH       |
       | 3          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14 | sourceWH       |
-      | 6          | SUPPLY            |                           | p_1          | 2022-07-04T00:00:00Z | 14  | 0   | sourceWH       |
     And after not more than 60s, following DD_Order_Candidates are found
       | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
       | p_1          | sourceWH            | targetWH         | 14 PCE | N         |
@@ -293,7 +288,6 @@ Feature: create distribution to balance demand
       | 5          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14 | sourceWH2      |
       | 6          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0   | sourceWH2      |
       | 7          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14 | sourceWH3      |
-      | 8          | SUPPLY            |                           | p_1          | 2022-07-04T00:00:00Z | 14  | 0   | sourceWH3      |
     And after not more than 60s, following DD_Order_Candidates are found
       | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
       | p_1          | sourceWH            | targetWH         | 14 PCE | N         |
