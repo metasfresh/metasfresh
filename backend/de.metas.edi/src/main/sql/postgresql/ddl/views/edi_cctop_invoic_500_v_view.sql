@@ -21,6 +21,7 @@ SELECT SUM(il.qtyEntered)                                                       
        il.c_invoice_id                                                           AS edi_cctop_invoic_v_id,
        il.priceactual,
        il.pricelist,
+       il.discount,
        ol.invoicableqtybasedon,
        REGEXP_REPLACE(pp.UPC, '\s+$', '')                                        AS UPC_CU,
        REGEXP_REPLACE(pp.EAN_CU, '\s+$', '')                                     AS EAN_CU, -- Deprecated: superseded by buyer_ean_cu
@@ -87,6 +88,7 @@ WHERE TRUE
 GROUP BY il.c_invoice_id,
          il.priceactual,
          il.pricelist,
+         il.discount,
          ol.InvoicableQtyBasedOn,
          pp.UPC,
          pp.EAN_CU,
