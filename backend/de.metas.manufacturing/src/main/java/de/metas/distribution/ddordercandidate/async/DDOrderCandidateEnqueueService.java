@@ -11,6 +11,7 @@ import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.process.PInstanceId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,7 @@ public class DDOrderCandidateEnqueueService
 
 		final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(ids);
 		enqueueSelection(DDOrderCandidateEnqueueRequest.ofSelectionId(selectionId));
+		Loggables.addLog("Enqueued DD_Order_Candidates with IDs {}. (selectionId={})", ids, selectionId);
 	}
 
 	public void enqueueSelection(@NonNull final PInstanceId selectionId)

@@ -5,6 +5,7 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.distribution.ddordercandidate.DDOrderCandidate;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateProcessRequest;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
@@ -18,7 +19,11 @@ public class GenerateDDOrderFromDDOrderCandidate extends WorkpackageProcessorAda
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, @Nullable final String localTrxName)
 	{
-		ddOrderCandidateService.process(getProcessRequest());
+		final DDOrderCandidateProcessRequest processRequest = getProcessRequest();
+		Loggables.addLog("{}", processRequest);
+
+		ddOrderCandidateService.process(processRequest);
+		Loggables.addLog("Done.");
 		return Result.SUCCESS;
 	}
 

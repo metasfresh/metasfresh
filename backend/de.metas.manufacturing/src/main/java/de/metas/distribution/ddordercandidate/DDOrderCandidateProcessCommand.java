@@ -37,10 +37,12 @@ import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.util.Loggables;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -133,7 +135,18 @@ class DDOrderCandidateProcessCommand
 
 	public void execute()
 	{
+		if (request.getCandidates().isEmpty())
+		{
+			Loggables.addLog("Skip generating DD_Orders because request is empty: {}", request);
+			return;
+		}
 		request.getCandidates().forEach(this::addToAggregates);
+
+		if (aggregates.isEmpty())
+		{
+			Loggables.addLog("Skip generating DD_Orders because no aggregates were created for {}", request);
+			return;
+		}
 		aggregates.values().forEach(this::createDDOrder);
 	}
 
@@ -149,6 +162,7 @@ class DDOrderCandidateProcessCommand
 	{
 		if (!headerAggregate.isEligibleToCreate())
 		{
+			Loggables.addLog("Skip generating {} because is not eligible", headerAggregate);
 			return;
 		}
 
@@ -158,6 +172,7 @@ class DDOrderCandidateProcessCommand
 		{
 			if (!lineAggregate.isEligibleToCreate())
 			{
+				Loggables.addLog("Skip line {} because is not eligible", lineAggregate);
 				continue;
 			}
 
@@ -171,6 +186,7 @@ class DDOrderCandidateProcessCommand
 
 		if (headerRecord == null)
 		{
+			Loggables.addLog("Skip generating {} because there were no eligible lines", headerAggregate);
 			return;
 		}
 
@@ -178,6 +194,7 @@ class DDOrderCandidateProcessCommand
 		fireDDOrderCreatedEvent(ddOrderId, headerAggregate.getKey().getTraceId());
 
 		documentBL.processEx(headerRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		Loggables.addLog("Generated & completed: {}", headerRecord);
 	}
 
 	private I_DD_Order createHeaderRecord(final HeaderAggregationKey key)
@@ -386,6 +403,7 @@ class DDOrderCandidateProcessCommand
 	//
 
 	@RequiredArgsConstructor
+	@ToString
 	private static class HeaderAggregate
 	{
 		@NonNull @Getter private final HeaderAggregationKey key;
@@ -462,6 +480,7 @@ class DDOrderCandidateProcessCommand
 
 	@Getter
 	@RequiredArgsConstructor
+	@ToString
 	static class LineAggregate
 	{
 		@NonNull private final LineAggregationKey key;
