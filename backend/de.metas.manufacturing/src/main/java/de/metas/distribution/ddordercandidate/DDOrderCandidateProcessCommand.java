@@ -265,6 +265,7 @@ class DDOrderCandidateProcessCommand
 
 	public void createLine(final LineAggregate lineAggregate, final I_DD_Order header)
 	{
+		Loggables.addLog("creating DD_OrderLine for {}", lineAggregate);
 		final LineAggregationKey key = lineAggregate.getKey();
 
 		// Create DD Order Line
@@ -329,6 +330,7 @@ class DDOrderCandidateProcessCommand
 						.ddOrderAndLineId(ddOrderAndLineId)
 						.build())
 				.collect(DDOrderCandidateAllocList.collect());
+
 
 		ddOrderCandidateService.saveAndUpdateCandidates(allocations);
 	}

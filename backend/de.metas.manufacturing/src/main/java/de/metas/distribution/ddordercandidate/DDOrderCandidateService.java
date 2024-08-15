@@ -16,6 +16,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -106,10 +107,12 @@ public class DDOrderCandidateService
 	{
 		if (ddOrderCandidateIds.isEmpty())
 		{
+			Loggables.addLog("updateCandidatesOnAllocationChanges: skip because provided IDs set is empty");
 			return;
 		}
 
 		final ImmutableMap<DDOrderCandidateId, DDOrderCandidate> candidates = Maps.uniqueIndex(ddOrderCandidateRepository.getByIds(ddOrderCandidateIds), DDOrderCandidate::getIdNotNull);
+		Loggables.addLog("updateCandidatesOnAllocationChanges: candidates={}", candidates);
 
 		ddOrderCandidateAllocRepository.getByCandidateIds(ddOrderCandidateIds)
 				.groupByCandidateId()
@@ -118,6 +121,7 @@ public class DDOrderCandidateService
 					final Quantity qtyProcessed = alloc.getQtySum().orElseGet(() -> candidate.getQty().toZero());
 					candidate.setQtyProcessed(qtyProcessed);
 					ddOrderCandidateRepository.save(candidate);
+					Loggables.addLog("updateCandidatesOnAllocationChanges: qtyProcessed={}, candidate={}, alloc={}", qtyProcessed, candidate, alloc);
 				});
 
 	}
