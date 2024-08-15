@@ -69,7 +69,7 @@ public class StockChangeDetailRepo
 		if (recordToUpdate == null)
 		{
 			recordToUpdate = newInstance(I_MD_Candidate_StockChange_Detail.class, candidateRecord);
-			recordToUpdate.setMD_Candidate_ID(candidateRecord.getMD_Candidate_ID());
+			recordToUpdate.setMD_Candidate_ID(candidateId.getRepoId());
 		}
 
 		recordToUpdate.setFresh_QtyOnHand_ID(NumberUtils.asInteger(stockChangeDetail.getFreshQuantityOnHandRepoId(), -1));

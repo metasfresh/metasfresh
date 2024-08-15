@@ -33,6 +33,7 @@ import de.metas.event.IEventBus;
 import de.metas.event.Topic;
 import de.metas.event.impl.EventBusFactory;
 import de.metas.event.remote.RabbitMQDestinationResolver;
+import de.metas.event.remote.RabbitMQEventBusConfiguration;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -343,12 +344,13 @@ public class RabbitMQ_StepDef
 		final long nowMillis = System.currentTimeMillis();
 		final long deadLineMillis = nowMillis + (300 * 1000L);    // dev-note: await maximum 5 minutes
 
-		final String queueName = rabbitMQDestinationSolver.getAMQPQueueNameByTopicName("de.metas.material");
+		final String queueName = rabbitMQDestinationSolver.getAMQPQueueNameByTopicName(RabbitMQEventBusConfiguration.MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
 		final RabbitAdmin rabbitAdmin = new RabbitAdmin(((RabbitTemplate)amqpTemplate));
 
 		long messageCount;
 		do
 		{
+			//noinspection BusyWait
 			Thread.sleep(1000);
 
 			final QueueInformation queueInformation = Optional.ofNullable(rabbitAdmin.getQueueInfo(queueName))
@@ -364,7 +366,8 @@ public class RabbitMQ_StepDef
 		{
 			throw new AdempiereException("Queue has not been entirely processed in 5 minutes !")
 					.appendParametersToMessage()
-					.setParameter("QueueName", queueName);
+					.setParameter("QueueName", queueName)
+					.setParameter("messageCount", messageCount);
 		}
 	}
 }

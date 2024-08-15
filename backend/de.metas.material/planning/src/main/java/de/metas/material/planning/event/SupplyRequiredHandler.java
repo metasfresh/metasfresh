@@ -4,20 +4,17 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
-import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
-import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.supplyrequired.NoSupplyAdviceEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
-import de.metas.material.planning.ddordercandidate.DDOrderCandidateAdvisedEventCreator;
-import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -36,9 +33,9 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 
 /*
@@ -72,10 +69,9 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	@NonNull private final DDOrderCandidateAdvisedEventCreator ddOrderCandidateAdvisedEventCreator;
-	@NonNull private final PPOrderCandidateAdvisedEventCreator ppOrderCandidateAdvisedEventCreator;
 	@NonNull private final PostMaterialEventService postMaterialEventService;
 	@NonNull private final MainDataRequestHandler mainDataRequestHandler;
+	@NonNull private final List<SupplyRequiredAdvisor> supplyRequiredAdvisors;
 
 	@Override
 	public Collection<Class<? extends SupplyRequiredEvent>> getHandledEventType()
@@ -91,39 +87,45 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 
 	private void handleSupplyRequiredEvent(@NonNull final SupplyRequiredDescriptor descriptor)
 	{
-		if(descriptor.getMaterialDescriptor().getQuantity().signum() != 0)
-		{
-			SupplyRequiredHandlerUtils.updateMainData(descriptor);
-		}
-
-		final MaterialPlanningContext context = createContextOrNull(descriptor);
-		if (context == null)
-		{
-			return; // nothing to do
-		}
-
 		final ArrayList<MaterialEvent> events = new ArrayList<>();
 
-		events.addAll(ddOrderCandidateAdvisedEventCreator.createDDOrderCandidateAdvisedEvents(descriptor, context));
-		events.addAll(ppOrderCandidateAdvisedEventCreator.createPPOrderCandidateAdvisedEvents(descriptor, context));
+		final MaterialPlanningContext context = createContextOrNull(descriptor);
+		if (context != null)
+		{
+			for (final SupplyRequiredAdvisor advisor : supplyRequiredAdvisors)
+			{
+				events.addAll(advisor.createAdvisedEvents(descriptor, context));
+			}
+		}
 
-		events.forEach(postMaterialEventService::enqueueEventNow);
+		if (events.isEmpty())
+		{
+			final NoSupplyAdviceEvent noSupplyAdviceEvent = NoSupplyAdviceEvent.of(descriptor.withNewEventId());
+			Loggables.addLog("No advice events were created. Firing {}", noSupplyAdviceEvent);
+
+			postMaterialEventService.enqueueEventNow(noSupplyAdviceEvent);
+		}
+		else
+		{
+			events.forEach(postMaterialEventService::enqueueEventNow);
+		}
 	}
 
-	private MaterialPlanningContext createContextOrNull(@NonNull final SupplyRequiredDescriptor materialDemandEvent)
+	private MaterialPlanningContext createContextOrNull(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
-		final OrgId orgId = materialDemandEvent.getOrgId();
+		final OrgId orgId = supplyRequiredDescriptor.getOrgId();
 
-		final WarehouseId warehouseId = materialDemandEvent.getWarehouseId();
+		final WarehouseId warehouseId = supplyRequiredDescriptor.getWarehouseId();
 		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 
-		final ProductId productId = ProductId.ofRepoId(materialDemandEvent.getProductId());
-		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(materialDemandEvent.getAttributeSetInstanceId());
-		final ResourceId plantId = productPlanningDAO.findPlantId(
-				orgId.getRepoId(),
-				warehouse,
-				productId.getRepoId(),
-				attributeSetInstanceId.getRepoId());
+		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getProductId());
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(supplyRequiredDescriptor.getAttributeSetInstanceId());
+		final ResourceId plantId = productPlanningDAO.findPlantIfExists(orgId, warehouse, productId, attributeSetInstanceId).orElse(null);
+		if (plantId == null)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No plant found for {}, {}, {}, {}", orgId, warehouse, productId, attributeSetInstanceId);
+			return null;
+		}
 
 		final ProductPlanningQuery productPlanningQuery = ProductPlanningQuery.builder()
 				.orgId(orgId)
@@ -151,26 +153,5 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 				.plantId(plantId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.build();
-	}
-
-	// TODO maybe it was already deleted on master?
-	private void updateMainData(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
-	{
-		if (supplyRequiredDescriptor.isSimulated())
-		{
-			return;
-		}
-
-		final ZoneId orgTimezone = orgDAO.getTimeZone(supplyRequiredDescriptor.getOrgId());
-
-		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier
-				.createForMaterial(supplyRequiredDescriptor.getMaterialDescriptor(), orgTimezone);
-
-		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
-				.identifier(mainDataRecordIdentifier)
-				.qtySupplyRequired(supplyRequiredDescriptor.getQtyToSupplyBD())
-				.build();
-
-		mainDataRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
 	}
 }

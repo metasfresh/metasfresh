@@ -48,6 +48,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -97,6 +98,13 @@ public class CandidateRepositoryRetrieval
 	{
 		this.dimensionService = dimensionService;
 		this.stockChangeDetailRepo = stockChangeDetailRepo;
+	}
+
+	public Candidate retrieveById(@NonNull final CandidateId candidateId)
+	{
+		candidateId.assertRegular();
+		return retrieveLatestMatch(CandidatesQuery.fromId(candidateId))
+				.orElseThrow(() -> new AdempiereException("No candidate found for " + candidateId));
 	}
 
 	/**
@@ -167,7 +175,10 @@ public class CandidateRepositoryRetrieval
 		final int hasStockChangeDetail = stockChangeDetailOrNull == null ? 0 : 1;
 
 		Check.errorIf(hasProductionDetail + hasDistributionDetail + hasPurchaseDetail + hasStockChangeDetail > 1,
-				"A candidate may not have both a distribution, production, production detail and a hasStockChangeDetail; candidateRecord={}", candidateRecordOrNull);
+				"A candidate may not have both a distribution, production, production detail and a hasStockChangeDetail; candidateRecord={}, "
+						+ "hasProductionDetail={}, hasDistributionDetail={}, hasPurchaseDetail={}, hasStockChangeDetail={}",
+				candidateRecordOrNull,
+				hasProductionDetail, hasDistributionDetail, hasPurchaseDetail, hasStockChangeDetail);
 
 		final DemandDetail demandDetailOrNull = retrieveDemandDetailOrNull(candidateId);
 

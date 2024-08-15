@@ -47,7 +47,7 @@ public class MaturingConfigLineId implements RepoIdAware
 	@Nullable
 	public static MaturingConfigLineId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return repoId > 0 ? ofRepoId(repoId) : null;
+		return repoId != null && repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	public static int toRepoId(final MaturingConfigLineId id)
@@ -59,7 +59,7 @@ public class MaturingConfigLineId implements RepoIdAware
 
 	private MaturingConfigLineId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_MaturingConfig_Line_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_Maturing_Configuration_Line_ID");
 	}
 
 	@JsonValue

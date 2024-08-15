@@ -33,6 +33,7 @@ import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderLineData;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
@@ -60,18 +61,20 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.JSONObjectMapper;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderAndBOMLineId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
@@ -165,12 +168,9 @@ public class MaterialEventSerializerTests
 	{
 		final DDOrderCreatedEvent event = DDOrderCreatedEvent.builder()
 				.supplyRequiredDescriptor(newSupplyRequiredDescriptor())
-				.ddOrder(createDdOrder(20))
-				.fromWarehouseId(WarehouseId.ofRepoId(30))
-				.toWarehouseId(WarehouseId.ofRepoId(40))
+				.ddOrder(newDDOrder())
 				.eventDescriptor(newEventDescriptor())
 				.build();
-		event.validate();
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
@@ -186,27 +186,46 @@ public class MaterialEventSerializerTests
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
-	@SuppressWarnings("SameParameterValue")
-	private DDOrder createDdOrder(final int ddOrderId)
+	private static DDOrder newDDOrder()
 	{
+		final Instant supplyDate = SystemTime.asInstant();
 		return DDOrder.builder()
-				.datePromised(SystemTime.asInstant())
-				.ddOrderId(ddOrderId)
+				.supplyDate(supplyDate)
+				.ddOrderId(20)
 				.docStatus(DocStatus.InProgress)
 				.materialDispoGroupId(MaterialDispoGroupId.ofInt(35))
-				.line(DDOrderLine.builder()
-						.productDescriptor(createProductDescriptor())
-						.ddOrderLineId(21)
-						.durationDays(31)
-						.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(40, 41))
-						.qty(TEN)
-						.salesOrderLineId(61)
-						.fromWarehouseMinMaxDescriptor(createSampleMinMaxDescriptor())
-						.build())
-				.orgId(OrgId.ofRepoId(40))
+				.line(newDDOrderLine(supplyDate))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(39, 40))
 				.plantId(ResourceId.ofRepoId(50))
 				.productPlanningId(ProductPlanningId.ofRepoId(60))
+				.sourceWarehouseId(WarehouseId.ofRepoId(30))
+				.targetWarehouseId(WarehouseId.ofRepoId(40))
 				.shipperId(ShipperId.ofRepoId(70))
+				.forwardPPOrderRef(newPPOrderRef())
+				.build();
+	}
+
+	private static DDOrderLine newDDOrderLine(final Instant supplyDate)
+	{
+		return DDOrderLine.builder()
+				.productDescriptor(createProductDescriptor())
+				.ddOrderLineId(21)
+				.demandDate(supplyDate.minus(10, ChronoUnit.DAYS))
+				.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIds(40, 41))
+				.qtyMoved(new BigDecimal("10"))
+				.qtyToMove(new BigDecimal("3"))
+				.salesOrderLineId(61)
+				.fromWarehouseMinMaxDescriptor(createSampleMinMaxDescriptor())
+				.build();
+	}
+
+	private static PPOrderRef newPPOrderRef()
+	{
+		return PPOrderRef.builder()
+				.ppOrderCandidateId(1)
+				.ppOrderLineCandidateId(2)
+				.ppOrderId(PPOrderId.ofRepoId(3))
+				.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoId(4))
 				.build();
 	}
 

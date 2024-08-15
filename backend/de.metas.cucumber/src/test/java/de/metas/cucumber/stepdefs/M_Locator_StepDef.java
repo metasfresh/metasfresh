@@ -88,9 +88,11 @@ public class M_Locator_StepDef
 	@And("metasfresh contains M_Locator:")
 	public void create_M_Locator_record(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach((row) -> {
-			createLocator(row);
-		});
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_Locator_ID)
+				.forEach((row) -> {
+					createLocator(row);
+				});
 	}
 
 	private void createLocator(@NonNull final DataTableRow row)
@@ -140,7 +142,7 @@ public class M_Locator_StepDef
 
 		InterfaceWrapperHelper.saveRecord(locatorRecord);
 
-		row.getAsIdentifier(COLUMNNAME_M_Locator_ID).put(locatorTable, locatorRecord);
+		row.getAsIdentifier().put(locatorTable, locatorRecord);
 	}
 
 	@Nullable

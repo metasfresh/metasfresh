@@ -14,7 +14,7 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler.OnNewOrChangeAdvise;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.PPOrder;
@@ -123,9 +123,7 @@ public final class PPOrderCreatedHandler
 				.lotForLot(ppOrderEvent.getLotForLot())
 				.build();
 
-		return candidateChangeService.onCandidateNewOrChange(
-				headerCandidate,
-				CandidateHandler.OnNewOrChangeAdvise.attemptUpdate(false));
+		return candidateChangeService.onCandidateNewOrChange(headerCandidate, OnNewOrChangeAdvise.attemptUpdate(false));
 	}
 
 	@NonNull

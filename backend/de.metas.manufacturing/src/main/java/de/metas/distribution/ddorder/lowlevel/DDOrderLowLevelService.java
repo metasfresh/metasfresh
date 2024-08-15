@@ -47,6 +47,7 @@ import de.metas.util.Check;
 import de.metas.util.IProcessor;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mmovement.MovementId;
 import org.adempiere.mmovement.api.IMovementBL;
@@ -70,25 +71,18 @@ import java.util.Objects;
 import java.util.function.Function;
 
 @Service
+@RequiredArgsConstructor
 public class DDOrderLowLevelService
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
-	private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
-	private final ResourceService resourceService;
-	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IMovementBL movementBL = Services.get(IMovementBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
-	public DDOrderLowLevelService(
-			@NonNull final DDOrderLowLevelDAO ddOrderLowLevelDAO,
-			@NonNull final ResourceService resourceService)
-	{
-		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
-		this.resourceService = resourceService;
-	}
+	@NonNull private static final Logger logger = LogManager.getLogger(DDOrderLowLevelService.class);
+	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
+	@NonNull private final ResourceService resourceService;
+	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IMovementBL movementBL = Services.get(IMovementBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public I_DD_Order getById(final DDOrderId ddOrderId)
 	{

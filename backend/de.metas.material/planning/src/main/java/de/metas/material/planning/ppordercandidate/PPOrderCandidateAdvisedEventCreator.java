@@ -31,6 +31,7 @@ import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent.PPOrderCandi
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.MaterialRequest;
+import de.metas.material.planning.event.SupplyRequiredAdvisor;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.quantity.Quantity;
@@ -38,7 +39,8 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -46,24 +48,16 @@ import java.math.BigDecimal;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_No;
 import static org.eevolution.model.X_PP_Order_Candidate.ISLOTFORLOT_Yes;
 
-@Service
-public class PPOrderCandidateAdvisedEventCreator
+@Component
+@RequiredArgsConstructor
+public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdvisor
 {
-	private final PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher;
-
-	private final PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
-	public PPOrderCandidateAdvisedEventCreator(
-			@NonNull final PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher,
-			@NonNull final PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier)
-	{
-		this.ppOrderCandidateDemandMatcher = ppOrderCandidateDemandMatcher;
-		this.ppOrderCandidatePojoSupplier = ppOrderCandidatePojoSupplier;
-	}
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher;
+	@NonNull private final PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
 
 	@NonNull
-	public ImmutableList<PPOrderCandidateAdvisedEvent> createPPOrderCandidateAdvisedEvents(
+	public ImmutableList<PPOrderCandidateAdvisedEvent> createAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final MaterialPlanningContext context)
 	{
@@ -111,13 +105,6 @@ public class PPOrderCandidateAdvisedEventCreator
 		else
 		{
 			supplyRequiredDescriptorToUse = supplyRequiredDescriptor.toBuilder().isLotForLot(ISLOTFORLOT_No).build();
-		}
-
-		final BigDecimal finalQtyUsed = supplyRequiredDescriptorToUse.getMaterialDescriptor().getQuantity();
-		if (requiredQty.compareTo(finalQtyUsed) != 0)
-		{
-			final BigDecimal deltaToApply = finalQtyUsed.subtract(requiredQty);
-			SupplyRequiredHandlerUtils.updateMainDataWithQty(supplyRequiredDescriptorToUse, deltaToApply);
 		}
 
 		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptorToUse, context);

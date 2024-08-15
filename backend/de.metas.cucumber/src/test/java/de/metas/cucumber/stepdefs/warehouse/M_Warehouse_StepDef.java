@@ -41,6 +41,8 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 
@@ -59,6 +61,7 @@ import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
 public class M_Warehouse_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
@@ -155,6 +158,8 @@ public class M_Warehouse_StepDef
 							.ifPresent(resourceId -> warehouseRecord.setPP_Plant_ID(resourceId.getRepoId()));
 
 					saveRecord(warehouseRecord);
+
+					warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()));
 
 					row.getAsIdentifier().put(warehouseTable, warehouseRecord);
 				});

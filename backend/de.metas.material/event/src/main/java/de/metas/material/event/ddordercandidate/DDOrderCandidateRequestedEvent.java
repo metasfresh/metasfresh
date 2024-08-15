@@ -19,18 +19,21 @@ public class DDOrderCandidateRequestedEvent implements MaterialEvent
 	@NonNull EventDescriptor eventDescriptor;
 	@NonNull Instant dateOrdered;
 	@NonNull DDOrderCandidateData ddOrderCandidateData;
+	boolean createDDOrder;
 
 	@Builder
 	@Jacksonized
 	private DDOrderCandidateRequestedEvent(
 			@NonNull final EventDescriptor eventDescriptor,
 			@NonNull final Instant dateOrdered,
-			@NonNull final DDOrderCandidateData ddOrderCandidateData)
+			@NonNull final DDOrderCandidateData ddOrderCandidateData,
+			final boolean createDDOrder)
 	{
 		ddOrderCandidateData.assertMaterialDispoGroupIdIsSet();
 
 		this.eventDescriptor = eventDescriptor;
 		this.dateOrdered = dateOrdered;
 		this.ddOrderCandidateData = ddOrderCandidateData;
+		this.createDDOrder = createDDOrder;
 	}
 }

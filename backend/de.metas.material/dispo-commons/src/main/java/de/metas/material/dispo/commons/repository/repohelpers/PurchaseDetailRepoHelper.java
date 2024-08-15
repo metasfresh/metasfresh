@@ -91,7 +91,7 @@ public final class PurchaseDetailRepoHelper
 		if (recordToUpdate == null)
 		{
 			recordToUpdate = newInstance(I_MD_Candidate_Purchase_Detail.class, candidateRecord);
-			recordToUpdate.setMD_Candidate_ID(candidateRecord.getMD_Candidate_ID());
+			recordToUpdate.setMD_Candidate_ID(candidateId.getRepoId());
 		}
 
 		if (purchaseDetail.getAdvised().isUpdateExistingRecord())

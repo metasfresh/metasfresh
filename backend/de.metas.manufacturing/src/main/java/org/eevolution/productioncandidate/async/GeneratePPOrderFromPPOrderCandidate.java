@@ -51,6 +51,9 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsLast;
 import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_AUTO_CLOSE_CANDIDATES_AFTER_PRODUCTION;
 import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION;
 import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_COMPLETE_DOC_PARAM;
@@ -113,7 +116,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 		headerAgg2PPOrderCandGroup.values()
 				.stream()
 				.filter(Objects::nonNull)
-				.sorted(Comparator.nullsLast(Comparator.comparing(PPOrderCandidatesGroup::getGroupSeqNo)))
+				.sorted(comparing(PPOrderCandidatesGroup::getGroupSeqNo, nullsLast(naturalOrder())))
 				.map(PPOrderCandidatesGroup::getPpOrderCandidateToAllocateList)
 				.forEach(sortedCandidates::addAll);
 
