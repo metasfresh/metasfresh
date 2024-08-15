@@ -1,5 +1,6 @@
 @from:cucumber
-@ghActions:run_on_executor6
+#@ghActions:run_on_executor6
+@ghActions:run_on_executor_temp
 Feature: Production + Distribution material dispo scenarios
 
   Background:
