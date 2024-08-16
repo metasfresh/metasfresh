@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.logging.LogManager;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -43,6 +44,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -56,6 +58,7 @@ public class ModCntr_Specific_Price_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final static Logger logger = LogManager.getLogger(ModCntr_Specific_Price_StepDef.class);
 
 	private final C_Flatrate_Term_StepDefData contractTable;
 	private final M_Product_StepDefData productTable;
@@ -79,11 +82,11 @@ public class ModCntr_Specific_Price_StepDef
 	{
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
-			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadSpecificPrice(tableRow));
+			final String specificPriceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Specific_Price_ID + "." + TABLECOLUMN_IDENTIFIER);
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadSpecificPrice(tableRow), () -> logger.error("Can't find specific price for: {}", specificPriceIdentifier));
 
 			final SoftAssertions softly = new SoftAssertions();
 
-			final String specificPriceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Specific_Price_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_ModCntr_Specific_Price specificPrice = specificPriceTable.get(specificPriceIdentifier);
 			InterfaceWrapperHelper.refresh(specificPrice);
 

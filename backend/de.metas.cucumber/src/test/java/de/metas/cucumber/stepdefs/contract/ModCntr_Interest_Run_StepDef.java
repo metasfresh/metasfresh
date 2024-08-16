@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.contracts.model.I_ModCntr_Interest_Run;
 import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
+import de.metas.contracts.modular.interest.EnqueueInterestComputationRequest;
 import de.metas.contracts.modular.interest.InterestBonusComputationRequest;
 import de.metas.contracts.modular.interest.InterestService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
@@ -39,10 +40,10 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @RequiredArgsConstructor
 public class ModCntr_Interest_Run_StepDef
@@ -52,7 +53,7 @@ public class ModCntr_Interest_Run_StepDef
 	@NonNull private final ModCntr_InvoicingGroup_StepDefData invoicingGroupTable;
 	@NonNull private final ModCntr_Interest_Run_StepDefData interestRunTable;
 	@NonNull private final AD_User_StepDefData userTable;
-	@NonNull private final InterestService interestService;
+	private final InterestService interestService = SpringContextHolder.instance.getBean(InterestService.class);
 
 	@And("^load latest ModCntr_Interest_Run for invoicing group (.*) as (.*)$")
 	public void metasfresh_contains_ModCntr_InvoicingGroup(@NonNull final String invoicingGroupIdentifier, @NonNull final String interestRunIdentifier)
@@ -71,11 +72,6 @@ public class ModCntr_Interest_Run_StepDef
 	@And("distribute interest")
 	public void distributeInterest(@NonNull final DataTable dataTable)
 	{
-		if (dataTable.height() != 1)
-		{
-			throw new AdempiereException("Can only distribute interest for a single request");
-		}
-
 		final InterestBonusComputationRequest computationRequest = getRequest(DataTableRow.singleRow(dataTable));
 		try
 		{
@@ -91,17 +87,17 @@ public class ModCntr_Interest_Run_StepDef
 	{
 		final I_ModCntr_InvoicingGroup invoicingGroup = invoicingGroupTable.get(tableRow.getAsIdentifier(I_ModCntr_InvoicingGroup.COLUMNNAME_ModCntr_InvoicingGroup_ID));
 		final InvoicingGroupId invoicingGroupId = InvoicingGroupId.ofRepoId(invoicingGroup.getModCntr_InvoicingGroup_ID());
-		final Timestamp billingDate = tableRow.getAsTimestamp(I_ModCntr_Interest_Run.COLUMNNAME_BillingDate);
-		final Timestamp interimDate = tableRow.getAsTimestamp(I_ModCntr_Interest_Run.COLUMNNAME_InterimDate);
+		final Instant billingDate = tableRow.getAsTimestamp(I_ModCntr_Interest_Run.COLUMNNAME_BillingDate).toInstant();
+		final Instant interimDate = tableRow.getAsTimestamp(I_ModCntr_Interest_Run.COLUMNNAME_InterimDate).toInstant();
 		final Money interestToDistribute = Money.of(invoicingGroup.getTotalInterest(), CurrencyId.ofRepoId(invoicingGroup.getC_Currency_ID()));
 		final UserId userId = userTable.getUserId(tableRow.getAsIdentifier(I_AD_User.COLUMNNAME_AD_User_ID));
 
-		return InterestBonusComputationRequest.builder()
-				.invoicingGroupId(invoicingGroupId)
-				.interimDate(interimDate.toInstant())
-				.billingDate(billingDate.toInstant())
+		return interestService.getInterestBonusComputationRequest(EnqueueInterestComputationRequest.builder()
+				.billingDate(billingDate)
+				.interimDate(interimDate)
 				.interestToDistribute(interestToDistribute)
 				.userId(userId)
-				.build();
+				.invoicingGroupId(invoicingGroupId)
+				.build());
 	}
 }

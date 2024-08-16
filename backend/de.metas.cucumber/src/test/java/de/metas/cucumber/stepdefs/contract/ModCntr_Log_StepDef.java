@@ -56,6 +56,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.IUOMDAO;
@@ -91,6 +92,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -110,6 +112,7 @@ public class ModCntr_Log_StepDef
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final LogsRecomputationService recomputeLogsService = SpringContextHolder.instance.getBean(LogsRecomputationService.class);
+	private final static Logger logger = LogManager.getLogger(ModCntr_Log_StepDef.class);
 
 	@NonNull
 	private final C_BPartner_StepDefData bpartnerTable;
@@ -238,6 +241,7 @@ public class ModCntr_Log_StepDef
 
 	private void validateModCntr_Log(final int timeoutSec, @NonNull final Map<String, String> tableRow) throws InterruptedException
 	{
+		final String modCntrLogIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final String tableName = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Table.COLUMNNAME_TableName);
 		final int tableId = tableDAO.retrieveTableId(tableName);
 
@@ -247,21 +251,8 @@ public class ModCntr_Log_StepDef
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateTermTable.get(flatrateTermIdentifier);
 
 		final String recordIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int recordId;
-		switch (tableName)
-		{
-			case I_C_OrderLine.Table_Name -> recordId = orderLineTable.get(recordIdentifier).getC_OrderLine_ID();
-			case I_M_InventoryLine.Table_Name -> recordId = inventoryLineTable.get(recordIdentifier).getM_InventoryLine_ID();
-			case I_M_InOutLine.Table_Name -> recordId = inOutLineTable.get(recordIdentifier).getM_InOutLine_ID();
-			case I_PP_Order.Table_Name -> recordId = manufacturingOrderTable.get(recordIdentifier).getPP_Order_ID();
-			case I_C_InvoiceLine.Table_Name -> recordId = invoiceLineTable.get(recordIdentifier).getC_InvoiceLine_ID();
-			case I_C_Flatrate_Term.Table_Name -> recordId = flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID();
-			case I_M_Shipping_NotificationLine.Table_Name -> recordId = shippingNotificationLineStepDefData.get(recordIdentifier).getM_Shipping_NotificationLine_ID();
-			case I_I_ModCntr_Log.Table_Name -> recordId = importModCntrTable.get(recordIdentifier).getI_ModCntr_Log_ID();
-			default -> throw new AdempiereException("Unsupported TableName !")
-					.appendParametersToMessage()
-					.setParameter("TableName", tableName);
-		}
+		final int recordId =
+				getRecordIdForTable(tableName, recordIdentifier);
 
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
@@ -282,7 +273,7 @@ public class ModCntr_Log_StepDef
 				.map(ItemProvider.ProviderResult::resultWasFound)
 				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound(buildMessageWitAllLogs(tableRow)));
 
-		final I_ModCntr_Log modCntrLogRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, locateLog);
+		final I_ModCntr_Log modCntrLogRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, locateLog, () -> logger.error("Can't find log for {}", modCntrLogIdentifier));
 
 		final SoftAssertions softly = new SoftAssertions();
 
@@ -441,8 +432,25 @@ public class ModCntr_Log_StepDef
 
 		softly.assertAll();
 
-		final String modCntrLogIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID + "." + TABLECOLUMN_IDENTIFIER);
 		modCntrLogTable.putOrReplace(modCntrLogIdentifier, modCntrLogRecord);
+	}
+
+	private int getRecordIdForTable(final String tableName, final String recordIdentifier)
+	{
+		return switch (tableName)
+		{
+			case I_C_OrderLine.Table_Name -> orderLineTable.get(recordIdentifier).getC_OrderLine_ID();
+			case I_M_InventoryLine.Table_Name -> inventoryLineTable.get(recordIdentifier).getM_InventoryLine_ID();
+			case I_M_InOutLine.Table_Name -> inOutLineTable.get(recordIdentifier).getM_InOutLine_ID();
+			case I_PP_Order.Table_Name -> manufacturingOrderTable.get(recordIdentifier).getPP_Order_ID();
+			case I_C_InvoiceLine.Table_Name -> invoiceLineTable.get(recordIdentifier).getC_InvoiceLine_ID();
+			case I_C_Flatrate_Term.Table_Name -> flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID();
+			case I_M_Shipping_NotificationLine.Table_Name -> shippingNotificationLineStepDefData.get(recordIdentifier).getM_Shipping_NotificationLine_ID();
+			case I_I_ModCntr_Log.Table_Name -> importModCntrTable.get(recordIdentifier).getI_ModCntr_Log_ID();
+			default -> throw new AdempiereException("Unsupported TableName !")
+					.appendParametersToMessage()
+					.setParameter("TableName", tableName);
+		};
 	}
 
 	private void validateNoModCntr_LogFound(@NonNull final Map<String, String> tableRow)
@@ -451,20 +459,7 @@ public class ModCntr_Log_StepDef
 		final int tableId = tableDAO.retrieveTableId(tableName);
 
 		final String recordIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int recordId;
-		switch (tableName)
-		{
-			case I_C_OrderLine.Table_Name -> recordId = orderLineTable.get(recordIdentifier).getC_OrderLine_ID();
-			case I_M_InOutLine.Table_Name -> recordId = inOutLineTable.get(recordIdentifier).getM_InOutLine_ID();
-			case I_C_InvoiceLine.Table_Name -> recordId = invoiceLineTable.get(recordIdentifier).getC_InvoiceLine_ID();
-			case I_M_InventoryLine.Table_Name -> recordId = inventoryLineTable.get(recordIdentifier).getM_InventoryLine_ID();
-			case I_C_Flatrate_Term.Table_Name -> recordId = flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID();
-			case I_PP_Order.Table_Name -> recordId = manufacturingOrderTable.get(recordIdentifier).getPP_Order_ID();
-			case I_M_Shipping_NotificationLine.Table_Name -> recordId = shippingNotificationLineStepDefData.get(recordIdentifier).getM_Shipping_NotificationLine_ID();
-			default -> throw new AdempiereException("Unsupported TableName !")
-					.appendParametersToMessage()
-					.setParameter("TableName", tableName);
-		}
+		final int recordId = getRecordIdForTable(tableName, recordIdentifier);
 
 		final I_ModCntr_Log modCntrLogRecord = queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.addOnlyActiveRecordsFilter()
