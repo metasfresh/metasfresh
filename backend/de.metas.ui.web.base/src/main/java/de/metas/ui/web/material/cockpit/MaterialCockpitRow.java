@@ -31,7 +31,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;

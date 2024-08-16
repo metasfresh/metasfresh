@@ -17,16 +17,13 @@ import de.metas.ui.web.material.cockpit.MaterialCockpitRow.MainRowBuilder;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowCache;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.ui.web.material.cockpit.QtyConvertorService;
-import de.metas.util.Services;
 import de.metas.util.MFColor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
