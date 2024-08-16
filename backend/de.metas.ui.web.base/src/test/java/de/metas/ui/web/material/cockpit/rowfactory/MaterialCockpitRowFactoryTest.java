@@ -21,6 +21,7 @@ import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
+import de.metas.ui.web.material.cockpit.QtyConvertorService;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
 import de.metas.ui.web.shipment_candidates_editor.MockedLookupDataSource;
 import de.metas.util.Services;
@@ -28,10 +29,10 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema;
@@ -102,6 +103,7 @@ public class MaterialCockpitRowFactoryTest
 	{
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(ADReferenceService.class, ADReferenceService.newMocked());
+		SpringContextHolder.registerJUnitBean(new QtyConvertorService());
 
 		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
 		productCategory.setName("productCategoryName");
