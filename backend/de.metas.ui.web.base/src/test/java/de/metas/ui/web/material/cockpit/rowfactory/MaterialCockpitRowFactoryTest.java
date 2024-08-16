@@ -103,7 +103,6 @@ public class MaterialCockpitRowFactoryTest
 	{
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(ADReferenceService.class, ADReferenceService.newMocked());
-		SpringContextHolder.registerJUnitBean(new QtyConvertorService());
 
 		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
 		productCategory.setName("productCategoryName");
@@ -116,6 +115,8 @@ public class MaterialCockpitRowFactoryTest
 		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class);
 		save(acctSchema);
 		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID()));
+
+		SpringContextHolder.registerJUnitBean(new QtyConvertorService());
 
 		product = newInstance(I_M_Product.class);
 		product.setValue("productValue");
