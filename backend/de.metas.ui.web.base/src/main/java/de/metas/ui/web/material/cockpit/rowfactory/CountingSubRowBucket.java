@@ -9,6 +9,7 @@ import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregationIden
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowCache;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
+import de.metas.ui.web.material.cockpit.QtyConvertorService;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.AccessLevel;
@@ -16,6 +17,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
@@ -62,6 +64,8 @@ public class CountingSubRowBucket
 {
 	@Getter(AccessLevel.NONE) private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
+	private final QtyConvertorService qtyConvertorService = SpringContextHolder.instance.getBean(QtyConvertorService.class);
+	
 	@NonNull private final MaterialCockpitRowCache cache;
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
 	@NonNull private final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier;
@@ -146,6 +150,7 @@ public class CountingSubRowBucket
 				.qtyOnHandStock(qtyOnHandStock)
 				.allIncludedCockpitRecordIds(cockpitRecordIds)
 				.allIncludedStockRecordIds(stockRecordIds)
+				.qtyConvertor(qtyConvertorService.getQtyConvertorIfConfigured(productIdAndDate))
 				.build();
 	}
 }

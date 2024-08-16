@@ -9,6 +9,7 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowCache;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
+import de.metas.ui.web.material.cockpit.QtyConvertorService;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.AccessLevel;
@@ -16,6 +17,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import java.util.HashSet;
@@ -56,7 +58,8 @@ import static de.metas.util.Check.assumeNotNull;
 public class DimensionGroupSubRowBucket
 {
 	@Getter(AccessLevel.NONE) private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
+	private final QtyConvertorService qtyConvertorService = SpringContextHolder.instance.getBean(QtyConvertorService.class);
+	
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
 	@NonNull private final DimensionSpecGroup dimensionSpecGroup;
 	@NonNull private final MaterialCockpitRowCache cache;
@@ -171,6 +174,7 @@ public class DimensionGroupSubRowBucket
 				.qtyExpectedSurplusAtDate(getQtyExpectedSurplusAtDate())
 				.allIncludedCockpitRecordIds(cockpitRecordIds)
 				.allIncludedStockRecordIds(stockRecordIds)
+				.qtyConvertor(qtyConvertorService.getQtyConvertorIfConfigured(productIdAndDate))
 				.build();
 	}
 }
