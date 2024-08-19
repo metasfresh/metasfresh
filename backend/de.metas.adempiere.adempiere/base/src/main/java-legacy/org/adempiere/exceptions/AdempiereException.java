@@ -756,11 +756,7 @@ public class AdempiereException extends RuntimeException
 	/**
 	 * Override with a method returning false if your exception is more of a signal than an error
 	 * and shall not clutter the log when it is caught and rethrown by the transaction manager.
-<<<<<<< HEAD
 	 * <p/>
-=======
-	 * <p>
->>>>>>> 761155db4f6 (Fix ViewExcelExporter in case of column not displayed because of displayLogic (#18681))
 	 * To be invoked by {@link AdempiereException#isThrowableLoggedInTrxManager(Throwable)}.
 	 */
 	protected boolean isLoggedInTrxManager()
