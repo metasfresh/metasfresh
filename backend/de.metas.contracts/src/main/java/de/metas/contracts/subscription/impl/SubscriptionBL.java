@@ -110,6 +110,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	public static final int SEQNO_FIRST_VALUE = 10;
 	private final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
@@ -411,7 +412,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		// is used for pricing) contains the number of goods to be delivered
 		// over the whole subscription term
 
-		newTerm.setPlannedQtyPerUnit(deliveryQty.multiply(olCandRecord.getQtyEntered()));
+		newTerm.setPlannedQtyPerUnit(deliveryQty.multiply(olCandEffectiveValuesBL.getEffectiveQtyEntered(olCandRecord)));
 		newTerm.setStartDate(olCandRecord.getDateCandidate());
 
 		newTerm.setDeliveryRule(olCandRecord.getDeliveryRule());
