@@ -75,7 +75,6 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -655,8 +654,7 @@ public class BankStatementCamt53Service
 		invoiceDocOrEsrRefNoCandidates.forEach(
 				invoiceDocOrEsrRefNoCandidate ->
 				{
-					final String esrReferenceNoToMatch = "%" + StringUtils.trim(invoiceDocOrEsrRefNoCandidate) + "%";
-					filter.addCompareFilter(I_C_ReferenceNo.COLUMNNAME_ReferenceNo, CompareQueryFilter.Operator.STRING_LIKE, esrReferenceNoToMatch);
+					filter.addEqualsFilter(I_C_ReferenceNo.COLUMNNAME_ReferenceNo,  StringUtils.trim(invoiceDocOrEsrRefNoCandidate));
 					filter.setJoinOr();
 				}
 		);
@@ -672,10 +670,9 @@ public class BankStatementCamt53Service
 				.addEqualsFilter(I_C_ReferenceNo_Doc.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
 				.create();
 
-		final ICompositeQueryFilter<I_C_Invoice> invoiceEsrReferenceNumberCandidatesFilter = queryBL
+        return queryBL
 				.createCompositeQueryFilter(I_C_Invoice.class)
 				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_C_ReferenceNo_Doc.COLUMNNAME_Record_ID, referenceNo_docQueryBuilderQueryBuilder);
-		return invoiceEsrReferenceNumberCandidatesFilter;
 	}
 
 	@NonNull
