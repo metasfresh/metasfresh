@@ -103,7 +103,7 @@ import static org.adempiere.util.CustomColNames.C_Invoice_ISUSE_BPARTNER_ADDRESS
 @SuppressWarnings("serial")
 public class MInvoice extends X_C_Invoice implements IDocument
 {
-	private final static String SYS_Config_Annotate_DocNo_INVOICE = "org.compiere.model.MInvoice.ANNOTATE_DOCNO_INVOICE";
+	private final static String SYS_Config_Annotate_DocNo_INVOICE = "org.compiere.model.MInvoice.ANNOTATE_DOCNO_INVOICE_TO_DESCRIPTION";
 	private final static ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
@@ -1697,7 +1697,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 	private boolean annotateDocNoToDescription()
 	{
-		final boolean annotateInvoice = sysConfigBL.getBooleanValue(SYS_Config_Annotate_DocNo_INVOICE, false);
+		final boolean annotateInvoice = sysConfigBL.getBooleanValue(SYS_Config_Annotate_DocNo_INVOICE, true);
 		return annotateInvoice;
 	}
 

@@ -11,3 +11,15 @@ INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLe
 UPDATE AD_SysConfig SET ConfigurationLevel='S', Value='N',Updated=TO_TIMESTAMP('2024-08-20 17:52:45.493','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_SysConfig_ID=541730
 ;
 
+-- SysConfig Name: org.compiere.model.MInvoice.ANNOTATE_DOCNO_INVOICE_TO_DESCRIPTION
+-- SysConfig Value: N
+-- 2024-08-20T15:32:18.853Z
+UPDATE AD_SysConfig SET ConfigurationLevel='S', Name='org.compiere.model.MInvoice.ANNOTATE_DOCNO_INVOICE_TO_DESCRIPTION',Updated=TO_TIMESTAMP('2024-08-20 18:32:18.852','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_SysConfig_ID=541730
+;
+
+-- SysConfig Name: org.compiere.model.MInvoice.ANNOTATE_DOCNO_INVOICE_TO_DESCRIPTION
+-- SysConfig Value: N
+-- 2024-08-20T15:34:17.222Z
+UPDATE AD_SysConfig SET ConfigurationLevel='S', Description='If set to Y, then metasfresh will add the documentno to the description when the invoice gets voided.',Updated=TO_TIMESTAMP('2024-08-20 18:34:17.219','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_SysConfig_ID=541730
+;
+
