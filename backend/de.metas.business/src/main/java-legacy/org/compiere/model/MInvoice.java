@@ -109,6 +109,9 @@ import static org.adempiere.util.CustomColNames.C_Invoice_ISUSE_BPARTNER_ADDRESS
 @SuppressWarnings("serial")
 public class MInvoice extends X_C_Invoice implements IDocument
 {
+	private final static String SYS_Config_Annotate_DocNo_INVOICE = "org.compiere.model.MInvoice.ANNOTATE_DOCNO_INVOICE_TO_DESCRIPTION";
+	private final static ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	/**
 	 * Get Payments Of BPartner
 	 *
@@ -1483,7 +1486,10 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			rLine.saveEx(get_TrxName());
 		}
 		reversal.setC_Order_ID(getC_Order_ID());
-		reversal.addDescription("{->" + getDocumentNo() + ")");
+		if (annotateDocNoToDescription())
+		{
+			reversal.addDescription("{->" + getDocumentNo() + ")");
+		}
 		// FR1948157
 		// metas: we need to set the Reversal_ID, before we process (and other model validators are invoked)
 		reversal.setReversal_ID(getC_Invoice_ID());
@@ -1501,7 +1507,10 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		InterfaceWrapperHelper.save(reversal);
 
 		//
-		addDescription("(" + reversal.getDocumentNo() + "<-)");
+		if (annotateDocNoToDescription())
+		{
+			addDescription("(" + reversal.getDocumentNo() + "<-)");
+		}
 
 		// Clean up Reversed (this)
 		final MInvoiceLine[] iLines = getLines(false);
@@ -1672,5 +1681,11 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		return Services.get(IInvoiceBL.class).isComplete(this);
 	}    // isComplete
+
+	private boolean annotateDocNoToDescription()
+	{
+		final boolean annotateInvoice = sysConfigBL.getBooleanValue(SYS_Config_Annotate_DocNo_INVOICE, true);
+		return annotateInvoice;
+	}
 
 }    // MInvoice
