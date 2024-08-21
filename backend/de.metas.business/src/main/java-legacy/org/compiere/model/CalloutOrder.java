@@ -79,7 +79,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -111,8 +110,11 @@ public class CalloutOrder extends CalloutEngine
 
 	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
 
+<<<<<<< HEAD
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
+=======
+>>>>>>> d47634d5720 (remove Callout-Code that was called too early; call it at the right time (#18690))
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
 	 */
@@ -224,19 +226,17 @@ public class CalloutOrder extends CalloutEngine
 					PaymentRule paymentRule = isSOTrx
 							? PaymentRule.ofCode(bpartner.getPaymentRule())
 							: PaymentRule.ofCode(bpartner.getPaymentRulePO());
-					if (paymentRule != null)
+
+					if (isSOTrx && paymentRule.isCashOrCheck()) // No Cash/Check/Transfer:
 					{
-						if (isSOTrx && paymentRule.isCashOrCheck()) // No Cash/Check/Transfer:
-						{
-							// for SO_Trx
-							paymentRule = PaymentRule.OnCredit; // Payment Term
-						}
-						if (!isSOTrx && paymentRule.isCash())  // No Cash for PO_Trx
-						{
-							paymentRule = PaymentRule.OnCredit; // Payment Term
-						}
-						order.setPaymentRule(paymentRule.getCode());
+						// for SO_Trx
+						paymentRule = PaymentRule.OnCredit; // Payment Term
 					}
+					if (!isSOTrx && paymentRule.isCash())  // No Cash for PO_Trx
+					{
+						paymentRule = PaymentRule.OnCredit; // Payment Term
+					}
+					order.setPaymentRule(paymentRule.getCode());
 				}
 
 				// Payment Term
@@ -272,7 +272,7 @@ public class CalloutOrder extends CalloutEngine
 				// FreightCostRule
 				{
 					final String freightCostRule = bpartner.getFreightCostRule();
-					if (freightCostRule != null && freightCostRule.length() != 0)
+					if (freightCostRule != null && !freightCostRule.isEmpty())
 					{
 						order.setFreightCostRule(freightCostRule);
 					}
@@ -281,7 +281,7 @@ public class CalloutOrder extends CalloutEngine
 				// DeliveryViaRule
 				{
 					final String deliveryViaRule = bpartner.getDeliveryViaRule();
-					if (deliveryViaRule != null && deliveryViaRule.length() != 0)
+					if (deliveryViaRule != null && !deliveryViaRule.isEmpty())
 					{
 						order.setDeliveryViaRule(deliveryViaRule);
 					}
@@ -771,20 +771,11 @@ public class CalloutOrder extends CalloutEngine
 			{
 				// #4463 don't change the pricelist of a sales order it its bill partner was changed.
 				if (!order.isSOTrx())
-				{
-					// PriceList (indirect: IsTaxIncluded & Currency)
-					final int priceListId = rs.getInt(IsSOTrx ? "M_PriceList_ID" : "PO_PriceList_ID");
-					if (!rs.wasNull())
+				{ // get default PriceList
+					final int i = calloutField.getGlobalContextAsInt("#M_PriceList_ID");
+					if (i > 0)
 					{
-						order.setM_PriceList_ID(priceListId);
-					}
-					else
-					{ // get default PriceList
-						final int i = calloutField.getGlobalContextAsInt("#M_PriceList_ID");
-						if (i > 0)
-						{
-							order.setM_PriceList_ID(i);
-						}
+						order.setM_PriceList_ID(i);
 					}
 				}
 
