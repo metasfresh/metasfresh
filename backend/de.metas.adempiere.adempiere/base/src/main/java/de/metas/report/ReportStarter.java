@@ -12,6 +12,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
+import de.metas.process.RunOutOfTrx;
 import de.metas.report.ExecuteReportStrategy.ExecuteReportResult;
 import de.metas.report.server.OutputType;
 import de.metas.util.Check;
@@ -70,6 +71,7 @@ public abstract class ReportStarter extends JavaProcess
 	 * </ul>
 	 */
 	@Override
+	@RunOutOfTrx // IMPORTANT: run out of trx because in case we are creating some T_Selection, and then we want to call the jasper server, we need that selection to be commited
 	protected final String doIt()
 	{
 		final ProcessInfo pi = getProcessInfo();

@@ -5,6 +5,7 @@ import { merge } from 'merge-anything';
 
 import * as types from '../constants/ActionTypes';
 import { doesSelectionExist } from '../utils/documentListHelper';
+import { shallowEqual, useSelector } from 'react-redux';
 
 export const initialTableState = {
   windowId: null,
@@ -62,6 +63,11 @@ export const getTable = createSelector(selectTableHelper, (table) => table);
 
 const getSelectionData = (state, tableId) =>
   selectTableHelper(state, tableId).selected;
+
+export const useSelectedRowIds = ({ windowId, tabId, docId }) => {
+  const tableId = getTableId({ windowId, docId, tabId });
+  return useSelector((state) => getSelectionData(state, tableId), shallowEqual);
+};
 
 /**
  * @method getSelection

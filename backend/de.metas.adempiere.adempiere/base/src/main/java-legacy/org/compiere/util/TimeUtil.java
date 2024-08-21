@@ -1302,6 +1302,11 @@ public class TimeUtil
 		return asTimestamp(obj, null);
 	}
 
+	public static Timestamp asTimestamp(@Nullable final ZonedDateTime zdt)
+	{
+		return zdt != null ? asTimestampNotNull(zdt) : null;
+	}
+
 	public static Timestamp asTimestamp(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
@@ -1639,10 +1644,6 @@ public class TimeUtil
 		return localDate;
 	}
 
-	/**
-	 * Please use {@link #asLocalDate(Timestamp, ZoneId)}
-	 */
-	@Deprecated
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Timestamp ts)
 	{

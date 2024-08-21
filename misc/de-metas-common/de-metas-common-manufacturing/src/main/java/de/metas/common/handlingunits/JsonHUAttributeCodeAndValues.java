@@ -29,8 +29,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableSet;
 import lombok.Data;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -50,36 +48,7 @@ public class JsonHUAttributeCodeAndValues
 	@JsonAnySetter
 	public void putAttribute(final String name, final Object value)
 	{
-		attributes.put(name, convertValueToJson(value));
-	}
-
-	@Nullable
-	static Object convertValueToJson(final Object value)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-		else if (value instanceof String)
-		{
-			return value;
-		}
-		else if (value instanceof Integer)
-		{
-			return value;
-		}
-		else if (value instanceof BigDecimal)
-		{
-			return value.toString();
-		}
-		else if (value instanceof Boolean)
-		{
-			return value;
-		}
-		else
-		{
-			return value.toString();
-		}
+		attributes.put(name, JsonHUAttribute.convertValueToJson(value));
 	}
 
 	public ImmutableSet<String> getAttributeNames()

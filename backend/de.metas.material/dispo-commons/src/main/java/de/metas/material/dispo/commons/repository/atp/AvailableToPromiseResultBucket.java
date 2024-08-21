@@ -1,9 +1,9 @@
 package de.metas.material.dispo.commons.repository.atp;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.material.commons.attributes.AttributesKeyMatcher;
-import de.metas.material.commons.attributes.AttributesKeyPattern;
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import org.adempiere.mm.attributes.keys.AttributesKeyMatcher;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
 import de.metas.material.commons.attributes.clasifiers.WarehouseClassifier;

@@ -29,6 +29,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
@@ -36,6 +37,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -126,7 +128,7 @@ public class OrderLineBL implements IOrderLineBL
 	private static final String SYSCONFIG_SetBOMDescription = "de.metas.order.sales.line.SetBOMDescription";
 
 	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
-	
+
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -321,11 +323,11 @@ public class OrderLineBL implements IOrderLineBL
 			OrderLineDocumentLocationAdapterFactory
 					.locationAdapter(ol)
 					.setFrom(DocumentLocation.builder()
-									 .bpartnerId(deliveryLocationId.getBpartnerId())
-									 .bpartnerLocationId(deliveryLocationId.getBpartnerLocationId())
-									 .locationId(deliveryLocationId.getLocationCaptureId())
-									 .contactId(contactId)
-									 .build());
+							.bpartnerId(deliveryLocationId.getBpartnerId())
+							.bpartnerLocationId(deliveryLocationId.getBpartnerLocationId())
+							.locationId(deliveryLocationId.getLocationCaptureId())
+							.contactId(contactId)
+							.build());
 		}
 
 		return ol;
@@ -461,7 +463,7 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal qtyReserved = BigDecimal.ZERO.max(qtyReservedRaw); // not less than zero
 
 		logger.debug("Given orderLine {} has QtyOrdered={} and QtyDelivered={}; setting QtyReserved={}.",
-					 orderLine, orderLine.getQtyOrdered(), orderLine.getQtyDelivered(), qtyReserved);
+				orderLine, orderLine.getQtyOrdered(), orderLine.getQtyDelivered(), qtyReserved);
 		orderLine.setQtyReserved(qtyReserved);
 	}
 
@@ -558,7 +560,7 @@ public class OrderLineBL implements IOrderLineBL
 		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
 
 		assume(uomId != null || productId != null,
-			   "For calling this method to make any sense, the given orderLine, needs to have at least a product *or* uom; C_OrderLine={}", orderLine);
+				"For calling this method to make any sense, the given orderLine, needs to have at least a product *or* uom; C_OrderLine={}", orderLine);
 		if (productId == null)
 		{
 			return Quantitys.create(qtyEntered, uomId);
@@ -591,11 +593,11 @@ public class OrderLineBL implements IOrderLineBL
 		}
 		return qtyItemCapacity;
 	}
-	
+
 	private BigDecimal computeQtyOrderedUsingQtyItemCapacity(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final BigDecimal qtyItemCapacity = extractQtyItemCapacity(orderLine);
-		
+
 		return orderLine.getQtyEntered().multiply(qtyItemCapacity);
 	}
 
@@ -616,10 +618,10 @@ public class OrderLineBL implements IOrderLineBL
 		final UomId targetUomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
 		return convertToTargetUOM(sourceQuantity, orderLine, targetUomId);
 	}
-	
+
 	private Quantity convertToTargetUOM(
-			final @NonNull Quantity sourceQuantity, 
-			final @NonNull org.compiere.model.I_C_OrderLine orderLine, 
+			final @NonNull Quantity sourceQuantity,
+			final @NonNull org.compiere.model.I_C_OrderLine orderLine,
 			final @Nullable UomId targetUomId)
 	{
 		if (targetUomId == null || targetUomId.equals(sourceQuantity.getUomId()))
@@ -663,7 +665,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		return sourceQtyInQtockUOM.divide(itemCapacityInStockUOM);
 	}
-	
+
 	@Override
 	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
@@ -838,7 +840,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	/**
-	 * task https://github.com/metasfresh/metasfresh/issues/4535
+	 * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/4535">task</a>
 	 */
 	@Override
 	public void updateProductDescriptionFromProductBOMIfConfigured(final org.compiere.model.I_C_OrderLine orderLine)
@@ -963,7 +965,7 @@ public class OrderLineBL implements IOrderLineBL
 			final I_M_PriceList result = priceListBL.getCurrentPricelistOrNull(orderPricingSystemId, bpCountryId, orderDate, soTrx);
 
 			logger.debug("C_OrderLine {} has M_PricingSystem_ID={}, effective C_BPartner_Location_ID={}, DateOrdered={} and SOTrx={}; -> return M_PriceList={}",
-						 olRecord.getC_OrderLine_ID(), orderPricingSystemId, bPartnerLocationId, orderDate, soTrx, result);
+					olRecord.getC_OrderLine_ID(), orderPricingSystemId, bPartnerLocationId, orderDate, soTrx, result);
 			return Optional.ofNullable(result);
 		}
 
@@ -982,7 +984,7 @@ public class OrderLineBL implements IOrderLineBL
 	public void setBPLocation(final I_C_OrderLine orderLine)
 	{
 		final int c_bPartner_id = orderLine.getC_BPartner_ID();
-		if (c_bPartner_id <=0)
+		if (c_bPartner_id <= 0)
 		{
 			return;
 		}
@@ -997,4 +999,18 @@ public class OrderLineBL implements IOrderLineBL
 		BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = bpartnerLocation != null ? BPartnerLocationAndCaptureId.ofRecord(bpartnerLocation) : null;
 		OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).setLocationAndResetRenderedAddress(bpartnerLocationAndCaptureId);
 	}
+
+	@Override
+	public boolean isCatchWeight(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		return InvoicableQtyBasedOn.ofNullableCodeOrNominal(orderLine.getInvoicableQtyBasedOn()).isCatchWeight();
+	}
+
+	@Override
+	public Optional<BPartnerId> getBPartnerId(@NonNull final OrderLineId orderLineId)
+	{
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
+		return BPartnerId.optionalOfRepoId(orderLine.getC_BPartner_ID());
+	}
+
 }

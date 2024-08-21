@@ -30,6 +30,9 @@ import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.ValidationHelper;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.desadvexport.LineAndPack;
+import de.metas.edi.esb.desadvexport.helper.DesadvLines;
+import de.metas.edi.esb.desadvexport.helper.DesadvParser;
+import de.metas.edi.esb.desadvexport.helper.SinglePack;
 import de.metas.edi.esb.desadvexport.stepcom.qualifier.AddressQual;
 import de.metas.edi.esb.desadvexport.stepcom.qualifier.ControlQual;
 import de.metas.edi.esb.desadvexport.stepcom.qualifier.DateQual;
@@ -46,8 +49,8 @@ import de.metas.edi.esb.desadvexport.stepcom.qualifier.QuantityQual;
 import de.metas.edi.esb.desadvexport.stepcom.qualifier.ReferenceQual;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerLocationType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpCUOMType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLinePackType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvPackItemType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.stepcom.desadv.DETAILXlief;
 import de.metas.edi.esb.jaxb.stepcom.desadv.DMARK1;
@@ -78,7 +81,6 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -130,7 +132,7 @@ public class StepComXMLDesadvBean
 		final String ownerId = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_OWNER_ID, String.class);
 		final String supplierGln = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN, String.class);
 
-		xmlDesadv.getEDIExpDesadvLine().sort(Comparator.comparing(EDIExpDesadvLineType::getLine));
+		final DesadvLines desadvLines = DesadvParser.getDesadvLinesEnforcingSinglePacks(xmlDesadv);
 
 		final Xlief4H xlief4H = DESADV_objectFactory.createXlief4H();
 
@@ -155,12 +157,13 @@ public class StepComXMLDesadvBean
 
 		mapAddresses(xmlDesadv, header, supplierGln);
 
-		mapPackaging(xmlDesadv, header, settings, decimalFormat, dateFormat);
+		mapPackaging(desadvLines, xmlDesadv, header, settings, decimalFormat, dateFormat);
 
 		final TRAILR trailr = DESADV_objectFactory.createTRAILR();
 		trailr.setDOCUMENTID(documentId);
 		trailr.setCONTROLQUAL(ControlQual.LINE.toString());
-		trailr.setCONTROLVALUE(formatNumber(xmlDesadv.getEDIExpDesadvLine().size(), decimalFormat));
+
+		trailr.setCONTROLVALUE(formatNumber(desadvLines.getAllLines().size(), decimalFormat));
 
 		xlief4H.setHEADER(header);
 		xlief4H.setTRAILR(trailr);
@@ -252,6 +255,7 @@ public class StepComXMLDesadvBean
 	}
 
 	private void mapPackaging(
+			@NonNull final DesadvLines desadvLines,
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final HEADERXlief header,
 			@NonNull final DesadvSettings settings,
@@ -267,17 +271,18 @@ public class StepComXMLDesadvBean
 		final boolean packagingCodeTURequired = settings.isDesadvLinePackagingCodeTURequired();
 		final boolean ppack1NeededInGeneral = ssccRequired || packagingCodeTURequired;
 
+		final List<EDIExpDesadvLineType> sortedLines = desadvLines.getAllSortedByLine();
+
 		if (ppack1NeededInGeneral)
 		{
 			int packagingTotalNumber = 0;
-			for (final EDIExpDesadvLineType line : xmlDesadv.getEDIExpDesadvLine())
-			{
-				BigDecimal qtyDelivered = ZERO;
 
+			for (final EDIExpDesadvLineType line : sortedLines)
+			{
 				final String documentId = xmlDesadv.getDocumentNo();
 				final String lineNumber = extractLineNumber(line, decimalFormat);
 
-				final List<EDIExpDesadvLinePackType> packs = line.getEDIExpDesadvLinePack();
+				final List<SinglePack> packs = desadvLines.getPacksForLine(line.getEDIDesadvLineID().intValue());
 				if (packs.isEmpty())
 				{
 					final LineAndPack lineAndPack = new LineAndPack(line, null/* pack */);
@@ -296,7 +301,10 @@ public class StepComXMLDesadvBean
 					}
 					continue;
 				}
-				for (final EDIExpDesadvLinePackType pack : packs)
+
+				BigDecimal qtyDelivered = ZERO;
+
+				for (final SinglePack pack : packs)
 				{
 					final LineAndPack lineAndPack = new LineAndPack(line, pack);
 					boolean detailAdded = false;
@@ -306,7 +314,7 @@ public class StepComXMLDesadvBean
 						packIn.getPPACK1().add(ppack1);
 
 						final String sscc18 = validateString(
-								lineAndPack.getPack().getIPASSCC18(),
+								lineAndPack.getSinglePack().getPack().getIPASSCC18(),
 								"@FillMandatory@ SSCC in @EDI_DesadvLine_ID@ " + lineAndPack.getLine().getLine());
 						ppack1.setIDENTIFICATIONCODE(Util.lpadZero(sscc18, 18)/* if ssccRequired and we got here, then this is not null */);
 						ppack1.setIDENTIFICATIONQUAL(PackIdentificationQual.SSCC.toString());
@@ -314,7 +322,7 @@ public class StepComXMLDesadvBean
 						if (settings.isDesadvLinePackagingCodeLURequired())
 						{
 							final String packagingCodeLU = validateString(
-									lineAndPack.getPack().getMHUPackagingCodeLUText(),
+									lineAndPack.getSinglePack().getPack().getMHUPackagingCodeLUText(),
 									"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @M_HU_PackagingCode_LU_ID@");
 							ppack1.setPACKAGINGCODE(packagingCodeLU);
 							ppack1.setPACKAGINGLEVEL(PackagingLevel.OUTE.toString());
@@ -331,7 +339,7 @@ public class StepComXMLDesadvBean
 						packIn.getPPACK1().add(ppack1);
 
 						final String packagingCodeTU = validateString(
-								lineAndPack.getPack().getMHUPackagingCodeTUText(),
+								lineAndPack.getSinglePack().getPackItem().getMHUPackagingCodeTUText(),
 								"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @M_HU_PackagingCode_TU_ID@");
 						ppack1.setPACKAGINGCODE(packagingCodeTU);
 						ppack1.setPACKAGINGLEVEL(PackagingLevel.INNE.toString());
@@ -343,7 +351,8 @@ public class StepComXMLDesadvBean
 						}
 					}
 					packagingTotalNumber++; // if there are no PPacks,packagingTotalNumber shall remain zero
-					qtyDelivered = qtyDelivered.add(extractQtyDelivered(lineAndPack.getPack()));
+
+					qtyDelivered = qtyDelivered.add(extractQtyDelivered(lineAndPack.getSinglePack()));
 				}
 
 				// we iterated all packs if the current line; now check if we a discrepancy information
@@ -362,7 +371,7 @@ public class StepComXMLDesadvBean
 		}
 		else
 		{
-			final PackagingLUGroupings packagingCodeLUs = extractPackagingCodeLU(xmlDesadv.getEDIExpDesadvLine(), settings); // has at least one key, even if there is no packagingCodeLU
+			final PackagingLUGroupings packagingCodeLUs = extractPackagingCodeLU(desadvLines, sortedLines, settings); // has at least one key, even if there is no packagingCodeLU
 
 			if (packagingCodeLUs.hasSinglePackagingCode())
 			{
@@ -377,10 +386,10 @@ public class StepComXMLDesadvBean
 					packIn.setPACKAGINGCODE(packagingCodeLU);
 					packIn.setPACKAGINGLEVEL(PackagingLevel.OUTE.toString());
 				}
-				for (final EDIExpDesadvLineType line : xmlDesadv.getEDIExpDesadvLine())
+				for (final EDIExpDesadvLineType line : sortedLines)
 				{
 					// don't create PPACK1s, but create one aggregated detail per line
-					final DETAILXlief detailXlief = createDETAILXliefForLine(xmlDesadv, line, settings, decimalFormat, dateFormat);
+					final DETAILXlief detailXlief = createDETAILXliefForLine(desadvLines, xmlDesadv, line, settings, decimalFormat);
 					packIn.getDETAIL().add(detailXlief);
 				}
 			}
@@ -402,7 +411,7 @@ public class StepComXMLDesadvBean
 					}
 					for (final EDIExpDesadvLineType line : packagingCodeLUs.getLines(packagingCodeLUText))
 					{
-						for (final EDIExpDesadvLinePackType pack : packagingCodeLUs.getPacks(packagingCodeLUText, line))
+						for (final SinglePack pack : packagingCodeLUs.getPacks(packagingCodeLUText, line))
 						{
 							final LineAndPack lineAndPack = new LineAndPack(line, pack);
 							final DETAILXlief detailXlief = createDETAILXliefForLineAndPack(xmlDesadv, lineAndPack, settings, decimalFormat, dateFormat);
@@ -417,6 +426,7 @@ public class StepComXMLDesadvBean
 	}
 
 	private PackagingLUGroupings extractPackagingCodeLU(
+			@NonNull final DesadvLines desadvLines,
 			@NonNull final List<EDIExpDesadvLineType> lines,
 			@NonNull final DesadvSettings settings)
 	{
@@ -424,7 +434,7 @@ public class StepComXMLDesadvBean
 
 		for (final EDIExpDesadvLineType line : lines)
 		{
-			for (final EDIExpDesadvLinePackType pack : line.getEDIExpDesadvLinePack())
+			for (final SinglePack pack : desadvLines.getPacksForLine(line.getEDIDesadvLineID().intValue()))
 			{
 				final String packagingCodeLU;
 				if (!settings.isDesadvLinePackagingCodeLURequired())
@@ -434,7 +444,7 @@ public class StepComXMLDesadvBean
 				}
 				else
 				{
-					packagingCodeLU = StringUtils.isEmpty(pack.getMHUPackagingCodeLUText()) ? "NONE" : pack.getMHUPackagingCodeLUText();
+					packagingCodeLU = StringUtils.isEmpty(pack.getPack().getMHUPackagingCodeLUText()) ? "NONE" : pack.getPack().getMHUPackagingCodeLUText();
 				}
 
 				packingLUGroupings.add(packagingCodeLU, line, pack);
@@ -448,18 +458,18 @@ public class StepComXMLDesadvBean
 	private static class PackagingLUGroupings
 	{
 		LinkedHashMap<String, LinkedHashSet<EDIExpDesadvLineType>> packagingCodeTolines = new LinkedHashMap<>();
-		Map<PackagingCodeLUAndLine, List<EDIExpDesadvLinePackType>> packs = new HashMap<>();
+		Map<PackagingCodeLUAndLine, List<SinglePack>> packs = new HashMap<>();
 
 		public void add(
 				@NonNull final String packagingCodeLU,
 				@NonNull final EDIExpDesadvLineType line,
-				@NonNull final EDIExpDesadvLinePackType pack)
+				@NonNull final SinglePack pack)
 		{
 			final LinkedHashSet<EDIExpDesadvLineType> codeLines = packagingCodeTolines.computeIfAbsent(packagingCodeLU, key -> new LinkedHashSet<>());
 			codeLines.add(line);
 
 			final PackagingCodeLUAndLine packagingCodeLUAndLine = new PackagingCodeLUAndLine(packagingCodeLU, line);
-			final List<EDIExpDesadvLinePackType> codeAndLinePacks = packs.computeIfAbsent(packagingCodeLUAndLine, key -> new ArrayList<>());
+			final List<SinglePack> codeAndLinePacks = packs.computeIfAbsent(packagingCodeLUAndLine, key -> new ArrayList<>());
 			codeAndLinePacks.add(pack);
 		}
 
@@ -483,7 +493,7 @@ public class StepComXMLDesadvBean
 			return packagingCodeTolines.get(packagingCodeLUText);
 		}
 
-		public Collection<EDIExpDesadvLinePackType> getPacks(@NonNull final String packagingCodeLU, @NonNull final EDIExpDesadvLineType line)
+		public Collection<SinglePack> getPacks(@NonNull final String packagingCodeLU, @NonNull final EDIExpDesadvLineType line)
 		{
 			final PackagingCodeLUAndLine packagingCodeLUAndLine = new PackagingCodeLUAndLine(packagingCodeLU, line);
 			return packs.get(packagingCodeLUAndLine);
@@ -519,7 +529,7 @@ public class StepComXMLDesadvBean
 		final String documentId = xmlDesadv.getDocumentNo();
 
 		final String lineNumber = extractLineNumber(line, decimalFormat);
-		final BigDecimal qtyDelivered = extractQtyDelivered(lineAndPack.getPack());
+		final BigDecimal qtyDelivered = extractQtyDelivered(lineAndPack.getSinglePack());
 
 		final DQUAN1 cuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.DELV);
 		cuQuantity.setQUANTITY(formatNumber(qtyDelivered, decimalFormat));
@@ -527,14 +537,14 @@ public class StepComXMLDesadvBean
 
 		if (lineAndPack.hasPack())
 		{
-			final EDIExpDesadvLinePackType pack = lineAndPack.getPack();
+			final EDIExpDesadvPackItemType packItem = lineAndPack.getSinglePack().getPackItem();
 
-			final String measurementUnitName = extractMeasurementUnitOrNull(pack.getCUOMID(), line, settings);
+			final String measurementUnitName = extractMeasurementUnitOrNull(packItem.getEDIDesadvLineID().getCUOMID(), line, settings);
 			cuQuantity.setMEASUREMENTUNIT(measurementUnitName);
 
 			if (settings.isDesadvLineCUTURequired())
 			{
-				final BigDecimal qtyItemCapacity = validateObject(pack.getQtyCU(),
+				final BigDecimal qtyItemCapacity = validateObject(packItem.getQtyCUsPerTU(),
 																  "@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @QtyCU@");
 				final DQUAN1 cuTuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.CUTU);
 				cuTuQuantity.setQUANTITY(formatNumber(qtyItemCapacity, decimalFormat));
@@ -547,7 +557,7 @@ public class StepComXMLDesadvBean
 
 			if (dmark1Required)
 			{
-				final String lotNumber = validateString(pack.getLotNumber(),
+				final String lotNumber = validateString(packItem.getLotNumber(),
 														"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @LotNumber@");
 
 				final DMARK1 dmark1 = DESADV_objectFactory.createDMARK1();
@@ -557,7 +567,7 @@ public class StepComXMLDesadvBean
 				dmark1.setIDENTIFICATIONCODE(lotNumber);
 				if (settings.isDesadvLineDMARK1BestBeforeDateRequired())
 				{
-					final XMLGregorianCalendar bestBefore = validateObject(pack.getBestBeforeDate(),
+					final XMLGregorianCalendar bestBefore = validateObject(packItem.getBestBeforeDate(),
 																		   "@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @BestBeforeDate@");
 					dmark1.setIDENTIFICATIONDATE1(toFormattedStringDate(toDate(bestBefore), dateFormat));
 				}
@@ -568,22 +578,22 @@ public class StepComXMLDesadvBean
 	}
 
 	private DETAILXlief createDETAILXliefForLine(
+			@NonNull final DesadvLines desadvLines,
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final EDIExpDesadvLineType line,
 			@NonNull final DesadvSettings settings,
-			@NonNull final DecimalFormat decimalFormat,
-			@NonNull final String dateFormat)
+			@NonNull final DecimalFormat decimalFormat)
 	{
 
 		BigDecimal qtyCU = null;
 
 		BigDecimal qtyDelivered = ZERO;
 		String measurementUnitName = null;
-		for (final EDIExpDesadvLinePackType pack : line.getEDIExpDesadvLinePack())
+		for (final SinglePack singlePack : desadvLines.getPacksForLine(line.getEDIDesadvLineID().intValue()))
 		{
-			qtyDelivered = qtyDelivered.add(extractQtyDelivered(pack));
-			measurementUnitName = extractMeasurementUnitOrNull(pack.getCUOMID(), line, settings);
-			qtyCU = pack.getQtyCU();
+			qtyDelivered = qtyDelivered.add(extractQtyDelivered(singlePack));
+			measurementUnitName = extractMeasurementUnitOrNull(singlePack.getDesadvLine().getCUOMID(), line, settings);
+			qtyCU = singlePack.getPackItem().getQtyCUsPerTU();
 		}
 
 		if (measurementUnitName == null) // case: there were no packs
@@ -823,13 +833,14 @@ public class StepComXMLDesadvBean
 		return dqvar1;
 	}
 
-	private BigDecimal extractQtyDelivered(@Nullable final EDIExpDesadvLinePackType pack)
+	@NonNull
+	private BigDecimal extractQtyDelivered(@Nullable final SinglePack singlePack)
 	{
-		if (pack == null)
+		if (singlePack == null)
 		{
 			return ZERO;
 		}
-		final BigDecimal qtyDelivered = pack.getQtyCUsPerLU();
+		final BigDecimal qtyDelivered = singlePack.getPackItem().getQtyCUsPerLU();
 		if (qtyDelivered == null)
 		{
 			return ZERO;

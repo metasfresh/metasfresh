@@ -1,14 +1,37 @@
 package de.metas.manufacturing.issue.plan;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.product.ProductId;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
 
-@Value(staticConstructor = "of")
+import javax.annotation.Nullable;
+
+@Value
+@Builder(access = AccessLevel.PRIVATE)
 class AllocableHUsGroupingKey
 {
 	@NonNull ProductId productId;
-	@NonNull LocatorId pickFromLocatorId;
+	@Nullable LocatorId pickFromLocatorId;
+	boolean sourceHUsOnly;
+
+	@NonNull
+	public static AllocableHUsGroupingKey of(@NonNull final ProductId productId, @NonNull final LocatorId locatorId)
+	{
+		return AllocableHUsGroupingKey.builder()
+				.productId(productId)
+				.pickFromLocatorId(locatorId)
+				.build();
+	}
+
+	@NonNull
+	public static AllocableHUsGroupingKey onlySourceHUs(@NonNull final ProductId productId)
+	{
+		return AllocableHUsGroupingKey.builder()
+				.productId(productId)
+				.sourceHUsOnly(true)
+				.build();
+	}
 }

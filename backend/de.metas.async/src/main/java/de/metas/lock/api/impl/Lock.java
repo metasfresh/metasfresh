@@ -22,6 +22,7 @@ package de.metas.lock.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
@@ -36,18 +37,18 @@ import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.concurrent.CloseableReentrantLock;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @ToString
 		/* package */class Lock implements ILock
 {
-	private static final transient Logger logger = LogManager.getLogger(Lock.class);
+	private static final Logger logger = LogManager.getLogger(Lock.class);
 
 	/* package */ final CloseableReentrantLock mutex = new CloseableReentrantLock();
 
@@ -78,7 +79,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		_countLocked = countLocked;
 	}
 
-	/** @return locks database; never return null */
+	/**
+	 * @return locks database; never return null
+	 */
 	/* package */
 	final ILockDatabase getLockDatabase()
 	{
@@ -98,10 +101,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		{
 			if (_countLocked < countLockedToSubtract)
 			{
+				//noinspection ThrowableNotThrown
 				new UnlockFailedException("Unlocked more than counted"
-												  + "\n Current locked count: " + _countLocked
-												  + "\n Locked to subtract: " + countLockedToSubtract
-												  + "\n Lock: " + this)
+						+ "\n Current locked count: " + _countLocked
+						+ "\n Locked to subtract: " + countLockedToSubtract
+						+ "\n Lock: " + this)
 						.throwIfDeveloperModeOrLogWarningElse(logger);
 
 				_countLocked = 0;
@@ -147,6 +151,41 @@ import java.util.concurrent.atomic.AtomicBoolean;
 	}
 
 	@Override
+	public void unlockAllAfterTrxRollback()
+	{
+		Services.get(ITrxManager.class)
+				.accumulateAndProcessAfterRollback(
+						"LocksToReleaseOnRollback",
+						ImmutableList.of(this),
+						Lock::unlockAllNoFail);
+	}
+
+	private static void unlockAllNoFail(final List<Lock> locks)
+	{
+		if (locks.isEmpty())
+		{
+			return;
+		}
+
+		for (final Lock lock : locks)
+		{
+			if (lock.isClosed())
+			{
+				continue;
+			}
+
+			try
+			{
+				lock.unlockAll();
+			}
+			catch (Exception ex)
+			{
+				logger.warn("Failed to unlock {}. Ignored", lock, ex);
+			}
+		}
+	}
+
+	@Override
 	public boolean isClosed()
 	{
 		return closed.get();
@@ -162,16 +201,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		}
 
 		unlockAll();
-	}
-
-	@Override
-	public void closeOnTrxClose(final String trxName)
-	{
-		Services.get(ITrxManager.class)
-				.getTrxListenerManagerOrAutoCommit(trxName)
-				.newEventListener(TrxEventTiming.AFTER_CLOSE)
-				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
-				.registerHandlingMethod(innerTrx -> close());
 	}
 
 	private void assertHasRealOwner()

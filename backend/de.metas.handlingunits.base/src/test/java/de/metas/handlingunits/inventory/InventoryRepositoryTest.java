@@ -17,8 +17,10 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
@@ -47,7 +49,8 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -99,6 +102,7 @@ class InventoryRepositoryTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 
 		orgId = createOrg(orgTimeZone);
 
@@ -190,6 +194,8 @@ class InventoryRepositoryTest
 				.storageAttributesKey(storageAttributesKey)
 				.huAggregationType(HUAggregationType.MULTI_HU)
 				.counted(true)
+				.qtyBookFixed(Quantity.of("30", uomRecord))
+				.qtyCountFixed(Quantity.of("3", uomRecord))
 				.inventoryLineHU(InventoryLineHU
 						.builder()
 						.huId(HuId.ofRepoId(100))

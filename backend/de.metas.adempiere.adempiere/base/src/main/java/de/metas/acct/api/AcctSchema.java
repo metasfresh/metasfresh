@@ -68,6 +68,8 @@ public class AcctSchema
 	boolean postTradeDiscount;
 	boolean postServices;
 	boolean postIfSameClearingAccounts;
+	boolean isAllowMultiDebitAndCredit;
+
 	boolean isAutoSetDebtoridAndCreditorid;
 	int debtorIdPrefix;
 	int creditorIdPrefix;
@@ -119,5 +121,10 @@ public class AcctSchema
 	public ChartOfAccountsId getChartOfAccountsId()
 	{
 		return getSchemaElements().getChartOfAccountsId();
+	}
+
+	public boolean isAccountingCurrency(@NonNull final CurrencyId currencyId)
+	{
+		return CurrencyId.equals(this.currencyId, currencyId);
 	}
 }

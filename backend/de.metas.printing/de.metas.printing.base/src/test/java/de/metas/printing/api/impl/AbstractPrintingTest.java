@@ -4,6 +4,9 @@ import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.printingdata.PrintingDataFactory;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.junit.Before;
@@ -58,6 +61,9 @@ public abstract class AbstractPrintingTest
 
 		Services.registerService(IPrintPackageBL.class, new PrintPackageBL(new PrintingDataFactory(new HardwarePrinterRepository(), archiveFileNameService)));
 		SpringContextHolder.registerJUnitBean(new PrintingDataFactory(new HardwarePrinterRepository(), archiveFileNameService));
+
+		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
+		SpringContextHolder.registerJUnitBean(workplaceService);
 
 		afterSetup();
 	}

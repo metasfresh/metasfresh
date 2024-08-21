@@ -7,7 +7,6 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.UpdateDraftReceiptCandidateRequest;
@@ -28,6 +27,8 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 /*
  * #%L
@@ -57,7 +58,6 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-	private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 
 	@Override
 	public void reverseDraftCandidate(final I_PP_Order_Qty candidate)
@@ -109,6 +109,7 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 	}
 
 	@Override
+	@NonNull
 	public DraftPPOrderQuantities getDraftPPOrderQuantities(@NonNull final PPOrderId ppOrderId)
 	{
 		Quantity finishedGood_QtyReceived = null;
@@ -176,5 +177,23 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 					candidate.setQty(qtyToUpdate.toBigDecimal());
 					huPPOrderQtyDAO.save(candidate);
 				});
+	}
+
+	@Override
+	public Set<HuId> getFinishedGoodsReceivedHUIds(@NonNull final PPOrderId ppOrderId)
+	{
+		final HashSet<HuId> receivedHUIds = new HashSet<>();
+		huPPOrderQtyDAO.retrieveOrderQtyForFinishedGoodsReceive(ppOrderId)
+				.stream()
+				.filter(I_PP_Order_Qty::isProcessed)
+				.forEach(processedCandidate -> {
+					final HuId huId = HuId.ofRepoId(processedCandidate.getM_HU_ID());
+					receivedHUIds.add(huId);
+
+					final I_M_HU parentHU = handlingUnitsBL.getTopLevelParent(huId);
+					receivedHUIds.add(HuId.ofRepoId(parentHU.getM_HU_ID()));
+				});
+
+		return receivedHUIds;
 	}
 }

@@ -33,6 +33,7 @@ import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -40,6 +41,7 @@ import de.metas.util.Check;
 import de.metas.util.IProcessor;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.IQuery;
@@ -47,7 +49,6 @@ import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
@@ -59,20 +60,15 @@ import java.util.Collection;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class DDOrderLowLevelService
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
-	private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
-	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-
-	public DDOrderLowLevelService(
-			@NonNull final DDOrderLowLevelDAO ddOrderLowLevelDAO)
-	{
-		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
-	}
+	@NonNull private static final Logger logger = LogManager.getLogger(DDOrderLowLevelService.class);
+	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
+	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	public I_DD_Order getById(final DDOrderId ddOrderId)
 	{
@@ -145,7 +141,7 @@ public class DDOrderLowLevelService
 	}
 
 	@javax.annotation.Nullable
-	public I_S_Resource findPlantFromOrNull(final I_DD_OrderLine ddOrderLine)
+	public ResourceId findPlantFromOrNull(final I_DD_OrderLine ddOrderLine)
 	{
 		Check.assumeNotNull(ddOrderLine, LiberoException.class, "ddOrderLine not null");
 
@@ -153,9 +149,9 @@ public class DDOrderLowLevelService
 		// First, if we were asked to keep the target plant, let's do it
 		if (ddOrderLine.isKeepTargetPlant())
 		{
-			final I_S_Resource plantTo = ddOrderLine.getDD_Order().getPP_Plant();
-			final I_S_Resource plantFrom = plantTo;
-			return plantFrom;
+			final ResourceId plantToId = ResourceId.ofRepoIdOrNull(ddOrderLine.getDD_Order().getPP_Plant_ID());
+			final ResourceId plantFromId = plantToId;
+			return plantFromId;
 		}
 
 		//
@@ -361,5 +357,10 @@ public class DDOrderLowLevelService
 
 		final UomId stockingUomId = productBL.getStockUOMId(productId);
 		ddOrderLine.setC_UOM_ID(stockingUomId.getRepoId());
+	}
+
+	public void deleteOrders(@NonNull final DeleteOrdersQuery deleteOrdersQuery)
+	{
+		ddOrderLowLevelDAO.deleteOrders(deleteOrdersQuery);
 	}
 }

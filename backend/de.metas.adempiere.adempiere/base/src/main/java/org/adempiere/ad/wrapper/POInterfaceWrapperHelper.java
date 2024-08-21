@@ -1,8 +1,7 @@
 package org.adempiere.ad.wrapper;
 
-import java.util.Properties;
-import java.util.Set;
-
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
@@ -10,9 +9,9 @@ import org.compiere.model.PO;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-
 import javax.annotation.Nullable;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -40,7 +39,6 @@ import javax.annotation.Nullable;
  * This handler is a wrapper/delegator for {@link POWrapper}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 {
@@ -183,17 +181,15 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 				return null;
 			}
 		}
-		
-		if(useOldValues)
+
+		if (useOldValues)
 		{
-			@SuppressWarnings("unchecked")
-			final T value = (T)po.get_ValueOld(idxColumnName);
+			@SuppressWarnings("unchecked") final T value = (T)po.get_ValueOld(idxColumnName);
 			return value;
 		}
 		else
 		{
-			@SuppressWarnings("unchecked")
-			final T value = (T)po.get_Value(idxColumnName);
+			@SuppressWarnings("unchecked") final T value = (T)po.get_Value(idxColumnName);
 			return value;
 		}
 	}
@@ -218,10 +214,9 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 
 	@Nullable
 	@Override
-	public <T> T getDynAttribute(final Object model, final String attributeName)
+	public <T> T getDynAttribute(final @NonNull Object model, final String attributeName)
 	{
-		final T value = POWrapper.getDynAttribute(model, attributeName);
-		return value;
+		return POWrapper.getDynAttribute(model, attributeName);
 	}
 
 	@Override
@@ -244,14 +239,8 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	}
 
 	@Override
-	public boolean isCopy(final Object model)
-	{
-		return getDynAttribute(model, PO.DYNATTR_CopyRecordSupport_OldValue) != null;
-	}
-	
+	public boolean isCopy(final Object model) {return POWrapper.getStrictPO(model).isCopiedFromOtherRecord();}
+
 	@Override
-	public boolean isCopying(final Object model)
-	{
-		return getDynAttribute(model, PO.DYNATTR_CopyRecordSupport) != null;
-	}
+	public boolean isCopying(final Object model) {return POWrapper.getStrictPO(model).isCopying();}
 }

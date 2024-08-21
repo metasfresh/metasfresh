@@ -29,6 +29,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.user.UserId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -56,6 +59,7 @@ import de.metas.util.Services;
 public class DefaultDunningProducer implements IDunningProducer
 {
 	private final static transient Logger logger = LogManager.getLogger(DefaultDunningProducer.class);
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
 	private IDunningContext dunningContext;
 
@@ -155,7 +159,10 @@ public class DefaultDunningProducer implements IDunningProducer
 
 		doc.setC_BPartner_ID(candidate.getC_BPartner_ID());
 		doc.setC_BPartner_Location_ID(candidate.getC_BPartner_Location_ID());
-		doc.setC_Dunning_Contact_ID(candidate.getC_Dunning_Contact_ID());
+		// because things might have changed between the moment when the dunning candidate was created and when the actual dunning doc is created
+		doc.setC_Dunning_Contact_ID(bPartnerBL.getDefaultDunningContact(BPartnerId.ofRepoId(candidate.getC_BPartner_ID()))
+				.map(UserId::getRepoId)
+				.orElse(candidate.getC_Dunning_Contact_ID()));
 		doc.setIsActive(true);
 		doc.setProcessed(false);
 		doc.setDocStatus(X_C_DunningDoc.DOCSTATUS_InProgress);

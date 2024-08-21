@@ -5,22 +5,21 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import { startProcess } from '../../api';
-import { processNewRecord } from '../../actions/GenericActions';
+import { openFile, processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
+  callAPI,
   closeModal,
   createProcess,
   createWindow,
-  handleProcessResponse,
   fetchChangeLog,
-  callAPI,
+  fireUpdateData,
+  handleProcessResponse,
   patch,
   resetPrintingOptions,
-  fireUpdateData,
 } from '../../actions/WindowActions';
-import { openFile } from '../../actions/GenericActions';
 
-import { getTableId, getSelection } from '../../reducers/tables';
+import { getSelection, getTableId } from '../../reducers/tables';
 import { findViewByViewId } from '../../reducers/viewHandler';
 
 import keymap from '../../shortcuts/keymap';
@@ -36,6 +35,9 @@ import PrintingOptions from './PrintingOptions';
 
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
+import ChangeCurrentWorkplace, {
+  STATIC_MODAL_TYPE_ChangeCurrentWorkplace,
+} from './ChangeCurrentWorkplace';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -526,12 +528,14 @@ class Modal extends Component {
         let content = null;
         if (staticModalType === 'about') {
           content = <ChangeLogModal data={data} />;
-        }
-        if (staticModalType === 'comments') {
+        } else if (staticModalType === 'comments') {
           content = <CommentsPanel windowId={windowId} docId={dataId} />;
-        }
-        if (staticModalType === 'printing') {
+        } else if (staticModalType === 'printing') {
           content = <PrintingOptions windowId={windowId} docId={dataId} />;
+        } else if (
+          staticModalType === STATIC_MODAL_TYPE_ChangeCurrentWorkplace
+        ) {
+          content = <ChangeCurrentWorkplace />;
         }
         return (
           <div className="window-wrapper">
@@ -577,18 +581,18 @@ class Modal extends Component {
     const {
       modalTitle,
       modalType,
-      isDocumentNotSaved,
       layout,
-      indicator,
       staticModalType,
       printingOptions,
+      //
+      indicator,
+      isDocumentNotSaved,
+      saveStatus,
     } = this.props;
 
     const { okButtonCaption: printBtnCaption } = printingOptions;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
 
-    const isNotSaved =
-      staticModalType === 'printing' ? true : isDocumentNotSaved;
     let applyHandler =
       modalType === 'process' ? this.handleStart : this.handleClose;
     if (staticModalType === 'printing') applyHandler = this.handlePrinting;
@@ -709,7 +713,17 @@ class Modal extends Component {
             </div>
           </div>
 
-          <Indicator {...{ isNotSaved, indicator }} />
+          <Indicator
+            indicator={indicator}
+            isDocumentNotSaved={
+              staticModalType === 'printing' ||
+              staticModalType === STATIC_MODAL_TYPE_ChangeCurrentWorkplace
+                ? false
+                : isDocumentNotSaved
+            }
+            error={saveStatus?.error ? saveStatus?.reason : ''}
+            exception={saveStatus?.error ? saveStatus?.exception : null}
+          />
 
           <div
             className="panel-modal-content js-panel-modal-content
@@ -863,10 +877,11 @@ Modal.propTypes = {
   indicator: PropTypes.string,
   layout: PropTypes.shape(),
   isAdvanced: PropTypes.bool,
-  isDocumentNotSaved: PropTypes.any,
+  isDocumentNotSaved: PropTypes.bool,
   modalTitle: PropTypes.any,
   modalType: PropTypes.any,
-  modalSaveStatus: PropTypes.any,
+  saveStatus: PropTypes.object,
+  modalSaveStatus: PropTypes.bool,
   modalViewDocumentIds: PropTypes.any,
   tabId: PropTypes.any,
   parentDataId: PropTypes.any,

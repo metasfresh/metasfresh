@@ -46,7 +46,8 @@ import org.adempiere.ad.persistence.IModelClassInfo;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -61,6 +62,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.apache.poi.ss.formula.functions.T;
 import org.compiere.Adempiere;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -79,6 +81,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -86,7 +90,6 @@ import java.util.stream.Collectors;
  * It internally relates on a {@link CompositeInterfaceWrapperHelper} which in turn supports all the types that are supported by this class.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @UtilityClass
 public class InterfaceWrapperHelper
@@ -148,17 +151,17 @@ public class InterfaceWrapperHelper
 	/**
 	 * Creates a new instance of the given object using same context and trxName as <code>contextProvider</code>
 	 *
-	 * @param contextProvider any object that carries a context (e.g. a PO, a wrapped PO, GridTab, a wrapped GridTab etc)<br>
-	 *            <p>
-	 *            IMPORTANT:</b> If contextProvider's transaction name is NULL and we have a thread inherited transaction, then use that one,
-	 *            <i>if</i> the given <code>contextProvider</code> permits it. See {@link IContextAware#isAllowThreadInherited()}.
+	 * @param contextProvider          any object that carries a context (e.g. a PO, a wrapped PO, GridTab, a wrapped GridTab etc)<br>
+	 *                                 <p>
+	 *                                 IMPORTANT:</b> If contextProvider's transaction name is NULL and we have a thread inherited transaction, then use that one,
+	 *                                 <i>if</i> the given <code>contextProvider</code> permits it. See {@link IContextAware#isAllowThreadInherited()}.
 	 * @param useClientOrgFromProvider if {@code true}, then the context used to create the new instance will have the {@code contextProvider}'s {@code AD_Client_ID} and {@code AD_Org_ID} as
-	 *            {@code #AD_Client_ID} resp. {@code #clone().AD_Org_ID}.
+	 *                                 {@code #AD_Client_ID} resp. {@code #clone().AD_Org_ID}.
 	 * @return new instance
 	 */
 	public static <T> T newInstance(final Class<T> cl,
-			@NonNull final Object contextProvider,
-			final boolean useClientOrgFromProvider)
+									@NonNull final Object contextProvider,
+									final boolean useClientOrgFromProvider)
 	{
 		final Properties ctx = getCtx(contextProvider, useClientOrgFromProvider);
 		//
@@ -222,7 +225,7 @@ public class InterfaceWrapperHelper
 	 * </ul>
 	 *
 	 * @param model the underlying {@link PO}, {@link GridTab} or POJO for which we need an instance of <code>cl</code>
-	 * @param cl the interface we need an instance of
+	 * @param cl    the interface we need an instance of
 	 * @return an instance of <code>cl</code> which actually wraps <code>model</code> or <code>null</code> if model was <code>null</code>
 	 */
 	public static <T> T create(@Nullable final Object model, final Class<T> cl)
@@ -234,18 +237,16 @@ public class InterfaceWrapperHelper
 	/**
 	 * See {@link #create(Object, Class)} for additional infos.
 	 *
-	 * @param modelClass model class
-	 * @param useOldValues
-	 *            <ul>
-	 *            <li>true if old values shall be used
-	 *            <li>false if model's old values flag shall BE PRESERVED. i.e. if it was "true" we shall use old values, if it was "false" we shall NOT use old values.
-	 *            </ul>
-	 *
+	 * @param modelClass   model class
+	 * @param useOldValues <ul>
+	 *                     <li>true if old values shall be used
+	 *                     <li>false if model's old values flag shall BE PRESERVED. i.e. if it was "true" we shall use old values, if it was "false" we shall NOT use old values.
+	 *                     </ul>
 	 * @deprecated Because this method is tricky and we consider to make it private, please use:
-	 *             <ul>
-	 *             <li>{@link #create(Object, Class)}
-	 *             <li>or {@link #createOld(Object, Class)}
-	 *             </ul>
+	 * <ul>
+	 * <li>{@link #create(Object, Class)}
+	 * <li>or {@link #createOld(Object, Class)}
+	 * </ul>
 	 */
 	@Deprecated
 	public static <T> T create(
@@ -259,8 +260,7 @@ public class InterfaceWrapperHelper
 		}
 		else if (modelClass.isInstance(model) && !useOldValues)
 		{
-			@SuppressWarnings("unchecked")
-			final T modelCasted = (T)model;
+			@SuppressWarnings("unchecked") final T modelCasted = (T)model;
 			return modelCasted;
 		}
 		else
@@ -372,39 +372,45 @@ public class InterfaceWrapperHelper
 
 	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass)
 	{
-		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited, UnaryOperator.identity());
 	}
 
 	public static <T> List<T> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, final Class<T> modelClass)
 	{
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
-		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited, UnaryOperator.identity());
+	}
+
+	public static <RT, MT> List<MT> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, @NonNull final Class<RT> modelClass, @NonNull Function<RT, MT> modelMapper)
+	{
+		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited, modelMapper);
 	}
 
 	public static <T> List<T> loadByIdsOutOfTrx(final Set<Integer> ids, final Class<T> modelClass)
 	{
-		return loadByIds(ids, modelClass, ITrx.TRXNAME_None);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_None, UnaryOperator.identity());
 	}
 
 	public static <T> List<T> loadByRepoIdAwaresOutOfTrx(@NonNull final Collection<? extends RepoIdAware> repoIdAwares, final Class<T> modelClass)
 	{
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
-		return loadByIds(ids, modelClass, ITrx.TRXNAME_None);
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_None, UnaryOperator.identity());
 	}
 
-	private static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
+	private static <RT, MT> List<MT> loadByIds(final Set<Integer> ids, final Class<RT> modelClass, final String trxName, final Function<RT, MT> modelMapper)
 	{
 		if (getInMemoryDatabaseForModel(modelClass) != null)
 		{
-			return POJOWrapper.loadByIds(ids, modelClass, trxName);
+			return POJOWrapper.loadByIds(ids, modelClass, trxName, modelMapper);
 		}
-		return POWrapper.loadByIds(ids, modelClass, trxName);
+		return POWrapper.loadByIds(ids, modelClass, trxName, modelMapper);
 	}
 
 	/**
 	 * Converts given list to target type by calling {@link #create(Object, Class)} for each item.
 	 *
-	 * @param list list to be converted
+	 * @param list  list to be converted
 	 * @param clazz target model class
 	 * @return converted list to given model
 	 */
@@ -510,8 +516,9 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
+	 * @param model
+	 * @param trxName
 	 * @param ignoreIfNotHandled <code>true</code> and the given model can not be handled (no PO, GridTab etc), then don't throw an exception,
-	 *
 	 * @throws AdempiereException if the given model is neither handled by {@link POWrapper} nor by {@link POJOWrapper} and ignoreIfNotHandled is <code>false</code>.
 	 */
 	public static void setTrxName(final Object model, final String trxName, final boolean ignoreIfNotHandled)
@@ -661,7 +668,7 @@ public class InterfaceWrapperHelper
 	/**
 	 * Get context from model and setting in context AD_Client_ID and AD_Org_ID according to the model if useClientOrgFromModel is true
 	 *
-	 * @param model may be null
+	 * @param model                 may be null
 	 * @param useClientOrgFromModel ignored, unless the given model is {@link ModelContextAware} or just a "normal" model. See {@link #getCtx(Object, boolean)}
 	 */
 	public static Properties getCtx(
@@ -824,7 +831,8 @@ public class InterfaceWrapperHelper
 	 * Introducing this exception to be thrown instead of ADempiereException. Reason: It's a pain if you have a breakpoint on "AdempiereException" and the debugger stops every 2 seconds because
 	 * InterfaceWrapperHelper throws it.
 	 */
-	/* package */@SuppressWarnings("serial")
+	/* package */
+	@SuppressWarnings("serial")
 	static class MissingTableNameException extends AdempiereException
 	{
 		private static MissingTableNameException notFound(final Class<?> modelClass)
@@ -953,10 +961,19 @@ public class InterfaceWrapperHelper
 		return true;
 	}
 
-	public static int getTableId(final Class<?> clazz)
+	public static int getTableId(@NonNull final Class<?> clazz)
 	{
 		final String tableName = getTableName(clazz);
-		return Services.get(IADTableDAO.class).retrieveTableId(tableName);
+		return TableIdsCache.instance.getTableId(tableName)
+				.map(AdTableId::getRepoId)
+				.orElse(-1);
+	}
+
+	public static AdTableId getAdTableId(@NonNull final Class<?> clazz)
+	{
+		final String tableName = getTableName(clazz);
+		return TableIdsCache.instance.getTableId(tableName)
+				.orElseThrow(() -> new AdempiereException("No AD_Table_ID found for " + tableName));
 	}
 
 	/**
@@ -969,8 +986,10 @@ public class InterfaceWrapperHelper
 		{
 			return -1;
 		}
-		return Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
+		return TableIdsCache.instance.getTableId(tableName)
+				.map(AdTableId::getRepoId)
+				.orElse(-1);
 	}
 
 	public static String getKeyColumnName(final Class<?> clazz)
@@ -1006,7 +1025,9 @@ public class InterfaceWrapperHelper
 	public static int getModelTableId(final Object model)
 	{
 		final String modelTableName = getModelTableName(model);
-		return Services.get(IADTableDAO.class).retrieveTableId(modelTableName);
+		return TableIdsCache.instance.getTableId(modelTableName)
+				.map(AdTableId::getRepoId)
+				.orElse(-1);
 	}
 
 	/**
@@ -1175,8 +1196,7 @@ public class InterfaceWrapperHelper
 			{
 				if (field.getAD_Column_ID() == adColumnId)
 				{
-					@SuppressWarnings("unchecked")
-					final T value = (T)field.getValue();
+					@SuppressWarnings("unchecked") final T value = (T)field.getValue();
 					return value;
 				}
 			}
@@ -1186,8 +1206,7 @@ public class InterfaceWrapperHelper
 		else if (POWrapper.isHandled(model))
 		{
 			final PO po = POWrapper.getStrictPO(model);
-			@SuppressWarnings("unchecked")
-			final T value = (T)po.get_ValueOfColumn(adColumnId);
+			@SuppressWarnings("unchecked") final T value = (T)po.get_ValueOfColumn(adColumnId);
 			return value;
 		}
 		// else if (POJOWrapper.isHandled(model))
@@ -1239,7 +1258,6 @@ public class InterfaceWrapperHelper
 	 *
 	 * @return value of [columnName]_Override or [columnName]; <b>might return null</b>, so don't blindly use as int.
 	 * @throws AdempiereException if neither the "normal" value nor the override value is available.
-	 *
 	 * @deprecated Favor using the actual getters. It's easier to trace/debug later.
 	 */
 	@Deprecated
@@ -1252,9 +1270,9 @@ public class InterfaceWrapperHelper
 	}
 
 	private static <T> T getValue(@NonNull final Object model,
-			final String columnName,
-			final boolean throwExIfColumnNotFound,
-			final boolean useOverrideColumnIfAvailable)
+								  final String columnName,
+								  final boolean throwExIfColumnNotFound,
+								  final boolean useOverrideColumnIfAvailable)
 	{
 		return helpers.getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
@@ -1277,14 +1295,14 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Set value for given <code>columnName</code>.
-	 *
+	 * <p>
 	 * If column was not found in <code>model</code> a warning will be logged but no exception will be thrown
 	 *
 	 * @return true if value was set
 	 */
 	public static boolean setValue(
 			@NonNull final Object model,
-			@NonNull final String columnName, 
+			@NonNull final String columnName,
 			@Nullable final Object value)
 	{
 		final boolean throwExIfColumnNotFound = false;
@@ -1293,7 +1311,7 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Set values for given <code>Map<columnName, value></code>.
-	 *
+	 * <p>
 	 * If a column was not found in <code>model</code>, an exception will be thrown.
 	 *
 	 * @return true if all values were set
@@ -1328,13 +1346,13 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Explicitly mark a column that was changed.
-	 *
+	 * <p>
 	 * It is helpful to do this when:
 	 * <ul>
 	 * <li>you set a value for a column but the new value can be the same as the old value
 	 * <li>and you really really what to trigger the database UPDATE or you really really want to trigger the model validators
 	 * </ul>
-	 *
+	 * <p>
 	 * NOTE:
 	 * <ul>
 	 * <li>if you are marking the column as changed but you are not explicitly set a value (i.e. a new value), this command will have no effect
@@ -1374,6 +1392,12 @@ public class InterfaceWrapperHelper
 		return helpers.getDynAttribute(model, attributeName);
 	}
 
+	@Nullable
+	public static <T> T computeDynAttributeIfAbsent(@NonNull final Object model, @NonNull final String attributeName, @NonNull final Supplier<T> supplier)
+	{
+		return helpers.computeDynAttributeIfAbsent(model, attributeName, supplier);
+	}
+
 	/**
 	 * Check if given <code>model</code> can be casted to <code>interfaceClass</code>. NOTE: by casted we mean using create(...) methods.
 	 *
@@ -1403,7 +1427,6 @@ public class InterfaceWrapperHelper
 	private static final String DYNATTR_SaveDeleteDisabled = "SaveDeleteDisabled";
 
 	/**
-	 *
 	 * @param model
 	 * @return true if save/delete was not disabled on purpose for given model
 	 * @see #DYNATTR_SaveDeleteDisabled
@@ -1494,7 +1517,6 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 *
 	 * @return true if this object was just created (saved or not). Compared to {@link #isNew(Object)} this method will return <code>true</code> even if the model was already saved.
 	 */
 	public static boolean isJustCreated(final Object model)
@@ -1514,7 +1536,6 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 *
 	 * @return true if this model is created, updated or deleted by a manual user action (from UI window)
 	 */
 	public static boolean isUIAction(final Object model)
@@ -1576,7 +1597,6 @@ public class InterfaceWrapperHelper
 		return helpers.isValueChanged(model, ImmutableSet.copyOf(columnNames));
 	}
 
-
 	@Deprecated
 	public static boolean isPOValueChanged(final Object model, final String columnName)
 	{
@@ -1606,7 +1626,6 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 *
 	 * @param model
 	 * @return how many times given model was loaded/reloaded
 	 */
@@ -1708,7 +1727,6 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-
 	/**
 	 * If the given <code>model</code> is not null and has all the columns which are defined inside the given <code>clazz</code>'s {@link IModelClassInfo},<br>
 	 * then return an instance using {@link #create(Object, Class)}.<br>
@@ -1719,7 +1737,7 @@ public class InterfaceWrapperHelper
 	 * @return
 	 */
 	public static <T> T asColumnReferenceAwareOrNull(final Object model,
-			final Class<T> clazz)
+													 final Class<T> clazz)
 	{
 		if (model == null)
 		{
@@ -1748,7 +1766,7 @@ public class InterfaceWrapperHelper
 	/**
 	 * Disables the read only (i.e. not updateable) columns enforcement.
 	 * So basically, after you are calling this method you will be able to change the values for any not updateable column.
-	 *
+	 * <p>
 	 * WARNING: please make sure you know what are you doing before calling this method. If you are not sure, please don't use it.
 	 */
 	public static void disableReadOnlyColumnCheck(final Object model)

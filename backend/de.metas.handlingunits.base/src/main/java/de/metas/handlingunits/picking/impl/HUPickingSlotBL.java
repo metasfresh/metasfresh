@@ -25,6 +25,7 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingSlotAllocateRequest;
+import de.metas.handlingunits.picking.PickingSlotConnectedComponent;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPick;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPickFilters;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -49,6 +50,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -87,6 +89,7 @@ public class HUPickingSlotBL
 {
 	private final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
 	private final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
+	private ImmutableList<PickingSlotConnectedComponent> pickingSlotConnectedComponents = null; // lazy
 
 	public static final class QueueActionResult implements IHUPickingSlotBL.IQueueActionResult
 	{
@@ -564,7 +567,15 @@ public class HUPickingSlotBL
 		// There still not closed picking candidates; do nothing
 		final PickingCandidateRepository pickingCandidatesRepo = Adempiere.getBean(PickingCandidateRepository.class);
 		final PickingSlotId pickingSlotId = PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
-		if (pickingCandidatesRepo.hasNotClosedCandidatesForPickingSlot(pickingSlotId))
+		if (pickingCandidatesRepo.hasDraftCandidatesForPickingSlot(pickingSlotId))
+		{
+			return;
+		}
+
+		final boolean isSlotAllocatedByAConnectedComponent = getPickingSlotConnectedComponents()
+				.stream()
+				.anyMatch(component -> component.hasAllocationsForSlot(PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID())));
+		if (isSlotAllocatedByAConnectedComponent)
 		{
 			return;
 		}
@@ -577,7 +588,7 @@ public class HUPickingSlotBL
 		pickingSlot.setC_BPartner_ID(-1);
 		pickingSlot.setC_BPartner_Location_ID(-1);
 		pickingSlot.setM_Picking_Job_ID(-1);
-		InterfaceWrapperHelper.save(pickingSlot);
+		pickingSlotDAO.save(pickingSlot);
 	}
 
 	@Override
@@ -655,4 +666,26 @@ public class HUPickingSlotBL
 		return retrieveAvailableHUIdsToPick(query);
 	}
 
+	public boolean clearPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId, final boolean removeQueuedHUsFromSlot)
+	{
+		final I_M_PickingSlot slot = pickingSlotDAO.getById(pickingSlotId, I_M_PickingSlot.class);
+
+		if (removeQueuedHUsFromSlot)
+		{
+			huPickingSlotDAO.retrieveAllHUs(slot).forEach(queuedHU -> removeFromPickingSlotQueue(slot, queuedHU));
+		}
+
+		return huPickingSlotDAO.isEmpty(slot);
+	}
+
+	@NonNull
+	private List<PickingSlotConnectedComponent> getPickingSlotConnectedComponents()
+	{
+		if (pickingSlotConnectedComponents == null)
+		{
+			pickingSlotConnectedComponents = ImmutableList.copyOf(SpringContextHolder.instance.getBeansOfType(PickingSlotConnectedComponent.class));
+		}
+
+		return pickingSlotConnectedComponents;
+	}
 }
