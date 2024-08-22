@@ -224,19 +224,17 @@ public class CalloutOrder extends CalloutEngine
 					PaymentRule paymentRule = isSOTrx
 							? PaymentRule.ofCode(bpartner.getPaymentRule())
 							: PaymentRule.ofCode(bpartner.getPaymentRulePO());
-					if (paymentRule != null)
+
+					if (isSOTrx && paymentRule.isCashOrCheck()) // No Cash/Check/Transfer:
 					{
-						if (isSOTrx && paymentRule.isCashOrCheck()) // No Cash/Check/Transfer:
-						{
-							// for SO_Trx
-							paymentRule = PaymentRule.OnCredit; // Payment Term
-						}
-						if (!isSOTrx && paymentRule.isCash())  // No Cash for PO_Trx
-						{
-							paymentRule = PaymentRule.OnCredit; // Payment Term
-						}
-						order.setPaymentRule(paymentRule.getCode());
+						// for SO_Trx
+						paymentRule = PaymentRule.OnCredit; // Payment Term
 					}
+					if (!isSOTrx && paymentRule.isCash())  // No Cash for PO_Trx
+					{
+						paymentRule = PaymentRule.OnCredit; // Payment Term
+					}
+					order.setPaymentRule(paymentRule.getCode());
 				}
 
 				// Payment Term
@@ -272,7 +270,7 @@ public class CalloutOrder extends CalloutEngine
 				// FreightCostRule
 				{
 					final String freightCostRule = bpartner.getFreightCostRule();
-					if (freightCostRule != null && freightCostRule.length() != 0)
+					if (freightCostRule != null && !freightCostRule.isEmpty())
 					{
 						order.setFreightCostRule(freightCostRule);
 					}
@@ -281,7 +279,7 @@ public class CalloutOrder extends CalloutEngine
 				// DeliveryViaRule
 				{
 					final String deliveryViaRule = bpartner.getDeliveryViaRule();
-					if (deliveryViaRule != null && deliveryViaRule.length() != 0)
+					if (deliveryViaRule != null && !deliveryViaRule.isEmpty())
 					{
 						order.setDeliveryViaRule(deliveryViaRule);
 					}
@@ -468,7 +466,7 @@ public class CalloutOrder extends CalloutEngine
 					{
 						// metas: before using the location we need to make sure
 						// that it is a shipping location
-						if (new MBPartnerLocation(calloutField.getCtx(), locFromContextId, null).isShipTo())
+						if (new MBPartnerLocation(calloutField.getCtx(), locFromContextId, ITrx.TRXNAME_None).isShipTo())
 						{
 							shipTo_ID = locFromContextId;
 						}
@@ -623,8 +621,6 @@ public class CalloutOrder extends CalloutEngine
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 		return NO_ERROR;
 	} // bPartner
@@ -771,20 +767,11 @@ public class CalloutOrder extends CalloutEngine
 			{
 				// #4463 don't change the pricelist of a sales order it its bill partner was changed.
 				if (!order.isSOTrx())
-				{
-					// PriceList (indirect: IsTaxIncluded & Currency)
-					final int priceListId = rs.getInt(IsSOTrx ? "M_PriceList_ID" : "PO_PriceList_ID");
-					if (!rs.wasNull())
+				{ // get default PriceList
+					final int i = calloutField.getGlobalContextAsInt("#M_PriceList_ID");
+					if (i > 0)
 					{
-						order.setM_PriceList_ID(priceListId);
-					}
-					else
-					{ // get default PriceList
-						final int i = calloutField.getGlobalContextAsInt("#M_PriceList_ID");
-						if (i > 0)
-						{
-							order.setM_PriceList_ID(i);
-						}
+						order.setM_PriceList_ID(i);
 					}
 				}
 
@@ -853,7 +840,7 @@ public class CalloutOrder extends CalloutEngine
 
 				// PO Reference
 				String s = rs.getString("POReference");
-				if (s != null && s.length() != 0)
+				if (Check.isNotBlank(s))
 				{
 					order.setPOReference(s);
 				}
@@ -863,7 +850,7 @@ public class CalloutOrder extends CalloutEngine
 				}
 				// SO Description
 				s = rs.getString("SO_Description");
-				if (s != null && s.trim().length() != 0)
+				if (Check.isNotBlank(s))
 				{
 					order.setDescription(s);
 				}
@@ -886,7 +873,7 @@ public class CalloutOrder extends CalloutEngine
 				{
 					// PaymentRule
 					s = rs.getString(IsSOTrx ? "PaymentRule" : "PaymentRulePO");
-					if (s != null && s.length() != 0)
+					if (Check.isNotBlank(s))
 					{
 						if ("B".equals(s))
 						{
@@ -1428,7 +1415,7 @@ public class CalloutOrder extends CalloutEngine
 		return NO_ERROR;
 	} // qty
 
-	private static final void setUOMConversion(final ICalloutField calloutField, final boolean conversion)
+	private static void setUOMConversion(final ICalloutField calloutField, final boolean conversion)
 	{
 		calloutField.putContext(CTX_UOMConversion, conversion);
 	}
@@ -1477,10 +1464,10 @@ public class CalloutOrder extends CalloutEngine
 	@Value
 	private static class CreditLimitRequest
 	{
-		final int bpartnerId;
-		@NonNull final CreditStatus creditStatus;
-		final boolean evalCreditstatus;
-		@NonNull final Timestamp evaluationDate;
+		int bpartnerId;
+		@NonNull CreditStatus creditStatus;
+		boolean evalCreditstatus;
+		@NonNull Timestamp evaluationDate;
 	}
 
 	/**
@@ -1493,7 +1480,7 @@ public class CalloutOrder extends CalloutEngine
 		final boolean evalCreditstatus = creditlimitrequest.isEvalCreditstatus();
 		final Timestamp evaluationDate = creditlimitrequest.getEvaluationDate();
 
-		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+		final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartnerId, evaluationDate);
 		boolean dontCheck = true;
 		if (evalCreditstatus)
@@ -1555,7 +1542,7 @@ public class CalloutOrder extends CalloutEngine
 					{
 						// metas: before using the location we need to make sure
 						// that it is a shipping location
-						if (new MBPartnerLocation(calloutField.getCtx(), locFromContextId, null).isShipTo())
+						if (new MBPartnerLocation(calloutField.getCtx(), locFromContextId, ITrx.TRXNAME_None).isShipTo())
 						{
 							shipTo_ID = locFromContextId;
 						}
@@ -1597,8 +1584,6 @@ public class CalloutOrder extends CalloutEngine
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 		return NO_ERROR;
 	}

@@ -243,6 +243,7 @@ Feature: create multiple production candidates
 # ########################################################################################################################################################################
   @from:cucumber
   @Id:S0212.300
+  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/10504799864/job/29103416885?pr=18701
   Scenario: The manufacturing candidate is created for a sales order line and then the sales order is re-opened and the ordered quantity is increased,
   resulting in a second manufacturing candidate to supply the additional demand
   and openQty for the second candidate is decreased
