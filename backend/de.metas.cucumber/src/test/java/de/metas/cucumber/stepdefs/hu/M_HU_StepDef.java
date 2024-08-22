@@ -37,6 +37,7 @@ import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -164,65 +165,67 @@ public class M_HU_StepDef
 	@And("validate M_HUs:")
 	public void validate_M_HUs(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach((row) -> {
-			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_HU_ID)
+				.forEach((row) -> {
+					final StepDefDataIdentifier huIdentifier = row.getAsIdentifier();
 
-			row.getAsOptionalIdentifier("M_HU_Parent")
-					.ifPresent(parentHuIdentifier -> {
-						final I_M_HU parentHU = huTable.get(parentHuIdentifier);
+					row.getAsOptionalIdentifier("M_HU_Parent")
+							.ifPresent(parentHuIdentifier -> {
+								final I_M_HU parentHU = huTable.get(parentHuIdentifier);
 
-						final I_M_HU_Item huItem = queryBL.createQueryBuilder(I_M_HU_Item.class)
-								.addEqualsFilter(I_M_HU_Item.COLUMNNAME_M_HU_ID, parentHU.getM_HU_ID())
-								.orderByDescending(I_M_HU_Item.COLUMN_M_HU_Item_ID)
-								.create()
-								.firstNotNull(I_M_HU_Item.class);
+								final I_M_HU_Item huItem = queryBL.createQueryBuilder(I_M_HU_Item.class)
+										.addEqualsFilter(I_M_HU_Item.COLUMNNAME_M_HU_ID, parentHU.getM_HU_ID())
+										.orderByDescending(I_M_HU_Item.COLUMN_M_HU_Item_ID)
+										.create()
+										.firstNotNull(I_M_HU_Item.class);
 
-						final I_M_HU currentHU = queryBL.createQueryBuilder(I_M_HU.class)
-								.addEqualsFilter(COLUMN_M_HU_Item_Parent_ID, huItem.getM_HU_Item_ID())
-								.orderByDescending(COLUMNNAME_M_HU_ID)
-								.create()
-								.firstNotNull(I_M_HU.class);
+								final I_M_HU currentHU = queryBL.createQueryBuilder(I_M_HU.class)
+										.addEqualsFilter(COLUMN_M_HU_Item_Parent_ID, huItem.getM_HU_Item_ID())
+										.orderByDescending(COLUMNNAME_M_HU_ID)
+										.create()
+										.firstNotNull(I_M_HU.class);
 
-						huTable.putOrReplace(huIdentifier, currentHU);
-					});
+								huTable.putOrReplace(huIdentifier, currentHU);
+							});
 
-			final I_M_HU hu = huTable.get(huIdentifier);
-			assertThat(hu).isNotNull();
+					final I_M_HU hu = huTable.get(huIdentifier);
+					assertThat(hu).isNotNull();
 
-			row.getAsOptionalIdentifier(COLUMNNAME_M_HU_PI_Version_ID)
-					.map(huPiVersionTable::get)
-					.ifPresent(piVersion -> assertThat(hu.getM_HU_PI_Version_ID()).isEqualTo(piVersion.getM_HU_PI_Version_ID()));
+					row.getAsOptionalIdentifier(COLUMNNAME_M_HU_PI_Version_ID)
+							.map(huPiVersionTable::get)
+							.ifPresent(piVersion -> assertThat(hu.getM_HU_PI_Version_ID()).isEqualTo(piVersion.getM_HU_PI_Version_ID()));
 
-			row.getAsOptionalIdentifier(COLUMNNAME_M_Locator_ID)
-					.ifPresent(locatorIdentifier -> {
-						final I_M_Locator locator = locatorTable.get(locatorIdentifier);
-						assertThat(locator).isNotNull();
-						assertThat(hu.getM_Locator_ID()).isEqualTo(locator.getM_Locator_ID());
-					});
+					row.getAsOptionalIdentifier(COLUMNNAME_M_Locator_ID)
+							.ifPresent(locatorIdentifier -> {
+								final I_M_Locator locator = locatorTable.get(locatorIdentifier);
+								assertThat(locator).isNotNull();
+								assertThat(hu.getM_Locator_ID()).isEqualTo(locator.getM_Locator_ID());
+							});
 
-			row.getAsOptionalIdentifier(COLUMNNAME_M_HU_PI_Item_Product_ID)
-					.ifPresent(huPiItemProductIdentifier -> {
-						final I_M_HU_PI_Item_Product huPiItemProduct = huPiItemProductTable.get(huPiItemProductIdentifier);
-						assertThat(huPiItemProduct).isNotNull();
-						assertThat(hu.getM_HU_PI_Item_Product_ID()).isEqualTo(huPiItemProduct.getM_HU_PI_Item_Product_ID());
-					});
+					row.getAsOptionalIdentifier(COLUMNNAME_M_HU_PI_Item_Product_ID)
+							.ifPresent(huPiItemProductIdentifier -> {
+								final I_M_HU_PI_Item_Product huPiItemProduct = huPiItemProductTable.get(huPiItemProductIdentifier);
+								assertThat(huPiItemProduct).isNotNull();
+								assertThat(hu.getM_HU_PI_Item_Product_ID()).isEqualTo(huPiItemProduct.getM_HU_PI_Item_Product_ID());
+							});
 
-			final String huStatus = row.getAsString(COLUMNNAME_HUStatus);
+					final String huStatus = row.getAsString(COLUMNNAME_HUStatus);
 
-			assertThat(hu.getHUStatus()).isEqualTo(huStatus);
+					assertThat(hu.getHUStatus()).isEqualTo(huStatus);
 
-			final String clearanceStatus = row.getAsOptionalString(COLUMNNAME_ClearanceStatus).orElse(null);
-			if (Check.isNotBlank(clearanceStatus))
-			{
-				assertThat(hu.getClearanceStatus()).isEqualTo(clearanceStatus);
-			}
+					final String clearanceStatus = row.getAsOptionalString(COLUMNNAME_ClearanceStatus).orElse(null);
+					if (Check.isNotBlank(clearanceStatus))
+					{
+						assertThat(hu.getClearanceStatus()).isEqualTo(clearanceStatus);
+					}
 
-			final String clearanceNote = row.getAsOptionalString(COLUMNNAME_ClearanceNote).orElse(null);
-			if (Check.isNotBlank(clearanceNote))
-			{
-				assertThat(hu.getClearanceNote()).isEqualTo(clearanceNote);
-			}
-		});
+					final String clearanceNote = row.getAsOptionalString(COLUMNNAME_ClearanceNote).orElse(null);
+					if (Check.isNotBlank(clearanceNote))
+					{
+						assertThat(hu.getClearanceNote()).isEqualTo(clearanceNote);
+					}
+				});
 	}
 
 	@And("^after not more than (.*)s, there are added M_HUs for inventory$")
@@ -535,12 +538,9 @@ public class M_HU_StepDef
 	}
 
 	@Given("M_HU are disposed:")
-	public void dispose_HU(@NonNull final DataTable table)
+	public void disposeHUs(@NonNull final DataTable table)
 	{
-		for (final Map<String, String> row : table.asMaps())
-		{
-			disposeHU(row);
-		}
+		DataTableRows.of(table).forEach(this::disposeHU);
 	}
 
 	@And("store JsonSetClearanceStatusRequest in context")
@@ -845,27 +845,21 @@ public class M_HU_StepDef
 				.build();
 	}
 
-	private void disposeHU(@NonNull final Map<String, String> row)
+	private void disposeHU(@NonNull final DataTableRow row)
 	{
-		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_M_HU huRecord = row.getAsIdentifier(COLUMNNAME_M_HU_ID).lookupIn(huTable);
+		final ZonedDateTime movementDate = row.getAsInstant(COLUMNNAME_MovementDate).atZone(SystemTime.zoneId());
 
-		final ZonedDateTime movementDate = DataTableUtil.extractZonedDateTimeForColumnName(row, COLUMNNAME_MovementDate);
+		final HUInternalUseInventoryCreateResponse result = inventoryService.moveToGarbage(
+				HUInternalUseInventoryCreateRequest.builder()
+						.hus(ImmutableList.of(huRecord))
+						.movementDate(movementDate)
+						.completeInventory(true)
+						.moveEmptiesToEmptiesWarehouse(true)
+						.build()
+		);
 
-		final I_M_HU huRecord = huTable.get(huIdentifier);
-
-		assertThat(huRecord).isNotNull();
-
-		final HUInternalUseInventoryCreateRequest huInternalUseInventoryCreateRequest = HUInternalUseInventoryCreateRequest.builder()
-				.hus(ImmutableList.of(huRecord))
-				.movementDate(movementDate)
-				.completeInventory(true)
-				.moveEmptiesToEmptiesWarehouse(true)
-				.build();
-
-		final HUInternalUseInventoryCreateResponse result = inventoryService.moveToGarbage(huInternalUseInventoryCreateRequest);
-
-		final boolean somethingWasProcessed = !result.getInventories().isEmpty();
-		assertThat(somethingWasProcessed).isTrue();
+		assertThat(result.getInventories()).isNotEmpty();
 	}
 
 	private void returnHUFromCustomer(@NonNull final Map<String, String> tableRow)

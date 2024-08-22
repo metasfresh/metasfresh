@@ -1,6 +1,5 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 import javax.annotation.Nullable;

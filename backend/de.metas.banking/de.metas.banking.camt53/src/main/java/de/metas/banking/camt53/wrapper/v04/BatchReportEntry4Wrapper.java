@@ -51,7 +51,9 @@ import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
@@ -183,35 +185,61 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 	@NonNull
 	protected String getUnstructuredRemittanceInfo(@NonNull final String delimiter)
 	{
-		return String.join(delimiter,
-				getEntryTransaction()
-						.stream()
-						.findFirst()
-						.map(EntryTransaction4::getRmtInf)
-						.map(RemittanceInformation7::getUstrd)
-						.orElseGet(ImmutableList::of));
+		return String.join(delimiter, getUnstructuredRemittanceInfoList());
+	}
+
+	@Override
+	@NonNull
+	protected List<String> getUnstructuredRemittanceInfoList()
+	{
+		return getEntryTransaction()
+				.stream()
+				.findFirst()
+				.map(EntryTransaction4::getRmtInf)
+				.map(RemittanceInformation7::getUstrd)
+				.orElse(ImmutableList.of())
+				.stream()
+				.map(str -> Arrays.asList(str.split(" ")))
+				.flatMap(List::stream)
+				.filter(Check::isNotBlank)
+				.toList();
 	}
 
 	@Override
 	@NonNull
 	protected String getLineDescription(@NonNull final String delimiter)
 	{
-		final ArrayList<String> trxDetails = new ArrayList<>();
-		trxDetails.add(entry.getAddtlNtryInf());
-
-		getEntryTransaction()
-				.forEach(ntryDetails -> {
-					final String addtlTxInf = ntryDetails.getAddtlTxInf();
-					if (Check.isNotBlank(addtlTxInf))
-					{
-						trxDetails.add(addtlTxInf);
-					}
-				});
-
-
-		return trxDetails.stream()
+		return getLineDescriptionList().stream()
 				.filter(Check::isNotBlank)
 				.collect(Collectors.joining(delimiter));
+	}
+
+	@Override
+	@NonNull
+	protected List<String> getLineDescriptionList()
+	{
+		final List<String> lineDesc = new ArrayList<>();
+
+		final String addtlNtryInfStr = entry.getAddtlNtryInf();
+		if( addtlNtryInfStr != null )
+		{
+			lineDesc.addAll( Arrays.stream(addtlNtryInfStr.split(" "))
+									 .filter(Check::isNotBlank)
+									 .toList());
+		}
+
+		final List<String> trxDetails = getEntryTransaction()
+				.stream()
+				.map(EntryTransaction4::getAddtlTxInf)
+				.filter(Objects::nonNull)
+				.map(str -> Arrays.asList(str.split(" ")))
+				.flatMap(List::stream)
+				.filter(Check::isNotBlank)
+				.toList();
+
+		lineDesc.addAll(trxDetails);
+
+		return lineDesc;
 	}
 
 	@Override
@@ -228,10 +256,7 @@ public class BatchReportEntry4Wrapper extends BatchReportEntryWrapper
 		return entry.getAmt().getValue();
 	}
 
-	public boolean isBatchTransaction()
-	{
-		return getEntryTransaction().size() > 1;
-	}
+	public boolean isBatchTransaction() {return getEntryTransaction().size() > 1;}
 
 	@Override
 	public List<ITransactionDtlsWrapper> getTransactionDtlsWrapper()

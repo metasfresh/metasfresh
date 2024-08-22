@@ -170,7 +170,7 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	@Nullable
-	public static ITableRecordReference ofReferencedOrNull(@Nullable final Object model)
+	public static TableRecordReference ofReferencedOrNull(@Nullable final Object model)
 	{
 		if (model == null)
 		{

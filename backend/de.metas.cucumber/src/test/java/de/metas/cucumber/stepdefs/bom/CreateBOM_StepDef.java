@@ -40,10 +40,10 @@ import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -185,69 +185,53 @@ public class CreateBOM_StepDef
 	@And("verify that bomLine was created for bom")
 	public void verifyThatBomLineWasCreatedForBom(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> bomLinesTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : bomLinesTableList)
-		{
-			final String bomIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "PP_Product_BOM_ID.Identifier");
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "M_Product_ID.Identifier");
-
-			final I_PP_Product_BOM bom = productBomTable.get(bomIdentifier);
-			final I_M_Product product = productTable.get(productIdentifier);
+		DataTableRows.of(dataTable).forEach(row -> {
+			final ProductBOMId bomId = row.getAsIdentifier("PP_Product_BOM_ID").lookupIdIn(productBomTable);
+			final ProductId productId = row.getAsIdentifier("M_Product_ID").lookupIdIn(productTable);
 
 			final I_PP_Product_BOMLine bomLine = queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
-					.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, bom.getPP_Product_BOM_ID())
-					.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+					.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, bomId)
+					.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productId)
 					.create()
-					.firstOnly(I_PP_Product_BOMLine.class);
+					.firstOnlyNotNull(I_PP_Product_BOMLine.class);
 
-			assertThat(bomLine).isNotNull();
+			final int line = row.getAsInt(I_PP_Product_BOMLine.COLUMNNAME_Line);
+			assertThat(bomLine.getLine()).isEqualTo(line);
 
-			final int line = DataTableUtil.extractIntForColumnName(dataTableRow, I_PP_Product_BOMLine.COLUMNNAME_Line);
-			final Boolean isQtyPercentage = DataTableUtil.extractBooleanForColumnName(dataTableRow, I_PP_Product_BOMLine.COLUMNNAME_IsQtyPercentage);
-			final String uomCode = DataTableUtil.extractStringForColumnName(dataTableRow, "UomCode");
-			final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "Qty");
-			final BigDecimal scrap = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_PP_Product_BOMLine.COLUMNNAME_Scrap);
+			final boolean isQtyPercentage = row.getAsOptionalBoolean(I_PP_Product_BOMLine.COLUMNNAME_IsQtyPercentage).orElseFalse();
+			final Quantity qty = row.getAsQuantity("Qty", "UomCode", uomDao::getByX12DE355);
+			assertThat(bomLine.isQtyPercentage()).isEqualTo(isQtyPercentage);
+			assertThat(bomLine.getC_UOM_ID()).isEqualTo(qty.getUomId().getRepoId());
+			if (isQtyPercentage)
+			{
+				assertThat(bomLine.getQtyBatch()).isEqualTo(qty.toBigDecimal());
+			}
+			else
+			{
+				assertThat(bomLine.getQtyBOM()).isEqualTo(qty.toBigDecimal());
+			}
 
+			final Quantity scrap = row.getAsOptionalQuantity("Scrap", "UomCode", uomDao::getByX12DE355).orElse(null);
 			if (scrap == null)
 			{
 				assertThat(bomLine.getScrap()).isEqualTo(BigDecimal.ZERO);
 			}
 			else
 			{
-				assertThat(bomLine.getScrap()).isEqualTo(scrap);
+				assertThat(bomLine.getScrap()).isEqualTo(scrap.toBigDecimal());
 			}
 
-			final I_C_UOM expectedUOM = uomDao.getByX12DE355(X12DE355.ofCode(uomCode));
+			row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)
+					.ifPresent(asiIdentifier -> {
+						final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(bomLine.getM_AttributeSetInstance_ID());
+						final I_M_AttributeSetInstance asi = attributeDAO.getAttributeSetInstanceById(asiId);
+						assertThat(asi).isNotNull();
+						attributeSetInstanceTable.put(asiIdentifier, asi);
+					});
 
-			if (isQtyPercentage)
-			{
-				assertThat(bomLine.getQtyBatch()).isEqualTo(qty);
-			}
-			else
-			{
-				assertThat(bomLine.getQtyBOM()).isEqualTo(qty);
-			}
-
-			assertThat(bomLine.getC_UOM_ID()).isEqualTo(expectedUOM.getC_UOM_ID());
-			assertThat(bomLine.getLine()).isEqualTo(line);
-			assertThat(bomLine.isQtyPercentage()).isEqualTo(isQtyPercentage);
-
-			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(attributeSetInstanceIdentifier))
-			{
-				final I_M_AttributeSetInstance attributeSetInstance = InterfaceWrapperHelper.load(bomLine.getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
-
-				assertThat(attributeSetInstance).isNotNull();
-
-				attributeSetInstanceTable.put(attributeSetInstanceIdentifier, attributeSetInstance);
-			}
-
-			final String bomLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_PP_Product_BOMLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bomLineIdentifier))
-			{
-				productBomLineTable.putOrReplace(bomLineIdentifier, bomLine);
-			}
-		}
+			row.getAsOptionalIdentifier(COLUMNNAME_PP_Product_BOMLine_ID)
+					.ifPresent(bomLineIdentifier -> productBomLineTable.putOrReplace(bomLineIdentifier, bomLine));
+		});
 	}
 
 	@And("verify BOM for M_Product:")

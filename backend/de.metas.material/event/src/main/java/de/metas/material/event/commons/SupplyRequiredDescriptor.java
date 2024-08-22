@@ -1,12 +1,20 @@
 package de.metas.material.event.commons;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.bpartner.BPartnerId;
+import de.metas.material.event.pporder.PPOrderRef;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.PPOrderId;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
@@ -33,33 +41,27 @@ import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
  */
 
 @Value
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class SupplyRequiredDescriptor
 {
 	EventDescriptor eventDescriptor;
-
 	MaterialDescriptor materialDescriptor;
-
-	/** the MD_Candidate_ID of the record which the required supply is about. */
+	/**
+	 * the MD_Candidate_ID of the record which the required supply is about.
+	 */
 	int demandCandidateId;
-
 	/**
 	 * The MD_Candidate_ID of the still "unspecific" supply-record that was already optimistically created.
 	 * It shall be updated by the response to this descriptor.
 	 */
 	int supplyCandidateId;
-
 	int shipmentScheduleId;
-
 	int forecastId;
-
 	int forecastLineId;
-
 	int orderId;
-
 	int orderLineId;
-
 	int subscriptionProgressId;
-
+	@Nullable PPOrderRef ppOrderRef;
 	boolean simulated;
 
 	/**
@@ -83,18 +85,6 @@ public class SupplyRequiredDescriptor
 	BigDecimal deltaQuantity;
 
 	/**
-	 * Used to avoid duplicated demand after Manufacturing Orders
-	 * in case of LotForLot and not LotForLot with isCreatePlan = false
-	 */
-	int ppOrderId;
-
-	/**
-	 * Used to avoid duplicated demand after Manufacturing OrderCandidates
-	 * in case of LotForLot and not LotForLot with isCreatePlan = false
-	 */
-	int ppOrderLineCandidateId;
-
-	/**
 	 * Used to avoid duplicated demand after Manufacturing Orders / OrderCandidates
 	 * in case of LotForLot and not LotForLot with isCreatePlan = false
 	 */
@@ -102,28 +92,27 @@ public class SupplyRequiredDescriptor
 
 	MinMaxDescriptor minMaxDescriptor;
 
-	@JsonCreator
 	@Builder(toBuilder = true)
+	@Jacksonized
 	private SupplyRequiredDescriptor(
-			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
-			@JsonProperty("demandCandidateId") final int demandCandidateId,
-			@JsonProperty("supplyCandidateId") final int supplyCandidateId,
-			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
-			@JsonProperty("forecastId") final int forecastId,
-			@JsonProperty("forecastLineId") final int forecastLineId,
-			@JsonProperty("orderId") final int orderId,
-			@JsonProperty("orderLineId") final int orderLineId,
-			@JsonProperty("subscriptionProgressId") final int subscriptionProgressId,
-			@JsonProperty("simulated") final boolean simulated,
-			@JsonProperty("fullDemandQty") final BigDecimal fullDemandQty,
-			@JsonProperty("isLotForLot") final String isLotForLot,
-			@JsonProperty("updated") final boolean updated,
-			@JsonProperty("deltaQuantity") final BigDecimal deltaQuantity,
-			@JsonProperty("ppOrderId") final int ppOrderId,
-			@JsonProperty("ppOrderLineCandidateId") final int ppOrderLineCandidateId,
-			@JsonProperty("ppOrderProductPlanningId") final int ppOrderProductPlanningId,
-			@JsonProperty("minMaxDescriptor") final MinMaxDescriptor minMaxDescriptor)
+			@NonNull final EventDescriptor eventDescriptor,
+			@NonNull final MaterialDescriptor materialDescriptor,
+			final int demandCandidateId,
+			final int supplyCandidateId,
+			final int shipmentScheduleId,
+			final int forecastId,
+			final int forecastLineId,
+			final int orderId,
+			final int orderLineId,
+			final int subscriptionProgressId,
+			@Nullable final PPOrderRef ppOrderRef,
+			final boolean simulated,
+			final BigDecimal fullDemandQty,
+			final String isLotForLot,
+			final boolean updated,
+			final BigDecimal deltaQuantity,
+			final int ppOrderProductPlanningId,
+			final MinMaxDescriptor minMaxDescriptor)
 	{
 		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
 		this.supplyCandidateId = supplyCandidateId;
@@ -139,6 +128,7 @@ public class SupplyRequiredDescriptor
 		this.orderLineId = orderLineId > 0 ? orderLineId : -1;
 
 		this.subscriptionProgressId = subscriptionProgressId > 0 ? subscriptionProgressId : -1;
+		this.ppOrderRef = ppOrderRef;
 		this.simulated = simulated;
 		this.fullDemandQty = fullDemandQty;
 		this.isLotForLot = isLotForLot;
@@ -146,10 +136,59 @@ public class SupplyRequiredDescriptor
 		this.updated = updated;
 		this.deltaQuantity = deltaQuantity;
 
-		this.ppOrderId = ppOrderId > 0 ? ppOrderId : -1;
-		this.ppOrderLineCandidateId = ppOrderLineCandidateId > 0 ? ppOrderLineCandidateId : -1;
 		this.ppOrderProductPlanningId = ppOrderProductPlanningId > 0 ? ppOrderProductPlanningId : -1;
 
 		this.minMaxDescriptor = minMaxDescriptor;
+	}
+
+	@NonNull
+	@JsonIgnore
+	public OrgId getOrgId() {return getEventDescriptor().getOrgId();}
+
+	@NonNull
+	@JsonIgnore
+	public SupplyRequiredDescriptor withNewEventId()
+	{
+		return toBuilder().eventDescriptor(newEventDescriptor()).build();
+	}
+
+	@NonNull
+	@JsonIgnore
+	public EventDescriptor newEventDescriptor() {return getEventDescriptor().withNewEventId();}
+
+	@NonNull
+	@JsonIgnore
+	public Instant getDemandDate() {return getMaterialDescriptor().getDate();}
+
+	@JsonIgnore
+	public int getProductId() {return getMaterialDescriptor().getProductId();}
+
+	@JsonIgnore
+	public BigDecimal getQtyToSupplyBD() {return getMaterialDescriptor().getQuantity();}
+
+	@Nullable
+	@JsonIgnore
+	public BPartnerId getCustomerId() {return getMaterialDescriptor().getCustomerId();}
+
+	@JsonIgnore
+	public WarehouseId getWarehouseId() {return getMaterialDescriptor().getWarehouseId();}
+
+	@JsonIgnore
+	public int getAttributeSetInstanceId() {return getMaterialDescriptor().getAttributeSetInstanceId();}
+
+	@JsonIgnore
+	public AttributesKey getStorageAttributesKey() {return getMaterialDescriptor().getStorageAttributesKey();}
+
+	@JsonIgnore
+	@Nullable
+	public PPOrderId getPpOrderId()
+	{
+		return ppOrderRef != null ? ppOrderRef.getPpOrderId() : null;
+	}
+
+	@JsonIgnore
+	public int getPpOrderLineCandidateId()
+	{
+		return ppOrderRef != null ? ppOrderRef.getPpOrderLineCandidateId() : -1;
 	}
 }

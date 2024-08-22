@@ -36,12 +36,15 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.i18n.ITranslatableString;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -184,5 +187,12 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	public ITranslatableString getDisplayName(@NonNull final HUPIItemProductId piItemProductId)
 	{
 		return huPIItemProductDAO.getById(piItemProductId).getName();
+	}
+
+
+	@Nullable
+	public I_M_HU_PI_Item_Product getDefaultForProduct(@NonNull final ProductId productId, @NonNull final ZonedDateTime dateTime)
+	{
+		return huPIItemProductDAO.retrieveDefaultForProduct(productId, dateTime);
 	}
 }

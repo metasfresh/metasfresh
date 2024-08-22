@@ -341,7 +341,7 @@ public class RabbitMQEventBusConfiguration
 	public static class MaterialEventsQueueConfiguration implements IEventBusQueueConfiguration
 	{
 		public static final String QUEUE_NAME_SPEL = "#{metasfreshMaterialEventsQueue.name}";
-		private static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.material");
+		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.material");
 		private static final String QUEUE_BEAN_NAME = "metasfreshMaterialEventsQueue";
 		private static final String EXCHANGE_NAME_PREFIX = "metasfresh-material-events";
 

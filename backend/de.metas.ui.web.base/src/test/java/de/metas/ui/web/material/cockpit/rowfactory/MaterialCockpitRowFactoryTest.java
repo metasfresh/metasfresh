@@ -21,6 +21,7 @@ import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
+import de.metas.ui.web.material.cockpit.QtyConvertorService;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
 import de.metas.ui.web.shipment_candidates_editor.MockedLookupDataSource;
 import de.metas.util.Services;
@@ -28,9 +29,9 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
@@ -114,6 +115,8 @@ public class MaterialCockpitRowFactoryTest
 		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class);
 		save(acctSchema);
 		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID()));
+
+		SpringContextHolder.registerJUnitBean(new QtyConvertorService());
 
 		product = newInstance(I_M_Product.class);
 		product.setValue("productValue");

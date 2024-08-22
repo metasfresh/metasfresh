@@ -185,6 +185,9 @@ import java.util.Optional;
 	@Getter @Setter @Nullable
 	private AuctionId auctionId;
 
+	@Getter @Setter @Nullable
+	private BankAccountId orgBankAccountId;
+
 	/* package */ InvoiceHeaderImpl()
 	{
 	}

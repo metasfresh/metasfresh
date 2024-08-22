@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
+import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.InvoiceLineAllocId;
@@ -431,4 +432,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	@NonNull
 	List<I_C_Invoice_Candidate> retrieveApprovedForInvoiceReferencing(TableRecordReferenceSet singleTableReferences);
+
+	boolean isCompletedOrClosedInvoice(@NonNull InOutId inOutId);
 }

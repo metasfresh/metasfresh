@@ -1,6 +1,5 @@
 package de.metas.material.dispo.service.event.handler.ddorder;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -9,7 +8,6 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
@@ -22,18 +20,18 @@ import de.metas.material.event.ddorder.AbstractDDOrderEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.ddorder.DDOrderRef;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 
 import java.time.Instant;
 import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 
 /*
  * #%L
@@ -57,30 +55,16 @@ import java.util.Optional;
  * #L%
  */
 
+@RequiredArgsConstructor
 public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEvent>
 		implements MaterialEventHandler<T>
 {
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-	private final CandidateRepositoryWriteService candidateRepositoryWrite;
-	private final CandidateChangeService candidateChangeHandler;
-	private final DDOrderDetailRequestHandler ddOrderDetailRequestHandler;
-	private final MainDataRequestHandler mainDataRequestHandler;
-
-	public DDOrderAdvisedOrCreatedHandler(
-			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
-			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final DDOrderDetailRequestHandler ddOrderDetailRequestHandler,
-			@NonNull final MainDataRequestHandler mainDataRequestHandler)
-	{
-		this.candidateChangeHandler = candidateChangeHandler;
-		this.candidateRepositoryRetrieval = candidateRepository;
-		this.candidateRepositoryWrite = candidateRepositoryCommands;
-		this.ddOrderDetailRequestHandler = ddOrderDetailRequestHandler;
-		this.mainDataRequestHandler = mainDataRequestHandler;
-	}
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWrite;
+	@NonNull private final CandidateChangeService candidateChangeHandler;
+	@NonNull private final DDOrderDetailRequestHandler ddOrderDetailRequestHandler;
+	@NonNull private final MainDataRequestHandler mainDataRequestHandler;
 
 	@NonNull
 	public static WarehouseId computeWarehouseId(
@@ -91,16 +75,13 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		{
 			case DEMAND:
 				return ddOrderEvent.getFromWarehouseId();
-
 			case SUPPLY:
 				return ddOrderEvent.getToWarehouseId();
-
 			default:
-				break;
+				throw new AdempiereException("Unexpected candidateType").appendParametersToMessage()
+						.setParameter("candidateType", candidateType)
+						.setParameter("abstractDDOrderEvent", ddOrderEvent);
 		}
-		throw new AdempiereException("Unexpected candidateType").appendParametersToMessage()
-				.setParameter("candidateType", candidateType)
-				.setParameter("abstractDDOrderEvent", ddOrderEvent);
 	}
 
 	@NonNull
@@ -109,48 +90,36 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 			@NonNull final DDOrderLine ddOrderLine,
 			@NonNull final CandidateType candidateType)
 	{
+
 		switch (candidateType)
 		{
 			case DEMAND:
-				final Instant datePromised = ddOrderEvent.getDdOrder().getDatePromised();
-				final int durationDays = ddOrderLine.getDurationDays();
-				return datePromised.minus(durationDays, ChronoUnit.DAYS);
-
+				return ddOrderLine.getDemandDate();
 			case SUPPLY:
-				return ddOrderEvent.getDdOrder().getDatePromised();
-
+				return ddOrderEvent.getDdOrder().getSupplyDate();
 			default:
-				break;
+				throw new AdempiereException("Unexpected candidateType").appendParametersToMessage()
+						.setParameter("candidateType", candidateType)
+						.setParameter("abstractDDOrderEvent", ddOrderEvent);
 		}
-		throw new AdempiereException("Unexpected candidateType").appendParametersToMessage()
-				.setParameter("candidateType", candidateType)
-				.setParameter("abstractDDOrderEvent", ddOrderEvent);
 	}
 
 	/**
-	 * @return the groupId of the candidates that were created or updated.
+	 *
 	 */
-	protected final ImmutableSet<MaterialDispoGroupId> handleAbstractDDOrderEvent(@NonNull final AbstractDDOrderEvent ddOrderEvent)
+	protected final void createAndProcessCandidates(@NonNull final AbstractDDOrderEvent ddOrderEvent)
 	{
-		final ImmutableSet.Builder<MaterialDispoGroupId> groupIds = ImmutableSet.builder();
-
 		for (final DDOrderLine ddOrderLine : ddOrderEvent.getDdOrder().getLines())
 		{
-			final MaterialDispoGroupId groupId = createAndProcessCandidatePair(ddOrderEvent, ddOrderLine);
-			if (groupId != null)
-			{
-				groupIds.add(groupId);
-			}
+			createAndProcessCandidatePair(ddOrderEvent, ddOrderLine);
 		}
-		return groupIds.build();
 	}
 
-	private MaterialDispoGroupId createAndProcessCandidatePair(
+	private void createAndProcessCandidatePair(
 			final AbstractDDOrderEvent ddOrderEvent,
 			final DDOrderLine ddOrderLine)
 	{
 		final DDOrder ddOrder = ddOrderEvent.getDdOrder();
-		// final CandidateStatus candidateStatus = computeCandidateStatus(ddOrder);
 
 		//
 		// create the supply candidate
@@ -177,7 +146,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.lotForLot(lotForLot)
 				.build();
 
-		final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
+		final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate).toCandidateWithQtyDelta();
 
 		// create  or update the demand candidate
 
@@ -197,14 +166,14 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.materialDescriptor(demandMaterialDescriptor)
 				.minMaxDescriptor(ddOrderLine.getFromWarehouseMinMaxDescriptor())
 				.businessCaseDetail(distributionDetail)
-				.additionalDemandDetail(Optional.ofNullable(demanddetail).map(detail -> detail.withTraceId(ddOrderEvent.getEventDescriptor().getTraceId())).orElse(null))
+				.additionalDemandDetail(demanddetail != null ? demanddetail.withTraceId(ddOrderEvent.getTraceId()) : null)
 				.seqNo(expectedSeqNoForDemandCandidate)
 				.simulated(ddOrder.isSimulated())
 				.lotForLot(lotForLot)
 				.build();
 
 		// this might cause 'candidateChangeHandler' to trigger another event
-		final Candidate demandCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(demandCandidate);
+		final Candidate demandCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(demandCandidate).toCandidateWithQtyDelta();
 
 		final int seqNoOfDemand = demandCandidateWithId.getSeqNo();
 		if (expectedSeqNoForDemandCandidate != seqNoOfDemand)
@@ -222,7 +191,6 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 			handleMainDataUpdates((DDOrderCreatedEvent)ddOrderEvent, ddOrderLine);
 		}
 
-		return groupId;
 	}
 
 	private CandidateBuilder createDemandCandidateBuilder(final AbstractDDOrderEvent ddOrderEvent, final DDOrderLine ddOrderLine)
@@ -233,10 +201,9 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				CandidateType.DEMAND);
 		final Candidate existingDemandCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingDemandQuery);
 
-		final CandidateBuilder demandCandidateBuilder = existingDemandCandidateOrNull != null
+		return existingDemandCandidateOrNull != null
 				? existingDemandCandidateOrNull.toBuilder()
-				: Candidate.builderForEventDescr(ddOrderEvent.getEventDescriptor());
-		return demandCandidateBuilder;
+				: Candidate.builderForEventDescriptor(ddOrderEvent.getEventDescriptor());
 	}
 
 	private CandidateBuilder createSupplyCandidateBuilder(final AbstractDDOrderEvent ddOrderEvent, final DDOrderLine ddOrderLine)
@@ -248,10 +215,9 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		final Candidate existingSupplyCandidateOrNull = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(preExistingSupplyQuery);
 
-		final CandidateBuilder supplyCandidateBuilder = existingSupplyCandidateOrNull != null
+		return existingSupplyCandidateOrNull != null
 				? existingSupplyCandidateOrNull.toBuilder()
-				: Candidate.builderForEventDescr(ddOrderEvent.getEventDescriptor());
-		return supplyCandidateBuilder;
+				: Candidate.builderForEventDescriptor(ddOrderEvent.getEventDescriptor());
 	}
 
 	private MaterialDescriptor createDemandMaterialDescriptor(
@@ -283,7 +249,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		return MaterialDescriptor.builder()
 				.productDescriptor(ddOrderLine.getProductDescriptor())
 				// .customerId(ddOrderLine.getBPartnerId()) // the ddOrder line's bpartner is not the customer, but probably the shipper
-				.quantity(ddOrderLine.getQty());
+				.quantity(ddOrderLine.getQtyToMove());
 	}
 
 	protected abstract CandidatesQuery createPreExistingCandidatesQuery(
@@ -291,19 +257,16 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 			DDOrderLine ddOrderLine,
 			CandidateType candidateType);
 
-	protected abstract Flag extractIsAdviseEvent(
-			@NonNull final AbstractDDOrderEvent ddOrderEvent);
-
 	private DistributionDetail createCandidateDetailFromDDOrderAndLine(
 			@NonNull final DDOrder ddOrder,
 			@NonNull final DDOrderLine ddOrderLine)
 	{
 		return DistributionDetail.builder()
 				.ddOrderDocStatus(ddOrder.getDocStatus())
-				.ddOrderId(ddOrder.getDdOrderId())
-				.ddOrderLineId(ddOrderLine.getDdOrderLineId())
-				.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
-				.qty(ddOrderLine.getQty())
+				.ddOrderRef(DDOrderRef.ofNullableDDOrderAndLineId(ddOrder.getDdOrderId(), ddOrderLine.getDdOrderLineId()))
+				.forwardPPOrderRef(ddOrder.getForwardPPOrderRef())
+				.distributionNetworkAndLineId(ddOrderLine.getDistributionNetworkAndLineId())
+				.qty(ddOrderLine.getQtyToMove())
 				.plantId(ddOrder.getPlantId())
 				.productPlanningId(ddOrder.getProductPlanningId())
 				.shipperId(ddOrder.getShipperId())
@@ -317,7 +280,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 			return;
 		}
 
-		final OrgId orgId = ddOrderCreatedEvent.getEventDescriptor().getOrgId();
+		final OrgId orgId = ddOrderCreatedEvent.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		final DDOrderMainDataHandler mainDataUpdater = DDOrderMainDataHandler.builder()

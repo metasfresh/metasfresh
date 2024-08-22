@@ -10,6 +10,18 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
     And metasfresh initially has no EDI_Desadv_Pack data
     And destroy existing M_HUs
 
+    
+    
+    
+
+
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
   @Id:S0316_010
   Scenario: S0316_010 - 1 Pack from 1 line with no HU & no packing item.
   There are no packing-infos to go with, so it assumes one LU, one TU and all CUs within that TU.
@@ -19,38 +31,38 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   - M_HU_PI_Item_Product_ID = 101 (No Packing Item)
 
     Given metasfresh contains M_Products:
-      | Identifier    | Name                     |
-      | p_1_S0316_010 | salesProduct_S0316_010_1 |
+      | Identifier    |
+      | p_1_S0316_010 |
     And metasfresh contains M_PricingSystems
-      | Identifier     | Name             | Value             | OPT.Description       | OPT.IsActive |
-      | ps_1_S0316_010 | name_S0316_010_1 | value_S0316_010_1 | description_S0316_010 | true         |
+      | Identifier     |
+      | ps_1_S0316_010 |
     And metasfresh contains M_PriceLists
-      | Identifier     | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1_S0316_010 | ps_1_S0316_010                | DE                        | EUR                 | name_S0316_010 | null            | true  | false         | 2              | true         |
+      | Identifier     | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_1_S0316_010 | ps_1_S0316_010     | DE           | EUR           | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                       | ValidFrom  |
-      | plv_1_S0316_010 | pl_1_S0316_010            | salesOrder-PLV_S0316_010_1 | 2021-04-01 |
+      | Identifier      | M_PriceList_ID |
+      | plv_1_S0316_010 | pl_1_S0316_010 |
     And metasfresh contains M_ProductPrices
-      | Identifier     | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1_S0316_010 | plv_1_S0316_010                   | p_1_S0316_010           | 10.0     | PCE               | Normal                        |
+      | Identifier     | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | pp_1_S0316_010 | plv_1_S0316_010        | p_1_S0316_010 | 10.0     | PCE      | Normal           |
     And metasfresh contains C_BPartners:
-      | Identifier              | Name             | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1_S0316_010 | name_S0316_010_1 | N            | Y              | ps_1_S0316_010                |
+      | Identifier  | IsCustomer | M_PricingSystem_ID |
+      | endcustomer | Y          | ps_1_S0316_010     |
     And the following c_bpartner is changed
-      | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
-      | endcustomer_1_S0316_010  | true                     | bPartnerDesadvRecipientGLN |
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
+      | endcustomer   | true                 | bPartnerDesadvRecipientGLN |
 
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
-      | endcustomer_1_S0316_010  | p_1_S0316_010           |
+      | endcustomer              | p_1_S0316_010           |
 
     And metasfresh contains C_Orders:
-      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
-      | o_1_S0316_010 | true    | endcustomer_1_S0316_010  | 2021-04-17  | po_ref_mock     |
+      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   |
+      | o_1_S0316_010 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ |
 
     And metasfresh contains C_OrderLines:
-      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1_S0316_010 | o_1_S0316_010         | p_1_S0316_010           | 10         |
+      | Identifier     | C_Order_ID    | M_Product_ID  | QtyEntered |
+      | ol_1_S0316_010 | o_1_S0316_010 | p_1_S0316_010 | 10         |
 
     When the order identified by o_1_S0316_010 is completed
 
@@ -71,8 +83,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | shipmentLine_1_S0316_010  | s_1_S0316_010         | p_1_S0316_010           | 10          | true      | ol_1_S0316_010                |
 
     And after not more than 30s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial |
-      | p_1_S0316_010                 | true                | null                   | null                                    | null                        |
+      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial | OPT.Line |
+      | p_1_S0316_010                 | true                | null                   | null                                    | null                        | 10       |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
@@ -84,7 +96,18 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And after not more than 30s, there are no records in EDI_Desadv_Pack
 
+    
+    
+    
 
+
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
   Scenario: 1 Pack from 1 line with no HU & no packing item.
   There are no packing-infos to go with, so it assumes one LU, one TU and all CUs within that TU.
   StockUOM = PCE; InvoiceUOM = KGM
@@ -94,41 +117,41 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   - M_HU_PI_Item_Product_ID = 101 (No Packing Item)
 
     Given metasfresh contains M_Products:
-      | Identifier     | Name                      |
-      | p_1_11212023_4 | salesProduct_11212023_4_1 |
+      | Identifier     |
+      | p_1_11212023_4 |
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1_11212023_4          | PCE                    | KGM                  | 0.25         |
     And metasfresh contains M_PricingSystems
-      | Identifier      | Name              | Value              | OPT.Description        | OPT.IsActive |
-      | ps_1_11212023_4 | name_11212023_4_1 | value_11212023_4_1 | description_11212023_4 | true         |
+      | Identifier      |
+      | ps_1_11212023_4 |
     And metasfresh contains M_PriceLists
-      | Identifier      | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1_11212023_4 | ps_1_11212023_4               | DE                        | EUR                 | name_11212023_4 | null            | true  | false         | 2              | true         |
+      | Identifier      | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_1_11212023_4 | ps_1_11212023_4    | DE           | EUR           | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier       | M_PriceList_ID.Identifier | Name                        | ValidFrom  |
-      | plv_1_11212023_4 | pl_1_11212023_4           | salesOrder-PLV_11212023_4_1 | 2021-04-01 |
+      | Identifier       | M_PriceList_ID  |
+      | plv_1_11212023_4 | pl_1_11212023_4 |
     And metasfresh contains M_ProductPrices
-      | Identifier      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1_11212023_4 | plv_1_11212023_4                  | p_1_11212023_4          | 10.0     | KGM               | Normal                        |
+      | Identifier      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | pp_1_11212023_4 | plv_1_11212023_4       | p_1_11212023_4 | 10.0     | KGM      | Normal           |
     And metasfresh contains C_BPartners:
-      | Identifier               | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1_11212023_4 | name_11212023_4_1 | N            | Y              | ps_1_11212023_4               |
+      | Identifier  | IsCustomer | M_PricingSystem_ID |
+      | endcustomer | Y          | ps_1_11212023_4    |
     And the following c_bpartner is changed
-      | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
-      | endcustomer_1_11212023_4 | true                     | bPartnerDesadvRecipientGLN |
+      | C_BPartner_ID.Identifier | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
+      | endcustomer              | true                 | bPartnerDesadvRecipientGLN |
 
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
-      | endcustomer_1_11212023_4 | p_1_11212023_4          |
+      | endcustomer              | p_1_11212023_4          |
 
     And metasfresh contains C_Orders:
-      | Identifier     | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference          |
-      | o_1_11212023_4 | true    | endcustomer_1_11212023_4 | 2021-04-17  | po_ref_mock_1_11212023_4 |
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   |
+      | o_1_11212023_4 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ |
 
     And metasfresh contains C_OrderLines:
-      | Identifier      | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1_11212023_4 | o_1_11212023_4        | p_1_11212023_4          | 10         |
+      | Identifier      | C_Order_ID     | M_Product_ID   | QtyEntered |
+      | ol_1_11212023_4 | o_1_11212023_4 | p_1_11212023_4 | 10         |
 
     When the order identified by o_1_11212023_4 is completed
 
@@ -149,8 +172,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | shipmentLine_1_11212023_4 | s_1_11212023_4        | p_1_11212023_4          | 10          | true      | ol_1_11212023_4               |
 
     And after not more than 30s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial |
-      | p_1_11212023_4                | true                | null                   | null                                    | null                        |
+      | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID | M_HU_PackagingCode_LU_ID | GTIN_LU_PackingMaterial | Line |
+      | p_1_11212023_4     | true                | null    | null                     | null                    | 10   |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
@@ -162,6 +185,18 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And after not more than 30s, there are no records in EDI_Desadv_Pack
 
+    
+    
+    
+
+
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
   Scenario: 1 Pack from 1 line with no HU & no packing item.
   There are no packing-infos to go with, so it assumes one LU, one TU and all CUs within that TU.
   StockUOM = PCE; InvoiceUOM = KGM
@@ -173,41 +208,41 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   - M_HU_PI_Item_Product_ID = 101 (No Packing Item)
 
     Given metasfresh contains M_Products:
-      | Identifier     | Name                      |
-      | p_1_11212023_1 | salesProduct_11212023_1_1 |
+      | Identifier     |
+      | p_1_11212023_1 |
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate | OPT.IsCatchUOMForProduct |
       | p_1_11212023_1          | PCE                    | KGM                  | 0.25         | true                     |
     And metasfresh contains M_PricingSystems
-      | Identifier      | Name              | Value              | OPT.Description        | OPT.IsActive |
-      | ps_1_11212023_1 | name_11212023_1_1 | value_11212023_1_1 | description_11212023_1 | true         |
+      | Identifier      |
+      | ps_1_11212023_1 |
     And metasfresh contains M_PriceLists
-      | Identifier      | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1_11212023_1 | ps_1_11212023_1               | DE                        | EUR                 | name_11212023_1 | null            | true  | false         | 2              | true         |
+      | Identifier      | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_1_11212023_1 | ps_1_11212023_1    | DE           | EUR           | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier       | M_PriceList_ID.Identifier | Name                        | ValidFrom  |
-      | plv_1_11212023_1 | pl_1_11212023_1           | salesOrder-PLV_11212023_1_1 | 2021-04-01 |
+      | Identifier       | M_PriceList_ID  |
+      | plv_1_11212023_1 | pl_1_11212023_1 |
     And metasfresh contains M_ProductPrices
-      | Identifier      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.InvoicableQtyBasedOn |
-      | pp_1_11212023_1 | plv_1_11212023_1                  | p_1_11212023_1          | 10.0     | KGM               | Normal                        | CatchWeight              |
+      | Identifier      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID | C_TaxCategory_ID | InvoicableQtyBasedOn |
+      | pp_1_11212023_1 | plv_1_11212023_1       | p_1_11212023_1 | 10.0     | KGM      | Normal           | CatchWeight          |
     And metasfresh contains C_BPartners:
-      | Identifier               | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1_11212023_1 | name_11212023_1_1 | N            | Y              | ps_1_11212023_1               |
+      | Identifier  | IsCustomer | M_PricingSystem_ID |
+      | endcustomer | Y          | ps_1_11212023_1    |
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
-      | endcustomer_1_11212023_1 | true                     | bPartnerDesadvRecipientGLN |
+      | endcustomer              | true                     | bPartnerDesadvRecipientGLN |
 
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
-      | endcustomer_1_11212023_1 | p_1_11212023_1          |
+      | endcustomer              | p_1_11212023_1          |
 
     And metasfresh contains C_Orders:
-      | Identifier     | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference        |
-      | o_1_11212023_1 | true    | endcustomer_1_11212023_1 | 2021-04-17  | po_ref_mock_11212023_1 |
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   |
+      | o_1_11212023_1 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ |
 
     And metasfresh contains C_OrderLines:
-      | Identifier      | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1_11212023_1 | o_1_11212023_1        | p_1_11212023_1          | 10         |
+      | Identifier      | C_Order_ID     | M_Product_ID   | QtyEntered |
+      | ol_1_11212023_1 | o_1_11212023_1 | p_1_11212023_1 | 10         |
 
     When the order identified by o_1_11212023_1 is completed
 
@@ -232,8 +267,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | shipmentLine_1_11212023_1 | s_1_11212023_1        | p_1_11212023_1          | 10          | true      | ol_1_11212023_1               |
 
     And after not more than 30s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial |
-      | p_1_11212023_1                | true                | null                   | null                                    | null                        |
+      | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID | M_HU_PackagingCode_LU_ID | GTIN_LU_PackingMaterial | Line |
+      | p_1_11212023_1     | true                | null    | null                     | null                    | 10   |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
@@ -245,6 +280,18 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And after not more than 30s, there are no records in EDI_Desadv_Pack
 
+    
+    
+    
+
+
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
   @Id:S0316_020
   Scenario: S0316_020 - 1 Pack from 1 line with no HU & 1 packing item.
   The packing-info with a capacity of 10 is created within the test and assigned to the order-line, so we expect the ordered qty to be distributed among 10 TUs.
@@ -254,31 +301,31 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   - M_HU_PI_Item_Product_ID = created in the test
 
     Given metasfresh contains M_Products:
-      | Identifier    | Name                        |
-      | p_1_S0316_020 | salesProduct_S0316_020_2    |
-      | p_2_S0316_020 | packingMaterial_S0316_020_2 |
+      | Identifier    |
+      | p_1_S0316_020 |
+      | p_2_S0316_020 |
     And metasfresh contains M_PricingSystems
-      | Identifier     | Name             | Value             | OPT.Description       | OPT.IsActive |
-      | ps_1_S0316_020 | name_S0316_020_2 | value_S0316_020_2 | description_S0316_020 | true         |
+      | Identifier     |
+      | ps_1_S0316_020 |
     And metasfresh contains M_PriceLists
-      | Identifier     | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name             | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1_S0316_020 | ps_1_S0316_020                | DE                        | EUR                 | name_S0316_020_2 | null            | true  | false         | 2              | true         |
+      | Identifier     | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1_S0316_020 | ps_1_S0316_020     | DE           | EUR           | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                       | ValidFrom  |
-      | plv_1_S0316_020 | pl_1_S0316_020            | salesOrder-PLV_S0316_020_2 | 2021-04-01 |
+      | Identifier      | M_PriceList_ID |
+      | plv_1_S0316_020 | pl_1_S0316_020 |
     And metasfresh contains M_ProductPrices
-      | Identifier     | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1_S0316_020 | plv_1_S0316_020                   | p_1_S0316_020           | 10.0     | PCE               | Normal                        |
-      | pp_2_S0316_020 | plv_1_S0316_020                   | p_2_S0316_020           | 10.0     | PCE               | Normal                        |
+      | Identifier     | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | pp_1_S0316_020 | plv_1_S0316_020        | p_1_S0316_020 | 10.0     | PCE      | Normal           |
+      | pp_2_S0316_020 | plv_1_S0316_020        | p_2_S0316_020 | 10.0     | PCE      | Normal           |
     And metasfresh contains C_BPartners:
-      | Identifier              | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1_S0316_020 | Endcustomer_S0316_020_2 | N            | Y              | ps_1_S0316_020                |
+      | Identifier  | IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer | Y          | ps_1_S0316_020                |
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
-      | endcustomer_1_S0316_020  | true                     | bPartnerDesadvRecipientGLN |
+      | endcustomer              | true                     | bPartnerDesadvRecipientGLN |
     And metasfresh contains C_BPartner_Product
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN            |
-      | bp_1_S0316_020                   | endcustomer_1_S0316_020  | p_2_S0316_020           | bPartnerProductGTIN |
+      | bp_1_S0316_020                   | endcustomer              | p_2_S0316_020           | bPartnerProductGTIN |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name                |
       | pm_1_S0316_020                     | p_2_S0316_020               | packingMaterialTest |
@@ -287,15 +334,15 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huPackagingCode_1_S0316_020      | ISO1          | LU          |
       | huPackagingCode_2_S0316_020      | CART          | TU          |
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier        | Name                        |
-      | huPackingLU_S0316_020        | huPackingLU_S0316_020_2     |
-      | huPackingTU_S0316_020        | huPackingTU_S0316_020_2     |
-      | huPackingVirtualPI_S0316_020 | No Packing Item_S0316_020_2 |
+      | M_HU_PI_ID                   |
+      | huPackingLU_S0316_020        |
+      | huPackingTU_S0316_020        |
+      | huPackingVirtualPI_S0316_020 |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier        | Name                         | HU_UnitType | IsCurrent | OPT.M_HU_PackagingCode_ID.Identifier |
-      | packingVersionLU_S0316_020    | huPackingLU_S0316_020        | packingVersionLU_S0316_020_2 | LU          | Y         |                                      |
-      | packingVersionTU_S0316_020    | huPackingTU_S0316_020        | packingVersionTU_S0316_020_2 | TU          | Y         | huPackagingCode_2_S0316_020          |
-      | packingVersionCU_S0316_020    | huPackingVirtualPI_S0316_020 | No Packing Item_S0316_020_2  | V           | Y         |                                      |
+      | M_HU_PI_Version_ID         | M_HU_PI_ID                   | HU_UnitType | IsCurrent | M_HU_PackagingCode_ID       |
+      | packingVersionLU_S0316_020 | huPackingLU_S0316_020        | LU          | Y         |                             |
+      | packingVersionTU_S0316_020 | huPackingTU_S0316_020        | TU          | Y         | huPackagingCode_2_S0316_020 |
+      | packingVersionCU_S0316_020 | huPackingVirtualPI_S0316_020 | V           | Y         |                             |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier | OPT.M_HU_PackingMaterial_ID.Identifier |
       | huPiItemLU_S0316_020       | packingVersionLU_S0316_020    | 10  | HU       | huPackingTU_S0316_020            |                                        |
@@ -321,12 +368,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   """
 
     And metasfresh contains C_Orders:
-      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference         |
-      | o_1_S0316_020 | true    | endcustomer_1_S0316_020  | 2021-04-17  | po_ref_mock_S0316_020_2 |
+      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   |
+      | o_1_S0316_020 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ |
 
     And metasfresh contains C_OrderLines:
-      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
-      | ol_1_S0316_020 | o_1_S0316_020         | p_1_S0316_020           | 100        | huAuditProductTU_S0316_020             | orderLineASI_S0316_020                   |
+      | Identifier     | C_Order_ID    | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID    | M_AttributeSetInstance_ID |
+      | ol_1_S0316_020 | o_1_S0316_020 | p_1_S0316_020 | 100        | huAuditProductTU_S0316_020 | orderLineASI_S0316_020    |
 
     When the order identified by o_1_S0316_020 is completed
 
@@ -347,8 +394,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | shipmentLine_1_S0316_020  | s_1_S0316_020         | p_1_S0316_020           | 100         | true      | ol_1_S0316_020                |
 
     And after not more than 60s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial |
-      | p_1_S0316_020                 | true                | null                   | huPackagingCode_1_S0316_020             | gtinPiItemProduct           |
+      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID | M_HU_PackagingCode_LU_ID    | GTIN_LU_PackingMaterial | Line |
+      | p_1_S0316_020                 | true                | null        | huPackagingCode_1_S0316_020 | gtinPiItemProduct       | 10   |
 
     And after not more than 60s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
@@ -361,6 +408,18 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
     And after not more than 60s, there are no records in EDI_Desadv_Pack
 
 
+    
+    
+    
+
+
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
   @Id:S0316_030
   Scenario: S0316_030 - 1 Pack from 1 line with HU for entire qty.
   There are no packing-infos to go with, but an actual HU is picked, so we use the qtys from that HU.
@@ -373,46 +432,46 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   - QtyPickList = 10
 
     Given metasfresh contains M_Products:
-      | Identifier    | Name                           |
-      | p_1_S0316_030 | salesProduct_S0316_030_1       |
-      | p_2_S0316_030 | packingMaterial_LU_S0316_030_2 |
-      | p_3_S0316_030 | packingMaterial_TU_S0316_030_2 |
+      | Identifier    |
+      | p_1_S0316_030 |
+      | p_2_S0316_030 |
+      | p_3_S0316_030 |
     And metasfresh contains M_PricingSystems
-      | Identifier     | Name             | Value             | OPT.Description            | OPT.IsActive |
-      | ps_1_S0316_030 | name_S0316_030_1 | value_S0316_030_1 | pricing_system_description | true         |
+      | Identifier     |
+      | ps_1_S0316_030 |
     And metasfresh contains M_PriceLists
-      | Identifier     | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name             | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1_S0316_030 | ps_1_S0316_030                | DE                        | EUR                 | name_S0316_030_1 | null            | true  | false         | 2              | true         |
+      | Identifier     | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_1_S0316_030 | ps_1_S0316_030     | DE           | EUR           | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                       | ValidFrom  |
-      | plv_1_S0316_030 | pl_1_S0316_030            | salesOrder-PLV_S0316_030_1 | 2021-04-01 |
+      | Identifier      | M_PriceList_ID |
+      | plv_1_S0316_030 | pl_1_S0316_030 |
     And metasfresh contains M_ProductPrices
-      | Identifier     | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1_S0316_030 | plv_1_S0316_030                   | p_1_S0316_030           | 10.0     | PCE               | Normal                        |
-      | pp_2_S0316_030 | plv_1_S0316_030                   | p_2_S0316_030           | 10.0     | PCE               | Normal                        |
-      | pp_3_S0316_030 | plv_1_S0316_030                   | p_3_S0316_030           | 10.0     | PCE               | Normal                        |
+      | Identifier     | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | pp_1_S0316_030 | plv_1_S0316_030        | p_1_S0316_030 | 10.0     | PCE      | Normal           |
+      | pp_2_S0316_030 | plv_1_S0316_030        | p_2_S0316_030 | 10.0     | PCE      | Normal           |
+      | pp_3_S0316_030 | plv_1_S0316_030        | p_3_S0316_030 | 10.0     | PCE      | Normal           |
 
     And metasfresh contains C_BPartners:
-      | Identifier              | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1_S0316_030 | Endcustomer_S0316_030_1 | N            | Y              | ps_1_S0316_030                |
+      | Identifier  | IsCustomer | M_PricingSystem_ID |
+      | endcustomer | Y          | ps_1_S0316_030     |
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
-      | endcustomer_1_S0316_030  | true                     | bPartnerDesadvRecipientGLN |
+      | endcustomer              | true                     | bPartnerDesadvRecipientGLN |
     And load M_HU_PackagingCode:
       | M_HU_PackagingCode_ID.Identifier | PackagingCode | HU_UnitType |
       | huPackagingCode_1_S0316_030      | ISO1          | LU          |
       | huPackagingCode_2_S0316_030      | CART          | TU          |
 
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier        | Name                        |
-      | huPackingLU_S0316_030        | huPackingLU_S0316_030_1     |
-      | huPackingTU_S0316_030        | huPackingTU_S0316_030_1     |
-      | huPackingVirtualPI_S0316_030 | No Packing Item_S0316_030_1 |
+      | M_HU_PI_ID.Identifier        |
+      | huPackingLU_S0316_030        |
+      | huPackingTU_S0316_030        |
+      | huPackingVirtualPI_S0316_030 |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier        | Name                         | HU_UnitType | IsCurrent | OPT.M_HU_PackagingCode_ID.Identifier |
-      | packingVersionLU_S0316_030    | huPackingLU_S0316_030        | packingVersionLU_S0316_030_1 | LU          | Y         | huPackagingCode_1_S0316_030          |
-      | packingVersionTU_S0316_030    | huPackingTU_S0316_030        | packingVersionTU_S0316_030_1 | TU          | Y         | huPackagingCode_2_S0316_030          |
-      | packingVersionCU_S0316_030    | huPackingVirtualPI_S0316_030 | No Packing Item_S0316_030_1  | V           | Y         |                                      |
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID                   | HU_UnitType | IsCurrent | M_HU_PackagingCode_ID       |
+      | packingVersionLU_S0316_030    | huPackingLU_S0316_030        | LU          | Y         | huPackagingCode_1_S0316_030 |
+      | packingVersionTU_S0316_030    | huPackingTU_S0316_030        | TU          | Y         | huPackagingCode_2_S0316_030 |
+      | packingVersionCU_S0316_030    | huPackingVirtualPI_S0316_030 | V           | Y         |                             |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
       | huPiItemLU_S0316_030       | packingVersionLU_S0316_030    | 10  | HU       | huPackingTU_S0316_030            |
@@ -451,8 +510,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And metasfresh contains C_BPartner_Product
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN               |
-      | bp_1_S0316_030                   | endcustomer_1_S0316_030  | p_2_S0316_030           | bPartnerProductGTIN_LU |
-      | bp_2_S0316_030                   | endcustomer_1_S0316_030  | p_3_S0316_030           | bPartnerProductGTIN_TU |
+      | bp_1_S0316_030                   | endcustomer              | p_2_S0316_030           | bPartnerProductGTIN_LU |
+      | bp_2_S0316_030                   | endcustomer              | p_3_S0316_030           | bPartnerProductGTIN_TU |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name                             |
       | pm_1_S0316_030                     | p_2_S0316_030               | packingMaterialTest_LU_S0316_030 |
@@ -464,12 +523,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huPiItemTU_S0316_030    | createdTU_S0316_030 | huPiItemTU_S0316_030       | 10  | pm_2_S0316_030                     | PM           |
 
     And metasfresh contains C_Orders:
-      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference    | OPT.C_PaymentTerm_ID | deliveryRule |
-      | o_1_S0316_030 | true    | endcustomer_1_S0316_030  | 2021-04-17  | po_ref_S0316_030_1 | 1000012              | F            |
+      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |
+      | o_1_S0316_030 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ | 1000012          | F            |
 
     And metasfresh contains C_OrderLines:
-      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1_S0316_030 | o_1_S0316_030         | p_1_S0316_030           | 10         |
+      | Identifier     | C_Order_ID    | M_Product_ID  | QtyEntered |
+      | ol_1_S0316_030 | o_1_S0316_030 | p_1_S0316_030 | 10         |
 
     When the order identified by o_1_S0316_030 is completed
 
@@ -500,8 +559,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | shipmentLine_1_S0316_030  | s_1_S0316_030         | p_1_S0316_030           | 10          | true      | ol_1_S0316_030                |
 
     Then after not more than 30s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial |
-      | p_1_S0316_030                 | true                | createdLU_S0316_030    | huPackagingCode_1_S0316_030             | bPartnerProductGTIN_LU      |
+      | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID             | M_HU_PackagingCode_LU_ID    | GTIN_LU_PackingMaterial | Line |
+      | p_1_S0316_030      | true                | createdLU_S0316_030 | huPackagingCode_1_S0316_030 | bPartnerProductGTIN_LU  | 10   |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
@@ -512,10 +571,10 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_1_S0316_030                 | ipaSSCC18_13092022 |
 
     And generate csv file for sscc labels for 'p_1_S0316_030'
-      | ReportDataLine                                                                                                                                              |
-      | %BTW% /AF="\\\V-APSRV01\PRAGMA\ETIKETTEN\LAYOUTS\SSCC.BTW" /D="<TRIGGER FILE NAME>" /PRN="\\\V-DCSRV02\ETIKETTEN01" /R=3 /P /D                              |
-      | %END%                                                                                                                                                       |
-      | "1","ipaSSCC18_13092022","po_ref_S0316_030_1","16.04.2021","","salesProduct_S0316_030_1","1","0","210420","luLotNumber","","","","","","","","","","","","" |
+      | ReportDataLine                                                                                                                                  |
+      | %BTW% /AF="\\\V-APSRV01\PRAGMA\ETIKETTEN\LAYOUTS\SSCC.BTW" /D="<TRIGGER FILE NAME>" /PRN="\\\V-DCSRV02\ETIKETTEN01" /R=3 /P /D                  |
+      | %END%                                                                                                                                           |
+      | "1","ipaSSCC18_13092022","@o_1_S0316_030@","16.04.2021","","@p_1_S0316_030@","1","0","210420","luLotNumber","","","","","","","","","","","","" |
 
     And the shipment identified by s_1_S0316_030 is reversed
 
@@ -523,6 +582,18 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And after not more than 30s, there are no records in EDI_Desadv_Pack
 
+    
+    
+    
+
+
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
   Scenario: 1 Pack from 1 line with HU for entire qty.
   There are no packing-infos to go with, but an actual HU is picked with actual weight, so we use the weight from that HU.
   in:
@@ -531,49 +602,49 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   - M_HU_PI_Item_Product_ID = 101 (No Packing Item)
 
     Given metasfresh contains M_Products:
-      | Identifier     | Name                            | OPT.Weight |
-      | p_1_11212023_2 | salesProduct_11212023_2_1       | 0.25       |
-      | p_2_11212023_2 | packingMaterial_LU_11212023_2_2 |            |
-      | p_3_11212023_2 | packingMaterial_TU_11212023_2_2 |            |
+      | Identifier     | Weight |
+      | p_1_11212023_2 | 0.25   |
+      | p_2_11212023_2 |        |
+      | p_3_11212023_2 |        |
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate | OPT.IsCatchUOMForProduct |
       | p_1_11212023_2          | PCE                    | KGM                  | 0.25         | true                     |
     And metasfresh contains M_PricingSystems
-      | Identifier      | Name              | Value              | OPT.Description            | OPT.IsActive |
-      | ps_1_11212023_2 | name_11212023_2_1 | value_11212023_2_1 | pricing_system_description | true         |
+      | Identifier      |
+      | ps_1_11212023_2 |
     And metasfresh contains M_PriceLists
-      | Identifier      | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name              | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1_11212023_2 | ps_1_11212023_2               | DE                        | EUR                 | name_11212023_2_1 | null            | true  | false         | 2              | true         |
+      | Identifier      | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_1_11212023_2 | ps_1_11212023_2    | DE           | EUR           | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier       | M_PriceList_ID.Identifier | Name                        | ValidFrom  |
-      | plv_1_11212023_2 | pl_1_11212023_2           | salesOrder-PLV_11212023_2_1 | 2021-04-01 |
+      | Identifier       | M_PriceList_ID  |
+      | plv_1_11212023_2 | pl_1_11212023_2 |
     And metasfresh contains M_ProductPrices
-      | Identifier      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.InvoicableQtyBasedOn |
-      | pp_1_11212023_2 | plv_1_11212023_2                  | p_1_11212023_2          | 10.0     | PCE               | Normal                        | CatchWeight              |
-      | pp_2_11212023_2 | plv_1_11212023_2                  | p_2_11212023_2          | 10.0     | PCE               | Normal                        |                          |
-      | pp_3_11212023_2 | plv_1_11212023_2                  | p_3_11212023_2          | 10.0     | PCE               | Normal                        |                          |
+      | Identifier      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID | C_TaxCategory_ID | InvoicableQtyBasedOn |
+      | pp_1_11212023_2 | plv_1_11212023_2       | p_1_11212023_2 | 10.0     | PCE      | Normal           | CatchWeight          |
+      | pp_2_11212023_2 | plv_1_11212023_2       | p_2_11212023_2 | 10.0     | PCE      | Normal           |                      |
+      | pp_3_11212023_2 | plv_1_11212023_2       | p_3_11212023_2 | 10.0     | PCE      | Normal           |                      |
 
     And metasfresh contains C_BPartners:
-      | Identifier               | Name                     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1_11212023_2 | Endcustomer_11212023_2_1 | N            | Y              | ps_1_11212023_2               |
+      | Identifier  | IsCustomer | M_PricingSystem_ID |
+      | endcustomer | Y          | ps_1_11212023_2    |
     And the following c_bpartner is changed
-      | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
-      | endcustomer_1_11212023_2 | true                     | bPartnerDesadvRecipientGLN |
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
+      | endcustomer   | true                 | bPartnerDesadvRecipientGLN |
     And load M_HU_PackagingCode:
       | M_HU_PackagingCode_ID.Identifier | PackagingCode | HU_UnitType |
       | huPackagingCode_1_11212023_2     | ISO1          | LU          |
       | huPackagingCode_2_11212023_2     | CART          | TU          |
 
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier         | Name                         |
-      | huPackingLU_11212023_2        | huPackingLU_11212023_2_1     |
-      | huPackingTU_11212023_2        | huPackingTU_11212023_2_1     |
-      | huPackingVirtualPI_11212023_2 | No Packing Item_11212023_2_1 |
+      | M_HU_PI_ID.Identifier         |
+      | huPackingLU_11212023_2        |
+      | huPackingTU_11212023_2        |
+      | huPackingVirtualPI_11212023_2 |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier         | Name                          | HU_UnitType | IsCurrent | OPT.M_HU_PackagingCode_ID.Identifier |
-      | packingVersionLU_11212023_2   | huPackingLU_11212023_2        | packingVersionLU_11212023_2_1 | LU          | Y         | huPackagingCode_1_11212023_2         |
-      | packingVersionTU_11212023_2   | huPackingTU_11212023_2        | packingVersionTU_11212023_2_1 | TU          | Y         | huPackagingCode_2_11212023_2         |
-      | packingVersionCU_11212023_2   | huPackingVirtualPI_11212023_2 | No Packing Item_11212023_2_1  | V           | Y         |                                      |
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID                    | HU_UnitType | IsCurrent | M_HU_PackagingCode_ID        |
+      | packingVersionLU_11212023_2   | huPackingLU_11212023_2        | LU          | Y         | huPackagingCode_1_11212023_2 |
+      | packingVersionTU_11212023_2   | huPackingTU_11212023_2        | TU          | Y         | huPackagingCode_2_11212023_2 |
+      | packingVersionCU_11212023_2   | huPackingVirtualPI_11212023_2 | V           | Y         |                              |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
       | huPiItemLU_11212023_2      | packingVersionLU_11212023_2   | 10  | HU       | huPackingTU_11212023_2           |
@@ -612,12 +683,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And metasfresh contains C_BPartner_Product
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN               |
-      | bp_1_11212023_2                  | endcustomer_1_11212023_2 | p_2_11212023_2          | bPartnerProductGTIN_LU |
-      | bp_2_11212023_2                  | endcustomer_1_11212023_2 | p_3_11212023_2          | bPartnerProductGTIN_TU |
+      | bp_1_11212023_2                  | endcustomer              | p_2_11212023_2          | bPartnerProductGTIN_LU |
+      | bp_2_11212023_2                  | endcustomer              | p_3_11212023_2          | bPartnerProductGTIN_TU |
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name                              |
-      | pm_1_11212023_2                    | p_2_11212023_2              | packingMaterialTest_LU_11212023_2 |
-      | pm_2_11212023_2                    | p_3_11212023_2              | packingMaterialTest_TU_11212023_2 |
+      | M_HU_PackingMaterial_ID | M_Product_ID   |
+      | pm_1_11212023_2         | p_2_11212023_2 |
+      | pm_2_11212023_2         | p_3_11212023_2 |
 
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier   | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
@@ -625,8 +696,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huPiItemTU_11212023_2   | createdTU_11212023_2 | huPiItemTU_11212023_2      | 10  | pm_2_11212023_2                    | PM           |
 
     And metasfresh contains C_Orders:
-      | Identifier     | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference     | OPT.C_PaymentTerm_ID | deliveryRule |
-      | o_1_11212023_2 | true    | endcustomer_1_11212023_2 | 2021-04-17  | po_ref_11212023_2_1 | 1000012              | F            |
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |
+      | o_1_11212023_2 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ | 1000012          | F            |
 
     And metasfresh contains C_OrderLines:
       | Identifier      | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
@@ -661,8 +732,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | shipmentLine_1_11212023_2 | s_1_11212023_2        | p_1_11212023_2          | 10          | true      | ol_1_11212023_2               |
 
     Then after not more than 30s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial |
-      | p_1_11212023_2                | true                | createdLU_11212023_2   | huPackagingCode_1_11212023_2            | bPartnerProductGTIN_LU      |
+      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | M_HU_ID              | M_HU_PackagingCode_LU_ID     | GTIN_LU_PackingMaterial | Line |
+      | p_1_11212023_2                | true                | createdLU_11212023_2 | huPackagingCode_1_11212023_2 | bPartnerProductGTIN_LU  | 10   |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
@@ -674,7 +745,19 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And after not more than 30s, there are no records in EDI_Desadv_Pack
 
-  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7528017001/job/20490070611
+    
+    
+    
+
+
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+#  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7528017001/job/20490070611
   Scenario: 1 Pack from 1 line with HU for entire qty.
   There are no packing-infos to go with, but an actual HU is picked with actual weight, so we use the weight from that HU and then we use the QtyToDeliverCatch_Override for the remaining qty
   in:
@@ -684,49 +767,49 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   - Weight = 0.25 KGM
 
     Given metasfresh contains M_Products:
-      | Identifier     | Name                            | OPT.Weight |
-      | p_1_11212023_3 | salesProduct_11212023_3_1       | 0.25       |
-      | p_2_11212023_3 | packingMaterial_LU_11212023_3_2 |            |
-      | p_3_11212023_3 | packingMaterial_TU_11212023_3_2 |            |
+      | Identifier     | Weight |
+      | p_1_11212023_3 | 0.25   |
+      | p_2_11212023_3 |        |
+      | p_3_11212023_3 |        |
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate | OPT.IsCatchUOMForProduct |
       | p_1_11212023_3          | PCE                    | KGM                  | 0.25         | true                     |
     And metasfresh contains M_PricingSystems
-      | Identifier      | Name              | Value              | OPT.Description            | OPT.IsActive |
-      | ps_1_11212023_3 | name_11212023_3_1 | value_11212023_3_1 | pricing_system_description | true         |
+      | Identifier      |
+      | ps_1_11212023_3 |
     And metasfresh contains M_PriceLists
-      | Identifier      | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name              | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1_11212023_3 | ps_1_11212023_3               | DE                        | EUR                 | name_11212023_3_1 | null            | true  | false         | 2              | true         |
+      | Identifier      | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_1_11212023_3 | ps_1_11212023_3    | DE           | EUR           | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier       | M_PriceList_ID.Identifier | Name                        | ValidFrom  |
-      | plv_1_11212023_3 | pl_1_11212023_3           | salesOrder-PLV_11212023_3_1 | 2021-04-01 |
+      | Identifier       | M_PriceList_ID  |
+      | plv_1_11212023_3 | pl_1_11212023_3 |
     And metasfresh contains M_ProductPrices
-      | Identifier      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.InvoicableQtyBasedOn |
-      | pp_1_11212023_3 | plv_1_11212023_3                  | p_1_11212023_3          | 10.0     | PCE               | Normal                        | CatchWeight              |
-      | pp_2_11212023_3 | plv_1_11212023_3                  | p_2_11212023_3          | 10.0     | PCE               | Normal                        |                          |
-      | pp_3_11212023_3 | plv_1_11212023_3                  | p_3_11212023_3          | 10.0     | PCE               | Normal                        |                          |
+      | Identifier      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID | C_TaxCategory_ID | InvoicableQtyBasedOn |
+      | pp_1_11212023_3 | plv_1_11212023_3       | p_1_11212023_3 | 10.0     | PCE      | Normal           | CatchWeight          |
+      | pp_2_11212023_3 | plv_1_11212023_3       | p_2_11212023_3 | 10.0     | PCE      | Normal           |                      |
+      | pp_3_11212023_3 | plv_1_11212023_3       | p_3_11212023_3 | 10.0     | PCE      | Normal           |                      |
 
     And metasfresh contains C_BPartners:
-      | Identifier               | Name                     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1_11212023_3 | Endcustomer_11212023_3_1 | N            | Y              | ps_1_11212023_3               |
+      | Identifier  | IsCustomer | M_PricingSystem_ID |
+      | endcustomer | Y          | ps_1_11212023_3    |
     And the following c_bpartner is changed
-      | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
-      | endcustomer_1_11212023_3 | true                     | bPartnerDesadvRecipientGLN |
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
+      | endcustomer   | true                 | bPartnerDesadvRecipientGLN |
     And load M_HU_PackagingCode:
-      | M_HU_PackagingCode_ID.Identifier | PackagingCode | HU_UnitType |
-      | huPackagingCode_1_11212023_3     | ISO1          | LU          |
-      | huPackagingCode_2_11212023_3     | CART          | TU          |
+      | M_HU_PackagingCode_ID        | PackagingCode | HU_UnitType |
+      | huPackagingCode_1_11212023_3 | ISO1          | LU          |
+      | huPackagingCode_2_11212023_3 | CART          | TU          |
 
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier         | Name                         |
-      | huPackingLU_11212023_3        | huPackingLU_11212023_3_1     |
-      | huPackingTU_11212023_3        | huPackingTU_11212023_3_1     |
-      | huPackingVirtualPI_11212023_3 | No Packing Item_11212023_3_1 |
+      | M_HU_PI_ID.Identifier         |
+      | huPackingLU_11212023_3        |
+      | huPackingTU_11212023_3        |
+      | huPackingVirtualPI_11212023_3 |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier         | Name                          | HU_UnitType | IsCurrent | OPT.M_HU_PackagingCode_ID.Identifier |
-      | packingVersionLU_11212023_3   | huPackingLU_11212023_3        | packingVersionLU_11212023_3_1 | LU          | Y         | huPackagingCode_1_11212023_3         |
-      | packingVersionTU_11212023_3   | huPackingTU_11212023_3        | packingVersionTU_11212023_3_1 | TU          | Y         | huPackagingCode_2_11212023_3         |
-      | packingVersionCU_11212023_3   | huPackingVirtualPI_11212023_3 | No Packing Item_11212023_3_1  | V           | Y         |                                      |
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID                    | HU_UnitType | IsCurrent | M_HU_PackagingCode_ID        |
+      | packingVersionLU_11212023_3   | huPackingLU_11212023_3        | LU          | Y         | huPackagingCode_1_11212023_3 |
+      | packingVersionTU_11212023_3   | huPackingTU_11212023_3        | TU          | Y         | huPackagingCode_2_11212023_3 |
+      | packingVersionCU_11212023_3   | huPackingVirtualPI_11212023_3 | V           | Y         |                              |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
       | huPiItemLU_11212023_3      | packingVersionLU_11212023_3   | 10  | HU       | huPackingTU_11212023_3           |
@@ -765,12 +848,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And metasfresh contains C_BPartner_Product
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN               |
-      | bp_1_11212023_3                  | endcustomer_1_11212023_3 | p_2_11212023_3          | bPartnerProductGTIN_LU |
-      | bp_2_11212023_3                  | endcustomer_1_11212023_3 | p_3_11212023_3          | bPartnerProductGTIN_TU |
+      | bp_1_11212023_3                  | endcustomer              | p_2_11212023_3          | bPartnerProductGTIN_LU |
+      | bp_2_11212023_3                  | endcustomer              | p_3_11212023_3          | bPartnerProductGTIN_TU |
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name                              |
-      | pm_1_11212023_3                    | p_2_11212023_3              | packingMaterialTest_LU_11212023_3 |
-      | pm_2_11212023_3                    | p_3_11212023_3              | packingMaterialTest_TU_11212023_3 |
+      | M_HU_PackingMaterial_ID | M_Product_ID   |
+      | pm_1_11212023_3         | p_2_11212023_3 |
+      | pm_2_11212023_3         | p_3_11212023_3 |
 
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier   | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
@@ -778,12 +861,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huPiItemTU_11212023_3   | createdTU_11212023_3 | huPiItemTU_11212023_3      | 10  | pm_2_11212023_3                    | PM           |
 
     And metasfresh contains C_Orders:
-      | Identifier     | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference     | OPT.C_PaymentTerm_ID | deliveryRule |
-      | o_1_11212023_3 | true    | endcustomer_1_11212023_3 | 2021-04-17  | po_ref_11212023_3_1 | 1000012              | F            |
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |
+      | o_1_11212023_3 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ | 1000012          | F            |
 
     And metasfresh contains C_OrderLines:
-      | Identifier      | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1_11212023_3 | o_1_11212023_3        | p_1_11212023_3          | 15         |
+      | Identifier      | C_Order_ID     | M_Product_ID   | QtyEntered |
+      | ol_1_11212023_3 | o_1_11212023_3 | p_1_11212023_3 | 15         |
 
     When the order identified by o_1_11212023_3 is completed
 
@@ -814,9 +897,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | s_1_11212023_3        | s_s_1_11212023_3                 | PD                | Y                  |
 
     Then after not more than 120s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial |
-      | p_1_11212023_3                | true                | createdLU_11212023_3   | huPackagingCode_1_11212023_3            | bPartnerProductGTIN_LU      |
-      | p_1_11212023_4                | true                |                        |                                         |                             |
+      | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID              | M_HU_PackagingCode_LU_ID     | GTIN_LU_PackingMaterial | Line |
+      | p_1_11212023_3     | true                | createdLU_11212023_3 | huPackagingCode_1_11212023_3 | bPartnerProductGTIN_LU  | 10   |
+      | p_1_11212023_4     | true                |                      |                              |                         | 20   |
 
     And after not more than 120s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
@@ -829,6 +912,18 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And after not more than 120s, there are no records in EDI_Desadv_Pack
 
+    
+    
+    
+
+
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
   @Id:S0316_040
   Scenario: S0316_040 - 2 Packs from 1 line with HU for partial qty & 1 packing item.
   The packing-info with a capacity of 10 is created within the test and assigned to the order-line, but then an HU with qty=5 is picked, before a shipment with the complete qty=10 is created. so we expect one "generic" EDI_Desadv_Pack_Item the is created from the packing-info and another one that reflects the actual HU.
@@ -841,62 +936,62 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   - QtyPickList = 5
 
     Given metasfresh contains M_Products:
-      | Identifier    | Name                           |
-      | p_1_S0316_040 | salesProduct_S0316_040_2       |
-      | p_2_S0316_040 | packingMaterial_LU_S0316_040_2 |
-      | p_3_S0316_040 | packingMaterial_TU_S0316_040_2 |
-      | p_4_S0316_040 | packingMaterial_S0316_040_2    |
+      | Identifier    |
+      | p_1_S0316_040 |
+      | p_2_S0316_040 |
+      | p_3_S0316_040 |
+      | p_4_S0316_040 |
     And metasfresh contains M_PricingSystems
-      | Identifier     | Name             | Value             | OPT.Description         | OPT.IsActive |
-      | ps_1_S0316_040 | name_S0316_040_2 | value_S0316_040_2 | description_S0316_040_2 | true         |
+      | Identifier     |
+      | ps_1_S0316_040 |
     And metasfresh contains M_PriceLists
-      | Identifier     | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name             | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1_S0316_040 | ps_1_S0316_040                | DE                        | EUR                 | name_S0316_040_2 | null            | true  | false         | 2              | true         |
+      | Identifier     | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_1_S0316_040 | ps_1_S0316_040     | DE           | EUR           | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                       | ValidFrom  |
-      | plv_1_S0316_040 | pl_1_S0316_040            | salesOrder-PLV_S0316_040_2 | 2021-04-01 |
+      | Identifier      | M_PriceList_ID.Identifier |
+      | plv_1_S0316_040 | pl_1_S0316_040            |
     And metasfresh contains M_ProductPrices
-      | Identifier     | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1_S0316_040 | plv_1_S0316_040                   | p_1_S0316_040           | 10.0     | PCE               | Normal                        |
-      | pp_2_S0316_040 | plv_1_S0316_040                   | p_2_S0316_040           | 10.0     | PCE               | Normal                        |
-      | pp_3_S0316_040 | plv_1_S0316_040                   | p_3_S0316_040           | 10.0     | PCE               | Normal                        |
-      | pp_4_S0316_040 | plv_1_S0316_040                   | p_4_S0316_040           | 10.0     | PCE               | Normal                        |
+      | Identifier     | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | pp_1_S0316_040 | plv_1_S0316_040        | p_1_S0316_040 | 10.0     | PCE      | Normal           |
+      | pp_2_S0316_040 | plv_1_S0316_040        | p_2_S0316_040 | 10.0     | PCE      | Normal           |
+      | pp_3_S0316_040 | plv_1_S0316_040        | p_3_S0316_040 | 10.0     | PCE      | Normal           |
+      | pp_4_S0316_040 | plv_1_S0316_040        | p_4_S0316_040 | 10.0     | PCE      | Normal           |
 
     And metasfresh contains C_BPartners:
-      | Identifier              | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1_S0316_040 | Endcustomer_S0316_040_2 | N            | Y              | ps_1_S0316_040                |
+      | Identifier  | IsCustomer | M_PricingSystem_ID |
+      | endcustomer | Y          | ps_1_S0316_040     |
 
     And the following c_bpartner is changed
-      | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
-      | endcustomer_1_S0316_040  | true                     | bPartnerDesadvRecipientGLN |
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
+      | endcustomer   | true                 | bPartnerDesadvRecipientGLN |
 
     And load M_HU_PackagingCode:
-      | M_HU_PackagingCode_ID.Identifier | PackagingCode | HU_UnitType |
-      | huPackagingCode_1_S0316_040      | ISO1          | LU          |
-      | huPackagingCode_2_S0316_040      | CART          | TU          |
+      | M_HU_PackagingCode_ID       | PackagingCode | HU_UnitType |
+      | huPackagingCode_1_S0316_040 | ISO1          | LU          |
+      | huPackagingCode_2_S0316_040 | CART          | TU          |
 
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name                   |
-      | pm_1_S0316_040                     | p_2_S0316_040               | packingMaterialTest_LU |
-      | pm_2_S0316_040                     | p_3_S0316_040               | packingMaterialTest_TU |
-      | pm_3_S0316_040                     | p_4_S0316_040               | packingMaterialTest    |
+      | M_HU_PackingMaterial_ID | M_Product_ID  |
+      | pm_1_S0316_040          | p_2_S0316_040 |
+      | pm_2_S0316_040          | p_3_S0316_040 |
+      | pm_3_S0316_040          | p_4_S0316_040 |
 
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier          | Name                        |
-      | huPackingLU_S0316_040          | huPackingLU_S0316_040_2     |
-      | huPackingTU_S0316_040          | huPackingTU_S0316_040_2     |
-      | huPackingVirtualPI_S0316_040   | No Packing Item_S0316_040_2 |
-      | huPackingLU_2_S0316_040        | huPackingLU_S0316_040_3     |
-      | huPackingTU_2_S0316_040        | huPackingTU_S0316_040_3     |
-      | huPackingVirtualPI_2_S0316_040 | No Packing Item_S0316_040_3 |
+      | M_HU_PI_ID.Identifier          |
+      | huPackingLU_S0316_040          |
+      | huPackingTU_S0316_040          |
+      | huPackingVirtualPI_S0316_040   |
+      | huPackingLU_2_S0316_040        |
+      | huPackingTU_2_S0316_040        |
+      | huPackingVirtualPI_2_S0316_040 |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier          | Name                         | HU_UnitType | IsCurrent | OPT.M_HU_PackagingCode_ID.Identifier |
-      | packingVersionLU_S0316_040    | huPackingLU_S0316_040          | packingVersionLU_S0316_040_2 | LU          | Y         | huPackagingCode_1_S0316_040          |
-      | packingVersionTU_S0316_040    | huPackingTU_S0316_040          | packingVersionTU_S0316_040_2 | TU          | Y         | huPackagingCode_2_S0316_040          |
-      | packingVersionCU_S0316_040    | huPackingVirtualPI_S0316_040   | No Packing Item_S0316_040_2  | V           | Y         |                                      |
-      | packingVersionLU_2_S0316_040  | huPackingLU_2_S0316_040        | packingVersionLU_S0316_040_3 | LU          | Y         |                                      |
-      | packingVersionTU_2_S0316_040  | huPackingTU_2_S0316_040        | packingVersionTU_S0316_040_3 | TU          | Y         | huPackagingCode_2_S0316_040          |
-      | packingVersionCU_2_S0316_040  | huPackingVirtualPI_2_S0316_040 | No Packing Item_S0316_040_3  | V           | Y         |                                      |
+      | M_HU_PI_Version_ID           | M_HU_PI_ID                     | HU_UnitType | IsCurrent | M_HU_PackagingCode_ID       |
+      | packingVersionLU_S0316_040   | huPackingLU_S0316_040          | LU          | Y         | huPackagingCode_1_S0316_040 |
+      | packingVersionTU_S0316_040   | huPackingTU_S0316_040          | TU          | Y         | huPackagingCode_2_S0316_040 |
+      | packingVersionCU_S0316_040   | huPackingVirtualPI_S0316_040   | V           | Y         |                             |
+      | packingVersionLU_2_S0316_040 | huPackingLU_2_S0316_040        | LU          | Y         |                             |
+      | packingVersionTU_2_S0316_040 | huPackingTU_2_S0316_040        | TU          | Y         | huPackagingCode_2_S0316_040 |
+      | packingVersionCU_2_S0316_040 | huPackingVirtualPI_2_S0316_040 | V           | Y         |                             |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier | OPT.M_HU_PackingMaterial_ID.Identifier |
       | huPiItemLU_S0316_040       | packingVersionLU_S0316_040    | 10  | HU       | huPackingTU_S0316_040            |                                        |
@@ -954,9 +1049,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And metasfresh contains C_BPartner_Product
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN               |
-      | bp_1_S0316_040                   | endcustomer_1_S0316_040  | p_2_S0316_040           | bPartnerProductGTIN_LU |
-      | bp_2_S0316_040                   | endcustomer_1_S0316_040  | p_3_S0316_040           | bPartnerProductGTIN_TU |
-      | bp_3_S0316_040                   | endcustomer_1_S0316_040  | p_4_S0316_040           | bPartnerProductGTIN    |
+      | bp_1_S0316_040                   | endcustomer              | p_2_S0316_040           | bPartnerProductGTIN_LU |
+      | bp_2_S0316_040                   | endcustomer              | p_3_S0316_040           | bPartnerProductGTIN_TU |
+      | bp_3_S0316_040                   | endcustomer              | p_4_S0316_040           | bPartnerProductGTIN    |
 
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier  | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
@@ -964,12 +1059,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huPiItemTU_S0316_040    | createdTU_S0316_040 | huPiItemTU_S0316_040       | 10  | pm_2_S0316_040                     | PM           |
 
     And metasfresh contains C_Orders:
-      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference         | OPT.C_PaymentTerm_ID | deliveryRule |
-      | o_1_S0316_040 | true    | endcustomer_1_S0316_040  | 2021-04-17  | po_ref_mock_S0316_040_2 | 1000012              | F            |
+      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |
+      | o_1_S0316_040 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ | 1000012          | F            |
 
     And metasfresh contains C_OrderLines:
-      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
-      | ol_1_S0316_040 | o_1_S0316_040         | p_1_S0316_040           | 10         | huAuditProductTU_2_S0316_040           | orderLineASI_S0316_040                   |
+      | Identifier     | C_Order_ID    | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID      | M_AttributeSetInstance_ID |
+      | ol_1_S0316_040 | o_1_S0316_040 | p_1_S0316_040 | 10         | huAuditProductTU_2_S0316_040 | orderLineASI_S0316_040    |
 
     When the order identified by o_1_S0316_040 is completed
 
@@ -992,9 +1087,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | s_s_1_S0316_040                  | PD           | true                | false       |
 
     Then after not more than 30s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial |
-      | p_1_S0316_040                 | true                | null                   | huPackagingCode_1_S0316_040             | gtinPiItemProduct           |
-      | p_2_S0316_040                 | true                | createdLU_S0316_040    | huPackagingCode_1_S0316_040             | bPartnerProductGTIN_LU      |
+      | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | M_HU_ID             | M_HU_PackagingCode_LU_ID    | GTIN_LU_PackingMaterial | Line |
+      | p_1_S0316_040                 | true                | null                | huPackagingCode_1_S0316_040 | gtinPiItemProduct       | 10   |
+      | p_2_S0316_040                 | true                | createdLU_S0316_040 | huPackagingCode_1_S0316_040 | bPartnerProductGTIN_LU  | 20   |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
@@ -1007,9 +1102,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_2_S0316_040                 | ipaSSCC18_14092022_2 |
 
     And generate csv file for sscc labels for 'p_1_S0316_040,p_2_S0316_040'
-      | ReportDataLine                                                                                                                                                     |
-      | %BTW% /AF="\\\V-APSRV01\PRAGMA\ETIKETTEN\LAYOUTS\SSCC.BTW" /D="<TRIGGER FILE NAME>" /PRN="\\\V-DCSRV02\ETIKETTEN01" /R=3 /P /D                                     |
-      | %END%                                                                                                                                                              |
-      | "1","ipaSSCC18_14092022_1","po_ref_mock_S0316_040_2","16.04.2021","","salesProduct_S0316_040_2","1","0","210420","lotNumber","","","","","","","","","","","",""   |
-      | "1","ipaSSCC18_14092022_2","po_ref_mock_S0316_040_2","16.04.2021","","salesProduct_S0316_040_2","1","0","210420","luLotNumber","","","","","","","","","","","","" |
+      | ReportDataLine                                                                                                                                    |
+      | %BTW% /AF="\\\V-APSRV01\PRAGMA\ETIKETTEN\LAYOUTS\SSCC.BTW" /D="<TRIGGER FILE NAME>" /PRN="\\\V-DCSRV02\ETIKETTEN01" /R=3 /P /D                    |
+      | %END%                                                                                                                                             |
+      | "1","ipaSSCC18_14092022_1","@o_1_S0316_040@","16.04.2021","","@p_1_S0316_040@","1","0","210420","lotNumber","","","","","","","","","","","",""   |
+      | "1","ipaSSCC18_14092022_2","@o_1_S0316_040@","16.04.2021","","@p_1_S0316_040@","1","0","210420","luLotNumber","","","","","","","","","","","","" |
     

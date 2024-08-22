@@ -29,6 +29,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryType;
 import de.metas.attachments.AttachmentTags;
 import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
@@ -632,10 +633,16 @@ public class PostFinanceYbInvoiceService
 		final Optional<BankAccount> bankAccountOptional = bankAccountDAO.getDefaultESRBankAccount(bPartnerId);
 		if(bankAccountOptional.isEmpty())
 		{
-			throw new PostFinanceExportException("Missing default bank account for OrgBPartner " + bPartnerId);
+			throw new PostFinanceExportException("Missing default ESR bank account for OrgBPartner " + bPartnerId);
 		}
 
 		final BankAccount bankAccount = bankAccountOptional.get();
+		final BankAccountId invoiceBankAccountId = BankAccountId.ofRepoIdOrNull(invoiceRecord.getOrg_BP_Account_ID());
+		if(invoiceBankAccountId != null && !BankAccountId.equals(invoiceBankAccountId, bankAccount.getId()))
+		{
+			throw new PostFinanceExportException("Only OrgBPartner default esr bank account is supported");
+		}
+
 		final BillHeaderType.PaymentInformation.IBAN iban = YB_INVOICE_OBJECT_FACTORY.createBillHeaderTypePaymentInformationIBAN();
 		if(bankAccount.getQR_IBAN() == null)
 		{

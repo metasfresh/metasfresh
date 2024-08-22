@@ -95,7 +95,7 @@ public class PPOrderCandidateRequestedEventHandler implements MaterialEventHandl
 		final PPOrderData ppOrderData = ppOrderCandidateRequestedEvent.getPpOrderCandidate().getPpOrderData();
 		final ProductId productId = ProductId.ofRepoId(ppOrderData.getProductDescriptor().getProductId());
 		final Quantity qtyRequired = Quantity.of(ppOrderData.getQtyRequired(), productBL.getStockUOM(productId));
-		final String traceId = ppOrderCandidateRequestedEvent.getEventDescriptor().getTraceId();
+		final String traceId = ppOrderCandidateRequestedEvent.getTraceId();
 		final boolean isSimulated = ppOrderCandidateRequestedEvent.getPpOrderCandidate().isSimulated();
 
 		return ppOrderCandidateService.createUpdateCandidate(PPOrderCandidateCreateUpdateRequest.builder()

@@ -24,8 +24,9 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.storage.EmptyHUListener;
-import de.metas.product.IProductActivityProvider;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.printing.DoNothingMassPrintingService;
+import de.metas.product.IProductActivityProvider;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -1291,6 +1292,8 @@ public class HUTransformServiceTests
 	@Test
 	public void husToNewCUs_LU_CU_QtyMoreThanPer1VirtualTU()
 	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+
 		final LUTUProducerDestinationTestSupport data = testsBase.getData();
 		final I_M_HU cuToSplit = data.makeLU_CU("500", 5); // represents 100 TUs with 5 CUs each
 

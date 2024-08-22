@@ -25,9 +25,11 @@ package de.metas.ui.web.pporder;
 import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.order.OrderLineId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -105,6 +107,8 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.referencingDocumentPaths(request.getReferencingDocumentPaths())
 				.ppOrderId(ppOrderId)
 				.docBaseType(ppOrderDocBaseType)
+				.docStatus(DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus()))
+				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrder.getC_OrderLine_ID()))
 				.dataSupplier(dataSupplier)
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.build();

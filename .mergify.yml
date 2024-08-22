@@ -35,6 +35,7 @@ pull_request_rules:
               - base=modified_carbon_uat
               - base=modus_operandi_uat
               - base=neon_underwear_uat
+              - base=oasis_sun_uat
               - base=pink_rooster_uat
               - base=release
               - base=soft_panda_uat

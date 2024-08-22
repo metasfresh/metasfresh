@@ -23,7 +23,7 @@ $$
 SELECT ('SPC' || E'\n' || --QRType
         '0200' || E'\n' || --Version
         '1' || E'\n' || --Coding
-        COALESCE(REPLACE(qr_iban, ' ', ''), REPLACE(iban, ' ', ''), '') || E'\n' || -- Account
+        COALESCE(REPLACE(COALESCE(orgbpb_invoice.qr_iban, orgbpb.qr_iban, ''), ' ', ''), REPLACE(COALESCE(orgbpb_invoice.iban, orgbpb.iban, ''), ' ', ''), '') || E'\n' || -- Account
         'K' || E'\n' || -- CR - AdressTyp = Combined address
         orgbp.name || E'\n' || --CR – Name
         orgl.address1 || E'\n' || --CR –Street and building number of P.O. Box
@@ -51,60 +51,59 @@ SELECT ('SPC' || E'\n' || --QRType
         E'\n' || --Do not fill in
         c.countrycode || E'\n' || -- UD Country
         (CASE
-             WHEN REPLACE(qr_iban, ' ', '') IS NOT NULL AND rn.referenceNo IS NOT NULL THEN 'QRR'
-             WHEN REPLACE(iban, ' ', '') IS NOT NULL AND REPLACE(orgbpb.sepa_creditoridentifier, ' ', '') IS NOT NULL
-                                                                                       THEN 'SCOR'
-                                                                                       ELSE 'NON'
+             WHEN REPLACE(COALESCE(orgbpb_invoice.qr_iban, orgbpb.iban, ''), ' ', '') IS NOT NULL AND rn.referenceNo IS NOT NULL THEN 'QRR'
+             WHEN REPLACE(COALESCE(orgbpb_invoice.iban, orgbpb.iban, ''), ' ', '') IS NOT NULL AND REPLACE(orgbpb.sepa_creditoridentifier, ' ', '') IS NOT NULL
+                                                                                                                                 THEN 'SCOR'
+                                                                                                                                 ELSE 'NON'
          END) || E'\n' || --ReferenceType
         (CASE
-             WHEN REPLACE(qr_iban, ' ', '') IS NOT NULL AND rn.referenceNo IS NOT NULL THEN rn.ReferenceNo
-             WHEN REPLACE(iban, ' ', '') IS NOT NULL AND REPLACE(orgbpb.sepa_creditoridentifier, ' ', '') IS NOT NULL
-                                                                                       THEN 'RF' || orgbpb.sepa_creditoridentifier
-                                                                                       ELSE ''
+             WHEN REPLACE(COALESCE(orgbpb_invoice.qr_iban, orgbpb.iban, ''), ' ', '') IS NOT NULL AND rn.referenceNo IS NOT NULL THEN rn.ReferenceNo
+             WHEN REPLACE(COALESCE(orgbpb_invoice.iban, orgbpb.iban, ''), ' ', '') IS NOT NULL AND REPLACE(orgbpb.sepa_creditoridentifier, ' ', '') IS NOT NULL
+                                                                                                                                 THEN 'RF' || orgbpb.sepa_creditoridentifier
+                                                                                                                                 ELSE ''
          END) || E'\n' || --Reference
         (CASE
              WHEN i.DocumentNo IS NOT NULL THEN ('Rechnungs-Nr. ' || i.DocumentNo)
                                            ELSE ''
          END) || E'\n' ||--Unstructured message
-
         'EPD' || E'\n' || --Trailer
 
         '' || E'\n' --Billing information
-           )                          AS QR_Code,
+           )                                            AS QR_Code,
 
-       COALESCE(iban, '')             AS CR_IBAN,
-       COALESCE(qr_iban, '')          AS CR_QR_IBAN,
-       orgbp.name                     AS CR_Name,
+       COALESCE(orgbpb_invoice.iban, orgbpb.iban, '')   AS CR_IBAN,
+       COALESCE(orgbpb_invoice.qr_iban, orgbpb.qr_iban) AS CR_QR_IBAN,
+       orgbp.name                                       AS CR_Name,
        (orgl.address1 || E'\n' ||
         COALESCE(orgl.postal, '') || ' ' || COALESCE(orgl.city, '') || E'\n' ||
-        orgc.countrycode)             AS CR_Addres,
+        orgc.countrycode)                               AS CR_Addres,
 
        (CASE
-            WHEN REPLACE(qr_iban, ' ', '') IS NOT NULL AND rn.referenceNo IS NOT NULL THEN
+            WHEN REPLACE(COALESCE(orgbpb_invoice.qr_iban, orgbpb.iban, ''), ' ', '') IS NOT NULL AND rn.referenceNo IS NOT NULL THEN
                 SUBSTRING(rn.referenceNo, 1, 2) || ' ' ||
                 SUBSTRING(rn.referenceNo, 3, 5) || ' ' ||
                 SUBSTRING(rn.referenceNo, 8, 5) || ' ' ||
                 SUBSTRING(rn.referenceNo, 13, 5) || ' ' ||
                 SUBSTRING(rn.referenceNo, 18, 5) || ' ' ||
                 SUBSTRING(rn.referenceNo, 23, 7)
-            WHEN REPLACE(iban, ' ', '') IS NOT NULL AND REPLACE(orgbpb.sepa_creditoridentifier, ' ', '') IS NOT NULL
-                                                                                      THEN 'RF' || orgbpb.sepa_creditoridentifier
-                                                                                      ELSE ''
+            WHEN REPLACE(COALESCE(orgbpb_invoice.iban, orgbpb.iban, ''), ' ', '') IS NOT NULL AND REPLACE(orgbpb.sepa_creditoridentifier, ' ', '') IS NOT NULL
+                                                                                                                                THEN 'RF' || orgbpb.sepa_creditoridentifier
+                                                                                                                                ELSE ''
         END)
-                                      AS referenceno,
-       i.bpartneraddress              AS DR_Address,
+                                                        AS referenceno,
+       i.bpartneraddress                                AS DR_Address,
        (CASE
             WHEN cl.referenceNo IS NOT NULL THEN TO_NUMBER(SUBSTRING(cl.referenceNo, 3, 8), '999999999') +
                                                  (TO_NUMBER(SUBSTRING(cl.referenceNo, 11, 2), '99') / 100)
                                             ELSE i.GrandTotal
-        END)                          AS Amount,
-       cur.iso_code                   AS currency,
+        END)                                            AS Amount,
+       cur.iso_code                                     AS currency,
        (CASE
             WHEN i.DocumentNo IS NOT NULL THEN ('Rechnungs-Nr. ' || i.DocumentNo)
                                           ELSE ''
-        END)                          AS additional_informations,
-       orgbpb.sepa_creditoridentifier AS SCOR,
-       cl.referenceno                 AS codeline,
+        END)                                            AS additional_informations,
+       orgbpb.sepa_creditoridentifier                   AS SCOR,
+       cl.referenceno                                   AS codeline,
        i.DocumentNo
 
 FROM C_Invoice i
@@ -121,6 +120,10 @@ FROM C_Invoice i
          LEFT JOIN C_BPartner orgbp ON o.AD_Org_ID = orgbp.AD_OrgBP_ID
          LEFT JOIN C_BP_Bankaccount orgbpb
                    ON orgbpb.C_BPartner_ID = orgbp.C_BPartner_ID AND orgbpb.IsEsrAccount = 'Y' AND orgbpb.isActive = 'Y'
+
+    -- support Invoice account
+         LEFT JOIN C_BP_Bankaccount orgbpb_invoice
+                   ON orgbpb_invoice.c_bp_bankaccount_id = i.Org_BP_Account_ID
     --- refno
          LEFT JOIN (SELECT rn.referenceNo, rnd.Record_ID
                     FROM C_ReferenceNo_Doc rnd

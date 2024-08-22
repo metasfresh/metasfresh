@@ -16,12 +16,14 @@ import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow.MainRowBuilder;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowCache;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
+import de.metas.ui.web.material.cockpit.QtyConvertorService;
 import de.metas.util.MFColor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
@@ -56,7 +58,8 @@ public class MainRowWithSubRows
 {
 	@NonNull private final MaterialCockpitRowCache cache;
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
-
+    @NonNull private final QtyConvertorService qtyConvertorService;
+	
 	@NonNull private final MainRowBucketId productIdAndDate;
 	@NonNull private final MainRowBucket mainRow = new MainRowBucket();
 	@NonNull private final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> dimensionGroupSubRows = new LinkedHashMap<>();
@@ -72,10 +75,11 @@ public class MainRowWithSubRows
 	{
 		this.cache = cache;
 		this.rowLookups = rowLookups;
-
+		
 		this.productIdAndDate = productIdAndDate;
         this.mainRow.setProcurementStatus(procurementStatusColor != null ? procurementStatusColor.toHexString() : null);
         this.mainRow.setHighestPurchasePrice_AtDate(maxPurchasePrice);
+		this.qtyConvertorService = SpringContextHolder.instance.getBean(QtyConvertorService.class);
 	}
 
 	public void addEmptyAttributesSubrowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
@@ -395,7 +399,8 @@ public class MainRowWithSubRows
 				.remainingStock_AtDate(mainRow.getRemainingStock_AtDate())
 				.pmm_QtyPromised_NextDay(mainRow.getPmm_QtyPromised_NextDay())
 				.allIncludedCockpitRecordIds(mainRow.getCockpitRecordIds())
-				.allIncludedStockRecordIds(mainRow.getStockRecordIds());
+				.allIncludedStockRecordIds(mainRow.getStockRecordIds())
+				.qtyConvertor(qtyConvertorService.getQtyConvertorIfConfigured(productIdAndDate));
 
 		for (final CountingSubRowBucket subRowBucket : countingSubRows.values())
 		{

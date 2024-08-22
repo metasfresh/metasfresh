@@ -658,8 +658,10 @@ jobs:
             params: -Dcucumber.filter.tags="@ghActions:run_on_executor7 and not @flaky and not @ignore"
           #          - profile: flaky
           #            params: -Dcucumber.filter.tags="@flaky and not @ignore"
+          - profile: profile-temp
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor_temp and not @flaky and not @ignore"
           - profile: catchall
-            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ignore and not @flaky"
+            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ghActions:run_on_executor_temp and not @ignore and not @flaky"
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3

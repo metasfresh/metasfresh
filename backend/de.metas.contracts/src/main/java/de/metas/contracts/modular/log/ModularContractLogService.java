@@ -168,12 +168,6 @@
 		 return modularContractLogDAO.getModularContractLogEntries(query);
 	 }
 
-
-	 @NonNull
-	 public Optional<ModularContractLogEntry> getModularContractLogEntry(@NonNull final ModularContractLogQuery query)
-	 {
-		 return modularContractLogDAO.getModularContractLogEntry(query);
-	 }
 	 @Nullable
 	 public PInstanceId getModularContractLogEntrySelection(@NonNull final ModularContractLogQuery query)
 	 {

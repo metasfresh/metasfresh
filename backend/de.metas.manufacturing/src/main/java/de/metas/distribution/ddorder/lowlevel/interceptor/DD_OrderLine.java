@@ -86,13 +86,16 @@ class DD_OrderLine
 		if (plantFromId == null)
 		{
 			final LiberoException ex = new LiberoException("@NotFound@ @PP_Plant_ID@"
-					+ "\n @M_Marehouse_ID@: " + ddOrderLine.getM_Locator_ID()
+					+ "\n @M_Locator_ID@: " + ddOrderLine.getM_Locator_ID()
 					+ "\n @M_Product_ID@: " + ddOrderLine.getM_Product_ID()
 					+ "\n @DD_OrderLine_ID@: " + ddOrderLine
 			);
 			logger.warn(ex.getLocalizedMessage(), ex);
 		}
-		ddOrderLine.setPP_Plant_From_ID(plantFromId.getRepoId());
+		else
+		{
+			ddOrderLine.setPP_Plant_From_ID(plantFromId.getRepoId());
+		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

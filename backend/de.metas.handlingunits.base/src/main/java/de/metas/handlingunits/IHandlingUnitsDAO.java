@@ -25,7 +25,7 @@ package de.metas.handlingunits;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
+import de.metas.common.util.pair.IPair;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
@@ -46,9 +46,7 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
-import de.metas.common.util.pair.IPair;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -308,15 +306,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return packing material and quantity pairs
 	 */
 	List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(I_M_HU hu);
-
-	/**
-	 * The special network distribution that is defined for empties (Gebinde) It contains lines that link the non-empties warehouses with the empties ones that the packing materials shall be moved to
-	 * when empty
-	 *
-	 * @param product (NOT USED); here just in case the requirements will change later and there will be gebinde network distributions based on product
-	 */
-	@Nullable
-	I_DD_NetworkDistribution retrieveEmptiesDistributionNetwork(Properties ctx, I_M_Product product, String trxName);
 
 	/**
 	 * Create or return a <b>HU</b> item. Other item types generally exist already, or should not exist.
