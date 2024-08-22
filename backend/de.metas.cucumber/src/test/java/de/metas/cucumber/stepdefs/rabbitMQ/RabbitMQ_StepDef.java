@@ -218,26 +218,19 @@ public class RabbitMQ_StepDef
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, "Identifier");
 		final String topicIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "Topic.Identifier");
-		final String exchangeNamePrefix = DataTableUtil.extractStringForColumnName(tableRow, "ExchangeNamePrefix");
-
-		//final String fanoutExchangeName = exchangeNamePrefix + "-fanout";
-		final String directExchangeName = exchangeNamePrefix + "-direct";
+		final String exchangeName = DataTableUtil.extractStringForColumnName(tableRow, "ExchangeName");
 
 		final Topic topic = topicTable.get(topicIdentifier);
-		//final RabbitMQTestConfiguration testRabbitMQConfiguration = new RabbitMQTestConfiguration(topic, fanoutExchangeName);
-		final RabbitMQTestConfiguration testRabbitMQConfiguration = new RabbitMQTestConfiguration(topic, directExchangeName);
+		final RabbitMQTestConfiguration testRabbitMQConfiguration = new RabbitMQTestConfiguration(topic, exchangeName);
 		final AnonymousQueue anonymousQueue = testRabbitMQConfiguration.getQueue();
 
 		final RabbitAdmin admin = new RabbitAdmin(connectionFactory);
 
-		//final FanoutExchange fanoutExchange = new FanoutExchange(fanoutExchangeName, false, true);
-		final DirectExchange directExchange = new DirectExchange(directExchangeName, false, true);
+		final DirectExchange directExchange = new DirectExchange(exchangeName, false, true);
 
-		//admin.declareExchange(fanoutExchange);
 		admin.declareExchange(directExchange);
 		admin.declareQueue(anonymousQueue);
-		//admin.declareBinding(BindingBuilder.bind(anonymousQueue).to(fanoutExchange));
-		admin.declareBinding(BindingBuilder.bind(anonymousQueue).to(directExchange).with(anonymousQueue.getName()));
+		admin.declareBinding(BindingBuilder.bind(anonymousQueue).to(directExchange).with(exchangeName));
 
 		rabbitMQDestinationSolver.registerQueue(testRabbitMQConfiguration);
 
@@ -308,7 +301,7 @@ public class RabbitMQ_StepDef
 	private void createQueue(@NonNull final Map<String, String> tableRow)
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, "Identifier");
-		final String exchangeNamePrefix = DataTableUtil.extractStringForColumnName(tableRow, "ExchangeNamePrefix");
+		final String exchangeName = DataTableUtil.extractStringForColumnName(tableRow, "ExchangeName");
 		final String topicIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "Topic.Identifier");
 		final Topic topic = topicTable.get(topicIdentifier);
 
@@ -317,13 +310,11 @@ public class RabbitMQ_StepDef
 
 		final RabbitAdmin admin = new RabbitAdmin(connectionFactory);
 
-		//final FanoutExchange exchange = new FanoutExchange(exchangeNamePrefix + "-fanout", false, true);
-		final DirectExchange exchange = new DirectExchange(exchangeNamePrefix, false, true);
+		final DirectExchange exchange = new DirectExchange(exchangeName, false, true);
 
 		admin.declareExchange(exchange);
 		admin.declareQueue(queue);
-		//admin.declareBinding(BindingBuilder.bind(queue).to(exchange));
-		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(queue.getName()));
+		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(exchangeName));
 
 		queueTable.put(identifier, queue);
 	}
@@ -334,8 +325,11 @@ public class RabbitMQ_StepDef
 		final String eventBody = DataTableUtil.extractStringForColumnName(tableRow, "Event.Body");
 
 		final Topic topic = topicTable.get(topicIdentifier);
+		assertThat(topic).as("Missing topic for Topic.Identifier=%s", topicIdentifier).isNotNull();
 
 		final IEventBus eventBus = eventBusFactory.getEventBus(topic);
+		assertThat(topic).as("Missing eventBus for topic=%s; Topic.Identifier=%s", topic.getName(), topicIdentifier).isNotNull();
+
 		eventBus.enqueueEvent(Event.builder()
 									  .withBody(eventBody)
 									  .build());
