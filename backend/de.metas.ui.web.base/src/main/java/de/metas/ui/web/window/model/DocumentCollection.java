@@ -345,8 +345,7 @@ public class DocumentCollection
 		assertNewDocumentAllowed(entityDescriptor);
 
 		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
-		@SuppressWarnings("UnnecessaryLocalVariable")
-		final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
+		@SuppressWarnings("UnnecessaryLocalVariable") final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
 		// NOTE: we assume document is writable
 		// NOTE: we are not adding it to index. That shall be done on "commit".
 		return document;
@@ -655,7 +654,7 @@ public class DocumentCollection
 
 		//
 		// Notify frontend
-		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId()));
+		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId(), true));
 	}
 
 	public void invalidateDocumentsByWindowId(@NonNull final WindowId windowId)

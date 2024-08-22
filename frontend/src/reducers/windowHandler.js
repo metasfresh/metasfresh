@@ -159,20 +159,22 @@ export const initialState = {
  * @param {boolean} isModal
  */
 export const getData = (state, isModal = false) => {
-  const selector = isModal ? 'modal' : 'master';
-
-  return state.windowHandler[selector].data;
+  return getLayoutAndData(state, isModal).data;
 };
 
 export const getElementLayout = (state, isModal, layoutPath) => {
-  const selector = isModal ? 'modal' : 'master';
-  const layout = state.windowHandler[selector].layout;
+  const layout = getLayoutAndData(state, isModal).layout;
   const [sectionIdx, columnIdx, elGroupIdx, elLineIdx, elIdx] =
     layoutPath.split('_');
 
   return layout.sections[sectionIdx].columns[columnIdx].elementGroups[
     elGroupIdx
   ].elementsLine[elLineIdx].elements[elIdx];
+};
+
+export const getLayoutAndData = (state, isModal = false) => {
+  const selector = isModal ? 'modal' : 'master';
+  return state.windowHandler[selector] ?? {};
 };
 
 export const getInlineTabLayout = ({
@@ -221,7 +223,7 @@ const selectWidgetData = (data, layout) => {
     }, []);
   }
 
-  if (!widgetData.length) {
+  if (!widgetData || !widgetData.length) {
     widgetData = [{}];
   }
 
