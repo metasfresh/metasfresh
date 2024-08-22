@@ -49,6 +49,7 @@ public class AdempiereException extends RuntimeException
 	 * @return {@link AdempiereException} or <code>null</code> if the throwable was null.
 	 */
 	@Nullable
+	@Contract("!null -> !null")
 	public static AdempiereException wrapIfNeeded(@Nullable final Throwable throwable)
 	{
 		if (throwable == null)
