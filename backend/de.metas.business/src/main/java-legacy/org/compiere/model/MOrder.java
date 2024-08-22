@@ -440,11 +440,6 @@ public class MOrder extends X_C_Order implements IDocument
 			setC_PaymentTerm_ID(paymentTermID);
 		}
 		//
-		final int priceLisId = isSOTrx() ? bp.getM_PriceList_ID() : bp.getPO_PriceList_ID();
-		if (priceLisId != 0)
-		{
-			setM_PriceList_ID(priceLisId);
-		}
 		// Default Delivery/Via Rule
 		String ss = bp.getDeliveryRule();
 		if (!Check.isEmpty(ss, true))
