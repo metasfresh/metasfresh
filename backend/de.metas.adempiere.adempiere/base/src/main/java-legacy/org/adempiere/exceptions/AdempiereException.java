@@ -19,6 +19,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.model.Null;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
