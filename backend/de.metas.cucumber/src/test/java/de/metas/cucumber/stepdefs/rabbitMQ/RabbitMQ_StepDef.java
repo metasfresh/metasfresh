@@ -47,7 +47,6 @@ import org.springframework.amqp.core.AnonymousQueue;
 import org.springframework.amqp.core.Base64UrlNamingStrategy;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.NamingStrategy;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueInformation;
@@ -221,22 +220,23 @@ public class RabbitMQ_StepDef
 		final String topicIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "Topic.Identifier");
 		final String exchangeNamePrefix = DataTableUtil.extractStringForColumnName(tableRow, "ExchangeNamePrefix");
 
-		final String fanoutExchangeName = exchangeNamePrefix + "-fanout";
+		//final String fanoutExchangeName = exchangeNamePrefix + "-fanout";
 		final String directExchangeName = exchangeNamePrefix + "-direct";
 
 		final Topic topic = topicTable.get(topicIdentifier);
-		final RabbitMQTestConfiguration testRabbitMQConfiguration = new RabbitMQTestConfiguration(topic, fanoutExchangeName);
+		//final RabbitMQTestConfiguration testRabbitMQConfiguration = new RabbitMQTestConfiguration(topic, fanoutExchangeName);
+		final RabbitMQTestConfiguration testRabbitMQConfiguration = new RabbitMQTestConfiguration(topic, directExchangeName);
 		final AnonymousQueue anonymousQueue = testRabbitMQConfiguration.getQueue();
 
 		final RabbitAdmin admin = new RabbitAdmin(connectionFactory);
 
-		final FanoutExchange fanoutExchange = new FanoutExchange(fanoutExchangeName, false, true);
+		//final FanoutExchange fanoutExchange = new FanoutExchange(fanoutExchangeName, false, true);
 		final DirectExchange directExchange = new DirectExchange(directExchangeName, false, true);
 
-		admin.declareExchange(fanoutExchange);
+		//admin.declareExchange(fanoutExchange);
 		admin.declareExchange(directExchange);
 		admin.declareQueue(anonymousQueue);
-		admin.declareBinding(BindingBuilder.bind(anonymousQueue).to(fanoutExchange));
+		//admin.declareBinding(BindingBuilder.bind(anonymousQueue).to(fanoutExchange));
 		admin.declareBinding(BindingBuilder.bind(anonymousQueue).to(directExchange).with(anonymousQueue.getName()));
 
 		rabbitMQDestinationSolver.registerQueue(testRabbitMQConfiguration);
@@ -317,11 +317,13 @@ public class RabbitMQ_StepDef
 
 		final RabbitAdmin admin = new RabbitAdmin(connectionFactory);
 
-		final FanoutExchange exchange = new FanoutExchange(exchangeNamePrefix + "-fanout", false, true);
+		//final FanoutExchange exchange = new FanoutExchange(exchangeNamePrefix + "-fanout", false, true);
+		final DirectExchange exchange = new DirectExchange(exchangeNamePrefix, false, true);
 
 		admin.declareExchange(exchange);
 		admin.declareQueue(queue);
-		admin.declareBinding(BindingBuilder.bind(queue).to(exchange));
+		//admin.declareBinding(BindingBuilder.bind(queue).to(exchange));
+		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(queue.getName()));
 
 		queueTable.put(identifier, queue);
 	}
