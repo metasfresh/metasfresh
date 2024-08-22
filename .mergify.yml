@@ -16,6 +16,7 @@ pull_request_rules:
       - or: &ALL_BASE_BRANCHES # this rule should apply to both the project-branches from above, and master
           - or: &PROJECT_BRANCHES_UAT # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
               # Please keep in sync with the branches at .testspace.yml
+              - base=temporary_test_uat_2
               - base=arctic_north_uat
               - base=blue_horizon_uat
               - base=big_coconut_uat
