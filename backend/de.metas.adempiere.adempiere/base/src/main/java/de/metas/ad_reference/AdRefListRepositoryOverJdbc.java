@@ -65,24 +65,19 @@ public class AdRefListRepositoryOverJdbc implements AdRefListRepository
 
 			record.setName(request.getName().getDefaultValue());
 			record.setValue(request.getValue());
-			try
-			{
-				saveRecord(record);
-			}
-			catch (final AdempiereException e)
-			{
-				throw AdempiereException.wrapIfNeeded(e)
-						.appendParametersToMessage()
-						.setParameter("Request", request);
-			}
+
+			saveRecord(record);
+
 			cache.reset();
 
 			// make sure that the cached value is really gone!
 			TryAndWaitUtil.tryAndWait(3, 100, () -> cache.get(SINGLE_CACHE_KEY) == null, () -> logger.warn("AdRefListRepositoryOverJdbc - cache not cleared after 3seconds!"));
 		}
-		catch (final InterruptedException e)
+		catch (final AdempiereException|InterruptedException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage().appendParametersToMessage().setParameter("Request", request);
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("Request", request);
 		}
 		finally
 		{
