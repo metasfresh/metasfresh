@@ -115,6 +115,7 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.user.User;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -193,6 +194,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	// System configurations (public for testing)
 	public static final String SYSCONFIG_AutoPayZeroAmt = "org.compiere.model.MInvoice.AutoPayZeroAmt";
 	public static final String SYSCONFIG_SortILsByShipmentLineOrders = "org.compiere.model.MInvoice.SortILsByShipmentLineOrders";
+	public static final String SYS_Config_Apply5CentRounding = "org.compiere.model.MInvoice.Apply5CentRounding";
 
 	// FRESH-488: Payment rule from sys config
 	public static final String SYSCONFIG_C_Invoice_PaymentRule = "de.metas.invoice.C_Invoice_PaymentRule";
@@ -2089,4 +2091,33 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return PaymentTermId.ofRepoId(getById(invoiceId)
 				.getC_PaymentTerm_ID());
 	}
+
+	@Override
+	public boolean isRoundTo5CentNeeded(@NonNull SOTrx isSOTrx, @NonNull ClientAndOrgId clientAndOrgId)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+		if (isSOTrx.isPurchase())
+		{
+			return false;
+		}
+
+		if (!sysConfigBL.getBooleanValue(SYS_Config_Apply5CentRounding, false, clientAndOrgId))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
+	public BigDecimal roundTo5CentIfNeeded(@NonNull SOTrx isSOTrx, @NonNull final BigDecimal grandTotal, @NonNull ClientAndOrgId clientAndOrgId)
+	{
+		if (!isRoundTo5CentNeeded(isSOTrx, clientAndOrgId))
+		{
+			return grandTotal;
+		}
+		return NumberUtils.roundTo5Cent(grandTotal);
+	}
 }
+

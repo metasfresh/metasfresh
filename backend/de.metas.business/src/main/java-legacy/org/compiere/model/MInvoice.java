@@ -40,6 +40,7 @@ import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -56,7 +57,6 @@ import de.metas.report.StandardDocumentReportType;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -105,7 +105,6 @@ import static org.adempiere.util.CustomColNames.C_Invoice_ISUSE_BPARTNER_ADDRESS
 public class MInvoice extends X_C_Invoice implements IDocument
 {
 	private final static String SYS_Config_Annotate_DocNo_INVOICE = "org.compiere.model.MInvoice.ANNOTATE_DOCNO_INVOICE_TO_DESCRIPTION";
-	private final static String SYS_Config_Apply5CentRounding = "org.compiere.model.MInvoice.Apply5CentRounding";
 	private final static ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
@@ -1021,10 +1020,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			}
 		}
 
-		if(apply5CentRounding())
-		{
-			grandTotal = NumberUtils.roundTo5Cent(grandTotal);
-		}
+		grandTotal = apply5CentRoundingIfNeeded(grandTotal);
 
 		//
 		setTotalLines(totalLines);
@@ -1709,10 +1705,13 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		return annotateInvoice;
 	}
 
-	private boolean apply5CentRounding()
+	private BigDecimal apply5CentRoundingIfNeeded(@NonNull final BigDecimal grandTotal)
 	{
 
-		return isSOTrx() && sysConfigBL.getBooleanValue(SYS_Config_Apply5CentRounding, false);
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		return invoiceBL.roundTo5CentIfNeeded(SOTrx.ofBoolean(isSOTrx()),
+											  grandTotal,
+											  ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID()));
 	}
 
 }    // MInvoice

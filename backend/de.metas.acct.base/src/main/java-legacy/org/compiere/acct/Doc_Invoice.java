@@ -39,9 +39,11 @@ import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -495,6 +497,11 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
+		if (invoiceBL.isRoundTo5CentNeeded(SOTrx.ofBoolean(isSOTrx()),
+										   ClientAndOrgId.ofClientAndOrg(getClientId(), getOrgId())))
+		{
+			// TODO Add accounting for rounding difference
+		}
 		return ImmutableList.of(fact);
 	}
 
