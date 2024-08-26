@@ -56,6 +56,7 @@ import de.metas.report.StandardDocumentReportType;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -104,6 +105,7 @@ import static org.adempiere.util.CustomColNames.C_Invoice_ISUSE_BPARTNER_ADDRESS
 public class MInvoice extends X_C_Invoice implements IDocument
 {
 	private final static String SYS_Config_Annotate_DocNo_INVOICE = "org.compiere.model.MInvoice.ANNOTATE_DOCNO_INVOICE_TO_DESCRIPTION";
+	private final static String SYS_Config_Apply5CentRounding = "org.compiere.model.MInvoice.Apply5CentRounding";
 	private final static ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
@@ -1018,6 +1020,12 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				}
 			}
 		}
+
+		if(apply5CentRounding())
+		{
+			grandTotal = NumberUtils.roundTo5Cent(grandTotal);
+		}
+
 		//
 		setTotalLines(totalLines);
 		setGrandTotal(grandTotal);
@@ -1699,6 +1707,12 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		final boolean annotateInvoice = sysConfigBL.getBooleanValue(SYS_Config_Annotate_DocNo_INVOICE, true);
 		return annotateInvoice;
+	}
+
+	private boolean apply5CentRounding()
+	{
+
+		return isSOTrx() && sysConfigBL.getBooleanValue(SYS_Config_Apply5CentRounding, false);
 	}
 
 }    // MInvoice
