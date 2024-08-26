@@ -16,7 +16,6 @@ import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.ManufacturingOrderQuery;
@@ -168,7 +167,7 @@ public class PPOrderDAO implements IPPOrderDAO
 				.createQueryBuilder(I_PP_Order.class, ppOrder)
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_DateStartSchedule, ppOrder.getDateStartSchedule(), DateTruncQueryFilterModifier.DAY)
 				.create()
-				.aggregate(I_M_ProductPrice.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, Integer.class)
+				.aggregate(I_PP_Order.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, Integer.class)
 		);
 
 		return lastSeqNo.next();
