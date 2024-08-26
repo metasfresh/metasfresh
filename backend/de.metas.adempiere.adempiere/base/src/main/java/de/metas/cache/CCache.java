@@ -487,6 +487,7 @@ public class CCache<K, V> implements CacheInterface
 		}
 	}
 
+	@Nullable
 	public V remove(final K key)
 	{
 		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
@@ -525,6 +526,7 @@ public class CCache<K, V> implements CacheInterface
 	 * <p>
 	 * For more informations, see {@link #get(Object, Callable)}.
 	 */
+	@Nullable
 	public V get(final K key, final Supplier<V> valueInitializer)
 	{
 		if (valueInitializer == null)
@@ -558,6 +560,7 @@ public class CCache<K, V> implements CacheInterface
 	 * @param valueInitializer optional cache initializer.
 	 * @return cached value or <code>null</code>
 	 */
+	@Nullable
 	public V get(final K key, final Callable<V> valueInitializer)
 	{
 		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
@@ -604,6 +607,7 @@ public class CCache<K, V> implements CacheInterface
 	 * @see #get(Object, Callable).
 	 * @see #get(Object, Supplier)
 	 */
+	@Nullable
 	public V getOrLoad(final K key, final Callable<V> valueLoader)
 	{
 		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
@@ -612,6 +616,7 @@ public class CCache<K, V> implements CacheInterface
 		}
 	}
 
+	@Nullable
 	public V getOrLoad(final K key, @NonNull final Function<K, V> valueLoader)
 	{
 		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
@@ -793,10 +798,7 @@ public class CCache<K, V> implements CacheInterface
 		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
 		{
 			logger.debug("Running finalize");
-			if (cache != null)
-			{
-				cache.invalidateAll();
-			}
+			cache.invalidateAll();
 		}
 	}
 

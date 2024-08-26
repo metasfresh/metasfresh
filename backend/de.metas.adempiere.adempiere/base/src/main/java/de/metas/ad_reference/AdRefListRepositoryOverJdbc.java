@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.common.util.TryAndWaitUtil;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.ColorId;
@@ -25,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -33,6 +35,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class AdRefListRepositoryOverJdbc implements AdRefListRepository
 {
 	private static final Logger logger = LogManager.getLogger(AdRefListRepositoryOverJdbc.class);
+	public static final int SINGLE_CACHE_KEY = 0;
+
+	/**
+	 * When calling createRefListItem + getById + createRefListItem for the same ref-list value fast (in cucumber),
+	 * then sometimes getById does not contain the previously created ref-list and then the 2nd createRefListItem call fails with a DBUniqueConstraintException.
+	 * The only reasons i can think of are
+	 * <li>that cache.clear() doesn't cause the cache to be really empty **before** it returns</li>
+	 * <li>that there is some other element of concurrency between reading and writing</li>
+	 */
+	private final transient ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
 	private final CCache<Integer, AdRefListsMap> cache = CCache.<Integer, AdRefListsMap>builder()
 			.tableName(I_AD_Ref_List.Table_Name)
@@ -44,27 +56,52 @@ public class AdRefListRepositoryOverJdbc implements AdRefListRepository
 	@Override
 	public void createRefListItem(@NonNull final ADRefListItemCreateRequest request)
 	{
-		final I_AD_Ref_List record = newInstanceOutOfTrx(I_AD_Ref_List.class);
+		readWriteLock.writeLock().lock();
+		try
+		{
+			final I_AD_Ref_List record = newInstanceOutOfTrx(I_AD_Ref_List.class);
 
-		record.setAD_Reference_ID(request.getReferenceId().getRepoId());
+			record.setAD_Reference_ID(request.getReferenceId().getRepoId());
 
-		record.setName(request.getName().getDefaultValue());
-		record.setValue(request.getValue());
+			record.setName(request.getName().getDefaultValue());
+			record.setValue(request.getValue());
 
-		saveRecord(record);
+			saveRecord(record);
 
-		cache.reset();
+			cache.reset();
+
+			// make sure that the cached value is really gone!
+			TryAndWaitUtil.tryAndWait(3, 100, () -> cache.get(SINGLE_CACHE_KEY) == null, () -> logger.warn("AdRefListRepositoryOverJdbc - cache not cleared after 3seconds!"));
+		}
+		catch (final AdempiereException|InterruptedException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("Request", request);
+		}
+		finally
+		{
+			readWriteLock.writeLock().unlock();
+		}
 	}
 
 	@Override
 	public ADRefList getById(final ReferenceId adReferenceId)
 	{
-		return getMap().getById(adReferenceId);
+		readWriteLock.readLock().lock();
+		try
+		{
+			return getMap().getById(adReferenceId);
+		}
+		finally
+		{
+			readWriteLock.readLock().unlock();
+		}
 	}
 
 	private AdRefListsMap getMap()
 	{
-		return cache.getOrLoad(0, this::retrieveMap);
+		return cache.getOrLoad(SINGLE_CACHE_KEY, this::retrieveMap);
 	}
 
 	private AdRefListsMap retrieveMap()
@@ -89,17 +126,18 @@ public class AdRefListRepositoryOverJdbc implements AdRefListRepository
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(ADRefListItem::getReferenceId, item -> item));
 
-		@NonNull final ImmutableList<ADRefList> lists = DB.retrieveRows("SELECT "
-						+ " r." + I_AD_Reference.COLUMNNAME_AD_Reference_ID
-						+ " , r." + I_AD_Reference.COLUMNNAME_Name
-						+ " , r." + I_AD_Reference.COLUMNNAME_IsOrderByValue
-						+ " FROM " + I_AD_Reference.Table_Name + " r"
-						+ " WHERE "
-						+ " r." + I_AD_Reference.COLUMNNAME_ValidationType + "=?"
-						// NOTE fetch all, even if not active
-						+ " ORDER BY r.AD_Reference_ID",
-				ImmutableList.of(X_AD_Reference.VALIDATIONTYPE_ListValidation),
-				rs -> retrieveADRefList(rs, itemsByReferenceId));
+		@NonNull
+		final ImmutableList<ADRefList> lists = DB.retrieveRows("SELECT "
+																	   + " r." + I_AD_Reference.COLUMNNAME_AD_Reference_ID
+																	   + " , r." + I_AD_Reference.COLUMNNAME_Name
+																	   + " , r." + I_AD_Reference.COLUMNNAME_IsOrderByValue
+																	   + " FROM " + I_AD_Reference.Table_Name + " r"
+																	   + " WHERE "
+																	   + " r." + I_AD_Reference.COLUMNNAME_ValidationType + "=?"
+																	   // NOTE fetch all, even if not active
+																	   + " ORDER BY r.AD_Reference_ID",
+															   ImmutableList.of(X_AD_Reference.VALIDATIONTYPE_ListValidation),
+															   rs -> retrieveADRefList(rs, itemsByReferenceId));
 
 		final AdRefListsMap result = new AdRefListsMap(lists);
 		logger.info("Loaded {} in {}", result, stopwatch.stop());
