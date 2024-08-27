@@ -129,7 +129,7 @@ public class DefaultModelArchiver
 				.toString();
 	}
 
-	public ArchiveResult archive()
+	public List<ArchiveResult> archive()
 	{
 		// Mark as processed
 		markProcessed();
@@ -141,14 +141,49 @@ public class DefaultModelArchiver
 				.map(AsyncBatchId::getRepoId)
 				.orElse(null);
 
-		final List<PrintFormatId> prinrFormatIdList = getPrintFormatIds();
+		final List<ArchiveResult> result = new ArrayList<>();
+
+		if (printFormatId != null)
+		{
+			final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, printFormatId);
+			sendToCCPathIfAvailable(recordRef, archiveResult);
+			result.add(archiveResult);
+		}
+
+		else
+		{
+			final List<PrintFormatId> printFormatIdList = getPrintFormatIds();
+
+
+
+			for (final PrintFormatId printFormatId : printFormatIdList)
+			{
+				final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, printFormatId);
+				sendToCCPathIfAvailable(recordRef, archiveResult);
+				result.add(archiveResult);
+			}
+
+			if (printFormatIdList.isEmpty())
+			{
+				final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, null);
+				sendToCCPathIfAvailable(recordRef, archiveResult);
+				result.add(archiveResult);
+			}
+		}
+
+
+		return result;
+	}
+
+	private ArchiveResult createArchiveResultMethod(final TableRecordReference recordRef, final Integer asyncBatchId, @Nullable final PrintFormatId printFormatId)
+	{
 
 		final DocumentReportResult report = getDocumentReportService()
 				.createReport(DocumentReportRequest.builder()
 						.flavor(flavor)
 						.documentRef(recordRef)
 						.reportProcessId(reportProcessId)
-						.printFormatIdToUse(getPrintFormatId().orElse(null))
+						.printFormatIdToUse(printFormatId)
 						.printPreview(true)
 						.asyncBatchId(asyncBatchId)
 						//
@@ -161,18 +196,15 @@ public class DefaultModelArchiver
 
 		final ArchiveResult lastArchive = report.getLastArchive();
 
-		final ArchiveResult archiveResult;
-
-		if (lastArchive == null || lastArchive.isNoArchive())
-		{
-			archiveResult = createArchive(report);
+		if (lastArchive == null || lastArchive.isNoArchive()) {
+			return createArchive(report);
+		} else {
+			return lastArchive;
 		}
-		else
-		{
-			archiveResult = lastArchive;
-		}
+	}
 
-		//
+	private void sendToCCPathIfAvailable(final TableRecordReference recordRef, ArchiveResult archiveResult)
+	{
 		// Send data to CC Path if available
 		final String ccPath = getCCPath().orElse(null);
 		if (Check.isNotBlank(ccPath)
@@ -181,9 +213,8 @@ public class DefaultModelArchiver
 		{
 			DocOutboundCCWorkpackageProcessor.scheduleOnTrxCommit(archiveResult.getArchiveRecord());
 		}
-
-		return archiveResult;
 	}
+
 
 	private DocumentReportService getDocumentReportService()
 	{
