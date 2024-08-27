@@ -34,6 +34,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -47,12 +48,14 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -235,7 +238,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_C_Doc_Outbound_Config_CC.Table_Name + "#AD_PrintFormat")
+	@Cached(cacheName = I_C_Doc_Outbound_Config_CC.Table_Name + "#AD_PrintFormatAll")
 	public List<PrintFormatId> retrieveAllPrintFormatIds(final int docOutboundConfigId)
 	{
 		final List<PrintFormatId> printFormatIdList = new ArrayList<>();
@@ -249,6 +252,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 
 				queryBL.createQueryBuilderOutOfTrx(I_C_Doc_Outbound_Config.class)
 						.addOnlyActiveRecordsFilter()
+						.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_C_Doc_Outbound_Config_ID, config.getC_Doc_Outbound_Config_ID())
 						.andCollectChildren(I_C_Doc_Outbound_Config_CC.COLUMN_C_Doc_Outbound_Config_ID)
 						.addOnlyActiveRecordsFilter()
 						.andCollect(I_AD_PrintFormat.COLUMN_AD_PrintFormat_ID)
@@ -258,5 +262,28 @@ public class DocOutboundDAO implements IDocOutboundDAO
 		);
 
 		return printFormatIdList;
+	}
+
+	@Override
+	@Cached(cacheName = I_C_Doc_Outbound_Config_CC.Table_Name + "#AD_PrintFormat_ID")
+	public Optional<AdColumnId> retrievePartnerColumnCorelatedWithPrintFormatId(@NonNull final Object model, final @Nullable PrintFormatId printFormatId)
+	{
+		if (printFormatId == null)
+		{
+			return Optional.empty();
+		}
+
+		final I_C_Doc_Outbound_Config config = retrieveConfigForModel(model);
+
+		return queryBL.createQueryBuilderOutOfTrx(I_C_Doc_Outbound_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_C_Doc_Outbound_Config_ID, config.getC_Doc_Outbound_Config_ID())
+				.andCollectChildren(I_C_Doc_Outbound_Config_CC.COLUMN_C_Doc_Outbound_Config_ID)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Doc_Outbound_Config_CC.COLUMN_AD_PrintFormat_ID, printFormatId)
+				.andCollect(I_AD_Column.COLUMN_AD_Column_ID)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstIdOnlyOptional(AdColumnId::ofRepoId);
 	}
 }

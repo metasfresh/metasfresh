@@ -25,18 +25,22 @@ package de.metas.document.archive.api;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Config_CC;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.postfinance.PostFinanceStatus;
 import de.metas.report.PrintFormatId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.proxy.Cached;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 public interface IDocOutboundDAO extends ISingletonService
@@ -91,4 +95,7 @@ public interface IDocOutboundDAO extends ISingletonService
 	I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID);
 
 	List<PrintFormatId> retrieveAllPrintFormatIds(int docOutboundConfigId);
+
+	@Cached(cacheName = I_C_Doc_Outbound_Config_CC.Table_Name + "#AD_PrintFormat_ID")
+	Optional<AdColumnId> retrievePartnerColumnCorelatedWithPrintFormatId(@NonNull final Object model, @Nullable PrintFormatId printFormatId);
 }

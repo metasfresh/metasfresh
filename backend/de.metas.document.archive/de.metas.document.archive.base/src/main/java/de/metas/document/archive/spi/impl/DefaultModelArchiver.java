@@ -154,8 +154,6 @@ public class DefaultModelArchiver
 		{
 			final List<PrintFormatId> printFormatIdList = getPrintFormatIds();
 
-
-
 			for (final PrintFormatId printFormatId : printFormatIdList)
 			{
 				final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, printFormatId);
@@ -170,7 +168,6 @@ public class DefaultModelArchiver
 				result.add(archiveResult);
 			}
 		}
-
 
 		return result;
 	}
@@ -196,9 +193,12 @@ public class DefaultModelArchiver
 
 		final ArchiveResult lastArchive = report.getLastArchive();
 
-		if (lastArchive == null || lastArchive.isNoArchive()) {
+		if (lastArchive == null || lastArchive.isNoArchive())
+		{
 			return createArchive(report);
-		} else {
+		}
+		else
+		{
 			return lastArchive;
 		}
 	}
@@ -214,7 +214,6 @@ public class DefaultModelArchiver
 			DocOutboundCCWorkpackageProcessor.scheduleOnTrxCommit(archiveResult.getArchiveRecord());
 		}
 	}
-
 
 	private DocumentReportService getDocumentReportService()
 	{
