@@ -3,7 +3,8 @@
   "soTrx" : "PURCHASE",
   "product": {
     "id": 300000,
-    "stocked": true
+    "stocked": true,
+    "itemType": true
   },
   "uomId" : 110000,
   "orderedData" : {

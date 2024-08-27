@@ -405,7 +405,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final ProductId productId = ProductId.ofRepoId(icRecord.getM_Product_ID());
 		final IProductBL productBL = Services.get(IProductBL.class);
-		if (!productBL.isShippedAndReceived(productId))
+		if (!productBL.isItemType(productId))
 		{
 			final Timestamp dateOrdered = icRecord.getDateOrdered();
 			logger.debug("computedateToInvoiceBasedOnDeliveryDate - deliveryDate is null and M_Product_ID={} is not stocked; -> return dateOrdered= {} as dateToInvoice", productId.getRepoId(), dateOrdered);

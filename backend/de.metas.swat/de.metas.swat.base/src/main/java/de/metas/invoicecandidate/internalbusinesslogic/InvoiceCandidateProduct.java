@@ -37,17 +37,17 @@ public class InvoiceCandidateProduct
 
 	boolean stocked; // TODO I think this can be dropped
 
-	boolean shippedAndReceived;
+	boolean itemType;
 
 	@JsonCreator
 	public InvoiceCandidateProduct(
 			@JsonProperty("id") @NonNull final ProductId id,
 			@JsonProperty("stocked") @NonNull final Boolean stocked,
-			@JsonProperty("shippedAndReceived") @NonNull final Boolean shiippedAndReceived)
+			@JsonProperty("itemType") @NonNull final Boolean shiippedAndReceived)
 	{
 		this.id = id;
 		this.stocked = stocked;
-		this.shippedAndReceived = shiippedAndReceived;
+		this.itemType = shiippedAndReceived;
 	}
 
 

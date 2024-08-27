@@ -75,9 +75,7 @@ public interface IProductBL extends ISingletonService
 
 	boolean isStocked(@Nullable ProductId productId);
 
-	boolean isShippedAndReceived(@Nullable ProductId productId);
-
-	boolean isShippedAndReceived(@NonNull I_M_Product product);
+	boolean isItemType(@Nullable ProductId productId);
 
 	boolean isDiverse(ProductId productId);
 

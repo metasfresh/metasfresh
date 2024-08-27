@@ -3,7 +3,8 @@
   "soTrx": "SALES",
   "product": {
     "id": 300000,
-    "stocked": false
+    "stocked": false,
+    "itemType": true
   },
   "uomId": 110000,
   "orderedData": {
@@ -16,22 +17,34 @@
       "uomId": 100000
     }
   },
+
   "deliveredData": {
     "shipmentData": {
       "productId": 300000,
       "qtyInStockUom": {
-        "qty": "0",
+        "qty": "19",
         "uomId": 100000
       },
       "qtyNominal": {
-        "qty": "0",
+        "qty": "20",
         "uomId": 110000
       },
-      "qtyCatch": null,
-      "deliveredQtyItems": []
-    },
-    "receiptData": null
+      "deliveredQtyItems": [
+        {
+          "qtyInStockUom": {
+            "qty": "19",
+            "uomId": 100000
+          },
+          "qtyNominal": {
+            "qty": "20",
+            "uomId": 110000
+          },
+          "qtyOverride": null
+        }
+      ]
+    }
   },
+
   "pickedData": {
     "productId": 300000,
     "qtyPicked": {
