@@ -39,6 +39,9 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -137,6 +140,8 @@ public class DefaultModelArchiver
 		final Integer asyncBatchId = asyncBatchBL.getAsyncBatchId(record)
 				.map(AsyncBatchId::getRepoId)
 				.orElse(null);
+
+		final List<PrintFormatId> prinrFormatIdList = getPrintFormatIds();
 
 		final DocumentReportResult report = getDocumentReportService()
 				.createReport(DocumentReportRequest.builder()
@@ -294,23 +299,31 @@ public class DefaultModelArchiver
 		return Optional.ofNullable(docOutboundConfig);
 	}
 
-	private Optional<PrintFormatId> getPrintFormatId()
+	private List<PrintFormatId> getPrintFormatIds()
 	{
+		final List<PrintFormatId> processList = new ArrayList<>();
+
 		// Favor the Report Process if any
 		if (reportProcessId != null)
 		{
-			return Optional.empty();
+			return Collections.emptyList();
 		}
 		// Then check the print format
 		else if (printFormatId != null)
 		{
-			return Optional.of(printFormatId);
+			processList.add(printFormatId);
 		}
 		// Else, fallback to doc outbound config
 		else
 		{
-			return getDocOutboundConfig().map(docOutboundConfig -> PrintFormatId.ofRepoIdOrNull(docOutboundConfig.getAD_PrintFormat_ID()));
+			getDocOutboundConfig().map(docOutboundConfig ->
+			{
+				processList.addAll(docOutboundDAO.retrieveAllPrintFormatIds(docOutboundConfig.getC_Doc_Outbound_Config_ID()));
+				return processList;
+			});
 		}
+
+		return processList;
 	}
 
 	@NonNull

@@ -25,9 +25,11 @@ package de.metas.document.archive.api.impl;
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Config_CC;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.postfinance.PostFinanceStatus;
+import de.metas.report.PrintFormatId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -45,9 +47,11 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -56,6 +60,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class DocOutboundDAO implements IDocOutboundDAO
 {
+
+	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	// note that this method doesn't directly access the DB. Therefore, a unit test DAO implementation can extend this
 	// class without problems.
@@ -143,10 +149,6 @@ public class DocOutboundDAO implements IDocOutboundDAO
 			return null;
 		}
 
-		//
-		// Services
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final Object contextProvider = log;
 
 		final IQueryBuilder<I_C_Doc_Outbound_Log_Line> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_Line.class, contextProvider)
@@ -184,10 +186,6 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	@Override
 	public I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID)
 	{
-		//
-		// Services
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, contextProvider)
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID, AD_Table_ID);
@@ -207,8 +205,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	@Override
 	public I_C_Doc_Outbound_Log retrieveLog(@NonNull final TableRecordReference tableRecordReference)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId())
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
@@ -225,8 +222,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	@Cached(cacheName = I_C_Doc_Outbound_Config.Table_Name + "#All")
 	public List<I_C_Doc_Outbound_Config> retrieveAllConfigs()
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_Doc_Outbound_Config.class)
+		return queryBL.createQueryBuilderOutOfTrx(I_C_Doc_Outbound_Config.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
@@ -236,5 +232,31 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	public I_C_Doc_Outbound_Config getConfigById(final int docOutboundConfigId)
 	{
 		return InterfaceWrapperHelper.load(docOutboundConfigId, I_C_Doc_Outbound_Config.class);
+	}
+
+	@Override
+	@Cached(cacheName = I_C_Doc_Outbound_Config_CC.Table_Name + "#AD_PrintFormat")
+	public List<PrintFormatId> retrieveAllPrintFormatIds(final int docOutboundConfigId)
+	{
+		final List<PrintFormatId> printFormatIdList = new ArrayList<>();
+		final I_C_Doc_Outbound_Config config = getConfigById(docOutboundConfigId);
+		if (config.getAD_PrintFormat_ID() > 0)
+		{
+			printFormatIdList.add(PrintFormatId.ofRepoId(config.getAD_PrintFormat_ID()));
+		}
+
+		printFormatIdList.addAll(
+
+				queryBL.createQueryBuilderOutOfTrx(I_C_Doc_Outbound_Config.class)
+						.addOnlyActiveRecordsFilter()
+						.andCollectChildren(I_C_Doc_Outbound_Config_CC.COLUMN_C_Doc_Outbound_Config_ID)
+						.addOnlyActiveRecordsFilter()
+						.andCollect(I_AD_PrintFormat.COLUMN_AD_PrintFormat_ID)
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.listIds(PrintFormatId::ofRepoId)
+		);
+
+		return printFormatIdList;
 	}
 }
