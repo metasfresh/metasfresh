@@ -3,7 +3,6 @@
     "soTrx" : "SALES",
     "product": {
       "id": 300000,
-      "stocked": true,
       "itemType": true
     },
     "uomId" : 110000,

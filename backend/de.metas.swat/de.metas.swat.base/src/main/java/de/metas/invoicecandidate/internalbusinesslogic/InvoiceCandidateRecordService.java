@@ -80,7 +80,6 @@ public class InvoiceCandidateRecordService
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
 		final ProductId productId = ProductId.ofRepoId(icRecord.getM_Product_ID());
 		final UomId stockUomId = productBL.getStockUOMId(productId);
-		final boolean stocked = productBL.isStocked(productId);
 		final boolean itemType = productBL.isItemType(productId);
 
 		final UomId icUomId = UomId.ofRepoId(icRecord.getC_UOM_ID());
@@ -94,7 +93,7 @@ public class InvoiceCandidateRecordService
 				.id(invoiceCandidateId)
 				.soTrx(soTrx)
 				.uomId(icUomId)
-				.product(new InvoiceCandidateProduct(productId, stocked, itemType))
+				.product(new InvoiceCandidateProduct(productId, itemType))
 				.invoiceRule(invoiceCandBL.getInvoiceRule(icRecord));
 
 		if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))

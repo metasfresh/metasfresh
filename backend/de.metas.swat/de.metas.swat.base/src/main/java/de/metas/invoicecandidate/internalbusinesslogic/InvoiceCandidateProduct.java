@@ -32,22 +32,17 @@ import lombok.Value;
 @Value
 public class InvoiceCandidateProduct
 {
-
 	ProductId id;
-
-	boolean stocked; // TODO I think this can be dropped
 
 	boolean itemType;
 
 	@JsonCreator
 	public InvoiceCandidateProduct(
 			@JsonProperty("id") @NonNull final ProductId id,
-			@JsonProperty("stocked") @NonNull final Boolean stocked,
-			@JsonProperty("itemType") @NonNull final Boolean shiippedAndReceived)
+			@JsonProperty("itemType") @NonNull final Boolean itemType)
 	{
 		this.id = id;
-		this.stocked = stocked;
-		this.itemType = shiippedAndReceived;
+		this.itemType = itemType;
 	}
 
 

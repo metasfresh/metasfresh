@@ -225,7 +225,7 @@ public final class ProductBL implements IProductBL
 	{
 		if (productId == null)
 		{
-			logger.debug("isisShippedAndReceived - productId=null; -> return false");
+			logger.debug("isItemType - productId=null; -> return false");
 			return false;
 		}
 
