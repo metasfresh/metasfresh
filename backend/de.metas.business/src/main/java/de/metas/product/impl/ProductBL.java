@@ -10,6 +10,7 @@ import de.metas.costing.IProductCostingBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -34,6 +35,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -61,6 +63,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public final class ProductBL implements IProductBL
 {
+
+	private static final String SYS_Config_ShipAndReceiveNonStockItems = "de.metas.product.impl.ProductBL.ShipAndReceiveNonStockItems";
+
 	private static final Logger logger = LogManager.getLogger(ProductBL.class);
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -70,6 +75,7 @@ public final class ProductBL implements IProductBL
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -218,6 +224,65 @@ public final class ProductBL implements IProductBL
 		// NOTE: we rely on table cache config
 		final I_M_Product product = getById(productId);
 		return isStocked(product);
+	}
+
+	@Override
+	public boolean isShippedAndReceived(@Nullable final ProductId productId)
+	{
+		if (productId == null)
+		{
+			logger.debug("isisShippedAndReceived - productId=null; -> return false");
+			return false;
+		}
+
+		// NOTE: we rely on table cache config
+		final I_M_Product product = getById(productId);
+		return isShippedAndReceived(product);
+	}
+
+	@Override
+	public boolean isShippedAndReceived(@NonNull final I_M_Product product)
+	{
+		final ProductType productType = ProductType.ofCode(product.getProductType());
+		final boolean isItemProduct = productType.isItem();
+
+		if (!isItemProduct)
+		{
+			logger.debug("isisShippedAndReceived - M_Product_ID={} has isStocked= {} and type={}; -> return {}",
+						 product.getM_Product_ID(),
+						 product.isStocked(),
+						 productType,
+						 false);
+			return false;
+		}
+
+		final boolean isShipAndReceiveNonStockItems = sysConfigBL.getBooleanValue(SYS_Config_ShipAndReceiveNonStockItems,
+																				  false,
+																				  ClientAndOrgId.ofClientAndOrg(product.getAD_Client_ID(), product.getAD_Org_ID()));
+
+		if (isShipAndReceiveNonStockItems)
+		{
+			logger.debug("isisShippedAndReceived - isShipAndReceiveNonStockItems=true: M_Product_ID={} has isStocked= {} and type={}; -> return {}",
+						 product.getM_Product_ID(),
+						 product.isStocked(),
+						 productType,
+						 true);
+
+			return true;
+		}
+
+		if (!product.isStocked())
+		{
+			logger.debug("isisShippedAndReceived - isShipAndReceiveNonStockItems=false: M_Product_ID={} has isStocked=false; -> return false",
+						 product.getM_Product_ID());
+			return false;
+		}
+
+		logger.debug("isisShippedAndReceived - isShipAndReceiveNonStockItems=false: M_Product_ID={} has isStocked=true and type={}; -> return {}",
+					 product.getM_Product_ID(),
+					 productType,
+					 true);
+		return true;
 	}
 
 	@Override
@@ -528,7 +593,7 @@ public final class ProductBL implements IProductBL
 	{
 		final I_M_Product product = productsRepo.getById(productId);
 
-		if(!product.isRequiresSupplierApproval())
+		if (!product.isRequiresSupplierApproval())
 		{
 			return ImmutableList.of();
 		}

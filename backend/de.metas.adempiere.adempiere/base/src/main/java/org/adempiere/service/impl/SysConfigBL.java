@@ -130,6 +130,14 @@ public class SysConfigBL implements ISysConfigBL
 	}
 
 	@Override
+	public boolean getBooleanValue(final String name, final boolean defaultValue, final ClientAndOrgId clientAndOrgId)
+	{
+		return sysConfigDAO.getValue(name, clientAndOrgId)
+				.map(valueStr -> StringUtils.toBoolean(valueStr, defaultValue))
+				.orElse(defaultValue);
+	}
+
+	@Override
 	public void setValue(
 			@NonNull final String name,
 			final int value,
