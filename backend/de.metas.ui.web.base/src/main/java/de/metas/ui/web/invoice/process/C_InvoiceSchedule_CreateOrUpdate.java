@@ -102,6 +102,7 @@ public class C_InvoiceSchedule_CreateOrUpdate extends ViewBasedProcessTemplate i
 		invoiceScheduleRecord.setAmt(amt);
 
 		InterfaceWrapperHelper.saveRecord(invoiceScheduleRecord);
+		
 		return MSG_OK;
 	}
 
