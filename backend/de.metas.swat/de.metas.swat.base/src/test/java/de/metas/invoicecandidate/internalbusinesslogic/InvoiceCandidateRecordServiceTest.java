@@ -225,6 +225,7 @@ class InvoiceCandidateRecordServiceTest
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
 		productRecord.setC_UOM_ID(stockUomRecord.getC_UOM_ID());
 		productRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
+		productRecord.setProductType(X_M_Product.PRODUCTTYPE_Item);
 		saveRecord(productRecord);
 
 		final I_C_UOM icUomRecord = uomConversionHelper.createUOM(2);
