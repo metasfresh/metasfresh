@@ -41,7 +41,7 @@ SELECT ('SPC' || E'\n' || --QRType
         TO_CHAR((CASE
                      WHEN cl.referenceNo IS NOT NULL THEN TO_NUMBER(SUBSTRING(cl.referenceNo, 3, 8), '999999999') + (TO_NUMBER(SUBSTRING(cl.referenceNo, 11, 2), '99') / 100)
                                                      ELSE i.GrandTotal
-                 END), 'FM99999999.00') || E'\n' ||
+                 END), 'FM9999999.00') || E'\n' ||
         cur.iso_code || E'\n' ||
         'K' || E'\n' || -- UD– AdressTyp = Combined address
         SUBSTRING(bpartneraddress FROM 1 FOR POSITION(E'\n' IN bpartneraddress)) || --UD – Name
