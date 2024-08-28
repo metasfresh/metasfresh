@@ -62,7 +62,7 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
 
-	private Optional<String> lotNumberFromSeq = null;
+	private Optional<String> lotNumberFromSeq = Optional.empty();
 
 	protected final void openHUsToReceive(final Collection<I_M_HU> hus)
 	{
@@ -101,16 +101,17 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 	@Nullable
 	private String getOrLoadLotNoFromSeq(final @NonNull I_M_ReceiptSchedule receiptSchedule)
 	{
-		if (lotNumberFromSeq == null)
+		if (!lotNumberFromSeq.isPresent())
 		{
 			final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(receiptSchedule.getC_DocType_ID()));
 			final DocSequenceId lotNoSequenceId = DocSequenceId.ofRepoIdOrNull(docType.getLotNo_Sequence_ID());
 			if (lotNoSequenceId != null)
 			{
-				lotNumberFromSeq = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
-																			.sequenceId(lotNoSequenceId)
-																			.clientId(ClientId.ofRepoId(receiptSchedule.getAD_Client_ID()))
-																			.build());
+				lotNumberFromSeq = lotNumberBL
+						.getAndIncrementLotNo(LotNoContext.builder()
+													  .sequenceId(lotNoSequenceId)
+													  .clientId(ClientId.ofRepoId(receiptSchedule.getAD_Client_ID()))
+													  .build());
 			}
 		}
 		return lotNumberFromSeq.orElse(null);
@@ -121,6 +122,7 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 		if (huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
 				&& huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate) == null
 				&& huAttributesBL.isAutomaticallySetBestBeforeDate()
+				&& receiptSchedule.getMovementDate() != null
 		)
 		{
 			final LocalDate bestBeforeDate = computeBestBeforeDate(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()), TimeUtil.asLocalDate(receiptSchedule.getMovementDate()));
