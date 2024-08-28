@@ -45,6 +45,8 @@ import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
+
 import static de.metas.document.archive.spi.impl.MockedDocumentReportService.MOCKED_REPORT_FILENAME;
 
 /**
@@ -104,9 +106,9 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 		mockedDocumentReportService.setPinstanceIdToReturn(PInstanceId.ofRepoId(11223344));
 		archiver.setDocumentReportService(mockedDocumentReportService);
 
-		final ArchiveResult archiveResult = archiver.archive();
+		final List<ArchiveResult> archiveResult = archiver.archive();
 
-		final I_AD_Archive archiveRecord = archiveResult.getArchiveRecord();
+		final I_AD_Archive archiveRecord = archiveResult.get(0).getArchiveRecord();
 		Assertions.assertThat(archiveRecord.getDocumentNo()).isEqualTo(dunningDoc.getDocumentNo());
 		Assertions.assertThat(archiveRecord.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_C_DunningDoc.class));
 		Assertions.assertThat(archiveRecord.getRecord_ID()).isEqualTo(dunningDoc.getC_DunningDoc_ID());
