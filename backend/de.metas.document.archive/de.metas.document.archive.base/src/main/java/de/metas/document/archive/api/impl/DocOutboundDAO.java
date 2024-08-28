@@ -22,6 +22,7 @@ package de.metas.document.archive.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
@@ -247,19 +248,17 @@ public class DocOutboundDAO implements IDocOutboundDAO
 		{
 			printFormatIdList.add(PrintFormatId.ofRepoId(config.getAD_PrintFormat_ID()));
 		}
+		final ImmutableSet<PrintFormatId> printFormatIds = queryBL.createQueryBuilderOutOfTrx(I_C_Doc_Outbound_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_C_Doc_Outbound_Config_ID, config.getC_Doc_Outbound_Config_ID())
+				.andCollectChildren(I_C_Doc_Outbound_Config_CC.COLUMN_C_Doc_Outbound_Config_ID)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_AD_PrintFormat.COLUMN_AD_PrintFormat_ID, I_AD_PrintFormat.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(PrintFormatId::ofRepoId);
 
-		printFormatIdList.addAll(
-
-				queryBL.createQueryBuilderOutOfTrx(I_C_Doc_Outbound_Config.class)
-						.addOnlyActiveRecordsFilter()
-						.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_C_Doc_Outbound_Config_ID, config.getC_Doc_Outbound_Config_ID())
-						.andCollectChildren(I_C_Doc_Outbound_Config_CC.COLUMN_C_Doc_Outbound_Config_ID)
-						.addOnlyActiveRecordsFilter()
-						.andCollect(I_AD_PrintFormat.COLUMN_AD_PrintFormat_ID)
-						.addOnlyActiveRecordsFilter()
-						.create()
-						.listIds(PrintFormatId::ofRepoId)
-		);
+		if (!printFormatIds.isEmpty())	{ printFormatIdList.addAll(printFormatIds);	}
 
 		return printFormatIdList;
 	}
@@ -281,7 +280,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 				.andCollectChildren(I_C_Doc_Outbound_Config_CC.COLUMN_C_Doc_Outbound_Config_ID)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Doc_Outbound_Config_CC.COLUMN_AD_PrintFormat_ID, printFormatId)
-				.andCollect(I_AD_Column.COLUMN_AD_Column_ID)
+				.andCollect(I_AD_Column.COLUMN_AD_Column_ID, I_AD_Column.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstIdOnlyOptional(AdColumnId::ofRepoId);
