@@ -280,7 +280,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 				.andCollectChildren(I_C_Doc_Outbound_Config_CC.COLUMN_C_Doc_Outbound_Config_ID)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Doc_Outbound_Config_CC.COLUMN_AD_PrintFormat_ID, printFormatId)
-				.andCollect(I_AD_Column.COLUMN_AD_Column_ID, I_AD_Column.class)
+				.andCollect(I_C_Doc_Outbound_Config_CC.COLUMN_BPartner_ColumnName_ID, I_AD_Column.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstIdOnlyOptional(AdColumnId::ofRepoId);
