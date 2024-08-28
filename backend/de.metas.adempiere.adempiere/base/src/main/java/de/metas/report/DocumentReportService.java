@@ -68,17 +68,20 @@ public class DocumentReportService
 	private final ImmutableMap<StandardDocumentReportType, DocumentReportAdvisor> advisorsByType;
 	private final ImmutableMap<String, DocumentReportAdvisor> advisorsByTableName;
 	private final FallbackDocumentReportAdvisor fallbackAdvisor;
+	private final DocOutboundConfigRepository docOutboundConfigRepository;
 	private final DocumentReportAdvisorUtil util;
 
 	public DocumentReportService(
 			@NonNull final List<DocumentReportAdvisor> advisors,
 			@NonNull final DocumentPrintOptionDescriptorsRepository documentPrintOptionDescriptorsRepository,
 			@NonNull final DocTypePrintOptionsRepository docTypePrintOptionsRepository,
-			@NonNull final DocumentReportAdvisorUtil util)
+			@NonNull final DocumentReportAdvisorUtil util,
+			@NonNull final DocOutboundConfigRepository docOutboundConfigRepository)
 	{
 		this.advisorsByType = Maps.uniqueIndex(advisors, DocumentReportAdvisor::getStandardDocumentReportType);
 		this.advisorsByTableName = Maps.uniqueIndex(advisors, DocumentReportAdvisor::getHandledTableName);
-		this.fallbackAdvisor = new FallbackDocumentReportAdvisor(util);
+		this.docOutboundConfigRepository = docOutboundConfigRepository;
+		this.fallbackAdvisor = new FallbackDocumentReportAdvisor(util, docOutboundConfigRepository);
 		logger.info("Advisors: {}", advisors);
 
 		this.documentPrintOptionDescriptorsRepository = documentPrintOptionDescriptorsRepository;

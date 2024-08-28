@@ -30,6 +30,7 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.report.DefaultPrintFormatsRepository;
+import de.metas.report.DocOutboundConfigRepository;
 import de.metas.report.DocTypePrintOptionsRepository;
 import de.metas.report.DocumentPrintOptionDescriptorsRepository;
 import de.metas.report.DocumentReportAdvisorUtil;
@@ -77,7 +78,8 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 				ImmutableList.of(),
 				new DocumentPrintOptionDescriptorsRepository(),
 				new DocTypePrintOptionsRepository(),
-				util);
+				util,
+				new DocOutboundConfigRepository());
 
 	}
 

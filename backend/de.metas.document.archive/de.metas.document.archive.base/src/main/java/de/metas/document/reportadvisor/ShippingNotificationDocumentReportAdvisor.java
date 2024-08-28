@@ -20,15 +20,14 @@
  * #L%
  */
 
-package de.metas.document.archive.api.impl;
+package de.metas.document.reportadvisor;
 
-import de.metas.acct.api.AccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
-import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
+import de.metas.report.DocOutboundConfigRepository;
 import de.metas.report.DocumentReportAdvisor;
 import de.metas.report.DocumentReportAdvisorUtil;
 import de.metas.report.DocumentReportInfo;
@@ -59,13 +58,16 @@ public class ShippingNotificationDocumentReportAdvisor implements DocumentReport
 {
 	private final DocumentReportAdvisorUtil util;
 	private final ShippingNotificationService shippingNotificationService;
-	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
+	private final DocOutboundConfigRepository docOutboundConfigRepository;
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-	public ShippingNotificationDocumentReportAdvisor(@NonNull final DocumentReportAdvisorUtil util, final ShippingNotificationService shippingNotificationService)
+	public ShippingNotificationDocumentReportAdvisor(@NonNull final DocumentReportAdvisorUtil util,
+													 @NonNull final ShippingNotificationService shippingNotificationService,
+													 @NonNull final DocOutboundConfigRepository docOutboundConfigRepository)
 	{
 		this.util = util;
 		this.shippingNotificationService = shippingNotificationService;
+		this.docOutboundConfigRepository = docOutboundConfigRepository;
 	}
 
 	@Override
@@ -88,7 +90,7 @@ public class ShippingNotificationDocumentReportAdvisor implements DocumentReport
 		final ShippingNotificationId shippingNotificationId = recordRef.getIdAssumingTableName(I_M_Shipping_Notification.Table_Name, ShippingNotificationId::ofRepoId);
 		final ShippingNotification shippingNotification = shippingNotificationService.getById(shippingNotificationId);
 
-		final AdColumnId columnId = docOutboundDAO.retrievePartnerColumnCorelatedWithPrintFormatId(recordRef, adPrintFormatToUseId).orElse(null);
+		final AdColumnId columnId = docOutboundConfigRepository.retrievePartnerColumnCorelatedWithPrintFormatId(recordRef, adPrintFormatToUseId).orElse(null);
 
 		BPartnerId bpartnerId;
 		if (columnId == null)

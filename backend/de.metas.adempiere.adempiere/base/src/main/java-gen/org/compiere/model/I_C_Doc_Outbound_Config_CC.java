@@ -1,26 +1,4 @@
-/*
- * #%L
- * de.metas.document.archive.base
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-package de.metas.document.archive.model;
+package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
 
@@ -28,13 +6,13 @@ import org.adempiere.model.ModelColumn;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_Doc_Outbound_Config_CC
+public interface I_C_Doc_Outbound_Config_CC 
 {
 
 	String Table_Name = "C_Doc_Outbound_Config_CC";
 
-	//	/** AD_Table_ID=542430 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=542430 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -164,11 +142,11 @@ public interface I_C_Doc_Outbound_Config_CC
 	 */
 	int getC_Doc_Outbound_Config_ID();
 
-	de.metas.document.archive.model.I_C_Doc_Outbound_Config getC_Doc_Outbound_Config();
+	org.compiere.model.I_C_Doc_Outbound_Config getC_Doc_Outbound_Config();
 
-	void setC_Doc_Outbound_Config(de.metas.document.archive.model.I_C_Doc_Outbound_Config C_Doc_Outbound_Config);
+	void setC_Doc_Outbound_Config(org.compiere.model.I_C_Doc_Outbound_Config C_Doc_Outbound_Config);
 
-	ModelColumn<I_C_Doc_Outbound_Config_CC, de.metas.document.archive.model.I_C_Doc_Outbound_Config> COLUMN_C_Doc_Outbound_Config_ID = new ModelColumn<>(I_C_Doc_Outbound_Config_CC.class, "C_Doc_Outbound_Config_ID", de.metas.document.archive.model.I_C_Doc_Outbound_Config.class);
+	ModelColumn<I_C_Doc_Outbound_Config_CC, org.compiere.model.I_C_Doc_Outbound_Config> COLUMN_C_Doc_Outbound_Config_ID = new ModelColumn<>(I_C_Doc_Outbound_Config_CC.class, "C_Doc_Outbound_Config_ID", org.compiere.model.I_C_Doc_Outbound_Config.class);
 	String COLUMNNAME_C_Doc_Outbound_Config_ID = "C_Doc_Outbound_Config_ID";
 
 	/**

@@ -6,16 +6,15 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
 import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.spi.IDocumentNoAware;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
+import de.metas.report.DocOutboundConfigRepository;
 import de.metas.report.DocumentReportFlavor;
 import de.metas.report.DocumentReportRequest;
 import de.metas.report.DocumentReportResult;
@@ -35,6 +34,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Doc_Outbound_Config;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -87,10 +87,10 @@ public class DefaultModelArchiver
 	private static final Logger logger = LogManager.getLogger(DefaultModelArchiver.class);
 	private final transient IArchiveBL archiveBL = Services.get(org.adempiere.archive.api.IArchiveBL.class);
 	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-	private final transient IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
 	private final transient ICCAbleDocumentFactoryService ccAbleDocumentFactoryService = Services.get(ICCAbleDocumentFactoryService.class);
 	private final transient IDocumentNoBL documentNoBL = Services.get(IDocumentNoBL.class);
 	private DocumentReportService _documentReportService; // lazy
+	private DocOutboundConfigRepository docOutboundConfigRepository = SpringContextHolder.instance.getBean(DocOutboundConfigRepository.class);
 
 	//
 	// Parameters
@@ -324,7 +324,7 @@ public class DefaultModelArchiver
 	private Optional<I_C_Doc_Outbound_Config> retrieveDocOutboundConfig()
 	{
 		final int adTableId = InterfaceWrapperHelper.getModelTableId(getRecord());
-		final I_C_Doc_Outbound_Config docOutboundConfig = docOutboundDAO.retrieveConfig(getCtx(), adTableId);
+		final I_C_Doc_Outbound_Config docOutboundConfig = docOutboundConfigRepository.retrieveConfig(getCtx(), adTableId);
 		logger.debug("Using config: {}", docOutboundConfig);
 		return Optional.ofNullable(docOutboundConfig);
 	}
@@ -348,7 +348,7 @@ public class DefaultModelArchiver
 		{
 			getDocOutboundConfig().map(docOutboundConfig ->
 			{
-				processList.addAll(docOutboundDAO.retrieveAllPrintFormatIds(docOutboundConfig.getC_Doc_Outbound_Config_ID()));
+				processList.addAll(docOutboundConfigRepository.retrieveAllPrintFormatIds(docOutboundConfig.getC_Doc_Outbound_Config_ID()));
 				return processList;
 			});
 		}

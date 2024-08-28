@@ -28,6 +28,7 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.service.InvoiceDocumentReportAdvisor;
 import de.metas.report.DefaultPrintFormatsRepository;
+import de.metas.report.DocOutboundConfigRepository;
 import de.metas.report.DocTypePrintOptionsRepository;
 import de.metas.report.DocumentPrintOptionDescriptorsRepository;
 import de.metas.report.DocumentReportAdvisorUtil;
@@ -76,7 +77,8 @@ class DefaultModelArchiverTest
 				),
 				new DocumentPrintOptionDescriptorsRepository(),
 				new DocTypePrintOptionsRepository(),
-				util);
+				util,
+				new DocOutboundConfigRepository());
 
 	}
 

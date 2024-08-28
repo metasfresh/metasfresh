@@ -849,3 +849,7 @@ DELETE FROM AD_Table_Process WHERE AD_Table_Process_ID=541518
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585420,542365,541519,TO_TIMESTAMP('2024-08-26 17:03:21.641','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.shippingnotification','Y',TO_TIMESTAMP('2024-08-26 17:03:21.641','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','Y','N','N')
 ;
 
+-- 2024-08-28T14:00:17.132Z
+INSERT INTO AD_PrintFormat (AD_Client_ID,AD_Org_ID,AD_PrintColor_ID,AD_PrintFont_ID,AD_Printformat_Group,AD_PrintFormat_ID,AD_PrintPaper_ID,AD_Table_ID,CreateCopy,Created,CreatedBy,FooterMargin,HeaderMargin,IsActive,IsDefault,IsForm,IsStandardHeaderFooter,IsTableBased,JasperProcess_ID,Name,Updated,UpdatedBy) VALUES (0,0,100,540006,'None',540135,102,542365,'N',TO_TIMESTAMP('2024-08-28 17:00:16.077','YYYY-MM-DD HH24:MI:SS.US'),100,0,0,'Y','N','N','Y','Y',585420,'Shipping Notification - shipFrom partner',TO_TIMESTAMP('2024-08-28 17:00:16.077','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+

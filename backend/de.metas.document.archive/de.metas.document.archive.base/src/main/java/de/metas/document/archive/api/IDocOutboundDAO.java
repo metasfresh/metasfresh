@@ -22,51 +22,20 @@ package de.metas.document.archive.api;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.document.archive.DocOutboundLogId;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config_CC;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.postfinance.PostFinanceStatus;
-import de.metas.report.PrintFormatId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.proxy.Cached;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
 
 public interface IDocOutboundDAO extends ISingletonService
 {
-	/**
-	 * Retrieve all <b>active</b> {@link I_C_Doc_Outbound_Config}s for <b>all</b> clients.
-	 */
-	List<I_C_Doc_Outbound_Config> retrieveAllConfigs();
-
-	/**
-	 * Retrieve {@link I_C_Doc_Outbound_Config} for given tableId. First current AD_Client_ID will be checked if not found, it will be checked on System level.
-	 *
-	 * @return config or null
-	 */
-	I_C_Doc_Outbound_Config retrieveConfig(Properties ctx, int tableId);
-
-	/**
-	 * Retrieve {@link I_C_Doc_Outbound_Config} for given <code>model</code>.
-	 *
-	 * @return config or null
-	 * @see #retrieveConfig(Properties, int)
-	 */
-	I_C_Doc_Outbound_Config retrieveConfigForModel(Object model);
-
-	I_C_Doc_Outbound_Config getConfigById(int docOutboundConfigId);
-
 	I_C_Doc_Outbound_Log retrieveLog(TableRecordReference tableRecordReference);
 
 	I_C_Doc_Outbound_Log getById(@NonNull DocOutboundLogId docOutboundLogId);
@@ -93,9 +62,4 @@ public interface IDocOutboundDAO extends ISingletonService
 	 * Retrieves last created {@link I_C_Doc_Outbound_Log} for given bpartner and table
 	 */
 	I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID);
-
-	List<PrintFormatId> retrieveAllPrintFormatIds(int docOutboundConfigId);
-
-	@Cached(cacheName = I_C_Doc_Outbound_Config_CC.Table_Name + "#AD_PrintFormat_ID")
-	Optional<AdColumnId> retrievePartnerColumnCorelatedWithPrintFormatId(@NonNull final Object model, @Nullable PrintFormatId printFormatId);
 }
