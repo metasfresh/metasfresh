@@ -88,7 +88,7 @@ public class M_Shipping_Notification
 																			 .build()));
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_Shipping_Notification.COLUMNNAME_M_Warehouse_ID)
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW}, ifColumnsChanged = I_M_Shipping_Notification.COLUMNNAME_M_Warehouse_ID)
 	public void setShipFrom_Partner_ID(@NonNull final I_M_Shipping_Notification shipingNotificationRecord)
 	{
 		if (shipingNotificationRecord.getM_Warehouse_ID() > 0)

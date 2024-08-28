@@ -853,3 +853,76 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,A
 INSERT INTO AD_PrintFormat (AD_Client_ID,AD_Org_ID,AD_PrintColor_ID,AD_PrintFont_ID,AD_Printformat_Group,AD_PrintFormat_ID,AD_PrintPaper_ID,AD_Table_ID,CreateCopy,Created,CreatedBy,FooterMargin,HeaderMargin,IsActive,IsDefault,IsForm,IsStandardHeaderFooter,IsTableBased,JasperProcess_ID,Name,Updated,UpdatedBy) VALUES (0,0,100,540006,'None',540135,102,542365,'N',TO_TIMESTAMP('2024-08-28 17:00:16.077','YYYY-MM-DD HH24:MI:SS.US'),100,0,0,'Y','N','N','Y','Y',585420,'Shipping Notification - shipFrom partner',TO_TIMESTAMP('2024-08-28 17:00:16.077','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
+
+-- Table: C_Doc_Outbound_Config
+-- 2024-08-28T14:20:27.454Z
+UPDATE AD_Table SET EntityType='D',Updated=TO_TIMESTAMP('2024-08-28 17:20:27.453','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Table_ID=540434
+;
+
+-- Table: C_Doc_Outbound_Config_CC
+-- 2024-08-28T14:20:33.519Z
+UPDATE AD_Table SET EntityType='D',Updated=TO_TIMESTAMP('2024-08-28 17:20:33.518','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Table_ID=542430
+;
+
+UPDATE ad_column SET EntityType='D' where AD_Table_ID = 542430;
+
+-- Column: C_Doc_Outbound_Config.AD_Client_ID
+-- 2024-08-28T14:21:43.760Z
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2024-08-28 17:21:43.76','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=548033
+;
+
+-- Column: C_Doc_Outbound_Config.AD_Org_ID
+-- 2024-08-28T14:21:48.319Z
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2024-08-28 17:21:48.319','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=548034
+;
+
+-- Column: C_Doc_Outbound_Config.AD_PrintFormat_ID
+-- 2024-08-28T14:21:52.027Z
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2024-08-28 17:21:52.027','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=548494
+;
+
+-- Column: C_Doc_Outbound_Config.AD_Table_ID
+-- 2024-08-28T14:21:56.528Z
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2024-08-28 17:21:56.528','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=548050
+;
+
+-- Column: C_Doc_Outbound_Config.CCPath
+-- 2024-08-28T14:22:04.678Z
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2024-08-28 17:22:04.678','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=550279
+;
+
+-- Column: C_Doc_Outbound_Config.C_Doc_Outbound_Config_ID
+-- 2024-08-28T14:22:12.634Z
+UPDATE AD_Column SET EntityType='D', IsUpdateable='N',Updated=TO_TIMESTAMP('2024-08-28 17:22:12.634','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=548040
+;
+
+-- Column: C_Doc_Outbound_Config.Created
+-- 2024-08-28T14:22:19.452Z
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2024-08-28 17:22:19.451','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=548035
+;
+
+-- Column: C_Doc_Outbound_Config.CreatedBy
+-- 2024-08-28T14:22:32.095Z
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2024-08-28 17:22:32.095','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=548036
+;
+
+-- Column: C_Doc_Outbound_Config.DocBaseType
+-- 2024-08-28T14:22:42.530Z
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2024-08-28 17:22:42.53','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=549000
+;
+
+-- Column: C_Doc_Outbound_Config.IsActive
+-- 2024-08-28T14:22:49.383Z
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2024-08-28 17:22:49.382','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=548037
+;
+
+-- Column: C_Doc_Outbound_Config.Updated
+-- 2024-08-28T14:23:01.979Z
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2024-08-28 17:23:01.978','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=548038
+;
+
+-- Column: C_Doc_Outbound_Config.UpdatedBy
+-- 2024-08-28T14:23:09.387Z
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2024-08-28 17:23:09.387','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=548039
+;
+
