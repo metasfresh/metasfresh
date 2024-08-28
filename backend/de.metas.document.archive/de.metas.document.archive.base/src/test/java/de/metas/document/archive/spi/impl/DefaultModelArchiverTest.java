@@ -45,6 +45,8 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static de.metas.document.archive.spi.impl.MockedDocumentReportService.MOCKED_REPORT_FILENAME;
 
 class DefaultModelArchiverTest
@@ -78,7 +80,7 @@ class DefaultModelArchiverTest
 
 	}
 
-	private ArchiveResult archive(final Object record)
+	private List<ArchiveResult> archive(final Object record)
 	{
 		final DefaultModelArchiver archiver = DefaultModelArchiver.of(record);
 		archiver.setDocumentReportService(createMockedDocumentReportService());
@@ -102,7 +104,7 @@ class DefaultModelArchiverTest
 		invoice.setC_Async_Batch_ID(1);
 		InterfaceWrapperHelper.save(invoice);
 
-		final ArchiveResult archiveResult = archive(invoice);
+		final ArchiveResult archiveResult = archive(invoice).get(0);
 		final I_AD_Archive archiveRecord = archiveResult.getArchiveRecord();
 		Assertions.assertThat(archiveRecord.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_C_Invoice.class));
 		Assertions.assertThat(archiveRecord.getRecord_ID()).isEqualTo(invoice.getC_Invoice_ID());
@@ -129,7 +131,7 @@ class DefaultModelArchiverTest
 		record.setC_Async_Batch_ID(1);
 		InterfaceWrapperHelper.save(record);
 
-		final ArchiveResult archiveResult = archive(record);
+		final ArchiveResult archiveResult = archive(record).get(0);
 		final I_AD_Archive archiveRecord = archiveResult.getArchiveRecord();
 		Assertions.assertThat(archiveRecord.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_Test.class));
 		Assertions.assertThat(archiveRecord.getRecord_ID()).isEqualTo(record.getTest_ID());
