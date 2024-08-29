@@ -33,6 +33,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_C_Doc_Outbound_Config;
 import org.compiere.model.I_C_Doc_Outbound_Config_CC;
@@ -91,6 +92,7 @@ public class DocOutboundConfigRepository
 
 		return DocOutboundConfig.builder()
 				.id(id)
+				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.tableId(AdTableId.ofRepoId(record.getAD_Table_ID()))
 				.printFormatId(PrintFormatId.ofRepoIdOrNull(record.getAD_PrintFormat_ID()))
 				.lines(configCCList)
