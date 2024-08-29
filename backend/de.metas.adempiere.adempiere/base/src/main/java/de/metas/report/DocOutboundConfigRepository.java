@@ -164,6 +164,6 @@ public class DocOutboundConfigRepository
 				.andCollect(I_C_Doc_Outbound_Config_CC.COLUMN_BPartner_ColumnName_ID, I_AD_Column.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstIdOnlyOptional(AdColumnId::ofRepoId);
+				.firstIdOnlyOptional(AdColumnId::ofRepoIdOrNull);
 	}
 }
