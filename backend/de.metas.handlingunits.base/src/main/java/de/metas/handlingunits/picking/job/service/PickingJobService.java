@@ -12,6 +12,7 @@ import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
@@ -81,6 +82,7 @@ public class PickingJobService
 	@NonNull private final HULabelService huLabelService;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUReservationService huReservationService;
+	@NonNull private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
 	public PickingJob getById(final PickingJobId pickingJobId)
 	{
@@ -316,6 +318,7 @@ public class PickingJobService
 						.inventoryService(inventoryService)
 						.huReservationService(huReservationService)
 						.pickingConfigRepo(pickingConfigRepo)
+						.mobileUIPickingUserProfileRepository(mobileUIPickingUserProfileRepository)
 						//
 						.pickingJob(pickingJob)
 						.pickingJobLineId(event.getPickingLineId())

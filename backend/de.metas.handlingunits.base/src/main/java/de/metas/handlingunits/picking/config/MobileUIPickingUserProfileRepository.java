@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.picking.rest-api
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.picking.config;
+package de.metas.handlingunits.picking.config;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -76,6 +76,9 @@ public class MobileUIPickingUserProfileRepository
 				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
 				.isAllowNewLU(profileRecord.isAllowNewLU())
+				.considerSalesOrderCapacity(profileRecord.isConsiderSalesOrderCapacity())
+				.isCatchWeightTUPickingEnabled(profileRecord.isCatchWeightTUPickingEnabled())
+				.isAllowSkippingRejectedReason(profileRecord.isAllowSkippingRejectedReason())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.filters(retrieveFilters(profileRecord))
 				.fields(retrieveFields(profileRecord))

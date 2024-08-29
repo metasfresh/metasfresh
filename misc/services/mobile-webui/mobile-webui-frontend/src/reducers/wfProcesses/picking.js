@@ -176,6 +176,7 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
   draftActivityDataStored.pickTarget = fromActivity.componentProps.pickTarget;
   draftActivityDataStored.isAllowNewLU = fromActivity.componentProps.isAllowNewLU;
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
+  draftActivityDataStored.isAllowSkippingRejectedReason = fromActivity.componentProps.isAllowSkippingRejectedReason;
 
   //
   // Copy lines

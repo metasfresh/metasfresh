@@ -28,6 +28,7 @@ import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LocatorInfo;
@@ -147,6 +148,7 @@ public class PickingJobPickCommand
 			final @NonNull PickingConfigRepositoryV2 pickingConfigRepo,
 			//
 			final @NonNull PickingJob pickingJob,
+			final @NonNull MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
 			final @NonNull PickingJobLineId pickingJobLineId,
 			final @Nullable PickingJobStepId pickingJobStepId,
 			final @Nullable PickingJobStepPickFromKey pickFromKey,
@@ -197,11 +199,12 @@ public class PickingJobPickCommand
 		if (this.pickingUnit.isTU())
 		{
 			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
-			final HUPIItemProduct packingInfo = line.getPackingInfo();
-			this.qtyToPickCUs = packingInfo.computeQtyCUsOfQtyTUs(this.qtyToPickTUs);
+			this.qtyToPickCUs = computeQtyToPickCUs(mobileUIPickingUserProfileRepository, line, qtyToPickTUs);
 
 			if (qtyRejectedReasonCode != null)
 			{
+				final HUPIItemProduct packingInfo = line.getPackingInfo();
+
 				final Quantity qtyRejectedCUs = QtyTU.optionalOfBigDecimal(qtyRejectedBD)
 						.map(packingInfo::computeQtyCUsOfQtyTUs)
 						.orElseGet(() -> computeQtyRejectedCUs(line, step, this.stepPickFromKey, this.qtyToPickCUs));
@@ -962,6 +965,27 @@ public class PickingJobPickCommand
 	private HUQRCode getQRCode(@NonNull final LU lu)
 	{
 		return huQRCodesService.getQRCodeByHuId(lu.getId());
+	}
+
+	@NonNull
+	private static Quantity computeQtyToPickCUs(
+			@NonNull final MobileUIPickingUserProfileRepository profileRepository,
+			@NonNull final PickingJobLine line,
+			@NonNull final QtyTU qtyTU)
+	{
+		final Quantity qtyToPickCUsBasedOnPackingInfo = line.getPackingInfo().computeQtyCUsOfQtyTUs(qtyTU);
+
+		if (!profileRepository.getProfile().isConsiderSalesOrderCapacity())
+		{
+			return qtyToPickCUsBasedOnPackingInfo;
+		}
+
+		final boolean qtyLeftToBePickedIsLessThanComputedBasedOnPacking = line.getQtyRemainingToPick().signum() > 0
+				&& (line.getQtyRemainingToPick().compareTo(qtyToPickCUsBasedOnPackingInfo) <= 0);
+
+		return qtyLeftToBePickedIsLessThanComputedBasedOnPacking
+				? line.getQtyRemainingToPick()
+				: qtyToPickCUsBasedOnPackingInfo;
 	}
 
 	//
