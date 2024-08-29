@@ -440,6 +440,17 @@ public interface I_AD_Archive
 	ModelColumn<I_AD_Archive, Object> COLUMN_IsDirectProcessQueueItem = new ModelColumn<>(I_AD_Archive.class, "IsDirectProcessQueueItem", null);
 	String COLUMNNAME_IsDirectProcessQueueItem = "IsDirectProcessQueueItem";
 
+
+	void setIsMainArchive(boolean IsMainArchive);
+
+	boolean isMainArchive();
+
+	ModelColumn<I_AD_Archive, Object> COLUMN_IsMainArchive = new ModelColumn<>(I_AD_Archive.class, "IsMainArchive", null);
+	String COLUMNNAME_IsMainArchive = "IsMainArchive";
+
+
+
+
 	/**
 	 * Set IsFileSystem.
 	 *

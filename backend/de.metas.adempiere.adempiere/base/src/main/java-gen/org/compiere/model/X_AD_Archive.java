@@ -269,6 +269,19 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	}
 
 	@Override
+	public void setIsMainArchive (final boolean IsMainArchive)
+	{
+		set_Value (COLUMNNAME_IsMainArchive, IsMainArchive);
+	}
+
+	@Override
+	public boolean isMainArchive()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsMainArchive);
+	}
+
+
+	@Override
 	public void setIsFileSystem (final boolean IsFileSystem)
 	{
 		set_Value (COLUMNNAME_IsFileSystem, IsFileSystem);
