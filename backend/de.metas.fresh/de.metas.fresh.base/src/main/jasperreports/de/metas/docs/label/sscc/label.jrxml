@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="420" pageHeight="595" columnWidth="420" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/sscc/report" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/sscc/report" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
@@ -8,15 +8,6 @@
 	<property name="ireport.y" value="528"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.unit." value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -130,44 +121,61 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 		<property name="com.jaspersoft.studio.field.name" value="totalprod"/>
 		<property name="com.jaspersoft.studio.field.label" value="totalprod"/>
 	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch">
+			<printWhenExpression><![CDATA[( $V{PAGE_NUMBER}.intValue() > 1 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
 	<detail>
-		<band height="595" splitType="Stretch">
-			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+		<band height="800" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField>
-				<reportElement x="60" y="80" width="297" height="19" uuid="0ec3f744-7821-4d60-b2c4-9b7f5f312c8e"/>
+				<reportElement x="149" y="206" width="297" height="19" uuid="0ec3f744-7821-4d60-b2c4-9b7f5f312c8e"/>
 				<textElement textAlignment="Center">
 					<font fontName="Arial" size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{org_address}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="60" y="99" width="297" height="1" uuid="1f4c5efc-131f-40d2-84f1-062801e33a4a"/>
+				<reportElement x="149" y="225" width="297" height="1" uuid="1f4c5efc-131f-40d2-84f1-062801e33a4a"/>
 			</line>
 			<textField isBlankWhenNull="true">
-				<reportElement x="60" y="102" width="297" height="19" uuid="95d6fd65-bcad-47ef-8cf6-6e4ac1feb886"/>
+				<reportElement x="149" y="228" width="297" height="19" uuid="95d6fd65-bcad-47ef-8cf6-6e4ac1feb886"/>
 				<textElement textAlignment="Center">
 					<font fontName="Arial" size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sscc}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="60" y="77" width="297" height="1" uuid="0501ec21-a240-4be3-a6f3-a3d52576fc96"/>
+				<reportElement x="149" y="203" width="297" height="1" uuid="0501ec21-a240-4be3-a6f3-a3d52576fc96"/>
 				<graphicElement>
 					<pen lineStyle="Dashed"/>
 				</graphicElement>
 			</line>
 			<textField>
-				<reportElement x="64" y="104" width="52" height="17" uuid="8695bcca-d854-49ef-ba26-dbf35284a13b"/>
+				<reportElement x="153" y="230" width="52" height="17" uuid="8695bcca-d854-49ef-ba26-dbf35284a13b"/>
 				<textElement verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{sscc}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="60" y="121" width="297" height="1" uuid="d840f122-aefd-41b7-a8b7-e5f7ecc5b9a5"/>
+				<reportElement x="149" y="247" width="297" height="1" uuid="d840f122-aefd-41b7-a8b7-e5f7ecc5b9a5"/>
 			</line>
 			<textField>
-				<reportElement x="64" y="122" width="140" height="16" uuid="5458817e-b006-4c10-8c77-676d8b621970">
+				<reportElement x="153" y="248" width="140" height="16" uuid="5458817e-b006-4c10-8c77-676d8b621970">
 					<printWhenExpression><![CDATA[$F{totalprod} <= 1]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Bottom" markup="none">
@@ -176,14 +184,14 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$R{customerno}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="245" y="122" width="98" height="16" uuid="a63fe2b6-8827-4291-91f9-23ee090433ed"/>
+				<reportElement x="334" y="248" width="98" height="16" uuid="a63fe2b6-8827-4291-91f9-23ee090433ed"/>
 				<textElement verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{priceactual}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="65" y="137" width="139" height="20" uuid="3a09859e-1889-4b7c-8b1c-d4bfe8f14db9">
+				<reportElement x="154" y="263" width="139" height="20" uuid="3a09859e-1889-4b7c-8b1c-d4bfe8f14db9">
 					<printWhenExpression><![CDATA[$F{totalprod} <= 1]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -192,14 +200,14 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$F{p_customervalue}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement x="245" y="137" width="98" height="20" uuid="22bc55ed-2a59-4833-aec1-3c9fcc6ed17a"/>
+				<reportElement x="334" y="263" width="98" height="20" uuid="22bc55ed-2a59-4833-aec1-3c9fcc6ed17a"/>
 				<textElement>
 					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{priceactual}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="65" y="156" width="140" height="16" uuid="c757fa61-8034-4042-bf8c-05d3a0e7edd5">
+				<reportElement x="154" y="282" width="140" height="16" uuid="c757fa61-8034-4042-bf8c-05d3a0e7edd5">
 					<printWhenExpression><![CDATA[$F{totalprod} <= 1]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Bottom" markup="none">
@@ -208,7 +216,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$R{p_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="65" y="171" width="291" height="17" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08">
+				<reportElement positionType="Float" x="154" y="297" width="291" height="17" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[$F{totalprod} <= 1]]></printWhenExpression>
 				</reportElement>
@@ -218,7 +226,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="61" y="190" width="47" height="16" uuid="8cdc16eb-5f29-4253-ba95-2737af872264">
+				<reportElement positionType="Float" x="150" y="316" width="47" height="16" uuid="8cdc16eb-5f29-4253-ba95-2737af872264">
 					<printWhenExpression><![CDATA[$F{totalprod} <= 1]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center" verticalAlignment="Bottom" markup="none">
@@ -227,7 +235,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$R{cu_per_tu}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.##" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="61" y="205" width="47" height="20" uuid="45d77dd8-1af1-4268-b530-08564b45f2c9">
+				<reportElement positionType="Float" x="150" y="331" width="47" height="20" uuid="45d77dd8-1af1-4268-b530-08564b45f2c9">
 					<printWhenExpression><![CDATA[$F{totalprod} <= 1]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
@@ -236,52 +244,52 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$F{cu_per_tu}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.##" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="118" y="204" width="45" height="20" uuid="687083e1-f6a3-4c6f-b984-e2729c107a63"/>
+				<reportElement positionType="Float" x="207" y="330" width="45" height="20" uuid="687083e1-f6a3-4c6f-b984-e2729c107a63"/>
 				<textElement textAlignment="Center">
 					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{tu_per_lu}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="118" y="190" width="45" height="16" uuid="58f4060d-1975-4901-9be9-66323de2ea20"/>
+				<reportElement positionType="Float" x="207" y="316" width="45" height="16" uuid="58f4060d-1975-4901-9be9-66323de2ea20"/>
 				<textElement textAlignment="Center" verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{tu_per_lu}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00 kg" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="176" y="204" width="84" height="20" uuid="e641f243-6ae4-43b5-9270-d9a1d97139c1"/>
+				<reportElement positionType="Float" x="265" y="330" width="84" height="20" uuid="e641f243-6ae4-43b5-9270-d9a1d97139c1"/>
 				<textElement>
 					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{net_weight}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="176" y="189" width="84" height="16" uuid="6e3c99d2-d0ec-43c5-84a5-37bbf9043099"/>
+				<reportElement positionType="Float" x="265" y="315" width="84" height="16" uuid="6e3c99d2-d0ec-43c5-84a5-37bbf9043099"/>
 				<textElement verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{net_weight}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="266" y="189" width="87" height="16" uuid="614044f5-8e6e-40c5-b00d-c996d532ba1f"/>
+				<reportElement positionType="Float" x="355" y="315" width="87" height="16" uuid="614044f5-8e6e-40c5-b00d-c996d532ba1f"/>
 				<textElement verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{gross_weight}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00 kg" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="266" y="204" width="87" height="20" uuid="8e393b6f-73fe-443e-b896-04a4e21df0bb"/>
+				<reportElement positionType="Float" x="355" y="330" width="87" height="20" uuid="8e393b6f-73fe-443e-b896-04a4e21df0bb"/>
 				<textElement>
 					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{gross_weight}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement positionType="Float" x="60" y="223" width="297" height="1" uuid="48645280-44a0-411c-bd6b-f3fbac0c87b0"/>
+				<reportElement positionType="Float" x="149" y="349" width="297" height="1" uuid="48645280-44a0-411c-bd6b-f3fbac0c87b0"/>
 			</line>
 			<textField>
-				<reportElement positionType="Float" x="65" y="226" width="167" height="16" uuid="71ec0b75-0427-409b-ac1a-a109fcbaa92b">
+				<reportElement positionType="Float" x="154" y="352" width="167" height="16" uuid="71ec0b75-0427-409b-ac1a-a109fcbaa92b">
 					<printWhenExpression><![CDATA[$F{totalprod} <= 1]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Bottom" markup="none">
@@ -290,7 +298,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$R{order_docno}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="65" y="244" width="167" height="16" uuid="0fc2ac41-653c-4285-a9b1-5126fc06b37a">
+				<reportElement positionType="Float" x="154" y="370" width="167" height="16" uuid="0fc2ac41-653c-4285-a9b1-5126fc06b37a">
 					<printWhenExpression><![CDATA[$F{totalprod} <= 1]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Bottom" markup="none">
@@ -299,7 +307,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$R{p_value}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="65" y="263" width="140" height="16" uuid="fbcc24ee-39b6-4040-8016-50253e513e5d">
+				<reportElement positionType="Float" x="154" y="389" width="140" height="16" uuid="fbcc24ee-39b6-4040-8016-50253e513e5d">
 					<printWhenExpression><![CDATA[$F{totalprod} <= 1]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Bottom" markup="none">
@@ -308,17 +316,17 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$R{lotcode}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="65" y="300" width="140" height="16" uuid="6ae440d2-25ef-4ac9-a54e-8ae527265672"/>
+				<reportElement positionType="Float" x="154" y="426" width="140" height="16" uuid="6ae440d2-25ef-4ac9-a54e-8ae527265672"/>
 				<textElement verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{paletno}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement positionType="Float" x="60" y="318" width="297" height="1" uuid="48645280-44a0-411c-bd6b-f3fbac0c87b0"/>
+				<reportElement positionType="Float" x="149" y="444" width="297" height="1" uuid="48645280-44a0-411c-bd6b-f3fbac0c87b0"/>
 			</line>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="222" y="223" width="130" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08">
+				<reportElement positionType="Float" x="311" y="349" width="130" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08">
 					<printWhenExpression><![CDATA[$F{totalprod} <= 1]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -327,7 +335,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$F{order_docno}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="222" y="241" width="130" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08">
+				<reportElement positionType="Float" x="311" y="367" width="130" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08">
 					<printWhenExpression><![CDATA[$F{totalprod} <= 1]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -336,7 +344,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$F{p_value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="204" y="260" width="148" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08">
+				<reportElement positionType="Float" x="293" y="386" width="148" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08">
 					<printWhenExpression><![CDATA[$F{totalprod} <= 1]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -345,31 +353,31 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$F{lotcode}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="204" y="298" width="148" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
+				<reportElement positionType="Float" x="293" y="424" width="148" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{paletno}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="65" y="318" width="140" height="16" uuid="bb5a160b-f650-4430-ac6e-5292b9280f42"/>
+				<reportElement positionType="Float" x="154" y="444" width="140" height="16" uuid="bb5a160b-f650-4430-ac6e-5292b9280f42"/>
 				<textElement verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{customer}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="65" y="333" width="291" height="42" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
+				<reportElement positionType="Float" x="154" y="459" width="291" height="42" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
 				<textElement>
 					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{customer}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement positionType="Float" x="60" y="374" width="297" height="1" uuid="48645280-44a0-411c-bd6b-f3fbac0c87b0"/>
+				<reportElement positionType="Float" x="149" y="500" width="297" height="1" uuid="48645280-44a0-411c-bd6b-f3fbac0c87b0"/>
 			</line>
 			<textField>
-				<reportElement positionType="Float" x="65" y="283" width="140" height="16" uuid="e625dbf8-cfcf-42c5-9a98-70715e25ad8f">
+				<reportElement positionType="Float" x="154" y="409" width="140" height="16" uuid="e625dbf8-cfcf-42c5-9a98-70715e25ad8f">
 					<printWhenExpression><![CDATA[$F{totalprod} <= 1]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Bottom" markup="none">
@@ -378,7 +386,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$R{LotNumberDate}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="204" y="279" width="148" height="20" uuid="9a08e298-10e1-496f-86a7-563a5edf0741">
+				<reportElement positionType="Float" x="293" y="405" width="148" height="20" uuid="9a08e298-10e1-496f-86a7-563a5edf0741">
 					<printWhenExpression><![CDATA[$F{totalprod} <= 1]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -387,7 +395,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 				<textFieldExpression><![CDATA[$F{lotnumberdate}]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement style="Barcode" positionType="FixRelativeToBottom" x="102" y="407" width="220" height="90" uuid="0ae1838d-4ffe-4779-bf46-6b97a1b81772">
+				<reportElement style="Barcode" positionType="FixRelativeToBottom" x="191" y="528" width="220" height="90" uuid="0ae1838d-4ffe-4779-bf46-6b97a1b81772">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -399,4 +407,13 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			</componentElement>
 		</band>
 	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
 </jasperReport>
