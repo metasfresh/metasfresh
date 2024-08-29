@@ -14,6 +14,7 @@ import de.metas.document.sequence.spi.IDocumentNoAware;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
+import de.metas.report.DocOutboundConfigId;
 import de.metas.report.DocOutboundConfigRepository;
 import de.metas.report.DocumentReportFlavor;
 import de.metas.report.DocumentReportRequest;
@@ -25,6 +26,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.ArchiveRequest;
 import org.adempiere.archive.api.ArchiveResult;
@@ -324,7 +326,7 @@ public class DefaultModelArchiver
 
 	private Optional<I_C_Doc_Outbound_Config> retrieveDocOutboundConfig()
 	{
-		final int adTableId = InterfaceWrapperHelper.getModelTableId(getRecord());
+		final AdTableId adTableId = AdTableId.ofRepoId(InterfaceWrapperHelper.getModelTableId(getRecord()));
 		final I_C_Doc_Outbound_Config docOutboundConfig = docOutboundConfigRepository.retrieveConfig(getCtx(), adTableId);
 		logger.debug("Using config: {}", docOutboundConfig);
 		return Optional.ofNullable(docOutboundConfig);
@@ -349,7 +351,7 @@ public class DefaultModelArchiver
 		{
 			getDocOutboundConfig().map(docOutboundConfig ->
 			{
-				processList.addAll(docOutboundConfigRepository.retrieveAllPrintFormatIds(docOutboundConfig.getC_Doc_Outbound_Config_ID()));
+				processList.addAll(docOutboundConfigRepository.retrieveAllPrintFormatIds(DocOutboundConfigId.ofRepoId(docOutboundConfig.getC_Doc_Outbound_Config_ID())));
 				return processList;
 			});
 		}

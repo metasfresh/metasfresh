@@ -102,7 +102,7 @@ public class DocumentReportRequest
 
 	public DocumentReportRequest withMainReport(final boolean isMainReport)
 	{
-		return this.isMainReport == isMainReport
+		return this.isMainReport != isMainReport
 				? toBuilder().isMainReport(isMainReport).build()
 				: this;
 	}

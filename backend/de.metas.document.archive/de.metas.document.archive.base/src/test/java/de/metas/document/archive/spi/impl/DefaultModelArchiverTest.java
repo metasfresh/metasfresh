@@ -78,7 +78,7 @@ class DefaultModelArchiverTest
 				new DocumentPrintOptionDescriptorsRepository(),
 				new DocTypePrintOptionsRepository(),
 				util,
-				new DocOutboundConfigRepository());
+				DocOutboundConfigRepository.instance);
 
 	}
 

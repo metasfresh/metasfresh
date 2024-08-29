@@ -25,6 +25,7 @@ package de.metas.document.archive.interceptor;
 
 import java.util.List;
 
+import de.metas.report.DocOutboundConfig;
 import de.metas.report.DocOutboundConfigRepository;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -66,10 +67,10 @@ class C_Doc_Outbound_Config
 	@Init
 	public void registerAllOutboundProducers()
 	{
-		final List<I_C_Doc_Outbound_Config> configs = docOutboundConfigRepository.retrieveAllConfigs();
-		for (final I_C_Doc_Outbound_Config config : configs)
+		final List<DocOutboundConfig> configs = docOutboundConfigRepository.retrieveAllConfigs();
+		for (final DocOutboundConfig config : configs)
 		{
-			registerOutboundProducer(config);
+			registerOutboundProducer(docOutboundConfigRepository.load(config.getId()));
 		}
 	}
 

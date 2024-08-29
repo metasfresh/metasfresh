@@ -79,7 +79,7 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 				new DocumentPrintOptionDescriptorsRepository(),
 				new DocTypePrintOptionsRepository(),
 				util,
-				new DocOutboundConfigRepository());
+				DocOutboundConfigRepository.instance);
 
 	}
 

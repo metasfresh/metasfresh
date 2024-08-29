@@ -141,7 +141,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 		// Order by
 		final IQueryOrderBy queryOrderBy = queryBL
 				.createQueryOrderByBuilder(I_C_Doc_Outbound_Log.class)
-				.addColumnDescending(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Archive_ID)
+				.addColumn(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Archive_ID)
 				.createQueryOrderBy();
 
 		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)

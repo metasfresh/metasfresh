@@ -22,18 +22,18 @@
 
 package de.metas.report;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.I_C_Doc_Outbound_Config;
 import org.compiere.model.I_C_Doc_Outbound_Config_CC;
 import org.compiere.util.Env;
@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
@@ -51,46 +52,91 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 public class DocOutboundConfigRepository
 {
 	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
+	public static final transient DocOutboundConfigRepository instance = new DocOutboundConfigRepository();
 
-	public I_C_Doc_Outbound_Config getConfigById(final int docOutboundConfigId)
+	private DocOutboundConfigRepository()
+	{
+	}
+
+	private final CCache<Integer, DocOutboundConfigMap> cache = CCache.<Integer, DocOutboundConfigMap>builder()
+			.tableName(I_C_Doc_Outbound_Config.Table_Name)
+			.build();
+
+	private DocOutboundConfigMap getAll()
+	{
+		return cache.getOrLoad(0, this::retrieveAll);
+	}
+
+	public DocOutboundConfig getById(@NonNull final DocOutboundConfigId id)
+	{
+		return getAll().getById(id);
+	}
+
+	private DocOutboundConfigMap retrieveAll()
+	{
+		final ImmutableList<DocOutboundConfig> list = queryBL.createQueryBuilder(I_C_Doc_Outbound_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(DocOutboundConfigRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+
+		return new DocOutboundConfigMap(list);
+	}
+
+	private static DocOutboundConfig fromRecord(@NonNull final I_C_Doc_Outbound_Config record)
+	{
+		final DocOutboundConfigId id = DocOutboundConfigId.ofRepoId(record.getC_Doc_Outbound_Config_ID());
+		final ImmutableList<DocOutboundConfigCC> configCCList = retrieveDocOutboundConfigCC(id);
+
+		return DocOutboundConfig.builder()
+				.id(id)
+				.tableId(AdTableId.ofRepoId(record.getAD_Table_ID()))
+				.printFormatId(PrintFormatId.ofRepoIdOrNull(record.getAD_PrintFormat_ID()))
+				.lines(configCCList)
+				.build();
+	}
+
+	public I_C_Doc_Outbound_Config load(@NonNull final DocOutboundConfigId docOutboundConfigId)
 	{
 		return InterfaceWrapperHelper.load(docOutboundConfigId, I_C_Doc_Outbound_Config.class);
 	}
 
 	// note that this method doesn't directly access the DB. Therefore, a unit test DAO implementation can extend this
 	// class without problems.
-	public final I_C_Doc_Outbound_Config retrieveConfig(final Properties ctx, final int tableId)
+	@Nullable
+	public final I_C_Doc_Outbound_Config retrieveConfig(final Properties ctx, @NonNull final AdTableId tableId)
 	{
-		Check.assume(tableId > 0, "tableId > 0");
-
 		final int adClientId = Env.getAD_Client_ID(ctx);
 
-		I_C_Doc_Outbound_Config configSys = null;
-		I_C_Doc_Outbound_Config config = null;
-		for (final I_C_Doc_Outbound_Config currentConfig : retrieveAllConfigs())
+		DocOutboundConfig configSys = null;
+		DocOutboundConfig config = null;
+		for (final DocOutboundConfig currentConfig : retrieveAllConfigs())
 		{
-			if (currentConfig.getAD_Table_ID() == tableId)
+			if (AdTableId.equals(currentConfig.getTableId(), tableId))
 			{
-				if (currentConfig.getAD_Client_ID() == adClientId)
+				if (currentConfig.getClientId().getRepoId() == adClientId)
 				{
 					throwExceptionIfNotNull(config, tableId, adClientId, currentConfig);
 					config = currentConfig;
 				}
-				else if (currentConfig.getAD_Client_ID() == 0) // system
+				else if (currentConfig.getClientId().getRepoId() == 0) // system
 				{
 					throwExceptionIfNotNull(configSys, tableId, adClientId, currentConfig);
 					configSys = currentConfig;
 				}
 			}
 		}
-		return coalesce(config, configSys);
+
+		DocOutboundConfig finaConfig = coalesce(config, configSys);
+		return finaConfig != null ? load(coalesce(config, configSys).getId()) : null;
 	}
 
 	private void throwExceptionIfNotNull(
-			@Nullable final I_C_Doc_Outbound_Config alreadyFoundConfig,
-			final int tableId,
+			@Nullable final DocOutboundConfig alreadyFoundConfig,
+			@NonNull final AdTableId tableId,
 			final int adClientId,
-			@NonNull final I_C_Doc_Outbound_Config currentConfig)
+			@NonNull final DocOutboundConfig currentConfig)
 	{
 		if (alreadyFoundConfig == null)
 		{
@@ -107,45 +153,35 @@ public class DocOutboundConfigRepository
 	public final I_C_Doc_Outbound_Config retrieveConfigForModel(@NonNull final Object model)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
-		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
+		final AdTableId adTableId = AdTableId.ofRepoId(InterfaceWrapperHelper.getModelTableId(model));
 
 		return retrieveConfig(ctx, adTableId);
 	}
 
-	@Cached(cacheName = I_C_Doc_Outbound_Config_CC.Table_Name + "#AD_PrintFormatAll")
-	public List<PrintFormatId> retrieveAllPrintFormatIds(final int docOutboundConfigId)
+	public ImmutableList<PrintFormatId> retrieveAllPrintFormatIds(@NonNull final DocOutboundConfigId docOutboundConfigId)
 	{
 		final List<PrintFormatId> printFormatIdList = new ArrayList<>();
-		final I_C_Doc_Outbound_Config config = getConfigById(docOutboundConfigId);
-		if (config.getAD_PrintFormat_ID() > 0)
+		final DocOutboundConfig config = getById(docOutboundConfigId);
+		if (config.getPrintFormatId() != null)
 		{
-			printFormatIdList.add(PrintFormatId.ofRepoId(config.getAD_PrintFormat_ID()));
+			printFormatIdList.add(config.getPrintFormatId());
 		}
-		final ImmutableSet<PrintFormatId> printFormatIds = queryBL.createQueryBuilderOutOfTrx(I_C_Doc_Outbound_Config.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_C_Doc_Outbound_Config_ID, config.getC_Doc_Outbound_Config_ID())
-				.andCollectChildren(I_C_Doc_Outbound_Config_CC.COLUMN_C_Doc_Outbound_Config_ID)
-				.addOnlyActiveRecordsFilter()
-				.andCollect(I_AD_PrintFormat.COLUMN_AD_PrintFormat_ID, I_AD_PrintFormat.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.listIds(PrintFormatId::ofRepoId);
+
+		final List<DocOutboundConfigCC> configCCList = config.getLines();
+		final List<PrintFormatId> printFormatIds = configCCList.stream()
+				.map(DocOutboundConfigCC::getPrintFormatId)
+				.collect(Collectors.toList());
 
 		if (!printFormatIds.isEmpty()) {printFormatIdList.addAll(printFormatIds);}
 
-		return printFormatIdList;
+		return ImmutableList.copyOf(printFormatIdList);
 	}
 
-	@Cached(cacheName = I_C_Doc_Outbound_Config.Table_Name + "#All")
-	public List<I_C_Doc_Outbound_Config> retrieveAllConfigs()
+	public ImmutableList<DocOutboundConfig> retrieveAllConfigs()
 	{
-		return queryBL.createQueryBuilderOutOfTrx(I_C_Doc_Outbound_Config.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
+		return getAll().getAllConfigs();
 	}
 
-	@Cached(cacheName = I_C_Doc_Outbound_Config_CC.Table_Name + "#AD_PrintFormat_ID")
 	public Optional<AdColumnId> retrievePartnerColumnCorelatedWithPrintFormatId(@NonNull final Object model, final @Nullable PrintFormatId printFormatId)
 	{
 		if (printFormatId == null)
@@ -166,4 +202,24 @@ public class DocOutboundConfigRepository
 				.create()
 				.firstIdOnlyOptional(AdColumnId::ofRepoIdOrNull);
 	}
+
+	private static ImmutableList<DocOutboundConfigCC> retrieveDocOutboundConfigCC(@NonNull final DocOutboundConfigId docOutboundConfigId)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_C_Doc_Outbound_Config_CC.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Doc_Outbound_Config_CC.COLUMN_C_Doc_Outbound_Config_ID, docOutboundConfigId)
+				.stream()
+				.map(DocOutboundConfigRepository::fromRecordConfigCC)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static DocOutboundConfigCC fromRecordConfigCC(@NonNull final I_C_Doc_Outbound_Config_CC record)
+	{
+		return DocOutboundConfigCC.builder()
+				.id(DocOutboundConfigCCId.ofRepoId(record.getC_Doc_Outbound_Config_CC_ID()))
+				.columnId(AdColumnId.ofRepoId(record.getBPartner_ColumnName_ID()))
+				.printFormatId(PrintFormatId.ofRepoId(record.getAD_PrintFormat_ID()))
+				.build();
+	}
+
 }
