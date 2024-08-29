@@ -35,3 +35,4 @@ UPDATE AD_Element SET Description='Das Druckformat legt fest, wie die Daten für
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1790,'de_DE')
 ;
 
+UPDATE public.c_doctype SET ad_printformat_id = 540136, name = 'Lieferavis' WHERE c_doctype_id = 541109;
