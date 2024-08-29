@@ -215,6 +215,7 @@ public class DocOutboundConfigRepository
 	{
 		return DocOutboundConfigCC.builder()
 				.id(DocOutboundConfigCCId.ofRepoId(record.getC_Doc_Outbound_Config_CC_ID()))
+				.docOutboundConfigId(DocOutboundConfigId.ofRepoId(record.getC_Doc_Outbound_Config_ID()))
 				.columnId(AdColumnId.ofRepoId(record.getBPartner_ColumnName_ID()))
 				.printFormatId(PrintFormatId.ofRepoId(record.getAD_PrintFormat_ID()))
 				.build();
