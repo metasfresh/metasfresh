@@ -198,13 +198,13 @@ public class PickingJobPickCommand
 		this.pickingUnit = line.getPickingUnit();
 		if (this.pickingUnit.isTU())
 		{
-			final HUPIItemProduct packingInfo = computePackingInfo(mobileUIPickingUserProfileRepository, line);
-
 			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
-			this.qtyToPickCUs = packingInfo.computeQtyCUsOfQtyTUs(this.qtyToPickTUs);
+			this.qtyToPickCUs = computeQtyToPickCUs(mobileUIPickingUserProfileRepository, line, qtyToPickTUs);
 
 			if (qtyRejectedReasonCode != null)
 			{
+				final HUPIItemProduct packingInfo = line.getPackingInfo();
+
 				final Quantity qtyRejectedCUs = QtyTU.optionalOfBigDecimal(qtyRejectedBD)
 						.map(packingInfo::computeQtyCUsOfQtyTUs)
 						.orElseGet(() -> computeQtyRejectedCUs(line, step, this.stepPickFromKey, this.qtyToPickCUs));
@@ -968,28 +968,24 @@ public class PickingJobPickCommand
 	}
 
 	@NonNull
-	private static HUPIItemProduct computePackingInfo(
+	private static Quantity computeQtyToPickCUs(
 			@NonNull final MobileUIPickingUserProfileRepository profileRepository,
-			@NonNull final PickingJobLine line)
+			@NonNull final PickingJobLine line,
+			@NonNull final QtyTU qtyTU)
 	{
+		final Quantity qtyToPickCUsBasedOnPackingInfo = line.getPackingInfo().computeQtyCUsOfQtyTUs(qtyTU);
+
 		if (!profileRepository.getProfile().isConsiderSalesOrderCapacity())
 		{
-			return line.getPackingInfo();
+			return qtyToPickCUsBasedOnPackingInfo;
 		}
 
-		final HUPIItemProduct packingInfo = line.getPackingInfo();
+		final boolean qtyLeftToBePickedIsLessThanComputedBasedOnPacking = line.getQtyRemainingToPick().signum() > 0
+				&& (line.getQtyRemainingToPick().compareTo(qtyToPickCUsBasedOnPackingInfo) <= 0);
 
-		final boolean qtyLeftToBePickedIsLessThanPackingCapacity = line.getQtyRemainingToPick().signum() > 0
-				&& (packingInfo.isInfiniteCapacity() || line.getQtyRemainingToPick().compareTo(packingInfo.getQtyCUsPerTU()) <= 0);
-
-		if (qtyLeftToBePickedIsLessThanPackingCapacity)
-		{
-			return packingInfo.toBuilder()
-					.qtyCUsPerTU(line.getQtyRemainingToPick())
-					.build();
-		}
-
-		return packingInfo;
+		return qtyLeftToBePickedIsLessThanComputedBasedOnPacking
+				? line.getQtyRemainingToPick()
+				: qtyToPickCUsBasedOnPackingInfo;
 	}
 
 	//
