@@ -26,6 +26,7 @@ import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.IMsgBL;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -283,7 +284,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 			@NonNull final DocOutBoundRecipient recipient)
 	{
 		final String tableName = TableRecordReference.ofReferenced(docOutboundLogRecord).getTableName();
-		final boolean isInvoiceEmailEnabled = I_C_Invoice.Table_Name.equals(tableName) && recipient.isInvoiceAsEmail();
+		final boolean isInvoiceEmailEnabled = (I_C_Invoice.Table_Name.equals(tableName) || I_M_Shipping_Notification.Table_Name.equals(tableName))
+				&& recipient.isInvoiceAsEmail();
 		docOutboundLogRecord.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled);
 
 		docOutboundLogRecord.setCurrentEMailRecipient_ID(recipient.getId().getRepoId());

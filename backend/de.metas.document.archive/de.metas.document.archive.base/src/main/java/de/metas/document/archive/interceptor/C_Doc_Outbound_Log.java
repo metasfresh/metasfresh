@@ -123,7 +123,7 @@ public class C_Doc_Outbound_Log
 		final int invoiceTableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name);
 		final int shippingNotificationTableId = Services.get(IADTableDAO.class).retrieveTableId(I_M_Shipping_Notification.Table_Name);
 		if (docOutboundlogRecord.getAD_Table_ID() != invoiceTableId
-		 	|| docOutboundlogRecord.getAD_Table_ID() != shippingNotificationTableId)
+		 	&& docOutboundlogRecord.getAD_Table_ID() != shippingNotificationTableId)
 		{
 			docOutboundlogRecord.setIsInvoiceEmailEnabled(false);
 			return;
