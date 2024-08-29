@@ -169,6 +169,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		archive.setC_BPartner_ID(deliveryOrder.getDeliveryAddress().getBpartnerId());
 		// archive.setAD_Org_ID(); // TODO: do we need to orgId too?
 		archive.setName(fileName);
+		archive.setIsMainArchive(true);
 		archiveStorage.setBinaryData(archive, labelData);
 		archive.setIsReport(false);
 		archive.setIsDirectEnqueue(true);

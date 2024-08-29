@@ -156,6 +156,7 @@ public class DocumentReportService
 					.build();
 
 			return DocumentReportResult.builder()
+					.isMainReport(lastArchiveRecord.isMainArchive())
 					.lastArchive(lastArchive)
 					.build();
 		}
@@ -172,7 +173,9 @@ public class DocumentReportService
 				.withPrintOptionsFallback(reportInfo.getPrintOptions())
 				.withPrintOptionsFallback(documentPrintOptionDescriptorsRepository.getPrintingOptionDescriptors(reportInfo.getReportProcessId()).getDefaults())
 				.withReportProcessId(reportInfo.getReportProcessId())
-				.withReportLanguage(reportInfo.getLanguage());
+				.withReportLanguage(reportInfo.getLanguage())
+				.withMainReport(reportInfo.isMainReport())
+		;
 
 		//
 		final DocumentReportResult report = executeReportProcessAndComputeResult(requestEffective);
@@ -218,6 +221,7 @@ public class DocumentReportService
 				.reportProcessId(request.getReportProcessId())
 				.language(request.getReportLanguage())
 				.copies(request.getPrintCopies())
+				.isMainReport(request.isMainReport())
 				//
 				.build();
 	}

@@ -253,6 +253,7 @@ public class DefaultModelArchiver
 				.archiveName(report.getFilename())
 				.bpartnerId(report.getBpartnerId())
 				.language(report.getLanguage())
+                .isMainReport(report.isMainReport())
 				.build());
 
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(

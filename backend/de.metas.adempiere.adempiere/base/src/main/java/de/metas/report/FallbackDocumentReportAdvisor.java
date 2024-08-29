@@ -29,7 +29,6 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
-import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -86,6 +85,7 @@ final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 		final I_C_DocType docType = docTypeId != null ? util.getDocTypeById(docTypeId) : null;
 		final String documentNo = documentBL.getDocumentNo(record);
 
+		boolean isMain = true;
 		final AdColumnId columnId = docOutboundConfigRepository.retrievePartnerColumnCorelatedWithPrintFormatId(recordRef, adPrintFormatToUseId).orElse(null);
 		BPartnerId bpartnerId;
 		if (columnId == null)
@@ -97,6 +97,7 @@ final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 			final String columnName = adTableDAO.retrieveColumnName(columnId.getRepoId());
 			final Object partnerIdObj = InterfaceWrapperHelper.getValueOrNull(record, columnName);
 			bpartnerId = BPartnerId.ofRepoIdOrNull(NumberUtils.asInt(partnerIdObj, -1));
+			isMain = false;
 		}
 
 		final I_C_BPartner bpartner = bpartnerId != null ? util.getBPartnerById(bpartnerId) : null;
@@ -131,6 +132,7 @@ final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)
 				.language(language)
+				.isMainReport(isMain)
 				//.printOptionsDescriptor() // will be fetched later based on reportProcessId
 				//.printOptions() // none
 				.build();

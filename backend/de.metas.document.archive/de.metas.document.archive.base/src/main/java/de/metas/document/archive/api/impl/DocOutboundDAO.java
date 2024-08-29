@@ -44,6 +44,8 @@ import org.compiere.model.I_AD_Archive;
 
 import javax.annotation.Nullable;
 
+import java.util.List;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class DocOutboundDAO implements IDocOutboundDAO
@@ -134,14 +136,21 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
-	public I_C_Doc_Outbound_Log retrieveLog(@NonNull final TableRecordReference tableRecordReference)
+	public List<I_C_Doc_Outbound_Log> retrieveLog(@NonNull final TableRecordReference tableRecordReference)
 	{
+		// Order by
+		final IQueryOrderBy queryOrderBy = queryBL
+				.createQueryOrderByBuilder(I_C_Doc_Outbound_Log.class)
+				.addColumnDescending(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Archive_ID)
+				.createQueryOrderBy();
+
 		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId())
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
 				.create()
-				.firstOnly(I_C_Doc_Outbound_Log.class);
+				.setOrderBy(queryOrderBy)
+				.list(I_C_Doc_Outbound_Log.class);
 	}
 
 	public static TableRecordReference extractRecordRef(@NonNull final I_AD_Archive archive)

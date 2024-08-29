@@ -178,13 +178,25 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	I_C_Doc_Outbound_Log_Line createLogLine(@NonNull final I_AD_Archive archive)
 	{
 		final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
-		I_C_Doc_Outbound_Log docOutboundLogRecord = docOutboundDAO.retrieveLog(DocOutboundDAO.extractRecordRef(archive));
+		List<I_C_Doc_Outbound_Log> docOutboundLogRecords = docOutboundDAO.retrieveLog(DocOutboundDAO.extractRecordRef(archive));
+
+		I_C_Doc_Outbound_Log docOutboundLogRecord = null;
+
+		for (final I_C_Doc_Outbound_Log log : docOutboundLogRecords)
+		{
+			if (log.getAD_Archive_ID() == archive.getAD_Archive_ID())
+			{
+				docOutboundLogRecord = log;
+			}
+		}
+
 
 		if (docOutboundLogRecord == null)
 		{
 			// no log found, create a new one
 			docOutboundLogRecord = createLog(archive);
 		}
+
 
 		final I_C_Doc_Outbound_Log_Line docOutboundLogLineRecord = DocOutboundUtils.createOutboundLogLineRecord(docOutboundLogRecord);
 
@@ -225,7 +237,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogRecord.setRecord_ID(recordId);
 		docOutboundLogRecord.setC_BPartner_ID(archiveRecord.getC_BPartner_ID());
 		docOutboundLogRecord.setC_Async_Batch_ID(archiveRecord.getC_Async_Batch_ID());
-
+		docOutboundLogRecord.setAD_Archive_ID(archiveRecord.getAD_Archive_ID());
 		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
 		docOutboundLogRecord.setC_DocType_ID(doctypeID);
 

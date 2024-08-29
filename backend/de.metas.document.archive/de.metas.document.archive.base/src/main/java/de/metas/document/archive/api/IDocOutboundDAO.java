@@ -33,10 +33,11 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public interface IDocOutboundDAO extends ISingletonService
 {
-	I_C_Doc_Outbound_Log retrieveLog(TableRecordReference tableRecordReference);
+	List<I_C_Doc_Outbound_Log> retrieveLog(TableRecordReference tableRecordReference);
 
 	I_C_Doc_Outbound_Log getById(@NonNull DocOutboundLogId docOutboundLogId);
 

@@ -44,7 +44,6 @@ import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -92,6 +91,8 @@ public class ShippingNotificationDocumentReportAdvisor implements DocumentReport
 
 		final AdColumnId columnId = docOutboundConfigRepository.retrievePartnerColumnCorelatedWithPrintFormatId(recordRef, adPrintFormatToUseId).orElse(null);
 
+		boolean isMain = true;
+
 		BPartnerId bpartnerId;
 		if (columnId == null)
 		{
@@ -103,12 +104,11 @@ public class ShippingNotificationDocumentReportAdvisor implements DocumentReport
 			final String columnName = adTableDAO.retrieveColumnName(columnId.getRepoId());
 			final Object partnerIdObj = InterfaceWrapperHelper.getValueOrNull(shippingNotificationModel, columnName);
 			bpartnerId = BPartnerId.ofRepoIdOrNull(NumberUtils.asInt(partnerIdObj, -1));
+			isMain = false;
 		}
 
 		final DocTypeId docTypeId = shippingNotification.getDocTypeId();
 		final I_C_DocType docType = util.getDocTypeById(docTypeId);
-
-		final ClientId clientId = shippingNotification.getClientId();
 
 		final PrintFormatId printFormatId = CoalesceUtil.coalesceSuppliers(
 				() -> adPrintFormatToUseId,
@@ -130,6 +130,7 @@ public class ShippingNotificationDocumentReportAdvisor implements DocumentReport
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)
 				.language(language)
+				.isMainReport(isMain)
 				.build();
 	}
 }
