@@ -7,6 +7,7 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
 import de.metas.attachments.AttachmentTags;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
@@ -274,6 +275,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 						.clientId(ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID()))
 						.orgId(OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()))
 						.docTypeId(DocTypeId.ofRepoIdOrNull(docOutboundLogRecord.getC_DocType_ID()))
+						.bPartnerId(BPartnerId.ofRepoIdOrNull(docOutboundLogRecord.getC_BPartner_ID()))
 						.build());
 
 		mailRecipient.ifPresent(recipient -> updateRecordWithRecipient(docOutboundLogRecord, recipient));
