@@ -86,7 +86,11 @@ public class ShippingNotificationDocOutboundLogMailRecipientProvider implements 
 
 		final String locationEmail = shippingNotificationService.getLocationEmail(ShippingNotificationId.ofRepoId(shippingNotificationRecord.getM_Shipping_Notification_ID()));
 
-		final BPartnerId bpartnerId = request.getBPartnerId();
+		BPartnerId bpartnerId = request.getBPartnerId();
+		if (bpartnerId == null)
+		{
+			bpartnerId = BPartnerId.ofRepoId(shippingNotificationRecord.getC_BPartner_ID());
+		}
 
 		final User billContact = bpartnerBL.retrieveContactOrNull(
 				IBPartnerBL.RetrieveContactRequest
@@ -102,14 +106,15 @@ public class ShippingNotificationDocOutboundLogMailRecipientProvider implements 
 			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
 			final String contactMail = billContact.getEmailAddress();
 
-			if (Check.isNotBlank(contactMail))
-			{
-				return Optional.of(docOutBoundRecipient.withEmailAddress(contactMail));
-			}
 
 			if (Check.isNotBlank(locationEmail))
 			{
 				return Optional.of(docOutBoundRecipient.withEmailAddress(locationEmail));
+			}
+
+			if (Check.isNotBlank(contactMail))
+			{
+				return Optional.of(docOutBoundRecipient.withEmailAddress(contactMail));
 			}
 
 			if (Check.isNotBlank(docOutBoundRecipient.getEmailAddress()))
