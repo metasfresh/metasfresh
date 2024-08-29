@@ -10,7 +10,7 @@ import org.adempiere.exceptions.AdempiereException;
 import java.util.Collection;
 import java.util.List;
 
-final class DocOutboundConfigMap
+final public class DocOutboundConfigMap
 {
 	private final ImmutableMap<DocOutboundConfigId, DocOutboundConfig> byId;
 	private final ImmutableList<DocOutboundConfig> list;

@@ -41,6 +41,7 @@ import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
 import org.junit.Before;
@@ -63,6 +64,7 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 		AdempiereTestHelper.get().init();
 
 		helper = new DefaultModelArchiverTestHelper();
+		SpringContextHolder.registerJUnitBean(DocOutboundConfigRepository.instance);
 
 		Env.setClientId(Env.getCtx(), helper.createClient());
 	}
