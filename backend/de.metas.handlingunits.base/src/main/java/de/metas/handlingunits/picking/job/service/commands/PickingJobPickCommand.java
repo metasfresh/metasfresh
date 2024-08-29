@@ -28,6 +28,7 @@ import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LocatorInfo;
@@ -147,6 +148,7 @@ public class PickingJobPickCommand
 			final @NonNull PickingConfigRepositoryV2 pickingConfigRepo,
 			//
 			final @NonNull PickingJob pickingJob,
+			final @NonNull MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
 			final @NonNull PickingJobLineId pickingJobLineId,
 			final @Nullable PickingJobStepId pickingJobStepId,
 			final @Nullable PickingJobStepPickFromKey pickFromKey,
@@ -196,8 +198,9 @@ public class PickingJobPickCommand
 		this.pickingUnit = line.getPickingUnit();
 		if (this.pickingUnit.isTU())
 		{
+			final HUPIItemProduct packingInfo = computePackingInfo(mobileUIPickingUserProfileRepository, line);
+
 			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
-			final HUPIItemProduct packingInfo = line.getPackingInfo();
 			this.qtyToPickCUs = packingInfo.computeQtyCUsOfQtyTUs(this.qtyToPickTUs);
 
 			if (qtyRejectedReasonCode != null)
@@ -962,6 +965,31 @@ public class PickingJobPickCommand
 	private HUQRCode getQRCode(@NonNull final LU lu)
 	{
 		return huQRCodesService.getQRCodeByHuId(lu.getId());
+	}
+
+	@NonNull
+	private static HUPIItemProduct computePackingInfo(
+			@NonNull final MobileUIPickingUserProfileRepository profileRepository,
+			@NonNull final PickingJobLine line)
+	{
+		if (!profileRepository.getProfile().isConsiderSalesOrderCapacity())
+		{
+			return line.getPackingInfo();
+		}
+
+		final HUPIItemProduct packingInfo = line.getPackingInfo();
+
+		final boolean qtyLeftToBePickedIsLessThanPackingCapacity = line.getQtyRemainingToPick().signum() > 0
+				&& (packingInfo.isInfiniteCapacity() || line.getQtyRemainingToPick().compareTo(packingInfo.getQtyCUsPerTU()) <= 0);
+
+		if (qtyLeftToBePickedIsLessThanPackingCapacity)
+		{
+			return packingInfo.toBuilder()
+					.qtyCUsPerTU(line.getQtyRemainingToPick())
+					.build();
+		}
+
+		return packingInfo;
 	}
 
 	//

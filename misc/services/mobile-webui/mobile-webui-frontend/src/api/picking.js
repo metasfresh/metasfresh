@@ -2,6 +2,7 @@ import axios from 'axios';
 import { apiBasePath } from '../constants';
 import { unboxAxiosResponse } from '../utils';
 import { useEffect, useState } from 'react';
+import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../reducers/wfProcesses';
 
 export const usePickTargets = ({ wfProcessId }) => {
   const [loading, setLoading] = useState(false);
@@ -57,6 +58,9 @@ export const postStepPicked = ({
   lotNo,
   isCloseTarget = false,
 }) => {
+  const realRejectedQtyReason =
+    qtyRejectedReasonCode === QTY_REJECTED_REASON_TO_IGNORE_KEY ? null : qtyRejectedReasonCode;
+
   return postEvent({
     wfProcessId,
     wfActivityId: activityId,
@@ -65,7 +69,7 @@ export const postStepPicked = ({
     type: 'PICK',
     huQRCode,
     qtyPicked,
-    qtyRejectedReasonCode,
+    qtyRejectedReasonCode: realRejectedQtyReason,
     qtyRejected,
     catchWeight,
     pickWholeTU,

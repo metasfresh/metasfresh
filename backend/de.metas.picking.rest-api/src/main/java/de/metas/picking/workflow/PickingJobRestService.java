@@ -22,6 +22,8 @@
 
 package de.metas.picking.workflow;
 
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
@@ -34,8 +36,6 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingTarget;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
-import de.metas.picking.config.MobileUIPickingUserProfile;
-import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import lombok.NonNull;
@@ -167,5 +167,10 @@ public class PickingJobRestService
 	public boolean isAllowNewLU()
 	{
 		return mobileUIPickingUserProfileRepository.getProfile().isAllowNewLU();
+	}
+
+	public boolean isAllowSkippingRejectedReasons()
+	{
+		return mobileUIPickingUserProfileRepository.getProfile().isAllowSkippingRejectedReason();
 	}
 }

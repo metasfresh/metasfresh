@@ -30,6 +30,8 @@
 	import de.metas.document.engine.IDocument;
 	import de.metas.document.location.IDocumentLocationBL;
 	import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+	import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
+	import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 	import de.metas.handlingunits.picking.job.model.PickingJob;
 	import de.metas.handlingunits.picking.job.model.PickingJobId;
 	import de.metas.handlingunits.picking.job.model.PickingJobLineId;
@@ -44,8 +46,6 @@
 	import de.metas.i18n.AdMessageKey;
 	import de.metas.i18n.ImmutableTranslatableString;
 	import de.metas.i18n.TranslatableStrings;
-	import de.metas.picking.config.MobileUIPickingUserProfile;
-	import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 	import de.metas.picking.rest_api.json.JsonPickingEventsList;
 	import de.metas.picking.rest_api.json.JsonPickingLineCloseRequest;
 	import de.metas.picking.rest_api.json.JsonPickingLineOpenRequest;

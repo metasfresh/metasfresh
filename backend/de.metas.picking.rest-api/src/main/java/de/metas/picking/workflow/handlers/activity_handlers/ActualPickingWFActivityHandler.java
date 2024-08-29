@@ -85,6 +85,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 						.valueObj("pickFromAlternatives", jsonPickingJob.getPickFromAlternatives())
 						.valueObj("qtyRejectedReasons", qtyRejectedReasons)
 						.valueObj("isAllowNewLU", pickingJobRestService.isAllowNewLU())
+						.valueObj("isAllowSkippingRejectedReason", pickingJobRestService.isAllowSkippingRejectedReasons())
 						.build())
 				.build();
 	}

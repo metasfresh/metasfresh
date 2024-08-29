@@ -10,6 +10,7 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -41,6 +42,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromMap;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.PickingTarget;
+import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.lock.spi.ExistingLockInfo;
@@ -524,13 +526,14 @@ class PickingJobLoaderAndSaver
 		final PickingJobLineId pickingJobLineId = PickingJobLineId.ofRepoId(record.getM_Picking_Job_Line_ID());
 
 		final HUPIItemProductId huPIItemProductId = HUPIItemProductId.ofRepoIdOrNone(record.getM_HU_PI_Item_Product_ID());
+		final HUPIItemProduct packingInfo = loadingSupportingServices.getPackingInfo(huPIItemProductId);
 
 		return PickingJobLine.builder()
 				.id(pickingJobLineId)
 				.productId(productId)
 				.productNo(loadingSupportingServices.getProductNo(productId))
 				.productName(loadingSupportingServices.getProductName(productId))
-				.packingInfo(loadingSupportingServices.getPackingInfo(huPIItemProductId))
+				.packingInfo(packingInfo)
 				.qtyToPick(Quantitys.create(record.getQtyToPick(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
@@ -540,6 +543,7 @@ class PickingJobLoaderAndSaver
 						.map(this::loadStep)
 						.collect(ImmutableList.toImmutableList()))
 				.isManuallyClosed(record.isManuallyClosed())
+				.pickingUnit(computePickingUnit(UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()), packingInfo))
 				.build();
 	}
 
@@ -950,5 +954,16 @@ class PickingJobLoaderAndSaver
 	private OptionalBoolean getShipmentSchedulesIsLocked(@NonNull final PickingJobId pickingJobId)
 	{
 		return OptionalBoolean.ofNullableBoolean(hasLocks.get(pickingJobId));
+	}
+
+	private PickingUnit computePickingUnit(@Nullable final UomId catchUomId, @NonNull final HUPIItemProduct packingInfo)
+	{
+		// If catch weight, always pick at CU level because user has to weight the products
+		if (!loadingSupportingServices().isCatchWeightTUPickingEnabled() && catchUomId != null)
+		{
+			return PickingUnit.CU;
+		}
+
+		return packingInfo.isFiniteTU() ? PickingUnit.TU : PickingUnit.CU;
 	}
 }

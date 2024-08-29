@@ -97,6 +97,7 @@ const translations = {
       switchToQrCodeInput: 'Scan QR',
       skip: 'Skip',
       scanTargetHU: 'Scan target HU',
+      qtyRejectedIgnoreReason: 'Do not record a reason',
       qrcode: {
         missingQty: 'The scanned QR, has no qty information!',
         differentUOM: 'The scanned QR UOM does not match the target!',
