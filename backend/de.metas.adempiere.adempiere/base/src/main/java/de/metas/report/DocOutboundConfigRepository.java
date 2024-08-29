@@ -55,10 +55,6 @@ public class DocOutboundConfigRepository
 	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
 	public static final transient DocOutboundConfigRepository instance = new DocOutboundConfigRepository();
 
-	private DocOutboundConfigRepository()
-	{
-	}
-
 	private final CCache<Integer, DocOutboundConfigMap> cache = CCache.<Integer, DocOutboundConfigMap>builder()
 			.tableName(I_C_Doc_Outbound_Config.Table_Name)
 			.build();
