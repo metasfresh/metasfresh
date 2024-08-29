@@ -8,6 +8,7 @@ import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -120,7 +121,9 @@ public class C_Doc_Outbound_Log
 		}
 
 		final int invoiceTableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name);
-		if (docOutboundlogRecord.getAD_Table_ID() != invoiceTableId)
+		final int shippingNotificationTableId = Services.get(IADTableDAO.class).retrieveTableId(I_M_Shipping_Notification.Table_Name);
+		if (docOutboundlogRecord.getAD_Table_ID() != invoiceTableId
+		 	|| docOutboundlogRecord.getAD_Table_ID() != shippingNotificationTableId)
 		{
 			docOutboundlogRecord.setIsInvoiceEmailEnabled(false);
 			return;
