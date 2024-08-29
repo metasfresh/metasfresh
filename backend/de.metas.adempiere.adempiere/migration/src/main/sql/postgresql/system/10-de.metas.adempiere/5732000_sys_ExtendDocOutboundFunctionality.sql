@@ -99,3 +99,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE C_Doc_Outbound_Log ADD CONSTRAINT ADArchive_CDocOutboundLog FOREIGN KEY (AD_Archive_ID) REFERENCES public.AD_Archive DEFERRABLE INITIALLY DEFERRED
 ;
 
+
+DROP index c_doc_outbound_log_uc;
+create unique index c_doc_outbound_log_uc
+    on public.c_doc_outbound_log (record_id, ad_table_id, ad_archive_id)
+    where (isactive = 'Y'::bpchar);
+
