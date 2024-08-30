@@ -23,6 +23,8 @@
 package de.metas.document.reportadvisor;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
@@ -109,6 +111,13 @@ public class ShippingNotificationDocumentReportAdvisor implements DocumentReport
 
 		final DocTypeId docTypeId = shippingNotification.getDocTypeId();
 		final I_C_DocType docType = util.getDocTypeById(docTypeId);
+		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
+				.adTableId(recordRef.getAdTableId())
+				.bpartnerId(bpartnerId)
+				.bPartnerLocationId(shippingNotification.getBpartnerAndLocationId())
+				.docTypeId(docTypeId)
+				.onlyCopiesGreaterZero(true)
+				.build();
 
 		final PrintFormatId printFormatId = CoalesceUtil.coalesceSuppliers(
 				() -> adPrintFormatToUseId,
@@ -125,7 +134,7 @@ public class ShippingNotificationDocumentReportAdvisor implements DocumentReport
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_M_InOut.Table_Name, shippingNotificationId))
 				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
-				.copies(util.getDocumentCopies(bpartner, docType))
+				.copies(util.getDocumentCopies(docType, bpPrintFormatQuery))
 				.documentNo(shippingNotification.getDocumentNo())
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)
