@@ -31,7 +31,10 @@ import de.metas.money.Money;
 import de.metas.process.PInstanceId;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import de.metas.util.lang.UIDStringUtil;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -50,6 +53,7 @@ import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -707,7 +711,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		}
 	}
 
-	private static final BigDecimal toBigDecimal(final Object value)
+	private static BigDecimal toBigDecimal(final Object value)
 	{
 		if (value == null)
 		{
@@ -856,7 +860,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 					.getValue(record, columnName)
 					.orElseGet(() -> DB.retrieveDefaultValue(valueType));
 
-			@SuppressWarnings("unchecked") final AT value = (AT)valueObj;
+			 final AT value = convertPOValueToType(valueObj, valueType);
 			if (value != null && !result.contains(value))
 			{
 				result.add(value);
