@@ -23,6 +23,7 @@ package org.eevolution.util;
  */
 
 import de.metas.document.engine.DocStatus;
+import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -30,16 +31,24 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.BOMUse;
+import org.eevolution.api.IProductBOMBL;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductBOMBuilder
 {
+	final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
+
+
 	private IContextAware _context;
 	// Product BOM fields
 	private I_M_Product _product;
@@ -47,10 +56,12 @@ public class ProductBOMBuilder
 	private I_PP_Product_BOM _productBOM;
 	private I_PP_Product_BOMVersions _bomVersions;
 
+	final ZonedDateTime date_2019_01_01 = LocalDate.of(2019, Month.JANUARY, 1).atStartOfDay(de.metas.common.util.time.SystemTime.zoneId());
+
 	// BOM Line Builders
 	private final List<ProductBOMLineBuilder> lineBuilders = new ArrayList<>();
 
-	public ProductBOMBuilder setContext(IContextAware context)
+	public ProductBOMBuilder setContext(final IContextAware context)
 	{
 		this._context = context;
 		return this;
@@ -100,6 +111,7 @@ public class ProductBOMBuilder
 		productBOM.setBOMType(BOMType.CurrentActive.getCode());
 		productBOM.setBOMUse(BOMUse.Manufacturing.getCode());
 		productBOM.setDocStatus(DocStatus.Completed.getCode());
+		productBOM.setValidFrom(TimeUtil.asTimestamp(date_2019_01_01));
 
 		if (_bomVersions != null)
 		{
@@ -112,10 +124,9 @@ public class ProductBOMBuilder
 		//
 		// Update product
 		product.setIsBOM(true);
-		// TODO: workaround until we refactor the product BOM verification
-		// see org.eevolution.process.PP_Product_BOM_Check.doIt()
-		product.setIsVerified(true);
+
 		InterfaceWrapperHelper.save(product);
+		productBOMBL.verifyDefaultBOMProduct(ProductId.ofRepoId(product.getM_Product_ID()));
 
 		return productBOM;
 	}
