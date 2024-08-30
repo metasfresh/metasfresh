@@ -91,7 +91,7 @@ public class DDOrderCandidateAdvisedHandler
 		final DDOrderCandidateAdvisedEvent eventEffective = updateEvent(event);
 		final CandidatesGroup group = createAndProcessCandidates(eventEffective);
 
-		materialEventService.postEventAsync(toDDOrderCandidateRequestedEvent(group, eventEffective));
+		materialEventService.enqueueEventAfterNextCommit(toDDOrderCandidateRequestedEvent(group, eventEffective));
 	}
 
 	private boolean isAccepted(final DDOrderCandidateAdvisedEvent event)

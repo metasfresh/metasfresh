@@ -86,7 +86,11 @@ public class EDI_DesadvPackGenerateCSV_FileForSSCC_Labels extends EDI_GenerateCS
 				.map(EDIDesadvPackId::ofRepoId)
 				.collect(ImmutableList.toImmutableList());
 
-		if (!Check.isEmpty(list))
+		if (Check.isEmpty(list))
+		{
+			addLog("There are no selected or selectable EDI_Desadv_Pack_IDs. => Nothing to do");
+		}
+		else
 		{
 			generateCSV_FileForSSCC_Labels(list);
 		}

@@ -107,7 +107,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 			final NoSupplyAdviceEvent noSupplyAdviceEvent = NoSupplyAdviceEvent.of(descriptor.withNewEventId());
 			Loggables.addLog("No advice events were created. Firing {}", noSupplyAdviceEvent);
 
-			postMaterialEventService.postEventAsync(noSupplyAdviceEvent);
+			postMaterialEventService.enqueueEventNow(noSupplyAdviceEvent);
 		}
 		else
 		{

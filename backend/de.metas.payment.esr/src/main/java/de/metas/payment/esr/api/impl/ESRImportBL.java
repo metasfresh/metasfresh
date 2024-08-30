@@ -74,6 +74,7 @@ import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -658,6 +659,7 @@ public class ESRImportBL implements IESRImportBL
 		return false;
 	}
 
+	@Nullable
 	private PaymentId fetchDuplicatePaymentIfExists(@NonNull final I_ESR_ImportLine line)
 	{
 		final Optional<PaymentId> existentPaymentId = esrImportDAO.findExistentPaymentId(line);

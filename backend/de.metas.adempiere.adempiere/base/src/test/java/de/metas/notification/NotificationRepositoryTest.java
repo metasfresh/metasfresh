@@ -1,5 +1,6 @@
 package de.metas.notification;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.document.references.zoom_into.CustomizedWindowInfo;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
@@ -7,17 +8,19 @@ import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapReposit
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.process.MockedCustomizedWindowInfoMapRepository;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Message;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.math.BigDecimal;
 import java.util.List;

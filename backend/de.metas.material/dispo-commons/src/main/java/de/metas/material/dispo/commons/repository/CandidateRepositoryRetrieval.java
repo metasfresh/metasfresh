@@ -402,32 +402,6 @@ public class CandidateRepositoryRetrieval
 				.map(record -> fromCandidateRecord(record).get())
 				.collect(Collectors.toList());
 	}
-
-	/**
-	 * Only use this method in testing
-	 */
-	@VisibleForTesting
-	public List<Candidate> retrieveAllNotStockOrderedByDateAndSeqNoFor(@NonNull final ProductId productId)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addNotEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
-				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, productId);
-
-		return retrieveForQueryBuilder(queryBuilderWithoutOrdering);
-	}
-
-	@NonNull
-	private List<Candidate> retrieveForQueryBuilder(@NonNull final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering)
-	{
-		final Stream<I_MD_Candidate> candidateRecords = addOrderingYoungestFirst(queryBuilderWithoutOrdering)
-				.create()
-				.stream();
-
-		return candidateRecords
-				.map(record -> fromCandidateRecord(record).get())
-				.collect(Collectors.toList());
-	}
 	
 	private IQueryBuilder<I_MD_Candidate> addOrderingYoungestFirst(final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering)
 	{

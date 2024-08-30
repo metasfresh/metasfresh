@@ -32,7 +32,6 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
@@ -53,7 +52,9 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
@@ -87,6 +88,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
@@ -96,7 +98,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.material.dispo.CandidatesToTabularStringConverter.toTabularStringFromCandidateRows;
@@ -107,8 +109,7 @@ import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candida
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_AttributeSetInstance_ID;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_Product_ID;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.*;
 
 @RequiredArgsConstructor
 public class MD_Candidate_StepDef
@@ -135,30 +136,6 @@ public class MD_Candidate_StepDef
 	@NonNull private final PP_OrderLine_Candidate_StepDefData ppOrderLineCandidateTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
-	
-	// TODO check if this is still used!
-	@When("metasfresh receives a ShipmentScheduleCreatedEvent")
-	public void shipmentScheduleCreatedEvent(@NonNull final DataTable dataTable)
-	{
-		final Map<String, String> map = dataTable.asMaps().get(0);
-
-		final int shipmentScheduleId = Integer.parseInt(map.get("M_ShipmentSchedule_ID"));
-		final int productId = Integer.parseInt(map.get("M_Product_ID"));
-		final Instant preparationDate = Instant.parse(map.get("PreparationDate"));
-		final BigDecimal qty = new BigDecimal(map.get("Qty"));
-
-		final MaterialDescriptor descriptor = MaterialDispoUtils.createMaterialDescriptor(productId, preparationDate, qty);
-
-		final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent = ShipmentScheduleCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(ClientId.METASFRESH.getRepoId(), StepDefConstants.ORG_ID.getRepoId()))
-				.materialDescriptor(descriptor)
-				.shipmentScheduleId(shipmentScheduleId)
-				.reservedQuantity(qty)
-				.documentLineDescriptor(OrderLineDescriptor.builder().orderId(10).orderLineId(20).docTypeId(30).orderBPartnerId(40).build())
-				.build();
-
-		postMaterialEventService.enqueueEventNow(shipmentScheduleCreatedEvent);
-	}
 
 	@When("metasfresh initially has this MD_Candidate data")
 	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table) throws Throwable
@@ -383,97 +360,6 @@ public class MD_Candidate_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, candidateWasDeleted);
 	}
 
-	@And("^after not more than (.*)s, MD_Candidates are found$")
-	public void validate_md_candidates(
-			final int timeoutSec,
-			@NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
-	{
-		for (final MaterialDispoTableRow tableRow : table.getRows())
-		{
-			// make sure the given md_candidate has been created
-			final MaterialDispoDataItem materialDispoRecord = tryAndWaitforCandidate(timeoutSec, tableRow);
-
-			assertThat(materialDispoRecord).isNotNull();
-
-			assertThat(materialDispoRecord.getType()).as("type of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getType());
-			assertThat(materialDispoRecord.getBusinessCase()).as("businessCase of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getBusinessCase());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getProductId()).as("productId of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getProductId().getRepoId());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).as("date  of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getTime());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity().abs()).as("quantity of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualByComparingTo(tableRow.getQty().abs()); // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
-			assertThat(materialDispoRecord.getAtp()).as("atp of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualByComparingTo(tableRow.getAtp());
-
-			materialDispoDataItemStepDefData.putOrReplace(tableRow.getIdentifier(), materialDispoRecord);
-		}
-	}
-
-	private MaterialDispoDataItem tryAndWaitforCandidate(
-			final int timeoutSec,
-			final @NonNull MaterialDispoTableRow tableRow) throws InterruptedException
-	{
-		final CandidatesQuery candidatesQuery = tableRow.createQuery();
-
-		// The provider gets the matching items and then does some matching of its own.
-		final ItemProvider<MaterialDispoDataItem> itemProvider = () -> {
-
-			final StringBuilder sb = new StringBuilder();
-			final ImmutableList<MaterialDispoDataItem> allByQuery = materialDispoRecordRepository.getAllBy(candidatesQuery);
-			for (final MaterialDispoDataItem item : allByQuery)
-			{
-				if (item.getMaterialDescriptor().getQuantity().abs().compareTo(tableRow.getQty().abs()) != 0) // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
-				{
-					sb.append("item with id=" + item.getCandidateId().getRepoId()
-									  + " does not match tableRow with Identifier " + tableRow.getIdentifier()
-									  + " because the qty values are different"
-									  + " Expected=" + tableRow.getQty().abs() + " (abs), Actual= " + item.getMaterialDescriptor().getQuantity().abs() + " (abs)"
-									  + "\n");
-					continue;
-				}
-				if (item.getAtp().compareTo(tableRow.getAtp()) != 0)
-				{
-					sb.append("item with id=" + item.getCandidateId().getRepoId()
-									  + " does not match tableRow with Identifier " + tableRow.getIdentifier()
-									  + " because the atp values are different"
-									  + " Expected=" + tableRow.getAtp() + ", Actual= " + item.getAtp()
-									  + "\n");
-					continue;
-				}
-				if (!item.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
-				{
-					sb.append("item with id=" + item.getCandidateId().getRepoId()
-									  + " does not match tableRow with Identifier " + tableRow.getIdentifier()
-									  + " because the time (resp. materialDecription.date) values are different"
-									  + " Expected=" + tableRow.getTime() + ", Actual= " + item.getMaterialDescriptor().getDate()
-									  + "\n");
-					continue;
-				}
-
-				if (!Objects.equals(item.getBusinessCase(), tableRow.getBusinessCase()))
-				{
-					sb.append("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the business case values are different\n");
-					continue;
-				}
-				return ItemProvider.ProviderResult.resultWasFound(item);
-			}
-			return ItemProvider.ProviderResult.resultWasNotFound(sb.toString());
-		};
-
-		final Supplier<String> contextSupplier = () -> {
-
-			final StringBuilder context = new StringBuilder("MD_Candidate not found\n");
-			context.append("**tableRow:** \n").append(tableRow).append("\n");
-			context.append("**candidatesQuery:** \n").append(candidatesQuery).append("\n");
-			context.append("**query result candidates:** \n").append(materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery)).append("\n");
-			context.append("**all product related candidates:** \n").append(materialDispoRecordRepository.getAllAsString(tableRow.getProductId()));
-
-			return context.toString();
-		};
-
-		return StepDefUtil
-				.tryAndWaitForItem(timeoutSec, 1000,
-								   itemProvider,
-								   contextSupplier);
-	}
-
 	@And("metasfresh has no MD_Candidate_StockChange_Detail data for identifier {string}")
 	public void metasfresh_has_no_md_candidate_stockChange_detail_for_identifier(@NonNull final String identifier)
 	{
@@ -616,10 +502,9 @@ public class MD_Candidate_StepDef
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
 
-		//noinspection deprecation
-		postMaterialEventService.postEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
+		postMaterialEventService.enqueueEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
-				.build(), null);
+				.build());
 
 		materialEventObserver.awaitProcessing(traceId);
 	}

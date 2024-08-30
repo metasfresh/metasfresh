@@ -49,7 +49,11 @@ public class EDI_DesadvGenerateCSV_FileForSSCC_Labels extends EDI_GenerateCSV_Fi
 				.map(EDIDesadvPackId::ofRepoId)
 				.collect(ImmutableList.toImmutableList());
 
-		if (!Check.isEmpty(list))
+		if (Check.isEmpty(list))
+		{
+			addLog("The selected DESADVs have no EDI_Desadv_Pack_IDs. => Nothing to do");
+		}
+		else
 		{
 			generateCSV_FileForSSCC_Labels(list);
 		}
