@@ -800,7 +800,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return retrieveParentPIItemsForParentPI(Env.getCtx(), packingInstructionsId, huUnitType, bpartnerId, ITrx.TRXNAME_None);
 	}
 
-	@Cached
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@CacheCtx final Properties ctx,
 			@NonNull final HuPackingInstructionsId packingInstructionsId,
