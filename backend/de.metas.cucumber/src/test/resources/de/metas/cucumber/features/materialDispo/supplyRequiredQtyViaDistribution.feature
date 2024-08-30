@@ -1,5 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor3
+@ignore # ignored until we implement generating DD_Order from DD_Order_Candidate
 Feature: Stock shortage solved via distribution
 
   Background:
