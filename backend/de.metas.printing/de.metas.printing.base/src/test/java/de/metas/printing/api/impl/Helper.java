@@ -745,6 +745,7 @@ public class Helper
 		archive.setName(pdfSuffix);
 		storage.setBinaryData(archive, data);
 		archive.setIsDirectEnqueue(true);
+		archive.setIsMainArchive(true);
 		printingDAO.save(archive);
 
 		//

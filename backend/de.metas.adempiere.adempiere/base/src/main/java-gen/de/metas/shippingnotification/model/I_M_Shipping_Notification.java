@@ -659,6 +659,26 @@ public interface I_M_Shipping_Notification
 	String COLUMNNAME_ShipFromAddress = "ShipFromAddress";
 
 	/**
+	 * Set Ship From Partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShipFrom_Partner_ID (int ShipFrom_Partner_ID);
+
+	/**
+	 * Get Ship From Partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getShipFrom_Partner_ID();
+
+	String COLUMNNAME_ShipFrom_Partner_ID = "ShipFrom_Partner_ID";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

@@ -31,6 +31,7 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.report.DefaultPrintFormatsRepository;
+import de.metas.report.DocOutboundConfigRepository;
 import de.metas.report.DocTypePrintOptionsRepository;
 import de.metas.report.DocumentPrintOptionDescriptorsRepository;
 import de.metas.report.DocumentReportAdvisorUtil;
@@ -41,10 +42,13 @@ import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
 
 import static de.metas.document.archive.spi.impl.MockedDocumentReportService.MOCKED_REPORT_FILENAME;
 
@@ -61,6 +65,7 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 		AdempiereTestHelper.get().init();
 
 		helper = new DefaultModelArchiverTestHelper();
+		SpringContextHolder.registerJUnitBean(DocOutboundConfigRepository.instance);
 
 		Env.setClientId(Env.getCtx(), helper.createClient());
 	}
@@ -76,7 +81,8 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 				ImmutableList.of(),
 				new DocumentPrintOptionDescriptorsRepository(),
 				new DocTypePrintOptionsRepository(),
-				util);
+				util,
+				DocOutboundConfigRepository.instance);
 
 	}
 
@@ -105,9 +111,9 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 		mockedDocumentReportService.setPinstanceIdToReturn(PInstanceId.ofRepoId(11223344));
 		archiver.setDocumentReportService(mockedDocumentReportService);
 
-		final ArchiveResult archiveResult = archiver.archive();
+		final List<ArchiveResult> archiveResult = archiver.archive();
 
-		final I_AD_Archive archiveRecord = archiveResult.getArchiveRecord();
+		final I_AD_Archive archiveRecord = archiveResult.get(0).getArchiveRecord();
 		Assertions.assertThat(archiveRecord.getDocumentNo()).isEqualTo(dunningDoc.getDocumentNo());
 		Assertions.assertThat(archiveRecord.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_C_DunningDoc.class));
 		Assertions.assertThat(archiveRecord.getRecord_ID()).isEqualTo(dunningDoc.getC_DunningDoc_ID());
