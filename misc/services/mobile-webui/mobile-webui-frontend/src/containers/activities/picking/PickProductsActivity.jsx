@@ -18,7 +18,7 @@ export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
 const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity }) => {
   const {
-    dataStored: { isUserEditable, isAllowNewLU },
+    dataStored: { isUserEditable, isPickWithNewLU },
   } = activity;
   const lines = getLinesArrayFromActivity(activity);
   const allowPickingAnyHU = isAllowPickingAnyHUForActivity({ activity });
@@ -26,6 +26,9 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   const history = useHistory();
 
   const currentPickTarget = useCurrentPickTarget({ wfProcessId, activityId });
+
+  const isLUScanRequiredAndMissing = isPickWithNewLU && !currentPickTarget;
+
   const onSelectPickTargetClick = () => {
     history.push(selectPickTargetScreenLocation({ applicationId, wfProcessId, activityId }));
   };
@@ -39,7 +42,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
 
   return (
     <div className="mt-5">
-      {isAllowNewLU && (
+      {isPickWithNewLU && (
         <ButtonWithIndicator
           caption={
             currentPickTarget?.caption
@@ -55,7 +58,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
       {allowPickingAnyHU && (
         <ButtonWithIndicator
           caption={trl('activities.picking.scanQRCode')}
-          disabled={!isUserEditable}
+          disabled={!isUserEditable || isLUScanRequiredAndMissing}
           onClick={onScanButtonClick}
         />
       )}
@@ -69,7 +72,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
               key={lineId}
               caption={lineItem.caption}
               completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
-              disabled={!isUserEditable}
+              disabled={!isUserEditable || isLUScanRequiredAndMissing}
               onClick={() => onLineButtonClick({ lineId })}
             >
               <ButtonQuantityProp
