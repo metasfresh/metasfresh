@@ -89,6 +89,7 @@ public class ArchiveDAO implements IArchiveDAO
 			@NonNull final QueryLimit limit)
 	{
 		return retrieveArchivesQuery(ctx, recordRef)
+				.orderByDescending(I_AD_Archive.COLUMNNAME_IsMainArchive)
 				.orderByDescending(I_AD_Archive.COLUMNNAME_Created)
 				.setLimit(limit)
 				.create()

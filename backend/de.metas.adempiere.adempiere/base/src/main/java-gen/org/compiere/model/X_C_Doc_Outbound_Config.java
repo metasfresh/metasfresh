@@ -1,46 +1,38 @@
-/** Generated Model - DO NOT CHANGE */
-package de.metas.document.archive.model;
+// Generated Model - DO NOT CHANGE
+package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Doc_Outbound_Config
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_C_Doc_Outbound_Config, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -173746834L;
+	private static final long serialVersionUID = -181516811L;
 
     /** Standard Constructor */
-    public X_C_Doc_Outbound_Config (Properties ctx, int C_Doc_Outbound_Config_ID, String trxName)
+    public X_C_Doc_Outbound_Config (final Properties ctx, final int C_Doc_Outbound_Config_ID, @Nullable final String trxName)
     {
       super (ctx, C_Doc_Outbound_Config_ID, trxName);
-      /** if (C_Doc_Outbound_Config_ID == 0)
-        {
-			setAD_Table_ID (0);
-			setC_Doc_Outbound_Config_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Doc_Outbound_Config (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Doc_Outbound_Config (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
 	public org.compiere.model.I_AD_PrintFormat getAD_PrintFormat()
@@ -49,97 +41,66 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setAD_PrintFormat(org.compiere.model.I_AD_PrintFormat AD_PrintFormat)
+	public void setAD_PrintFormat(final org.compiere.model.I_AD_PrintFormat AD_PrintFormat)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class, AD_PrintFormat);
 	}
 
-	/** Set Druck - Format.
-		@param AD_PrintFormat_ID 
-		Data Print Format
-	  */
 	@Override
-	public void setAD_PrintFormat_ID (int AD_PrintFormat_ID)
+	public void setAD_PrintFormat_ID (final int AD_PrintFormat_ID)
 	{
 		if (AD_PrintFormat_ID < 1) 
 			set_Value (COLUMNNAME_AD_PrintFormat_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_PrintFormat_ID, Integer.valueOf(AD_PrintFormat_ID));
+			set_Value (COLUMNNAME_AD_PrintFormat_ID, AD_PrintFormat_ID);
 	}
 
-	/** Get Druck - Format.
-		@return Data Print Format
-	  */
 	@Override
-	public int getAD_PrintFormat_ID () 
+	public int getAD_PrintFormat_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintFormat_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_PrintFormat_ID);
 	}
 
-	/** Set DB-Tabelle.
-		@param AD_Table_ID 
-		Database Table information
-	  */
 	@Override
-	public void setAD_Table_ID (int AD_Table_ID)
+	public void setAD_Table_ID (final int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
 			set_Value (COLUMNNAME_AD_Table_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+			set_Value (COLUMNNAME_AD_Table_ID, AD_Table_ID);
 	}
 
-	/** Get DB-Tabelle.
-		@return Database Table information
-	  */
 	@Override
-	public int getAD_Table_ID () 
+	public int getAD_Table_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
 
-	/** Set CC Pfad.
-		@param CCPath CC Pfad	  */
 	@Override
-	public void setCCPath (java.lang.String CCPath)
+	public void setCCPath (final @Nullable java.lang.String CCPath)
 	{
 		set_Value (COLUMNNAME_CCPath, CCPath);
 	}
 
-	/** Get CC Pfad.
-		@return CC Pfad	  */
 	@Override
-	public java.lang.String getCCPath () 
+	public java.lang.String getCCPath() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CCPath);
+		return get_ValueAsString(COLUMNNAME_CCPath);
 	}
 
-	/** Set Ausgehende Belege Konfig.
-		@param C_Doc_Outbound_Config_ID Ausgehende Belege Konfig	  */
 	@Override
-	public void setC_Doc_Outbound_Config_ID (int C_Doc_Outbound_Config_ID)
+	public void setC_Doc_Outbound_Config_ID (final int C_Doc_Outbound_Config_ID)
 	{
 		if (C_Doc_Outbound_Config_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Doc_Outbound_Config_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Doc_Outbound_Config_ID, Integer.valueOf(C_Doc_Outbound_Config_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Doc_Outbound_Config_ID, C_Doc_Outbound_Config_ID);
 	}
 
-	/** Get Ausgehende Belege Konfig.
-		@return Ausgehende Belege Konfig	  */
 	@Override
-	public int getC_Doc_Outbound_Config_ID () 
+	public int getC_Doc_Outbound_Config_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Doc_Outbound_Config_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Doc_Outbound_Config_ID);
 	}
 
 	/** 
@@ -207,8 +168,8 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	public static final String DOCBASETYPE_GehaltsrechnungAngestellter = "AEI";
 	/** Interne Rechnung (Lieferant) = AVI */
 	public static final String DOCBASETYPE_InterneRechnungLieferant = "AVI";
-	/** Speditionsauftrag/Ladeliste = MST */
-	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
+	/** ShipperTransportation = MST */
+	public static final String DOCBASETYPE_ShipperTransportation = "MST";
 	/** CustomerContract = CON */
 	public static final String DOCBASETYPE_CustomerContract = "CON";
 	/** DunningDoc = DUN */
@@ -219,20 +180,27 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	public static final String DOCBASETYPE_ShipmentDeclarationCorrection = "SDC";
 	/** Customs Invoice = CUI */
 	public static final String DOCBASETYPE_CustomsInvoice = "CUI";
-	/** Set Dokument Basis Typ.
-		@param DocBaseType Dokument Basis Typ	  */
+	/** ServiceRepairOrder = MRO */
+	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
+	/** Remittance Advice = RMA */
+	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
+	/** BOM & Formula = BOM */
+	public static final String DOCBASETYPE_BOMFormula = "BOM";
+	/** Cost Revaluation = CRD */
+	public static final String DOCBASETYPE_CostRevaluation = "CRD";
+	/** ModularOrder = MMO */
+	public static final String DOCBASETYPE_ModularOrder = "MMO";
+	/** Shipping notification = SHN */
+	public static final String DOCBASETYPE_ShippingNotification = "SHN";
 	@Override
-	public void setDocBaseType (java.lang.String DocBaseType)
+	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
-
 		set_Value (COLUMNNAME_DocBaseType, DocBaseType);
 	}
 
-	/** Get Dokument Basis Typ.
-		@return Dokument Basis Typ	  */
 	@Override
-	public java.lang.String getDocBaseType () 
+	public java.lang.String getDocBaseType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocBaseType);
+		return get_ValueAsString(COLUMNNAME_DocBaseType);
 	}
 }

@@ -61,6 +61,9 @@ public class DocumentReportRequest
 	int tabNo = 0;
 
 	boolean printPreview;
+	@Builder.Default
+	boolean isMainReport = true;
+
 	@NonNull
 	@Builder.Default
 	PrintCopies printCopies = PrintCopies.ONE;
@@ -101,6 +104,13 @@ public class DocumentReportRequest
 	{
 		return !Objects.equals(this.printCopies, printCopies)
 				? toBuilder().printCopies(printCopies).build()
+				: this;
+	}
+
+	public DocumentReportRequest withMainReport(final boolean isMainReport)
+	{
+		return this.isMainReport != isMainReport
+				? toBuilder().isMainReport(isMainReport).build()
 				: this;
 	}
 }
