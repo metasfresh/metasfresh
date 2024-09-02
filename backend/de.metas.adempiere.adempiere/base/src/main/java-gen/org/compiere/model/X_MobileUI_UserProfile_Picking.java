@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1105540999L;
+	private static final long serialVersionUID = -678002359L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -57,18 +57,6 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public java.lang.String getCreateShipmentPolicy() 
 	{
 		return get_ValueAsString(COLUMNNAME_CreateShipmentPolicy);
-	}
-
-	@Override
-	public void setIsAllowNewLU (final boolean IsAllowNewLU)
-	{
-		set_Value (COLUMNNAME_IsAllowNewLU, IsAllowNewLU);
-	}
-
-	@Override
-	public boolean isAllowNewLU() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAllowNewLU);
 	}
 
 	@Override
@@ -129,6 +117,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isConsiderSalesOrderCapacity() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsConsiderSalesOrderCapacity);
+	}
+
+	@Override
+	public void setIsPickingWithNewLU (final boolean IsPickingWithNewLU)
+	{
+		set_Value (COLUMNNAME_IsPickingWithNewLU, IsPickingWithNewLU);
+	}
+
+	@Override
+	public boolean isPickingWithNewLU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPickingWithNewLU);
 	}
 
 	@Override

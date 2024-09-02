@@ -75,7 +75,7 @@ public class MobileUIPickingUserProfileRepository
 				.onlyBPartnerIds(onlyBPartnerIds)
 				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
-				.isAllowNewLU(profileRecord.isAllowNewLU())
+				.isPickWithNewLU(profileRecord.isPickingWithNewLU())
 				.considerSalesOrderCapacity(profileRecord.isConsiderSalesOrderCapacity())
 				.isCatchWeightTUPickingEnabled(profileRecord.isCatchWeightTUPickingEnabled())
 				.isAllowSkippingRejectedReason(profileRecord.isAllowSkippingRejectedReason())

@@ -121,27 +121,6 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Allow new LU.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsAllowNewLU (boolean IsAllowNewLU);
-
-	/**
-	 * Get Allow new LU.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isAllowNewLU();
-
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowNewLU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowNewLU", null);
-	String COLUMNNAME_IsAllowNewLU = "IsAllowNewLU";
-
-	/**
 	 * Set Allow picking any HU.
 	 *
 	 * <br>Type: YesNo
@@ -164,6 +143,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	/**
 	 * Set Allow picking with no rejected qty reason.
+	 * If activated, a smaller quantity may be picked. An additional option then appears in the picking dialog.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -173,6 +153,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	/**
 	 * Get Allow picking with no rejected qty reason.
+	 * If activated, a smaller quantity may be picked. An additional option then appears in the picking dialog.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -208,6 +189,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	/**
 	 * Set Allow picking TU with catch weight.
+	 * If activated and a packing instruction is included in the order line, it is assumed that it is a TU when Catch Weight is picked. Otherwise metasfresh assumes that it is a CU
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -217,6 +199,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	/**
 	 * Get Allow picking TU with catch weight.
+	 * If activated and a packing instruction is included in the order line, it is assumed that it is a TU when Catch Weight is picked. Otherwise metasfresh assumes that it is a CU
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -229,6 +212,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	/**
 	 * Set Consider sales order capacity.
+	 * If not activated, the quantity allocation for TU Catch Weight is taken from the master data of the product
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -238,6 +222,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	/**
 	 * Get Consider sales order capacity.
+	 * If not activated, the quantity allocation for TU Catch Weight is taken from the master data of the product
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -247,6 +232,27 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsConsiderSalesOrderCapacity = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsConsiderSalesOrderCapacity", null);
 	String COLUMNNAME_IsConsiderSalesOrderCapacity = "IsConsiderSalesOrderCapacity";
+
+	/**
+	 * Set Pick with LU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickingWithNewLU (boolean IsPickingWithNewLU);
+
+	/**
+	 * Get Pick with LU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPickingWithNewLU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsPickingWithNewLU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsPickingWithNewLU", null);
+	String COLUMNNAME_IsPickingWithNewLU = "IsPickingWithNewLU";
 
 	/**
 	 * Set Mobile UI Picking Profile.

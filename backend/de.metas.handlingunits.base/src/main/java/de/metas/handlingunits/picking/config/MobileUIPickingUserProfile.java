@@ -42,7 +42,7 @@ public class MobileUIPickingUserProfile
 {
 	public static final MobileUIPickingUserProfile DEFAULT = builder()
 			.name("default")
-			.isAllowNewLU(true)
+			.isPickWithNewLU(true)
 			.isCatchWeightTUPickingEnabled(false)
 			.considerSalesOrderCapacity(false)
 			.isAllowSkippingRejectedReason(false)
@@ -70,7 +70,7 @@ public class MobileUIPickingUserProfile
 	@NonNull ImmutableSet<BPartnerId> onlyBPartnerIds;
 	boolean isAllowPickingAnyHU;
 	boolean isAlwaysSplitHUsEnabled;
-	boolean isAllowNewLU;
+	boolean isPickWithNewLU;
 	boolean isCatchWeightTUPickingEnabled;
 	boolean considerSalesOrderCapacity;
 	boolean isAllowSkippingRejectedReason;
@@ -87,7 +87,7 @@ public class MobileUIPickingUserProfile
 			final @Nullable ImmutableSet<BPartnerId> onlyBPartnerIds,
 			final boolean isAllowPickingAnyHU,
 			final boolean isAlwaysSplitHUsEnabled,
-			final boolean isAllowNewLU,
+			final boolean isPickWithNewLU,
 			final boolean isCatchWeightTUPickingEnabled,
 			final boolean considerSalesOrderCapacity,
 			final boolean isAllowSkippingRejectedReason,
@@ -101,7 +101,7 @@ public class MobileUIPickingUserProfile
 		this.onlyBPartnerIds = onlyBPartnerIds != null ? onlyBPartnerIds : ImmutableSet.of();
 		this.isAllowPickingAnyHU = isAllowPickingAnyHU;
 		this.isAlwaysSplitHUsEnabled = isAlwaysSplitHUsEnabled;
-		this.isAllowNewLU = isAllowNewLU;
+		this.isPickWithNewLU = isPickWithNewLU;
 		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.DO_NOT_CREATE;
 		this.filters = filters != null ? filters : PickingFiltersList.EMPTY;
 		this.fields = fields;
