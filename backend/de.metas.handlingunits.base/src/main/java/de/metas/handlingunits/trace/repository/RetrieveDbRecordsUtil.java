@@ -582,7 +582,7 @@ public class RetrieveDbRecordsUtil
 				return;
 			}
 
-			final Collection<HuId> directFollowupVhuIds = sqlQueryBuilder.create().listDistinct(I_M_HU_Trace.COLUMNNAME_VHU_ID, HuId.class);
+		final Collection<HuId> directFollowupVhuIds = sqlQueryBuilder.create().listDistinct(I_M_HU_Trace.COLUMNNAME_VHU_ID, HuId.class);
 
 			for (final HuId directFollowupVhuId : directFollowupVhuIds)
 			{

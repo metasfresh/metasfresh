@@ -31,7 +31,10 @@ import de.metas.money.Money;
 import de.metas.process.PInstanceId;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import de.metas.util.lang.UIDStringUtil;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -50,6 +53,7 @@ import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -856,7 +860,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 					.getValue(record, columnName)
 					.orElseGet(() -> DB.retrieveDefaultValue(valueType));
 
-			@SuppressWarnings("unchecked") final AT value = (AT)valueObj;
+			final AT value = convertPOValueToType(valueObj, valueType);
 			if (value != null && !result.contains(value))
 			{
 				result.add(value);
@@ -864,6 +868,37 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		}
 
 		return ImmutableList.copyOf(result);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> T convertPOValueToType(@Nullable final Object valueObj, @NonNull final Class<T> valueType)
+	{
+		if (valueObj == null)
+		{
+			return null;
+		}
+
+		if (valueType.isAssignableFrom(Integer.class))
+		{
+			return (T)NumberUtils.asIntegerOrNull(valueObj);
+		}
+		else if (valueType.isAssignableFrom(String.class))
+		{
+			return (T)valueObj.toString();
+		}
+		else if (valueType.isAssignableFrom(BigDecimal.class))
+		{
+			return (T)NumberUtils.asBigDecimal(valueObj);
+		}
+		else if (RepoIdAware.class.isAssignableFrom(valueType))
+		{
+			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)valueType;
+			return (T)RepoIdAwares.ofObjectOrNull(valueObj, repoIdAwareType);
+		}
+		else
+		{
+			return (T)valueObj;
+		}
 	}
 
 	@Override
