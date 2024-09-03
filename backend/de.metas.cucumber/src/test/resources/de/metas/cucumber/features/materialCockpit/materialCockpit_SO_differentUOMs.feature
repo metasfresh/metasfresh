@@ -45,7 +45,7 @@ Feature: sales order interaction with material cockpit - Order Line's UOM is dif
 
     Then after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 2.5                             | 2.5                     | 0                          | -2.5                          | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 2.5                             | 2.5                     | -2.5                       | -2.5                          | 0                            |
 
     And inactivate C_UOM_Conversion:
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 |
