@@ -4,7 +4,8 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_D
 
 
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details(IN p_record_id   numeric,
-                                                                               IN p_ad_language Character Varying(6))
+                                                                                          IN p_ad_language Character Varying(6))
+
     RETURNS TABLE
             (
                 line                 numeric(10, 0),
@@ -97,11 +98,12 @@ FROM C_OrderLine ol
     -- Tax
          LEFT OUTER JOIN C_Tax t ON ol.C_Tax_ID = t.C_Tax_ID
     -- Get Attributes
-         LEFT OUTER JOIN (SELECT STRING_AGG(att.ai_value, ', ' ORDER BY LENGTH(att.ai_value)) AS Attributes, att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
-                          FROM Report.fresh_Attributes att
-                                   JOIN C_OrderLine ol ON att.M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID
+         LEFT OUTER JOIN (
+    SELECT STRING_AGG(att.ai_value, ', ' ORDER BY LENGTH(att.ai_value)) AS Attributes, att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
+    FROM Report.fresh_Attributes att
+             JOIN C_OrderLine ol ON att.M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID
                           WHERE att.at_Value IN ('1000002', '1000001', '1000030', '1000015', 'M_Material_Tracking_ID')
-                            AND ol.C_Order_ID = p_record_id
+      AND ol.C_Order_ID = p_record_id
                           -- att.at_IsAttrDocumentRelevant = 'Y' currently those flags are set to be correct for purchase invoices. we need something more flexible for all kinds of documents
                           GROUP BY att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND ol.C_OrderLine_ID = att.C_OrderLine_ID
 
@@ -115,4 +117,3 @@ ORDER BY ol.line
 
 $$
 ;
-
