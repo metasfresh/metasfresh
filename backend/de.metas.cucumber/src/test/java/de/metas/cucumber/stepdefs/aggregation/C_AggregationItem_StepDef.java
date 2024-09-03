@@ -71,7 +71,7 @@ public class C_AggregationItem_StepDef
 		final String aggregationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_AggregationItem.COLUMNNAME_C_Aggregation_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_Aggregation aggregationRecord = aggregationTable.get(aggregationIdentifier);
 
-		final I_C_AggregationItem aggregationItemRecord = InterfaceWrapperHelper.newInstance(I_C_AggregationItem.class);
+		final I_C_AggregationItem aggregationItemRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_AggregationItem.class);
 
 		aggregationItemRecord.setType(type);
 		aggregationItemRecord.setEntityType(entityType);
