@@ -1,5 +1,5 @@
 @from:cucumber
-@ghActions:run_on_executor5
+@ghActions:run_on_executor2
 Feature: invoice with aggregation attributes
 
   Background:
