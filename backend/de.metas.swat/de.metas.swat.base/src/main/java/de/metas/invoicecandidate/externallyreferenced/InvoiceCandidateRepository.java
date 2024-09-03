@@ -205,6 +205,12 @@ public class InvoiceCandidateRepository
 
 		icRecord.setOrg_BP_Account_ID(BankAccountId.toRepoId(ic.getBankAccountId()));
 
+		// avoid bad Fallback based on random pick of conversion UOMs via autoAppliedValidationRule, if not set
+		if(UomId.ofRepoIdOrNull(icRecord.getPrice_UOM_ID()) == null && UomId.ofRepoIdOrNull(icRecord.getC_UOM_ID()) != null)
+		{
+			icRecord.setPrice_UOM_ID(icRecord.getC_UOM_ID());
+		}
+
 		saveRecord(icRecord);
 		final InvoiceCandidateId persistedInvoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
 

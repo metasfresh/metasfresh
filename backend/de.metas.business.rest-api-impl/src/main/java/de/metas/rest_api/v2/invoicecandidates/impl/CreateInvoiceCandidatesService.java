@@ -528,12 +528,11 @@ public class CreateInvoiceCandidatesService
 				productId,
 				item);
 
-		final ProductPrice price = ProductPrice.builder()
+        return ProductPrice.builder()
 				.money(Money.of(jsonPrice.getValue(), currencyId))
 				.productId(productId)
 				.uomId(priceUomId)
 				.build();
-		return price;
 	}
 
 	private CurrencyId lookupCurrencyId(@NonNull final JsonPrice jsonPrice)
