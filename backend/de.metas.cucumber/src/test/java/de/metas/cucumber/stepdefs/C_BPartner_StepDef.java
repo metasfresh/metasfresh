@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -29,7 +30,11 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+<<<<<<< HEAD
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
+=======
+import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
+>>>>>>> 44e73d2f360 (cucumber scenario for invoice with aggregation attributes)
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
@@ -78,7 +83,12 @@ import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_Pr
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
+=======
+import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID;
+import static org.assertj.core.api.Assertions.*;
+>>>>>>> 44e73d2f360 (cucumber scenario for invoice with aggregation attributes)
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
@@ -112,6 +122,7 @@ public class C_BPartner_StepDef
 	private final M_DiscountSchema_StepDefData discountSchemaTable;
 	private final C_Dunning_StepDefData dunningTable;
 	private final AD_Org_StepDefData orgTable;
+	private final C_Aggregation_StepDefData aggregationTable;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -119,6 +130,27 @@ public class C_BPartner_StepDef
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 
+<<<<<<< HEAD
+=======
+	public C_BPartner_StepDef(
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
+			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_DiscountSchema_StepDefData discountSchemaTable,
+			@NonNull final AD_Org_StepDefData orgTable,
+			@NonNull final C_Aggregation_StepDefData aggregationTable)
+	{
+		this.bPartnerTable = bPartnerTable;
+		this.bPartnerLocationTable = bPartnerLocationTable;
+		this.pricingSystemTable = pricingSystemTable;
+		this.productTable = productTable;
+		this.discountSchemaTable = discountSchemaTable;
+		this.orgTable = orgTable;
+		this.aggregationTable = aggregationTable;
+	}
+
+>>>>>>> 44e73d2f360 (cucumber scenario for invoice with aggregation attributes)
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable)
 	{
@@ -196,6 +228,18 @@ public class C_BPartner_StepDef
 
 	@Given("update C_BPartner:")
 	public void update_c_bpartner(@NonNull final DataTable dataTable)
+<<<<<<< HEAD
+=======
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			updateBPartner(tableRow);
+		}
+	}
+
+	private void createC_BPartner(@NonNull final Map<String, String> tableRow, final boolean addDefaultLocationIfNewBPartner)
+>>>>>>> 44e73d2f360 (cucumber scenario for invoice with aggregation attributes)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
@@ -242,8 +286,16 @@ public class C_BPartner_StepDef
 		final DeliveryRule deliveryRule = row.getAsOptionalEnum(COLUMNNAME_DeliveryRule, DeliveryRule.class).orElse(DeliveryRule.FORCE);
 		bPartnerRecord.setDeliveryRule(deliveryRule.getCode());
 
+<<<<<<< HEAD
 		final StepDefDataIdentifier pricingSystemIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_PricingSystem_ID).orElse(null);
 		if (pricingSystemIdentifier != null)
+=======
+		final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DeliveryRule);
+		bPartnerRecord.setDeliveryRule(CoalesceUtil.firstNotBlank(deliveryRule, DELIVERYRULE_Force));
+
+		final String pricingSystemIdentifier = tableRow.get(I_M_PricingSystem.COLUMNNAME_M_PricingSystem_ID + ".Identifier");
+		if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
+>>>>>>> 44e73d2f360 (cucumber scenario for invoice with aggregation attributes)
 		{
 			final int pricingSystemId = pricingSystemTable.getOptional(pricingSystemIdentifier)
 					.map(I_M_PricingSystem::getM_PricingSystem_ID)
@@ -578,5 +630,23 @@ public class C_BPartner_StepDef
 					.getResult();
 		}
 
+	}
+
+	private void updateBPartner(@NonNull final Map<String, String> tableRow)
+	{
+		final String bPartnerIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner");
+		
+		final de.metas.invoicecandidate.model.I_C_BPartner bPartner = InterfaceWrapperHelper.create(bPartnerTable.get(bPartnerIdentifier), de.metas.invoicecandidate.model.I_C_BPartner.class);
+
+		final String soInvoiceAggregationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_SO_Invoice_Aggregation_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(soInvoiceAggregationIdentifier))
+		{
+			final I_C_Aggregation aggregationRecord = aggregationTable.get(soInvoiceAggregationIdentifier);
+			bPartner.setSO_Invoice_Aggregation_ID(aggregationRecord.getC_Aggregation_ID());
+		}
+
+		InterfaceWrapperHelper.save(bPartner);
+
+		bPartnerTable.putOrReplace(bPartnerIdentifier, bPartner);
 	}
 }

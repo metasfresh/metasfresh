@@ -2,7 +2,11 @@
  * #%L
  * de.metas.cucumber
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2023 metas GmbH
+=======
+ * Copyright (C) 2024 metas GmbH
+>>>>>>> 44e73d2f360 (cucumber scenario for invoice with aggregation attributes)
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as

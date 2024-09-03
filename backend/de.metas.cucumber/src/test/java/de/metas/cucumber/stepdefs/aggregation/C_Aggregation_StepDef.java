@@ -2,7 +2,11 @@
  * #%L
  * de.metas.cucumber
  * %%
+<<<<<<< HEAD
  * Copyright (C) 2023 metas GmbH
+=======
+ * Copyright (C) 2024 metas GmbH
+>>>>>>> 44e73d2f360 (cucumber scenario for invoice with aggregation attributes)
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +27,7 @@
 package de.metas.cucumber.stepdefs.aggregation;
 
 import de.metas.aggregation.model.I_C_Aggregation;
+<<<<<<< HEAD
 import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import io.cucumber.datatable.DataTable;
@@ -36,6 +41,28 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 
 public class C_Aggregation_StepDef
 {
+=======
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Given;
+import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Table;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+
+public class C_Aggregation_StepDef
+{
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+
+>>>>>>> 44e73d2f360 (cucumber scenario for invoice with aggregation attributes)
 	private final C_Aggregation_StepDefData aggregationTable;
 
 	public C_Aggregation_StepDef(@NonNull final C_Aggregation_StepDefData aggregationTable)
@@ -43,6 +70,7 @@ public class C_Aggregation_StepDef
 		this.aggregationTable = aggregationTable;
 	}
 
+<<<<<<< HEAD
 	@And("load C_Aggregation:")
 	public void load_C_Aggregation(@NonNull final DataTable dataTable)
 	{
@@ -82,5 +110,59 @@ public class C_Aggregation_StepDef
 		}
 
 		InterfaceWrapperHelper.saveRecord(aggregationRecord);
+=======
+	@Given("metasfresh contains C_Aggregations:")
+	public void metasfresh_contains_c_aggregation(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			createC_Aggregation(tableRow);
+		}
+	}
+
+	@Given("load C_Aggregations:")
+	public void load_C_Aggregation(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			loadC_Aggregation(tableRow);
+		}
+	}
+
+	private void loadC_Aggregation(@NonNull final Map<String, String> tableRow)
+	{
+		final int aggregationId = DataTableUtil.extractIntForColumnName(tableRow, I_C_Aggregation.COLUMNNAME_C_Aggregation_ID);
+		final I_C_Aggregation aggregationRecord = InterfaceWrapperHelper.load(aggregationId, I_C_Aggregation.class);
+
+		final String aggregationIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_Aggregation");
+		aggregationTable.putOrReplace(aggregationIdentifier, aggregationRecord);
+	}
+
+	private void createC_Aggregation(@NonNull final Map<String, String> tableRow)
+	{
+		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_C_Aggregation.COLUMNNAME_Name);
+		final String tableName = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Table.COLUMNNAME_TableName);
+		final AdTableId adTableId = tableDAO.retrieveAdTableId(tableName);
+		final String entityType = DataTableUtil.extractStringForColumnName(tableRow, I_C_Aggregation.COLUMNNAME_EntityType);
+
+		final I_C_Aggregation aggregationRecord = newInstanceOutOfTrx(I_C_Aggregation.class);
+
+		aggregationRecord.setName(name);
+		aggregationRecord.setAD_Table_ID(AdTableId.toRepoId(adTableId));
+		aggregationRecord.setEntityType(entityType);
+
+		final String aggregationUsageLevel = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Aggregation.COLUMNNAME_AggregationUsageLevel);
+		if (Check.isNotBlank(aggregationUsageLevel))
+		{
+			aggregationRecord.setAggregationUsageLevel(aggregationUsageLevel);
+		}
+
+		InterfaceWrapperHelper.saveRecord(aggregationRecord);
+
+		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_Aggregation");
+		aggregationTable.putOrReplace(recordIdentifier, aggregationRecord);
+>>>>>>> 44e73d2f360 (cucumber scenario for invoice with aggregation attributes)
 	}
 }
