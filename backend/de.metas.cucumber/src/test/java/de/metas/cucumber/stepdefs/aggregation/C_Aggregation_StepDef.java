@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -55,6 +55,16 @@ public class C_Aggregation_StepDef
 		dataTable.asMaps().forEach(this::updateAggregation);
 	}
 
+	@Given("metasfresh contains C_Aggregations:")
+	public void metasfresh_contains_c_aggregation(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			createC_Aggregation(tableRow);
+		}
+	}
+
 	private void loadAggregation(@NonNull final Map<String, String> row)
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_Aggregation.COLUMNNAME_C_Aggregation_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -82,5 +92,30 @@ public class C_Aggregation_StepDef
 		}
 
 		InterfaceWrapperHelper.saveRecord(aggregationRecord);
+	}
+
+	private void createC_Aggregation(@NonNull final Map<String, String> tableRow)
+	{
+		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_C_Aggregation.COLUMNNAME_Name);
+		final String tableName = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Table.COLUMNNAME_TableName);
+		final AdTableId adTableId = tableDAO.retrieveAdTableId(tableName);
+		final String entityType = DataTableUtil.extractStringForColumnName(tableRow, I_C_Aggregation.COLUMNNAME_EntityType);
+
+		final I_C_Aggregation aggregationRecord = newInstanceOutOfTrx(I_C_Aggregation.class);
+
+		aggregationRecord.setName(name);
+		aggregationRecord.setAD_Table_ID(AdTableId.toRepoId(adTableId));
+		aggregationRecord.setEntityType(entityType);
+
+		final String aggregationUsageLevel = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Aggregation.COLUMNNAME_AggregationUsageLevel);
+		if (Check.isNotBlank(aggregationUsageLevel))
+		{
+			aggregationRecord.setAggregationUsageLevel(aggregationUsageLevel);
+		}
+
+		InterfaceWrapperHelper.saveRecord(aggregationRecord);
+
+		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_Aggregation");
+		aggregationTable.putOrReplace(recordIdentifier, aggregationRecord);
 	}
 }
