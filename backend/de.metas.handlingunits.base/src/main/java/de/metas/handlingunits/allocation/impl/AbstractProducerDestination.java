@@ -34,6 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.util.Util.ArrayKey;
 
@@ -46,6 +47,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 
 /**
  * Contains common BL used when loading from an {@link de.metas.handlingunits.allocation.IAllocationRequest} to an {@link IAllocationResult}
@@ -57,6 +59,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	//
 	// Services
 	protected final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	protected final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
 	/**
@@ -567,7 +570,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 				if (request.isDeleteEmptyAndJustCreatedAggregatedTUs())
 				{
-					destroyCurrentHU(currentHUCursor);
+					destroyCurrentHU(currentHUCursor, request.getHuContext());
 					continue;
 				}
 			}
@@ -757,7 +760,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return _huClearanceStatusInfo;
 	}
 
-	private void destroyCurrentHU(final HUListCursor currentHUCursor)
+	private void destroyCurrentHU(final HUListCursor currentHUCursor, final IHUContext huContext)
 	{
 		final I_M_HU hu = currentHUCursor.current();
 		if (hu == null)
@@ -776,8 +779,18 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		// Delete only those HUs which were internally created by THIS producer
 		if (DYNATTR_Producer.getValue(hu) == this)
 		{
-			// FIXME: deleting directly is not ok. We need to handle the attributes, handle the included HUs (if any)
-			handlingUnitsDAO.delete(hu);
+			final Supplier<IAutoCloseable> getDontDestroyParentLUClosable = () -> {
+				final I_M_HU lu = handlingUnitsBL.getLoadingUnitHU(hu);
+				return lu != null
+						? huContext.temporarilyDontDestroyHU(HuId.ofRepoId(lu.getM_HU_ID()))
+						: () -> {
+				};
+			};
+
+			try (final IAutoCloseable dontDestroyParentLU = getDontDestroyParentLUClosable.get())
+			{
+				handlingUnitsBL.destroyIfEmptyStorage(huContext, hu);
+			}
 		}
 	}
 }

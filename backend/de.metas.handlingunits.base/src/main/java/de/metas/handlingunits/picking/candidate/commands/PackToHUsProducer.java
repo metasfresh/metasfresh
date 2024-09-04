@@ -204,7 +204,7 @@ public class PackToHUsProducer
 							.setQuantity(qtyPicked)
 							.setFromReferencedTableRecord(documentRef)
 							.setForceQtyAllocation(true)
-  						    // .setDeleteEmptyAndJustCreatedAggregatedTUs(true)
+  						    .setDeleteEmptyAndJustCreatedAggregatedTUs(true)
 							.create());
 
 			weightUpdater.updatePickFromHUs(pickFromHUs.toHUsList());

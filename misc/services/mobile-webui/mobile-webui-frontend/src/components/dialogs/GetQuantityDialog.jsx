@@ -46,7 +46,7 @@ const GetQuantityDialog = ({
 }) => {
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
-  const useZeroAsInitialValue = true; // todo replace with sys config ASAP
+  const useZeroAsInitialValue = useBooleanSetting('qtyInput.useZeroAsInitialValue');
 
   const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(useZeroAsInitialValue ? 0 : qtyTarget));
   const [rejectedReason, setRejectedReason] = useState(null);
