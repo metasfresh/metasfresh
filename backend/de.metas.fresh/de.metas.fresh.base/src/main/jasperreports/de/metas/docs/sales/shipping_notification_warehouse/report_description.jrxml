@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="407" pageHeight="200" whenNoDataType="BlankPage" columnWidth="407" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/shipping_notification_warehouse/report" uuid="1a23dc24-c216-40e0-891b-a3648835dca6">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.2100000000000006"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<parameterDescription><![CDATA[]]></parameterDescription>
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT 	*
+FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description( $P{RECORD_ID}, $P{ad_language} ) as t1,
+de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details($P{RECORD_ID}, $P{ad_language} ) as t2
+;]]>
+	</queryString>
+	<field name="document_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="document_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="document_name"/>
+	</field>
+	<field name="documentno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="documentno"/>
+		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
+	</field>
+	<field name="sales_order" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sales_order"/>
+		<property name="com.jaspersoft.studio.field.label" value="sales_order"/>
+	</field>
+	<field name="poreference" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="poreference"/>
+		<property name="com.jaspersoft.studio.field.label" value="poreference"/>
+	</field>
+	<field name="physicalclearancedate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="physicalclearancedate"/>
+		<property name="com.jaspersoft.studio.field.label" value="physicalclearancedate"/>
+	</field>
+	<field name="harvesting_year" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="harvesting_year"/>
+		<property name="com.jaspersoft.studio.field.label" value="harvesting_year"/>
+	</field>
+	<field name="description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="description"/>
+		<property name="com.jaspersoft.studio.field.label" value="description"/>
+	</field>
+	<field name="line" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="line"/>
+		<property name="com.jaspersoft.studio.field.label" value="line"/>
+	</field>
+	<field name="p_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="p_value"/>
+		<property name="com.jaspersoft.studio.field.label" value="p_value"/>
+	</field>
+	<field name="product_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="product_value"/>
+		<property name="com.jaspersoft.studio.field.label" value="product_value"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="name"/>
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="attributes" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="attributes"/>
+		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
+	</field>
+	<field name="movementqty" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="movementqty"/>
+		<property name="com.jaspersoft.studio.field.label" value="movementqty"/>
+	</field>
+	<field name="uomsymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="uomsymbol"/>
+		<property name="com.jaspersoft.studio.field.label" value="uomsymbol"/>
+	</field>
+	<field name="qtypattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="qtypattern"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
+	</field>
+	<field name="priceactual" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="priceactual"/>
+		<property name="com.jaspersoft.studio.field.label" value="priceactual"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="44" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-24" mode="Transparent" x="0" y="0" width="150" height="22" forecolor="#000000" backcolor="#FFFFFF" uuid="80600e83-f699-43c7-84f3-f9eb1946846b">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+				</reportElement>
+				<box rightPadding="3">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" isBold="false"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Ausschreibung"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-24" mode="Transparent" x="150" y="0" width="120" height="22" forecolor="#000000" backcolor="#FFFFFF" uuid="e517e1c5-590e-473e-894a-6597273903ea">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box rightPadding="3">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Freistellungsdatum"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement key="textField-24" mode="Transparent" x="270" y="0" width="137" height="22" forecolor="#000000" backcolor="#FFFFFF" uuid="78143a6a-29aa-4266-a88a-3dd8a4067411">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box rightPadding="3">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{physicalclearancedate}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-24" mode="Transparent" x="0" y="22" width="270" height="22" forecolor="#000000" backcolor="#FFFFFF" uuid="b0a3042f-2c34-4732-a86e-8ee328f8afa4">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+				</reportElement>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" isBold="false"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Frachtzahler      Unfrankiert       "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement key="textField-24" mode="Transparent" x="270" y="22" width="137" height="22" forecolor="#000000" backcolor="#FFFFFF" uuid="150b059b-a854-4608-bc3e-777fb399035d">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box rightPadding="3">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Tarif-Nr.: " + (new DecimalFormat("#.##")).format($F{priceactual})+
+"\n"+
+"Kd-Nr.: " + $F{p_value}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

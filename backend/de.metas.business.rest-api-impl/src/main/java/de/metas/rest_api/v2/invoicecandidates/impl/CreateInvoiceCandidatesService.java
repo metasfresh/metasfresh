@@ -26,13 +26,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.rest_api.v2.JsonInvoiceRule;
@@ -100,6 +103,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
@@ -110,19 +114,19 @@ import static java.math.BigDecimal.ZERO;
 @Service
 public class CreateInvoiceCandidatesService
 {
-	private final DocTypeService docTypeService;
-	private final CurrencyService currencyService;
-
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-	private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
-	private final InvoiceCandidateRepository invoiceCandidateRepository;
-	private final ManualCandidateService manualCandidateService;
-	private final ProductRestService productRestService;
-	private final BPRelationsService bpRelationsService;
-	private final JsonRetrieverService jsonRetrieverService;
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	@NonNull private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
+	@NonNull private final InvoiceCandidateRepository invoiceCandidateRepository;
+	@NonNull private final ManualCandidateService manualCandidateService;
+	@NonNull private final ProductRestService productRestService;
+	@NonNull private final BPRelationsService bpRelationsService;
+	@NonNull private final JsonRetrieverService jsonRetrieverService;
+	@NonNull private final DocTypeService docTypeService;
+	@NonNull private final CurrencyService currencyService;
 
 	public CreateInvoiceCandidatesService(
 			@NonNull final DocTypeService docTypeService,
@@ -199,6 +203,8 @@ public class CreateInvoiceCandidatesService
 		syncBPartnerToCandidate(candidate, orgId, item);
 
 		syncTargetDocTypeToCandidate(candidate, orgId, item.getInvoiceDocType());
+
+		syncBankAccountIdToCandidate(candidate, item, orgId);
 
 		syncDiscountOverrideToCandidate(candidate, item.getDiscountOverride());
 
@@ -477,6 +483,33 @@ public class CreateInvoiceCandidatesService
 
 	}
 
+	private void syncBankAccountIdToCandidate(
+			@NonNull final InvoiceCandidateUpsertRequestBuilder candidate,
+			@NonNull final JsonCreateInvoiceCandidatesRequestItem item,
+			@NonNull final OrgId orgId)
+	{
+		if (Check.isNotBlank(item.getBankAccountIdentifier()))
+		{
+
+			final Optional<BPartnerId> orgBPartnerIdOptional = partnerOrgBL.retrieveLinkedBPartnerId(orgId);
+			if (orgBPartnerIdOptional.isPresent())
+			{
+				final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(String.valueOf(BPartnerId.toRepoId(orgBPartnerIdOptional.get())));
+
+				final Optional<MetasfreshId> metasfreshId = jsonRetrieverService.resolveBankAccountIdentifier(orgId,
+						bpartnerIdentifier,
+						ExternalIdentifier.of(item.getBankAccountIdentifier()));
+
+				if (metasfreshId.isPresent())
+				{
+					final BankAccountId bankAccountId = BankAccountId.ofRepoId(metasfreshId.get().getValue());
+					candidate.bankAccountId(bankAccountId);
+				}
+			}
+		}
+	}
+
+
 	@Nullable
 	private ProductPrice createProductPriceOrNull(
 			@Nullable final JsonPrice jsonPrice,
@@ -495,12 +528,11 @@ public class CreateInvoiceCandidatesService
 				productId,
 				item);
 
-		final ProductPrice price = ProductPrice.builder()
+        return ProductPrice.builder()
 				.money(Money.of(jsonPrice.getValue(), currencyId))
 				.productId(productId)
 				.uomId(priceUomId)
 				.build();
-		return price;
 	}
 
 	private CurrencyId lookupCurrencyId(@NonNull final JsonPrice jsonPrice)

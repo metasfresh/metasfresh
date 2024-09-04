@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.auction.AuctionId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.CalendarId;
@@ -465,6 +466,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setC_PaymentInstruction_ID(invoiceHeader.getC_PaymentInstruction_ID());
 			invoice.setM_Warehouse_ID(WarehouseId.toRepoId(invoiceHeader.getWarehouseId()));
 			invoice.setC_Auction_ID(AuctionId.toRepoId(invoiceHeader.getAuctionId()));
+			invoice.setOrg_BP_Account_ID(BankAccountId.toRepoId(invoiceHeader.getOrgBankAccountId()));
 
 			setHarvestingDetails(invoice, invoiceHeader);
 

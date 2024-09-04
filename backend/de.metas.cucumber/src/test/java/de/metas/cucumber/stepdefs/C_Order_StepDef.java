@@ -331,6 +331,7 @@ public class C_Order_StepDef
 				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
 						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
 						.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
+						.addOnlyActiveRecordsFilter()
 						.create()
 						.firstOnlyNotNull(I_C_DocType.class);
 

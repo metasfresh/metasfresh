@@ -67,6 +67,10 @@ public class DocumentReportResult
 	@Builder.Default
 	PrintCopies copies = PrintCopies.ONE;
 
+	@Builder.Default
+	boolean isMainReport = true;
+
+
 	@Nullable
 	ArchiveResult lastArchive;
 

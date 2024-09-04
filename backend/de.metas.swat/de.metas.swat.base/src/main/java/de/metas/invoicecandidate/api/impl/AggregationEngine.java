@@ -69,6 +69,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -148,6 +149,7 @@ public final class AggregationEngine
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
 	 */
 	private final Map<AggregationKey, InvoiceHeaderAndLineAggregators> key2headerAndAggregators = new LinkedHashMap<>();
+
 	@Builder
 	private AggregationEngine(
 			@Nullable final MatchInvoiceService matchInvoiceService,
@@ -451,7 +453,7 @@ public final class AggregationEngine
 			invoiceHeader.setDateAcct(dateAcct);
 
 			final LocalDate overrideDueDate = computeOverrideDueDate(icRecord);
-			logger.debug("Setting invoiceHeader's OverrideDueDate={}", dateAcct);
+			logger.debug("Setting invoiceHeader's OverrideDueDate={}", overrideDueDate);
 			invoiceHeader.setOverrideDueDate(overrideDueDate);
 
 			// #367 Invoice candidates invoicing Pricelist not found
@@ -547,6 +549,7 @@ public final class AggregationEngine
 			invoiceHeader.setHarvesting_Year_ID(icRecord.getHarvesting_Year_ID());
 			invoiceHeader.setM_Warehouse_ID(icRecord.getM_Warehouse_ID());
 			invoiceHeader.setAuctionId(icRecord.getC_Auction_ID());
+			invoiceHeader.setOrgBankAccountId(icRecord.getOrg_BP_Account_ID());
 		}
 		catch (final RuntimeException rte)
 		{
@@ -832,7 +835,12 @@ public final class AggregationEngine
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);
-		invoiceHeader.setPaymentTermId(getPaymentTermId(invoiceHeader).orElse(null));
+		final PaymentTermId paymentTermId = Optionals.firstPresentOfSuppliers(
+						() -> getPaymentTermId(invoiceHeader),
+						paymentTermRepository::getDefaultPaymentTermId
+				)
+				.orElseThrow(() -> new AdempiereException("No payment term found for invoice candidates, BpartnerID {} and no default payment term defined."));
+		invoiceHeader.setPaymentTermId(paymentTermId);
 	}
 
 	@NonNull
@@ -948,7 +956,7 @@ public final class AggregationEngine
 		}
 
 		return Optional.of(aggregationDAO.retrieveAggregation(InterfaceWrapperHelper.getCtx(icRecord),
-															  headerAggregationId.getRepoId()));
+				headerAggregationId.getRepoId()));
 	}
 
 	private void setDocTypeInvoiceId(@NonNull final InvoiceHeaderImpl invoiceHeader)

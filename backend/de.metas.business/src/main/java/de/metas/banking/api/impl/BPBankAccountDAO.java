@@ -14,6 +14,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CleanWhitespaceQueryFilterModifier;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 
 import java.util.Optional;
@@ -162,5 +163,12 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstIdOnlyOptional(BankAccountId::ofRepoIdOrNull);
+	}
+
+
+	@Override
+	public <T extends I_C_BP_BankAccount> T  getById(@NonNull final BankAccountId bankAccountId, @NonNull final Class<T> modelClass)
+	{
+		return InterfaceWrapperHelper.load(bankAccountId, modelClass);
 	}
 }

@@ -22,6 +22,7 @@
 
 package de.metas.invoicecandidate;
 
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
@@ -69,6 +70,8 @@ public class InvoiceCandidateUpsertRequest
 	BPartnerInfo billPartnerInfo;
 
 	ProductId productId;
+
+	@Nullable BankAccountId bankAccountId;
 
 	InvoiceRule invoiceRuleOverride;
 
@@ -136,6 +139,7 @@ public class InvoiceCandidateUpsertRequest
 			@Nullable final String poReference,
 			@NonNull final BPartnerInfo billPartnerInfo,
 			@NonNull final ProductId productId,
+			@Nullable final BankAccountId bankAccountId,
 			@Nullable final InvoiceRule invoiceRuleOverride,
 			@Nullable final InvoiceRule invoiceRule,
 			@NonNull final SOTrx soTrx,
@@ -171,6 +175,7 @@ public class InvoiceCandidateUpsertRequest
 		this.poReference = poReference;
 		this.billPartnerInfo = billPartnerInfo;
 		this.productId = productId;
+		this.bankAccountId = bankAccountId;
 		this.invoiceRuleOverride = invoiceRuleOverride;
 		this.soTrx = soTrx;
 		this.dateOrdered = dateOrdered;

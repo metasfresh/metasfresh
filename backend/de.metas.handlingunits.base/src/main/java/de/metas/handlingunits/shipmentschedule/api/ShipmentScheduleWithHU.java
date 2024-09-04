@@ -124,17 +124,18 @@ public class ShipmentScheduleWithHU
 	@Getter private final boolean adviseManualPackingMaterial;
 
 	ShipmentScheduleWithHU(
-			@NonNull ShipmentScheduleWithHUSupportingServices services,
+			@NonNull final ShipmentScheduleWithHUSupportingServices services,
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule_QtyPicked allocRecord,
-			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse,
+			@Nullable final ShipmentScheduleSplit split)
 	{
 		this.services = services;
 		this.huContext = huContext;
 
 		this.shipmentScheduleQtyPicked = allocRecord;
 		this.shipmentSchedule = InterfaceWrapperHelper.create(allocRecord.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
-		this.split = null;
+		this.split = split;
 
 		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 		final UomId catchUomIdOrNull = UomId.ofRepoIdOrNull(allocRecord.getCatch_UOM_ID());
@@ -158,7 +159,7 @@ public class ShipmentScheduleWithHU
 	 * Creates a HU-"empty" instance that just references the given shipment schedule.
 	 */
 	ShipmentScheduleWithHU(
-			@NonNull ShipmentScheduleWithHUSupportingServices services, 
+			@NonNull final ShipmentScheduleWithHUSupportingServices services,
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty,
@@ -186,14 +187,15 @@ public class ShipmentScheduleWithHU
 			@NonNull final ShipmentScheduleWithHUSupportingServices services,
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final ShipmentScheduleSplit split)
+			@NonNull final ShipmentScheduleSplit split,
+			@NonNull final Quantity qtyToAllocate)
 	{
 		this.services = services;
 		this.huContext = huContext;
 		this.shipmentSchedule = shipmentSchedule;
 		this.split = split;
 
-		this.pickedQty = split.getQtyToDeliver();
+		this.pickedQty = qtyToAllocate;
 		this.catchQty = Optional.empty();
 
 		this.vhu = null; // no VHU
@@ -533,6 +535,7 @@ public class ShipmentScheduleWithHU
 		return dimension;
 	}
 
+	@Nullable
 	public ShipmentScheduleSplitId getSplitId() {return split != null ? split.getIdNotNull() : null;}
 
 	public Optional<LocalDate> getDeliveryDate()

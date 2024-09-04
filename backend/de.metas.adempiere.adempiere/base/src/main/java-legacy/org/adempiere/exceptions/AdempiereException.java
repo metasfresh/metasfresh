@@ -19,6 +19,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.model.Null;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
@@ -48,6 +49,7 @@ public class AdempiereException extends RuntimeException
 	 * @return {@link AdempiereException} or <code>null</code> if the throwable was null.
 	 */
 	@Nullable
+	@Contract("!null -> !null")
 	public static AdempiereException wrapIfNeeded(@Nullable final Throwable throwable)
 	{
 		if (throwable == null)
@@ -113,10 +115,9 @@ public class AdempiereException extends RuntimeException
 
 	public static ITranslatableString extractMessageTrl(final Throwable throwable)
 	{
-		if (throwable instanceof AdempiereException)
+		if (throwable instanceof final AdempiereException ex)
 		{
-			final AdempiereException ex = (AdempiereException)throwable;
-			return ex.getMessageBuilt();
+            return ex.getMessageBuilt();
 		}
 
 		return TranslatableStrings.constant(extractMessage(throwable));
@@ -409,10 +410,9 @@ public class AdempiereException extends RuntimeException
 		{
 			appendParameters(message);
 			final Throwable cause = getCause();
-			if (cause instanceof AdempiereException)
+			if (cause instanceof final AdempiereException metasfreshCause)
 			{
-				final AdempiereException metasfreshCause = (AdempiereException)cause;
-				if (metasfreshCause.appendParametersToMessage) // also append the cause's parameters
+                if (metasfreshCause.appendParametersToMessage) // also append the cause's parameters
 				{
 					metasfreshCause.appendParameters(message);
 				}
@@ -421,6 +421,7 @@ public class AdempiereException extends RuntimeException
 		return message.build();
 	}
 
+	@Nullable
 	protected final String getADLanguage()
 	{
 		return coalesceSuppliers(() -> adLanguage, Env::getAD_Language);
@@ -731,7 +732,7 @@ public class AdempiereException extends RuntimeException
 	/**
 	 * Override with a method returning false if your exception is more of a signal than an error 
 	 * and shall not clutter the log when it is caught and rethrown by the transaction manager.
-	 * 
+	 * <p>
 	 * To be invoked by {@link AdempiereException#isThrowableLoggedInTrxManager(Throwable)}.
 	 */
 	protected boolean isLoggedInTrxManager()

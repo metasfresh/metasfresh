@@ -31,7 +31,7 @@ import java.time.Instant;
 
 @Value
 @Builder
-public class BonusComputationTimeInterval
+public class BonusAndInterestTimeInterval
 {
 	@NonNull Instant interimDate;
 	@NonNull Instant billingDate;

@@ -32,6 +32,7 @@ import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
@@ -62,7 +63,6 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
@@ -95,6 +95,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Auction;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
@@ -131,7 +132,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
@@ -167,7 +168,6 @@ public class C_Invoice_StepDef
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
-	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
 	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	private final C_Invoice_StepDefData invoiceTable;
@@ -187,6 +187,7 @@ public class C_Invoice_StepDef
 	private final C_Calendar_StepDefData calendarTable;
 	private final C_Year_StepDefData yearTable;
 	private final C_Auction_StepDefData auctionStepDefData;
+	private final C_BP_BankAccount_StepDefData bankAccountTable;
 
 	public C_Invoice_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
@@ -205,7 +206,8 @@ public class C_Invoice_StepDef
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final C_Calendar_StepDefData calendarTable,
 			@NonNull final C_Year_StepDefData yearTable,
-			@NonNull final C_Auction_StepDefData auctionStepDefData)
+			@NonNull final C_Auction_StepDefData auctionStepDefData,
+			@NonNull final C_BP_BankAccount_StepDefData bankAccountTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceLineTable = invoiceLineTable;
@@ -224,6 +226,7 @@ public class C_Invoice_StepDef
 		this.calendarTable = calendarTable;
 		this.yearTable = yearTable;
 		this.auctionStepDefData = auctionStepDefData;
+		this.bankAccountTable = bankAccountTable;
 	}
 
 	@And("validate created invoices")
@@ -695,6 +698,12 @@ public class C_Invoice_StepDef
 			softly.assertThat(invoice.getC_Auction_ID()).isEqualTo(auction.getC_Auction_ID());
 		}
 
+		final String bankAccountIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_Org_BP_Account_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (de.metas.common.util.Check.isNotBlank(bankAccountIdentifier))
+		{
+			final I_C_BP_BankAccount bankAccount = bankAccountTable.get(bankAccountIdentifier);
+			softly.assertThat(invoice.getOrg_BP_Account_ID()).isEqualTo(bankAccount.getC_BP_BankAccount_ID());
+		}
 		softly.assertAll();
 	}
 

@@ -22,7 +22,7 @@ $$
 select ('SPC' || E'\n' || --QRType
         '0200' || E'\n' || --Version
         '1' || E'\n' || --Coding
-        COALESCE(replace(qr_iban, ' ', ''), replace(iban, ' ', ''), '') || E'\n' || -- Account
+        COALESCE(replace(coalesce(orgbpb_invoice.qr_iban, orgbpb.qr_iban,''), ' ', ''), replace(coalesce(orgbpb_invoice.iban, orgbpb.iban,''), ' ', ''), '') || E'\n' || -- Account
         'K' || E'\n' || -- CR - AdressTyp = Combined address
         orgbp.name || E'\n' || --CR – Name
         orgl.address1 || E'\n' || --CR –Street and building number of P.O. Box
@@ -40,7 +40,7 @@ select ('SPC' || E'\n' || --QRType
         to_char((case
             when cl.referenceNo is not null then   to_number(substring(cl.referenceNo, 3, 8), '999999999') + (to_number(substring(cl.referenceNo, 11, 2), '99') /100 )
             else i.GrandTotal
-           end),'FM99999.00')  || E'\n' ||
+           end),'FM9999999.00')  || E'\n' ||
         cur.iso_code || E'\n' ||
         'K' || E'\n' || -- UD– AdressTyp = Combined address
         substring(bpartneraddress from 1 for position(E'\n' in bpartneraddress)) || --UD – Name
@@ -50,14 +50,14 @@ select ('SPC' || E'\n' || --QRType
         E'\n' || --Do not fill in
         c.countrycode || E'\n' || -- UD Country
         (case
-             when replace(qr_iban, ' ', '') is not null and rn.referenceNo is not null then 'QRR'
-             when replace(iban, ' ', '') is not null and replace(orgbpb.sepa_creditoridentifier, ' ', '') is not null
+             when replace(coalesce(orgbpb_invoice.qr_iban, orgbpb.iban,''), ' ', '') is not null and rn.referenceNo is not null then 'QRR'
+             when replace(coalesce(orgbpb_invoice.iban, orgbpb.iban,''), ' ', '') is not null and replace(orgbpb.sepa_creditoridentifier, ' ', '') is not null
                  then 'SCOR'
              else 'NON'
             end) || E'\n' || --ReferenceType
         (case
-             when replace(qr_iban, ' ', '') is not null and rn.referenceNo is not null then rn.ReferenceNo
-             when replace(iban, ' ', '') is not null and replace(orgbpb.sepa_creditoridentifier, ' ', '') is not null
+             when replace(coalesce(orgbpb_invoice.qr_iban, orgbpb.iban,''), ' ', '') is not null and rn.referenceNo is not null then rn.ReferenceNo
+             when replace(coalesce(orgbpb_invoice.iban, orgbpb.iban,''), ' ', '') is not null and replace(orgbpb.sepa_creditoridentifier, ' ', '') is not null
                  then 'RF' || orgbpb.sepa_creditoridentifier
              else ''
             end) || E'\n' || --Reference
@@ -67,22 +67,22 @@ select ('SPC' || E'\n' || --QRType
         '' || E'\n' --Billing information
            )                                   as QR_Code,
 
-       COALESCE(iban, '')    as CR_IBAN,
-       COALESCE(qr_iban, '') as CR_QR_IBAN,
+       coalesce(orgbpb_invoice.iban, orgbpb.iban,'')   as CR_IBAN,
+       coalesce(orgbpb_invoice.qr_iban, orgbpb.qr_iban) as CR_QR_IBAN,
        orgbp.name                              As CR_Name,
        (orgl.address1 || E'\n' ||
         coalesce(orgl.postal, '') || ' ' || coalesce(orgl.city, '') || E'\n' ||
         orgc.countrycode)                      as CR_Addres,
 
        (case
-            when replace(qr_iban, ' ', '') is not null and rn.referenceNo is not null then
+            when replace(coalesce(orgbpb_invoice.qr_iban, orgbpb.iban, ''), ' ', '') is not null and rn.referenceNo is not null then
                                                     substring(rn.referenceNo, 1, 2) || ' ' ||
                                                     substring(rn.referenceNo, 3, 5) || ' ' ||
                                                     substring(rn.referenceNo, 8, 5) || ' ' ||
                                                     substring(rn.referenceNo, 13, 5) || ' ' ||
                                                     substring(rn.referenceNo, 18, 5) || ' ' ||
                                                     substring(rn.referenceNo, 23, 7)
-            when replace(iban, ' ', '') is not null and replace(orgbpb.sepa_creditoridentifier, ' ', '') is not null
+            when replace(coalesce(orgbpb_invoice.iban, orgbpb.iban, ''), ' ', '') is not null and replace(orgbpb.sepa_creditoridentifier, ' ', '') is not null
                 then 'RF' || orgbpb.sepa_creditoridentifier
             else ''
            end)
@@ -113,6 +113,10 @@ from C_Invoice i
          LEFT JOIN C_BPartner orgbp ON o.AD_Org_ID = orgbp.AD_OrgBP_ID
          LEFT JOIN C_BP_Bankaccount orgbpb
                    ON orgbpb.C_BPartner_ID = orgbp.C_BPartner_ID AND orgbpb.IsEsrAccount = 'Y' AND orgbpb.isActive = 'Y'
+
+        -- support Invoice account
+         LEFT JOIN C_BP_Bankaccount orgbpb_invoice
+                   ON orgbpb_invoice.c_bp_bankaccount_id=i.Org_BP_Account_ID
     --- refno
          LEFT JOIN (
     SELECT rn.referenceNo, rnd.Record_ID
