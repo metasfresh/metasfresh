@@ -24,11 +24,13 @@ package de.metas.workflow.rest_api.controller.v2;
 
 import de.metas.Profiles;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplicationsList;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonSetScannedBarcodeRequest;
+import de.metas.workflow.rest_api.controller.v2.json.JsonSettings;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
@@ -40,6 +42,7 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.Params;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
@@ -52,13 +55,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
+import java.util.Map;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/userWorkflows")
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class WorkflowRestController
 {
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final WorkflowRestAPIService workflowRestAPIService;
+
+	private static final String SYSCONFIG_SETTINGS_PREFIX = "mobileui.frontend.";
 
 	public WorkflowRestController(
 			@NonNull final WorkflowRestAPIService workflowRestAPIService)
@@ -184,4 +191,12 @@ public class WorkflowRestController
 
 		return toJson(wfProcess);
 	}
+
+	@GetMapping("/settings")
+	public JsonSettings getSettings()
+	{
+		final Map<String, String> map = sysConfigBL.getValuesForPrefix(SYSCONFIG_SETTINGS_PREFIX, true, Env.getClientAndOrgId());
+		return JsonSettings.ofMap(map);
+	}
+
 }

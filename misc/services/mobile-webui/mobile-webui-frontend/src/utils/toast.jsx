@@ -1,8 +1,24 @@
+import React from 'react';
 import toast from 'react-hot-toast';
 import { unboxAxiosResponse } from './index';
 import { trl } from './translations';
+import { isError } from 'lodash';
 
-export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage }) => {
+export const toastErrorFromObj = (obj) => {
+  console.log('toastErrorFromObj', { obj });
+  if (!obj) {
+    // shall not happen
+    console.error('toastErrorFromObj called without any error');
+  } else if (isError(obj)) {
+    toastError({ axiosError: obj });
+  } else if (typeof obj === 'object') {
+    toastError(obj);
+  } else {
+    toastError({ plainMessage: `${obj}` });
+  }
+};
+
+export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage, context }) => {
   let message;
   if (axiosError) {
     message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError, fallbackMessageKey });
@@ -15,8 +31,40 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
     return;
   }
 
-  console.trace('toast error: ', { message, axiosError });
-  toast(message, { type: 'error', style: { color: 'white' } });
+  console.trace('toast error: ', { message, axiosError, context });
+  toast.custom(
+    (t) => (
+      <div className="toastContainer" onClick={() => toast.dismiss(t.id)}>
+        <span>{message}</span>
+      </div>
+    ),
+    {
+      duration: 86400000,
+    }
+  );
+};
+
+export const toastNotification = ({ messageKey, plainMessage }) => {
+  let message;
+  if (messageKey) {
+    message = trl(messageKey);
+  } else if (plainMessage) {
+    message = plainMessage;
+  } else {
+    console.error('toastNotification called without any message');
+    return;
+  }
+
+  toast.custom(
+    (t) => (
+      <div className="toastSuccessContainer" onClick={() => toast.dismiss(t.id)}>
+        <span>{message}</span>
+      </div>
+    ),
+    {
+      duration: 86400000,
+    }
+  );
 };
 
 export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fallbackMessageKey = null }) => {
@@ -41,6 +89,13 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
   }
 
   return trl('error.PleaseTryAgain');
+};
+
+export const extractErrorResponseFromAxiosError = (axiosError) => {
+  if (!axiosError || !axiosError.response || !axiosError.response.data) {
+    return undefined;
+  }
+  return unboxAxiosResponse(axiosError.response);
 };
 
 function extractUserFriendlyErrorSingleErrorObject(error) {

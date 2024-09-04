@@ -35,6 +35,11 @@ const translations = {
       appName: 'Distribution',
     },
   },
+  components: {
+    BarcodeScannerComponent: {
+      scanTextPlaceholder: 'scan...',
+    },
+  },
   activities: {
     scanBarcode: {
       defaultCaption: 'Scan',
