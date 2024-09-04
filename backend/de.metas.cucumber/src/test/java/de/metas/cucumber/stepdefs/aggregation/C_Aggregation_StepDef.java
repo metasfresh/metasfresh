@@ -25,17 +25,26 @@ package de.metas.cucumber.stepdefs.aggregation;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Table;
 
+import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
 public class C_Aggregation_StepDef
 {
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+
 	private final C_Aggregation_StepDefData aggregationTable;
 
 	public C_Aggregation_StepDef(@NonNull final C_Aggregation_StepDefData aggregationTable)

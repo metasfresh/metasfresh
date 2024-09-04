@@ -222,8 +222,8 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 					.getUOMQtyNotNull()
 					.multiply(factor)
 					.compareTo(qtyAlreadyInvoicedPerCurrentICS
-							.getUOMQtyNotNull()
-							.multiply(factor)) <= 0;
+									   .getUOMQtyNotNull()
+									   .multiply(factor)) <= 0;
 			if (alreadyInvoicedFullShippedQty)
 			{
 				// If we already invoiced the full shipped qty, then skip this ICS
@@ -437,8 +437,8 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		else
 		{
 			Check.assume(_priceActual.isEqualByComparingTo(candPriceActual),
-					"All invoice candidates from this aggregation shall have the same PriceActual={} but got PriceActual={}",
-					_priceActual, candPriceActual);
+						 "All invoice candidates from this aggregation shall have the same PriceActual={} but got PriceActual={}",
+						 _priceActual, candPriceActual);
 		}
 	}
 
@@ -457,8 +457,8 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		else
 		{
 			Check.assume(_priceEntered.isEqualByComparingTo(candPriceEntered),
-					"All invoice candidates from this aggregation shall have the same PriceEntered={}",
-					_priceEntered);
+						 "All invoice candidates from this aggregation shall have the same PriceEntered={}",
+						 _priceEntered);
 		}
 	}
 
@@ -477,8 +477,8 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		else
 		{
 			Check.assume(_discount.toBigDecimal().compareTo(candDiscount.toBigDecimal()) == 0,
-					"All invoice candidates from this aggregation shall have the same Discount={}",
-					_discount);
+						 "All invoice candidates from this aggregation shall have the same Discount={}",
+						 _discount);
 		}
 	}
 

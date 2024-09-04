@@ -18,6 +18,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.util.lang.ObjectUtils;
@@ -152,7 +153,7 @@ public final class InvoiceCandidateWithInOutLine
 			}
 		}
 
-		final Quantity shippedUomQuantityInIcUOM = uomConversionBL.convertQuantityTo(Quantitys.create(uomQty, UomId.ofRepoId(iciol.getC_UOM_ID())),
+		final Quantity shippedUomQuantityInIcUOM = uomConversionBL.convertQuantityTo(Quantitys.of(uomQty, UomId.ofRepoId(iciol.getC_UOM_ID())),
 																					 productId,
 																					 icUomId);
 

@@ -42,7 +42,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_InOutLine;
 
 import java.util.ArrayList;
@@ -110,7 +109,7 @@ public class DefaultAggregator implements IAggregator
 		//
 		final String lineAggregationKeyStr = ic.getLineAggregationKey();
 		Check.assume(!Check.isEmpty(lineAggregationKeyStr) || Services.get(IInvoiceCandDAO.class).isToRecompute(ic),
-				"LineAggregationKey may not be empty, except when the ic is new and thus needs recomputation: {}", ic);
+					 "LineAggregationKey may not be empty, except when the ic is new and thus needs recomputation: {}", ic);
 
 		final StringBuilder aggregationKeyToUse = new StringBuilder();
 

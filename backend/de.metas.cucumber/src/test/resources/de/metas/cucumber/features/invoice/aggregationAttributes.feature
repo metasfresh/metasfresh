@@ -17,9 +17,9 @@ Feature: invoice with aggregation attributes
     And metasfresh contains C_Aggregations:
       | Identifier | Name          | TableName           | EntityType                | OPT.AggregationUsageLevel |
       | a_1        | test_09032024 | C_Invoice_Candidate | de.metas.invoicecandidate | H                         |
-    And load C_Aggregations:
-      | Identifier | C_Aggregation_ID |
-      | a_2        | 1000000          |
+    And load C_Aggregation:
+      | C_Aggregation_ID.Identifier | OPT.C_Aggregation_ID |
+      | a_2                         | 1000000              |
     And load C_Aggregation_Attributes:
       | Identifier | C_Aggregation_Attribute_ID |
       | aa_1       | 540001                     |
