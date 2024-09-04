@@ -179,6 +179,16 @@ public class WarehouseBL implements IWarehouseBL
 
 	@Nullable
 	@Override
+	public BPartnerContactId getBPartnerContactId(@NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(warehouse.getC_BPartner_ID());
+
+		return BPartnerContactId.ofRepoIdOrNull(bpartnerId, warehouse.getAD_User_ID());
+	}
+
+	@Nullable
+	@Override
 	public CountryId getCountryId(@NonNull final WarehouseId warehouseId)
 	{
 		final I_C_Location location = getC_Location(warehouseId);

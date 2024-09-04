@@ -73,6 +73,8 @@ public class ShippingNotification
 	@Nullable private final BPartnerContactId contactId;
 	private final int auctionId;
 	@NonNull private final LocatorId locatorId;
+	@NonNull private final BPartnerLocationId shipFromBPartnerAndLocationId;
+	@Nullable private final BPartnerContactId shipFroContactId;
 	@NonNull private final OrderId salesOrderId;
 	@NonNull private final Instant dateAcct;
 	@NonNull private final Instant physicalClearanceDate;
@@ -85,6 +87,7 @@ public class ShippingNotification
 	private boolean processed;
 	@Nullable @Setter private ShippingNotificationId reversalId;
 	@Nullable private String bpaddress;
+	@Nullable private String shipFromBPAddress;
 
 	private static final String REVERSE_INDICATOR = "^";
 
@@ -98,6 +101,8 @@ public class ShippingNotification
 			@Nullable final BPartnerContactId contactId,
 			final int auctionId,
 			@NonNull final LocatorId locatorId,
+			@NonNull final BPartnerLocationId shipFromBPartnerAndLocationId,
+			@Nullable final BPartnerContactId shipFroContactId,
 			@NonNull final OrderId salesOrderId,
 			final @NonNull Instant dateAcct, @NonNull final Instant physicalClearanceDate,
 			@Nullable final YearAndCalendarId harvestingYearId,
@@ -117,6 +122,8 @@ public class ShippingNotification
 		this.contactId = contactId;
 		this.auctionId = auctionId;
 		this.locatorId = locatorId;
+		this.shipFromBPartnerAndLocationId = shipFromBPartnerAndLocationId;
+		this.shipFroContactId = shipFroContactId;
 		this.salesOrderId = salesOrderId;
 		this.dateAcct = dateAcct;
 		this.physicalClearanceDate = physicalClearanceDate;
@@ -150,6 +157,20 @@ public class ShippingNotification
 				.build();
 	}
 
+	public BPartnerId getShipFromBPartnerId()
+	{
+		return shipFromBPartnerAndLocationId.getBpartnerId();
+	}
+
+	public DocumentLocation getShipFromLocation()
+	{
+		return DocumentLocation.builder()
+				.bpartnerId(shipFromBPartnerAndLocationId.getBpartnerId())
+				.bpartnerLocationId(shipFromBPartnerAndLocationId)
+				.contactId(shipFroContactId)
+				.build();
+	}
+
 	public void completeIt()
 	{
 		if (processed)
@@ -173,11 +194,12 @@ public class ShippingNotification
 
 	public void updateBPAddress(@NonNull final Function<DocumentLocation, String> addressRenderer)
 	{
-		this.bpaddress = addressRenderer.apply(DocumentLocation.builder()
-				.bpartnerId(bpartnerAndLocationId.getBpartnerId())
-				.bpartnerLocationId(bpartnerAndLocationId)
-				.contactId(contactId)
-				.build());
+		this.bpaddress = addressRenderer.apply(getLocation());
+	}
+
+	public void updateShipFromBPAddress(@NonNull final Function<DocumentLocation, String> addressRenderer)
+	{
+		this.shipFromBPAddress = addressRenderer.apply(getShipFromLocation());
 	}
 
 	void markAsSaved(@NonNull final ShippingNotificationId id)
