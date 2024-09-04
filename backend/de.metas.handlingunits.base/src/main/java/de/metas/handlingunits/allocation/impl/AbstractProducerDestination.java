@@ -238,7 +238,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 */
 	private I_M_HU createNewHU(final IAllocationRequest request)
 	{
-		//
 		// Create HU Builder
 		final IHUBuilder huBuilder = createHUBuilder(request);
 
@@ -537,7 +536,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 			prepareToLoad(request.getHuContext(), currentHU);
 			final IAllocationRequest currentRequest = AllocationUtils.createQtyRequestForRemaining(request, result);
 			final IAllocationResult currentResult = loadHU(currentHU, currentRequest);
-			AllocationUtils.mergeAllocationResult(result, currentResult);
 
 			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
@@ -566,9 +564,15 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 					// throw a nice user friendly error
 					throw new AdempiereException(MSG_QTY_LOAD_ERROR, currentHU_PI_Version != null ? currentHU_PI_Version.getName() : "");
 				}
-				// destroyCurrentHU(currentHUCursor);
-				// currentHU = null;
+
+				if (request.isDeleteEmptyAndJustCreatedAggregatedTUs())
+				{
+					destroyCurrentHU(currentHUCursor);
+					continue;
+				}
 			}
+
+			AllocationUtils.mergeAllocationResult(result, currentResult);
 
 			if (handlingUnitsBL.isAggregateHU(currentHU))
 			{
@@ -751,5 +755,29 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	public final ClearanceStatusInfo getHUClearanceStatusInfo()
 	{
 		return _huClearanceStatusInfo;
+	}
+
+	private void destroyCurrentHU(final HUListCursor currentHUCursor)
+	{
+		final I_M_HU hu = currentHUCursor.current();
+		if (hu == null)
+		{
+			return; // shall not happen
+		}
+
+		currentHUCursor.closeCurrent(); // close the current position of this cursor
+
+		// since _createdNonAggregateHUs is just a subset of _createdHUs, we don't know if 'hu' was in there to start with. All we care is that it's not in _createdNonAggregateHUs after this method.
+		_createdNonAggregateHUs.remove(hu);
+
+		final boolean removedFromCreatedHUs = _createdHUs.remove(hu);
+		Check.assume(removedFromCreatedHUs, "Cannot destroy {} because it wasn't created by us", hu);
+
+		// Delete only those HUs which were internally created by THIS producer
+		if (DYNATTR_Producer.getValue(hu) == this)
+		{
+			// FIXME: deleting directly is not ok. We need to handle the attributes, handle the included HUs (if any)
+			handlingUnitsDAO.delete(hu);
+		}
 	}
 }

@@ -31,6 +31,8 @@ import org.compiere.model.I_M_ProductPrice;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * Query VO to be used when filtering on {@link I_M_HU_PI_Item_Product}.
@@ -44,6 +46,10 @@ public interface IHUPIItemProductQuery
 	void setM_HU_PI_Item_ID(final int huPIItemId);
 
 	int getM_Product_ID();
+
+	Set<ProductId> getOnlyProductIds();
+
+	void setOnlyProductIds(Collection<ProductId> productIds);
 
 	void setM_Product_ID(final int productId);
 

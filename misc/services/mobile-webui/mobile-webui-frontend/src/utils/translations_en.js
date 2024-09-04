@@ -109,6 +109,12 @@ const translations = {
         Current: 'Current',
         CloseTarget: 'Close',
       },
+      tuPickingTarget: {
+        New: 'New TU',
+        Select: 'Select Target',
+        Current: 'Current',
+        CloseTarget: 'Close',
+      },
     },
     distribution: {
       DistributionLine: 'Distribution Line',

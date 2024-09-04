@@ -76,6 +76,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
 				.isPickWithNewLU(profileRecord.isPickingWithNewLU())
+				.isAllowNewTU(profileRecord.isAllowNewTU())
 				.considerSalesOrderCapacity(profileRecord.isConsiderSalesOrderCapacity())
 				.isCatchWeightTUPickingEnabled(profileRecord.isCatchWeightTUPickingEnabled())
 				.isAllowSkippingRejectedReason(profileRecord.isAllowSkippingRejectedReason())
@@ -120,6 +121,10 @@ public class MobileUIPickingUserProfileRepository
 		profileRecord.setIsAllowPickingAnyHU(profile.isAllowPickingAnyHU());
 		profileRecord.setCreateShipmentPolicy(profile.getCreateShipmentPolicy().getCode());
 		profileRecord.setIsActive(true);
+		profileRecord.setIsAllowNewTU(profile.isAllowNewTU());
+		profileRecord.setIsAllowSkippingRejectedReason(profile.isAllowSkippingRejectedReason());
+		profileRecord.setIsConsiderSalesOrderCapacity(profile.isConsiderSalesOrderCapacity());
+		profileRecord.setIsCatchWeightTUPickingEnabled(profile.isCatchWeightTUPickingEnabled());
 		InterfaceWrapperHelper.saveRecord(profileRecord);
 
 		final HashMap<BPartnerId, I_MobileUI_UserProfile_Picking_BPartner> profileBPartnerRecords = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_BPartner.class)

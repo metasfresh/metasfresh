@@ -72,13 +72,25 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setIsAllowNewTU (final boolean IsAllowNewTU)
+	{
+		set_Value (COLUMNNAME_IsAllowNewTU, IsAllowNewTU);
+	}
+
+	@Override
+	public boolean isAllowNewTU()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowNewTU);
+	}
+
+	@Override
 	public void setIsAllowSkippingRejectedReason (final boolean IsAllowSkippingRejectedReason)
 	{
 		set_Value (COLUMNNAME_IsAllowSkippingRejectedReason, IsAllowSkippingRejectedReason);
 	}
 
 	@Override
-	public boolean isAllowSkippingRejectedReason() 
+	public boolean isAllowSkippingRejectedReason()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowSkippingRejectedReason);
 	}
@@ -102,7 +114,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isCatchWeightTUPickingEnabled() 
+	public boolean isCatchWeightTUPickingEnabled()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCatchWeightTUPickingEnabled);
 	}
@@ -114,7 +126,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isConsiderSalesOrderCapacity() 
+	public boolean isConsiderSalesOrderCapacity()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsConsiderSalesOrderCapacity);
 	}
@@ -126,7 +138,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isPickingWithNewLU() 
+	public boolean isPickingWithNewLU()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPickingWithNewLU);
 	}

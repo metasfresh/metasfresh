@@ -46,13 +46,16 @@ const GetQuantityDialog = ({
 }) => {
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
+  const useZeroAsInitialValue = true; // todo replace with sys config ASAP
 
-  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyTarget));
+  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(useZeroAsInitialValue ? 0 : qtyTarget));
   const [rejectedReason, setRejectedReason] = useState(null);
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
 
   const useCatchWeight = !scaleDevice && catchWeightUom;
-  const [catchWeight, setCatchWeight] = useState(qtyInfos.invalidOfNumber(catchWeightParam));
+  const [catchWeight, setCatchWeight] = useState(
+    qtyInfos.invalidOfNumber(useZeroAsInitialValue ? 0 : catchWeightParam)
+  );
   const [showCatchWeightQRCodeReader, setShowCatchWeightQRCodeReader] = useState(useCatchWeight);
 
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);

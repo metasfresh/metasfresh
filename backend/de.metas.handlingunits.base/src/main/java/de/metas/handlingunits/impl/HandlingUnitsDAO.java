@@ -968,6 +968,19 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@NonNull
+	@Override
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull final Collection<HuPackingInstructionsItemId> piItemIds)
+	{
+		return retrievePIIdsByPIItemIds(piItemIds)
+				.stream()
+				.map(this::getPackingInstructionById)
+				.map(huPi -> HuPackingInstructionsIdAndCaption.of(
+						HuPackingInstructionsId.ofRepoId(huPi.getM_HU_PI_ID()),
+						huPi.getName()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	private Set<HuPackingInstructionsId> retrievePIIdsByPIItemIds(final Collection<HuPackingInstructionsItemId> piItemIds)
 	{
 		if (piItemIds.isEmpty())

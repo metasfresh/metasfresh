@@ -142,6 +142,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
 
 	/**
+	 * Set Allow new TU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowNewTU (boolean IsAllowNewTU);
+
+	/**
+	 * Get Allow new TU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowNewTU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowNewTU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowNewTU", null);
+	String COLUMNNAME_IsAllowNewTU = "IsAllowNewTU";
+
+	/**
 	 * Set Allow picking with no rejected qty reason.
 	 * If activated, a smaller quantity may be picked. An additional option then appears in the picking dialog.
 	 *
