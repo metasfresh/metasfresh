@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -31,6 +32,7 @@ import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
+import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
@@ -80,7 +82,8 @@ import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_Pr
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient;
-import static org.assertj.core.api.Assertions.assertThat;
+import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
@@ -115,13 +118,13 @@ public class C_BPartner_StepDef
 	@NonNull private final C_Dunning_StepDefData dunningTable;
 	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
+	@NonNull private final C_Aggregation_StepDefData aggregationTable;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
-
 
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable)
@@ -409,7 +412,7 @@ public class C_BPartner_StepDef
 	{
 		final String bPartnerIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner");
 
-		final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+		final de.metas.invoicecandidate.model.I_C_BPartner bPartner = InterfaceWrapperHelper.create(bPartnerTable.get(bPartnerIdentifier), de.metas.invoicecandidate.model.I_C_BPartner.class);
 
 		assertThat(bPartner).isNotNull();
 
@@ -437,6 +440,13 @@ public class C_BPartner_StepDef
 		{
 			final I_M_PricingSystem pricingSystem = pricingSystemTable.get(pricingSystemIdentifier);
 			bPartner.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+		}
+
+		final String soInvoiceAggregationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_SO_Invoice_Aggregation_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(soInvoiceAggregationIdentifier))
+		{
+			final I_C_Aggregation aggregationRecord = aggregationTable.get(soInvoiceAggregationIdentifier);
+			bPartner.setSO_Invoice_Aggregation_ID(aggregationRecord.getC_Aggregation_ID());
 		}
 
 		InterfaceWrapperHelper.save(bPartner);
