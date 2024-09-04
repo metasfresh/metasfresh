@@ -22,40 +22,55 @@
 
 package de.metas.shippingnotification.interceptor;
 
-import de.metas.order.OrderId;
-import de.metas.shippingnotification.ShippingNotificationService;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.compiere.model.I_C_Order;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
+import de.metas.shippingnotification.location.adapter.ShippingNotificationDocumentLocationAdapterFactory;
 
 @Interceptor(I_M_Shipping_Notification.class)
 @Component
-@RequiredArgsConstructor
 public class M_Shipping_Notification
 {
-	private final ShippingNotificationService shippingNotificationService;
+	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 
-	private static Optional<OrderId> getSalesOrderId(@NonNull final I_C_Order order)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = {
+					I_M_Shipping_Notification.COLUMNNAME_C_BPartner_ID,
+					I_M_Shipping_Notification.COLUMNNAME_C_BPartner_Location_ID,
+					I_M_Shipping_Notification.COLUMNNAME_AD_User_ID },
+			skipIfCopying = true)
+	public void updateBPartnerAddress(final I_M_Shipping_Notification shippingNotification)
 	{
-		return order.isSOTrx() ? OrderId.optionalOfRepoId(order.getC_Order_ID()) : Optional.empty();
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(ShippingNotificationDocumentLocationAdapterFactory.locationAdapter(shippingNotification));
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)
-	public void afterVoid(@NonNull final I_C_Order order)
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = {
+					I_M_Shipping_Notification.COLUMNNAME_ShipFrom_Partner_ID,
+					I_M_Shipping_Notification.COLUMNNAME_ShipFrom_Location_ID,
+					I_M_Shipping_Notification.COLUMNNAME_ShipFrom_User_ID },
+			skipIfCopying = true)
+	public void updateShipFromPartnerAddress(final I_M_Shipping_Notification shippingNotification)
 	{
-		getSalesOrderId(order).ifPresent(shippingNotificationService::reverseBySalesOrderId);
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(ShippingNotificationDocumentLocationAdapterFactory.shipFromLocationAdapter(shippingNotification));
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
-	public void beforeReactivate(@NonNull final I_C_Order order)
-	{
-		getSalesOrderId(order).ifPresent(shippingNotificationService::assertNoCompletedNorClosedShippingNotifications);
-	}
+
+	// @ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+	// 		ifColumnsChanged = { I_M_Shipping_Notification.COLUMNNAME_ShipFrom_Partner_ID,
+	// 				I_M_Shipping_Notification.COLUMNNAME_ShipFrom_Location_ID,
+	// 				I_M_Shipping_Notification.COLUMNNAME_ShipFrom_User_ID },
+	// 		skipIfCopying = true
+	// )
+	// public void updateNextLocation(final I_C_BPartner_Location bpLocation)
+	// {
+	// 	documentLocationBL.updateCapturedLocation(ShippingNotificationDocumentLocationAdapterFactory.billLocationAdapter(order));
+	// }
 
 }
