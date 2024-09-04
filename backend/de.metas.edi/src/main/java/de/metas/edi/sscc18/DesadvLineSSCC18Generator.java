@@ -36,7 +36,7 @@ import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator.LUQtys;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
-import de.metas.inout.impl.InOutBL;
+import de.metas.inout.IInOutBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -74,7 +74,7 @@ public class DesadvLineSSCC18Generator
 	// services
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final InOutBL inOutBL = Services.get(InOutBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final SSCC18CodeBL sscc18CodeBL;
 	private final IDesadvBL desadvBL;
 	private final EDIDesadvPackRepository ediDesadvPackRepository;
