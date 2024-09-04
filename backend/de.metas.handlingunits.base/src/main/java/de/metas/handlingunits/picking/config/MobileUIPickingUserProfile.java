@@ -71,6 +71,7 @@ public class MobileUIPickingUserProfile
 	boolean isAllowPickingAnyHU;
 	boolean isAlwaysSplitHUsEnabled;
 	boolean isPickWithNewLU;
+	boolean isAllowNewTU;
 	boolean isCatchWeightTUPickingEnabled;
 	boolean considerSalesOrderCapacity;
 	boolean isAllowSkippingRejectedReason;
@@ -88,6 +89,7 @@ public class MobileUIPickingUserProfile
 			final boolean isAllowPickingAnyHU,
 			final boolean isAlwaysSplitHUsEnabled,
 			final boolean isPickWithNewLU,
+			final boolean isAllowNewTU,
 			final boolean isCatchWeightTUPickingEnabled,
 			final boolean considerSalesOrderCapacity,
 			final boolean isAllowSkippingRejectedReason,
@@ -119,6 +121,7 @@ public class MobileUIPickingUserProfile
 		this.isCatchWeightTUPickingEnabled = isCatchWeightTUPickingEnabled;
 		this.considerSalesOrderCapacity = considerSalesOrderCapacity;
 		this.isAllowSkippingRejectedReason = isAllowSkippingRejectedReason;
+		this.isAllowNewTU = isAllowNewTU;
 	}
 
 	public ImmutableList<PickingJobFacetGroup> getFilterGroupsInOrder() {return filters.getGroupsInOrder();}

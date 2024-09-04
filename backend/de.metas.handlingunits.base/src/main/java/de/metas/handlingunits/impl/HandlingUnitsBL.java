@@ -1363,6 +1363,20 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	@NonNull
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds)
+	{
+		return handlingUnitsRepo.retrievePIInfo(piItemIds);
+	}
+
+	@Override
+	@Nullable
+	public I_M_HU_PI retrievePIDefaultForPicking()
+	{
+		return handlingUnitsRepo.retrievePIDefaultForPicking();
+	}
+
+	@Override
 	public boolean isTUIncludedInLU(@NonNull final I_M_HU tu, @NonNull final I_M_HU expectedLU)
 	{
 		final I_M_HU actualLU = getLoadingUnitHU(tu);

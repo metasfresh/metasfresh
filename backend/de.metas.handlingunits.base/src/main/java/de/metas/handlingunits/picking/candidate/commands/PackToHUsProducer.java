@@ -22,14 +22,17 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
-import de.metas.handlingunits.picking.job.model.PickingTarget;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -52,6 +55,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class PackToHUsProducer
 {
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
 	private final IHandlingUnitsBL handlingUnitsBL;
 	private final IHUPIItemProductBL huPIItemProductBL;
 	private final IUOMConversionBL uomConversionBL;
@@ -100,7 +105,7 @@ public class PackToHUsProducer
 		boolean createInventoryForMissingQty;
 	}
 
-	public LUTUResult packToHU(@NonNull PackToHURequest request)
+	public LUTUResult packToHU(@NonNull final PackToHURequest request)
 	{
 		@NonNull final IHUContext huContext = request.getHuContext();
 		@NonNull final HuId pickFromHUId = request.getPickFromHUId();
@@ -199,6 +204,7 @@ public class PackToHUsProducer
 							.setQuantity(qtyPicked)
 							.setFromReferencedTableRecord(documentRef)
 							.setForceQtyAllocation(true)
+  						    // .setDeleteEmptyAndJustCreatedAggregatedTUs(true)
 							.create());
 
 			weightUpdater.updatePickFromHUs(pickFromHUs.toHUsList());
@@ -225,32 +231,40 @@ public class PackToHUsProducer
 	}
 
 	public PackToInfo extractPackToInfo(
-			@NonNull final PackToSpec packToTUSpec,
-			@Nullable final PickingTarget packToLU,
+			@NonNull final ProductId productId,
+			@NonNull final PackToSpec stepPackToTUSpec,
+			@Nullable final LUPickingTarget pickingTarget,
+			@Nullable final TUPickingTarget tuPickingTarget,
 			@NonNull final BPartnerLocationId shipToBPLocationId,
 			@NonNull final LocatorId shipFromLocatorId)
 	{
 		final HuPackingInstructionsId tuPackingInstructionsId;
 		final Capacity tuCapacity;
-		if (packToTUSpec.isVirtual())
+
+		if (tuPickingTarget != null)
+		{
+			tuPackingInstructionsId = tuPickingTarget.getTuPIId();
+			tuCapacity = Capacity.createInfiniteCapacity(productId, productBL.getStockUOM(productId));
+		}
+		else if (stepPackToTUSpec.isVirtual())
 		{
 			tuPackingInstructionsId = HuPackingInstructionsId.VIRTUAL;
 			tuCapacity = null;
 		}
-		else if (packToTUSpec.getTuPackingInstructionsId() != null)
+		else if (stepPackToTUSpec.getTuPackingInstructionsId() != null)
 		{
-			final HUPIItemProduct tuPIItemProduct = huPIItemProductBL.getById(packToTUSpec.getTuPackingInstructionsId());
+			final HUPIItemProduct tuPIItemProduct = huPIItemProductBL.getById(stepPackToTUSpec.getTuPackingInstructionsId());
 			tuPackingInstructionsId = handlingUnitsBL.getPackingInstructionsId(tuPIItemProduct.getPiItemId());
 			tuCapacity = tuPIItemProduct.toCapacity();
 		}
-		else if (packToTUSpec.getGenericPackingInstructionsId() != null)
+		else if (stepPackToTUSpec.getGenericPackingInstructionsId() != null)
 		{
-			tuPackingInstructionsId = packToTUSpec.getGenericPackingInstructionsId();
+			tuPackingInstructionsId = stepPackToTUSpec.getGenericPackingInstructionsId();
 			tuCapacity = null;
 		}
 		else
 		{
-			throw new AdempiereException("Unsupported pack to spec: " + packToTUSpec);
+			throw new AdempiereException("Unsupported pack to spec: " + stepPackToTUSpec);
 		}
 
 		final int packageNo = isPackEachCandidateInItsOwnHU(tuPackingInstructionsId) ? nextPackageNo.getAndIncrement() : PACKAGE_NO_ZERO;
@@ -261,7 +275,7 @@ public class PackToHUsProducer
 				.tuPackingInstructionsId(tuPackingInstructionsId)
 				.tuCapacity(tuCapacity)
 				.tuPackageNo(packageNo)
-				.lu(packToLU)
+				.lu(pickingTarget)
 				.build();
 	}
 
@@ -280,11 +294,11 @@ public class PackToHUsProducer
 	{
 		final HuPackingInstructionsId tuPackingInstructionsId = packToInfo.getTuPackingInstructionsId();
 		final Capacity tuCapacity = packToInfo.getTuCapacity();
-		final PickingTarget lu = packToInfo.getLu();
+		final LUPickingTarget lu = packToInfo.getLu();
 
 		if (tuPackingInstructionsId.isVirtual())
 		{
-			return PickingTarget.apply(lu, new PickingTarget.CaseMapper<IHUProducerAllocationDestination>()
+			return LUPickingTarget.apply(lu, new LUPickingTarget.CaseMapper<IHUProducerAllocationDestination>()
 			{
 				@Override
 				public IHUProducerAllocationDestination noLU()
@@ -343,11 +357,11 @@ public class PackToHUsProducer
 			//
 			// TU
 			lutuProducer.setTUPI(tuPackingInstructionsId);
-			lutuProducer.addCUPerTU(packToInfo.getTuCapacity());
+			lutuProducer.addCUPerTU(tuCapacity);
 
 			//
 			// LU
-			PickingTarget.apply(lu, new PickingTarget.CaseConsumer()
+			LUPickingTarget.apply(lu, new LUPickingTarget.CaseConsumer()
 			{
 				@Override
 				public void noLU()
@@ -417,7 +431,7 @@ public class PackToHUsProducer
 
 		//
 		// LU
-		@Nullable PickingTarget lu;
+		@Nullable LUPickingTarget lu;
 
 		public WarehouseId getShipFromWarehouseId() {return getShipFromLocatorId().getWarehouseId();}
 	}

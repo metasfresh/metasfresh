@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 
 @Value
-public class PickingTarget
+public class LUPickingTarget
 {
 	@NonNull String id;
 
@@ -29,7 +29,7 @@ public class PickingTarget
 	@Nullable HuId luId;
 
 	@Builder
-	private PickingTarget(
+	private LUPickingTarget(
 			@NonNull final String caption,
 			@Nullable final HuPackingInstructionsId luPIId,
 			@Nullable final HuId luId)
@@ -54,26 +54,35 @@ public class PickingTarget
 		}
 	}
 
-	public static PickingTarget ofPackingInstructions(@NonNull final HuPackingInstructionsId luPIId, @NonNull final String caption)
+	public static LUPickingTarget ofPackingInstructions(@NonNull final HuPackingInstructionsId luPIId, @NonNull final String caption)
 	{
 		return builder().luPIId(luPIId).caption(caption).build();
 	}
 
-	public static PickingTarget ofPackingInstructions(@NonNull final HuPackingInstructionsIdAndCaption luPI)
+	public static LUPickingTarget ofPackingInstructions(@NonNull final HuPackingInstructionsIdAndCaption luPI)
 	{
 		return builder().luPIId(luPI.getId()).caption(luPI.getCaption()).build();
 	}
 
-	public static PickingTarget ofExistingHU(@NonNull final HuId luId, @NonNull final HUQRCode qrCode)
+	public static LUPickingTarget ofExistingHU(@NonNull final HuId luId, @NonNull final HUQRCode qrCode)
 	{
 		return builder().luId(luId).caption(qrCode.toDisplayableQRCode()).build();
 	}
 
-	public static boolean equals(final PickingTarget o1, final PickingTarget o2) {return Objects.equals(o1, o2);}
+	public static boolean equals(@Nullable final LUPickingTarget o1, @Nullable final LUPickingTarget o2)
+	{
+		return Objects.equals(o1, o2);
+	}
 
-	public boolean isExistingLU() {return luId != null;}
+	public boolean isExistingLU()
+	{
+		return luId != null;
+	}
 
-	public boolean isNewLU() {return luId == null && luPIId != null;}
+	public boolean isNewLU()
+	{
+		return luId == null && luPIId != null;
+	}
 
 	public HuPackingInstructionsId getLuPIIdNotNull()
 	{
@@ -103,7 +112,7 @@ public class PickingTarget
 		T existingLU(final HuId luId);
 	}
 
-	public static void apply(@Nullable final PickingTarget target, @NonNull final CaseConsumer consumer)
+	public static void apply(@Nullable final LUPickingTarget target, @NonNull final CaseConsumer consumer)
 	{
 		if (target == null)
 		{
@@ -123,7 +132,7 @@ public class PickingTarget
 		}
 	}
 
-	public static <T> T apply(@Nullable final PickingTarget target, @NonNull final CaseMapper<T> mapper)
+	public static <T> T apply(@Nullable final LUPickingTarget target, @NonNull final CaseMapper<T> mapper)
 	{
 		if (target == null)
 		{

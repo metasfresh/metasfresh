@@ -24,6 +24,7 @@ import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.job.model.HUInfo;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.LocatorInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
@@ -41,8 +42,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromMap;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
-import de.metas.handlingunits.picking.job.model.PickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.lock.spi.ExistingLockInfo;
@@ -351,7 +352,7 @@ class PickingJobLoaderAndSaver
 				.map(alt -> PickingJobPickFromAlternativeId.ofRepoId(alt.getM_Picking_Job_HUAlternative_ID()))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No HU alternative found for " + pickingJobId + ", " + alternativeHUId + ", " + productId
-						+ ". Available HU alternatives are: " + pickingJobHUAlternatives));
+																  + ". Available HU alternatives are: " + pickingJobHUAlternatives));
 	}
 
 	private void loadRecordsFromDB(final Set<PickingJobId> pickingJobIds)
@@ -439,7 +440,8 @@ class PickingJobLoaderAndSaver
 				.id(pickingJobId)
 				.header(toPickingJobHeader(record))
 				.pickingSlot(pickingSlot)
-				.pickTarget(extractPickingTarget(record))
+				.luPickTarget(extractLUPickingTarget(record))
+				.tuPickTarget(extractTUPickingTarget(record))
 				.docStatus(PickingJobDocStatus.ofCode(record.getDocStatus()))
 				.lines(pickingJobLines.get(pickingJobId)
 						.stream()
@@ -472,7 +474,8 @@ class PickingJobLoaderAndSaver
 				.build();
 	}
 
-	private Optional<PickingTarget> extractPickingTarget(final I_M_Picking_Job record)
+	@NonNull
+	private Optional<LUPickingTarget> extractLUPickingTarget(final I_M_Picking_Job record)
 	{
 		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(record.getM_LU_HU_PI_ID());
 		final HuId luId = HuId.ofRepoIdOrNull(record.getM_LU_HU_ID());
@@ -480,12 +483,28 @@ class PickingJobLoaderAndSaver
 		if (luId != null)
 		{
 			final HUQRCode qrCode = loadingSupportingServices().getQRCodeByHUId(luId);
-			return Optional.of(PickingTarget.ofExistingHU(luId, qrCode));
+			return Optional.of(LUPickingTarget.ofExistingHU(luId, qrCode));
 		}
 		else if (luPIId != null)
 		{
 			final String caption = loadingSupportingServices().getPICaption(luPIId);
-			return Optional.of(PickingTarget.ofPackingInstructions(luPIId, caption));
+			return Optional.of(LUPickingTarget.ofPackingInstructions(luPIId, caption));
+		}
+		else
+		{
+			return Optional.empty();
+		}
+	}
+
+	@NonNull
+	private Optional<TUPickingTarget> extractTUPickingTarget(final I_M_Picking_Job record)
+	{
+		final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoIdOrNull(record.getM_TU_HU_PI_ID());
+
+		if (tuPIId != null)
+		{
+			final String caption = loadingSupportingServices().getPICaption(tuPIId);
+			return Optional.of(TUPickingTarget.ofPackingInstructions(tuPIId, caption));
 		}
 		else
 		{
@@ -510,9 +529,12 @@ class PickingJobLoaderAndSaver
 		record.setPicking_User_ID(UserId.toRepoId(from.getLockedBy()));
 		record.setM_PickingSlot_ID(from.getPickingSlotId().map(PickingSlotId::getRepoId).orElse(-1));
 
-		final PickingTarget pickTarget = from.getPickTarget().orElse(null);
+		final LUPickingTarget pickTarget = from.getLuPickTarget().orElse(null);
 		record.setM_LU_HU_PI_ID(HuPackingInstructionsId.toRepoId(pickTarget != null ? pickTarget.getLuPIId() : null));
 		record.setM_LU_HU_ID(HuId.toRepoId(pickTarget != null ? pickTarget.getLuId() : null));
+
+		final TUPickingTarget tuPickingTarget = from.getTuPickTarget().orElse(null);
+		record.setM_TU_HU_PI_ID(HuPackingInstructionsId.toRepoId(tuPickingTarget != null ? tuPickingTarget.getTuPIId() : null));
 
 		record.setDocStatus(from.getDocStatus().getCode());
 		record.setProcessed(from.getDocStatus().isProcessed());

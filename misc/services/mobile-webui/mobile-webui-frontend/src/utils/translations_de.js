@@ -109,6 +109,12 @@ const translations = {
         Current: 'Offenes Gebinde',
         CloseTarget: 'Schließen',
       },
+      tuPickingTarget: {
+        New: 'New TU',
+        Select: 'Select Target',
+        Current: 'Current',
+        CloseTarget: 'Close',
+      },
     },
     distribution: {
       DistributionLine: 'Bereitstellung Zeile',
