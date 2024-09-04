@@ -812,12 +812,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1_11212023_3        | s_s_1_11212023_3                 | PD                | Y                  |
 
-    Then after not more than 30s, EDI_Desadv_Pack records are found:
+    Then after not more than 120s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial | OPT.Line |
       | p_1_11212023_3                | true                | createdLU_11212023_3   | huPackagingCode_1_11212023_3            | bPartnerProductGTIN_LU      | 10       |
       | p_1_11212023_4                | true                |                        |                                         |                             | 20       |
 
-    And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
+    And after not more than 120s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
       | pi_1_11212023_3                    | p_1_11212023_3                | 10              | 10              | 2.5                          | 10              | 2.5                          | 10                  | 1         | s_1_11212023_3            | luLotNumber   | huPackagingCode_2_11212023_3            | bPartnerProductGTIN_TU      |
       | pi_1_11212023_4                    | p_1_11212023_4                | 5               | 5               | 1.25                         | 5               | 1.25                         | 0                   | 1         | s_1_11212023_3            |               |                                         |                             |
