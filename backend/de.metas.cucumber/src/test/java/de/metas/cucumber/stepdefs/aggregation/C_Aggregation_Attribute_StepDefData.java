@@ -22,16 +22,16 @@
 
 package de.metas.cucumber.stepdefs.aggregation;
 
-import de.metas.aggregation.model.I_C_AggregationItem;
+import de.metas.aggregation.model.I_C_Aggregation_Attribute;
 import de.metas.cucumber.stepdefs.StepDefData;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class C_AggregationItem_StepDefData extends StepDefData<I_C_AggregationItem>
+public class C_Aggregation_Attribute_StepDefData extends StepDefData<I_C_Aggregation_Attribute>
 {
-	public C_AggregationItem_StepDefData()
+	public C_Aggregation_Attribute_StepDefData()
 	{
-		super(I_C_AggregationItem.class);
+		super(I_C_Aggregation_Attribute.class);
 	}
 }
