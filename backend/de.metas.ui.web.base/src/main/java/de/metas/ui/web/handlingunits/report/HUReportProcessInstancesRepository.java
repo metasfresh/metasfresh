@@ -42,7 +42,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Process;
 import org.springframework.stereotype.Component;
 
@@ -90,7 +89,12 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 			.expireAfterAccess(10, TimeUnit.MINUTES)
 			.build();
 
-	private final ADProcessInstancesRepository processInstancesRepository = SpringContextHolder.instance.getBean(ADProcessInstancesRepository.class);
+	private final ADProcessInstancesRepository processInstancesRepository;
+
+	public HUReportProcessInstancesRepository(@NonNull final ADProcessInstancesRepository processInstancesRepository)
+	{
+		this.processInstancesRepository = processInstancesRepository;
+	}
 
 	@Override
 	public ProcessHandlerType getProcessHandlerType()
