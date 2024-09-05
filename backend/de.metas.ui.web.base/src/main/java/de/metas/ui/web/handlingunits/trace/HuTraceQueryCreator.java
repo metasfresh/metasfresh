@@ -1,18 +1,7 @@
 package de.metas.ui.web.handlingunits.trace;
 
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Map;
-import java.util.OptionalInt;
-import java.util.function.BiFunction;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
@@ -30,6 +19,14 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Map;
+import java.util.OptionalInt;
+import java.util.function.BiFunction;
 
 /*
  * #%L
@@ -56,7 +53,7 @@ import lombok.NonNull;
 final class HuTraceQueryCreator
 {
 	private static final Map<String, BiFunction<HUTraceEventQuery, DocumentFilterParam, HUTraceEventQuery>> FIELD_NAME_2_UPDATE_METHOD = //
-			ImmutableMap.<String, BiFunction<HUTraceEventQuery, DocumentFilterParam, HUTraceEventQuery>> builder()
+			ImmutableMap.<String, BiFunction<HUTraceEventQuery, DocumentFilterParam, HUTraceEventQuery>>builder()
 					.put(I_M_HU_Trace.COLUMNNAME_AD_Org_ID, HuTraceQueryCreator::updateOrgIdFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_C_DocType_ID, HuTraceQueryCreator::updateDocTypeIdFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_DocStatus, HuTraceQueryCreator::updateDocStatusFromParameter)
@@ -118,16 +115,29 @@ final class HuTraceQueryCreator
 			@NonNull final DocumentFilterParam parameter)
 	{
 		final String paramName = parameter.getFieldName();
-
-		final BiFunction<HUTraceEventQuery, DocumentFilterParam, HUTraceEventQuery> queryUpdateFunction = //
-				FIELD_NAME_2_UPDATE_METHOD.get(paramName);
-
-		if (queryUpdateFunction == null)
+		final BiFunction<HUTraceEventQuery, DocumentFilterParam, HUTraceEventQuery> queryUpdateFunction;
+		if (Check.isNotBlank(paramName))
 		{
-			final String message = StringUtils.formatMessage("The given filterparam has an unexpected fieldName={}", paramName);
+			queryUpdateFunction = //
+					FIELD_NAME_2_UPDATE_METHOD.get(paramName);
+			if (queryUpdateFunction == null)
+			{
+				final String message = StringUtils.formatMessage("The given filterParam has an unexpected fieldName={}", paramName);
+				throw new AdempiereException(message)
+						.setParameter("documentFilterParam", parameter);
+			}
+		}
+		else if (parameter.getSqlWhereClause() != null && !parameter.getSqlWhereClause().isEmpty())
+		{
+			queryUpdateFunction = HuTraceQueryCreator::updateWhereClauseFromParameter;
+		} 
+		else
+		{
+			final String message = StringUtils.formatMessage("The given filterParam has has nothing we can extract into the HUTraceQuery={}", parameter);
 			throw new AdempiereException(message)
 					.setParameter("documentFilterParam", parameter);
 		}
+
 		return queryUpdateFunction;
 	}
 
@@ -306,6 +316,15 @@ final class HuTraceQueryCreator
 		return query.withOrgId(OrgId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
+	private static HUTraceEventQuery updateWhereClauseFromParameter(
+			@NonNull final HUTraceEventQuery query,
+			@NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotNull("sqlWhereClause", query.getSqlWhereClause(), query);
+
+		return query.withSqlWhereClause(parameter.getSqlWhereClause().toSqlStringInlineParams());
+	}
+	
 	private static void errorIfQueryValueGreaterThanZero(
 			@NonNull final String field,
 			final int value,
@@ -344,7 +363,7 @@ final class HuTraceQueryCreator
 
 	private static void errorIfQueryValueNotNull(
 			@NonNull final String field,
-			final Object value,
+			@Nullable final Object value,
 			@NonNull final HUTraceEventQuery query)
 	{
 		if (value != null)
