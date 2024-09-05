@@ -6,8 +6,8 @@ import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
-import org.springframework.context.annotation.Primary;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 @Service
