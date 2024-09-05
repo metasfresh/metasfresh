@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.not;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.handlingunits.util.HUTracerInstance;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Assert;
 import org.junit.Before;
@@ -186,6 +187,7 @@ public class HUTransformServiceReservationTests
 		final I_M_HU cuToSplit = data.mkAggregateHUWithTotalQtyCU("200");
 
 		final I_M_HU topLevelParent = handlingUnitsBL.getTopLevelParent(cuToSplit);
+		new HUTracerInstance().dump("topLevelParent - before husToNewCUs", topLevelParent);
 
 		final HUsToNewCUsRequest husToNewCUsRequest = HUsToNewCUsRequest.builder()
 				.sourceHU(topLevelParent)
@@ -196,6 +198,8 @@ public class HUTransformServiceReservationTests
 
 		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
 		// data.helper.commitAndDumpHU(topLevelParent);
+		new HUTracerInstance().dump("topLevelParent - after husToNewCUs", topLevelParent);
+		new HUTracerInstance().dump("newCUs", newCUs);
 
 		final Node existingLUXML = HUXmlConverter.toXml(topLevelParent);
 		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet[@HUStatus='A'])", is("1")));

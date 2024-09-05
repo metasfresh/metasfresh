@@ -188,7 +188,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 				.quantity(quantity)
 				.build();
 
-		return Candidate.builderForEventDescr(event.getEventDescriptor())
+		return Candidate.builderForEventDescriptor(event.getEventDescriptor())
 				.materialDescriptor(materialDescriptorBuilder)
 				.transactionDetail(stockChangeDetail);
 	}

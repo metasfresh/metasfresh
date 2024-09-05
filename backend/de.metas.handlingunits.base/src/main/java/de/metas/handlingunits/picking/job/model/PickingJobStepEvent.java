@@ -28,19 +28,28 @@ public class PickingJobStepEvent
 	@Nullable PickingJobStepPickFromKey pickFromKey;
 
 	@NonNull PickingJobStepEventType eventType;
+
+
+	//
+	// Common
 	@NonNull IHUQRCode huQRCode;
+	
+	//
+	// Event Type: PICK
 	@Nullable BigDecimal qtyPicked;
 	@Nullable BigDecimal qtyRejected;
 	@Nullable QtyRejectedReasonCode qtyRejectedReasonCode;
 	@Nullable BigDecimal catchWeight;
 	boolean isPickWholeTU;
 	@Builder.Default boolean checkIfAlreadyPacked = true;
-
 	boolean isSetBestBeforeDate;
 	@Nullable LocalDate bestBeforeDate;
 	boolean isSetLotNo;
 	@Nullable String lotNo;
+	boolean isCloseTarget;
 
+	//
+	// Event Type: UNPICK
 	@Nullable HUQRCode unpickToTargetQRCode;
 
 	public static Collection<PickingJobStepEvent> removeDuplicates(@NonNull final Collection<PickingJobStepEvent> events)

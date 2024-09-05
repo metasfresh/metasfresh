@@ -165,7 +165,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 			@Nullable final ActivityId activityId,
 			@Nullable final String description)
 	{
-		warehouseLocatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+		warehouseLocatorId = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
 		this.inventoryDocTypeId = inventoryDocTypeId;
 		chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId();
 
@@ -556,7 +556,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		final I_M_Inventory inventory = newInstance(I_M_Inventory.class);
 		inventory.setDocStatus(DocStatus.Drafted.getCode());
 		inventory.setDocAction(IDocument.ACTION_Complete);
-		inventory.setMovementDate(TimeUtil.asTimestamp(movementDate));
+		inventory.setMovementDate(TimeUtil.asTimestampNotNull(movementDate));
 		inventory.setM_Warehouse_ID(warehouseLocatorId.getWarehouseId().getRepoId());
 
 		inventory.setC_Activity_ID(activityId == null ? -1 : activityId.getRepoId());

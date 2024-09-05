@@ -109,7 +109,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 			final ImmutableList<I_M_ShipmentSchedule_QtyPicked> records = retrieveRecordsOrdered(shipmentScheduleId);
 			assertThat(records).hasSize(rows.size());
 
-			DataTableRows.of(dataTable).forEach((expected, index) -> {
+			rows.forEach((expected, index) -> {
 				final I_M_ShipmentSchedule_QtyPicked actual = records.get(index);
 				SharedTestContext.put("actual", actual);
 

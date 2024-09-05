@@ -23,14 +23,13 @@
 package de.metas.cucumber.stepdefs.billofmaterial;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -38,12 +37,12 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.BOMUse;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
@@ -52,14 +51,13 @@ import org.eevolution.model.X_PP_Product_BOM;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Product_Bom_StepDef
@@ -68,6 +66,7 @@ public class PP_Product_Bom_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final int DEFAULT_C_DOCTYPE_ID = 541027;
+	private static final LocalDate DEFAULT_ValidFrom = LocalDate.parse("2000-01-01");
 
 	private final M_Product_StepDefData productTable;
 	private final PP_Product_BOM_StepDefData productBOMTable;
@@ -93,21 +92,15 @@ public class PP_Product_Bom_StepDef
 	@Given("metasfresh contains PP_Product_BOM")
 	public void add_PP_Product_Bom(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps();
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createPP_Product_BOM(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::createPP_Product_BOM);
 	}
 
 	@Given("metasfresh contains PP_Product_BOMLines")
 	public void add_PP_Product_BOMLine(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps();
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createPP_Product_BOMLine(tableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName("PP_Product_BOMLine")
+				.forEach(this::createPP_Product_BOMLine);
 	}
 
 	@And("^the PP_Product_BOM identified by (.*) is completed$")
@@ -118,90 +111,81 @@ public class PP_Product_Bom_StepDef
 		documentBL.processEx(productBOM, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
-	private void createPP_Product_BOMLine(@NonNull final Map<String, String> tableRow)
+	private void createPP_Product_BOMLine(@NonNull final DataTableRow row)
 	{
-		final String bomIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_PP_Product_BOM productBOMRecord = productBOMTable.get(bomIdentifier);
-
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
+		final I_PP_Product_BOM bom = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID).lookupIn(productBOMTable);
+		final ProductBOMId bomId = ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID());
+		final I_M_Product productRecord = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupIn(productTable);
 
 		final I_PP_Product_BOMLine bomLine = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
 						.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
-						.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, productBOMRecord.getPP_Product_BOM_ID())
+						.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, bomId)
 						.create()
 						.firstOnly(I_PP_Product_BOMLine.class),
 				() -> newInstance(I_PP_Product_BOMLine.class));
 
-		bomLine.setPP_Product_BOM_ID(productBOMRecord.getPP_Product_BOM_ID());
+		bomLine.setPP_Product_BOM_ID(bomId.getRepoId());
 		bomLine.setM_Product_ID(productRecord.getM_Product_ID());
 		bomLine.setC_UOM_ID(productRecord.getC_UOM_ID());
 
-		bomLine.setComponentType(BOMComponentType.Component.getCode());
+		final BOMComponentType componentType = row.getAsOptionalEnum(I_PP_Product_BOMLine.COLUMNNAME_ComponentType, BOMComponentType.class).orElse(BOMComponentType.Component);
+		bomLine.setComponentType(componentType.getCode());
 
-		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_PP_Product_BOMLine.COLUMNNAME_ValidFrom);
-		final BigDecimal qtyBatch = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_PP_Product_BOMLine.COLUMNNAME_QtyBatch);
+		final Timestamp validFrom = row.getAsOptionalLocalDate(I_PP_Product_BOMLine.COLUMNNAME_ValidFrom)
+				.map(localDate -> Timestamp.valueOf(localDate.atStartOfDay()))
+				.orElseGet(bom::getValidFrom);
 		bomLine.setValidFrom(validFrom);
 
-		final boolean isPercentage = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_PP_Product_BOMLine.COLUMNNAME_IsQtyPercentage, false);
+		final boolean isPercentage = row.getAsOptionalBoolean(I_PP_Product_BOMLine.COLUMNNAME_IsQtyPercentage).orElseFalse();
+		final BigDecimal qty = row.getAsBigDecimal(I_PP_Product_BOMLine.COLUMNNAME_QtyBatch);
 		if (isPercentage)
 		{
 			bomLine.setIsQtyPercentage(true);
-			bomLine.setQtyBatch(qtyBatch);
+			bomLine.setQtyBatch(qty);
 		}
 		else
 		{
-			bomLine.setQtyBOM(qtyBatch);
+			bomLine.setQtyBOM(qty);
 		}
 
-		final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(asiIdentifier))
-		{
-			final I_M_AttributeSetInstance asiRecord = attributeSetInstanceTable.get(asiIdentifier);
-			assertThat(asiRecord).isNotNull();
-
-			bomLine.setM_AttributeSetInstance_ID(asiRecord.getM_AttributeSetInstance_ID());
-		}
+		row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)
+				.map(attributeSetInstanceTable::getId)
+				.ifPresent(asiId -> bomLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
 
 		saveRecord(bomLine);
 
-		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "PP_Product_BOMLine");
-		productBOMLineTable.putOrReplace(recordIdentifier, bomLine);
+		row.getAsOptionalIdentifier().ifPresent(identifier -> productBOMLineTable.putOrReplace(identifier, bomLine));
 	}
 
-	private void createPP_Product_BOM(@NonNull final Map<String, String> tableRow)
+	private void createPP_Product_BOM(@NonNull final DataTableRow row)
 	{
-		final I_PP_Product_BOMVersions bomVersions = createBOMVersions(tableRow);
+		final I_PP_Product_BOMVersions bomVersions = createBOMVersions(row);
 
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
+		final I_M_Product productRecord = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_M_Product_ID).lookupIn(productTable);
 
-		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_ValidFrom);
+		final LocalDateTime validFrom = row.getAsOptionalLocalDate(I_PP_Product_BOM.COLUMNNAME_ValidFrom).orElse(DEFAULT_ValidFrom).atStartOfDay();
 
-		final I_PP_Product_BOM productBOMRecord = getExistingBOM(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+		BOMType bomType = row.getAsOptionalEnum(I_PP_Product_BOM.COLUMNNAME_BOMType, BOMType.class).orElse(BOMType.CurrentActive);
+
+		final I_PP_Product_BOM productBOMRecord = getExistingBOM(ProductId.ofRepoId(productRecord.getM_Product_ID()), bomType)
 				.orElseGet(() -> newInstance(I_PP_Product_BOM.class));
 
 		productBOMRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		productBOMRecord.setC_UOM_ID(productRecord.getC_UOM_ID());
 		productBOMRecord.setValue(productRecord.getValue());
 		productBOMRecord.setName(productRecord.getName());
-		productBOMRecord.setBOMType(BOMType.CurrentActive.getCode());
+		productBOMRecord.setBOMType(bomType.getCode());
 		productBOMRecord.setBOMUse(BOMUse.Manufacturing.getCode());
-		productBOMRecord.setValidFrom(validFrom);
+		productBOMRecord.setValidFrom(Timestamp.valueOf(validFrom));
 		productBOMRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
 		productBOMRecord.setC_DocType_ID(DEFAULT_C_DOCTYPE_ID);
 		productBOMRecord.setDateDoc(TimeUtil.asTimestamp(Instant.now()));
 		productBOMRecord.setDocStatus(X_PP_Product_BOM.DOCSTATUS_Drafted);
 
-		final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(asiIdentifier))
-		{
-			final I_M_AttributeSetInstance asiRecord = attributeSetInstanceTable.get(asiIdentifier);
-			assertThat(asiRecord).isNotNull();
-
-			productBOMRecord.setM_AttributeSetInstance_ID(asiRecord.getM_AttributeSetInstance_ID());
-		}
+		row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)
+				.map(attributeSetInstanceTable::getId)
+				.ifPresent(asiId -> productBOMRecord.setM_AttributeSetInstance_ID(asiId.getRepoId()));
 
 		saveRecord(productBOMRecord);
 
@@ -209,14 +193,16 @@ public class PP_Product_Bom_StepDef
 		productRecord.setIsVerified(true);
 		saveRecord(productRecord);
 
-		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "PP_Product_BOM");
-		productBOMTable.putOrReplace(recordIdentifier, productBOMRecord);
+		row.setAdditionalRowIdentifierColumnName("PP_Product_BOM");
+		row.getAsOptionalIdentifier()
+				.ifPresent(identifier -> productBOMTable.putOrReplace(identifier, productBOMRecord));
 	}
 
-	private Optional<I_PP_Product_BOM> getExistingBOM(@NonNull final ProductId productId)
+	private Optional<I_PP_Product_BOM> getExistingBOM(@NonNull final ProductId productId, @NonNull final BOMType bomType)
 	{
 		final List<I_PP_Product_BOM> boms = queryBL.createQueryBuilder(I_PP_Product_BOM.class)
 				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, bomType)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
@@ -258,10 +244,17 @@ public class PP_Product_Bom_StepDef
 		return bomInfo.toString();
 	}
 
-	private I_PP_Product_BOMVersions createBOMVersions(@NonNull final Map<String, String> tableRow)
+	private I_PP_Product_BOMVersions createBOMVersions(@NonNull final DataTableRow row)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
+		final I_PP_Product_BOMVersions existingBOMVersions = row.getAsOptionalIdentifier(I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID)
+				.flatMap(productBomVersionsTable::getOptional)
+				.orElse(null);
+		if (existingBOMVersions != null)
+		{
+			return existingBOMVersions;
+		}
+
+		final I_M_Product productRecord = row.getAsIdentifier(I_PP_Product_BOMVersions.COLUMNNAME_M_Product_ID).lookupIn(productTable);
 
 		final I_PP_Product_BOMVersions bomVersionsRecord = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_PP_Product_BOMVersions.class)
@@ -275,8 +268,8 @@ public class PP_Product_Bom_StepDef
 
 		saveRecord(bomVersionsRecord);
 
-		final String bomVersionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		productBomVersionsTable.putOrReplace(bomVersionsIdentifier, bomVersionsRecord);
+		row.getAsOptionalIdentifier(I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID)
+				.ifPresent(identifier -> productBomVersionsTable.putOrReplace(identifier, bomVersionsRecord));
 
 		return bomVersionsRecord;
 	}

@@ -10,6 +10,8 @@ import { getActivityById } from '../../../reducers/wfProcesses';
 
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { fireWFActivityCompleted } from '../../../apps';
+import { toastError } from '../../../utils/toast';
+import Spinner from '../../../components/Spinner';
 
 const ScanScreen = () => {
   const {
@@ -17,11 +19,17 @@ const ScanScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId },
   } = useRouteMatch();
 
-  const { activityCaption, userInstructions } = useSelector((state) => {
+  const queryParameters = new URLSearchParams(window.location.search);
+  const useTheAlreadyScannedQrCode = queryParameters.get('resendQr');
+  const validOptionIndex = queryParameters.get('validOptionIndex');
+
+  const { activityCaption, userInstructions, currentValue, validOptions } = useSelector((state) => {
     const activity = getActivityById(state, wfProcessId, activityId);
     return {
       activityCaption: activity?.caption,
       userInstructions: activity?.userInstructions,
+      currentValue: activity?.dataStored.currentValue,
+      validOptions: activity?.dataStored?.validOptions,
     };
   });
 
@@ -30,9 +38,25 @@ const ScanScreen = () => {
     dispatch(pushHeaderEntry({ location: url, caption: activityCaption, userInstructions }));
   }, [url, activityCaption, userInstructions]);
 
+  useEffect(() => {
+    if (useTheAlreadyScannedQrCode === 'true' && currentValue?.qrCode !== undefined) {
+      onBarcodeScanned({ scannedBarcode: currentValue?.qrCode });
+    }
+  }, [useTheAlreadyScannedQrCode, currentValue?.qrCode]);
+
   const history = useHistory();
   const onBarcodeScanned = ({ scannedBarcode }) => {
     //console.log('onBarcodeScanned', { scannedBarcode });
+    if (validOptionIndex != null && !validOptions?.length) {
+      toastError({ messageKey: 'activities.mfg.validateSourceLocator.noValidOption' });
+      history.goBack();
+      return;
+    }
+
+    if (validOptionIndex != null && scannedBarcode !== validOptions[validOptionIndex]?.qrCode) {
+      toastError({ messageKey: 'activities.mfg.validateSourceLocator.qrDoesNotMatch' });
+      return;
+    }
 
     dispatch(setScannedBarcode({ wfProcessId, activityId, scannedBarcode }));
 
@@ -61,7 +85,11 @@ const ScanScreen = () => {
       });
   };
 
-  return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} />;
+  if (useTheAlreadyScannedQrCode === 'true') {
+    return <Spinner />;
+  }
+
+  return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} continuousRunning={true} />;
 };
 
 export default ScanScreen;

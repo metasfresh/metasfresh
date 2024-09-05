@@ -40,6 +40,7 @@ const ScanHUAndGetQtyComponent = ({
   catchWeightUom,
   isShowBestBeforeDate = false,
   isShowLotNo = false,
+  isShowCloseTargetButton = false,
   //
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
@@ -191,6 +192,7 @@ const ScanHUAndGetQtyComponent = ({
     bestBeforeDate,
     lotNo,
     productNo,
+    isCloseTarget = false,
     isDone = true,
   }) => {
     return onResult({
@@ -205,6 +207,7 @@ const ScanHUAndGetQtyComponent = ({
       bestBeforeDate,
       lotNo,
       productNo,
+      isCloseTarget,
       isDone,
     });
   };
@@ -256,6 +259,7 @@ const ScanHUAndGetQtyComponent = ({
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
           isShowLotNo={isShowLotNo}
           lotNo={resolvedBarcodeData.lotNo}
+          isShowCloseTargetButton={isShowCloseTargetButton}
           //
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
@@ -295,6 +299,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   catchWeightUom: PropTypes.string,
   isShowBestBeforeDate: PropTypes.bool,
   isShowLotNo: PropTypes.bool,
+  isShowCloseTargetButton: PropTypes.bool,
   //
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,

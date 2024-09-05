@@ -23,8 +23,8 @@
 package de.metas.handlingunits;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
@@ -35,6 +35,7 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -45,7 +46,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
@@ -84,6 +84,10 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU getByIdOutOfTrx(HuId huId);
 
 	I_M_HU getById(HuId huId);
+
+	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
+
+	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
 
 	ClientAndOrgId getClientAndOrgId(@NonNull HuId huId);
 
@@ -162,13 +166,26 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU_Item> retrieveItems(I_M_HU hu, HUItemType type);
 
+	@NonNull
 	I_M_HU_Item retrieveItem(I_M_HU hu, I_M_HU_PI_Item piItem);
+
+	Optional<I_M_HU_Item> retrieveItemIfExists(I_M_HU hu, I_M_HU_PI_Item piItem);
 
 	List<I_M_HU> retrieveIncludedHUs(final I_M_HU_Item item);
 
 	List<I_M_HU> retrieveIncludedHUs(@NonNull I_M_HU hu);
 
 	// Handling Unit PI Retrieval
+
+	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull HuPackingInstructionsId piId,
+			@Nullable String itemType,
+			@Nullable BPartnerId bpartnerId);
+
+	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull HuPackingInstructionsId piId,
+			@NonNull HuPackingInstructionsId includedPIId,
+			@Nullable BPartnerId bpartnerId);
 
 	List<I_M_HU_PI_Item> retrievePIItems(@NonNull I_M_HU_PI handlingUnitPI, @Nullable BPartnerId bpartnerId);
 
@@ -179,6 +196,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @param bpartnerId optional. If not {@code null}, then exclude items with {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} that have a different {@link I_M_HU_PI_Item#COLUMNNAME_C_BPartner_ID}.
 	 */
 	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version version, final BPartnerId bpartnerId);
+
+	I_M_HU_PI_Item retrievePIItemMaterial(@NonNull I_M_HU_PI_Version version);
 
 	/**
 	 * Retrieve all {@link I_M_HU_PI_Item}s (active or inactive) for given M_HU_PI_Version.
@@ -280,27 +299,20 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(I_M_HU hu);
 
 	/**
-	 * The special network distribution that is defined for empties (Gebinde) It contains lines that link the non-empties warehouses with the empties ones that the packing materials shall be moved to
-	 * when empty
-	 *
-	 * @param product (NOT USED); here just in case the requirements will change later and there will be gebinde network distributions based on product
-	 */
-	@Nullable
-	I_DD_NetworkDistribution retrieveEmptiesDistributionNetwork(Properties ctx, I_M_Product product, String trxName);
-
-	/**
 	 * Create or return a <b>HU</b> item. Other item types generally exist already, or should not exist.
 	 *
 	 * @return a pair of the item that was created or retrieved on the left and a boolean that is {@code true} if the item was created and {@code false} if it was retrieved.
 	 */
 	IPair<I_M_HU_Item, Boolean> createHUItemIfNotExists(I_M_HU hu, I_M_HU_PI_Item piItem);
 
+	I_M_HU_Item retrieveAggregatedItem(I_M_HU hu);
+
 	/**
 	 * Retrieve the aggregated item of the given HU if it has one.
 	 *
 	 * @return the aggregated item or null.
 	 */
-	I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu, I_M_HU_PI_Item piItem);
+	I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu);
 
 	/**
 	 * Retrieve all the child HUs of the given item, both active and not active
@@ -317,6 +329,13 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU> retrieveByIds(Collection<HuId> huIds);
 
 	void setReservedByHUIds(final Set<HuId> huIds, boolean reserved);
+
+	ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIs(
+			@NonNull Set<HuPackingInstructionsItemId> piItemIds,
+			@Nullable BPartnerId bpartnerId);
+
+	@NonNull
+	ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds);
 
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);

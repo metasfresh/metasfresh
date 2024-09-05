@@ -1,7 +1,7 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -19,13 +19,11 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -39,7 +37,7 @@ import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -65,42 +63,33 @@ import static org.assertj.core.api.Assertions.*;
 @ExtendWith(AdempiereTestWatcher.class)
 public class SupplyCandidateHandlerTest
 {
-
-	private static final BigDecimal ELEVEN = new BigDecimal("11");
-
-	private static final BigDecimal TWENTY_THREE = new BigDecimal("23");
-
-	private SupplyCandidateHandler supplyCandiateHandler;
-
+	private SupplyCandidateHandler supplyCandidateHandler;
 	private CandidateRepositoryWriteService candidateRepositoryWriteService;
-	private DimensionService dimensionService;
 
 	@BeforeEach
-	public void init()
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
-		SpringContextHolder.registerJUnitBean(dimensionFactories);
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
+		// SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepository);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryWriteService);
 
-		supplyCandiateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
+		supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
 	}
 
 	@Test
 	public void testOnSupplyCandidateNewOrChange_noOlderRecords()
 	{
-		final BigDecimal qty = TWENTY_THREE;
+		final BigDecimal qty = new BigDecimal("23");
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
@@ -114,7 +103,7 @@ public class SupplyCandidateHandlerTest
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.build();
-		supplyCandiateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
+		supplyCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 		final List<I_MD_Candidate> records = retrieveAllRecords();
 		assertThat(records).hasSize(2);
@@ -132,7 +121,7 @@ public class SupplyCandidateHandlerTest
 	@Test
 	public void testOnSupplyCandidateNewOrChange_noOlderRecords_invokeTwiceWithSame()
 	{
-		final BigDecimal qty = TWENTY_THREE;
+		final BigDecimal qty = new BigDecimal("23");
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
@@ -149,7 +138,7 @@ public class SupplyCandidateHandlerTest
 
 		final Consumer<Candidate> doTest = candidate -> {
 
-			supplyCandiateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
+			supplyCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 			final List<I_MD_Candidate> records = retrieveAllRecords();
 			assertThat(records).hasSize(2);
@@ -171,7 +160,7 @@ public class SupplyCandidateHandlerTest
 	@Test
 	public void onCandidateNewOrChange_noOlderRecords_invokeTwice_withDifferentQuantites()
 	{
-		final BigDecimal qty = TWENTY_THREE;
+		final BigDecimal qty = new BigDecimal("23");
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
@@ -188,7 +177,7 @@ public class SupplyCandidateHandlerTest
 
 		final BiConsumer<Candidate, BigDecimal> doTest = (candidate, exptectedQty) -> {
 
-			supplyCandiateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
+			supplyCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 			final List<I_MD_Candidate> records = retrieveAllRecords();
 			assertThat(records).hasSize(2);
@@ -213,12 +202,11 @@ public class SupplyCandidateHandlerTest
 	@Test
 	public void onCandidateNewOrChange()
 	{
-		final BigDecimal olderStockQty = ELEVEN;
 
 		final MaterialDescriptor olderMaterialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
-				.quantity(olderStockQty)
+				.quantity(new BigDecimal("11"))
 				.date(NOW)
 				.build();
 
@@ -232,7 +220,7 @@ public class SupplyCandidateHandlerTest
 		final MaterialDescriptor materialDescriptoriptor = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
-				.quantity(TWENTY_THREE)
+				.quantity(new BigDecimal("23"))
 				.date(AFTER_NOW)
 				.build();
 
@@ -242,16 +230,16 @@ public class SupplyCandidateHandlerTest
 				.materialDescriptor(materialDescriptoriptor)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.build();
-		supplyCandiateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
+		supplyCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 		final List<I_MD_Candidate> records = retrieveAllRecords();
 		assertThat(records).hasSize(3);
 		final I_MD_Candidate stockRecord = filter(CandidateType.STOCK, AFTER_NOW).get(0);
 		final I_MD_Candidate supplyRecord = filter(CandidateType.SUPPLY).get(0);
 
-		assertThat(supplyRecord.getQty()).isEqualByComparingTo(TWENTY_THREE);
-		assertThat(supplyRecord.getMD_Candidate_BusinessCase()).isEqualTo(CandidateBusinessCase.PRODUCTION.toString());
-		assertThat(stockRecord.getQty()).isEqualByComparingTo(ELEVEN.add(TWENTY_THREE));
+		assertThat(supplyRecord.getQty()).isEqualByComparingTo(new BigDecimal("23"));
+		assertThat(CandidateBusinessCase.ofNullableCode(supplyRecord.getMD_Candidate_BusinessCase())).isEqualTo(CandidateBusinessCase.PRODUCTION);
+		assertThat(stockRecord.getQty()).isEqualByComparingTo(new BigDecimal("11").add(new BigDecimal("23")));
 
 		// note that now, the stock record shall have the same SeqNo as it's "actual" record
 		assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo());
@@ -262,7 +250,7 @@ public class SupplyCandidateHandlerTest
 	{
 		final Candidate candidate = createCandidateWithType(CandidateType.UNEXPECTED_INCREASE);
 
-		supplyCandiateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
+		supplyCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 		final List<I_MD_Candidate> allRecords = retrieveAllRecords();
 		assertThat(allRecords).hasSize(2);
@@ -283,7 +271,7 @@ public class SupplyCandidateHandlerTest
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
-				.quantity(TWENTY_THREE)
+				.quantity(new BigDecimal("23"))
 				.date(AFTER_NOW)
 				.build();
 
@@ -293,7 +281,7 @@ public class SupplyCandidateHandlerTest
 				.materialDescriptor(materialDescriptor)
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.build();
-		final Candidate persistendCandidate = supplyCandiateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
+		final Candidate persistendCandidate = supplyCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT).getCandidate();
 
 		assertThat(filter(CandidateType.SUPPLY)).hasSize(1); // guard
 		assertThat(filter(CandidateType.STOCK)).hasSize(1); // guard
@@ -310,16 +298,17 @@ public class SupplyCandidateHandlerTest
 		final Candidate updatedCandidate = persistendCandidate.withQuantity(ZERO);
 
 		// invoke the method under test
-		supplyCandiateHandler.onCandidateNewOrChange(alternativeAttribsCandidate, OnNewOrChangeAdvise.DEFAULT);
-		supplyCandiateHandler.onCandidateNewOrChange(updatedCandidate, OnNewOrChangeAdvise.DEFAULT);
+		supplyCandidateHandler.onCandidateNewOrChange(alternativeAttribsCandidate, OnNewOrChangeAdvise.DEFAULT);
+		supplyCandidateHandler.onCandidateNewOrChange(updatedCandidate, OnNewOrChangeAdvise.DEFAULT);
 
 		assertThat(filter(CandidateType.SUPPLY)).hasSize(2);
 		assertThat(filter(CandidateType.STOCK)).hasSize(2);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private Candidate createCandidateWithType(@NonNull final CandidateType type)
 	{
-		final Candidate candidate = Candidate.builder()
+		return Candidate.builder()
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.type(type)
 				.materialDescriptor(MaterialDescriptor.builder()
@@ -329,6 +318,5 @@ public class SupplyCandidateHandlerTest
 						.quantity(BigDecimal.TEN)
 						.build())
 				.build();
-		return candidate;
 	}
 }

@@ -87,12 +87,12 @@ public class PPOrderData
 	/**
 	 * qty in stocking UOM
 	 */
-	BigDecimal qtyRequired;
+	@NonNull BigDecimal qtyRequired;
 
 	/**
 	 * qty in stocking UOM
 	 */
-	BigDecimal qtyDelivered;
+	@NonNull BigDecimal qtyDelivered;
 
 	HUPIItemProductId packingMaterialId;
 
@@ -126,7 +126,7 @@ public class PPOrderData
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.datePromised = datePromised;
 		this.dateStartSchedule = dateStartSchedule;
-		this.qtyRequired = qtyRequired;
+		this.qtyRequired = CoalesceUtil.coalesce(qtyRequired, ZERO);
 		this.qtyDelivered = CoalesceUtil.coalesce(qtyDelivered, ZERO);
 		this.materialDispoGroupId = materialDispoGroupId;
 		this.packingMaterialId = packingMaterialId;

@@ -201,8 +201,8 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 						.value(job.getDocumentNo())
 						.build())
 				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("DatePromised"))
-						.value(job.getDatePromised())
+						.caption(TranslatableStrings.adElementOrMessage("DateStartSchedule"))
+						.value(job.getDateStartScheduleAsLocalDate())
 						.build())
 				.build();
 	}

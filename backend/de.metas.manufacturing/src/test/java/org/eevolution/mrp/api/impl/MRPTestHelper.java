@@ -17,7 +17,6 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.planning.ErrorCodes;
-import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPRoutingType;
 import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
@@ -384,7 +383,7 @@ public class MRPTestHelper
 
 	private static LocatorId getDefaultLocatorId(final I_M_Warehouse warehouse)
 	{
-		return Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
 	}
 
 	public I_C_UOM createUOM(final String name)
@@ -565,7 +564,7 @@ public class MRPTestHelper
 
 	public final Logger getMRPLogger()
 	{
-		return LogManager.getLogger(IMaterialPlanningContext.LOGGERNAME);
+		return LogManager.getLogger("org.eevolution.mrp.MRP");
 	}
 
 	public I_PP_Order createPP_Order(

@@ -10,8 +10,10 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_HUAlternative;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
@@ -19,10 +21,10 @@ import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step_HUAlternative;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step_PickedHU;
 import de.metas.handlingunits.picking.PackToSpec;
-import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.job.model.HUInfo;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.LocatorInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
@@ -40,6 +42,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromMap;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
+import de.metas.handlingunits.picking.job.model.PickingUnit;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.lock.spi.ExistingLockInfo;
@@ -49,6 +53,7 @@ import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -144,8 +149,8 @@ class PickingJobLoaderAndSaver
 		final I_M_Picking_Job record = pickingJobs.get(pickingJobId);
 		updateRecord(record, pickingJob);
 		InterfaceWrapperHelper.save(record);
-		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
 
+		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
 		saveLines(pickingJob.getLines(), pickingJobId, orgId, pickingJob.getDocStatus());
 	}
 
@@ -255,16 +260,17 @@ class PickingJobLoaderAndSaver
 			@NonNull final PickingJobStepId pickingStepId,
 			@Nullable final PickingJobPickFromAlternativeId alternativeId)
 	{
-		final HashMap<HuId, I_M_Picking_Job_Step_PickedHU> existingRecordsByPickedHUId = pickedHUs.get(pickingStepId)
+		final HashMap<HUInfo, I_M_Picking_Job_Step_PickedHU> existingRecordsByPickedHUId = pickedHUs.get(pickingStepId)
 				.stream()
 				.filter(record -> PickingJobPickFromAlternativeId.equals(extractAlternativeId(record), alternativeId))
-				.collect(GuavaCollectors.toHashMapByKey(record -> HuId.ofRepoId(record.getPicked_HU_ID())));
+				.collect(GuavaCollectors.toHashMapByKey(this::extractPickedHUInfo));
 
 		if (pickedTo != null)
 		{
 			for (final PickingJobStepPickedToHU pickedHU : pickedTo.getActualPickedHUs())
 			{
-				I_M_Picking_Job_Step_PickedHU record = existingRecordsByPickedHUId.remove(pickedHU.getActualPickedHUId());
+				final HUInfo actualPickedHU = pickedHU.getActualPickedHU();
+				I_M_Picking_Job_Step_PickedHU record = existingRecordsByPickedHUId.remove(actualPickedHU);
 				if (record == null)
 				{
 					record = InterfaceWrapperHelper.newInstance(I_M_Picking_Job_Step_PickedHU.class);
@@ -274,10 +280,12 @@ class PickingJobLoaderAndSaver
 				}
 
 				record.setPickFrom_HU_ID(pickedHU.getPickFromHUId().getRepoId());
-				record.setPicked_HU_ID(pickedHU.getActualPickedHUId().getRepoId());
+				record.setPicked_HU_ID(actualPickedHU.getId().getRepoId());
+				record.setPicked_RenderedQRCode(actualPickedHU.getQrCode().toGlobalQRCodeString());
 				record.setC_UOM_ID(pickedHU.getQtyPicked().getUomId().getRepoId());
 				record.setQtyPicked(pickedHU.getQtyPicked().toBigDecimal());
-				record.setM_Picking_Candidate_ID(pickedHU.getPickingCandidateId().getRepoId());
+				record.setCatchWeight(pickedHU.getCatchWeight() != null ? pickedHU.getCatchWeight().toBigDecimal() : null);
+				record.setCatch_UOM_ID(pickedHU.getCatchWeight() != null ? pickedHU.getCatchWeight().getUomId().getRepoId() : -1);
 				InterfaceWrapperHelper.save(record);
 			}
 		}
@@ -344,7 +352,7 @@ class PickingJobLoaderAndSaver
 				.map(alt -> PickingJobPickFromAlternativeId.ofRepoId(alt.getM_Picking_Job_HUAlternative_ID()))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No HU alternative found for " + pickingJobId + ", " + alternativeHUId + ", " + productId
-						+ ". Available HU alternatives are: " + pickingJobHUAlternatives));
+																  + ". Available HU alternatives are: " + pickingJobHUAlternatives));
 	}
 
 	private void loadRecordsFromDB(final Set<PickingJobId> pickingJobIds)
@@ -432,6 +440,8 @@ class PickingJobLoaderAndSaver
 				.id(pickingJobId)
 				.header(toPickingJobHeader(record))
 				.pickingSlot(pickingSlot)
+				.luPickTarget(extractLUPickingTarget(record))
+				.tuPickTarget(extractTUPickingTarget(record))
 				.docStatus(PickingJobDocStatus.ofCode(record.getDocStatus()))
 				.lines(pickingJobLines.get(pickingJobId)
 						.stream()
@@ -460,8 +470,46 @@ class PickingJobLoaderAndSaver
 				.deliveryRenderedAddress(record.getDeliveryToAddress())
 				.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
 				.lockedBy(UserId.ofRepoIdOrNullIfSystem(record.getPicking_User_ID()))
-				.handoverLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getHandover_Partner_ID(), record.getHandover_Location_ID()))
+				.handoverLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getHandOver_Partner_ID(), record.getHandOver_Location_ID()))
 				.build();
+	}
+
+	@NonNull
+	private Optional<LUPickingTarget> extractLUPickingTarget(final I_M_Picking_Job record)
+	{
+		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(record.getM_LU_HU_PI_ID());
+		final HuId luId = HuId.ofRepoIdOrNull(record.getM_LU_HU_ID());
+
+		if (luId != null)
+		{
+			final HUQRCode qrCode = loadingSupportingServices().getQRCodeByHUId(luId);
+			return Optional.of(LUPickingTarget.ofExistingHU(luId, qrCode));
+		}
+		else if (luPIId != null)
+		{
+			final String caption = loadingSupportingServices().getPICaption(luPIId);
+			return Optional.of(LUPickingTarget.ofPackingInstructions(luPIId, caption));
+		}
+		else
+		{
+			return Optional.empty();
+		}
+	}
+
+	@NonNull
+	private Optional<TUPickingTarget> extractTUPickingTarget(final I_M_Picking_Job record)
+	{
+		final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoIdOrNull(record.getM_TU_HU_PI_ID());
+
+		if (tuPIId != null)
+		{
+			final String caption = loadingSupportingServices().getPICaption(tuPIId);
+			return Optional.of(TUPickingTarget.ofPackingInstructions(tuPIId, caption));
+		}
+		else
+		{
+			return Optional.empty();
+		}
 	}
 
 	@NonNull
@@ -480,6 +528,14 @@ class PickingJobLoaderAndSaver
 	{
 		record.setPicking_User_ID(UserId.toRepoId(from.getLockedBy()));
 		record.setM_PickingSlot_ID(from.getPickingSlotId().map(PickingSlotId::getRepoId).orElse(-1));
+
+		final LUPickingTarget pickTarget = from.getLuPickTarget().orElse(null);
+		record.setM_LU_HU_PI_ID(HuPackingInstructionsId.toRepoId(pickTarget != null ? pickTarget.getLuPIId() : null));
+		record.setM_LU_HU_ID(HuId.toRepoId(pickTarget != null ? pickTarget.getLuId() : null));
+
+		final TUPickingTarget tuPickingTarget = from.getTuPickTarget().orElse(null);
+		record.setM_TU_HU_PI_ID(HuPackingInstructionsId.toRepoId(tuPickingTarget != null ? tuPickingTarget.getTuPIId() : null));
+
 		record.setDocStatus(from.getDocStatus().getCode());
 		record.setProcessed(from.getDocStatus().isProcessed());
 	}
@@ -492,13 +548,14 @@ class PickingJobLoaderAndSaver
 		final PickingJobLineId pickingJobLineId = PickingJobLineId.ofRepoId(record.getM_Picking_Job_Line_ID());
 
 		final HUPIItemProductId huPIItemProductId = HUPIItemProductId.ofRepoIdOrNone(record.getM_HU_PI_Item_Product_ID());
+		final HUPIItemProduct packingInfo = loadingSupportingServices.getPackingInfo(huPIItemProductId);
 
 		return PickingJobLine.builder()
 				.id(pickingJobLineId)
 				.productId(productId)
 				.productNo(loadingSupportingServices.getProductNo(productId))
 				.productName(loadingSupportingServices.getProductName(productId))
-				.packingInfo(loadingSupportingServices.getPackingInfo(huPIItemProductId))
+				.packingInfo(packingInfo)
 				.qtyToPick(Quantitys.create(record.getQtyToPick(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
@@ -508,6 +565,7 @@ class PickingJobLoaderAndSaver
 						.map(this::loadStep)
 						.collect(ImmutableList.toImmutableList()))
 				.isManuallyClosed(record.isManuallyClosed())
+				.pickingUnit(computePickingUnit(UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()), packingInfo))
 				.build();
 	}
 
@@ -533,7 +591,7 @@ class PickingJobLoaderAndSaver
 
 		pickingJobStepAlternatives.get(pickingJobStepId)
 				.stream()
-				.map(alternativeHU -> loadPickFrom(productId, alternativeHU))
+				.map(this::loadPickFrom)
 				.forEach(pickFroms::add);
 
 		return PickingJobStep.builder()
@@ -567,17 +625,20 @@ class PickingJobLoaderAndSaver
 						.id(locatorId)
 						.caption(loadingSupportingServices().getLocatorName(locatorId))
 						.build())
-				.pickFromHU(HUInfo.builder()
-						.id(pickFromHUId)
-						.qrCode(getQRCode(pickFromHUId))
-						.build())
+				.pickFromHU(getHUInfo(pickFromHUId))
 				.pickedTo(loadPickedTo(record))
 				.build();
 	}
 
-	private PickingJobStepPickFrom loadPickFrom(
-			final ProductId pickedProductId,
-			final I_M_Picking_Job_Step_HUAlternative record)
+	private HUInfo getHUInfo(@NonNull final HuId huId)
+	{
+		return HUInfo.builder()
+				.id(huId)
+				.qrCode(getQRCode(huId))
+				.build();
+	}
+
+	private PickingJobStepPickFrom loadPickFrom(final I_M_Picking_Job_Step_HUAlternative record)
 	{
 		final PickingJobPickFromAlternativeId alternativeId = extractAlternativeId(record);
 
@@ -590,11 +651,8 @@ class PickingJobLoaderAndSaver
 						.id(pickFromLocatorId)
 						.caption(loadingSupportingServices().getLocatorName(pickFromLocatorId))
 						.build())
-				.pickFromHU(HUInfo.builder()
-						.id(pickFromHUId)
-						.qrCode(getQRCode(pickFromHUId))
-						.build())
-				.pickedTo(loadPickedTo(pickedProductId, record))
+				.pickFromHU(getHUInfo(pickFromHUId))
+				.pickedTo(loadPickedTo(record))
 				.build();
 	}
 
@@ -620,7 +678,6 @@ class PickingJobLoaderAndSaver
 			return PickingJobStepPickedTo.builder()
 					.qtyRejected(qtyRejected)
 					.actualPickedHUs(pickedHUs)
-					.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 					.build();
 		}
 		else
@@ -631,6 +688,7 @@ class PickingJobLoaderAndSaver
 
 	private static Optional<QtyRejectedWithReason> extractQtyRejected(final I_M_Picking_Job_Step record)
 	{
+		//noinspection DuplicatedCode
 		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
 		final QtyRejectedReasonCode reasonCode = QtyRejectedReasonCode.ofNullableCode(record.getRejectReason()).orElse(null);
 		return reasonCode != null && uomId != null
@@ -655,20 +713,40 @@ class PickingJobLoaderAndSaver
 		return PickingJobPickFromAlternativeId.ofRepoIdOrNull(record.getM_Picking_Job_HUAlternative_ID());
 	}
 
-	private PickingJobStepPickedToHU loadPickedToHU(final I_M_Picking_Job_Step_PickedHU record)
+	private PickingJobStepPickedToHU loadPickedToHU(@NonNull final I_M_Picking_Job_Step_PickedHU record)
 	{
 		return PickingJobStepPickedToHU.builder()
 				.pickFromHUId(HuId.ofRepoId(record.getPickFrom_HU_ID()))
-				.actualPickedHUId(HuId.ofRepoId(record.getPicked_HU_ID()))
+				.actualPickedHU(extractPickedHUInfo(record))
 				.qtyPicked(Quantitys.create(record.getQtyPicked(), UomId.ofRepoId(record.getC_UOM_ID())))
-				.pickingCandidateId(PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()))
+				.catchWeight(extractCatchWeight(record))
 				.build();
 	}
 
+	private HUInfo extractPickedHUInfo(@NonNull final I_M_Picking_Job_Step_PickedHU record)
+	{
+		final HuId pickedHUId = HuId.ofRepoId(record.getPicked_HU_ID());
+		HUQRCode pickedQRCode = HUQRCode.fromNullableGlobalQRCodeJsonString(record.getPicked_RenderedQRCode());
+		if (pickedQRCode == null)
+		{
+			pickedQRCode = getQRCode(pickedHUId);
+		}
+
+		return HUInfo.builder().id(pickedHUId).qrCode(pickedQRCode).build();
+
+	}
+
 	@Nullable
-	private PickingJobStepPickedTo loadPickedTo(
-			@NonNull final ProductId pickedProductId,
-			@NonNull final I_M_Picking_Job_Step_HUAlternative record)
+	private static Quantity extractCatchWeight(@NonNull final I_M_Picking_Job_Step_PickedHU record)
+	{
+		final UomId catchWeightUomId = UomId.ofRepoIdOrNull(record.getCatch_UOM_ID());
+		return catchWeightUomId != null
+				? Quantitys.create(record.getCatchWeight(), catchWeightUomId)
+				: null;
+	}
+
+	@Nullable
+	private PickingJobStepPickedTo loadPickedTo(@NonNull final I_M_Picking_Job_Step_HUAlternative record)
 	{
 		final PickingJobStepId pickingJobStepId = extractPickingJobStepId(record);
 		final PickingJobPickFromAlternativeId alternativeId = extractAlternativeId(record);
@@ -679,7 +757,6 @@ class PickingJobLoaderAndSaver
 			return PickingJobStepPickedTo.builder()
 					.qtyRejected(qtyRejected)
 					.actualPickedHUs(pickedHUs)
-					.productId(pickedProductId)
 					.build();
 		}
 		else
@@ -691,6 +768,7 @@ class PickingJobLoaderAndSaver
 	@NonNull
 	private static Optional<QtyRejectedWithReason> extractQtyRejected(final I_M_Picking_Job_Step_HUAlternative record)
 	{
+		//noinspection DuplicatedCode
 		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
 		final QtyRejectedReasonCode reasonCode = QtyRejectedReasonCode.ofNullableCode(record.getRejectReason()).orElse(null);
 		return reasonCode != null && uomId != null
@@ -787,10 +865,7 @@ class PickingJobLoaderAndSaver
 						.id(locatorId)
 						.caption(loadingSupportingServices().getLocatorName(locatorId))
 						.build())
-				.pickFromHU(HUInfo.builder()
-						.id(pickFromHUId)
-						.qrCode(getQRCode(pickFromHUId))
-						.build())
+				.pickFromHU(getHUInfo(pickFromHUId))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.qtyAvailable(Quantitys.create(record.getQtyAvailable(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.build();
@@ -901,5 +976,16 @@ class PickingJobLoaderAndSaver
 	private OptionalBoolean getShipmentSchedulesIsLocked(@NonNull final PickingJobId pickingJobId)
 	{
 		return OptionalBoolean.ofNullableBoolean(hasLocks.get(pickingJobId));
+	}
+
+	private PickingUnit computePickingUnit(@Nullable final UomId catchUomId, @NonNull final HUPIItemProduct packingInfo)
+	{
+		// If catch weight, always pick at CU level because user has to weight the products
+		if (!loadingSupportingServices().isCatchWeightTUPickingEnabled() && catchUomId != null)
+		{
+			return PickingUnit.CU;
+		}
+
+		return packingInfo.isFiniteTU() ? PickingUnit.TU : PickingUnit.CU;
 	}
 }

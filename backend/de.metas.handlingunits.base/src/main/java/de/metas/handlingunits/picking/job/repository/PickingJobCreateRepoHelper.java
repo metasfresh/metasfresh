@@ -79,8 +79,8 @@ class PickingJobCreateRepoHelper
 		record.setIsAllowPickingAnyHU(request.isAllowPickingAnyHU());
 		record.setDocStatus(DocStatus.Drafted.getCode());
 		record.setProcessed(false);
-		record.setHandover_Location_ID(BPartnerLocationId.toRepoId(request.getHandoverLocationId()));
-		record.setHandover_Partner_ID(BPartnerId.toRepoId(request.getHandoverLocationId().getBpartnerId()));
+		record.setHandOver_Location_ID(BPartnerLocationId.toRepoId(request.getHandoverLocationId()));
+		record.setHandOver_Partner_ID(BPartnerId.toRepoId(request.getHandoverLocationId().getBpartnerId()));
 		InterfaceWrapperHelper.save(record);
 
 		loader.addAlreadyLoadedFromDB(record);

@@ -32,6 +32,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Function;
 
@@ -41,6 +42,8 @@ import java.util.function.Function;
 public class JsonPickingJob
 {
 	@NonNull JsonCompleteStatus completeStatus;
+	@Nullable JsonLUPickingTarget pickTarget;
+	@Nullable JsonTUPickingTarget tuPickTarget;
 	@NonNull List<JsonPickingJobLine> lines;
 	@NonNull List<JsonPickFromAlternative> pickFromAlternatives;
 
@@ -51,6 +54,8 @@ public class JsonPickingJob
 	{
 		return builder()
 				.completeStatus(JsonCompleteStatus.of(pickingJob.getProgress()))
+				.pickTarget(pickingJob.getLuPickTarget().map(JsonLUPickingTarget::of).orElse(null))
+				.tuPickTarget(pickingJob.getTuPickTarget().map(JsonTUPickingTarget::of).orElse(null))
 				.lines(pickingJob.getLines()
 						.stream()
 						.map(line -> JsonPickingJobLine.builderFrom(line, getUOMSymbolById, jsonOpts)

@@ -95,6 +95,28 @@ public class HUAttributesBL implements IHUAttributesBL
 	}
 
 	@Override
+	public void updateHUAttribute(@NonNull final I_M_HU destHU, @NonNull final I_M_HU sourceHU, @NonNull final AttributeCode attributeCode)
+	{
+		final ILoggable loggable = Loggables.get();
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(storageFactory);
+
+		final IAttributeStorage sourceHUAttrStorage = huAttributeStorageFactory.getAttributeStorage(sourceHU);
+		if (sourceHUAttrStorage.hasAttribute(attributeCode))
+		{
+			final Object attributeValue = sourceHUAttrStorage.getValue(attributeCode);
+			final IAttributeStorage destHUAttrStorage = huAttributeStorageFactory.getAttributeStorage(destHU);
+			if (destHUAttrStorage.hasAttribute(attributeCode))
+			{
+				final Object existingAttributeValue = sourceHUAttrStorage.getValue(attributeCode);
+				loggable.addLog("for HUID={} overwriting attribute={} from {} to {}", destHU.getM_HU_ID(), attributeCode, attributeValue,existingAttributeValue);
+			}
+			destHUAttrStorage.setValue(attributeCode, attributeValue);
+			destHUAttrStorage.saveChangesIfNeeded();
+		}
+	}
+
+	@Override
 	public void updateHUAttributeRecursive(@NonNull final HuId huId, @NonNull final AttributeCode attributeCode, @Nullable final Object attributeValue, @Nullable final String onlyHUStatus)
 	{
 		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValueOrNull(attributeCode);

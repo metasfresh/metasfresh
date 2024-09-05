@@ -13,6 +13,7 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 @EqualsAndHashCode
 @ToString
@@ -39,7 +40,27 @@ public class DataTableRows
 				.collect(GuavaCollectors.collectUsingListAccumulator(DataTableRows::new));
 	}
 
+	public DataTableRows setAdditionalRowIdentifierColumnName(String columnName)
+	{
+		list.forEach(row -> row.setAdditionalRowIdentifierColumnName(columnName));
+		return this;
+	}
+
 	public int size() {return list.size();}
+
+	public Stream<DataTableRow> stream() {return list.stream();}
+
+	public DataTableRow singleRow()
+	{
+		if (list.size() == 1)
+		{
+			return list.get(0);
+		}
+		else
+		{
+			throw new AdempiereException("Expected single row but have: " + list);
+		}
+	}
 
 	public void forEach(final ThrowingConsumer<? super DataTableRow> consumer)
 	{

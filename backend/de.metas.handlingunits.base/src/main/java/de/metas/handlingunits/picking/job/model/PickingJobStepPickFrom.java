@@ -5,9 +5,11 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.quantity.Quantity;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -24,7 +26,7 @@ public class PickingJobStepPickFrom
 	@NonNull LocatorInfo pickFromLocator;
 	@NonNull HUInfo pickFromHU;
 
-	@Nullable PickingJobStepPickedTo pickedTo;
+	@Nullable @With(AccessLevel.PRIVATE) PickingJobStepPickedTo pickedTo;
 
 	public LocatorId getPickFromLocatorId() {return getPickFromLocator().getId();}
 
@@ -65,23 +67,23 @@ public class PickingJobStepPickFrom
 		}
 	}
 
-	public void assertNotPicked()
+	public PickingJobStepPickFrom assertNotPicked()
 	{
 		if (isPicked())
 		{
 			throw new AdempiereException("PickFrom already picked: " + this);
 		}
+
+		return this;
 	}
 
 	public PickingJobStepPickFrom withPickedEvent(@NonNull final PickingJobStepPickedTo pickedTo)
 	{
-		return toBuilder()
-				.pickedTo(pickedTo)
-				.build();
+		return withPickedTo(pickedTo);
 	}
 
-	public PickingJobStepPickFrom withUnPickedEvent(@NonNull PickingJobStepUnpickInfo ignoredUnpicked)
+	public PickingJobStepPickFrom withUnPickedEvent(@NonNull PickingJobStepUnpickInfo unpickEvent)
 	{
-		return toBuilder().pickedTo(null).build();
+		return withPickedTo(pickedTo != null ? pickedTo.removing(unpickEvent.getUnpickedHUs()) : null);
 	}
 }

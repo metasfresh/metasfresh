@@ -147,7 +147,7 @@ public class PP_Order extends CalloutEngine
 			return;
 		}
 
-		final LocatorId locatorId = warehouseBL.getDefaultLocatorId(warehouseId);
+		final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
 		ppOrder.setM_Locator_ID(locatorId.getRepoId());
 	}
 
