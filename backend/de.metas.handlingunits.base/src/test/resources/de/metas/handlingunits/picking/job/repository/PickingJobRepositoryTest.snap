@@ -123,6 +123,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
         ]
       }
     ],
+    "luPickTarget": null,
     "pickFromAlternatives": [
       {
         "id": 1000000,
@@ -151,8 +152,8 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
         "qtyAvailable": "999 Ea"
       }
     ],
-    "pickTarget": null,
     "pickingSlot": null,
-    "progress": "NOT_STARTED"
+    "progress": "NOT_STARTED",
+    "tuPickTarget": null
   }
 ]

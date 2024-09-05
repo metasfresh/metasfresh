@@ -384,9 +384,12 @@ public class ProcessPickingCandidatesCommand
 			}
 
 			final ShipmentScheduleId shipmentScheduleId = pickingCandidate.getShipmentScheduleId();
+			final ProductId productId = ProductId.ofRepoId(shipmentSchedulesCache.getById(shipmentScheduleId).getM_Product_ID());
 
 			return packToHUsProducer.extractPackToInfo(
+					productId,
 					packToSpec,
+					null,
 					null,
 					shipmentSchedulesCache.getShipToBPLocationId(shipmentScheduleId),
 					shipmentSchedulesCache.getShipFromLocatorId(shipmentScheduleId));

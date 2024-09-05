@@ -101,7 +101,7 @@ public class PickingJobCompleteCommand
 		pickingJob = pickingJob.withDocStatus(PickingJobDocStatus.Completed);
 		pickingJobRepository.save(pickingJob);
 
-		pickingJob = pickingJobService.closePickTarget(pickingJob);
+		pickingJob = pickingJobService.closeLUPickTarget(pickingJob);
 
 		final PickingJobId pickingJobId = pickingJob.getId();
 		pickingJob.getPickingSlotId()

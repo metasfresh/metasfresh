@@ -47,14 +47,17 @@ const GetQuantityDialog = ({
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
   const allowTempQtyStorage = useBooleanSetting('qtyInput.allowTempQtyStorage');
+  const useZeroAsInitialValue = useBooleanSetting('qtyInput.useZeroAsInitialValue');
 
-  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyTarget));
+  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(useZeroAsInitialValue ? 0 : qtyTarget));
   const [rejectedReason, setRejectedReason] = useState(null);
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
   const [tempQtyStorage, setTempQtyStorage] = useState(qtyInfos.of({ qty: 0 }));
 
   const useCatchWeight = !scaleDevice && catchWeightUom;
-  const [catchWeight, setCatchWeight] = useState(qtyInfos.invalidOfNumber(catchWeightParam));
+  const [catchWeight, setCatchWeight] = useState(
+    qtyInfos.invalidOfNumber(useZeroAsInitialValue ? 0 : catchWeightParam)
+  );
   const [showCatchWeightQRCodeReader, setShowCatchWeightQRCodeReader] = useState(useCatchWeight);
 
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);

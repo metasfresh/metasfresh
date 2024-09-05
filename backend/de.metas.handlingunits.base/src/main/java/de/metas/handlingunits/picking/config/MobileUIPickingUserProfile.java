@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.picking.rest-api
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.picking.config;
+package de.metas.handlingunits.picking.config;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -42,7 +42,10 @@ public class MobileUIPickingUserProfile
 {
 	public static final MobileUIPickingUserProfile DEFAULT = builder()
 			.name("default")
-			.isAllowNewLU(true)
+			.isPickWithNewLU(true)
+			.isCatchWeightTUPickingEnabled(false)
+			.considerSalesOrderCapacity(false)
+			.isAllowSkippingRejectedReason(false)
 			.filters(PickingFiltersList.ofList(ImmutableList.of(
 					PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),
 					PickingFilter.of(PickingJobFacetGroup.DELIVERY_DATE, 20)))
@@ -67,7 +70,11 @@ public class MobileUIPickingUserProfile
 	@NonNull ImmutableSet<BPartnerId> onlyBPartnerIds;
 	boolean isAllowPickingAnyHU;
 	boolean isAlwaysSplitHUsEnabled;
-	boolean isAllowNewLU;
+	boolean isPickWithNewLU;
+	boolean isAllowNewTU;
+	boolean isCatchWeightTUPickingEnabled;
+	boolean considerSalesOrderCapacity;
+	boolean isAllowSkippingRejectedReason;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
 	@Getter(AccessLevel.PACKAGE) @NonNull ImmutableList<PickingJobField> fields;
@@ -81,7 +88,11 @@ public class MobileUIPickingUserProfile
 			final @Nullable ImmutableSet<BPartnerId> onlyBPartnerIds,
 			final boolean isAllowPickingAnyHU,
 			final boolean isAlwaysSplitHUsEnabled,
-			final boolean isAllowNewLU,
+			final boolean isPickWithNewLU,
+			final boolean isAllowNewTU,
+			final boolean isCatchWeightTUPickingEnabled,
+			final boolean considerSalesOrderCapacity,
+			final boolean isAllowSkippingRejectedReason,
 			final @Nullable CreateShipmentPolicy createShipmentPolicy,
 			final @Nullable PickingFiltersList filters,
 			final @NonNull ImmutableList<PickingJobField> fields)
@@ -92,7 +103,7 @@ public class MobileUIPickingUserProfile
 		this.onlyBPartnerIds = onlyBPartnerIds != null ? onlyBPartnerIds : ImmutableSet.of();
 		this.isAllowPickingAnyHU = isAllowPickingAnyHU;
 		this.isAlwaysSplitHUsEnabled = isAlwaysSplitHUsEnabled;
-		this.isAllowNewLU = isAllowNewLU;
+		this.isPickWithNewLU = isPickWithNewLU;
 		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.DO_NOT_CREATE;
 		this.filters = filters != null ? filters : PickingFiltersList.EMPTY;
 		this.fields = fields;
@@ -107,6 +118,10 @@ public class MobileUIPickingUserProfile
 				.sorted(Comparator.comparing(PickingJobField::getSeqNo))
 				.collect(ImmutableList.toImmutableList());
 
+		this.isCatchWeightTUPickingEnabled = isCatchWeightTUPickingEnabled;
+		this.considerSalesOrderCapacity = considerSalesOrderCapacity;
+		this.isAllowSkippingRejectedReason = isAllowSkippingRejectedReason;
+		this.isAllowNewTU = isAllowNewTU;
 	}
 
 	public ImmutableList<PickingJobFacetGroup> getFilterGroupsInOrder() {return filters.getGroupsInOrder();}

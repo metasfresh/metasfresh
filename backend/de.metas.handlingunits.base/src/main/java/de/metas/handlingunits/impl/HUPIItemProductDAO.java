@@ -77,6 +77,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -304,6 +305,11 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			if (queryVO.getM_Product_ID() > 0)
 			{
 				productFilter.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, queryVO.getM_Product_ID());
+			}
+
+			if (queryVO.getOnlyProductIds() != null)
+			{
+				productFilter.addInArrayFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, queryVO.getOnlyProductIds());
 			}
 
 			if (queryVO.isAllowAnyProduct())
@@ -599,6 +605,21 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = createHU_PI_Item_Product_QueryBuilder(ctx, queryVO, trxName);
 		return queryBuilder
+				.create()
+				.list(I_M_HU_PI_Item_Product.class);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item_Product> retrieveForProducts(@NonNull final Set<ProductId> productIdSet, @Nullable final BPartnerId partnerId)
+	{
+		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
+		queryVO.setOnlyProductIds(productIdSet);
+		queryVO.setAllowVirtualPI(false);
+		queryVO.setBPartnerId(partnerId);
+
+		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = createHU_PI_Item_Product_QueryBuilder(Env.getCtx(), queryVO, null);
+		return queryBuilder
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_M_HU_PI_Item_Product.class);
 	}

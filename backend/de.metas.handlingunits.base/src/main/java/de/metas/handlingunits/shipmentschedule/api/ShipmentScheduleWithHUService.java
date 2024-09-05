@@ -72,6 +72,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.config.PickingConfigV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -205,11 +206,14 @@ public class ShipmentScheduleWithHUService
 				new QRCodeConfigurationService(new QRCodeConfigurationRepository())
 		);
 
+		final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository = new MobileUIPickingUserProfileRepository(); 
+		
 		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
 				pickingJobSlotService,
 				bpartnerBL,
 				huQRCodeService,
-				workplaceService
+				workplaceService,
+				mobileUIPickingUserProfileRepository
 		);
 
 		final HUReservationService huReservationServiceTest = new HUReservationService(new HUReservationRepository());

@@ -89,8 +89,8 @@ public class C_Order
 	public void updateBPartnerAddress(final I_C_Order order)
 	{
 		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
-
-		orderBL.setPriceList(order); // changed location might imply a changed PL
+		
+		orderBL.setM_PricingSystem_ID(order, true); // changed partner/location might imply a changed PS/PL
 	}
 
 	@CalloutMethod(columnNames = {
@@ -101,7 +101,7 @@ public class C_Order
 	{
 		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
 
-		orderBL.setPriceList(order); // changed location might imply a changed PL
+		orderBL.setM_PricingSystem_ID(order, true); // changed partner/location might imply a changed PS/PL
 	}
 
 	@CalloutMethod(columnNames = {

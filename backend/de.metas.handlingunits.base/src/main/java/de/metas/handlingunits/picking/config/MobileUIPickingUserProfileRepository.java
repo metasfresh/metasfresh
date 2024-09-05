@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.picking.rest-api
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.picking.config;
+package de.metas.handlingunits.picking.config;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -75,7 +75,11 @@ public class MobileUIPickingUserProfileRepository
 				.onlyBPartnerIds(onlyBPartnerIds)
 				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
-				.isAllowNewLU(profileRecord.isAllowNewLU())
+				.isPickWithNewLU(profileRecord.isPickingWithNewLU())
+				.isAllowNewTU(profileRecord.isAllowNewTU())
+				.considerSalesOrderCapacity(profileRecord.isConsiderSalesOrderCapacity())
+				.isCatchWeightTUPickingEnabled(profileRecord.isCatchWeightTUPickingEnabled())
+				.isAllowSkippingRejectedReason(profileRecord.isAllowSkippingRejectedReason())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.filters(retrieveFilters(profileRecord))
 				.fields(retrieveFields(profileRecord))
@@ -117,6 +121,10 @@ public class MobileUIPickingUserProfileRepository
 		profileRecord.setIsAllowPickingAnyHU(profile.isAllowPickingAnyHU());
 		profileRecord.setCreateShipmentPolicy(profile.getCreateShipmentPolicy().getCode());
 		profileRecord.setIsActive(true);
+		profileRecord.setIsAllowNewTU(profile.isAllowNewTU());
+		profileRecord.setIsAllowSkippingRejectedReason(profile.isAllowSkippingRejectedReason());
+		profileRecord.setIsConsiderSalesOrderCapacity(profile.isConsiderSalesOrderCapacity());
+		profileRecord.setIsCatchWeightTUPickingEnabled(profile.isCatchWeightTUPickingEnabled());
 		InterfaceWrapperHelper.saveRecord(profileRecord);
 
 		final HashMap<BPartnerId, I_MobileUI_UserProfile_Picking_BPartner> profileBPartnerRecords = queryBL.createQueryBuilder(I_MobileUI_UserProfile_Picking_BPartner.class)
