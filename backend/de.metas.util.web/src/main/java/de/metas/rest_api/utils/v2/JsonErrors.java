@@ -56,7 +56,7 @@ public class JsonErrors
 
 		final JsonErrorItemBuilder builder = JsonErrorItem.builder()
 				.message(AdempiereException.extractMessageTrl(cause).translate(adLanguage))
-				.userFriendlyError(AdempiereException.isUserFriendlyError(cause))
+				.userFriendlyError(AdempiereException.isUserValidationError(cause))
 				.stackTrace(Trace.toOneLineStackTraceString(cause.getStackTrace()))
 				.parameters(extractParameters(throwable, adLanguage))
 				.throwable(throwable);
