@@ -413,6 +413,9 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.setAmtSource(null, chargeAmt)
 					.buildAndAdd();
 		}
+		
+		//
+		// TODO Cash Rounding Amount CR
 
 		//
 		// TaxDue CR
@@ -526,6 +529,9 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.setAmtSource(chargeAmt, null)
 					.buildAndAdd();
 		}
+
+		//
+		// TODO Cash Rounding Amount DR
 
 		//
 		// TaxDue DR
