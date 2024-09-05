@@ -59,7 +59,7 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            | 10                               |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | -10                        | 0                             | 0                            | 10                               |
     And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 0               |
@@ -81,7 +81,7 @@ Feature: sales order interaction with material cockpit - no product planning
 
     And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            | 10                               |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | -10                        | 0                             | 0                            | 10                               |
     And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 0               |
@@ -541,7 +541,7 @@ Feature: sales order interaction with material cockpit - no product planning
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 20                              | 20                      | -10                        | -20                           | 0                            | 20                               |
+      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 20                              | 20                      | -20                        | -20                           | 0                            | 20                               |
     And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
