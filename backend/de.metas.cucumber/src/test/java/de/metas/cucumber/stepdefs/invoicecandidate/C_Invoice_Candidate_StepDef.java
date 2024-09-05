@@ -76,7 +76,6 @@ import de.metas.process.PInstanceId;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -1517,7 +1516,7 @@ public class C_Invoice_Candidate_StepDef
 			}
 		}
 
-		final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
+		final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
 
 		if (qtyToInvoice != null)
 		{
@@ -1566,7 +1565,7 @@ public class C_Invoice_Candidate_StepDef
 
 		final List<String> errors = errorCollectors.build();
 
-		if (errors.size() > 0)
+		if (!errors.isEmpty())
 		{
 			final String errorMessages = String.join(" && \n", errors);
 			return ItemProvider.ProviderResult.resultWasNotFound(errorMessages);

@@ -31,6 +31,7 @@ Feature: Modular contract log from purchase order for raw product
       | org_1                | 001   |
 
   @from:cucumber
+  @ghActions:run_on_executor7
   Scenario: raw product with the following computing methods:
   - InformativeLogs
   - Receipt
@@ -273,61 +274,63 @@ Feature: Modular contract log from purchase order for raw product
 
     And load latest ModCntr_Interest_Run for invoicing group invGroup as lastInterestRun
 
+
     And create final invoice
-      | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier |
-      | moduleLogContract_1           | metasfresh_user       |
+      | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier | OPT.DateInvoiced | OPT.DateAcct |
+      | moduleLogContract_1           | metasfresh_user       | 2022-03-01       | 2022-03-01   |
 
     And after not more than 60s, modular C_Invoice_Candidates are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Flatrate_Term_ID.Identifier | M_Product_ID.Identifier  | ProductName                          |
-      | candidate_1                       | moduleLogContract_1           | rawProduct               | receipt_06032024_1                   |
-      | candidate_2                       | moduleLogContract_1           | rawProduct               | salesOnRawProduct_06032024_1         |
-      | candidate_3                       | moduleLogContract_1           | addValueOnRaw_PO         | addValueOnRawProduct_06032024_1      |
-      | candidate_4                       | moduleLogContract_1           | subtractValueOnRaw_PO    | subtractValueOnRawProduct_06032024_1 |
-      | candidate_5                       | moduleLogContract_1           | addValueOnRaw_PO_2       | addValueOnRawProduct_06032024_1      |
-      | candidate_6                       | moduleLogContract_1           | subtractValueOnRaw_PO_2  | subtractValueOnRawProduct_06032024_1 |
-      | candidate_7                       | moduleLogContract_1           | addValueOnInterim        | addValueOnInterim_06032024_1         |
-      | candidate_8                       | moduleLogContract_1           | subValueOnInterim        | subValueOnInterim_06032024_1         |
-      | candidate_9                       | moduleLogContract_1           | storageCostForRawProduct | storageCost_06032024_1               |
+      | C_Invoice_Candidate_ID.Identifier     | C_Flatrate_Term_ID.Identifier | M_Product_ID.Identifier  | ProductName                          |
+      | candidate_receipt                     | moduleLogContract_1           | rawProduct               | receipt_06032024_1                   |
+      | candidate_salesOnRawProduct           | moduleLogContract_1           | rawProduct               | salesOnRawProduct_06032024_1         |
+      | candidate_addValueOnRawProduct_1      | moduleLogContract_1           | addValueOnRaw_PO         | addValueOnRawProduct_06032024_1      |
+      | candidate_subtractValueOnRawProduct_1 | moduleLogContract_1           | subtractValueOnRaw_PO    | subtractValueOnRawProduct_06032024_1 |
+      | candidate_addValueOnRawProduct_2      | moduleLogContract_1           | addValueOnRaw_PO_2       | addValueOnRawProduct_06032024_1      |
+      | candidate_subtractValueOnRawProduct_2 | moduleLogContract_1           | subtractValueOnRaw_PO_2  | subtractValueOnRawProduct_06032024_1 |
+      | candidate_addValueOnInterim           | moduleLogContract_1           | addValueOnInterim        | addValueOnInterim_06032024_1         |
+      | candidate_subValueOnInterim           | moduleLogContract_1           | subValueOnInterim        | subValueOnInterim_06032024_1         |
+      | candidate_storageCost                 | moduleLogContract_1           | storageCostForRawProduct | storageCost_06032024_1               |
 
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
-      | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice |
-      | candidate_1                       | 0                |
-      | candidate_2                       | 0                |
-      | candidate_3                       | 0                |
-      | candidate_4                       | 0                |
-      | candidate_5                       | 0                |
-      | candidate_6                       | 0                |
-      | candidate_7                       | 0                |
-      | candidate_8                       | 0                |
-      | candidate_9                       | 0                |
+      | C_Invoice_Candidate_ID.Identifier     | OPT.QtyToInvoice |
+      | candidate_receipt                     | 0                |
+      | candidate_salesOnRawProduct           | 0                |
+      | candidate_addValueOnRawProduct_1      | 0                |
+      | candidate_subtractValueOnRawProduct_1 | 0                |
+      | candidate_addValueOnRawProduct_2      | 0                |
+      | candidate_subtractValueOnRawProduct_2 | 0                |
+      | candidate_addValueOnInterim           | 0                |
+      | candidate_subValueOnInterim           | 0                |
+      | candidate_storageCost                 | 0                |
 
     And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
-      | candidate_1                       | 0            | 1000           | 1000             | I               | 0               | 0                   | 0                  | Y             |
-      | candidate_2                       | 0            | 1000           | 1000             | I               | 10              | 0                   | 3000               | Y             |
-      | candidate_3                       | 0            | 1000           | 1000             | I               | 8               | 0                   | 2400               | Y             |
-      | candidate_4                       | 0            | 1000           | 1000             | I               | -7              | 0                   | -2100              | Y             |
-      | candidate_5                       | 0            | 1000           | 1000             | I               | -6              | 0                   | -1800              | Y             |
-      | candidate_6                       | 0            | 1000           | 1000             | I               | 9               | 0                   | 2700               | Y             |
-      | candidate_7                       | 0            | 0              | 0                | I               | 9               | 0                   | 2700               | Y             |
-      | candidate_8                       | 0            | 0              | 0                | I               | 9               | 0                   | 2700               | Y             |
-      | candidate_9                       | 0            | 0              | 0                | I               | 9               | 0                   | 2700               | Y             |
+      | C_Invoice_Candidate_ID.Identifier     | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
+      | candidate_receipt                     | 0            | 1000           | 1000             | I               | 0               | 0                   | 0                  | Y             |
+      | candidate_salesOnRawProduct           | 0            | 1000           | 1000             | I               | 10              | 0                   | 10000              | Y             |
+      | candidate_addValueOnRawProduct_1      | 0            | 1000           | 1000             | I               | 8               | 0                   | 8000               | Y             |
+      | candidate_subtractValueOnRawProduct_1 | 0            | 1000           | 1000             | I               | -7              | 0                   | -7000              | Y             |
+      | candidate_addValueOnRawProduct_2      | 0            | 1000           | 1000             | I               | -6              | 0                   | -6000              | Y             |
+      | candidate_subtractValueOnRawProduct_2 | 0            | 1000           | 1000             | I               | 9               | 0                   | 9000               | Y             |
+      | candidate_addValueOnInterim           | 0            | 1              | 1                | I               | -40             | 0                   | -40                | Y             |
+      | candidate_subValueOnInterim           | 0            | 0              | 0                | I               | 0               | 0                   | 0                  | N             |
+      | candidate_storageCost                 | 0            | 0              | 0                | I               | 0               | 0                   | 0                  | N             |
 
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus | OPT.TotalLines |
-      | candidate_1                       | invoice_1               | CO            | 4200           |
+      | candidate_receipt                 | invoice_1               | CO            | 13960          |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal |
-      | invoice_1               | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 4998           |
+      | invoice_1               | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 15034.92       |
     And validate created modular invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | ProductName                          | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
-      | invoiceLine_1_1             | invoice_1               | rawProduct              | receipt_06032024_1                   | 300         | true      | 0                | 0               | 0              | PCE                   | PCE                       |
-      | invoiceLine_1_2             | invoice_1               | rawProduct              | salesOnRawProduct_06032024_1         | 300         | true      | 10               | 10              | 3000           | PCE                   | PCE                       |
-      | invoiceLine_1_3             | invoice_1               | addValueOnRaw_PO        | addValueOnRawProduct_06032024_1      | 300         | true      | 8                | 8               | 2400           | PCE                   | PCE                       |
-      | invoiceLine_1_4             | invoice_1               | subtractValueOnRaw_PO_2 | subtractValueOnRawProduct_06032024_1 | 300         | true      | 9                | 9               | 2700           | PCE                   | PCE                       |
-      | invoiceLine_1_5             | invoice_1               | subtractValueOnRaw_PO   | subtractValueOnRawProduct_06032024_1 | 300         | true      | -7               | -7              | -2100          | PCE                   | PCE                       |
-      | invoiceLine_1_6             | invoice_1               | addValueOnRaw_PO_2      | addValueOnRawProduct_06032024_1      | 300         | true      | -6               | -6              | -1800          | PCE                   | PCE                       |
+      | invoiceLine_1_1             | invoice_1               | rawProduct              | receipt_06032024_1                   | 1000        | true      | 0                | 0               | 0              | PCE                   | PCE                       |
+      | invoiceLine_1_2             | invoice_1               | rawProduct              | salesOnRawProduct_06032024_1         | 1000        | true      | 10               | 10              | 10000          | PCE                   | PCE                       |
+      | invoiceLine_1_3             | invoice_1               | addValueOnRaw_PO        | addValueOnRawProduct_06032024_1      | 1000        | true      | 8                | 8               | 8000           | PCE                   | PCE                       |
+      | invoiceLine_1_4             | invoice_1               | subtractValueOnRaw_PO_2 | subtractValueOnRawProduct_06032024_1 | 1000        | true      | 9                | 9               | 9000           | PCE                   | PCE                       |
+      | invoiceLine_1_5             | invoice_1               | subtractValueOnRaw_PO   | subtractValueOnRawProduct_06032024_1 | 1000        | true      | -7               | -7              | -7000          | PCE                   | PCE                       |
+      | invoiceLine_1_6             | invoice_1               | addValueOnRaw_PO_2      | addValueOnRawProduct_06032024_1      | 1000        | true      | -6               | -6              | -6000          | PCE                   | PCE                       |
+      | invoiceLine_1_7             | invoice_1               | addValueOnInterim       | addValueOnInterim_06032024_1         | 1           | true      | -40              | -40             | -40            | PCE                   | PCE                       |
 
     And update AD_Ref_Lists:
       | AD_Ref_List_ID.Identifier | IsActive |
