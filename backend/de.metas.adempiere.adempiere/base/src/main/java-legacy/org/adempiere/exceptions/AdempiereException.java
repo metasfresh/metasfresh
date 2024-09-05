@@ -14,6 +14,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.model.Null;
@@ -715,6 +716,14 @@ public class AdempiereException extends RuntimeException
 	public static boolean isUserValidationError(final Throwable ex)
 	{
 		return (ex instanceof AdempiereException) && ((AdempiereException)ex).isUserValidationError();
+	}
+
+	public static boolean isUserFriendlyError(final Throwable ex)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+		return isUserValidationError(ex)
+				|| sysConfigBL.getBooleanValue("mobileui.frontend.showAllErrorMessages", false);
 	}
 
 	/**

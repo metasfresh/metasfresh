@@ -89,7 +89,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
 
           const tuTargetIsSetButCurrentLineHasItsOwnPacking = currentTUPickTarget && lineItem.pickingUnit === 'TU';
           const tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs =
-            isPickWithNewLU && !currentTUPickTarget && lineItem.pickingUnit === 'CU';
+            isPickWithNewLU && isAllowNewTU && !currentTUPickTarget && lineItem.pickingUnit === 'CU';
           const lineIsDisabled =
             !isUserEditable ||
             isLUScanRequiredAndMissing ||
