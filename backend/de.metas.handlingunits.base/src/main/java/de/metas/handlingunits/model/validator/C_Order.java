@@ -25,22 +25,27 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
-
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.handlingunits.order.api.impl.OrderPackingMaterialDocumentLinesBuilder;
+import de.metas.handlingunits.reservation.handleordervoid.HUReservationAfterOrderUnProcessService;
+import de.metas.order.OrderId;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
-
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.handlingunits.order.api.impl.OrderPackingMaterialDocumentLinesBuilder;
-
-/**
- * @author cg
- *
- */
+import org.springframework.stereotype.Component;
 
 @Validator(I_C_Order.class)
+@Component
 public class C_Order
 {
+	private final HUReservationAfterOrderUnProcessService HUReservationAfterOrderUnProcessService;
+
+	public C_Order(@NonNull final HUReservationAfterOrderUnProcessService HUReservationAfterOrderUnProcessService)
+	{
+		this.HUReservationAfterOrderUnProcessService = HUReservationAfterOrderUnProcessService;
+	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
 	public void addPackingMaterialLine(final I_C_Order order)
@@ -60,5 +65,14 @@ public class C_Order
 	{
 		final OrderPackingMaterialDocumentLinesBuilder packingMaterialOrderLineBuilder = new OrderPackingMaterialDocumentLinesBuilder(order);
 		packingMaterialOrderLineBuilder.deactivateAndUnlinkAllPackingMaterialOrderLinesFromOrder();
+	}
+
+	@DocValidate(timings = {
+			ModelValidator.TIMING_BEFORE_REACTIVATE /* while the default handler-does nothing on reactive, the repairOrder-handler does */, 
+			ModelValidator.TIMING_BEFORE_VOID,
+			ModelValidator.TIMING_BEFORE_REVERSECORRECT })
+	public void handleHUReservationsAfterOrderUnprocess(@NonNull final I_C_Order order, @NonNull final DocTimingType timing)
+	{
+		HUReservationAfterOrderUnProcessService.handleOrderVoid(OrderId.ofRepoId(order.getC_Order_ID()), timing);
 	}
 }
