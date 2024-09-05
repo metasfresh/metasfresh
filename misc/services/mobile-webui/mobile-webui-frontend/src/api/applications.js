@@ -15,10 +15,6 @@ export function getSettings() {
   return axios.get(`${API}/settings`).then((response) => unboxAxiosResponse(response));
 }
 
-export function getSettings() {
-  return axios.get(`${API}/settings`).then((response) => unboxAxiosResponse(response));
-}
-
 export const logErrorToBackend = (error, info) => {
   console.log('Sending error to backend...', { error, info });
 
