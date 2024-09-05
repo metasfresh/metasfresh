@@ -103,6 +103,7 @@ const translations = {
       switchToQrCodeInput: 'Scan QR',
       skip: 'Skip',
       scanTargetHU: 'Scan target HU',
+      qtyRejectedIgnoreReason: 'Do not record a reason',
       qrcode: {
         missingQty: 'The scanned QR, has no qty information!',
         differentUOM: 'The scanned QR UOM does not match the target!',
@@ -110,6 +111,12 @@ const translations = {
       },
       pickingTarget: {
         New: 'New LU',
+        Select: 'Select Target',
+        Current: 'Current',
+        CloseTarget: 'Close',
+      },
+      tuPickingTarget: {
+        New: 'New TU',
         Select: 'Select Target',
         Current: 'Current',
         CloseTarget: 'Close',

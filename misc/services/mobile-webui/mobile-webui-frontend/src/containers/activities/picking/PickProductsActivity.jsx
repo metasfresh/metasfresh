@@ -7,18 +7,22 @@ import {
   pickingLineScreenLocation,
   pickingScanScreenLocation,
   selectPickTargetScreenLocation,
+  selectTUPickTargetScreenLocation,
 } from '../../../routes/picking';
 import { useHistory } from 'react-router-dom';
 import { trl } from '../../../utils/translations';
 import { getLinesArrayFromActivity } from '../../../reducers/wfProcesses';
 import { isAllowPickingAnyHUForActivity } from '../../../utils/picking';
-import { useCurrentPickTarget } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
+import {
+  useCurrentPickTarget,
+  useCurrentTUPickTarget,
+} from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
 
 export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
 const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity }) => {
   const {
-    dataStored: { isUserEditable, isAllowNewLU },
+    dataStored: { isUserEditable, isPickWithNewLU, isAllowNewTU },
   } = activity;
   const lines = getLinesArrayFromActivity(activity);
   const allowPickingAnyHU = isAllowPickingAnyHUForActivity({ activity });
@@ -26,8 +30,16 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   const history = useHistory();
 
   const currentPickTarget = useCurrentPickTarget({ wfProcessId, activityId });
+
+  const isLUScanRequiredAndMissing = isPickWithNewLU && !currentPickTarget;
+
   const onSelectPickTargetClick = () => {
     history.push(selectPickTargetScreenLocation({ applicationId, wfProcessId, activityId }));
+  };
+
+  const currentTUPickTarget = useCurrentTUPickTarget({ wfProcessId, activityId });
+  const onSelectTUPickTargetClick = () => {
+    history.push(selectTUPickTargetScreenLocation({ applicationId, wfProcessId, activityId }));
   };
 
   const onScanButtonClick = () => {
@@ -39,7 +51,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
 
   return (
     <div className="mt-5">
-      {isAllowNewLU && (
+      {isPickWithNewLU && (
         <ButtonWithIndicator
           caption={
             currentPickTarget?.caption
@@ -50,12 +62,23 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
           onClick={onSelectPickTargetClick}
         />
       )}
+      {isAllowNewTU && (
+        <ButtonWithIndicator
+          caption={
+            currentTUPickTarget?.caption
+              ? trl('activities.picking.tuPickingTarget.Current') + ': ' + currentTUPickTarget?.caption
+              : trl('activities.picking.tuPickingTarget.New')
+          }
+          disabled={!isUserEditable || isLUScanRequiredAndMissing}
+          onClick={onSelectTUPickTargetClick}
+        />
+      )}
       <br />
 
-      {allowPickingAnyHU && (
+      {allowPickingAnyHU && !isPickWithNewLU && (
         <ButtonWithIndicator
           caption={trl('activities.picking.scanQRCode')}
-          disabled={!isUserEditable}
+          disabled={!isUserEditable || isLUScanRequiredAndMissing}
           onClick={onScanButtonClick}
         />
       )}
@@ -64,12 +87,21 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
           const lineId = lineItem.pickingLineId;
           const { uom, qtyToPick, qtyPicked } = lineItem;
 
+          const tuTargetIsSetButCurrentLineHasItsOwnPacking = currentTUPickTarget && lineItem.pickingUnit === 'TU';
+          const tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs =
+            isPickWithNewLU && isAllowNewTU && !currentTUPickTarget && lineItem.pickingUnit === 'CU';
+          const lineIsDisabled =
+            !isUserEditable ||
+            isLUScanRequiredAndMissing ||
+            tuTargetIsSetButCurrentLineHasItsOwnPacking ||
+            tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs;
+
           return (
             <ButtonWithIndicator
               key={lineId}
               caption={lineItem.caption}
               completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
-              disabled={!isUserEditable}
+              disabled={lineIsDisabled}
               onClick={() => onLineButtonClick({ lineId })}
             >
               <ButtonQuantityProp

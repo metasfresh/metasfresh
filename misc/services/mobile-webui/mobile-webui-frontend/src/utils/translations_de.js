@@ -103,6 +103,7 @@ const translations = {
       switchToQrCodeInput: 'QR scannen',
       skip: 'Überspringen',
       scanTargetHU: 'Ziel HU scannen',
+      qtyRejectedIgnoreReason: 'Keinen Grund eintragen',
       qrcode: {
         missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
         differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
@@ -113,6 +114,12 @@ const translations = {
         Select: 'Gebinde',
         Current: 'Offenes Gebinde',
         CloseTarget: 'Schließen',
+      },
+      tuPickingTarget: {
+        New: 'New TU',
+        Select: 'Select Target',
+        Current: 'Current',
+        CloseTarget: 'Close',
       },
     },
     distribution: {

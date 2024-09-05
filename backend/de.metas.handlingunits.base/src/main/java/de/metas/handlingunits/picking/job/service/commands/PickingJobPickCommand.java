@@ -28,8 +28,10 @@ import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.HUInfo;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.LocatorInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
@@ -40,8 +42,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
-import de.metas.handlingunits.picking.job.model.PickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
@@ -149,6 +151,7 @@ public class PickingJobPickCommand
 			final @NonNull PickingConfigRepositoryV2 pickingConfigRepo,
 			//
 			final @NonNull PickingJob pickingJob,
+			final @NonNull MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
 			final @NonNull PickingJobLineId pickingJobLineId,
 			final @Nullable PickingJobStepId pickingJobStepId,
 			final @Nullable PickingJobStepPickFromKey pickFromKey,
@@ -198,12 +201,20 @@ public class PickingJobPickCommand
 		this.pickingUnit = line.getPickingUnit();
 		if (this.pickingUnit.isTU())
 		{
+			if (pickingJob.getTuPickTarget().isPresent())
+			{
+				throw new AdempiereException("Cannot pick TUs when TU pick target is set!")
+						.appendParametersToMessage()
+						.setParameter("PickingJobId", pickingJob.getId());
+			}
+
 			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
-			final HUPIItemProduct packingInfo = line.getPackingInfo();
-			this.qtyToPickCUs = packingInfo.computeQtyCUsOfQtyTUs(this.qtyToPickTUs);
+			this.qtyToPickCUs = computeQtyToPickCUs(mobileUIPickingUserProfileRepository, line, qtyToPickTUs);
 
 			if (qtyRejectedReasonCode != null)
 			{
+				final HUPIItemProduct packingInfo = line.getPackingInfo();
+
 				final Quantity qtyRejectedCUs = QtyTU.optionalOfBigDecimal(qtyRejectedBD)
 						.map(packingInfo::computeQtyCUsOfQtyTUs)
 						.orElseGet(() -> computeQtyRejectedCUs(line, step, this.stepPickFromKey, this.qtyToPickCUs));
@@ -337,26 +348,31 @@ public class PickingJobPickCommand
 		_pickingJob = _pickingJob.withChangedStep(getStepId(), stepMapper);
 	}
 
-	private Optional<PickingTarget> getPickingLUTarget()
+	private Optional<LUPickingTarget> getLUPickingTarget()
 	{
-		return _pickingJob.getPickTarget();
+		return _pickingJob.getLuPickTarget();
 	}
 
-	private void setPickingLUTarget(@NonNull final PickingTarget pickingLUTarget)
+	private Optional<TUPickingTarget> getTUPickingTarget()
 	{
-		_pickingJob = _pickingJob.withPickTarget(pickingLUTarget);
+		return _pickingJob.getTuPickTarget();
+	}
+
+	private void setPickingLUTarget(@NonNull final LUPickingTarget pickingLUTarget)
+	{
+		_pickingJob = _pickingJob.withLuPickTarget(pickingLUTarget);
 	}
 
 	private void setPickingLUTarget(@NonNull final LU lu)
 	{
 		final HuId luId = lu.getId();
 		final HUQRCode qrCode = getQRCode(lu);
-		setPickingLUTarget(PickingTarget.ofExistingHU(luId, qrCode));
+		setPickingLUTarget(LUPickingTarget.ofExistingHU(luId, qrCode));
 	}
 
-	private void updatePickingLUTarget(@NonNull final LUTUResult result)
+	private void updatePickingTarget(@NonNull final LUTUResult result)
 	{
-		final PickingTarget pickingTarget = getPickingLUTarget().orElse(null);
+		final LUPickingTarget pickingTarget = getLUPickingTarget().orElse(null);
 		if (pickingTarget != null && pickingTarget.isNewLU())
 		{
 			if (result.isSingleLU())
@@ -368,7 +384,7 @@ public class PickingJobPickCommand
 
 	private void closePickingLUTarget()
 	{
-		this._pickingJob = pickingJobService.closePickTarget(this._pickingJob);
+		this._pickingJob = pickingJobService.closeLUPickTarget(this._pickingJob);
 	}
 
 	private PickingJobStepId getStepId()
@@ -475,8 +491,10 @@ public class PickingJobPickCommand
 		final LocatorId pickFromLocatorId = pickFrom.getPickFromLocatorId();
 
 		final PackToHUsProducer.PackToInfo packToInfo = packToHUsProducer.extractPackToInfo(
+				productId,
 				step.getPackToSpec(),
-				getPickingLUTarget().orElse(null),
+				getLUPickingTarget().orElse(null),
+				getTUPickingTarget().orElse(null),
 				getPickingJob().getDeliveryBPLocationId(),
 				pickFromLocatorId);
 
@@ -513,7 +531,7 @@ public class PickingJobPickCommand
 			}
 		}
 
-		updatePickingLUTarget(packedHUs);
+		updatePickingTarget(packedHUs);
 
 		if (packedHUs.isEmpty())
 		{
@@ -521,8 +539,8 @@ public class PickingJobPickCommand
 		}
 		else if (packedHUs.getQtyTUs().isOne())
 		{
+			updateHUWeightFromCatchWeight(packedHUs.getAllTUs(), productId);
 			final TU tu = packedHUs.getSingleTU();
-			updateHUWeightFromCatchWeight(tu, productId);
 			updateOtherHUAttributes(tu);
 
 			final Quantity qtyPicked = isPickWholeTU ? getStorageQty(tu, productId) : qtyToPickCUs;
@@ -532,11 +550,7 @@ public class PickingJobPickCommand
 		}
 		else
 		{
-			if (catchWeight != null)
-			{
-				throw new AdempiereException("Cannot apply catch weight when receiving more than one HU");
-			}
-
+			updateHUWeightFromCatchWeight(packedHUs.getAllTUs(), productId);
 			updateOtherHUAttributes(packedHUs);
 
 			final IHUStorageFactory huStorageFactory = HUContextHolder.getCurrent().getHUStorageFactory();
@@ -555,7 +569,7 @@ public class PickingJobPickCommand
 		}
 	}
 
-	private void updateHUWeightFromCatchWeight(final TU tu, final ProductId productId)
+	private void updateHUWeightFromCatchWeight(final TUsList tuList, final ProductId productId)
 	{
 		if (catchWeight == null)
 		{
@@ -563,7 +577,7 @@ public class PickingJobPickCommand
 		}
 
 		final PackedHUWeightNetUpdater weightUpdater = new PackedHUWeightNetUpdater(uomConversionBL, HUContextHolder.getCurrent(), productId, catchWeight);
-		weightUpdater.updatePackToHU(tu.toHU());
+		weightUpdater.updatePackToHUs(tuList.toHURecords());
 	}
 
 	private void updateOtherHUAttributes(final LUTUResult result)
@@ -754,12 +768,12 @@ public class PickingJobPickCommand
 	{
 		final HUTransformService huTransformService = HUTransformService.newInstance();
 
-		final PickingTarget pickingTarget = getPickingLUTarget().orElse(null);
+		final LUPickingTarget pickingTarget = getLUPickingTarget().orElse(null);
 		final LUTUResult result;
 
 		if (handlingUnitsBL.isLoadingUnit(pickFromHU))
 		{
-			final HUTransformService.TargetLU targetLU = PickingTarget.apply(pickingTarget, new PickingTarget.CaseMapper<>()
+			final HUTransformService.TargetLU targetLU = LUPickingTarget.apply(pickingTarget, new LUPickingTarget.CaseMapper<>()
 			{
 				@Override
 				public HUTransformService.TargetLU noLU() {return HUTransformService.TargetLU.NONE;}
@@ -969,6 +983,27 @@ public class PickingJobPickCommand
 	private HUQRCode getQRCode(@NonNull final LU lu)
 	{
 		return huQRCodesService.getQRCodeByHuId(lu.getId());
+	}
+
+	@NonNull
+	private static Quantity computeQtyToPickCUs(
+			@NonNull final MobileUIPickingUserProfileRepository profileRepository,
+			@NonNull final PickingJobLine line,
+			@NonNull final QtyTU qtyTU)
+	{
+		final Quantity qtyToPickCUsBasedOnPackingInfo = line.getPackingInfo().computeQtyCUsOfQtyTUs(qtyTU);
+
+		if (!profileRepository.getProfile().isConsiderSalesOrderCapacity())
+		{
+			return qtyToPickCUsBasedOnPackingInfo;
+		}
+
+		final boolean qtyLeftToBePickedIsLessThanComputedBasedOnPacking = line.getQtyRemainingToPick().signum() > 0
+				&& (line.getQtyRemainingToPick().compareTo(qtyToPickCUsBasedOnPackingInfo) <= 0);
+
+		return qtyLeftToBePickedIsLessThanComputedBasedOnPacking
+				? line.getQtyRemainingToPick()
+				: qtyToPickCUsBasedOnPackingInfo;
 	}
 
 	//

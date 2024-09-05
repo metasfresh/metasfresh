@@ -20,24 +20,40 @@
  * #L%
  */
 
-package de.metas.picking.config;
+package de.metas.picking.rest_api.json;
 
-import de.metas.i18n.ITranslatableString;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
-public class PickingJobField
+@Jacksonized
+public class JsonTUPickingTarget
 {
-	@NonNull PickingJobFieldType field;
-	int seqNo;
-	boolean isShowInSummary;
-	boolean isShowInDetailed;
-	@Nullable String pattern;
+	@NonNull String id;
+	@NonNull String caption;
+	@NonNull HuPackingInstructionsId tuPIId;
+	boolean isDefault;
 
-	public ITranslatableString getCaption() {return field.getCaption();}
+	public static JsonTUPickingTarget of(@NonNull final TUPickingTarget target)
+	{
+		return builder()
+				.id(target.getId())
+				.caption(target.getCaption())
+				.tuPIId(target.getTuPIId())
+				.isDefault(target.isDefaultPacking())
+				.build();
+	}
+
+	public TUPickingTarget unbox()
+	{
+		return TUPickingTarget.builder()
+				.caption(caption)
+				.tuPIId(tuPIId)
+				.build();
+	}
 }

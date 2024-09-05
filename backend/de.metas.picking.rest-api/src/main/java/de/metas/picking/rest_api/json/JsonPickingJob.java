@@ -42,7 +42,8 @@ import java.util.function.Function;
 public class JsonPickingJob
 {
 	@NonNull JsonCompleteStatus completeStatus;
-	@Nullable JsonPickingTarget pickTarget;
+	@Nullable JsonLUPickingTarget pickTarget;
+	@Nullable JsonTUPickingTarget tuPickTarget;
 	@NonNull List<JsonPickingJobLine> lines;
 	@NonNull List<JsonPickFromAlternative> pickFromAlternatives;
 
@@ -53,7 +54,8 @@ public class JsonPickingJob
 	{
 		return builder()
 				.completeStatus(JsonCompleteStatus.of(pickingJob.getProgress()))
-				.pickTarget(pickingJob.getPickTarget().map(JsonPickingTarget::of).orElse(null))
+				.pickTarget(pickingJob.getLuPickTarget().map(JsonLUPickingTarget::of).orElse(null))
+				.tuPickTarget(pickingJob.getTuPickTarget().map(JsonTUPickingTarget::of).orElse(null))
 				.lines(pickingJob.getLines()
 						.stream()
 						.map(line -> JsonPickingJobLine.builderFrom(line, getUOMSymbolById, jsonOpts)
