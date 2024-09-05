@@ -108,7 +108,7 @@ public class ArchiveBL implements IArchiveBL
 		final TableRecordReference recordRef = request.getRecordRef();
 		archive.setAD_Table_ID(recordRef != null ? recordRef.getAD_Table_ID() : -1);
 		archive.setRecord_ID(recordRef != null ? recordRef.getRecord_ID() : -1);
-
+		archive.setIsMainArchive(request.isMainReport());
 		archive.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
 
 		final byte[] byteArray = extractByteArray(request);

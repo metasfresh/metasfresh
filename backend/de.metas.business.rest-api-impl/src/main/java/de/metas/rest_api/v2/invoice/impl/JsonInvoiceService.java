@@ -677,18 +677,10 @@ public class JsonInvoiceService
 			@NonNull final JsonDocTypeInfo invoiceDocType,
 			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final DocTypeId docTypeId = docTypeService.getDocTypeId(
+		return docTypeService.getDocTypeId(
 				DocBaseType.ofCode(invoiceDocType.getDocBaseType()),
 				invoiceDocType.getDocSubType(),
 				clientAndOrgId.getOrgId());
-
-		return Optional.ofNullable(docTypeId)
-				.orElseThrow(() -> new AdempiereException("No DocumentType found!")
-						.appendParametersToMessage()
-						.setParameter("ClientId", clientAndOrgId.getClientId())
-						.setParameter("OrgId", clientAndOrgId.getOrgId())
-						.setParameter("DocBaseType", invoiceDocType.getDocBaseType())
-						.setParameter("DocSubType", invoiceDocType.getDocSubType()));
 	}
 
 	/**
@@ -700,7 +692,7 @@ public class JsonInvoiceService
 			@NonNull final JsonCreateInvoiceLineItemRequest jsonLine,
 			@NonNull final ProductMasterDataProvider.ProductInfo productInfo)
 	{
-		if (STORAGE_UOM.equals(jsonLine.getPriceUomCode()))
+		if (STORAGE_UOM.equals(jsonLine.getUomCode()))
 		{
 			return productInfo.getUomId();
 		}

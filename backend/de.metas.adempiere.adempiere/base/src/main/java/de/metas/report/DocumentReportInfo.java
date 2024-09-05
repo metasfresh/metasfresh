@@ -50,6 +50,9 @@ public class DocumentReportInfo
 	DocTypeId docTypeId;
 	Language language;
 
+	@Builder.Default
+	boolean isMainReport = true;
+
 	@NonNull
 	@Builder.Default
 	DocumentPrintOptions printOptions = DocumentPrintOptions.NONE;

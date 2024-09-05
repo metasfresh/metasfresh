@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
-import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -48,6 +47,8 @@ import de.metas.printing.spi.impl.C_Printing_Queue_RecipientHandler;
 import de.metas.printing.spi.impl.CompositePrintingQueueHandler;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.report.DocOutboundConfigId;
+import de.metas.report.DocOutboundConfigRepository;
 import de.metas.report.PrintCopies;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
@@ -62,6 +63,7 @@ import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
@@ -90,7 +92,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	 */
 	private final CompositePrintingQueueHandler printingQueueHandler = new CompositePrintingQueueHandler(C_Printing_Queue_RecipientHandler.INSTANCE);
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
-	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
+	private DocOutboundConfigRepository docOutboundConfigRepository = SpringContextHolder.instance.getBeanOr(DocOutboundConfigRepository.class, DocOutboundConfigRepository.instance);
 
 	@Override
 	public void updateArchiveFlagsFromConfig(final I_AD_Archive archive)
@@ -264,14 +266,14 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 	private I_C_Doc_Outbound_Config getDocOutboundConfigOrNull(@NonNull final I_AD_Archive archive)
 	{
-		final int docOutboundConfigId = archive.getC_Doc_Outbound_Config_ID();
-		if (docOutboundConfigId <= 0)
+		final DocOutboundConfigId docOutboundConfigId = DocOutboundConfigId.ofRepoIdOrNull(archive.getC_Doc_Outbound_Config_ID());
+		if (docOutboundConfigId == null)
 		{
 			return null;
 		}
 
 		return InterfaceWrapperHelper.create(
-				docOutboundDAO.getConfigById(docOutboundConfigId),
+				docOutboundConfigRepository.load(docOutboundConfigId),
 				I_C_Doc_Outbound_Config.class);
 	}
 
