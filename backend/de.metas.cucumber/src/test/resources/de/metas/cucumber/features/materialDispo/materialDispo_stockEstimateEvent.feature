@@ -81,7 +81,7 @@ Feature: material-dispo updates on StockEstimateEvent events
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 4                  | 44                      | 2021-06-23T00:00:00.00Z | 90  |
     Then after not more than 60s, metasfresh has no MD_Candidate for identifier c_1
-    And after not more than 60s, metasfresh has no MD_Candidate_StockChange_Detail data for identifier "scd_1"
+    And after not more than 60s, metasfresh has no MD_Candidate_StockChange_Detail data for identifier scd_1
 
   @from:cucumber
   @topic:materialdispo
@@ -111,7 +111,7 @@ Feature: material-dispo updates on StockEstimateEvent events
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-06-23T00:00:00.00Z | 100 | 100                    |
       | c_2        | INVENTORY_UP      |                               | p_1                     | 2021-06-25T00:00:00.00Z | 40  | 140                    |
-    And after not more than 60s, metasfresh has no MD_Candidate_StockChange_Detail data for identifier "scd_2"
+    And after not more than 60s, metasfresh has no MD_Candidate_StockChange_Detail data for identifier scd_2
 
   @from:cucumber
   @topic:materialdispo
@@ -142,4 +142,4 @@ Feature: material-dispo updates on StockEstimateEvent events
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-06-23T00:00:00.00Z | 100 | 100                    |
       | c_2        | INVENTORY_DOWN    |                               | p_1                     | 2021-06-25T00:00:00.00Z | -60 | 25                     |
-    And after not more than 60s, metasfresh has no MD_Candidate_StockChange_Detail data for identifier "scd_3"
+    And after not more than 60s, metasfresh has no MD_Candidate_StockChange_Detail data for identifier scd_3
