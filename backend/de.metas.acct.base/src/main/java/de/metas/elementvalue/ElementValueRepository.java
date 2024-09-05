@@ -29,6 +29,7 @@ import de.metas.acct.api.impl.ElementValueId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
@@ -39,6 +40,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ElementValue;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,7 +76,6 @@ public class ElementValueRepository
 				.firstOnlyOptional(I_C_ElementValue.class)
 				.map(ElementValueRepository::toElementValue);
 	}
-
 
 	void save(@NonNull final I_C_ElementValue record)
 	{
@@ -116,7 +117,7 @@ public class ElementValueRepository
 	{
 		//
 		// Validate
-		if(request.getParentId() != null)
+		if (request.getParentId() != null)
 		{
 			final ElementValue parent = getById(request.getParentId());
 			if (!parent.isSummary())
@@ -155,10 +156,41 @@ public class ElementValueRepository
 		return toElementValue(record);
 	}
 
-	ImmutableSet<ElementValueId> getElementValueIdsBetween(final String accountValueFrom, final String accountValueTo)
+	public enum AccountValueComparisonMode
 	{
-		final RPadQueryFilterModifier rpad = new RPadQueryFilterModifier(20, "0");
+		RESPECT_ACCOUNTS_TREE,
+		NUMERIC,
+		;
 
+		public static AccountValueComparisonMode ofNullableString(@Nullable final String value)
+		{
+			final String valueNorm = StringUtils.trimBlankToNull(value);
+			if (valueNorm == null)
+			{
+				return RESPECT_ACCOUNTS_TREE;
+			}
+			else
+			{
+				return valueOf(valueNorm);
+			}
+		}
+	}
+
+	ImmutableSet<ElementValueId> getElementValueIdsBetween(final String accountValueFrom, final String accountValueTo, @NonNull final AccountValueComparisonMode comparisonMode)
+	{
+		switch (comparisonMode)
+		{
+			case RESPECT_ACCOUNTS_TREE:
+				return getElementValueIdsBetween_RESPECT_ACCOUNTS_TREE(accountValueFrom, accountValueTo);
+			case NUMERIC:
+				return getElementValueIdsBetween_NUMERIC(accountValueFrom, accountValueTo);
+			default:
+				throw new AdempiereException("Unknown comparison mode: " + comparisonMode);
+		}
+	}
+
+	private ImmutableSet<ElementValueId> getElementValueIdsBetween_RESPECT_ACCOUNTS_TREE(final String accountValueFrom, final String accountValueTo)
+	{
 		final I_C_ElementValue from = queryBL.createQueryBuilder(I_C_ElementValue.class)
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(I_C_ElementValue.COLUMNNAME_Value, CompareQueryFilter.Operator.STRING_LIKE_IGNORECASE, accountValueFrom + "%")
@@ -175,11 +207,18 @@ public class ElementValueRepository
 				.create()
 				.first();
 
+		final RPadQueryFilterModifier rpad = new RPadQueryFilterModifier(20, "0");
+
 		return queryBL.createQueryBuilder(I_C_ElementValue.class)
 				.addOnlyActiveRecordsFilter()
 				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, from.getValue(), to.getValue(), rpad)
 				.create()
 				.listIds(ElementValueId::ofRepoId);
+	}
+
+	private ImmutableSet<ElementValueId> getElementValueIdsBetween_NUMERIC(final String accountValueFrom, final String accountValueTo)
+	{
+		// TODO
 	}
 
 	@VisibleForTesting
