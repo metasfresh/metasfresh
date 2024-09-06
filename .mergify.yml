@@ -79,7 +79,9 @@ pull_request_rules:
       - check-success=testspace-analytics
       - check-success=continuous-integration/jenkins/branch
       - label=ops:auto_merge
-      - or: *ALL_BASE_BRANCHES
+      - or:
+          - or: *ALL_BASE_BRANCHES
+          - base=master
       - or:
           - "#approved-reviews-by>=1"
           - label=ops:without_review_approval
