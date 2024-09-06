@@ -1,7 +1,6 @@
 WITH invoices AS (SELECT externalid, ad_org_id, COUNT(c_invoice_id), ARRAY_AGG(c_invoice_id) AS ids
                   FROM c_invoice
                   WHERE TRUE
-                    AND isactive = 'Y'
                     AND externalid IS NOT NULL
                   GROUP BY externalid, ad_org_id
                   HAVING COUNT(c_invoice_id) > 1),
