@@ -22,20 +22,19 @@ package de.metas.document.archive.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Archive;
 
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
-import de.metas.process.PInstanceId;
-import de.metas.util.ISingletonService;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Properties;
 
 public interface IDocOutboundDAO extends ISingletonService
 {
@@ -66,7 +65,8 @@ public interface IDocOutboundDAO extends ISingletonService
 	 */
 	I_C_Doc_Outbound_Log retrieveLog(ArchiveId archiveId);
 
-	I_C_Doc_Outbound_Log retrieveLog(TableRecordReference tableRecordReference);
+	@Nullable
+	I_C_Doc_Outbound_Log retrieveLog(@NonNull TableRecordReference tableRecordReference);
 
 	/**
 	 * Find among the given <code>log</code>'s {@link I_C_Doc_Outbound_Log_Line}s the latest one with action <code>PDF</code> (i.e highest ID)
@@ -84,4 +84,6 @@ public interface IDocOutboundDAO extends ISingletonService
 	 * Retrieves last created {@link I_C_Doc_Outbound_Log} for given bpartner and table
 	 */
 	I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID);
+	
+	void updatePOReferenceIfExists(@NonNull TableRecordReference recordReference, @Nullable String poReference);
 }

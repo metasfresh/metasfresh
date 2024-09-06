@@ -148,7 +148,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set C_Doc_Outbound_Log.
+	 * Set Outbound Document Log ID.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -157,7 +157,7 @@ public interface I_C_Doc_Outbound_Log
 	void setC_Doc_Outbound_Log_ID (int C_Doc_Outbound_Log_ID);
 
 	/**
-	 * Get C_Doc_Outbound_Log.
+	 * Get Outbound Document Log ID.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -216,7 +216,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Derzeitige Mailadresse.
+	 * Set eMail.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -225,7 +225,7 @@ public interface I_C_Doc_Outbound_Log
 	void setCurrentEMailAddress (@Nullable String CurrentEMailAddress);
 
 	/**
-	 * Get Derzeitige Mailadresse.
+	 * Get eMail.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -237,7 +237,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_CurrentEMailAddress = "CurrentEMailAddress";
 
 	/**
-	 * Set Derzeitiger Mailempfänger.
+	 * Set eMail Receipient.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -246,7 +246,7 @@ public interface I_C_Doc_Outbound_Log
 	void setCurrentEMailRecipient_ID (int CurrentEMailRecipient_ID);
 
 	/**
-	 * Get Derzeitiger Mailempfänger.
+	 * Get eMail Receipient.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -278,7 +278,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_DateDoc = "DateDoc";
 
 	/**
-	 * Set Zuletzt gemailt.
+	 * Set Last eMailed.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -287,7 +287,7 @@ public interface I_C_Doc_Outbound_Log
 	void setDateLastEMail (@Nullable java.sql.Timestamp DateLastEMail);
 
 	/**
-	 * Get Zuletzt gemailt.
+	 * Get Last eMailed.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -299,7 +299,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_DateLastEMail = "DateLastEMail";
 
 	/**
-	 * Set Zuletzt gedruckt.
+	 * Set Last printed.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -308,7 +308,7 @@ public interface I_C_Doc_Outbound_Log
 	void setDateLastPrint (@Nullable java.sql.Timestamp DateLastPrint);
 
 	/**
-	 * Get Zuletzt gedruckt.
+	 * Get Last printed.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -320,7 +320,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_DateLastPrint = "DateLastPrint";
 
 	/**
-	 * Set Zuletzt gespeichert.
+	 * Set Last store.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -329,7 +329,7 @@ public interface I_C_Doc_Outbound_Log
 	void setDateLastStore (@Nullable java.sql.Timestamp DateLastStore);
 
 	/**
-	 * Get Zuletzt gespeichert.
+	 * Get Last store.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -385,7 +385,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set EDI Status Exportieren.
+	 * Set EDI export status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -394,7 +394,7 @@ public interface I_C_Doc_Outbound_Log
 	void setEDI_ExportStatus (@Nullable String EDI_ExportStatus);
 
 	/**
-	 * Get EDI Status Exportieren.
+	 * Get EDI export status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -406,7 +406,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_EDI_ExportStatus = "EDI_ExportStatus";
 
 	/**
-	 * Set Anz. gemailt.
+	 * Set eMail counter.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -417,7 +417,7 @@ public interface I_C_Doc_Outbound_Log
 	void setEMailCount (int EMailCount);
 
 	/**
-	 * Get Anz. gemailt.
+	 * Get eMail counter.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -438,7 +438,7 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setFileName (@Nullable java.lang.String FileName);
+	void setFileName (@Nullable String FileName);
 
 	/**
 	 * Get File Name.
@@ -448,7 +448,7 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getFileName();
+	@Nullable String getFileName();
 
 	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_FileName = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "FileName", null);
 	String COLUMNNAME_FileName = "FileName";
@@ -477,7 +477,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Beleg soll per EDI übermittelt werden.
+	 * Set Document to be sent via EDI.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -488,7 +488,7 @@ public interface I_C_Doc_Outbound_Log
 	void setIsEdiEnabled (boolean IsEdiEnabled);
 
 	/**
-	 * Get Beleg soll per EDI übermittelt werden.
+	 * Get Document to be sent via EDI.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -523,7 +523,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
 
 	/**
-	 * Set Anz. PDF.
+	 * Set PDF counter.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -534,7 +534,7 @@ public interface I_C_Doc_Outbound_Log
 	void setPDFCount (int PDFCount);
 
 	/**
-	 * Get Anz. PDF.
+	 * Get PDF counter.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -553,10 +553,8 @@ public interface I_C_Doc_Outbound_Log
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	void setPOReference (@Nullable String POReference);
 
 	/**
@@ -565,17 +563,15 @@ public interface I_C_Doc_Outbound_Log
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	@Nullable String getPOReference();
 
 	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_POReference = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";
 
 	/**
-	 * Set Anz. gedruckt.
+	 * Set Print counter.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -586,7 +582,7 @@ public interface I_C_Doc_Outbound_Log
 	void setPrintCount (int PrintCount);
 
 	/**
-	 * Get Anz. gedruckt.
+	 * Get Print counter.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -623,7 +619,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
-	 * Set Anz. gespeichert.
+	 * Set Stored count.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -634,7 +630,7 @@ public interface I_C_Doc_Outbound_Log
 	void setStoreCount (int StoreCount);
 
 	/**
-	 * Get Anz. gespeichert.
+	 * Get Stored count.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
