@@ -14,9 +14,10 @@ import { useBooleanSetting } from '../../reducers/settings';
 import { toastError, toastErrorFromObj } from '../../utils/toast';
 import BarcodeScannerComponent from '../BarcodeScannerComponent';
 import { parseQRCodeString } from '../../utils/qrCode/hu';
+import { doFinally } from '../../utils';
 
 const GetQuantityDialog = ({
-  readOnly = false,
+  readOnly: readOnlyParam = false,
   hideQtyInput = false,
   //
   userInfo,
@@ -44,6 +45,8 @@ const GetQuantityDialog = ({
   onQtyChange,
   onCloseDialog,
 }) => {
+  const [isProcessing, setProcessing] = useState(false);
+
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
   const allowTempQtyStorage = useBooleanSetting('qtyInput.allowTempQtyStorage');
@@ -89,7 +92,8 @@ const GetQuantityDialog = ({
     (qtyInfo?.isQtyValid &&
       (qtyRejected === 0 || rejectedReason != null) &&
       (!useCatchWeight || catchWeight?.isQtyValid));
-  const allValid = readOnly || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid));
+  const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
+  const readOnly = readOnlyParam || isProcessing;
 
   const actualValidateQtyEntered = useCallback(
     (qty, uom) => {
@@ -103,6 +107,8 @@ const GetQuantityDialog = ({
   );
 
   const onDialogYes = ({ isCloseTarget }) => {
+    if (isProcessing) return;
+
     if (allValid) {
       const inputQtyEnteredAndValidated = qtyInfos.toNumberOrString(qtyInfo);
 
@@ -113,7 +119,8 @@ const GetQuantityDialog = ({
         qtyEnteredAndValidated = Math.max(qtyToIssue - qtyAlreadyOnScale, 0);
       }
 
-      onQtyChange({
+      setProcessing(true);
+      const promise = onQtyChange({
         qtyEnteredAndValidated: qtyEnteredAndValidated,
         qtyRejected,
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
@@ -123,6 +130,8 @@ const GetQuantityDialog = ({
         lotNo: isShowLotNo ? lotNo : null,
         isCloseTarget: !!isCloseTarget,
       })?.catch?.((error) => toastErrorFromObj(error));
+
+      doFinally(promise, () => setProcessing(false));
     }
   };
 
@@ -444,7 +453,7 @@ const GetQuantityDialog = ({
                   >
                     {trl('activities.picking.confirmDone')}
                   </button>
-                  <button className="button is-success" onClick={onCloseDialog}>
+                  <button className="button is-success" disabled={isProcessing} onClick={onCloseDialog}>
                     {trl('general.cancelText')}
                   </button>
                 </div>
