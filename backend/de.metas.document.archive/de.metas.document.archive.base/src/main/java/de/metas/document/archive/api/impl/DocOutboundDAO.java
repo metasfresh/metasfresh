@@ -43,16 +43,9 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 
 import javax.annotation.Nullable;
-
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Properties;
-
-import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class DocOutboundDAO implements IDocOutboundDAO
@@ -163,15 +156,17 @@ public class DocOutboundDAO implements IDocOutboundDAO
 			@NonNull final TableRecordReference recordReference,
 			@Nullable final String poReference)
 	{
-		final I_C_Doc_Outbound_Log docOutboundLog = retrieveLog(recordReference);
-		if (docOutboundLog == null)
+		final List<I_C_Doc_Outbound_Log> docOutboundLogs = retrieveLog(recordReference);
+		if (Check.isEmpty(docOutboundLogs))
 		{
 			return;
 		}
 
-		docOutboundLog.setPOReference(poReference);
+		docOutboundLogs.forEach(docOutboundLog -> {
+			docOutboundLog.setPOReference(poReference);
 
-		saveRecord(docOutboundLog);
+			saveRecord(docOutboundLog);
+		});
 	}
 	
 	public static TableRecordReference extractRecordRef(@NonNull final I_AD_Archive archive)
