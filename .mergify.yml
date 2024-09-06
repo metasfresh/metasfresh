@@ -78,7 +78,7 @@ pull_request_rules:
     conditions:
       - check-success=testspace-analytics
       - check-success=continuous-integration/jenkins/branch
-      - label=ops:auto_merge
+      - label=ops:auto_squash_merge
       - or:
           - or: *ALL_BASE_BRANCHES
           - base=master
@@ -94,7 +94,7 @@ pull_request_rules:
     conditions:
       - check-success=testspace-analytics
       - check-success=continuous-integration/jenkins/branch
-      - label=ops:auto_merge_no_squash
+      - label=ops:auto_merge_commit
       - or:
           - or: *ALL_BASE_BRANCHES
           - base=master
