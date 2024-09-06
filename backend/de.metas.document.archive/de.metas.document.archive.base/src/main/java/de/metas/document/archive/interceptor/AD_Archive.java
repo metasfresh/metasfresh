@@ -22,27 +22,29 @@
 
 package de.metas.document.archive.interceptor;
 
-import de.metas.util.Services;
+import de.metas.document.archive.api.impl.DocOutboundService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_AD_Archive;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_M_InOut.class)
+@Interceptor(I_AD_Archive.class)
 @Component
-public class M_InOut
+@RequiredArgsConstructor
+public class AD_Archive
 {
-	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+	@NonNull
+	private final DocOutboundService docOutboundService;
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_InOut.COLUMNNAME_POReference)
-	public void updatePOReference(@NonNull final I_M_InOut inout)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_AD_Archive.COLUMNNAME_POReference)
+	public void updatePOReference(@NonNull final I_AD_Archive archive)
 	{
-		final TableRecordReference tableRecordReference = TableRecordReference.of(inout);
+		final TableRecordReference tableRecordReference = TableRecordReference.of(archive.getAD_Table_ID(), archive.getRecord_ID());
 
-		archiveDAO.updatePOReferenceIfExists(tableRecordReference, inout.getPOReference());
+		docOutboundService.updatePOReferenceIfExists(tableRecordReference, archive.getPOReference());
 	}
 }

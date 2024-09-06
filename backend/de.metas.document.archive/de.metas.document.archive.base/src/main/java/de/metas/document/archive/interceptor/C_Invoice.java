@@ -22,11 +22,11 @@
 
 package de.metas.document.archive.interceptor;
 
-import de.metas.document.archive.api.impl.DocOutboundService;
+import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
@@ -34,17 +34,15 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Invoice.class)
 @Component
-@RequiredArgsConstructor
 public class C_Invoice
 {
-	@NonNull
-	private final DocOutboundService docOutboundService;
+	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Invoice.COLUMNNAME_POReference)
 	public void updatePOReference(@NonNull final I_C_Invoice invoice)
 	{
 		final TableRecordReference tableRecordReference = TableRecordReference.of(invoice);
-		
-		docOutboundService.updatePOReferenceIfExists(tableRecordReference, invoice.getPOReference());
+
+		archiveDAO.updatePOReferenceIfExists(tableRecordReference, invoice.getPOReference());
 	}
 }

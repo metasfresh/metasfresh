@@ -18,7 +18,7 @@ public interface I_AD_Archive
 
 
 	/**
-	 * Set Archiv.
+	 * Set Archive.
 	 * Archiv für Belege und Berichte
 	 *
 	 * <br>Type: ID
@@ -28,7 +28,7 @@ public interface I_AD_Archive
 	void setAD_Archive_ID (int AD_Archive_ID);
 
 	/**
-	 * Get Archiv.
+	 * Get Archive.
 	 * Archiv für Belege und Berichte
 	 *
 	 * <br>Type: ID
@@ -395,8 +395,8 @@ public interface I_AD_Archive
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set In Druck-Warteschlange.
-	 * Entscheidet, ob beim erstellen des DruckstÃ¼cks (Archiv) automatisch eine Druck-Warteschlange-Datensatz erstellt werden soll
+	 * Set Is Direct Enqueue.
+	 * Entscheidet, ob beim erstellen des Druckstücks (Archiv) automatisch eine Druck-Warteschlange-Datensatz erstellt werden soll
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -405,8 +405,8 @@ public interface I_AD_Archive
 	void setIsDirectEnqueue (boolean IsDirectEnqueue);
 
 	/**
-	 * Get In Druck-Warteschlange.
-	 * Entscheidet, ob beim erstellen des DruckstÃ¼cks (Archiv) automatisch eine Druck-Warteschlange-Datensatz erstellt werden soll
+	 * Get Is Direct Enqueue.
+	 * Entscheidet, ob beim erstellen des Druckstücks (Archiv) automatisch eine Druck-Warteschlange-Datensatz erstellt werden soll
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -473,7 +473,7 @@ public interface I_AD_Archive
 	String COLUMNNAME_IsFileSystem = "IsFileSystem";
 
 	/**
-	 * Set Bericht.
+	 * Set Report.
 	 * Indicates a Report record
 	 *
 	 * <br>Type: YesNo
@@ -483,7 +483,7 @@ public interface I_AD_Archive
 	void setIsReport (boolean IsReport);
 
 	/**
-	 * Get Bericht.
+	 * Get Report.
 	 * Indicates a Report record
 	 *
 	 * <br>Type: YesNo
@@ -515,6 +515,29 @@ public interface I_AD_Archive
 
 	ModelColumn<I_AD_Archive, Object> COLUMN_Name = new ModelColumn<>(I_AD_Archive.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOReference (@Nullable java.lang.String POReference);
+
+	/**
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOReference();
+
+	ModelColumn<I_AD_Archive, Object> COLUMN_POReference = new ModelColumn<>(I_AD_Archive.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
 
 	/**
 	 * Set Record ID.
