@@ -2113,4 +2113,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return PaymentTermId.ofRepoId(getById(invoiceId)
 				.getC_PaymentTerm_ID());
 	}
+
+	@Override
+	@Nullable
+	public String getPOReference(@NonNull final InvoiceId invoiceId)
+	{
+		return getById(invoiceId).getPOReference();
+	}
 }
