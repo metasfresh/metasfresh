@@ -112,7 +112,8 @@ public class ArchiveBL implements IArchiveBL
 					.processId(archiveInfo.getProcessId())
 					.pinstanceId(archiveInfo.getPInstanceId())
 					.archiveName(archiveInfo.getName())
-					.bpartnerId(archiveInfo.getBpartnerId());
+					.bpartnerId(archiveInfo.getBpartnerId())
+					.poReference(archiveInfo.getPoReference());
 		}
 
 		return requestBuilder.build();
@@ -143,6 +144,7 @@ public class ArchiveBL implements IArchiveBL
 		archive.setRecord_ID(recordRef != null ? recordRef.getRecord_ID() : -1);
 
 		archive.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
+		archive.setPOReference(request.getPoReference());
 
 		final byte[] byteArray = extractByteArray(request);
 		storage.setBinaryData(archive, byteArray);

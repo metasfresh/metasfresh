@@ -30,8 +30,8 @@ import de.metas.invoice.InvoiceId;
 import de.metas.process.AdProcessId;
 import de.metas.report.DocumentReportAdvisor;
 import de.metas.report.DocumentReportAdvisorUtil;
-import de.metas.report.PrintFormatId;
 import de.metas.report.DocumentReportInfo;
+import de.metas.report.PrintFormatId;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -104,6 +104,7 @@ public class InvoiceDocumentReportAdvisor implements DocumentReportAdvisor
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)
 				.language(language)
+				.poReference(invoice.getPOReference())
 				.build();
 	}
 
