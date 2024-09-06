@@ -27,7 +27,6 @@ export const toUrl = (path, queryParams) => {
 };
 
 export const doFinally = (promise, func) => {
-  console.log('doFinally', { promise, func });
   if (!func) return;
 
   if (promise?.finally) {
