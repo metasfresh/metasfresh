@@ -63,6 +63,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.X_C_DocType;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -440,4 +441,7 @@ public interface IInvoiceBL extends ISingletonService {
 
 	@NonNull
 	PaymentTermId getPaymentTermId(@NonNull InvoiceId invoiceId);
+
+	@Nullable
+	String getPOReference(@NonNull InvoiceId invoiceId);
 }

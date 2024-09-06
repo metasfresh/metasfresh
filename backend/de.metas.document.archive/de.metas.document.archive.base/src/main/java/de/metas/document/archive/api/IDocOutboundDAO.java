@@ -63,4 +63,6 @@ public interface IDocOutboundDAO extends ISingletonService
 	 * Retrieves last created {@link I_C_Doc_Outbound_Log} for given bpartner and table
 	 */
 	I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID);
+	
+	void updatePOReferenceIfExists(@NonNull TableRecordReference recordReference, @Nullable String poReference);
 }

@@ -47,6 +47,13 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class DocOutboundDAO implements IDocOutboundDAO
 {
@@ -82,9 +89,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 			return null;
 		}
 
-		final Object contextProvider = log;
-
-		final IQueryBuilder<I_C_Doc_Outbound_Log_Line> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_Line.class, contextProvider)
+		final IQueryBuilder<I_C_Doc_Outbound_Log_Line> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_Line.class, log)
 				.addEqualsFilter(I_C_Doc_Outbound_Log_Line.COLUMN_C_Doc_Outbound_Log_ID, log.getC_Doc_Outbound_Log_ID());
 		addPDFArchiveLogLineFilters(queryBuilder);
 
@@ -124,7 +129,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID, AD_Table_ID);
 
 		// Order by
-		final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class)
+		final IQueryOrderBy queryOrderBy = queryBL
 				.createQueryOrderByBuilder(I_C_Doc_Outbound_Log.class)
 				.addColumnDescending(I_C_Doc_Outbound_Log.COLUMNNAME_Created)
 				.createQueryOrderBy();
@@ -153,6 +158,22 @@ public class DocOutboundDAO implements IDocOutboundDAO
 				.list(I_C_Doc_Outbound_Log.class);
 	}
 
+	@Override
+	public void updatePOReferenceIfExists(
+			@NonNull final TableRecordReference recordReference,
+			@Nullable final String poReference)
+	{
+		final I_C_Doc_Outbound_Log docOutboundLog = retrieveLog(recordReference);
+		if (docOutboundLog == null)
+		{
+			return;
+		}
+
+		docOutboundLog.setPOReference(poReference);
+
+		saveRecord(docOutboundLog);
+	}
+	
 	public static TableRecordReference extractRecordRef(@NonNull final I_AD_Archive archive)
 	{
 		return TableRecordReference.of(archive.getAD_Table_ID(), archive.getRecord_ID());

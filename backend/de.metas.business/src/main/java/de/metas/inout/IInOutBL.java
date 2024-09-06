@@ -221,4 +221,7 @@ public interface IInOutBL extends ISingletonService
 	Money getCOGSBySalesOrderId(
 			@NonNull OrderLineId salesOrderLineId,
 			@NonNull AcctSchemaId acctSchemaId);
+
+	@Nullable
+	String getPOReference(@NonNull InOutId inOutId);
 }

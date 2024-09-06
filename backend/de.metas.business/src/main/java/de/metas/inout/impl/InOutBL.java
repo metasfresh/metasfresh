@@ -813,4 +813,10 @@ public class InOutBL implements IInOutBL
 				.orElseGet(() -> Money.zero(acctSchemaBL.getAcctCurrencyId(acctSchemaId)));
 	}
 
+	@Override
+	@Nullable
+	public String getPOReference(@NonNull final InOutId inOutId)
+	{
+		return getById(inOutId).getPOReference();
+	}
 }
