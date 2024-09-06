@@ -68,13 +68,36 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
   return trl('error.PleaseTryAgain');
 };
 
+export const toastNotification = ({ messageKey, plainMessage }) => {
+  let message;
+  if (messageKey) {
+    message = trl(messageKey);
+  } else if (plainMessage) {
+    message = plainMessage;
+  } else {
+    console.error('toastNotification called without any message');
+    return;
+  }
+
+  toast.custom(
+    (t) => (
+      <div className="toastSuccessContainer" onClick={() => toast.dismiss(t.id)}>
+        <span>{message}</span>
+      </div>
+    ),
+    {
+      duration: 86400000,
+    }
+  );
+};
+
 function extractUserFriendlyErrorSingleErrorObject(error) {
   if (!error) {
     // null/empty error message... shall not happen
     return trl('error.PleaseTryAgain');
   }
   if (typeof error === 'object') {
-    if (error.userFriendlyError) {
+    if (error.userFriendlyError || window.showAllErrorMessages) {
       return error.message;
     } else {
       // don't scare the user with weird errors. Better show him some generic error.

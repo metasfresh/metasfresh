@@ -24,9 +24,11 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.i18n.ExplainedOptional;
 import de.metas.quantity.Quantity;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.OptionalBoolean;
+import de.metas.util.Optionals;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -34,6 +36,7 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import io.cucumber.datatable.DataTable;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
@@ -44,6 +47,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +60,8 @@ import java.util.function.Function;
 public class DataTableRow
 {
 	private final int lineNo; // introduced to improve logging/debugging
-	final Map<String, String> map;
+	@NonNull private final Map<String, String> map;
+	@Nullable @Setter private String additionalRowIdentifierColumnName;
 
 	DataTableRow(
 			final int lineNo,
@@ -156,7 +161,12 @@ public class DataTableRow
 			throw new AdempiereException("Invalid name: `" + name + "`");
 		}
 
-		nameResolved = nameResolved.replace("@Date@", Instant.now().toString());
+		if (nameResolved.contains("@Date@"))
+		{
+			final String timestamp = Instant.now().toString();
+			nameResolved = nameResolved.replace("@Date@", timestamp);
+		}
+
 		return nameResolved;
 	}
 
@@ -208,29 +218,29 @@ public class DataTableRow
 	@NonNull
 	public StepDefDataIdentifier getAsIdentifier()
 	{
-		return getAsIdentifier(StepDefDataIdentifier.SUFFIX);
+		return getAsOptionalIdentifier()
+				.orElseThrow(() -> new AdempiereException("No row identifier")
+						.appendParametersToMessage()
+						.setParameter("row", map)
+						.setParameter("additionalRowIdentifierColumnName", additionalRowIdentifierColumnName));
 	}
 
 	@NonNull
-	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier() {return getAsOptionalIdentifier(StepDefDataIdentifier.SUFFIX);}
+	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier()
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> getAsOptionalIdentifier(StepDefDataIdentifier.SUFFIX),
+				() -> additionalRowIdentifierColumnName != null ? getAsOptionalIdentifier(additionalRowIdentifierColumnName) : Optional.empty()
+		);
+	}
 
 	@NonNull
 	public StepDefDataIdentifier getAsIdentifier(@NonNull final String columnName)
 	{
-		String string = map.get(columnName);
-		if (string == null && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
-		{
-			string = map.get(columnName + "." + StepDefDataIdentifier.SUFFIX);
-		}
-
-		if (string == null || Check.isBlank(string))
-		{
-			throw new AdempiereException("Missing value for columnName=" + columnName)
-					.appendParametersToMessage()
-					.setParameter("row", map);
-		}
-
-		return StepDefDataIdentifier.ofString(string);
+		return getAsOptionalIdentifier(columnName)
+				.orElseThrow(() -> new AdempiereException("Missing value for columnName=" + columnName)
+						.appendParametersToMessage()
+						.setParameter("row", map));
 	}
 
 	@NonNull
@@ -336,26 +346,74 @@ public class DataTableRow
 		return OptionalBoolean.ofNullableString(valueString);
 	}
 
+	public Quantity getAsQuantity(
+			@NonNull final String valueColumnName,
+			@Nullable final String uomColumnName,
+			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
+	{
+		return getAsOptionalQuantity(valueColumnName, uomColumnName, uomMapper)
+				.orElseThrow(() -> new AdempiereException("No value found for " + valueColumnName));
+	}
+
 	public Optional<Quantity> getAsOptionalQuantity(
 			@NonNull final String valueColumnName,
-			@NonNull final String uomColumnName,
-			@NonNull final Function<String, I_C_UOM> uomMapper)
+			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
 	{
-		final BigDecimal valueBD = getAsOptionalBigDecimal(valueColumnName).orElse(null);
-		if (valueBD == null)
+		return getAsOptionalQuantity(valueColumnName, null, uomMapper);
+	}
+
+	public Optional<Quantity> getAsOptionalQuantity(
+			@NonNull final String valueColumnName,
+			@Nullable final String uomColumnName,
+			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
+	{
+		final String valueStr = getAsOptionalString(valueColumnName).map(StringUtils::trimBlankToNull).orElse(null);
+		if (valueStr == null)
 		{
 			return Optional.empty();
 		}
 
-		final String uomString = getAsOptionalString(uomColumnName).orElse(null);
-		if (uomString == null)
+		final int spaceIdx = valueStr.indexOf(" ");
+		final BigDecimal valueBD;
+		X12DE355 uomCode;
+		if (spaceIdx <= 0)
 		{
-			return Optional.empty();
+			valueBD = parseBigDecimal(valueStr, valueColumnName);
+			uomCode = null;
+		}
+		else
+		{
+			valueBD = parseBigDecimal(valueStr.substring(0, spaceIdx), valueColumnName);
+			uomCode = X12DE355.ofNullableCode(valueStr.substring(spaceIdx).trim());
 		}
 
-		final I_C_UOM uom = uomMapper.apply(uomString);
+		if (uomCode == null)
+		{
+			if (uomColumnName == null)
+			{
+				throw new AdempiereException("When UOM is not incorporated in `" + valueColumnName + "` then an UOM column name shall be provided");
+			}
 
+			uomCode = getAsUOMCode(uomColumnName);
+		}
+
+		final I_C_UOM uom = uomMapper.apply(uomCode);
 		return Optional.of(Quantity.of(valueBD, uom));
+	}
+
+	@NonNull
+	public X12DE355 getAsUOMCode(@NonNull final String columnName)
+	{
+		String valueStr = getAsOptionalString(columnName).orElse(null);
+		if (valueStr == null && !columnName.endsWith("X12DE355"))
+		{
+			valueStr = getAsOptionalString(columnName + ".X12DE355").orElse(null);
+		}
+		if (valueStr == null)
+		{
+			throw new AdempiereException("No value found for " + columnName);
+		}
+		return X12DE355.ofCode(valueStr);
 	}
 
 	public LocalDate getAsLocalDate(@NonNull final String columnName)
@@ -386,22 +444,61 @@ public class DataTableRow
 		return Timestamp.valueOf(getAsLocalDate(columnName).atStartOfDay());
 	}
 
+	@SuppressWarnings("unused")
+	public Timestamp getAsInstantTimestamp(@NonNull final String columnName)
+	{
+		return Timestamp.from(getAsInstant(columnName));
+	}
+
+	public Optional<Timestamp> getAsOptionalInstantTimestamp(@NonNull final String columnName)
+	{
+		return getAsOptionalInstant(columnName).map(Timestamp::from);
+	}
+
 	public Instant getAsInstant(@NonNull final String columnName)
 	{
 		return parseInstant(getAsString(columnName), columnName);
 	}
 
+	public Optional<Instant> getAsOptionalInstant(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(valueStr -> parseInstant(valueStr, columnName));
+	}
+
 	@NonNull
-	private static Instant parseInstant(final String valueStr, final String columnInfo)
+	private static Instant parseInstant(@NonNull final String valueStr, final String columnInfo)
 	{
 		try
 		{
-			return Instant.parse(valueStr);
+			if (valueStr.contains("T"))
+			{
+				if (valueStr.endsWith("Z"))
+				{
+					return Instant.parse(valueStr);
+				}
+				else
+				{
+					return toInstant(LocalDateTime.parse(valueStr));
+				}
+			}
+			else
+			{
+				return toInstant(LocalDate.parse(valueStr).atStartOfDay());
+			}
 		}
 		catch (Exception ex)
 		{
 			throw new AdempiereException("Column `" + columnInfo + "` has invalid Instant `" + valueStr + "`");
 		}
+	}
+
+	private static Instant toInstant(@NonNull final LocalDateTime ldt)
+	{
+		// IMPORTANT: we use JVM timezone instead of SystemTime.zoneId()
+		// because that's the timezone java.sql.Timestamp would use it too,
+		// and because most of currently logic is silently assuming that
+		final ZoneId jvmTimeZone = ZoneId.systemDefault();
+		return ldt.atZone(jvmTimeZone).toInstant();
 	}
 
 	public Optional<LocalDateTime> getAsOptionalLocalDateTime(@NonNull final String columnName)

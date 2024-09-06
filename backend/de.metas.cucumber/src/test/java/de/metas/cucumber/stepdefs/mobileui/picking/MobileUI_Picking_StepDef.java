@@ -6,10 +6,14 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.picking.PickingSlot_StepDefData;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -19,6 +23,7 @@ import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFActivity;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
@@ -38,11 +43,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @RequiredArgsConstructor
 public class MobileUI_Picking_StepDef
 {
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 	@NonNull private final MobileUIPickingClient mobileUIPickingClient = new MobileUIPickingClient();
 
@@ -50,6 +56,7 @@ public class MobileUI_Picking_StepDef
 	@NonNull private final C_Order_StepDefData ordersTable;
 	@NonNull private final PickingSlot_StepDefData pickingSlotsTable;
 	@NonNull private final M_HU_StepDefData huTable;
+	@NonNull private final M_HU_PI_StepDefData huPiTable;
 
 	@NonNull private final Context context = new Context();
 
@@ -68,6 +75,40 @@ public class MobileUI_Picking_StepDef
 
 		final JsonWFProcess wfProcess = mobileUIPickingClient.scanPickingSlot(context.getWfProcessIdNotNull(), pickingSlotIdAndCaption);
 		context.setWfProcess(wfProcess);
+	}
+
+	@When("^set picking target as new LU identified by (.*)$")
+	public void setPickingLUTarget(@NonNull final String packingInstructionsIdentifier)
+	{
+		final HuPackingInstructionsId luPIId = huPiTable.getId(packingInstructionsIdentifier);
+		final LUPickingTarget pickingTarget = LUPickingTarget.ofPackingInstructions(luPIId, packingInstructionsIdentifier);
+
+		final JsonWFProcess wfProcess = mobileUIPickingClient.setPickingTarget(context.getWfProcessIdNotNull(), pickingTarget);
+		context.setWfProcess(wfProcess);
+	}
+
+	@When("expect current picking target")
+	public void setPickingLUTarget(@NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final String wfProcessId = context.getWfProcessNotNull().getId();
+
+		row.getAsOptionalIdentifier("Existing_LU")
+				.ifPresent(luIdentifier -> {
+					final LUPickingTarget actualPickingTarget = mobileUIPickingClient.getPickingTarget(wfProcessId).orElse(null);
+					assertThat(actualPickingTarget).as("actual picking LU target").isNotNull();
+					assertThat(actualPickingTarget.isExistingLU()).as(() -> "actual picking LU target is existing LU: " + actualPickingTarget).isTrue();
+
+					final HuId luId = huTable.getIdOptional(luIdentifier).orElse(null);
+					if (luId == null)
+					{
+						huTable.put(luIdentifier, handlingUnitsBL.getById(actualPickingTarget.getLuIdNotNull()));
+					}
+					else
+					{
+						assertThat(actualPickingTarget.getLuIdNotNull()).as("actual picking LU target").isEqualTo(luId);
+					}
+				});
 	}
 
 	@When("pick lines")

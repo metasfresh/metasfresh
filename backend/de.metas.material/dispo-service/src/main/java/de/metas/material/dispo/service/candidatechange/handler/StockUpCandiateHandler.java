@@ -6,7 +6,7 @@ import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
+import de.metas.material.dispo.commons.repository.CandidateSaveResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.event.PostMaterialEventService;
@@ -45,7 +45,6 @@ import java.util.Collection;
  * This handler might create a {@link SupplyRequiredEvent}, but does not decrease the protected stock quantity.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
@@ -75,7 +74,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 	}
 
 	@Override
-	public Candidate onCandidateNewOrChange(
+	public CandidateSaveResult onCandidateNewOrChange(
 			@NonNull final Candidate candidate,
 			@NonNull final OnNewOrChangeAdvise advise)
 	{
@@ -88,13 +87,14 @@ public class StockUpCandiateHandler implements CandidateHandler
 
 		assertCorrectCandidateType(candidate);
 
-		final SaveResult candidateSaveResult = candidateRepositoryWriteService
-				.addOrUpdateOverwriteStoredSeqNo(candidate);
-		final Candidate candidateWithQtyDeltaAndId = candidateSaveResult.toCandidateWithQtyDelta();
+		final CandidateSaveResult candidateSaveResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidate);
+		//final Candidate candidateWithQtyDeltaAndId = candidateSaveResult.toCandidateWithQtyDelta();
 
 		if (!candidateSaveResult.isQtyChanged() && !candidateSaveResult.isDateChanged())
 		{
-			return candidateWithQtyDeltaAndId; // this candidate didn't change anything
+			// this candidate didn't change anything
+			//return candidateWithQtyDeltaAndId;
+			return candidateSaveResult;
 		}
 
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(candidate.getMaterialDescriptor());
@@ -106,12 +106,13 @@ public class StockUpCandiateHandler implements CandidateHandler
 
 		if (requiredAdditionalQty.signum() > 0)
 		{
-			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
-					.createSupplyRequiredEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty, null);
+			final Candidate candidateWithQtyDeltaAndId = candidateSaveResult.toCandidateWithQtyDelta();
+			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator.createSupplyRequiredEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty, null);
 			materialEventService.enqueueEventNow(supplyRequiredEvent);
 		}
 
-		return candidateWithQtyDeltaAndId;
+		//return candidateWithQtyDeltaAndId;
+		return candidateSaveResult;
 	}
 
 	@Override

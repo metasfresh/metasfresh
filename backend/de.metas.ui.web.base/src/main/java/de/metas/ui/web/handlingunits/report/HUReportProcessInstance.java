@@ -2,11 +2,13 @@ package de.metas.ui.web.handlingunits.report;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportExecutorResult;
-import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.process.AdProcessId;
+import de.metas.report.PrintCopies;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstanceParameter;
 import de.metas.ui.web.process.ProcessExecutionContext;
@@ -34,6 +36,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -148,8 +151,8 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	@Override
 	public synchronized ProcessInstanceResult startProcess(@NonNull final ProcessExecutionContext context)
 	{
-		final int numberOfCopies = getCopies();
-		if (numberOfCopies <= 0)
+		final PrintCopies numberOfCopies = getCopies();
+		if (!numberOfCopies.isGreaterThanZero())
 		{
 			throw new AdempiereException("@" + PARAM_Copies + "@ > 0");
 		}
@@ -186,8 +189,109 @@ final class HUReportProcessInstance implements IProcessInstanceController
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return HUReportService.get().getHUsToProcess(husToCheck);
+		return getHUsToProcess(husToCheck);
 	}
+
+	private static List<HUToReport> getHUsToProcess(@NonNull final Set<HUToReport> husToCheck)
+	{
+		if (husToCheck.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<HUToReport> tuHUs = new ArrayList<>();
+		final List<HUToReport> luHUs = new ArrayList<>();
+		final List<HUToReport> cuHUs = new ArrayList<>();
+		for (final HUToReport hu : husToCheck)
+		{
+			final HuUnitType huUnitType = hu.getHUUnitType();
+
+			if (HuUnitType.VHU.equals(huUnitType))
+			{
+				cuHUs.add(hu);
+			}
+			else if (HuUnitType.LU.equals(huUnitType))
+			{
+				luHUs.add(hu);
+			}
+			else if (HuUnitType.TU.equals(huUnitType))
+			{
+				tuHUs.add(hu);
+			}
+		}
+
+		final String huUnitTypeToReport;
+		if (!tuHUs.isEmpty())
+		{
+			huUnitTypeToReport = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
+		}
+		else if (!luHUs.isEmpty())
+		{
+			huUnitTypeToReport = X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit;
+		}
+		else
+		{
+			huUnitTypeToReport = X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI;
+		}
+
+		if (!luHUs.isEmpty() || !tuHUs.isEmpty() || !cuHUs.isEmpty())
+		{
+			return extractHUsToProcess(huUnitTypeToReport, luHUs, tuHUs, cuHUs);
+		}
+		else
+		{
+			return ImmutableList.of();
+		}
+	}
+
+	/**
+	 * In case at least one TU was selected, we will deliver the processes for TUs.
+	 * <p>
+	 * This will happen even though we have, for instance, just 1 TU and some LUs selected.
+	 * <p>
+	 * The HUs to have the processes applied will be the 1 TU and the included TUs of the selected LUs
+	 */
+	private static List<HUToReport> extractHUsToProcess(final String huUnitType, final List<HUToReport> luHUs, final List<HUToReport> tuHUs, final List<HUToReport> cuHUs)
+	{
+		// In case the unit type is Virtual PI we don't have to return anything, since we don't have processes for virtual PIs
+		if (X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(huUnitType))
+		{
+			return cuHUs;
+		}
+
+		// In case the unit type is LU we just have to process the LUs
+		else if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitType))
+		{
+			return luHUs;
+		}
+
+		// In case the unit type is TU we have 2 possibilities:
+		else
+		{
+			// In case there are no selected LUs, simply return the TUs
+			if (luHUs.isEmpty())
+			{
+				return tuHUs;
+			}
+			// if this point is reached, it means we have both TUs and LUs selected
+			else
+			{
+				final ImmutableList.Builder<HUToReport> husToProcess = ImmutableList.builder();
+
+				// first, add all the selected TUs
+				husToProcess.addAll(tuHUs);
+
+				for (final HUToReport lu : luHUs)
+				{
+					final List<HUToReport> includedHUs = lu.getIncludedHUs();
+					husToProcess.addAll(includedHUs);
+				}
+
+				return husToProcess.build();
+			}
+		}
+	}
+
 
 	@Override
 	public synchronized ProcessInstanceResult getExecutionResult()
@@ -228,9 +332,9 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		parameters.processValueChange(PARAM_Copies, copies, ReasonSupplier.NONE, ignoreReadonlyFlag);
 	}
 
-	public int getCopies()
+	public PrintCopies getCopies()
 	{
-		return parameters.getFieldView(PARAM_Copies).getValueAsInt(0);
+		return PrintCopies.ofInt(parameters.getFieldView(PARAM_Copies).getValueAsInt(0));
 	}
 
 	public AdProcessId getJasperProcess_ID()

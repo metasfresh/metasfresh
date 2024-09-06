@@ -22,7 +22,6 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.document.DocTypeQuery;
@@ -53,7 +52,6 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
@@ -77,13 +75,11 @@ import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class HUInOutBL implements IHUInOutBL
 {
@@ -392,18 +388,17 @@ public class HUInOutBL implements IHUInOutBL
 						Map.Entry::getValue));
 	}
 
-	public ImmutableSetMultimap<InOutLineId, HuId> getHUIdsByInOutIds(@NonNull final Set<InOutId> inoutIds)
+	@Override
+	public Set<HuId> getHUIdsByInOutIds(@NonNull final Set<InOutId> inoutIds)
 	{
 		if (inoutIds.isEmpty())
 		{
-			return ImmutableSetMultimap.of();
+			return ImmutableSet.of();
 		}
-		final Set<InOutLineId> inoutLineIds = inoutIds.stream()
-				.map(inOutDAO::retrieveLinesForInOutId)
-				.flatMap(Collection::stream)
-				.map(InOutAndLineId::getInOutLineId)
-				.collect(Collectors.toSet());
-		return getHUIdsByInOutLineIds(inoutLineIds);
+
+		final ImmutableSet<InOutLineId> inoutLineIds = inOutDAO.retrieveActiveLineIdsByInOutIds(inoutIds);
+		final ImmutableSetMultimap<InOutLineId, HuId> huIds = getHUIdsByInOutLineIds(inoutLineIds);
+		return ImmutableSet.copyOf(huIds.values());
 	}
 
 	@Override
@@ -425,7 +420,7 @@ public class HUInOutBL implements IHUInOutBL
 			return false;
 		}
 
-		final ImmutableCollection<HuId> huIds = getHUIdsByInOutIds(Collections.singleton(inOutId)).values();
+		final Set<HuId> huIds = getHUIdsByInOutIds(Collections.singleton(inOutId));
 		if (huIds.isEmpty())
 		{
 			return true;

@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.material.dispo;
 import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.MaterialDispoDataItem;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.product.ProductId;
@@ -72,14 +71,14 @@ public class MaterialDispoRecordRepository
 	{
 		return candidateRepositoryRetrieval.retrieveAllNotStockOrderedByDateAndSeqNoFor(productId);
 	}
-	
+
 	private ImmutableList<MaterialDispoDataItem> asMaterialDispoDataItems(final @NonNull List<Candidate> candidates)
 	{
 		return candidates.stream()
 				.map(this::asMaterialDispoDataItem)
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	private MaterialDispoDataItem asMaterialDispoDataItem(final @NonNull Candidate candidate)
 	{
 		final Candidate stockCandidate = getStockCandidate(candidate)
@@ -110,7 +109,7 @@ public class MaterialDispoRecordRepository
 			}
 		}
 	}
-	
+
 	private void assertNotStockQuery(final @NonNull CandidatesQuery query)
 	{
 		if (query.getType().equals(CandidateType.STOCK))

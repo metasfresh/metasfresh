@@ -38,6 +38,7 @@ const GetQuantityDialog = ({
   bestBeforeDate: bestBeforeDateParam = '',
   isShowLotNo = false,
   lotNo: lotNoParam = '',
+  isShowCloseTargetButton = false,
   //
   validateQtyEntered,
   onQtyChange,
@@ -45,13 +46,16 @@ const GetQuantityDialog = ({
 }) => {
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
+  const useZeroAsInitialValue = useBooleanSetting('qtyInput.useZeroAsInitialValue');
 
-  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyTarget));
+  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(useZeroAsInitialValue ? 0 : qtyTarget));
   const [rejectedReason, setRejectedReason] = useState(null);
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
 
   const useCatchWeight = !scaleDevice && catchWeightUom;
-  const [catchWeight, setCatchWeight] = useState(qtyInfos.invalidOfNumber(catchWeightParam));
+  const [catchWeight, setCatchWeight] = useState(
+    qtyInfos.invalidOfNumber(useZeroAsInitialValue ? 0 : catchWeightParam)
+  );
   const [showCatchWeightQRCodeReader, setShowCatchWeightQRCodeReader] = useState(useCatchWeight);
 
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);
@@ -85,7 +89,7 @@ const GetQuantityDialog = ({
       (!useCatchWeight || catchWeight?.isQtyValid));
   const allValid = readOnly || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid));
 
-  const onDialogYes = () => {
+  const onDialogYes = ({ isCloseTarget }) => {
     if (allValid) {
       const inputQtyEnteredAndValidated = qtyInfos.toNumberOrString(qtyInfo);
 
@@ -102,6 +106,7 @@ const GetQuantityDialog = ({
         catchWeightUom: useCatchWeight ? catchWeightUom : null,
         bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
         lotNo: isShowLotNo ? lotNo : null,
+        isCloseTarget: !!isCloseTarget,
       })?.catch?.((error) => toastErrorFromObj(error));
     }
   };
@@ -365,7 +370,23 @@ const GetQuantityDialog = ({
                   </table>
                 </div>
                 <div className="buttons is-centered">
-                  <button className="button is-success" disabled={!allValid} onClick={onDialogYes}>
+                  {isShowCloseTargetButton && (
+                    <>
+                      <button
+                        className="button is-success"
+                        disabled={!allValid}
+                        onClick={() => onDialogYes({ isCloseTarget: true })}
+                      >
+                        {trl('activities.picking.confirmDoneAndCloseTarget')}
+                      </button>
+                      <br />
+                    </>
+                  )}
+                  <button
+                    className="button is-success"
+                    disabled={!allValid}
+                    onClick={() => onDialogYes({ isCloseTarget: false })}
+                  >
                     {trl('activities.picking.confirmDone')}
                   </button>
                   <button className="button is-danger" onClick={onCloseDialog}>
@@ -417,6 +438,7 @@ GetQuantityDialog.propTypes = {
   bestBeforeDate: PropTypes.string,
   isShowLotNo: PropTypes.bool,
   lotNo: PropTypes.string,
+  isShowCloseTargetButton: PropTypes.bool,
 
   // Callbacks
   validateQtyEntered: PropTypes.func,

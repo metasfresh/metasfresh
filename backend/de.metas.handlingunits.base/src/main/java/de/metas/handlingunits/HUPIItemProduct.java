@@ -30,7 +30,7 @@ public class HUPIItemProduct
 	@Nullable ProductId productId;
 	@Nullable Quantity qtyCUsPerTU;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private HUPIItemProduct(
 			@NonNull final HUPIItemProductId id,
 			@NonNull final ITranslatableString name,
@@ -105,8 +105,8 @@ public class HUPIItemProduct
 		{
 			throw new AdempiereException("Cannot calculate qty of CUs for infinite capacity");
 		}
-
-		return qtyCUsPerTU.multiply(qtyTU.toInt());
+		
+		return qtyTU.computeTotalQtyCUsUsingQtyCUsPerTU(qtyCUsPerTU);
 	}
 
 	public Capacity toCapacity()

@@ -21,6 +21,7 @@ import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.material.planning.pporder.PPRoutingProduct;
 import de.metas.material.planning.pporder.PPRoutingProductId;
 import de.metas.material.planning.pporder.PPRoutingType;
+import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
 import de.metas.material.planning.pporder.UserInstructions;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -239,6 +240,8 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.nextActivityIds(nextActivityIds)
 				//
 				.activityTemplateId(PPRoutingActivityTemplateId.ofRepoIdOrNull(activityRecord.getAD_WF_Node_Template_ID()))
+				//
+				.rawMaterialsIssueStrategy(RawMaterialsIssueStrategy.ofCodeOrDefault(activityRecord.getRawMaterialsIssueStrategy()))
 				//
 				.build();
 	}

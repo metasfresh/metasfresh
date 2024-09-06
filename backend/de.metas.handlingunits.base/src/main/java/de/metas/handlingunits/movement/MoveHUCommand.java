@@ -1,6 +1,7 @@
 package de.metas.handlingunits.movement;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
@@ -22,6 +23,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class MoveHUCommand
@@ -33,13 +35,13 @@ public class MoveHUCommand
 	private final HUTransformService huTransformService;
 	private final HUQRCodesService huQRCodesService;
 
-	private final List<HUIdAndQRCode> huIdAndQRCodes;
+	private final ImmutableSet<HUIdAndQRCode> huIdAndQRCodes;
 	private final GlobalQRCode targetQRCode;
 
 	@Builder
 	private MoveHUCommand(
 			@NonNull final HUQRCodesService huQRCodesService,
-			@NonNull final List<HUIdAndQRCode> husToMove,
+			@NonNull final Set<HUIdAndQRCode> husToMove,
 			@NonNull final GlobalQRCode targetQRCode)
 	{
 		this.huQRCodesService = huQRCodesService;
@@ -47,7 +49,7 @@ public class MoveHUCommand
 				.huQRCodesService(huQRCodesService)
 				.build();
 
-		this.huIdAndQRCodes = husToMove;
+		this.huIdAndQRCodes = ImmutableSet.copyOf(husToMove);
 		this.targetQRCode = targetQRCode;
 
 	}
@@ -209,9 +211,9 @@ public class MoveHUCommand
 		}
 
 		huMovementBL.moveHUs(HUMovementGenerateRequest.builder()
-									 .toLocatorId(locatorId)
-									 .huIdsToMove(huIdsFromDiffLocator)
-									 .movementDate(SystemTime.asInstant())
-									 .build());
+				.toLocatorId(locatorId)
+				.huIdsToMove(huIdsFromDiffLocator)
+				.movementDate(SystemTime.asInstant())
+				.build());
 	}
 }

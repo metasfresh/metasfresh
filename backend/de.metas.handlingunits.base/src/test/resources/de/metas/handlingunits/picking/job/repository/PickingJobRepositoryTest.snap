@@ -114,6 +114,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
       "shipmentScheduleId" : 7
     } ]
   } ],
+  "luPickTarget" : null,
   "pickFromAlternatives" : [ {
     "id" : 1000000,
     "locatorInfo" : {
@@ -141,5 +142,6 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "qtyAvailable" : "999 Ea"
   } ],
   "pickingSlot" : null,
-  "progress" : "NOT_STARTED"
+  "progress" : "NOT_STARTED",
+  "tuPickTarget" : null
 } ]

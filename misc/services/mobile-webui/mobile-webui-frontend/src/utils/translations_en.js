@@ -88,6 +88,7 @@ const translations = {
       qtyAboveMax: '%(qtyDiff)s above max',
       notPositiveQtyNotAllowed: 'Zero or negative qty not allowed',
       confirmDone: 'Done',
+      confirmDoneAndCloseTarget: 'Done and close target LU',
       rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
       unPickBtn: 'Unpick',
       target: 'To Pick',
@@ -96,10 +97,23 @@ const translations = {
       switchToQrCodeInput: 'Scan QR',
       skip: 'Skip',
       scanTargetHU: 'Scan target HU',
+      qtyRejectedIgnoreReason: 'Do not record a reason',
       qrcode: {
         missingQty: 'The scanned QR, has no qty information!',
         differentUOM: 'The scanned QR UOM does not match the target!',
         differentProduct: 'The scanned QR Product does not match',
+      },
+      pickingTarget: {
+        New: 'New LU',
+        Select: 'Select Target',
+        Current: 'Current',
+        CloseTarget: 'Close',
+      },
+      tuPickingTarget: {
+        New: 'New TU',
+        Select: 'Select Target',
+        Current: 'Current',
+        CloseTarget: 'Close',
       },
     },
     distribution: {
@@ -153,6 +167,11 @@ const translations = {
         newHU: 'New HU',
         target: 'To receive',
         picked: 'Received',
+      },
+      validateSourceLocator: {
+        noValidOption: 'No valid option available',
+        qrMatches: `OK!`,
+        qrDoesNotMatch: `Scanned QR doesn't match the source Locator!`,
       },
     },
   },

@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
@@ -47,9 +48,13 @@ public interface PickingJobLoaderSupportingServices
 
 	HUPIItemProduct getPackingInfo(@NonNull HUPIItemProductId huPIItemProductId);
 
+	String getPICaption(@NonNull HuPackingInstructionsId piId);
+
 	String getLocatorName(@NonNull LocatorId locatorId);
 
 	HUQRCode getQRCodeByHUId(HuId huId);
 
 	SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(Collection<ShipmentScheduleId> shipmentScheduleIds);
+
+	boolean isCatchWeightTUPickingEnabled();
 }

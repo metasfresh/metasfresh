@@ -24,21 +24,28 @@ package de.metas.cucumber.stepdefs.material.dispo;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.material.dispo.MaterialDispoTableRow.DDOrderRefIdentifiers;
+import de.metas.cucumber.stepdefs.material.dispo.MaterialDispoTableRow.Distribution;
+import de.metas.cucumber.stepdefs.material.dispo.MaterialDispoTableRow.PPOrderRefIdentifiers;
+import de.metas.cucumber.stepdefs.material.dispo.MaterialDispoTableRow.Production;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.product.ProductId;
 import io.cucumber.datatable.TableTransformer;
 import io.cucumber.java.DataTableType;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -55,62 +62,136 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 	@Override
 	public MD_Candidate_StepDefTable transform(@NonNull final io.cucumber.datatable.DataTable dataTable)
 	{
-		final MD_Candidate_StepDefTable.MD_Candidate_StepDefTableBuilder materialDispoTableBuilder = MD_Candidate_StepDefTable.builder();
-
 		// NOTE: don't call dataTable.asMaps() here because that will fail, instead get the raw (not converted/transformed) rows.
 		final List<Map<String, String>> rawRowsList = dataTable.entries();
 
-		DataTableRows.ofListOfMaps(rawRowsList).forEach((row) -> {
-			final StepDefDataIdentifier identifier = CoalesceUtil.coalesceSuppliersNotNull(
-					() -> row.getAsOptionalIdentifier("MD_Candidate_ID").orElse(null),
-					() -> row.getAsOptionalIdentifier().orElse(null),
-					StepDefDataIdentifier::nextUnnamed
-			);
-
-			final CandidateType type = row.getAsEnum(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, CandidateType.class);
-
-			final CandidateBusinessCase businessCase = row.getAsOptionalEnum(I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase, CandidateBusinessCase.class).orElse(null);
-
-			final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID);
-			final ProductId productId = productTable.getIdOptional(productIdentifier)
-					.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
-
-			final Instant dateProjected = row.getAsOptionalLocalDateTime("DateProjected_LocalTimeZone")
-					.map(localDateTime -> localDateTime.atZone(SystemTime.zoneId()).toInstant())
-					.orElseGet(() -> row.getAsInstant("DateProjected"));
-
-			BigDecimal qty = row.getAsBigDecimal("Qty");
-
-			if (type.equals(CandidateType.DEMAND) || type.equals(CandidateType.INVENTORY_DOWN) || type.equals(CandidateType.UNEXPECTED_DECREASE))
-			{
-				qty = qty.negate();
-			}
-
-			final BigDecimal atp = row.getAsBigDecimal("Qty_AvailableToPromise");
-
-			final StepDefDataIdentifier attributeSetInstanceIdentifier = row.getAsOptionalIdentifier("M_AttributeSetInstance_ID").orElse(null);
-
-			final boolean simulated = row.getAsOptionalBoolean("simulated").orElseFalse();
-
-			final WarehouseId warehouseId = row.getAsOptionalIdentifier("M_Warehouse_ID")
-					.flatMap(warehouseTable::getIdOptional)
-					.orElse(null);
-
-			final MD_Candidate_StepDefTable.MaterialDispoTableRow tableRow = MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()
-					.identifier(identifier)
-					.type(type)
-					.businessCase(businessCase)
-					.productId(productId)
-					.time(dateProjected)
-					.qty(qty)
-					.atp(atp)
-					.attributeSetInstanceId(attributeSetInstanceIdentifier)
-					.simulated(simulated)
-					.warehouseId(warehouseId)
-					.build();
-			materialDispoTableBuilder.row(identifier, tableRow);
-		});
-
-		return materialDispoTableBuilder.build();
+		return DataTableRows.ofListOfMaps(rawRowsList)
+				.setAdditionalRowIdentifierColumnName("MD_Candidate_ID")
+				.stream()
+				.map(this::toMaterialDispoTableRow)
+				.collect(MD_Candidate_StepDefTable.collect());
 	}
+
+	private MaterialDispoTableRow toMaterialDispoTableRow(final DataTableRow row)
+	{
+		return MaterialDispoTableRow.builder()
+				.identifier(extractIdentifier(row))
+				.type(extractType(row))
+				.businessCase(row.getAsOptionalEnum(I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase, CandidateBusinessCase.class).orElse(null))
+				.productId(extractProductId(row))
+				.time(extractDateProjected(row))
+				.qty(extractQty(row))
+				.atp(extractATP(row))
+				.attributeSetInstanceId(row.getAsOptionalIdentifier("M_AttributeSetInstance_ID").orElse(null))
+				.simulated(row.getAsOptionalBoolean("simulated").orElseFalse())
+				.warehouseId(row.getAsOptionalIdentifier("M_Warehouse_ID").map(warehouseTable::getId).orElse(null))
+				.distribution(extractDistribution(row))
+				.production(extractProduction(row))
+				//
+				.rawValues(row)
+				//
+				.build();
+	}
+
+	public static BigDecimal extractATP(final DataTableRow row)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> row.getAsOptionalBigDecimal("ATP").orElse(null),
+				() -> row.getAsOptionalBigDecimal("Qty_AvailableToPromise").orElse(null),
+				() -> BigDecimal.ZERO
+		);
+	}
+
+	private static @NonNull StepDefDataIdentifier extractIdentifier(final DataTableRow row)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> row.getAsOptionalIdentifier().orElse(null),
+				StepDefDataIdentifier::nextUnnamed
+		);
+	}
+
+	private static BigDecimal extractQty(final DataTableRow row)
+	{
+		BigDecimal qty = row.getAsBigDecimal("Qty");
+		final CandidateType type = extractType(row);
+		if (type.isDecreasingStock())
+		{
+			qty = qty.negate();
+		}
+		return qty;
+	}
+
+	private static CandidateType extractType(final DataTableRow row)
+	{
+		return row.getAsEnum(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, CandidateType.class);
+	}
+
+	private static Instant extractDateProjected(final DataTableRow row)
+	{
+		return row.getAsOptionalLocalDateTime("DateProjected_LocalTimeZone")
+				.map(localDateTime -> localDateTime.atZone(SystemTime.zoneId()).toInstant())
+				.orElseGet(() -> row.getAsInstant("DateProjected"));
+	}
+
+	private ProductId extractProductId(final DataTableRow row)
+	{
+		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID);
+		return productTable.getIdOptional(productIdentifier)
+				.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
+	}
+
+	@Nullable
+	private static Distribution extractDistribution(final DataTableRow row)
+	{
+		return Distribution.builder()
+				.ddOrderRef(extractDistribution_DDOrderRef(row))
+				.forwardPPOrderRef(extractDistribution_ForwardPPOrderRef(row))
+				.build()
+				.toNullIfEmpty();
+	}
+
+	@Nullable
+	private static DDOrderRefIdentifiers extractDistribution_DDOrderRef(final DataTableRow row)
+	{
+		return DDOrderRefIdentifiers.builder()
+				.ddOrderCandidateId(row.getAsOptionalIdentifier(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_Order_Candidate_ID).orElse(null))
+				.ddOrderId(row.getAsOptionalIdentifier(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_Order_ID).orElse(null))
+				.ddOrderLineId(row.getAsOptionalIdentifier(I_MD_Candidate_Dist_Detail.COLUMNNAME_DD_OrderLine_ID).orElse(null))
+				.build()
+				.toNullIfEmpty();
+	}
+
+	@Nullable
+	private static PPOrderRefIdentifiers extractDistribution_ForwardPPOrderRef(final DataTableRow row)
+	{
+		return PPOrderRefIdentifiers.builder()
+				.ppOrderCandidateId(row.getAsOptionalIdentifier("Forward_PP_Order_Candidate_ID").orElse(null))
+				.ppOrderLineCandidateId(row.getAsOptionalIdentifier("Forward_PP_OrderLine_Candidate_ID").orElse(null))
+				.ppOrderId(row.getAsOptionalIdentifier("Forward_PP_Order_ID").orElse(null))
+				.ppOrderBOMLineId(row.getAsOptionalIdentifier("Forward_PP_Order_BOMLine_ID").orElse(null))
+				.build()
+				.toNullIfEmpty();
+	}
+
+	@Nullable
+	private static Production extractProduction(final DataTableRow row)
+	{
+		return Production.builder()
+				.ppOrderRef(extractProduction_PPOrderRef(row))
+				.build()
+				.toNullIfEmpty();
+	}
+
+	@Nullable
+	private static PPOrderRefIdentifiers extractProduction_PPOrderRef(final DataTableRow row)
+	{
+		return PPOrderRefIdentifiers.builder()
+				.ppOrderCandidateId(row.getAsOptionalIdentifier(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_Candidate_ID).orElse(null))
+				.ppOrderLineCandidateId(row.getAsOptionalIdentifier(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_OrderLine_Candidate_ID).orElse(null))
+				.ppOrderId(row.getAsOptionalIdentifier(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_ID).orElse(null))
+				.ppOrderBOMLineId(row.getAsOptionalIdentifier(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_BOMLine_ID).orElse(null))
+				.build()
+				.toNullIfEmpty();
+	}
+
 }

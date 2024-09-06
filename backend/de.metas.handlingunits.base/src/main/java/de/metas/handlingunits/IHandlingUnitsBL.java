@@ -46,6 +46,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
@@ -107,6 +108,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	ImmutableMap<HuId, I_M_HU> getByIdsReturningMap(@NonNull Collection<HuId> huIds);
 
+	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
+
+	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
+
 	/**
 	 * @return default storage factory
 	 */
@@ -143,6 +148,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_C_UOM getHandlingUOM(I_M_Product product);
 
 	I_C_UOM getC_UOM(I_M_Transaction mtrx);
+
+	boolean isDestroyed(HuId huId);
 
 	/**
 	 * @return true if HU was destroyed
@@ -288,6 +295,18 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@Nullable BPartnerId bpartnerId);
 
 	void reactivateDestroyedHU(@NonNull I_M_HU hu, @NonNull IContextAware contextProvider);
+
+	Set<HuPackingInstructionsIdAndCaption> getLUPIs(
+			@NonNull ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
+			@Nullable BPartnerId bpartnerId);
+
+	@NonNull
+	ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds);
+
+	@Nullable
+	I_M_HU_PI retrievePIDefaultForPicking();
+
+	boolean isTUIncludedInLU(@NonNull I_M_HU tu, @NonNull I_M_HU expectedLU);
 
 	@Builder
 	@Value
@@ -465,6 +484,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	I_M_HU_PI getPI(@NonNull HuPackingInstructionsItemId piItemId);
 
+	HuPackingInstructionsIdAndCaption getEffectivePackingInstructionsIdAndCaption(@NonNull I_M_HU hu);
+
 	HuPackingInstructionsId getPackingInstructionsId(@NonNull HuPackingInstructionsItemId piItemId);
 
 	I_M_HU_PI getPI(@NonNull I_M_HU_PI_Item piItem);
@@ -619,11 +640,18 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 
+	void setHUStatus(@NonNull I_M_HU hu, @NonNull String huStatus);
+
 	boolean isEmptyStorage(I_M_HU hu);
 
 	void setClearanceStatusRecursively(final HuId huId, final ClearanceStatusInfo statusInfo);
 
+	boolean isHUHierarchyCleared(@NonNull I_M_HU hu);
+
 	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
 
 	boolean isHUHierarchyCleared(@NonNull final HuId huId);
+
+	@NonNull
+	ImmutableSet<LocatorId> getLocatorIds(@NonNull Collection<HuId> huIds);
 }

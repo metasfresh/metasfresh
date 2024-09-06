@@ -43,10 +43,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class StockChangeDetailRepo
 {
 	@Nullable
-	public StockChangeDetail getSingleForCandidateRecordOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	public StockChangeDetail getSingleForCandidateRecordOrNull(@NonNull final CandidateId candidateId)
 	{
 		final I_MD_Candidate_StockChange_Detail stockChangeDetailRecord = RepositoryCommons
-				.createCandidateDetailQueryBuilder(candidateRecord, I_MD_Candidate_StockChange_Detail.class)
+				.createCandidateDetailQueryBuilder(candidateId, I_MD_Candidate_StockChange_Detail.class)
 				.firstOnly(I_MD_Candidate_StockChange_Detail.class);
 
 		return ofRecord(stockChangeDetailRecord);
@@ -61,14 +61,15 @@ public class StockChangeDetailRepo
 			return;
 		}
 
+		final CandidateId candidateId = CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID());
 		I_MD_Candidate_StockChange_Detail recordToUpdate = RepositoryCommons.retrieveSingleCandidateDetail(
-				candidateRecord,
+				candidateId,
 				I_MD_Candidate_StockChange_Detail.class);
 
 		if (recordToUpdate == null)
 		{
 			recordToUpdate = newInstance(I_MD_Candidate_StockChange_Detail.class, candidateRecord);
-			recordToUpdate.setMD_Candidate_ID(candidateRecord.getMD_Candidate_ID());
+			recordToUpdate.setMD_Candidate_ID(candidateId.getRepoId());
 		}
 
 		recordToUpdate.setFresh_QtyOnHand_ID(NumberUtils.asInteger(stockChangeDetail.getFreshQuantityOnHandRepoId(), -1));

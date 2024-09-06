@@ -14,6 +14,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.manufacturing.generatedcomponents.ComponentGeneratorRepository;
+import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigDAO;
@@ -39,6 +41,7 @@ class ManufacturingJobServiceTest
 		);
 
 		this.manufacturingJobService = new ManufacturingJobService(
+				new ManufacturingComponentGeneratorService(new ComponentGeneratorRepository()),
 				ppOrderIssueScheduleService,
 				new HUReservationService(new HUReservationRepository()),
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(), ppOrderIssueScheduleService),
@@ -73,10 +76,10 @@ class ManufacturingJobServiceTest
 		void allEnumValues()
 		{
 			// IMPORTANT: set the value as plain string to also enforce the name of the enums are not changed on refactoring
-			sysConfigDAO.setValue(ManufacturingJobService.SYSCONFIG_defaultFilters, "UserPlant, TodayDatePromised", ClientAndOrgId.SYSTEM);
+			sysConfigDAO.setValue(ManufacturingJobService.SYSCONFIG_defaultFilters, "UserPlant, TodayDateStartSchedule", ClientAndOrgId.SYSTEM);
 
 			Assertions.assertThat(manufacturingJobService.getDefaultFilters().toSet())
-					.contains(ManufacturingJobDefaultFilter.UserPlant, ManufacturingJobDefaultFilter.TodayDatePromised);
+					.contains(ManufacturingJobDefaultFilter.UserPlant, ManufacturingJobDefaultFilter.TodayDateStartSchedule);
 		}
 	}
 }

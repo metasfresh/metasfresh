@@ -30,7 +30,9 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.MockedPickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
@@ -46,6 +48,9 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.labels.HULabelConfigRepository;
+import de.metas.handlingunits.report.labels.HULabelConfigService;
+import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
@@ -140,6 +145,7 @@ public class PickingJobTestHelper
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
 		final HUQRCodesService huQRCodeService = new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService());
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
+		final MobileUIPickingUserProfileRepository profileRepository = new MobileUIPickingUserProfileRepository();
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,
 				new PickingJobLockService(new InMemoryShipmentScheduleLockRepository()),
@@ -156,13 +162,19 @@ public class PickingJobTestHelper
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
 						bpartnerBL,
-						huQRCodeService
+						huQRCodeService,
+						profileRepository
 				),
 				pickingConfigRepo,
 				ShipmentService.getInstance(),
 				huQRCodeService,
+				new HULabelService(
+						new HULabelConfigService(new HULabelConfigRepository()),
+						huQRCodeService
+				),
 				inventoryService,
-				huReservationService);
+				huReservationService,
+				profileRepository);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)
@@ -316,6 +328,13 @@ public class PickingJobTestHelper
 				.luPIItem(luPIItem)
 				.tuPackingInstructionId(tuPackingInstructionId)
 				.build();
+	}
+
+	public HUInfo createVHUInfo(@NonNull final ProductId productId, @NonNull final String qtyStr, @NonNull final String qrCodeId)
+	{
+		final HuId huId = createVHU(productId, qtyStr);
+		final HUQRCode qrCode = createQRCode(huId, qrCodeId);
+		return HUInfo.builder().id(huId).qrCode(qrCode).build();
 	}
 
 	public HuId createVHU(final ProductId productId, final String qtyStr)

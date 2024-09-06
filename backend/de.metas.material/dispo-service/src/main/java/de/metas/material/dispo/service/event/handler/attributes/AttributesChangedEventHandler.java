@@ -11,7 +11,6 @@ import de.metas.material.event.attributes.AttributesKeyWithASI;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
-import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.context.annotation.Profile;
@@ -65,9 +64,9 @@ public class AttributesChangedEventHandler implements MaterialEventHandler<Attri
 	{
 		final Candidate fromCandidate = createCandidate(event, CandidateType.ATTRIBUTES_CHANGED_FROM);
 
-		final Candidate fromCandidatePersistedWithGroupId = candidateChangeHandler.onCandidateNewOrChange(fromCandidate);
-		final MaterialDispoGroupId groupId = fromCandidatePersistedWithGroupId.getEffectiveGroupId();
-		Check.assumeNotNull(groupId, "Parameter groupId is not null");
+		final MaterialDispoGroupId groupId = candidateChangeHandler.onCandidateNewOrChange(fromCandidate)
+				.getEffectiveGroupId()
+				.orElseThrow(() -> new AdempiereException("No groupId"));
 
 		final Candidate toCandidate = createCandidate(event, CandidateType.ATTRIBUTES_CHANGED_TO)
 				.withGroupId(groupId);
@@ -93,7 +92,7 @@ public class AttributesChangedEventHandler implements MaterialEventHandler<Attri
 			throw new AdempiereException("Invalid type: " + type); // really shall not happen
 		}
 
-		return Candidate.builderForEventDescr(event.getEventDescriptor())
+		return Candidate.builderForEventDescriptor(event.getEventDescriptor())
 				.type(type)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.warehouseId(event.getWarehouseId())

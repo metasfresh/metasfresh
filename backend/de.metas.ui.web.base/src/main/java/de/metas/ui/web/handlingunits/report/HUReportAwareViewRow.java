@@ -24,17 +24,20 @@ package de.metas.ui.web.handlingunits.report;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuUnitType;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.stream.Stream;
 
 public interface HUReportAwareViewRow
 {
-	String getHUUnitTypeOrNull();
+	HuUnitType getHUUnitTypeOrNull();
 
-	default String getHUUnitType()
+	default HuUnitType getHUUnitType()
 	{
-		final String unitType = getHUUnitTypeOrNull();
+		final HuUnitType unitType = getHUUnitTypeOrNull();
 		if (unitType == null)
 		{
 			throw new AdempiereException("Cannot get HU_UnitType from " + this);
@@ -49,4 +52,9 @@ public interface HUReportAwareViewRow
 	boolean isTopLevel();
 
 	Stream<HUReportAwareViewRow> streamIncludedHUReportAwareRows();
+
+	default boolean applies(@NonNull final ProcessDescriptor processDescriptor)
+	{
+		return true;
+	}
 }

@@ -1,7 +1,6 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.document.engine.DocStatus;
@@ -43,7 +42,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
@@ -57,7 +55,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.X_AD_OrgInfo.STORECREDITCARDDATA_Speichern;
 
 /*
@@ -95,10 +93,7 @@ public class PPOrderCreatedHandlerTests
 
 	private static final BigDecimal ELEVEN = TEN.add(ONE);
 
-	private AvailableToPromiseRepository availableToPromiseRepository;
-
 	private PPOrderCreatedHandler ppOrderCreatedHandler;
-	private DimensionService dimensionService;
 
 	@BeforeEach
 	public void init()
@@ -110,9 +105,7 @@ public class PPOrderCreatedHandlerTests
 		orgInfo.setStoreCreditCardData(STORECREDITCARDDATA_Speichern);
 		saveRecord(orgInfo);
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
@@ -120,13 +113,13 @@ public class PPOrderCreatedHandlerTests
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
 				candidateRepositoryWriteService);
 
-		availableToPromiseRepository = new AvailableToPromiseRepository();
+		final AvailableToPromiseRepository availableToPromiseRepository = new AvailableToPromiseRepository();
 
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
@@ -280,42 +273,42 @@ public class PPOrderCreatedHandlerTests
 				.ppOrderId(ppOrderId)
 				.docStatus(DocStatus.InProgress)
 				.ppOrderData(PPOrderData.builder()
-									 .clientAndOrgId(CLIENT_AND_ORG_ID)
-									 .datePromised(AFTER_NOW)
-									 .dateStartSchedule(NOW)
-									 .productDescriptor(createProductDescriptor())
-									 .qtyRequired(TEN)
-									 .qtyDelivered(ONE)
-									 .warehouseId(intermediateWarehouseId)
-									 .bpartnerId(BPARTNER_ID)
-									 .materialDispoGroupId(groupId)
-									 .plantId(ResourceId.ofRepoId(120))
-									 .productPlanningId(140)
-									 .build())
+						.clientAndOrgId(CLIENT_AND_ORG_ID)
+						.datePromised(AFTER_NOW)
+						.dateStartSchedule(NOW)
+						.productDescriptor(createProductDescriptor())
+						.qtyRequired(TEN)
+						.qtyDelivered(ONE)
+						.warehouseId(intermediateWarehouseId)
+						.bpartnerId(BPARTNER_ID)
+						.materialDispoGroupId(groupId)
+						.plantId(ResourceId.ofRepoId(120))
+						.productPlanningId(140)
+						.build())
 				.line(PPOrderLine.builder()
-							  .ppOrderLineId(ppOrderId * 5)
-							  .ppOrderLineData(PPOrderLineData.builder()
-													   .description("descr1")
-													   .productDescriptor(rawProductDescriptor1)
-													   .issueOrReceiveDate(NOW)
-													   .qtyRequired(TEN)
-													   .qtyDelivered(ONE)
-													   .productBomLineId(1020)
-													   .receipt(false)
-													   .build())
-							  .build())
+						.ppOrderLineId(ppOrderId * 5)
+						.ppOrderLineData(PPOrderLineData.builder()
+								.description("descr1")
+								.productDescriptor(rawProductDescriptor1)
+								.issueOrReceiveDate(NOW)
+								.qtyRequired(TEN)
+								.qtyDelivered(ONE)
+								.productBomLineId(1020)
+								.receipt(false)
+								.build())
+						.build())
 				.line(PPOrderLine.builder()
-							  .ppOrderLineId(ppOrderId * 6)
-							  .ppOrderLineData(PPOrderLineData.builder()
-													   .description("descr2")
-													   .productDescriptor(rawProductDescriptor2)
-													   .issueOrReceiveDate(NOW)
-													   .qtyRequired(ELEVEN)
-													   .qtyDelivered(ONE)
-													   .productBomLineId(1030)
-													   .receipt(false)
-													   .build())
-							  .build())
+						.ppOrderLineId(ppOrderId * 6)
+						.ppOrderLineData(PPOrderLineData.builder()
+								.description("descr2")
+								.productDescriptor(rawProductDescriptor2)
+								.issueOrReceiveDate(NOW)
+								.qtyRequired(ELEVEN)
+								.qtyDelivered(ONE)
+								.productBomLineId(1030)
+								.receipt(false)
+								.build())
+						.build())
 				.build();
 	}
 

@@ -4,8 +4,12 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReport;
+import de.metas.handlingunits.report.labels.HULabelConfig;
+import de.metas.handlingunits.report.labels.HULabelConfigQuery;
+import de.metas.handlingunits.report.labels.HULabelService;
+import de.metas.handlingunits.report.labels.HULabelSourceDocType;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessPrecondition;
@@ -24,6 +28,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
@@ -56,8 +61,8 @@ public class WEBUI_M_HU_PrintFinishedGoodsLabel
 		extends HUEditorProcessTemplate
 		implements IProcessPrecondition
 {
-	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
-	final private HUReportService huReportService = HUReportService.get();
+	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final HULabelService huLabelService = SpringContextHolder.instance.getBean(HULabelService.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -67,12 +72,10 @@ public class WEBUI_M_HU_PrintFinishedGoodsLabel
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
 
-		final HUReportService huReportService = HUReportService.get();
-
-		final AdProcessId adProcessId = huReportService.retrievePrintFinishedGoodsLabelProcessIdOrNull();
-		if (adProcessId == null)
+		final ExplainedOptional<HULabelConfig> optionalLabelConfig = getLabelConfig();
+		if (!optionalLabelConfig.isPresent())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Finished Goods label process not configured via sysconfig " + HUReportService.SYSCONFIG_FINISHEDGOODS_LABEL_PROCESS_ID);
+			return ProcessPreconditionsResolution.rejectWithInternalReason(optionalLabelConfig.getExplanation());
 		}
 
 		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
@@ -90,10 +93,9 @@ public class WEBUI_M_HU_PrintFinishedGoodsLabel
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-
-		final HUToReport hu = HUReportAwareViewRowAsHUToReport.of(getSingleSelectedRow());
+		final HUToReport hu = getHuToReport();
 
 		// create selection
 		final List<HuId> distinctHuIds = ImmutableList.of(hu.getHUId());
@@ -108,9 +110,27 @@ public class WEBUI_M_HU_PrintFinishedGoodsLabel
 		return MSG_OK;
 	}
 
+	private ExplainedOptional<HULabelConfig> getLabelConfig()
+	{
+		final HUToReport hu = getHuToReport();
+		return huLabelService.getFirstMatching(HULabelConfigQuery.builder()
+				.sourceDocType(HULabelSourceDocType.Manufacturing)
+				.huUnitType(hu.getHUUnitType())
+				.bpartnerId(hu.getBPartnerId())
+				.build());
+	}
+
+	@NonNull
+	private HUToReport getHuToReport()
+	{
+		return HUReportAwareViewRowAsHUToReport.of(getSingleSelectedRow());
+	}
+
 	private ReportResult printLabel()
 	{
-		final AdProcessId adProcessId = huReportService.retrievePrintFinishedGoodsLabelProcessIdOrNull();
+		final AdProcessId adProcessId = getLabelConfig()
+				.get()
+				.getPrintFormatProcessId();
 		final PInstanceRequest pinstanceRequest = createPInstanceRequest(adProcessId);
 		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(pinstanceRequest);
 

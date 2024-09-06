@@ -54,17 +54,12 @@ import static de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvis
 @Builder
 public class DDOrderMainDataHandler
 {
-	@NonNull
-	ZoneId orgZone;
-	@NonNull
-	AbstractDDOrderEvent abstractDDOrderEvent;
-	@NonNull
-	DDOrderLine ddOrderLine;
+	@NonNull DDOrderDetailRequestHandler ddOrderDetailRequestHandler;
+	@NonNull MainDataRequestHandler mainDataRequestHandler;
 
-	@NonNull
-	DDOrderDetailRequestHandler ddOrderDetailRequestHandler;
-	@NonNull
-	MainDataRequestHandler mainDataRequestHandler;
+	@NonNull ZoneId orgZone;
+	@NonNull AbstractDDOrderEvent abstractDDOrderEvent;
+	@NonNull DDOrderLine ddOrderLine;
 
 	public void handleDelete()
 	{
@@ -84,8 +79,8 @@ public class DDOrderMainDataHandler
 
 		final de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailIdentifier ddOrderDetailIdentifier = de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailIdentifier
 				.createForWarehouseRelatedIdentifier(mainDataRecordIdentifier,
-													 DDOrderDetailIdentifier.of(getWarehouseIdForType(candidateType),
-																				ddOrderLine.getDdOrderLineId()));
+						DDOrderDetailIdentifier.of(getWarehouseIdForType(candidateType),
+								ddOrderLine.getDdOrderLineId()));
 
 		final Optional<I_MD_Cockpit_DDOrder_Detail> existingDDOrderDetail = ddOrderDetailRequestHandler
 				.retrieveDDOrderDetail(ddOrderDetailIdentifier);
@@ -112,8 +107,8 @@ public class DDOrderMainDataHandler
 
 		final de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailIdentifier ddOrderDetailIdentifier = de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailIdentifier
 				.createForWarehouseRelatedIdentifier(mainDataRecordIdentifier,
-													 DDOrderDetailIdentifier.of(getWarehouseIdForType(candidateType),
-																				ddOrderLine.getDdOrderLineId()));
+						DDOrderDetailIdentifier.of(getWarehouseIdForType(candidateType),
+								ddOrderLine.getDdOrderLineId()));
 
 		final Optional<I_MD_Cockpit_DDOrder_Detail> existingDDOrderDetail = ddOrderDetailRequestHandler
 				.retrieveDDOrderDetail(ddOrderDetailIdentifier);
@@ -147,17 +142,7 @@ public class DDOrderMainDataHandler
 	}
 
 	@NonNull
-	private BigDecimal getQtyPending()
-	{
-		if (ddOrderLine.getQtyPending() == null)
-		{
-			throw new AdempiereException("ddOrderLine.qtyPending should never be null in case of DDOrderCreatedEvent!")
-					.appendParametersToMessage()
-					.setParameter("ddOrderLineId", ddOrderLine.getDdOrderLineId());
-		}
-
-		return ddOrderLine.getQtyPending();
-	}
+	private BigDecimal getQtyPending() {return ddOrderLine.getQtyToMove();}
 
 	@NonNull
 	private WarehouseId getWarehouseIdForType(@NonNull final CandidateType candidateType)

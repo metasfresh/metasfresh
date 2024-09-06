@@ -144,24 +144,24 @@ public class HUReservationRepository
 					return null;
 				}
 			});
+		}
 
-			final ICompositeQueryFilter<I_M_HU_Reservation> documentRefFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
-			if (!salesOrderLineIds.isEmpty())
-			{
-				documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMN_C_OrderLineSO_ID, salesOrderLineIds);
-			}
-			if (!projectIds.isEmpty())
-			{
-				documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMNNAME_C_Project_ID, projectIds);
-			}
-			if (!pickingJobStepIds.isEmpty())
-			{
-				documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMNNAME_M_Picking_Job_Step_ID, pickingJobStepIds);
-			}
-			if(!ddOrderLineIds.isEmpty())
-			{
-				documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMNNAME_DD_OrderLine_ID, ddOrderLineIds);
-			}
+		final ICompositeQueryFilter<I_M_HU_Reservation> documentRefFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
+		if (!salesOrderLineIds.isEmpty())
+		{
+			documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMN_C_OrderLineSO_ID, salesOrderLineIds);
+		}
+		if (!projectIds.isEmpty())
+		{
+			documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMNNAME_C_Project_ID, projectIds);
+		}
+		if (!pickingJobStepIds.isEmpty())
+		{
+			documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMNNAME_M_Picking_Job_Step_ID, pickingJobStepIds);
+		}
+		if (!ddOrderLineIds.isEmpty())
+		{
+			documentRefFilter.addInArrayFilter(I_M_HU_Reservation.COLUMNNAME_DD_OrderLine_ID, ddOrderLineIds);
 		}
 
 		return queryBuilder;
@@ -317,7 +317,10 @@ public class HUReservationRepository
 
 	public ImmutableList<HUReservationEntry> getEntriesByVHUIds(@NonNull final Collection<HuId> vhuIds)
 	{
-		if (vhuIds.isEmpty()) {return ImmutableList.of();}
+		if (vhuIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
 		return entriesByVhuId.getAllOrLoad(vhuIds, this::retrieveEntriesByVHUId)
 				.stream()
@@ -327,7 +330,10 @@ public class HUReservationRepository
 
 	private Map<HuId, Optional<HUReservationEntry>> retrieveEntriesByVHUId(@NonNull final Collection<HuId> vhuIds)
 	{
-		if (vhuIds.isEmpty()) {return ImmutableMap.of();} // shall not happen
+		if (vhuIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		} // shall not happen
 
 		final HashMap<HuId, Optional<HUReservationEntry>> result = new HashMap<>(vhuIds.size());
 		vhuIds.forEach(huId -> result.put(huId, Optional.empty()));

@@ -1,13 +1,23 @@
 package de.metas.handlingunits.picking.job.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.Check;
 import de.metas.dao.ValueRestriction;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -16,6 +26,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
@@ -27,6 +38,10 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateReque
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.HUToReportWrapper;
+import de.metas.handlingunits.report.labels.HULabelPrintRequest;
+import de.metas.handlingunits.report.labels.HULabelService;
+import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.order.OrderId;
@@ -46,9 +61,11 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -57,6 +74,8 @@ import java.util.stream.Stream;
 public class PickingJobService
 {
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
@@ -66,8 +85,10 @@ public class PickingJobService
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 	@NonNull private final IShipmentService shipmentService;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final HULabelService huLabelService;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUReservationService huReservationService;
+	@NonNull private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
 	public PickingJob getById(final PickingJobId pickingJobId)
 	{
@@ -105,6 +126,7 @@ public class PickingJobService
 	public PickingJobCompleteCommand.PickingJobCompleteCommandBuilder prepareToComplete(@NonNull final PickingJob pickingJob)
 	{
 		return PickingJobCompleteCommand.builder()
+				.pickingJobService(this)
 				.pickingJobRepository(pickingJobRepository)
 				.pickingJobLockService(pickingJobLockService)
 				.pickingSlotService(pickingSlotService)
@@ -295,13 +317,14 @@ public class PickingJobService
 		{
 			case PICK:
 			{
-				PickingJobPickCommand.builder()
+				return PickingJobPickCommand.builder()
+						.pickingJobService(this)
 						.pickingJobRepository(pickingJobRepository)
-						.pickingCandidateService(pickingCandidateService)
 						.huQRCodesService(huQRCodesService)
 						.inventoryService(inventoryService)
 						.huReservationService(huReservationService)
 						.pickingConfigRepo(pickingConfigRepo)
+						.mobileUIPickingUserProfileRepository(mobileUIPickingUserProfileRepository)
 						//
 						.pickingJob(pickingJob)
 						.pickingJobLineId(event.getPickingLineId())
@@ -319,9 +342,10 @@ public class PickingJobService
 						.bestBeforeDate(event.getBestBeforeDate())
 						.isSetLotNo(event.isSetLotNo())
 						.lotNo(event.getLotNo())
+						.isCloseTarget(event.isCloseTarget())
 						//
-						.build().execute();
-				return getById(pickingJob.getId());
+						.build()
+						.execute();
 			}
 			case UNPICK:
 			{
@@ -465,5 +489,121 @@ public class PickingJobService
 
 		pickingJobRepository.save(pickingJobChanged);
 		return pickingJobChanged;
+	}
+
+	@NonNull
+	public List<LUPickingTarget> getLUAvailableTargets(@NonNull final PickingJob pickingJob)
+	{
+		return handlingUnitsBL.getLUPIs(getTUPIItems(pickingJob), pickingJob.getCustomerId())
+				.stream()
+				.map(PickingJobService::toPickingTarget)
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	@NonNull
+	public List<TUPickingTarget> getTUAvailableTargets(@NonNull final PickingJob pickingJob)
+	{
+		final ImmutableList.Builder<TUPickingTarget> pickingTargetBuilder = ImmutableList.builder();
+		Optional.ofNullable(handlingUnitsBL.retrievePIDefaultForPicking())
+				.map(defaultPI -> TUPickingTarget.builder()
+						.tuPIId(HuPackingInstructionsId.ofRepoId(defaultPI.getM_HU_PI_ID()))
+						.caption(defaultPI.getName())
+						.isDefaultPacking(true)
+						.build())
+				.ifPresent(pickingTargetBuilder::add);
+
+		handlingUnitsBL.retrievePIInfo(getTUPIItems(pickingJob))
+				.stream()
+				.map(idAndCaption -> TUPickingTarget.ofPackingInstructions(idAndCaption.getId(), idAndCaption.getCaption()))
+				.forEach(pickingTargetBuilder::add);
+
+		return pickingTargetBuilder.build();
+	}
+
+	@NonNull
+	private ImmutableSet<HuPackingInstructionsItemId> getTUPIItems(@NonNull final PickingJob pickingJob)
+	{
+		return huPIItemProductDAO.retrieveForProducts(pickingJob.getProductIds(), pickingJob.getCustomerId())
+				.stream()
+				.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_ID)
+				.map(HuPackingInstructionsItemId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static ImmutableSet<HuPackingInstructionsItemId> getTuPIItemIds(final @NonNull PickingJob pickingJob)
+	{
+		return pickingJob.getLines()
+				.stream()
+				.map(line -> line.getPackingInfo().getPiItemId())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static LUPickingTarget toPickingTarget(@NonNull final HuPackingInstructionsIdAndCaption luPIAndCaption)
+	{
+		return LUPickingTarget.builder()
+				.caption(luPIAndCaption.getCaption())
+				.luPIId(luPIAndCaption.getId())
+				.build();
+	}
+
+	public PickingJob setPickTarget(@NonNull final PickingJob pickingJob, @Nullable final LUPickingTarget target)
+	{
+		final PickingJob pickingJobChanged = pickingJob.withLuPickTarget(target);
+		if (Util.equals(pickingJob, pickingJobChanged))
+		{
+			return pickingJob;
+		}
+
+		pickingJobRepository.save(pickingJobChanged);
+		return pickingJobChanged;
+	}
+
+	public PickingJob setPickTarget(@NonNull final PickingJob pickingJob, @Nullable final TUPickingTarget target)
+	{
+		final PickingJob pickingJobChanged = pickingJob.withTuPickTarget(target);
+		if (Util.equals(pickingJob, pickingJobChanged))
+		{
+			return pickingJob;
+		}
+
+		pickingJobRepository.save(pickingJobChanged);
+		return pickingJobChanged;
+	}
+
+	public PickingJob closeLUPickTarget(final PickingJob pickingJob)
+	{
+		final LUPickingTarget pickingTarget = pickingJob.getLuPickTarget().orElse(null);
+		if (pickingTarget == null)
+		{
+			return pickingJob;
+		}
+
+		final PickingJob pickingJobChanged = setPickTarget(pickingJob, (LUPickingTarget)null);
+
+		final HuId luId = pickingTarget.getLuId();
+		if (luId != null)
+		{
+			huLabelService.print(HULabelPrintRequest.builder()
+					.sourceDocType(HULabelSourceDocType.Picking)
+					.hu(HUToReportWrapper.of(handlingUnitsBL.getById(luId)))
+					.onlyIfAutoPrint(true)
+					.failOnMissingLabelConfig(false)
+					.build());
+		}
+
+		return pickingJobChanged;
+	}
+
+	@NonNull
+	public PickingJob closeTUPickTarget(final PickingJob pickingJob)
+	{
+		final TUPickingTarget pickingTarget = pickingJob.getTuPickTarget().orElse(null);
+		if (pickingTarget == null)
+		{
+			return pickingJob;
+		}
+
+		return setPickTarget(pickingJob, (TUPickingTarget)null);
 	}
 }

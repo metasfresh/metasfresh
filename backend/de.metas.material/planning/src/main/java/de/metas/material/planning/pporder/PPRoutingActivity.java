@@ -85,6 +85,7 @@ public class PPRoutingActivity
 	@NonNull @Default ImmutableSet<PPRoutingActivityId> nextActivityIds = ImmutableSet.of();
 
 	@Nullable PPRoutingActivityTemplateId activityTemplateId;
+	@Nullable RawMaterialsIssueStrategy rawMaterialsIssueStrategy;
 
 	public boolean isValidAtDate(final Instant dateTime)
 	{

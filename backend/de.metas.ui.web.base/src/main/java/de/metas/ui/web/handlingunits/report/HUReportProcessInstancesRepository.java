@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.model.I_M_HU_Process;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
@@ -164,6 +165,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 				.processDescriptor(ProcessDescriptor.builder()
 						.setProcessId(processId)
 						.setInternalName(InternalName.ofString(huProcessDescriptor.getInternalName()))
+						.setProcessClassname(adProcess.getClassname())
 						.setType(ProcessDescriptorType.Report)
 						.setParametersDescriptor(parametersDescriptor)
 						.setLayout(ProcessLayout.builder()
@@ -234,7 +236,13 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 		if (HUReportAwareViews.isHUReportAwareViewRow(row))
 		{
 			final HUReportAwareViewRow huRow = HUReportAwareViews.cast(row);
-			final String huUnitType = huRow.getHUUnitTypeOrNull();
+
+			if (!huRow.applies(descriptor.getProcessDescriptor()))
+			{
+				return false;
+			}
+			
+			final HuUnitType huUnitType = huRow.getHUUnitTypeOrNull();
 			return huUnitType != null && descriptor.appliesToHUUnitType(huUnitType);
 		}
 		else

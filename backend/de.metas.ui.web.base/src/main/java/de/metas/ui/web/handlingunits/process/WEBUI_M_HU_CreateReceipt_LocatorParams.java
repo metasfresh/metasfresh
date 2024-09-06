@@ -17,12 +17,10 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.api.impl.WarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Warehouse;
 import org.springframework.context.annotation.Profile;
@@ -110,7 +108,7 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 		{
 			if (warehouseIdOrNull() != null)
 			{
-				final LocatorId defaultLocator = warehouseBL.getDefaultLocatorId(warehouseId());
+				final LocatorId defaultLocator = warehouseBL.getOrCreateDefaultLocatorId(warehouseId());
 				if (defaultLocator != null)
 				{
 					return defaultLocator.getRepoId();
@@ -143,7 +141,7 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 			return;
 		}
 
-		locatorRepoId = warehouseBL.getDefaultLocatorId(warehouseId()).getRepoId();
+		locatorRepoId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId()).getRepoId();
 	}
 
 	@ProcessParamLookupValuesProvider(parameterName = LOCATOR_PARAM_NAME, dependsOn = WAREHOUSE_PARAM_NAME, numericKey = true)
