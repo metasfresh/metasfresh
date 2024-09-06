@@ -1939,4 +1939,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		return null;
 	}
+
+	@Override
+	@Nullable
+	public String getPOReference(@NonNull final InvoiceId invoiceId)
+	{
+		return getById(invoiceId).getPOReference();
+	}
 }
