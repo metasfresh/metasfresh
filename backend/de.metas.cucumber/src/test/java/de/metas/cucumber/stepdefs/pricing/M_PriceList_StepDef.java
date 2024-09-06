@@ -369,8 +369,9 @@ public class M_PriceList_StepDef
 		{
 			taxCategoryId = taxBL.getTaxCategoryIdByName(taxCategoryName);
 		}
-		else {
-			taxCategoryId = Optional.empty();
+		else
+		{
+			taxCategoryId = Optional.of(taxBL.retrieveRegularTaxCategoryId());
 		}
 		assertThat(taxCategoryId).as("Missing taxCategory for internalName=%s", taxCategoryInternalName).isPresent();
 

@@ -65,9 +65,11 @@ Feature: Modular contract log from purchase order for raw product
     And load M_Shipper:
       | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
       | shipper_1               | 540006           |
+
     And load DD_NetworkDistribution:
       | DD_NetworkDistribution_ID.Identifier | Value   |
       | ddNetwork_isHUDestroyed              | Gebinde |
+
     And metasfresh contains DD_NetworkDistributionLine
       | DD_NetworkDistributionLine_ID.Identifier | DD_NetworkDistribution_ID.Identifier | M_Warehouse_ID.Identifier | M_WarehouseSource_ID.Identifier | M_Shipper_ID.Identifier |
       | ddNetworkLine_1                          | ddNetwork_isHUDestroyed              | warehouseStd              | warehouse_06032024_1            | shipper_1               |
@@ -98,16 +100,16 @@ Feature: Modular contract log from purchase order for raw product
       | invoicingGroup_p1                            | invGroup                             | rawProduct              |
 
     And metasfresh contains M_ProductPrices
-      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.Name |
-      | moduleLogPP_1 | moduleLogPLV_PO                   | rawProduct               | 10.00    | PCE               | Bezugssteuer          |
-      | moduleLogPP_2 | moduleLogPLV_PO                   | subtractValueOnRaw_PO    | 7.00     | PCE               | Bezugssteuer          |
-      | moduleLogPP_3 | moduleLogPLV_PO                   | subtractValueOnRaw_PO_2  | 9.00     | PCE               | Bezugssteuer          |
-      | moduleLogPP_4 | moduleLogPLV_PO                   | addValueOnRaw_PO         | 8.00     | PCE               | Bezugssteuer          |
-      | moduleLogPP_5 | moduleLogPLV_PO                   | addValueOnRaw_PO_2       | 6.00     | PCE               | Bezugssteuer          |
-      | moduleLogPP_6 | moduleLogPLV_PO                   | addValueOnInterim        | 10.00    | PCE               | Bezugssteuer          |
-      | moduleLogPP_7 | moduleLogPLV_PO                   | subValueOnInterim        | 10.00    | PCE               | Bezugssteuer          |
-      | moduleLogPP_8 | moduleLogPLV_PO                   | storageCostForRawProduct | 6.00     | PCE               | Bezugssteuer          |
-      | moduleLogPP_9 | moduleLogPLV_SO                   | rawProduct               | 20.00    | PCE               | Bezugssteuer          |
+      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier  | PriceStd | C_UOM_ID.X12DE355 |
+      | moduleLogPP_1 | moduleLogPLV_PO                   | rawProduct               | 10.00    | PCE               |
+      | moduleLogPP_2 | moduleLogPLV_PO                   | subtractValueOnRaw_PO    | 7.00     | PCE               |
+      | moduleLogPP_3 | moduleLogPLV_PO                   | subtractValueOnRaw_PO_2  | 9.00     | PCE               |
+      | moduleLogPP_4 | moduleLogPLV_PO                   | addValueOnRaw_PO         | 8.00     | PCE               |
+      | moduleLogPP_5 | moduleLogPLV_PO                   | addValueOnRaw_PO_2       | 6.00     | PCE               |
+      | moduleLogPP_6 | moduleLogPLV_PO                   | addValueOnInterim        | 10.00    | PCE               |
+      | moduleLogPP_7 | moduleLogPLV_PO                   | subValueOnInterim        | 10.00    | PCE               |
+      | moduleLogPP_8 | moduleLogPLV_PO                   | storageCostForRawProduct | 6.00     | PCE               |
+      | moduleLogPP_9 | moduleLogPLV_SO                   | rawProduct               | 20.00    | PCE               |
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Year_ID.Identifier | M_PricingSystem_ID.Identifier |
@@ -274,7 +276,6 @@ Feature: Modular contract log from purchase order for raw product
 
     And load latest ModCntr_Interest_Run for invoicing group invGroup as lastInterestRun
 
-
     And create final invoice
       | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier | OPT.DateInvoiced | OPT.DateAcct |
       | moduleLogContract_1           | metasfresh_user       | 2022-03-01       | 2022-03-01   |
@@ -322,6 +323,7 @@ Feature: Modular contract log from purchase order for raw product
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal |
       | invoice_1               | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 15034.92       |
+
     And validate created modular invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | ProductName                          | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | invoiceLine_1_1             | invoice_1               | rawProduct              | receipt_06032024_1                   | 1000        | true      | 0                | 0               | 0              | PCE                   | PCE                       |
