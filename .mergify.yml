@@ -106,23 +106,6 @@ pull_request_rules:
         name: default
         method: merge
 
-#  # This rule is for the derivitative PRs that we created (note the label)
-#  It's commented out right now, because the rules to create those branches is also commented out
-#  - name: Automatic merge PRs labeled with `ops:merge_towards_master` into the respective `_uat` or `master`-branch
-#    conditions:
-#      - check-success=testspace-analytics
-#      - check-success=continuous-integration/jenkins/branch
-#      - or:
-#          - or: *PROJECT_BRANCHES_UAT
-#          - or:
-#              - base=master
-#      - label=ops:merge_towards_master
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      queue:
-#        name: default
-#        method: merge
-
 
 # The following is commentede out, because too many times this failed doe to conflicts and there is a high probability
 # for PRs from the same base branch getting out of order
