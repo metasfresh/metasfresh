@@ -25,3 +25,15 @@ export const toUrlQueryParams = (queryParams) => {
 export const toUrl = (path, queryParams) => {
   return `${path}${toUrlQueryParams(queryParams)}`;
 };
+
+export const doFinally = (promise, func) => {
+  console.log('doFinally', { promise, func });
+  if (!func) return;
+
+  if (promise?.finally) {
+    return promise.finally(func);
+  } else {
+    func();
+    return promise;
+  }
+};
