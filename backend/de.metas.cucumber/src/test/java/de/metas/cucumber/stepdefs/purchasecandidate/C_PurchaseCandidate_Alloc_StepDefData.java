@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,15 +20,18 @@
  * #L%
  */
 
-package de.metas.event.remote;
+package de.metas.cucumber.stepdefs.purchasecandidate;
 
-import java.util.Optional;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 
-public interface IEventBusQueueConfiguration
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class C_PurchaseCandidate_Alloc_StepDefData extends StepDefData<I_C_PurchaseCandidate_Alloc>
 {
-	String getQueueName();
-
-	Optional<String> getTopicName();
-
-	String getExchangeName();
+	public C_PurchaseCandidate_Alloc_StepDefData()
+	{
+		super(I_C_PurchaseCandidate_Alloc.class);
+	}
 }

@@ -38,8 +38,8 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderId;
-import de.metas.product.ProductId;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -65,6 +65,7 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.junit.jupiter.api.Assertions;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -389,6 +390,52 @@ public class C_OrderLine_StepDef
 		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
 		identifierIdsTable.put(orderLineIdentifier, orderLine.getC_OrderLine_ID());
 		InterfaceWrapperHelper.delete(orderLine);
+	}
+
+	@And("load C_Order from C_OrderLine")
+	public void loadC_Order(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> table = dataTable.asMaps();
+		for (final Map<String, String> row : table)
+		{
+			loadC_Order(row);
+		}
+	}
+
+	private void loadC_Order(@NonNull final Map<String, String> row)
+	{
+		final String olIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_OrderLine orderLine = orderLineTable.get(olIdentifier);
+		assertThat(orderLine).isNotNull();
+
+		final I_C_Order orderRecord = InterfaceWrapperHelper.load(orderLine.getC_Order_ID(), I_C_Order.class);
+		assertThat(orderRecord).isNotNull();
+
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		orderTable.putOrReplace(orderIdentifier, orderRecord);
+	}
+
+	@Given("metasfresh contains C_OrderLine expecting error:")
+	public void metasfresh_contains_c_order_lines_expecting_error(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		if (tableRows.size() > 1)
+		{
+			throw new IllegalArgumentException("Multiple rows are not supported!");
+		}
+
+		try
+		{
+			metasfresh_contains_c_order_lines(dataTable);
+
+			Assertions.fail("An Exception should have been thrown !");
+		}
+		catch (final AdempiereException exception)
+		{
+			final String errorCode = DataTableUtil.extractStringOrNullForColumnName(tableRows.get(0), "ErrorCode");
+
+			assertThat(exception.getErrorCode()).isEqualTo(errorCode);
+		}
 	}
 
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
