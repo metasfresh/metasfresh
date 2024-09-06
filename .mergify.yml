@@ -88,6 +88,22 @@ pull_request_rules:
         name: default
         method: squash
 
+  - name: Automatic merge commit (not squash) successful PRs
+    conditions:
+      - check-success=testspace-analytics
+      - check-success=continuous-integration/jenkins/branch
+      - label=ops:auto_merge_no_squash
+      - or:
+          - or: *ALL_BASE_BRANCHES
+          - base=master
+      - or:
+          - "#approved-reviews-by>=1"
+          - label=ops:without_review_approval
+    actions:
+      queue:
+        name: default
+        method: merge
+
 #  # This rule is for the derivitative PRs that we created (note the label)
 #  It's commented out right now, because the rules to create those branches is also commented out
 #  - name: Automatic merge PRs labeled with `ops:merge_towards_master` into the respective `_uat` or `master`-branch
