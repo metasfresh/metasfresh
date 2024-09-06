@@ -3,7 +3,6 @@ import toast from 'react-hot-toast';
 import { unboxAxiosResponse } from './index';
 import { trl } from './translations';
 import { isError } from 'lodash';
-import { useBooleanSetting } from '../reducers/settings';
 
 export const toastErrorFromObj = (obj) => {
   console.log('toastErrorFromObj', { obj });
@@ -47,7 +46,6 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
 
 export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fallbackMessageKey = null }) => {
   // console.log('extractUserFriendlyErrorMessageFromAxiosError', { axiosError });
-  const showAllErrorMessages = useBooleanSetting('showAllErrorMessages');
 
   if (axiosError) {
     if (axiosError.request && !axiosError.response) {
@@ -56,9 +54,9 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
       const data = axiosError.response && unboxAxiosResponse(axiosError.response);
       if (data && data.errors && data.errors[0] && data.errors[0].message) {
         const error = data.errors[0];
-        return extractUserFriendlyErrorSingleErrorObject(error, showAllErrorMessages);
+        return extractUserFriendlyErrorSingleErrorObject(error);
       } else if (axiosError.response.data.error) {
-        return extractUserFriendlyErrorSingleErrorObject(axiosError.response.data.error, showAllErrorMessages);
+        return extractUserFriendlyErrorSingleErrorObject(axiosError.response.data.error);
       }
     }
   }
@@ -93,13 +91,13 @@ export const toastNotification = ({ messageKey, plainMessage }) => {
   );
 };
 
-function extractUserFriendlyErrorSingleErrorObject(error, showAllErrors) {
+function extractUserFriendlyErrorSingleErrorObject(error) {
   if (!error) {
     // null/empty error message... shall not happen
     return trl('error.PleaseTryAgain');
   }
   if (typeof error === 'object') {
-    if (error.userFriendlyError || showAllErrors) {
+    if (error.userFriendlyError || window.showAllErrorMessages) {
       return error.message;
     } else {
       // don't scare the user with weird errors. Better show him some generic error.

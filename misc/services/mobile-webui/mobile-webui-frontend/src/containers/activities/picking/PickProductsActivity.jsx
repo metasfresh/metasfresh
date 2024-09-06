@@ -49,6 +49,22 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
     history.push(pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };
 
+  const isLineReadOnly = (line) => {
+    const tuTargetIsSetButCurrentLineHasItsOwnPacking = currentTUPickTarget && line.pickingUnit === 'TU';
+    const tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs =
+      isPickWithNewLU && isAllowNewTU && !currentTUPickTarget && line.pickingUnit === 'CU';
+    return (
+      !isUserEditable ||
+      isLUScanRequiredAndMissing ||
+      tuTargetIsSetButCurrentLineHasItsOwnPacking ||
+      tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs
+    );
+  };
+
+  const isAtLeastOneReadOnlyLine = (lines) => {
+    return lines.some((line) => isLineReadOnly(line));
+  };
+
   return (
     <div className="mt-5">
       {isPickWithNewLU && (
@@ -75,10 +91,10 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
       )}
       <br />
 
-      {allowPickingAnyHU && !isPickWithNewLU && (
+      {allowPickingAnyHU && (
         <ButtonWithIndicator
           caption={trl('activities.picking.scanQRCode')}
-          disabled={!isUserEditable || isLUScanRequiredAndMissing}
+          disabled={isAtLeastOneReadOnlyLine(lines)}
           onClick={onScanButtonClick}
         />
       )}
@@ -87,21 +103,12 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
           const lineId = lineItem.pickingLineId;
           const { uom, qtyToPick, qtyPicked } = lineItem;
 
-          const tuTargetIsSetButCurrentLineHasItsOwnPacking = currentTUPickTarget && lineItem.pickingUnit === 'TU';
-          const tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs =
-            isPickWithNewLU && !currentTUPickTarget && lineItem.pickingUnit === 'CU';
-          const lineIsDisabled =
-            !isUserEditable ||
-            isLUScanRequiredAndMissing ||
-            tuTargetIsSetButCurrentLineHasItsOwnPacking ||
-            tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs;
-
           return (
             <ButtonWithIndicator
               key={lineId}
               caption={lineItem.caption}
               completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
-              disabled={lineIsDisabled}
+              disabled={isLineReadOnly(lineItem)}
               onClick={() => onLineButtonClick({ lineId })}
             >
               <ButtonQuantityProp
