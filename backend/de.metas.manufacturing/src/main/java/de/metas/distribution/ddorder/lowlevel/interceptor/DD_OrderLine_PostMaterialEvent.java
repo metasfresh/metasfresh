@@ -75,6 +75,6 @@ public class DD_OrderLine_PostMaterialEvent
 		}
 
 		final DDOrder ddOrder = newLoader().loadWithSingleLine(ddOrderLineRecord);
-		materialEventService.enqueueEventNow(DDOrderDeletedEvent.of(ddOrder));
+		materialEventService.enqueueEventAfterNextCommit(DDOrderDeletedEvent.of(ddOrder));
 	}
 }
