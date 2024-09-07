@@ -110,6 +110,7 @@ public class ArchiveBL implements IArchiveBL
 		archive.setRecord_ID(recordRef != null ? recordRef.getRecord_ID() : -1);
 		archive.setIsMainArchive(request.isMainReport());
 		archive.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
+		archive.setPOReference(request.getPoReference());
 
 		final byte[] byteArray = extractByteArray(request);
 		storage.setBinaryData(archive, byteArray);

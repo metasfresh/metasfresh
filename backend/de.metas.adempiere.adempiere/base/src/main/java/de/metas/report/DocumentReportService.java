@@ -180,7 +180,10 @@ public class DocumentReportService
 
 		//
 		final DocumentReportResult report = executeReportProcessAndComputeResult(requestEffective);
-		return report.withBpartnerId(reportInfo.getBpartnerId());
+		return report.toBuilder()
+				.poReference(reportInfo.getPoReference())
+				.bpartnerId(reportInfo.getBpartnerId())
+				.build();
 	}
 
 	@Nullable

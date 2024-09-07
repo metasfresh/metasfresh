@@ -87,6 +87,9 @@ public class ArchiveRequest
 	@Nullable
 	Language language;
 
+	@Nullable
+	String poReference;
+	
 	//
 	// Printing:
 	boolean isDirectEnqueue;

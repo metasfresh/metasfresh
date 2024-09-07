@@ -29,7 +29,6 @@ import de.metas.process.PInstanceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.core.io.Resource;
@@ -38,7 +37,7 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class DocumentReportResult
 {
 	@NonNull
@@ -57,7 +56,6 @@ public class DocumentReportResult
 	PInstanceId reportPInstanceId;
 
 	@Nullable
-	@With
 	BPartnerId bpartnerId;
 
 	@Nullable
@@ -77,6 +75,9 @@ public class DocumentReportResult
 	@Nullable
 	Integer asyncBatchId;
 
+	@Nullable
+	String poReference;
+	
 	@Nullable
 	public String getFilename()
 	{
