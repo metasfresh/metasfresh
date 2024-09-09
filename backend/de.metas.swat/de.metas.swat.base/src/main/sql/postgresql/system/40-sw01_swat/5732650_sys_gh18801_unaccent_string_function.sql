@@ -27,3 +27,4 @@ END;
 $BODY$
     LANGUAGE plpgsql IMMUTABLE
                      COST 100;
+
