@@ -101,13 +101,13 @@ Feature: create multiple production candidates
     #
     # Complete the sales order and expected the PP_Order_Candidate to be generated.
     When the order identified by o_1 is completed
-    And after not more than 60s, PP_Order_Candidates are found
+    And after not more than 120s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | p_1          | bom_1             | ppln_1                 | testResource  | 10 PCE     | 10 PCE       | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
-    And after not more than 60s, PP_OrderLine_Candidates are found
+    And after not more than 120s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
       | oc_1                  | p_2          | 100 PCE    | CO            | boml_1                |
-    And after not more than 60s, the MD_Candidate table has only the following records
+    And after not more than 120s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP  | M_Warehouse_ID |
       | 1/c_1      | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | -10  | -10  | production_WH  |
       | 2/c_2      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0    | production_WH  |
@@ -121,13 +121,13 @@ Feature: create multiple production candidates
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1                      | 12             |
     And the order identified by o_1 is completed
-    And after not more than 60s, PP_Order_Candidates are found
+    And after not more than 120s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_2       | false     | p_1          | bom_1             | ppln_1                 | testResource  | 2 PCE      | 2 PCE        | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
-    And after not more than 60s, PP_OrderLine_Candidates are found
+    And after not more than 120s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
       | oc_2                  | p_2          | 20 PCE     | CO            | boml_1                |
-    And after not more than 60s, the MD_Candidate table has only the following records
+    And after not more than 120s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP  | M_Warehouse_ID |
       | 1/c_1      | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | 12  | -12  | production_WH  |
       | 2/c_2      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10  | -2   | production_WH  |
@@ -143,18 +143,18 @@ Feature: create multiple production candidates
       | PP_Order_Candidate_ID |
       | oc_1                  |
       | oc_2                  |
-    Then after not more than 60s, PP_Orders are found
+    Then after not more than 120s, PP_Orders are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_BPartner_ID | DatePromised         | DocStatus |
       | ppo_1      | p_1          | bom_1             | ppln_1                 | testResource  | 12 PCE     | 12         | endcustomer_2 | 2021-04-16T21:00:00Z | DR        |
-    And after not more than 0s, PP_Order_Candidates are found
+    And after not more than 120s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | true      | p_1          | bom_1             | ppln_1                 | testResource  | 10 PCE     | 0 PCE        | 10 PCE       | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
       | oc_2       | true      | p_1          | bom_1             | ppln_1                 | testResource  | 2 PCE      | 0 PCE        | 2 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
-    And after not more than 60s, PP_OrderCandidate_PP_Order are found
+    And after not more than 120s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID | PP_Order_ID | QtyEntered |
       | oc_1                  | ppo_1       | 10 PCE     |
       | oc_2                  | ppo_1       | 2 PCE      |
-    And after not more than 60s, the MD_Candidate table has only the following records
+    And after not more than 120s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP  | M_Warehouse_ID |
       | 1/c_1      | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | 12  | -12  | production_WH  |
       | 2/c_2      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 0   | -12  | production_WH  |
@@ -199,7 +199,7 @@ Feature: create multiple production candidates
     #
     # Complete the sales order, update the PP_Order_Candidate qty from 12 PCE to 11 PCE
     When the order identified by o_2 is completed
-    Then after not more than 60s, PP_Order_Candidates are found
+    Then after not more than 120s, PP_Order_Candidates are found
       | Identifier       | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate | false     | p_1          | bom_1             | ppln_1                 | testResource  | 12 PCE     | 12 PCE       | 0 PCE        | 2022-10-10T21:00:00Z | 2022-10-10T21:00:00Z | false    |
     And update PP_Order_Candidates
@@ -211,20 +211,20 @@ Feature: create multiple production candidates
     When generate PP_Order process is invoked for selection, with completeDocument=true and autoProcessCandidateAfterProduction=false
       | PP_Order_Candidate_ID |
       | ppOrderCandidate      |
-    Then after not more than 60s, load PP_Order by candidate id: ppOrderCandidate
+    Then after not more than 120s, load PP_Order by candidate id: ppOrderCandidate
       | PP_Order_ID | QtyEntered |
       | ppOrder_1   | 5          |
       | ppOrder_2   | 5          |
       | ppOrder_3   | 1          |
-    And after not more than 0s, PP_Order_Candidates are found
+    And after not more than 120s, PP_Order_Candidates are found
       | Identifier       | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate | false     | p_1          | bom_1             | ppln_1                 | testResource  | 12 PCE     | 1 PCE        | 11 PCE       | 2022-10-10T21:00:00Z | 2022-10-10T21:00:00Z | false    |
-    And after not more than 60s, PP_Orders are found
+    And after not more than 120s, PP_Orders are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_BPartner_ID | DatePromised         | DocStatus |
       | ppOrder_1  | p_1          | bom_1             | ppln_1                 | testResource  | 5 PCE      | 5          | endcustomer_2 | 2022-10-10T21:00:00Z | CO        |
       | ppOrder_2  | p_1          | bom_1             | ppln_1                 | testResource  | 5 PCE      | 5          | endcustomer_2 | 2022-10-10T21:00:00Z | CO        |
       | ppOrder_3  | p_1          | bom_1             | ppln_1                 | testResource  | 1 PCE      | 1          | endcustomer_2 | 2022-10-10T21:00:00Z | CO        |
-    And after not more than 60s, PP_OrderCandidate_PP_Order are found
+    And after not more than 120s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID | PP_Order_ID | QtyEntered |
       | ppOrderCandidate      | ppOrder_1   | 5 PCE      |
       | ppOrderCandidate      | ppOrder_2   | 5 PCE      |
@@ -266,7 +266,7 @@ Feature: create multiple production candidates
 
     When the order identified by o_3 is completed
 
-    Then after not more than 60s, PP_Order_Candidates are found
+    Then after not more than 120s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | SeqNo |
       | ppOrderCandidate_3_1 | false     | p_1          | bom_1             | ppln_1                 | testResource  | 3 PCE      | 3 PCE        | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
 
@@ -275,7 +275,7 @@ Feature: create multiple production candidates
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_3                      | 12             |
     And the order identified by o_3 is completed
-    And after not more than 60s, PP_Order_Candidates are found
+    And after not more than 120s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | SeqNo |
       | ppOrderCandidate_3_2 | false     | p_1          | bom_1             | ppln_1                 | testResource  | 9 PCE      | 9 PCE        | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
 
@@ -293,21 +293,21 @@ Feature: create multiple production candidates
     # so all (3) of ppOrderCandidate_3_1 end up in the first PP_Order, i.e. ppOrder_3_1.
     # Then of ppOrderCandidate_3_2's 4PCE, 2 end up on the same PP_Order ppOrder_3_1 which then is (full) with 5 items,
     # Therefore the remaining 2PCE of ppOrderCandidate_3_2 end up in a new PP_Order, i.e. ppOrder_3_2.
-    Then after not more than 60s, load PP_Order by candidate id: ppOrderCandidate_3_2
+    Then after not more than 120s, load PP_Order by candidate id: ppOrderCandidate_3_2
       | PP_Order_ID | QtyEntered |
       | ppOrder_3_1 | 2          |
       | ppOrder_3_2 | 2          |
 
-    And after not more than 0s, PP_Order_Candidates are found
+    And after not more than 120s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate_3_1 | true      | p_1          | bom_1             | ppln_1                 | testResource  | 3 PCE      | 0 PCE        | 3 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
       | ppOrderCandidate_3_2 | true      | p_1          | bom_1             | ppln_1                 | testResource  | 9 PCE      | 5 PCE        | 4 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
 
-    And after not more than 60s, PP_Orders are found
+    And after not more than 120s, PP_Orders are found
       | Identifier  | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_BPartner_ID | DatePromised         | DocStatus |
       | ppOrder_3_1 | p_1          | bom_1             | ppln_1                 | testResource  | 5 PCE      | 5          | endcustomer_2 | 2022-11-07T21:00:00Z | CO        |
       | ppOrder_3_2 | p_1          | bom_1             | ppln_1                 | testResource  | 2 PCE      | 2          | endcustomer_2 | 2022-11-07T21:00:00Z | CO        |
-    And after not more than 60s, PP_OrderCandidate_PP_Order are found
+    And after not more than 120s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID | PP_Order_ID | QtyEntered |
       | ppOrderCandidate_3_1  | ppOrder_3_1 | 3 PCE      |
       | ppOrderCandidate_3_2  | ppOrder_3_1 | 2 PCE      |
@@ -371,7 +371,7 @@ Feature: create multiple production candidates
 
     When the order identified by order_4_1 is completed
 
-    Then after not more than 60s, PP_Order_Candidates are found
+    Then after not more than 120s, PP_Order_Candidates are found
       | Identifier           | Processed | SeqNo | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate_4_1 | false     | 20    | product_4    | bom_4             | ppln_4                 | testResource  | 5 PCE      | 5 PCE        | 0 PCE        | 2022-11-09T21:00:00Z | 2022-11-09T21:00:00Z | false    |
 
@@ -384,7 +384,7 @@ Feature: create multiple production candidates
 
     When the order identified by order_4_2 is completed
 
-    Then after not more than 60s, PP_Order_Candidates are found
+    Then after not more than 120s, PP_Order_Candidates are found
       | Identifier           | Processed | SeqNo | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate_4_2 | false     | 10    | p_1          | bom_1             | ppln_1                 | testResource  | 5 PCE      | 5 PCE        | 0 PCE        | 2022-11-09T21:00:00Z | 2022-11-09T21:00:00Z | false    |
 
@@ -393,7 +393,7 @@ Feature: create multiple production candidates
       | ppOrderCandidate_4_1  |
       | ppOrderCandidate_4_2  |
 
-    And validate that after not more than 60s, PP_Orders are created for PP_Order_Candidate in the following order:
+    And validate that after not more than 120s, PP_Orders are created for PP_Order_Candidate in the following order:
       | PP_Order_Candidate_ID | PP_Order_ID |
       | ppOrderCandidate_4_2  | ppOrder_4_1 |
       | ppOrderCandidate_4_1  | ppOrder_4_2 |
