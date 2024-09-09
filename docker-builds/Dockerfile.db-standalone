@@ -23,6 +23,6 @@ COPY --from=backend /backend/metasfresh-dist/dist/target/dist/sql /tmp/sql
 
 RUN cd /tmp/sql \
 	&& find -mindepth 3 -type f -delete \
-	&& find -type f -regextype egrep -not -regex ".*\/([0-9]{5,7})_.*" -delete \
+	&& find -type f -regextype egrep -not -regex ".*\/([0-9]{5,8})_.*" -delete \
 	&& mkdir /docker-entrypoint-initdb.d/migrations \
 	&& mcp '*/*.sql' '/docker-entrypoint-initdb.d/migrations/#2---#1.sql'
