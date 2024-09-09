@@ -81,6 +81,9 @@ public class ArchiveRequest
 	@Nullable
 	String documentNo;
 
+	@Builder.Default
+	boolean isMainReport = true;
+
 	@Nullable
 	Language language;
 

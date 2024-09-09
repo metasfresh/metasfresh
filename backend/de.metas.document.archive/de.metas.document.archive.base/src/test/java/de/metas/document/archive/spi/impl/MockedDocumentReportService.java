@@ -23,6 +23,7 @@
 package de.metas.document.archive.spi.impl;
 
 import de.metas.process.PInstanceId;
+import de.metas.report.DocOutboundConfigRepository;
 import de.metas.report.DocTypePrintOptionsRepository;
 import de.metas.report.DocumentPrintOptionDescriptorsRepository;
 import de.metas.report.DocumentReportAdvisor;
@@ -48,13 +49,15 @@ public class MockedDocumentReportService extends DocumentReportService
 			final @NonNull List<DocumentReportAdvisor> advisors,
 			final @NonNull DocumentPrintOptionDescriptorsRepository documentPrintOptionDescriptorsRepository,
 			final @NonNull DocTypePrintOptionsRepository docTypePrintOptionsRepository,
-			final @NonNull DocumentReportAdvisorUtil util)
+			final @NonNull DocumentReportAdvisorUtil util,
+			final @NonNull DocOutboundConfigRepository docOutboundConfigRepository)
 	{
 		super(
 				advisors,
 				documentPrintOptionDescriptorsRepository,
 				docTypePrintOptionsRepository,
-				util);
+				util,
+				docOutboundConfigRepository);
 	}
 
 	@Override

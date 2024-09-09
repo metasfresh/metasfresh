@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Shipping_Notification extends org.compiere.model.PO implements I_M_Shipping_Notification, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -818657104L;
+	private static final long serialVersionUID = 1656125332L;
 
     /** Standard Constructor */
     public X_M_Shipping_Notification (final Properties ctx, final int M_Shipping_Notification_ID, @Nullable final String trxName)
@@ -495,5 +495,20 @@ public class X_M_Shipping_Notification extends org.compiere.model.PO implements 
 	public java.lang.String getShipFromAddress() 
 	{
 		return get_ValueAsString(COLUMNNAME_ShipFromAddress);
+	}
+
+	@Override
+	public void setShipFrom_Partner_ID (final int ShipFrom_Partner_ID)
+	{
+		if (ShipFrom_Partner_ID < 1) 
+			set_Value (COLUMNNAME_ShipFrom_Partner_ID, null);
+		else 
+			set_Value (COLUMNNAME_ShipFrom_Partner_ID, ShipFrom_Partner_ID);
+	}
+
+	@Override
+	public int getShipFrom_Partner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ShipFrom_Partner_ID);
 	}
 }
