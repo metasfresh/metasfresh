@@ -28,6 +28,7 @@ import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -35,12 +36,14 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.RPadQueryFilterModifier;
+import org.adempiere.ad.dao.impl.StringToNumericModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ElementValue;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -207,6 +210,11 @@ public class ElementValueRepository
 				.create()
 				.first();
 
+		if(from == null || to == null)
+		{
+			return ImmutableSet.of();
+		}
+
 		final RPadQueryFilterModifier rpad = new RPadQueryFilterModifier(20, "0");
 
 		return queryBL.createQueryBuilder(I_C_ElementValue.class)
@@ -218,7 +226,16 @@ public class ElementValueRepository
 
 	private ImmutableSet<ElementValueId> getElementValueIdsBetween_NUMERIC(final String accountValueFrom, final String accountValueTo)
 	{
-		// TODO
+		final BigDecimal from = NumberUtils.asBigDecimal(accountValueFrom);
+		final BigDecimal to = NumberUtils.asBigDecimal(accountValueTo);
+
+		final StringToNumericModifier stringToNumericModifier = new StringToNumericModifier();
+
+		return queryBL.createQueryBuilder(I_C_ElementValue.class)
+				.addOnlyActiveRecordsFilter()
+				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, from, to, stringToNumericModifier)
+				.create()
+				.listIds(ElementValueId::ofRepoId);
 	}
 
 	@VisibleForTesting
