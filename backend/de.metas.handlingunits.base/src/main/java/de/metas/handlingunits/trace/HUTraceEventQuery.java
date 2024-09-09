@@ -13,6 +13,7 @@ import lombok.Singular;
 import lombok.Value;
 import lombok.With;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
@@ -42,7 +43,7 @@ import java.util.OptionalInt;
 
 /**
  * Used to pass to {@link HUTraceRepository#query(HUTraceEventQuery)} to retrieve {@link HUTraceEvent}s.
- * 
+ * <p>
  * This class has the properties that {@link HUTraceEvent} has, but the following differences:
  * <ul>
  * <li>none of those properties is mandatory, all may be {@code null}
@@ -127,4 +128,10 @@ public class HUTraceEventQuery
 	Optional<DocTypeId> docTypeId = Optional.empty();
 
 	int huTrxLineId;
+
+	/**
+	 * Might be a HU-trace-record's VHU or TopLevel-HU
+	 */
+	@Nullable
+	HuId anyHuId;
 }
