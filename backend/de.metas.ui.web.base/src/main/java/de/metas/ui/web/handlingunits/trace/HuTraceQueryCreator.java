@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceEventQuery.EventTimeOperator;
@@ -15,6 +16,7 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -127,10 +129,12 @@ final class HuTraceQueryCreator
 						.setParameter("documentFilterParam", parameter);
 			}
 		}
-		else if (parameter.getSqlWhereClause() != null && !parameter.getSqlWhereClause().isEmpty())
-		{
-			queryUpdateFunction = HuTraceQueryCreator::updateWhereClauseFromParameter;
-		} 
+		else if (parameter.getSqlWhereClause() != null
+				&& !parameter.getSqlWhereClause().isEmpty()
+				&& parameter.getSqlWhereClause().getSql().startsWith(I_M_HU.COLUMNNAME_M_HU_ID))
+		{ // special case: we zoom to the HU-TRace-Window from an M_HU record
+			queryUpdateFunction = HuTraceQueryCreator::updateAnyHuFromParameterWhereClause;
+		}
 		else
 		{
 			final String message = StringUtils.formatMessage("The given filterParam has has nothing we can extract into the HUTraceQuery={}", parameter);
@@ -316,15 +320,32 @@ final class HuTraceQueryCreator
 		return query.withOrgId(OrgId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
-	private static HUTraceEventQuery updateWhereClauseFromParameter(
+	private static HUTraceEventQuery updateAnyHuFromParameterWhereClause(
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueNotNull("sqlWhereClause", query.getSqlWhereClause(), query);
+		errorIfQueryValueNotNull("anyHuId", query.getAnyHuId(), query);
+		final SqlAndParams sqlWhereClause = Check.assumeNotNull(
+				parameter.getSqlWhereClause(),
+				"If this method is called, then the  given parameter has a sqlWhereClause; parameter={}", parameter);
+		
+		try
+		{
+			final String whereClauseString = sqlWhereClause.toSqlStringInlineParams();
 
-		return query.withSqlWhereClause(parameter.getSqlWhereClause().toSqlStringInlineParams());
+			final String huIdStr = whereClauseString.split("=")[1];
+			final HuId huId = HuId.ofRepoId(Integer.parseInt(huIdStr));
+
+			return query.withAnyHuId(huId);
+		}
+		catch (final Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e) // this method work. if not, there isn't really anything the user can do about it
+					.appendParametersToMessage()
+					.setParameter("DocumentFilterParam", parameter);
+		}
 	}
-	
+
 	private static void errorIfQueryValueGreaterThanZero(
 			@NonNull final String field,
 			final int value,

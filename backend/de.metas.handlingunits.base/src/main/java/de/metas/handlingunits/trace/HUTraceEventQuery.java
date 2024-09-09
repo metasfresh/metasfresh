@@ -128,7 +128,10 @@ public class HUTraceEventQuery
 	Optional<DocTypeId> docTypeId = Optional.empty();
 
 	int huTrxLineId;
-	
+
+	/**
+	 * Might be a HU-trace-record's VHU or TopLevel-HU
+	 */
 	@Nullable
-	String sqlWhereClause;
+	HuId anyHuId;
 }

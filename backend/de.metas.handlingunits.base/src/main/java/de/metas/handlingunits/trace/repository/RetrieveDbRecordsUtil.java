@@ -1,23 +1,7 @@
 package de.metas.handlingunits.trace.repository;
 
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.model.util.ModelByIdComparator;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
-import org.compiere.model.IQuery;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.annotations.VisibleForTesting;
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
@@ -26,8 +10,25 @@ import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.model.util.ModelByIdComparator;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.compiere.model.IQuery;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -84,15 +85,11 @@ public class RetrieveDbRecordsUtil
 
 		/**
 		 * Get the {@code VHU_ID}s from the records we already found so far. Needed to recurse forwards.
-		 *
-		 * @return
 		 */
 		List<HuId> getVhuIds();
 
 		/**
 		 * Get the {@code VHU_Source_ID} from the records we already found so far. Needed to recurse backwards.
-		 *
-		 * @return
 		 */
 		List<HuId> getVhuSourceIds();
 	}
@@ -154,6 +151,7 @@ public class RetrieveDbRecordsUtil
 	/**
 	 * Used when we are going to store the result in the {@code T_Selection} table and return the selection ID.
 	 */
+	@Getter
 	private static class SelectionResult implements Result
 	{
 		private PInstanceId selectionId;
@@ -234,10 +232,6 @@ public class RetrieveDbRecordsUtil
 					.collect(ImmutableList.toImmutableList());
 		}
 
-		public PInstanceId getSelectionId()
-		{
-			return selectionId;
-		}
 	}
 
 	private Result queryDbRecord(
@@ -284,10 +278,12 @@ public class RetrieveDbRecordsUtil
 		return resultOut;
 	}
 
+	@Nullable
 	@VisibleForTesting
 	static IQueryBuilder<I_M_HU_Trace> createQueryBuilderOrNull(@NonNull final HUTraceEventQuery query)
 	{
-		final IQueryBuilder<I_M_HU_Trace> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<I_M_HU_Trace> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Trace.class)
 				.addOnlyActiveRecordsFilter();
 
 		boolean queryIsEmpty = updateQueryBuilderForQueryEventTime(queryBuilder, query);
@@ -377,7 +373,15 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Trx_Line_ID, query.getHuTrxLineId());
 			queryIsEmpty = false;
 		}
-
+		if (query.getAnyHuId() != null)
+		{
+			final ICompositeQueryFilter<I_M_HU_Trace> anyHuFilter = queryBL.createCompositeQueryFilter(I_M_HU_Trace.class)
+					.setJoinOr()
+					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_M_HU_ID, query.getAnyHuId())
+					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_VHU_ID, query.getAnyHuId());
+			queryBuilder.addFilter(anyHuFilter);
+			queryIsEmpty = false;
+		}
 		if (queryIsEmpty)
 		{
 			return null;
@@ -496,8 +500,6 @@ public class RetrieveDbRecordsUtil
 
 	/**
 	 * Return all records; this makes absolutely no sense in production; Intended to be used only use for testing.
-	 *
-	 * @return
 	 */
 	@VisibleForTesting
 	public List<HUTraceEvent> queryAll()
