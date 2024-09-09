@@ -100,16 +100,16 @@ Feature: Modular contract log from purchase order for raw product
       | invoicingGroup_p1                            | invGroup                             | rawProduct              |
 
     And metasfresh contains M_ProductPrices
-      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier  | PriceStd | C_UOM_ID.X12DE355 |
-      | moduleLogPP_1 | moduleLogPLV_PO                   | rawProduct               | 10.00    | PCE               |
-      | moduleLogPP_2 | moduleLogPLV_PO                   | subtractValueOnRaw_PO    | 7.00     | PCE               |
-      | moduleLogPP_3 | moduleLogPLV_PO                   | subtractValueOnRaw_PO_2  | 9.00     | PCE               |
-      | moduleLogPP_4 | moduleLogPLV_PO                   | addValueOnRaw_PO         | 8.00     | PCE               |
-      | moduleLogPP_5 | moduleLogPLV_PO                   | addValueOnRaw_PO_2       | 6.00     | PCE               |
-      | moduleLogPP_6 | moduleLogPLV_PO                   | addValueOnInterim        | 10.00    | PCE               |
-      | moduleLogPP_7 | moduleLogPLV_PO                   | subValueOnInterim        | 10.00    | PCE               |
-      | moduleLogPP_8 | moduleLogPLV_PO                   | storageCostForRawProduct | 6.00     | PCE               |
-      | moduleLogPP_9 | moduleLogPLV_SO                   | rawProduct               | 20.00    | PCE               |
+      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.Name |
+      | moduleLogPP_1 | moduleLogPLV_PO                   | rawProduct               | 10.00    | PCE               | Normale MWSt          |
+      | moduleLogPP_2 | moduleLogPLV_PO                   | subtractValueOnRaw_PO    | 7.00     | PCE               | Normale MWSt          |
+      | moduleLogPP_3 | moduleLogPLV_PO                   | subtractValueOnRaw_PO_2  | 9.00     | PCE               | Normale MWSt          |
+      | moduleLogPP_4 | moduleLogPLV_PO                   | addValueOnRaw_PO         | 8.00     | PCE               | Normale MWSt          |
+      | moduleLogPP_5 | moduleLogPLV_PO                   | addValueOnRaw_PO_2       | 6.00     | PCE               | Normale MWSt          |
+      | moduleLogPP_6 | moduleLogPLV_PO                   | addValueOnInterim        | 10.00    | PCE               | Normale MWSt          |
+      | moduleLogPP_7 | moduleLogPLV_PO                   | subValueOnInterim        | 10.00    | PCE               | Normale MWSt          |
+      | moduleLogPP_8 | moduleLogPLV_PO                   | storageCostForRawProduct | 6.00     | PCE               | Normale MWSt          |
+      | moduleLogPP_9 | moduleLogPLV_SO                   | rawProduct               | 20.00    | PCE               | Normale MWSt          |
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Year_ID.Identifier | M_PricingSystem_ID.Identifier |
