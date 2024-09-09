@@ -23,11 +23,6 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.IMsgBL;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.InOutId;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -62,8 +57,6 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	private final AttachmentEntryService attachmentEntryService;
 	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry;
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	public DocOutboundArchiveEventListener(
 			@NonNull final AttachmentEntryService attachmentEntryService,
@@ -232,6 +225,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogRecord.setAD_Table_ID(adTableId);
 		docOutboundLogRecord.setRecord_ID(recordId);
 		docOutboundLogRecord.setC_BPartner_ID(archiveRecord.getC_BPartner_ID());
+		docOutboundLogRecord.setPOReference(archiveRecord.getPOReference());
 		docOutboundLogRecord.setC_Async_Batch_ID(archiveRecord.getC_Async_Batch_ID());
 
 		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
@@ -254,33 +248,11 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		setMailRecipient(docOutboundLogRecord);
 
-		setPOReference(docOutboundLogRecord, reference);
-
 		save(docOutboundLogRecord);
 
 		shareDocumentAttachmentsWithDocoutBoundLog(archiveRecord, docOutboundLogRecord);
 
 		return docOutboundLogRecord;
-	}
-
-	private void setPOReference(
-			@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord,
-			@NonNull final TableRecordReference reference)
-	{
-		final String tableName = reference.getTableName();
-		switch (tableName)
-		{
-			case I_M_InOut.Table_Name:
-				final InOutId inOutId = reference.getIdAssumingTableName(tableName, InOutId::ofRepoId);
-				docOutboundLogRecord.setPOReference(inOutBL.getPOReference(inOutId));
-				break;
-			case I_C_Invoice.Table_Name:
-				final InvoiceId invoiceId = reference.getIdAssumingTableName(tableName, InvoiceId::ofRepoId);
-				docOutboundLogRecord.setPOReference(invoiceBL.getPOReference(invoiceId));
-				break;
-			default:
-				break;
-		}
 	}
 	
 	private void setMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
