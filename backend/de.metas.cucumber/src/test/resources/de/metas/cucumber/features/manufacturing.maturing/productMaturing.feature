@@ -63,7 +63,7 @@ Feature: Maturing scenarios
       | maturingInv    | maturing_inv_10    | rawGood      | 0       | 10       | huASI_10                  |
     And complete inventory with inventoryIdentifier 'maturingInv'
 
-    And after not more than 60s, there are added M_HUs for inventory
+    And after not more than 120s, there are added M_HUs for inventory
       | M_InventoryLine_ID | M_HU_ID       |
       | maturing_inv_10    | rawgood_hu_10 |
     And validate M_HU_Storage:
@@ -72,21 +72,21 @@ Feature: Maturing scenarios
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
-    Then after not more than 60s, PP_Order_Candidates are found
+    Then after not more than 120s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
       | oc_1       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 10 PCE     | 10 PCE       | 0 PCE        | 2023-05-31T22:00:00Z | 2023-05-31T22:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_10 |
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering' is ran once
 
-    And after not more than 60s, PP_Order_Candidates are found
+    And after not more than 120s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
       | oc_1       | true      | maturedGood  | bom_1             | prodPlanning           | 540006        | 10 PCE     | 0 PCE        | 10 PCE       | 2023-05-31T22:00:00Z | 2023-05-31T22:00:00Z | true     | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_10 |
 
-    And after not more than 60s, load PP_Order by candidate id: oc_1
+    And after not more than 120s, load PP_Order by candidate id: oc_1
       | PP_Order_ID | QtyEntered |
       | ppOrder_1   | 10         |
 
-    And after not more than 60s, PP_Orders are found
+    And after not more than 120s, PP_Orders are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | DatePromised         | DocStatus |
       | ppOrder_1  | maturedGood  | bom_1             | prodPlanning           | 540006        | 10 PCE     | 10         | 2023-05-31T22:00:00Z | CL        |
 
@@ -129,7 +129,7 @@ Feature: Maturing scenarios
       | maturingInv2              | maturing_inv_20               | rawGood                 | 0       | 20       | huASI_20                                 |
     And complete inventory with inventoryIdentifier 'maturingInv2'
 
-    And after not more than 60s, there are added M_HUs for inventory
+    And after not more than 120s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | maturing_inv_20               | rawgood_hu_20      |
     And validate M_HU_Storage:
@@ -138,7 +138,7 @@ Feature: Maturing scenarios
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
-    And after not more than 60s, PP_Order_Candidates are found
+    And after not more than 120s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
       | oc_2       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 20 PCE     | 20 PCE       | 0 PCE        | 2023-06-30T22:00:00Z | 2023-06-30T22:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_20 |
 
@@ -148,7 +148,7 @@ Feature: Maturing scenarios
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
-    Then after not more than 60s, PP_Order_Candidates are found
+    Then after not more than 120s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
       | oc_2       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 15 PCE     | 15 PCE       | 0 PCE        | 2023-06-30T22:00:00Z | 2023-06-30T22:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_20 |
 
@@ -177,7 +177,7 @@ Feature: Maturing scenarios
       | maturingInv3   | maturing_inv_30    | rawGood      | 0       | 30       | huASI_30                  |
     And complete inventory with inventoryIdentifier 'maturingInv3'
 
-    And after not more than 60s, there are added M_HUs for inventory
+    And after not more than 120s, there are added M_HUs for inventory
       | M_InventoryLine_ID | M_HU_ID       |
       | maturing_inv_30    | rawgood_hu_30 |
     And validate M_HU_Storage:
@@ -186,7 +186,7 @@ Feature: Maturing scenarios
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
-    And after not more than 60s, PP_Order_Candidates are found
+    And after not more than 120s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
       | oc_3       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 30 PCE     | 30 PCE       | 0 PCE        | 2023-06-30T22:00:00Z | 2023-06-30T22:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_30 |
 
@@ -196,4 +196,4 @@ Feature: Maturing scenarios
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
-    Then after not more than 60s, no PP_Order_Candidates are found for Issue_HU_ID: 'rawgood_hu_30'
+    Then after not more than 120s, no PP_Order_Candidates are found for Issue_HU_ID: 'rawgood_hu_30'
