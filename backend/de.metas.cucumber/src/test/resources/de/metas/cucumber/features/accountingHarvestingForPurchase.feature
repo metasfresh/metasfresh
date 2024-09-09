@@ -187,8 +187,8 @@ Feature: accounting-purchase-harvesting-feature
       | bp_moduleLogMR_Location | 5823098505483 | bp_po                    | true                | true                |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_05072023_1 | product_PO_05082023_1       | harvesting_calendar      | y2022                | ps_1                              |
+      | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | M_PricingSystem_ID.Identifier |
+      | modCntr_settings_1             | testSettings_05072023_1 | product_PO_05082023_1       | harvesting_calendar      | y2022                | ps_1                          |
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name              | Value             | ModularContractHandlerType |
       | modCntr_type_1             | poLine_05072023_1 | poLine_05072023_1 | Receipt                    |

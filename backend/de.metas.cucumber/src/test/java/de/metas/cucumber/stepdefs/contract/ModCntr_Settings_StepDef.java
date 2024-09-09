@@ -95,7 +95,7 @@ public class ModCntr_Settings_StepDef
 		final I_C_Year yearRecord = yearTable.get(yearIdentifier);
 
 		final Boolean isSoTrx = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_IsSOTrx, false);
-		
+
 		final I_ModCntr_Settings modCntrSettingsRecord = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_ModCntr_Settings.class)
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, rawProduct.getM_Product_ID())
@@ -123,12 +123,9 @@ public class ModCntr_Settings_StepDef
 		modCntrSettingsRecord.setIsSOTrx(isSoTrx);
 		modCntrSettingsRecord.setStorageCostStartDate(Timestamp.valueOf("2024-04-24 07:15:00"));
 
-		final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_Flatrate_Conditions.COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(pricingSystemIdentifier))
-		{
-			final I_M_PricingSystem pricingSystem = pricingSysTable.get(pricingSystemIdentifier);
-			modCntrSettingsRecord.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
-		}
+		final String pricingSystemIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Flatrate_Conditions.COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_PricingSystem pricingSystem = pricingSysTable.get(pricingSystemIdentifier);
+		modCntrSettingsRecord.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 
 		InterfaceWrapperHelper.saveRecord(modCntrSettingsRecord);
 
