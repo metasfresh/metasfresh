@@ -48,7 +48,10 @@ public class HUReservationAfterOrderUnProcessService
 		this.defaultHandler = new DefaultOrderUnProcessHandler(huReservationService);
 	}
 
-	public void handleOrderVoid(@NonNull final OrderId orderId, @NonNull final DocTimingType timing)
+	/**
+	 * Supposed to be called from a model interceptor
+	 */
+	public void handleHUReservationsAfterOrderUnprocess(@NonNull final OrderId orderId, @NonNull final DocTimingType timing)
 	{
 		HandlerResult lastInjectedHandlerResult = null;
 		for (final IUReservationAfterOrderUnProcessHandler handler : injectedHandlers)

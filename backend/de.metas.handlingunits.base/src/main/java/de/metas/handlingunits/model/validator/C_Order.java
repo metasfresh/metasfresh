@@ -32,19 +32,19 @@ import de.metas.order.OrderId;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Validator(I_C_Order.class)
+@Interceptor(I_C_Order.class)
 @Component
 public class C_Order
 {
 	private final HUReservationAfterOrderUnProcessService HUReservationAfterOrderUnProcessService;
 
-	public C_Order(@NonNull final HUReservationAfterOrderUnProcessService HUReservationAfterOrderUnProcessService)
+	public C_Order(@NonNull final HUReservationAfterOrderUnProcessService huReservationAfterOrderUnProcessService)
 	{
-		this.HUReservationAfterOrderUnProcessService = HUReservationAfterOrderUnProcessService;
+		this.HUReservationAfterOrderUnProcessService = huReservationAfterOrderUnProcessService;
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
@@ -73,6 +73,6 @@ public class C_Order
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT })
 	public void handleHUReservationsAfterOrderUnprocess(@NonNull final I_C_Order order, @NonNull final DocTimingType timing)
 	{
-		HUReservationAfterOrderUnProcessService.handleOrderVoid(OrderId.ofRepoId(order.getC_Order_ID()), timing);
+		HUReservationAfterOrderUnProcessService.handleHUReservationsAfterOrderUnprocess(OrderId.ofRepoId(order.getC_Order_ID()), timing);
 	}
 }
