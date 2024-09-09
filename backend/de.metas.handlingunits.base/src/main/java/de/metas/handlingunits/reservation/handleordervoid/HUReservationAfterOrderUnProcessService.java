@@ -29,6 +29,8 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * Invokes all handlers, making sure to invoke {@link DefaultOrderUnProcessHandler} last.
  */
@@ -39,10 +41,10 @@ public class HUReservationAfterOrderUnProcessService
 	private final DefaultOrderUnProcessHandler defaultHandler;
 
 	public HUReservationAfterOrderUnProcessService(
-			@NonNull final ImmutableList<IUReservationAfterOrderUnProcessHandler> injectedHandlers,
+			@NonNull final List<IUReservationAfterOrderUnProcessHandler> injectedHandlers,
 			@NonNull final HUReservationService huReservationService)
 	{
-		this.injectedHandlers = injectedHandlers;
+		this.injectedHandlers = ImmutableList.copyOf(injectedHandlers);
 		this.defaultHandler = new DefaultOrderUnProcessHandler(huReservationService);
 	}
 
