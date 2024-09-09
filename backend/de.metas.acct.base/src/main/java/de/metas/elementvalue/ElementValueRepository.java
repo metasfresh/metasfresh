@@ -80,6 +80,7 @@ public class ElementValueRepository
 				.map(ElementValueRepository::toElementValue);
 	}
 
+
 	void save(@NonNull final I_C_ElementValue record)
 	{
 		saveRecord(record);
@@ -120,7 +121,7 @@ public class ElementValueRepository
 	{
 		//
 		// Validate
-		if (request.getParentId() != null)
+		if(request.getParentId() != null)
 		{
 			final ElementValue parent = getById(request.getParentId());
 			if (!parent.isSummary())
