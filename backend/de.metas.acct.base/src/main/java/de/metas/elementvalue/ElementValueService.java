@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.interceptor.C_ElementValue;
-import de.metas.acct.model.validator.C_ElementValue;
 import de.metas.elementvalue.ElementValueRepository.AccountValueComparisonMode;
 import de.metas.treenode.TreeNodeService;
 import de.metas.util.GuavaCollectors;
@@ -106,7 +105,7 @@ public class ElementValueService
 				root.setSeqNo(0);
 				elementValueRepository.save(root);
 
-				savedElementValues.add(ElementValueRepository.toElementValue(root));
+				savedElementValues.add(ElementValueRepository.fromRecord(root));
 			}
 
 			for (final ElementValueId parentId : elementValuesByParentId.keySet())
@@ -114,7 +113,7 @@ public class ElementValueService
 				final List<I_C_ElementValue> children = elementValuesByParentId.get(parentId);
 				sortByAccountNoAndSave(children);
 
-				children.forEach(child -> savedElementValues.add(ElementValueRepository.toElementValue(child)));
+				children.forEach(child -> savedElementValues.add(ElementValueRepository.fromRecord(child)));
 			}
 		}
 
