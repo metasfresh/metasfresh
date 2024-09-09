@@ -145,20 +145,6 @@ Feature: Modular contract log from purchase order for raw product
       | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
       | moduleLogConditions_06032024_1      | moduleLogConditions_06032024_1 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 | CO            |
 
-    And load C_DocType:
-      | C_DocType_ID.Identifier | OPT.Name          |
-      | defInv                  | Schlusszahlung    |
-      | defInv_credit           | Schlussabrechnung |
-
-    And metasfresh contains C_DocType_Invoicing_Pool:
-      | C_DocType_Invoicing_Pool_ID.Identifier | Name            | Positive_Amt_C_DocType_ID.Identifier | Negative_Amt_C_DocType_ID.Identifier | IsSOTrx | IsOnDistinctICTypes |
-      | ip_1                                   | test_06032024_1 | defInv                               | defInv_credit                        | false   | true                |
-
-    And update C_DocType:
-      | C_DocType_ID.Identifier | OPT.C_DocType_Invoicing_Pool_ID.Identifier | OPT.C_DocTypeInvoice_ID.Identifier |
-      | defInv                  | ip_1                                       | null                               |
-      | defInv_credit           | ip_1                                       | null                               |
-
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                    | OPT.M_Warehouse_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
       | po_order   | false   | bp_moduleLogPO           | 2022-02-01  | POO             | poModuleLogContract_ref_06292023_2 | warehouse_06032024_1          | y2022                             |
