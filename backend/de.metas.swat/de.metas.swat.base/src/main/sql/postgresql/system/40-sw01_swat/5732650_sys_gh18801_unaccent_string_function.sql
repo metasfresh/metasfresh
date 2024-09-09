@@ -28,5 +28,3 @@ $BODY$
     LANGUAGE plpgsql IMMUTABLE
                      COST 100;
 
-ALTER FUNCTION unaccent_string(text, numeric) OWNER TO adempiere;
-
