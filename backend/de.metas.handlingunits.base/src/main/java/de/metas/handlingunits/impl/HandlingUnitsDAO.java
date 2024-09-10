@@ -800,7 +800,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return retrieveParentPIItemsForParentPI(Env.getCtx(), packingInstructionsId, huUnitType, bpartnerId, ITrx.TRXNAME_None);
 	}
 
-	@Cached
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@CacheCtx final Properties ctx,
 			@NonNull final HuPackingInstructionsId packingInstructionsId,
@@ -966,6 +965,19 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.create()
 				.stream()
 				.map(HandlingUnitsDAO::extractHuPackingInstructionsIdAndCaption)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	@Override
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull final Collection<HuPackingInstructionsItemId> piItemIds)
+	{
+		return retrievePIIdsByPIItemIds(piItemIds)
+				.stream()
+				.map(this::getPackingInstructionById)
+				.map(huPi -> HuPackingInstructionsIdAndCaption.of(
+						HuPackingInstructionsId.ofRepoId(huPi.getM_HU_PI_ID()),
+						huPi.getName()))
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
