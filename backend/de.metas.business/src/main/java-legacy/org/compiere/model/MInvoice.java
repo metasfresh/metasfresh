@@ -40,7 +40,6 @@ import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -1020,11 +1019,13 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			}
 		}
 
-		grandTotal = apply5CentRoundingIfNeeded(grandTotal);
+		final BigDecimal grandTotalNoRounding = grandTotal;
+		final BigDecimal roundedGrandTotal = apply5CentRoundingIfNeeded(grandTotal);
 
 		//
 		setTotalLines(totalLines);
-		setGrandTotal(grandTotal);
+		setGrandTotal(roundedGrandTotal);
+		setCashRoundingAmt(roundedGrandTotal.subtract(grandTotalNoRounding));
 		return true;
 	}    // calculateTaxTotal
 
@@ -1709,9 +1710,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		return invoiceBL.roundTo5CentIfNeeded(SOTrx.ofBoolean(isSOTrx()),
-											  grandTotal,
-											  ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID()));
+		return invoiceBL.roundTo5CentIfNeeded(InvoiceId.ofRepoId(getC_Invoice_ID()),
+											  grandTotal);
 	}
 
 }    // MInvoice

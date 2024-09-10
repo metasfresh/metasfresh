@@ -532,7 +532,10 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		//
 		// TODO Cash Rounding Amount DR
+if(invoiceBL.isApply5CentCashRounding(getInvoiceId()))
+{
 
+}
 
 
 		//

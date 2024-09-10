@@ -194,7 +194,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	// System configurations (public for testing)
 	public static final String SYSCONFIG_AutoPayZeroAmt = "org.compiere.model.MInvoice.AutoPayZeroAmt";
 	public static final String SYSCONFIG_SortILsByShipmentLineOrders = "org.compiere.model.MInvoice.SortILsByShipmentLineOrders";
-	public static final String SYS_Config_Apply5CentRounding = "org.compiere.model.MInvoice.Apply5CentRounding";
 
 	// FRESH-488: Payment rule from sys config
 	public static final String SYSCONFIG_C_Invoice_PaymentRule = "de.metas.invoice.C_Invoice_PaymentRule";
@@ -2093,27 +2092,25 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public boolean isRoundTo5CentNeeded(@NonNull SOTrx isSOTrx, @NonNull ClientAndOrgId clientAndOrgId)
+	public boolean isApply5CentCashRounding(@NonNull final InvoiceId invoiceId)
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-		if (isSOTrx.isPurchase())
+		final org.compiere.model.I_C_Invoice invoice = getById(invoiceId);
+
+
+		if (!invoice.isSOTrx())
 		{
 			return false;
 		}
 
-		if (!sysConfigBL.getBooleanValue(SYS_Config_Apply5CentRounding, false, clientAndOrgId))
-		{
-			return false;
-		}
+		return currencyBL.isApply5CentCashRounding(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
 
-		return true;
 	}
 
 	@Override
-	public BigDecimal roundTo5CentIfNeeded(@NonNull SOTrx isSOTrx, @NonNull final BigDecimal grandTotal, @NonNull ClientAndOrgId clientAndOrgId)
+	public BigDecimal roundTo5CentIfNeeded(@NonNull final InvoiceId invoiceId, @NonNull final BigDecimal grandTotal)
 	{
-		if (!isRoundTo5CentNeeded(isSOTrx, clientAndOrgId))
+		if (!isApply5CentCashRounding(invoiceId))
 		{
 			return grandTotal;
 		}

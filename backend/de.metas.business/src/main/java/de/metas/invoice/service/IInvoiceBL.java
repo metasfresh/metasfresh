@@ -45,7 +45,6 @@ import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.order.OrderId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
@@ -442,7 +441,7 @@ public interface IInvoiceBL extends ISingletonService {
     @NonNull
     PaymentTermId getPaymentTermId(@NonNull InvoiceId invoiceId);
 
-    boolean isRoundTo5CentNeeded(@NonNull SOTrx isSOTrx, @NonNull ClientAndOrgId clientAndOrgId);
+    boolean isApply5CentCashRounding(@NonNull InvoiceId invoiceId);
 
-    BigDecimal roundTo5CentIfNeeded(@NonNull SOTrx isSOTrx, @NonNull BigDecimal grandTotal, @NonNull ClientAndOrgId clientAndOrgId);
+    BigDecimal roundTo5CentIfNeeded(@NonNull InvoiceId invoiceId, @NonNull BigDecimal grandTotal);
 }
