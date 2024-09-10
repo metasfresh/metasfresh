@@ -10,6 +10,7 @@ import lombok.Value;
 @Builder
 public class DDOrderCandidateAlloc
 {
+	int id; // required for delete operations
 	@NonNull DDOrderCandidateId ddOrderCandidateId;
 	@NonNull DDOrderAndLineId ddOrderAndLineId;
 	@NonNull Quantity qty;
