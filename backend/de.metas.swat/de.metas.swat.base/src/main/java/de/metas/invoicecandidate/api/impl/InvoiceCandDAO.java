@@ -4,9 +4,6 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.aggregation.model.I_C_Aggregation;
-import de.metas.aggregation.model.I_C_AggregationItem;
-import de.metas.aggregation.model.I_C_Aggregation_Attribute;
-import de.metas.aggregation.model.X_C_AggregationItem;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -90,6 +87,7 @@ import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -113,9 +111,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
-import static de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext.ATTRIBUTE_CODE_AggregatePer_M_InOut_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
-import static org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID;
 
 /*
  * #%L
@@ -475,26 +471,14 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 	public boolean isCompletedOrClosedInvoice(@NonNull final InOutId inOutId)
 	{
-		final IQueryBuilder<I_C_Invoice_Line_Alloc> invoiceLineAllocQueryBuilder = retrieveInvoiceLineAllocQueryBuilder(inOutId);
-
-		if (isAggregationWithAttributeAggregatePerInOut(invoiceLineAllocQueryBuilder))
-		{
-			return queryBL.createQueryBuilder(I_C_Invoice.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(COLUMNNAME_M_InOut_ID, inOutId)
-					.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed) // DocStatus in ('CO', 'CL')
-					.create()
-					.anyMatch();
-		}
-		else
-		{
-			return invoiceLineAllocQueryBuilder
-					.andCollect(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID, I_C_InvoiceLine.class)
-					.andCollect(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_C_Invoice.class)
-					.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed) // DocStatus in ('CO', 'CL')
-					.create()
-					.anyMatch();
-		}
+		return queryBL.createQueryBuilder(I_M_MatchInv.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_InOut_ID, inOutId)
+				.andCollect(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_C_Invoice.class)
+				.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed) // DocStatus in ('CO', 'CL')
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
 	}
 
 	@Override
@@ -2023,38 +2007,5 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 
 		return filter;
-	}
-
-	@NonNull
-	private IQueryBuilder<I_C_Invoice_Line_Alloc> retrieveInvoiceLineAllocQueryBuilder(@NonNull final InOutId inOutId)
-	{
-		final IQuery<I_C_InvoiceCandidate_InOutLine> candidateInOutLine = retrieveCandidateInOutLineQuery(inOutId);
-
-		return queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
-				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, candidateInOutLine);
-	}
-
-	@NonNull
-	private IQuery<I_C_InvoiceCandidate_InOutLine> retrieveCandidateInOutLineQuery(@NonNull final InOutId inOutId)
-	{
-		return queryBL.createQueryBuilder(I_M_InOutLine.class)
-				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOutId)
-				.addOnlyActiveRecordsFilter()
-				.andCollectChildren(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID, I_C_InvoiceCandidate_InOutLine.class)
-				.create();
-	}
-
-	private boolean isAggregationWithAttributeAggregatePerInOut(@NonNull final IQueryBuilder<I_C_Invoice_Line_Alloc> invoiceLineAllocQueryBuilder)
-	{
-		return invoiceLineAllocQueryBuilder
-				.andCollect(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.class)
-				.andCollect(I_C_Invoice_Candidate.COLUMNNAME_HeaderAggregationKeyBuilder_ID, I_C_Aggregation.class)
-				.andCollectChildren(I_C_AggregationItem.COLUMNNAME_C_Aggregation_ID, I_C_AggregationItem.class)
-				.addEqualsFilter(I_C_AggregationItem.COLUMNNAME_Type, X_C_AggregationItem.TYPE_Attribute)
-				.andCollect(I_C_AggregationItem.COLUMNNAME_C_Aggregation_Attribute_ID, I_C_Aggregation_Attribute.class)
-				.addEqualsFilter(I_C_Aggregation_Attribute.COLUMNNAME_Code, ATTRIBUTE_CODE_AggregatePer_M_InOut_ID)
-				.create()
-				.anyMatch();
 	}
 }
