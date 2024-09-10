@@ -88,6 +88,7 @@ import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -471,18 +472,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 	public boolean isCompletedOrClosedInvoice(@NonNull final InOutId inOutId)
 	{
-		final IQuery<I_C_InvoiceCandidate_InOutLine> candidateInOutLine = queryBL.createQueryBuilder(I_M_InOutLine.class)
-				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOutId)
+		return queryBL.createQueryBuilder(I_M_MatchInv.class)
 				.addOnlyActiveRecordsFilter()
-				.andCollectChildren(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID, I_C_InvoiceCandidate_InOutLine.class)
-				.create();
-
-		return queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
-				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, candidateInOutLine)
-				.andCollect(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID, I_C_InvoiceLine.class)
+				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_InOut_ID, inOutId)
 				.andCollect(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_C_Invoice.class)
 				.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed) // DocStatus in ('CO', 'CL')
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.anyMatch();
 	}
