@@ -97,7 +97,7 @@ function extractUserFriendlyErrorSingleErrorObject(error) {
     return trl('error.PleaseTryAgain');
   }
   if (typeof error === 'object') {
-    if (error.userFriendlyError) {
+    if (error.userFriendlyError || window.showAllErrorMessages) {
       return error.message;
     } else {
       // don't scare the user with weird errors. Better show him some generic error.

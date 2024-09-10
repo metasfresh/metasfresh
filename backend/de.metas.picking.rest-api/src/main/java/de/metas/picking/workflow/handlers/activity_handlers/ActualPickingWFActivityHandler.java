@@ -81,10 +81,13 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 		return UIComponent.builderFrom(COMPONENTTYPE_PICK_PRODUCTS, wfActivity)
 				.properties(Params.builder()
 						.valueObj("pickTarget", jsonPickingJob.getPickTarget())
+						.valueObj("tuPickTarget", jsonPickingJob.getTuPickTarget())
 						.valueObj("lines", jsonPickingJob.getLines())
 						.valueObj("pickFromAlternatives", jsonPickingJob.getPickFromAlternatives())
 						.valueObj("qtyRejectedReasons", qtyRejectedReasons)
-						.valueObj("isAllowNewLU", pickingJobRestService.isAllowNewLU())
+						.valueObj("isPickWithNewLU", pickingJobRestService.isPickWithNewLU())
+						.valueObj("isAllowSkippingRejectedReason", pickingJobRestService.isAllowSkippingRejectedReasons())
+						.valueObj("isAllowNewTU", pickingJobRestService.isAllowNewTU())
 						.build())
 				.build();
 	}

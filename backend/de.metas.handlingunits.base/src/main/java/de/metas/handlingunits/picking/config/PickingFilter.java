@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.picking.rest-api
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.picking.config;
+package de.metas.handlingunits.picking.config;
 
 import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
 import lombok.NonNull;
