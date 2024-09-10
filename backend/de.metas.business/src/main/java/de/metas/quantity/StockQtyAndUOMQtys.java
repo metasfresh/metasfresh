@@ -1,16 +1,6 @@
 package de.metas.quantity;
 
-import java.math.BigDecimal;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty.StockQtyAndUOMQtyBuilder;
@@ -23,6 +13,13 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Util.ArrayKey;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Objects;
 
 /*
  * #%L
@@ -302,6 +299,9 @@ public class StockQtyAndUOMQtys
 		}
 	}
 
+	/**
+	 * @return the argument with the smaller UOM-quantity. If both have the same size, then the <b>first</b> argument is returned.
+	 */
 	public StockQtyAndUOMQty minUomQty(
 			@NonNull final StockQtyAndUOMQty qtysToCompare1,
 			@NonNull final StockQtyAndUOMQty qtysToCompare2)
@@ -319,6 +319,9 @@ public class StockQtyAndUOMQtys
 		return uomQty1.compareTo(uomQty2) <= 0 ? qtysToCompare1 : qtysToCompare2;
 	}
 
+	/**
+	 * @return The argument with the bigger UOM-quantity. If both have the same size, then the <b>first</b> argument is returned.
+	 */
 	public StockQtyAndUOMQty maxUomQty(
 			@NonNull final StockQtyAndUOMQty qtysToCompare1,
 			@NonNull final StockQtyAndUOMQty qtysToCompare2)

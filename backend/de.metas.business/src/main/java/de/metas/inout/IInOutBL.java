@@ -186,4 +186,7 @@ public interface IInOutBL extends ISingletonService
 	LocalDate retrieveMovementDate(I_M_InOut inOut);
 
 	String getLocationEmail(InOutId ofRepoId);
+
+	@Nullable
+	String getPOReference(@NonNull InOutId inOutId);
 }
