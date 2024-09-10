@@ -352,10 +352,8 @@ public final class NumberUtils
 	@NonNull
 	public static BigDecimal roundTo5Cent(@NonNull final BigDecimal initialValue)
 	{
-		final MathContext mathContext = new MathContext(2); // The precision must always be 2 because the rounding is done on 5 cents.
-
 		final BigDecimal multiplyBy20 = initialValue.multiply(TWENTY);
-		final int intPart = multiplyBy20.round(mathContext).intValue();
-		return BigDecimal.valueOf(intPart).divide(TWENTY);
+		final BigDecimal intPart = multiplyBy20.setScale(0, RoundingMode.HALF_UP);
+		return intPart.divide(TWENTY);
 	}
 }
