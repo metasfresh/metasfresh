@@ -5,6 +5,8 @@ import lombok.NonNull;
 import lombok.Value;
 import de.metas.acct.Account;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -49,6 +51,10 @@ public class AcctSchemaGeneralLedger
 	
 	@NonNull
 	Account purchasePriceVarianceOffsetAcct;
+
+
+	@Nullable
+	Account cashRoundingAcct;
 
 	@NonNull
 	public Account getDueToAcct(final AcctSchemaElementType segment)
