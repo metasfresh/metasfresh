@@ -386,6 +386,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// Amounts are updated by trigger when adding lines
 		to.setGrandTotal(BigDecimal.ZERO);
 		to.setTotalLines(BigDecimal.ZERO);
+		to.setCashRoundingAmt(BigDecimal.ZERO);
 		//
 		to.setIsTransferred(false);
 		to.setPosted(false);

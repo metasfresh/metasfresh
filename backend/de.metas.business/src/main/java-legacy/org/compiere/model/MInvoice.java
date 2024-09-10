@@ -200,6 +200,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setChargeAmt(BigDecimal.ZERO);
 			setTotalLines(BigDecimal.ZERO);
 			setGrandTotal(BigDecimal.ZERO);
+			setCashRoundingAmt(BigDecimal.ZERO);
 			//
 			setIsSOTrx(true);
 			setIsTaxIncluded(false);
@@ -1677,6 +1678,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setGrandTotal(rma.getAmt());
 		setIsSOTrx(rma.isSOTrx());
 		setTotalLines(rma.getAmt());
+		setCashRoundingAmt(BigDecimal.ZERO);
 
 		setC_Currency_ID(originalInvoice.getC_Currency_ID());
 		setIsTaxIncluded(originalInvoice.isTaxIncluded());
