@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.model.util.ModelByIdComparator;
@@ -224,6 +225,7 @@ public class RetrieveDbRecordsUtil
 	/**
 	 * Used when we are going to store the result in the {@code T_Selection} table and return the selection ID.
 	 */
+	@Getter
 	private static class SelectionResult implements Result
 	{
 		@NonNull private final IQueryBL queryBL;
@@ -394,6 +396,7 @@ public class RetrieveDbRecordsUtil
 			}
 		}
 
+	@Nullable
 		@VisibleForTesting
 		static IQueryBuilder<I_M_HU_Trace> createQueryBuilderOrNull(@NonNull final HUTraceEventQuery query)
 		{
@@ -502,7 +505,15 @@ public class RetrieveDbRecordsUtil
 				queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Trx_Line_ID, query.getHuTrxLineId());
 				queryIsEmpty = false;
 			}
-
+		if (query.getAnyHuId() != null)
+		{
+			final ICompositeQueryFilter<I_M_HU_Trace> anyHuFilter = queryBL.createCompositeQueryFilter(I_M_HU_Trace.class)
+					.setJoinOr()
+					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_M_HU_ID, query.getAnyHuId())
+					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_VHU_ID, query.getAnyHuId());
+			queryBuilder.addFilter(anyHuFilter);
+			queryIsEmpty = false;
+		}
 			if (queryIsEmpty)
 			{
 				return null;
