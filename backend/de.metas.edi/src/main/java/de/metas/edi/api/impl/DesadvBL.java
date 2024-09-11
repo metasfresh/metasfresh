@@ -45,9 +45,12 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -140,6 +143,7 @@ public class DesadvBL implements IDesadvBL
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
 	private final HURepository huRepository;
 	private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
@@ -238,6 +242,7 @@ public class DesadvBL implements IDesadvBL
 		newDesadvLine.setPriceActual(orderLineRecord.getPriceActual());
 
 		newDesadvLine.setQtyOrdered(orderLineRecord.getQtyOrdered());
+		newDesadvLine.setQtyOrdered_Override(getQtyOrdered_Override(orderLineRecord));
 		newDesadvLine.setQtyDeliveredInStockingUOM(ZERO);
 		newDesadvLine.setM_Product_ID(productId.getRepoId());
 
@@ -291,6 +296,14 @@ public class DesadvBL implements IDesadvBL
 
 		InterfaceWrapperHelper.save(newDesadvLine);
 		return newDesadvLine;
+	}
+
+	@Nullable
+	private BigDecimal getQtyOrdered_Override(@NonNull final I_C_OrderLine orderLineRecord)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID());
+		final I_M_ShipmentSchedule shipSched = shipmentSchedulePA.getByOrderLineId(orderLineId);
+		return shipSched.getQtyOrdered_Override();
 	}
 
 	private I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine)
