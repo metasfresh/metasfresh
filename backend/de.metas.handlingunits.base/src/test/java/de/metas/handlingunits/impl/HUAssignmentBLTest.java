@@ -8,6 +8,7 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.handlingunits.HuId;
@@ -29,8 +30,6 @@ import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.resource.ResourceService;
-import de.metas.pricing.tax.ProductTaxCategoryRepository;
-import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -97,7 +96,7 @@ public class HUAssignmentBLTest
 				ddOrderService,
 				new PickingBOMService(),
 				huUniqueAttributesService));
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order(ddOrderMoveScheduleService, ddOrderService));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order(ddOrderService, ddOrderMoveScheduleService, DDOrderCandidateService.newInstanceForUnitTesting()));
 
 		//
 		// BL under test

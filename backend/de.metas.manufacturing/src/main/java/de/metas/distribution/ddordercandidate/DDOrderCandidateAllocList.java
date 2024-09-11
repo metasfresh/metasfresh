@@ -79,4 +79,17 @@ public class DDOrderCandidateAllocList implements Iterable<DDOrderCandidateAlloc
 				.map(DDOrderCandidateAlloc::getQty)
 				.reduce(Quantity::add);
 	}
+
+	public Set<Integer> getIds()
+	{
+		if (list.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		
+		return list.stream()
+				.map(DDOrderCandidateAlloc::getId)
+				.filter(id -> id > 0)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }
