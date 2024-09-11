@@ -135,6 +135,13 @@ public class HUTraceEventQuery
 
 	int huTrxLineId;
 
+	// Lotnumber is currently not set from webui DocumentFilterParams. When it was added, it wasn't intended to be (not 100% sure whether it should have been).
 	@Nullable
 	String lotNumber;
+
+	/**
+	 * Might be a HU-trace-record's VHU or TopLevel-HU
+	 */
+	@Nullable
+	HuId anyHuId;
 }
