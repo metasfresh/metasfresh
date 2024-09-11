@@ -75,9 +75,6 @@ public interface IESRImportDAO extends ISingletonService
 	I_ESR_Import retrieveESRImportForPayment(final I_C_Payment payment);
 
 	/**
-	 * count lines
-	 *
-	 * @param esrImport
 	 * @param processed 3 possible values: null = ignore processed status; true = only count processed lines; false = only count unprocessed lines
 	 * @return lines count
 	 */
@@ -87,8 +84,7 @@ public interface IESRImportDAO extends ISingletonService
 
 	List<I_ESR_Import> getByIds(@NonNull Set<ESRImportId> esrImportIds);
 
-	List<I_ESR_ImportLine> fetchESRLinesForESRLineText(String esrImportLineText,
-			int excludeESRImportLineID);
+	List<I_ESR_ImportLine> fetchSimilarESRLine(I_ESR_ImportLine esrImportLine);
 
 	ImmutableSet<ESRImportId> retrieveNotReconciledESRImportIds(@NonNull Set<ESRImportId> esrImportIds);
 

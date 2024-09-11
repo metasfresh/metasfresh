@@ -28,8 +28,6 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
-import de.metas.dao.selection.model.I_T_Query_Selection;
-import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import lombok.NonNull;

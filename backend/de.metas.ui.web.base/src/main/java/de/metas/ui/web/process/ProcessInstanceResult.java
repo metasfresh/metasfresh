@@ -7,11 +7,8 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.Value;
 import org.springframework.core.io.Resource;
 
@@ -48,7 +45,7 @@ public class ProcessInstanceResult
 				.instanceId(instanceId);
 	}
 
-	DocumentId instanceId;
+	@NonNull DocumentId instanceId;
 	String summary;
 	boolean error;
 	@Nullable ResultAction action;
