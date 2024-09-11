@@ -61,6 +61,7 @@ public class DDOrderCandidateEnqueueService
 		getQueue().newWorkPackage()
 				.parameter(WP_PARAM_request, toJsonString(request))
 				.setElementsLocker(toWorkPackageElementsLocker(request))
+				.bindToThreadInheritedTrx()
 				.buildAndEnqueue();
 	}
 

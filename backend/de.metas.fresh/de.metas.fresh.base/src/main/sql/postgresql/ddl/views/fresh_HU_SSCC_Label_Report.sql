@@ -78,7 +78,7 @@ FROM
 		SELECT 	lui.M_HU_ID, 
 		--in case the HUs are aggregated we need to calculate how many TU and Cu are there
 		COALESCE( (CASE WHEN val.qty IS NOT NULL THEN (avg(tus.qty) / val.qty)::numeric ELSE avg(tus.qty)  END), 0) AS CU_per_TU,
-		COALESCE(val.qty, count(tu.M_HU_ID))::bigint AS TU_per_LU,
+        COUNT(tu.m_hu_id)::bigint AS TU_per_LU,
                 tus.m_product_id
 		FROM 	M_HU_Item lui
 			 JOIN M_HU_PI_Item lupii ON lui.M_HU_PI_Item_ID = lupii.M_HU_PI_Item_ID AND lupii.ItemType = 'HU' AND lupii.isActive = 'Y'
