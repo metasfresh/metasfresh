@@ -17,7 +17,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_Invoice_Verification_SetLine;
+import org.compiere.model.MInvoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -128,5 +130,19 @@ public class C_InvoiceLine
 		{
 			invoiceLine.setC_Tax_ID(tax.getTaxId().getRepoId());
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, //
+			ifColumnsChanged = { I_C_InvoiceLine.COLUMNNAME_C_VAT_Code_ID,
+					I_C_InvoiceLine.COLUMNNAME_C_Tax_ID,
+					I_C_InvoiceLine.COLUMNNAME_M_Product_ID,
+					I_C_InvoiceLine.COLUMNNAME_QtyInvoiced,
+					I_C_InvoiceLine.COLUMNNAME_PriceActual})
+	public void updateGrandTotal(final I_C_InvoiceLine invoiceLine)
+	{
+		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
+		final MInvoice invoicePO = LegacyAdapters.convertToPO(invoice);
+		invoicePO.calculateTaxTotal();
+		invoicePO.saveEx();
 	}
 }
