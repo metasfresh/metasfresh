@@ -533,7 +533,8 @@ public class EDIDesadvPackService
 		}
 		else
 		{
-			final SSCC18 sscc18 = sscc18CodeService.generate(rootHU.getOrgId(), rootHU.getId().getRepoId());
+			// don't use M_HU_ID because multiple packs can have the same HU and each pack needs an individual SSCC
+			final SSCC18 sscc18 = sscc18CodeService.generate(rootHU.getOrgId() /*, rootHU.getId().getRepoId()*/);
 
 			createEDIDesadvPackRequestBuilder.sscc18(sscc18.asString());
 			createEDIDesadvPackRequestBuilder.isManualIpaSSCC(true);
