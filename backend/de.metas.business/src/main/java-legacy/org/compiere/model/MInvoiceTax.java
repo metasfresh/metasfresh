@@ -119,9 +119,10 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		retValue.setC_Invoice_ID(line.getC_Invoice_ID());
 		retValue.setC_Tax_ID(tax.getTaxId().getRepoId());
 		retValue.setIsWholeTax(tax.isWholeTax());
+		retValue.setIsDocumentLevel(tax.isDocumentLevel());
 		retValue.setPrecision(precision);
 		retValue.setIsTaxIncluded(taxIncluded);
-		s_log.debug("(new) " + retValue);
+		s_log.debug("(new) {}", retValue);
 		return retValue;
 	}	// get
 
@@ -134,10 +135,12 @@ public class MInvoiceTax extends X_C_InvoiceTax
 	public MInvoiceTax(Properties ctx, int id, String trxName)
 	{
 		super(ctx, id, trxName);
-
-		setTaxAmt(BigDecimal.ZERO);
-		setTaxBaseAmt(BigDecimal.ZERO);
-		setIsTaxIncluded(false);
+		if(id <= 0)
+		{
+			setTaxAmt(BigDecimal.ZERO);
+			setTaxBaseAmt(BigDecimal.ZERO);
+			setIsTaxIncluded(false);
+		}
 	}	// MInvoiceTax
 
 	/**

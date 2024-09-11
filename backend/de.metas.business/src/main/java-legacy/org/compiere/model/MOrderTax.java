@@ -134,9 +134,10 @@ public class MOrderTax extends X_C_OrderTax
 		retValue.setC_Order_ID(line.getC_Order_ID());
 		retValue.setC_Tax_ID(tax.getTaxId().getRepoId());
 		retValue.setIsWholeTax(tax.isWholeTax());
+		retValue.setIsDocumentLevel(tax.isDocumentLevel());
 		retValue.setPrecision(precision);
 		retValue.setIsTaxIncluded(taxIncluded);
-		s_log.debug("(new) " + retValue);
+		s_log.debug("(new) {}", retValue);
 		return retValue;
 	}	// get
 

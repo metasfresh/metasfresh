@@ -33,6 +33,7 @@ import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -732,19 +733,19 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 */
 	public void setTaxAmt()
 	{
-		BigDecimal TaxAmt = ZERO;
-		if (getC_Tax_ID() == 0)
+		final TaxId taxId = TaxId.ofRepoIdOrNull(getC_Tax_ID());
+		if (taxId == null)
 		{
 			return;
 		}
 		// setLineNetAmt();
-		MTax tax = MTax.get(getCtx(), getC_Tax_ID());
+		final Tax tax = Services.get(ITaxBL.class).getTaxById(taxId);
 		if (tax.isDocumentLevel() && m_IsSOTrx)
 		{
 			return;
 		}
 		//
-		TaxAmt = tax.calculateTax(getLineNetAmt(), isTaxIncluded(), getAmountPrecision().toInt());
+		final BigDecimal TaxAmt = tax.calculateTax(getLineNetAmt(), isTaxIncluded(), getAmountPrecision().toInt());
 		if (isTaxIncluded())
 		{
 			setLineTotalAmt(getLineNetAmt());
@@ -753,6 +754,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			setLineTotalAmt(getLineNetAmt().add(TaxAmt));
 		}
+		
 		super.setTaxAmt(TaxAmt);
 	}    // setTaxAmt
 
