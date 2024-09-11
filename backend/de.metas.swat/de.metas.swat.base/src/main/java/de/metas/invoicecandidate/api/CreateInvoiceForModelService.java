@@ -123,6 +123,7 @@ public class CreateInvoiceForModelService
 		return InvoicingParams.builder()
 				.ignoreInvoiceSchedule(false)
 				.dateInvoiced(LocalDate.now())
+				.supplementMissingPaymentTermIds(true)
 				.build();
 	}
 
