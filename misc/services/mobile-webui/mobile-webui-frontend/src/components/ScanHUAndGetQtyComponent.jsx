@@ -236,7 +236,7 @@ const ScanHUAndGetQtyComponent = ({
     isCloseTarget = false,
     isDone = true,
   }) => {
-    onResult({
+    return onResult({
       qty: qtyEnteredAndValidated,
       qtyRejected,
       reason: qtyRejectedReason,
