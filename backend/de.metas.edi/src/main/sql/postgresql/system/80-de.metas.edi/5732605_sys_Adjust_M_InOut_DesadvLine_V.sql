@@ -53,7 +53,7 @@ select shipment.m_inout_id                                                      
        dline.OrderLine,
        dline.ExternalSeqNo,
        dline.BPartner_QtyItemCapacity,
-       case when desadvInOutLine.DesadvLineTotalQtyDelivered >= dline.qtyordered then 'Y' else 'N' end as IsDeliveryClosed
+       case when desadvInOutLine.DesadvLineTotalQtyDelivered >= coalesce(dline.QtyOrdered_Override, dline.QtyOrdered) then 'Y' else 'N' end as IsDeliveryClosed
 
 from edi_desadv desadv
          inner join edi_desadvline dline on desadv.edi_desadv_id = dline.edi_desadv_id
