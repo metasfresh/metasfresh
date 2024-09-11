@@ -122,7 +122,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 		<property name="com.jaspersoft.studio.field.label" value="totalprod"/>
 	</field>
 	<detail>
-		<band height="595" splitType="Stretch">
+		<band height="502" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField>
 				<reportElement x="57" y="44" width="297" height="19" uuid="0ec3f744-7821-4d60-b2c4-9b7f5f312c8e"/>
