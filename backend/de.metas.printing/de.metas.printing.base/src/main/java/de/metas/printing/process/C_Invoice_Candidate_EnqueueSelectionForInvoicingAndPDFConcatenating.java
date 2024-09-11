@@ -32,9 +32,8 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
-import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.organization.OrgId;
 import de.metas.printing.async.spi.impl.InvoiceEnqueueingWorkpackageProcessor;
 import de.metas.process.JavaProcess;
@@ -49,7 +48,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.api.IParams;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
@@ -68,8 +66,6 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	// Parameters
-	private IInvoicingParams invoicingParams;
-
 	@Param(parameterName = I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, mandatory = true)
 	private OrgId p_OrgId;
 
@@ -80,10 +76,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 	@RunOutOfTrx
 	protected void prepare()
 	{
-		final IParams params = getParameterAsIParams();
-		this.invoicingParams = new InvoicingParams(params);
-
-		int selectionCount = createSelection();
+		final int selectionCount = createSelection();
 
 		if (selectionCount <= 0)
 		{
@@ -107,6 +100,8 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 	}
 
+	private InvoicingParams getInvoicingParams() {return InvoicingParams.ofParams(getParameterAsIParams());}
+
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -118,7 +113,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 		queue
 				.newWorkPackage()
 				.setC_Async_Batch(asyncBatchBL.getAsyncBatchById(asyncBatchId))
-				.parameters(invoicingParams.asMap())
+				.parameters(getInvoicingParams().toMap())
 				.buildAndEnqueue();
 
 		return MSG_OK;

@@ -12,9 +12,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
@@ -161,14 +160,13 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 	}
 
 	@NonNull
-	private IInvoicingParams getIInvoicingParams()
+	private InvoicingParams getIInvoicingParams()
 	{
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setUpdateLocationAndContactForInvoice(true);
-		invoicingParams.setIgnoreInvoiceSchedule(false);
-		invoicingParams.setSupplementMissingPaymentTermIds(true);
-
-		return invoicingParams;
+		return InvoicingParams.builder()
+				.updateLocationAndContactForInvoice(true)
+				.ignoreInvoiceSchedule(false)
+				.supplementMissingPaymentTermIds(true)
+				.build();
 	}
 
 	private boolean hasAnyNonPaymentAllocations(@NonNull final I_C_Invoice invoice)
