@@ -18,7 +18,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- Field: EDI Lieferavis (DESADV)(540256,de.metas.esb.edi) -> DESADV Zeile(540663,de.metas.esb.edi) -> Bestellt abw.
 -- Column: EDI_DesadvLine.QtyOrdered_Override
 -- 2024-09-11T09:08:29.361Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsForbidNewRecordCreation,IsHeading,IsReadOnly,IsSameLine,Name,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,588948,729858,0,540663,0,TO_TIMESTAMP('2024-09-11 12:08:29.237','YYYY-MM-DD HH24:MI:SS.US'),100,10,'U',0,'Y','N','N','N','N','N','N','Y','N','Bestellt abw.',1,1,TO_TIMESTAMP('2024-09-11 12:08:29.237','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,588948,729858,0,540663,0,TO_TIMESTAMP('2024-09-11 12:08:29.237','YYYY-MM-DD HH24:MI:SS.US'),100,10,'U',0,'Y','N','N','N','N','N','Y','N','Bestellt abw.',1,1,TO_TIMESTAMP('2024-09-11 12:08:29.237','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2024-09-11T09:08:29.363Z
