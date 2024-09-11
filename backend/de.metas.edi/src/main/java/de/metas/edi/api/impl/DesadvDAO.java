@@ -325,6 +325,13 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
+	public void save(@NonNull final I_EDI_DesadvLine ediDesadvLine)
+	{
+		InterfaceWrapperHelper.save(ediDesadvLine);
+	}
+
+
+	@Override
 	public BPartnerId retrieveBPartnerFromEdiDesadvPackId(final int desadvLinePackID)
 	{
 		return queryBL

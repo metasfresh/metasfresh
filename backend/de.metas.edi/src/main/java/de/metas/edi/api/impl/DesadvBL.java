@@ -1138,6 +1138,18 @@ public class DesadvBL implements IDesadvBL
 		return result.build();
 	}
 
+	@Override
+	public void updateQtyOrdered_OverrideFromShipSchedAndSave(@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(schedule.getC_OrderLine(), I_C_OrderLine.class);
+		final I_EDI_DesadvLine desadvLineRecord = orderLineRecord.getEDI_DesadvLine();
+		if (desadvLineRecord != null)
+		{
+			desadvLineRecord.setQtyOrdered_Override(schedule.getQtyOrdered_Override());
+			desadvDAO.save(desadvLineRecord);
+		}
+	}
+
 	public void propagateEDIStatus(@NonNull final I_EDI_Desadv desadv)
 	{
 		desadvDAO.retrieveShipmentsWithStatus(desadv, ImmutableSet.of(EDIExportStatus.SendingStarted))
@@ -1305,4 +1317,5 @@ public class DesadvBL implements IDesadvBL
 		newDesadvLine.setQtyEnteredInBPartnerUOM(ZERO);
 		newDesadvLine.setBPartner_QtyItemCapacity(orderLineRecord.getBPartner_QtyItemCapacity());
 	}
+
 }

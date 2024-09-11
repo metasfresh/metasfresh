@@ -133,6 +133,8 @@ public interface IDesadvDAO extends ISingletonService
 
 	void save(@NonNull I_EDI_Desadv ediDesadv);
 
+	void save(@NonNull I_EDI_DesadvLine ediDesadvLine);
+
 	BPartnerId retrieveBPartnerFromEdiDesadvPackId(int packId);
 
 	@NonNull
