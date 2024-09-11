@@ -1,5 +1,6 @@
 package de.metas.invoice.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
@@ -16,10 +17,9 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_Invoice_Verification_SetLine;
-import org.compiere.model.MInvoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +33,7 @@ public class C_InvoiceLine
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IBPartnerProductBL partnerProductBL = Services.get(IBPartnerProductBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	/**
 	 * Set QtyInvoicedInPriceUOM, just to make sure is up2date.
@@ -132,17 +133,19 @@ public class C_InvoiceLine
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, //
-			ifColumnsChanged = { I_C_InvoiceLine.COLUMNNAME_C_VAT_Code_ID,
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = {
+					I_C_InvoiceLine.COLUMNNAME_LineNetAmt,
 					I_C_InvoiceLine.COLUMNNAME_C_Tax_ID,
-					I_C_InvoiceLine.COLUMNNAME_M_Product_ID,
-					I_C_InvoiceLine.COLUMNNAME_QtyInvoiced,
-					I_C_InvoiceLine.COLUMNNAME_PriceActual})
+					I_C_InvoiceLine.COLUMNNAME_TaxAmt })
 	public void updateGrandTotal(final I_C_InvoiceLine invoiceLine)
 	{
-		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
-		final MInvoice invoicePO = LegacyAdapters.convertToPO(invoice);
-		invoicePO.calculateTaxTotal();
-		invoicePO.saveEx();
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID());
+
+		trxManager.accumulateAndProcessAfterCommit(
+				"C_Invoice_UpdateTaxesAndTotal",
+				ImmutableSet.of(invoiceId),
+				invoiceBL::updateTaxesAndGrandTotal
+		);
 	}
 }

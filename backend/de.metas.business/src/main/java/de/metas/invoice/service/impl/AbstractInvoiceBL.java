@@ -127,6 +127,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -143,6 +144,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_RMA;
+import org.compiere.model.MInvoice;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Tax;
 import org.compiere.util.Env;
@@ -2088,5 +2090,18 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		return PaymentTermId.ofRepoId(getById(invoiceId)
 				.getC_PaymentTerm_ID());
+	}
+
+	@Override
+	public void updateTaxesAndGrandTotal(final Collection<InvoiceId> invoiceIds)
+	{
+		invoiceDAO.getByIdsInTrx(invoiceIds).forEach(this::updateTaxesAndGrandTotal);
+	}
+
+	private void updateTaxesAndGrandTotal(final org.compiere.model.I_C_Invoice invoice)
+	{
+		final MInvoice invoicePO = LegacyAdapters.convertToPO(invoice);
+		invoicePO.calculateTaxTotal();
+		invoicePO.saveEx();
 	}
 }
