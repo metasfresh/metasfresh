@@ -28,6 +28,7 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
@@ -1349,6 +1350,27 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				throw new AdempiereException("Updating GrandTotal failed; updated records=" + no + "; sql=" + sql);
 			}
 		}
+
+		//
+		// Update Invoice Header: GrandTotal and CashRoundingAmt for 5 cents rounding
+		{
+			final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+			final boolean isApply5CentCashRounding = invoiceBL.isApply5CentCashRounding(InvoiceId.ofRepoId(getC_Invoice_ID()));
+			if (isApply5CentCashRounding)
+			{
+				final String sql = "UPDATE C_Invoice i "
+						+ " SET GrandTotal = (GrandTotal * 20.0) :: int / 20.0 , "
+						+ " CashRoundingAmt = ((GrandTotal * 20.0) :: int / 20.0 ) - GrandTotal"
+						+ " WHERE C_Invoice_ID=?";
+
+				final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { getC_Invoice_ID() }, get_TrxName());
+				if (no != 1)
+				{
+					throw new AdempiereException("Updating GrandTotal failed; updated records=" + no + "; sql=" + sql);
+				}
+			}
+		}
+
 		m_parent = null;
 
 		return true;
