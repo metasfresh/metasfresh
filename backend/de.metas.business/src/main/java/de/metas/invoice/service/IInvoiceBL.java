@@ -445,5 +445,5 @@ public interface IInvoiceBL extends ISingletonService
 	@NonNull
 	PaymentTermId getPaymentTermId(@NonNull InvoiceId invoiceId);
 
-	void updateTaxesAndGrandTotal(Collection<InvoiceId> invoiceIds);
+	void updateTaxesAndGrandTotal(@NonNull InvoiceId invoiceId);
 }

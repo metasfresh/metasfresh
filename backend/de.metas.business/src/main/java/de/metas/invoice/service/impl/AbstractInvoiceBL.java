@@ -2093,9 +2093,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public void updateTaxesAndGrandTotal(final Collection<InvoiceId> invoiceIds)
+	public void updateTaxesAndGrandTotal(@NonNull final InvoiceId invoiceId)
 	{
-		invoiceDAO.getByIdsInTrx(invoiceIds).forEach(this::updateTaxesAndGrandTotal);
+		final org.compiere.model.I_C_Invoice invoice = getById(invoiceId);
+		updateTaxesAndGrandTotal(invoice);
 	}
 
 	private void updateTaxesAndGrandTotal(final org.compiere.model.I_C_Invoice invoice)

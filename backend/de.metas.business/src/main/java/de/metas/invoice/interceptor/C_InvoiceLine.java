@@ -1,6 +1,5 @@
 package de.metas.invoice.interceptor;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
@@ -17,7 +16,6 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice_Verification_SetLine;
 import org.compiere.model.ModelValidator;
@@ -33,7 +31,6 @@ public class C_InvoiceLine
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IBPartnerProductBL partnerProductBL = Services.get(IBPartnerProductBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	/**
 	 * Set QtyInvoicedInPriceUOM, just to make sure is up2date.
@@ -137,15 +134,12 @@ public class C_InvoiceLine
 			ifColumnsChanged = {
 					I_C_InvoiceLine.COLUMNNAME_LineNetAmt,
 					I_C_InvoiceLine.COLUMNNAME_C_Tax_ID,
-					I_C_InvoiceLine.COLUMNNAME_TaxAmt })
+					I_C_InvoiceLine.COLUMNNAME_TaxAmt },
+			ifUIAction = true //optimize: update only in case it's a user action
+	)
 	public void updateGrandTotal(final I_C_InvoiceLine invoiceLine)
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID());
-
-		trxManager.accumulateAndProcessAfterCommit(
-				"C_Invoice_UpdateTaxesAndTotal",
-				ImmutableSet.of(invoiceId),
-				invoiceBL::updateTaxesAndGrandTotal
-		);
+		invoiceBL.updateTaxesAndGrandTotal(invoiceId);
 	}
 }
