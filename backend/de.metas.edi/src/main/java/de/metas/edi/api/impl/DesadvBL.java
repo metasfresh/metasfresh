@@ -303,7 +303,7 @@ public class DesadvBL implements IDesadvBL
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID());
 		final I_M_ShipmentSchedule shipSched = shipmentSchedulePA.getByOrderLineId(orderLineId);
-		return shipSched.getQtyOrdered_Override();
+		return shipSched != null ? shipSched.getQtyOrdered_Override() : null;
 	}
 
 	private I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine)
