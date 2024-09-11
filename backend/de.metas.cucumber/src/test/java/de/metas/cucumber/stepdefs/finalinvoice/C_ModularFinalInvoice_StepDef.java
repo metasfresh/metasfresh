@@ -78,6 +78,28 @@ public class C_ModularFinalInvoice_StepDef
 				createDefaultIInvoicingParams(row));
 	}
 
+	@And("create definitive invoice")
+	public void create_definitiveInvoice(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			createDefinitiveInvoice(row);
+		}
+	}
+
+	private void createDefinitiveInvoice(@NonNull final Map<String, String> row)
+	{
+		final String contractIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Flatrate_Term contractRecord = contractTable.get(contractIdentifier);
+
+		final String adUserIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_User.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final UserId userId = userTable.getUserId(adUserIdentifier);
+
+		finalInvoiceEnqueuer.enqueueDefinitiveInvoice(ImmutableSet.of(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID())),
+				userId,
+				createDefaultIInvoicingParams(row));
+	}
+
 	@NonNull
 	private InvoicingParams createDefaultIInvoicingParams(@NonNull final Map<String, String> row)
 	{

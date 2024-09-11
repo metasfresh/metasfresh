@@ -28,13 +28,13 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Year;
@@ -47,29 +47,16 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 
+@RequiredArgsConstructor
 public class ModCntr_Settings_StepDef
 {
+	public static final Timestamp FIXED_STORAGE_DATE = Timestamp.valueOf("2024-04-24 07:15:00");
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final M_Product_StepDefData productTable;
-	private final C_Calendar_StepDefData calendarTable;
 	private final C_Year_StepDefData yearTable;
 	private final ModCntr_Settings_StepDefData modCntrSettingsTable;
 	private final M_PricingSystem_StepDefData pricingSysTable;
-
-	public ModCntr_Settings_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_Calendar_StepDefData calendarTable,
-			@NonNull final C_Year_StepDefData yearTable,
-			@NonNull final ModCntr_Settings_StepDefData modCntrSettingsTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSysTable)
-	{
-		this.productTable = productTable;
-		this.calendarTable = calendarTable;
-		this.yearTable = yearTable;
-		this.modCntrSettingsTable = modCntrSettingsTable;
-		this.pricingSysTable = pricingSysTable;
-	}
 
 	@Given("metasfresh contains ModCntr_Settings:")
 	public void metasfresh_contains_modcntr_settings(@NonNull final DataTable dataTable)
@@ -96,6 +83,9 @@ public class ModCntr_Settings_StepDef
 
 		final Boolean isSoTrx = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_IsSOTrx, false);
 
+		final Timestamp storageDate = CoalesceUtil.coalesceNotNull(DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_StorageCostStartDate),
+				FIXED_STORAGE_DATE);
+
 		final I_ModCntr_Settings modCntrSettingsRecord = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_ModCntr_Settings.class)
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, rawProduct.getM_Product_ID())
@@ -121,7 +111,7 @@ public class ModCntr_Settings_StepDef
 		modCntrSettingsRecord.setC_Calendar_ID(yearRecord.getC_Calendar_ID());
 		modCntrSettingsRecord.setC_Year_ID(yearRecord.getC_Year_ID());
 		modCntrSettingsRecord.setIsSOTrx(isSoTrx);
-		modCntrSettingsRecord.setStorageCostStartDate(Timestamp.valueOf("2024-04-24 07:15:00"));
+		modCntrSettingsRecord.setStorageCostStartDate(storageDate);
 
 		final String pricingSystemIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Flatrate_Conditions.COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_PricingSystem pricingSystem = pricingSysTable.get(pricingSystemIdentifier);
