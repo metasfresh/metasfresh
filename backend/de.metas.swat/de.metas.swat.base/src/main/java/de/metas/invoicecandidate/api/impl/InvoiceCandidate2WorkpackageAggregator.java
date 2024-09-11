@@ -32,9 +32,9 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.invoicecandidate.api.IAggregationBL;
-import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.LockOwner;
@@ -69,7 +69,7 @@ import java.util.Properties;
 	private PInstanceId pInstanceId;
 	private IWorkpackagePrioStrategy workpackagePriority = SizeBasedWorkpackagePrio.INSTANCE;
 	private ILock invoiceCandidatesLock = ILock.NULL;
-	private IInvoicingParams invoicingParams;
+	private InvoicingParams invoicingParams;
 	private I_C_Async_Batch _asyncBatch = null;
 
 	// status
@@ -184,9 +184,9 @@ import java.util.Properties;
 		final IWorkPackageParamsBuilder parameters = group.parameters();
 		if (invoicingParams != null)
 		{
-			parameters.setParameters(invoicingParams.asMap());
+			parameters.setParameters(invoicingParams.toMap());
 		}
-		parameters.setParameter(IInvoicingParams.PARA_Check_NetAmtToInvoice, netAmtToInvoiceChecker.getValue());
+		parameters.setParameter(InvoicingParams.PARA_Check_NetAmtToInvoice, netAmtToInvoiceChecker.getValue());
 
 		if (_asyncBatch != null)
 		{
@@ -216,7 +216,7 @@ import java.util.Properties;
 		return this;
 	}
 
-	public InvoiceCandidate2WorkpackageAggregator setInvoicingParams(@NonNull final IInvoicingParams invoicingParams)
+	public InvoiceCandidate2WorkpackageAggregator setInvoicingParams(@NonNull final InvoicingParams invoicingParams)
 	{
 		this.invoicingParams = invoicingParams;
 		return this;

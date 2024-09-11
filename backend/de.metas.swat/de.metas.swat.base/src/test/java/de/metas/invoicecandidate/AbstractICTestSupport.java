@@ -38,7 +38,6 @@ import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
 import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoiceCandDAO;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
@@ -49,6 +48,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.modelvalidator.C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.PlainInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
@@ -738,11 +738,11 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		return InvoiceCandidateExpectation.newExpectation();
 	}
 
-	protected PlainInvoicingParams createDefaultInvoicingParams()
+	protected InvoicingParams createDefaultInvoicingParams()
 	{
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(true);
-		invoicingParams.setConsolidateApprovedICs(false);
-		return invoicingParams;
+		return InvoicingParams.builder()
+				.ignoreInvoiceSchedule(true)
+				.consolidateApprovedICs(false)
+				.build();
 	}
 }

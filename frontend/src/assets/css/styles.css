@@ -5,8 +5,8 @@
 @import './board.css';
 @import './charts.css';
 @import './charts.css';
-@import './datepicker.css';
-@import './daterangepicker.css';
+@import './datepicker.scss';
+@import './daterangepicker.scss';
 @import './datetime.css';
 @import './draggable.css';
 @import './font-meta.css';

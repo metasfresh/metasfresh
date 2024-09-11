@@ -31,10 +31,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
-import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandUpdateSchedulerRequest;
-import de.metas.invoicecandidate.api.impl.InvoicingParams;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
@@ -62,7 +61,6 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
 
 	private final IInvoiceGenerateResult _result;
-	private InvoicingParams _invoicingParams = null; // lazy loaded
 
 	/**
 	 * @param result result to be used when processing
@@ -138,12 +136,8 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 				_result, queueDAO, invoiceCandBL, invoiceCandDAO, workPackageBL);
 	}
 
-	private IInvoicingParams getInvoicingParams()
+	private InvoicingParams getInvoicingParams()
 	{
-		if (_invoicingParams == null)
-		{
-			_invoicingParams = new InvoicingParams(getParameters());
-		}
-		return _invoicingParams;
+		return InvoicingParams.ofParams(getParameters());
 	}
 }
