@@ -105,7 +105,6 @@ import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
@@ -199,11 +198,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			if (invoice.isPaid())
 			{
-				throw new AdempiereException(
-						MSG_InvoiceMayNotBePaid,
-						new Object[] {
-								invoice.getDocumentNo()
-						});
+				throw new AdempiereException(MSG_InvoiceMayNotBePaid, invoice.getDocumentNo());
 			}
 
 			//
@@ -214,11 +209,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			// 'invoice' is not paid, so the open amount won't be zero
 			if (openAmt.signum() == 0)
 			{
-				throw new AdempiereException(
-						MSG_InvoiceMayNotHaveOpenAmtZero,
-						new Object[] {
-								invoice.getDocumentNo()
-						});
+				throw new AdempiereException(MSG_InvoiceMayNotHaveOpenAmtZero, invoice.getDocumentNo());
 			}
 
 		}
