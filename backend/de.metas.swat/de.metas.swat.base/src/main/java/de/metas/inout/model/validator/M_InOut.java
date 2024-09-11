@@ -78,8 +78,10 @@ public class M_InOut
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REACTIVATE })
-	public void deleteMatchInvs(final I_M_InOut inoutRecord)
+	public void deleteMatchInvs(@NonNull final I_M_InOut inoutRecord)
 	{
+		forbidReversingWhenInvoiceExists(inoutRecord);
+
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
 			matchInvoiceService.deleteByInOutId(InOutId.ofRepoId(inoutRecord.getM_InOut_ID()));
@@ -158,8 +160,7 @@ public class M_InOut
 		inoutBL.updateDescriptionAndDescriptionBottomFromDocType(inoutRecord);
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL })
-	public void forbidVoidingWhenInvoiceExists(@NonNull final org.compiere.model.I_M_InOut inout)
+	private void forbidReversingWhenInvoiceExists(@NonNull final I_M_InOut inout)
 	{
 		if (!sysConfigBL.getBooleanValue(SYSCONFIG_PreventReversingShipmentsWhenInvoiceExists, false))
 		{
