@@ -21,6 +21,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
 import de.metas.quantity.Quantity;
+import de.metas.resource.ResourceService;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -69,7 +70,7 @@ public class DDOrderCandidateService
 				ddOrderCandidateRepository,
 				new DDOrderCandidateAllocRepository(),
 				new DDOrderCandidateEnqueueService(ddOrderCandidateRepository),
-				new DDOrderLowLevelService(new DDOrderLowLevelDAO()),
+				new DDOrderLowLevelService(new DDOrderLowLevelDAO(), ResourceService.newInstanceForJUnitTesting()),
 				new DistributionNetworkRepository(),
 				postMaterialEventService,
 				new ReplenishInfoRepository()
