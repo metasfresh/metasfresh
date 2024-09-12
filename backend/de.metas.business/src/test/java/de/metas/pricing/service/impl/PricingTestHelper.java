@@ -224,7 +224,7 @@ public class PricingTestHelper
 	public final I_M_PriceList_Version createPriceListVersion(final I_M_PriceList priceList)
 	{
 		final I_M_PriceList_Version plv = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class, priceList);
-		plv.setM_PriceList(priceList);
+		plv.setM_PriceList_ID(priceList.getM_PriceList_ID());
 		plv.setValidFrom(TimeUtil.getDay(1970, 1, 1));
 		InterfaceWrapperHelper.save(plv);
 		return plv;
