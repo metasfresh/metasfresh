@@ -78,6 +78,7 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;

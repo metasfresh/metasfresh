@@ -154,6 +154,7 @@ public class InvoiceService
 		return InvoicingParams.builder()
 				.ignoreInvoiceSchedule(false)
 				.dateInvoiced(LocalDate.now())
+				.supplementMissingPaymentTermIds(true)
 				.build();
 	}
 }
