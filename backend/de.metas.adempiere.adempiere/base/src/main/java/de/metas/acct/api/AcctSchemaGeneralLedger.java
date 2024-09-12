@@ -1,11 +1,9 @@
 package de.metas.acct.api;
 
+import de.metas.acct.Account;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import de.metas.acct.Account;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -53,7 +51,7 @@ public class AcctSchemaGeneralLedger
 	Account purchasePriceVarianceOffsetAcct;
 
 
-	@Nullable
+	@NonNull
 	Account cashRoundingAcct;
 
 	@NonNull

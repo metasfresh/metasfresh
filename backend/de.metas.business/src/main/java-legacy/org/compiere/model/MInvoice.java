@@ -40,6 +40,7 @@ import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -1712,8 +1713,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		return invoiceBL.roundTo5CentIfNeeded(InvoiceId.ofRepoId(getC_Invoice_ID()),
-											  grandTotal);
+		return invoiceBL.roundTo5CentIfNeeded(grandTotal, CurrencyId.ofRepoId(getC_Currency_ID()) , SOTrx.ofBoolean(isSOTrx()));
 	}
 
 }    // MInvoice

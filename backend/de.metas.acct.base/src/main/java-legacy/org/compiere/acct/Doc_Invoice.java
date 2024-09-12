@@ -415,10 +415,9 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
-		if (invoiceBL.isApply5CentCashRounding(getInvoiceId()))
+		final BigDecimal cashRoundingAmt = getAmount(Doc.AMTTYPE_CashRounding);
+		if (cashRoundingAmt.signum() != 0)
 		{
-			final BigDecimal cashRoundingAmt = getAmount(Doc.AMTTYPE_CashRounding);
-
 			fact.createLine()
 					.setAccount(as.getGeneralLedger().getCashRoundingAcct())
 					.setCurrencyId(getCurrencyId())
@@ -540,10 +539,9 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
-		if (invoiceBL.isApply5CentCashRounding(getInvoiceId()))
+		final BigDecimal cashRoundingAmt = getAmount(Doc.AMTTYPE_CashRounding);
+		if (cashRoundingAmt.signum() != 0)
 		{
-			final BigDecimal cashRoundingAmt = getAmount(Doc.AMTTYPE_CashRounding);
-
 			fact.createLine()
 					.setAccount(as.getGeneralLedger().getCashRoundingAcct())
 					.setCurrencyId(getCurrencyId())

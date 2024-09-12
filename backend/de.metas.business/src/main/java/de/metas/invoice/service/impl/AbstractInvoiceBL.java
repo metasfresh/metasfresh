@@ -2093,25 +2093,23 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public boolean isApply5CentCashRounding(@NonNull final InvoiceId invoiceId)
+	public boolean isApply5CentCashRounding(@NonNull final CurrencyId currencyId, @NonNull final SOTrx soTrx)
 	{
-
-		final org.compiere.model.I_C_Invoice invoice = getById(invoiceId);
-
-
-		if (!invoice.isSOTrx())
+		if (soTrx.isPurchase())
 		{
 			return false;
 		}
 
-		return currencyBL.isApply5CentCashRounding(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		return currencyBL.isApply5CentCashRounding(currencyId);
 
 	}
 
 	@Override
-	public BigDecimal roundTo5CentIfNeeded(@NonNull final InvoiceId invoiceId, @NonNull final BigDecimal grandTotal)
+	public BigDecimal roundTo5CentIfNeeded(@NonNull final BigDecimal grandTotal,
+			@NonNull final CurrencyId currencyId,
+			@NonNull final SOTrx soTrx)
 	{
-		if (!isApply5CentCashRounding(invoiceId))
+		if (!isApply5CentCashRounding(currencyId, soTrx))
 		{
 			return grandTotal;
 		}
