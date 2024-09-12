@@ -180,7 +180,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- Element: Surcharge_Calc_SQL
 -- 2024-09-12T06:37:44.671Z
-UPDATE AD_Element_Trl SET Description='The SQL needs to contain two parameter: "$1" ( Target_PriceList_Version_ID ) und "$2" ( Source_M_ProductPrice_ID ) and should only have one numeric value as result', IsTranslated='Y', Name='Surcharge Calculation SQL', PrintName='Surcharge Calculation SQL',Updated=TO_TIMESTAMP('2024-09-12 06:37:44.671000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583251 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Description='The SQL needs to contain two parameter: "$1" ( Target_PriceList_Version_ID ) and "$2" ( Source_M_ProductPrice_ID ) and should only have one numeric value as result', IsTranslated='Y', Name='Surcharge Calculation SQL', PrintName='Surcharge Calculation SQL',Updated=TO_TIMESTAMP('2024-09-12 06:37:44.671000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583251 AND AD_Language='en_US'
 ;
 
 -- 2024-09-12T06:37:44.675Z

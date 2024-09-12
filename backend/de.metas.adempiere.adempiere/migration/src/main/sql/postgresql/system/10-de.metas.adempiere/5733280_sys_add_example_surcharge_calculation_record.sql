@@ -1,4 +1,4 @@
-INSERT INTO M_DiscountSchema_Calculated_Surcharge (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,M_DiscountSchema_Calculated_Surcharge_ID,Name,Surcharge_Calc_SQL,Updated,UpdatedBy) VALUES (1000000,1000000,TO_TIMESTAMP('2024-09-12 13:57:16.725000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',540000,'Transportkosten','SELECT COALESCE (dsc.freight_cost_calc_price * (piitem_lu.qty*mhpip.qty), 0::numeric) as surcharge_transport
+INSERT INTO M_DiscountSchema_Calculated_Surcharge (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,M_DiscountSchema_Calculated_Surcharge_ID,Name,Surcharge_Calc_SQL,Updated,UpdatedBy) VALUES (1000000,1000000,TO_TIMESTAMP('2024-09-12 13:57:16.725000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',540000,'Transportkosten','SELECT COALESCE (dsc.freight_cost_calc_price / (piitem_lu.qty*mhpip.qty), 0::numeric) as surcharge_transport
 from m_productprice mpp
          left join m_product mp on mp.m_product_id = mpp.m_product_id
          left join m_hu_pi_item_product mhpip on mpp.m_hu_pi_item_product_id = mhpip.m_hu_pi_item_product_id
