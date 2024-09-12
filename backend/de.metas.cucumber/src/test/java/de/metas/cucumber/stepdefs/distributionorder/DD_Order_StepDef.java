@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.distributionorder;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -40,6 +41,7 @@ import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.order.OrderId;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -81,6 +83,7 @@ public class DD_Order_StepDef
 	@NonNull private final S_Resource_StepDefData resourceTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
+	@NonNull private final C_Order_StepDefData orderTable;
 	@NonNull private final DD_OrderLine_StepDefData ddOrderLineTable;
 	@NonNull private final M_Shipper_StepDefData shipperTable;
 
@@ -208,6 +211,14 @@ public class DD_Order_StepDef
 			final PPOrderBOMLineId expectedPPOrderBOMLineId = ppOrderBOMLineIdentifier.lookupIdIn(ppOrderBOMLineTable);
 			final PPOrderBOMLineId actualPPOrderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(actual.getForward_PP_Order_BOMLine_ID());
 			softly.assertThat(actualPPOrderBOMLineId).as("Forward_PP_Order_BOMLine_ID").isEqualTo(expectedPPOrderBOMLineId);
+		}
+
+		final StepDefDataIdentifier salesOrderIdentifier = expected.getAsOptionalIdentifier(I_DD_Order.COLUMNNAME_C_Order_ID).orElse(null);
+		if (salesOrderIdentifier != null)
+		{
+			final OrderId expectedOrderId = salesOrderIdentifier.lookupIdIn(orderTable);
+			final OrderId actualOrderId = OrderId.ofRepoIdOrNull(actual.getC_Order_ID());
+			softly.assertThat(actualOrderId).as("C_Order_ID").isEqualTo(expectedOrderId);
 		}
 
 		softly.assertAll();
