@@ -77,7 +77,7 @@ public class DocumentFilterToHuTraceQueryTest
 
 		assertThat(huTraceQuery).isNotNull();
 		assertThat(huTraceQuery.getRecursionMode()).isEqualTo(RecursionMode.BOTH);
-		assertThat(huTraceQuery.getInOutId()).isEqualTo(20);
+		assertThat(huTraceQuery.getInOutId().getRepoId()).isEqualTo(20);
 	}
 
 	@Test
@@ -128,12 +128,12 @@ public class DocumentFilterToHuTraceQueryTest
 		assertThat(huTraceQuery.getTopLevelHuIds()).isEqualTo(ImmutableSet.of(HuId.ofRepoId(60)));
 		assertThat(huTraceQuery.getHuTraceEventId().getAsInt()).isEqualTo(70);
 		assertThat(huTraceQuery.getHuTrxLineId()).isEqualTo(80);
-		assertThat(huTraceQuery.getInOutId()).isEqualTo(90);
-		assertThat(huTraceQuery.getMovementId()).isEqualTo(100);
+		assertThat(huTraceQuery.getInOutId().getRepoId()).isEqualTo(90);
+		assertThat(huTraceQuery.getMovementId().getRepoId()).isEqualTo(100);
 		assertThat(huTraceQuery.getProductId().getRepoId()).isEqualTo(110);
 		assertThat(huTraceQuery.getShipmentScheduleId().getRepoId()).isEqualTo(120);
-		assertThat(huTraceQuery.getPpCostCollectorId()).isEqualTo(130);
-		assertThat(huTraceQuery.getPpOrderId()).isEqualTo(140);
+		assertThat(huTraceQuery.getPpCostCollectorId().getRepoId()).isEqualTo(130);
+		assertThat(huTraceQuery.getPpOrderId().getRepoId()).isEqualTo(140);
 		assertThat(huTraceQuery.getVhuIds()).isEqualTo(ImmutableSet.of(HuId.ofRepoId(160)));
 		assertThat(huTraceQuery.getVhuSourceId().getRepoId()).isEqualTo(170);
 		assertThat(huTraceQuery.getVhuStatus()).isEqualTo(X_M_HU_Trace.VHUSTATUS_Active);
@@ -172,7 +172,7 @@ public class DocumentFilterToHuTraceQueryTest
 	@Test
 	public void createTraceQueryFromDocumentFilter_onrelatedquereclause()
 	{
-		final DocumentFilterParam filterParam = DocumentFilterParam.of(SqlAndParams.of("M_InOut_ID=123"));
+		final DocumentFilterParam filterParam = DocumentFilterParam.of(SqlAndParams.of("AD_Table_ID=123"));
 
 		// given
 		final DocumentFilter filter = DocumentFilter.builder()
