@@ -125,11 +125,7 @@ public interface IDesadvDAO extends ISingletonService
 
 	void save(@NonNull I_EDI_Desadv ediDesadv);
 
-	I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId);
-
 	void save(@NonNull I_EDI_DesadvLine ediDesadvLine);
-
-	BPartnerId retrieveBPartnerFromEdiDesadvPackId(int packId);
 
 	@NonNull
 	List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull I_EDI_Desadv desadv, @NonNull ImmutableSet<EDIExportStatus> statusSet);

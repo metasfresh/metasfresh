@@ -38,7 +38,6 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.process.ProcessExecutionResult;
@@ -73,8 +72,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -281,29 +278,6 @@ public class DesadvBL implements IDesadvBL
 		return schedule.getQtyOrdered_Override();
 	}
 
-
-	private I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine)
-	{
-		final I_M_HU_PI_Item_Product materialItemProduct;
-		if (orderLine.getM_HU_PI_Item_Product_ID() > 0)
-		{
-			materialItemProduct = orderLine.getM_HU_PI_Item_Product();
-		}
-		else
-		{
-			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-			final BPartnerId buyerBPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
-			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
-
-			materialItemProduct = hupiItemProductDAO.retrieveMaterialItemProduct(
-					productId,
-					buyerBPartnerId,
-					TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone),
-					X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, true/* allowInfiniteCapacity */);
-		}
-		return materialItemProduct;
-	}
-
 	private I_EDI_Desadv retrieveOrCreateDesadv(@NonNull final I_C_Order order)
 	{
 		I_EDI_Desadv desadv = desadvDAO.retrieveMatchingDesadvOrNull(
@@ -395,7 +369,16 @@ public class DesadvBL implements IDesadvBL
 			@NonNull final SimpleSequence packLineSequence)
 	{
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLineRecord.getC_OrderLine(), I_C_OrderLine.class);
-		final I_EDI_DesadvLine desadvLineRecord = orderLineRecord.getEDI_DesadvLine();
+
+		final EDIDesadvLineId desadvLineId = EDIDesadvLineId.ofRepoIdOrNull(orderLineRecord.getEDI_DesadvLine_ID());
+
+		if (desadvLineId == null)
+		{
+			logger.debug("No EDI_DesadvLine_ID set on C_OrderLine with ID={};",
+						 orderLineRecord.getC_OrderLine_ID());
+
+			return;
+		}
 
 		final I_EDI_DesadvLine desadvLineRecord = desadvDAO.retrieveLineById(desadvLineId);
 

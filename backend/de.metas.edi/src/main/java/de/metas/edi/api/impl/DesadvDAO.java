@@ -138,12 +138,6 @@ public class DesadvDAO implements IDesadvDAO
 
 	}
 
-	@NonNull
-	public I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId)
-	{
-		return InterfaceWrapperHelper.load(ediDesadvLineId, I_EDI_DesadvLine.class);
-	}
-
 	@Override
 	public int retrieveMaxDesadvPackLine(@NonNull final EDIDesadvId desadvId)
 	{
@@ -298,19 +292,6 @@ public class DesadvDAO implements IDesadvDAO
 	public void save(@NonNull final I_EDI_DesadvLine ediDesadvLine)
 	{
 		InterfaceWrapperHelper.save(ediDesadvLine);
-	}
-
-
-	@Override
-	public BPartnerId retrieveBPartnerFromEdiDesadvPackId(final int desadvLinePackID)
-	{
-		return queryBL
-				.createQueryBuilder(I_EDI_DesadvLine_Pack.class)
-				.addEqualsFilter(I_EDI_DesadvLine_Pack.COLUMNNAME_EDI_DesadvLine_Pack_ID, desadvLinePackID)
-				.andCollect(I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID, I_EDI_Desadv.class)
-				.andCollect(I_EDI_Desadv.COLUMNNAME_C_BPartner_ID, I_C_BPartner.class)
-				.create()
-				.firstId(BPartnerId::ofRepoId);
 	}
 
 	@Override
