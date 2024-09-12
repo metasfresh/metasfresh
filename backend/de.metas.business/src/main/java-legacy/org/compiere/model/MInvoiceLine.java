@@ -20,6 +20,8 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
@@ -43,6 +45,8 @@ import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
+import okhttp3.Cache;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -1341,7 +1345,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				throw new AdempiereException("Updating GrandTotal failed; updated records=" + no + "; sql=" + sql);
 			}
 		}
+		
 		m_parent = null;
+		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(get_TrxName(), CacheInvalidateMultiRequest.rootRecord(I_C_Invoice.Table_Name, getC_Invoice_ID()));
 	}    // updateHeaderTax
 
 	/**************************************************************************
