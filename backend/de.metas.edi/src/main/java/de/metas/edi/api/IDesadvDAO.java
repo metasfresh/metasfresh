@@ -54,6 +54,8 @@ public interface IDesadvDAO extends ISingletonService
 
 	I_EDI_Desadv retrieveById(@NonNull EDIDesadvId ediDesadvId);
 
+	I_EDI_DesadvLine retrieveLineById(@NonNull EDIDesadvLineId ediDesadvLineId);
+
 	/**
 	 * Retrieves the desadv line that has the given <code>desadv</code> and <code>line</code> number.
 	 */
@@ -123,7 +125,7 @@ public interface IDesadvDAO extends ISingletonService
 
 	void save(@NonNull I_EDI_Desadv ediDesadv);
 
-	I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId);
+	void save(@NonNull I_EDI_DesadvLine ediDesadvLine);
 
 	@NonNull
 	List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull I_EDI_Desadv desadv, @NonNull ImmutableSet<EDIExportStatus> statusSet);

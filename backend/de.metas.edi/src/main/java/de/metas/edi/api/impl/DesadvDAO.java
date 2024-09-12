@@ -91,6 +91,12 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
+	public I_EDI_DesadvLine retrieveLineById(final @NonNull EDIDesadvLineId ediDesadvLineId)
+	{
+		return InterfaceWrapperHelper.load(ediDesadvLineId, I_EDI_DesadvLine.class);
+	}
+
+	@Override
 	public I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(
 			@NonNull final I_EDI_Desadv desadv,
 			final int line,
@@ -130,12 +136,6 @@ public class DesadvDAO implements IDesadvDAO
 				.create()
 				.list();
 
-	}
-
-	@NonNull
-	public I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId)
-	{
-		return InterfaceWrapperHelper.load(ediDesadvLineId, I_EDI_DesadvLine.class);
 	}
 
 	@Override
@@ -286,6 +286,12 @@ public class DesadvDAO implements IDesadvDAO
 	public void save(@NonNull final I_EDI_Desadv ediDesadv)
 	{
 		InterfaceWrapperHelper.save(ediDesadv);
+	}
+
+	@Override
+	public void save(@NonNull final I_EDI_DesadvLine ediDesadvLine)
+	{
+		InterfaceWrapperHelper.save(ediDesadvLine);
 	}
 
 	@Override
