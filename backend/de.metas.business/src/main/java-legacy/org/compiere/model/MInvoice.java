@@ -162,7 +162,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Deprecated
 	public static MInvoice get(final Properties ctx, final int C_Invoice_ID)
 	{
-		final Integer key = new Integer(C_Invoice_ID);
+		final Integer key = C_Invoice_ID;
 		MInvoice retValue = s_cache.get(key);
 		if (retValue != null)
 		{
@@ -969,10 +969,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			}
 
 			iTax.setIsTaxIncluded(invoiceBL.isTaxIncluded(line));
-			if (!iTax.calculateTaxFromLines())
-			{
-				return false;
-			}
+			iTax.calculateTaxFromLines();
 			Check.assume(iTax.isActive(), "InvoiceTax shall be active: {}", iTax);
 			InterfaceWrapperHelper.save(iTax);
 			taxIds.add(taxId);
