@@ -7,7 +7,7 @@ import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
@@ -107,7 +107,8 @@ public class DDOrderCandidateRepository
 		//
 		// Forward document references
 		record.setC_BPartner_ID(BPartnerId.toRepoId(from.getCustomerId()));
-		record.setC_OrderLineSO_ID(OrderLineId.toRepoId(from.getSalesOrderLineId()));
+		record.setC_OrderSO_ID(OrderAndLineId.toOrderRepoId(from.getSalesOrderLineId()));
+		record.setC_OrderLineSO_ID(OrderAndLineId.toOrderLineRepoId(from.getSalesOrderLineId()));
 		updateRecord(record, from.getForwardPPOrderRef());
 
 		//
@@ -160,7 +161,7 @@ public class DDOrderCandidateRepository
 				.processed(record.isProcessed())
 				//
 				.customerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
-				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()))
+				.salesOrderLineId(OrderAndLineId.ofRepoIdsOrNull(record.getC_OrderSO_ID(), record.getC_OrderLineSO_ID()))
 				//
 				.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIdsOrNull(record.getDD_NetworkDistribution_ID(), record.getDD_NetworkDistributionLine_ID()))
 				.productPlanningId(ProductPlanningId.ofRepoIdOrNull(record.getPP_Product_Planning_ID()))

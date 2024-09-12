@@ -232,4 +232,6 @@ public interface IOrderLineBL extends ISingletonService
 	boolean isCatchWeight(@NonNull org.compiere.model.I_C_OrderLine orderLine);
 
 	Optional<BPartnerId> getBPartnerId(OrderLineId orderLineId);
+
+	Optional<BPartnerId> getBPartnerId(@NonNull OrderAndLineId orderLineId);
 }

@@ -33,7 +33,7 @@ import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
 import de.metas.material.event.pporder.PPOrderRef;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.IProductBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -232,6 +232,7 @@ public class DDOrderCandidateAdvisedHandler
 		final Candidate demandCandidate = group.getSingleDemandCandidate();
 
 		final DistributionDetail supplyDistributionDetail = DistributionDetail.cast(supplyCandidate.getBusinessCaseDetail());
+		final OrderAndLineId salesOrderLineId = demandCandidate.getSalesOrderLineId();
 
 		return DDOrderCandidateData.builder()
 				.clientAndOrgId(supplyCandidate.getClientAndOrgId())
@@ -244,7 +245,8 @@ public class DDOrderCandidateAdvisedHandler
 				.shipperId(supplyDistributionDetail.getShipperId())
 				//
 				.customerId(BPartnerId.toRepoId(supplyCandidate.getCustomerId()))
-				.salesOrderLineId(OrderLineId.toRepoId(demandCandidate.getSalesOrderLineId()))
+				.salesOrderId(OrderAndLineId.toOrderRepoId(salesOrderLineId))
+				.salesOrderLineId(OrderAndLineId.toOrderLineRepoId(salesOrderLineId))
 				.forwardPPOrderRef(getPpOrderRef(supplyCandidate))
 				//
 				.productDescriptor(supplyCandidate.getMaterialDescriptor())

@@ -10,7 +10,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -337,7 +337,7 @@ public class Candidate
 	}
 
 	@Nullable
-	public OrderLineId getSalesOrderLineId()
+	public OrderAndLineId getSalesOrderLineId()
 	{
 		final DemandDetail demandDetail = getDemandDetail();
 		if (demandDetail == null)
@@ -345,7 +345,7 @@ public class Candidate
 			return null;
 		}
 
-		return OrderLineId.ofRepoIdOrNull(demandDetail.getOrderLineId());
+		return OrderAndLineId.ofRepoIdsOrNull(demandDetail.getOrderId(), demandDetail.getOrderLineId());
 	}
 
 	@NonNull

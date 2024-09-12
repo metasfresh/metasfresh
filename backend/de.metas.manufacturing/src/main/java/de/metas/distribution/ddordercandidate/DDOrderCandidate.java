@@ -9,7 +9,7 @@ import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -65,7 +65,7 @@ public class DDOrderCandidate
 	private boolean processed;
 
 	@Nullable private final BPartnerId customerId;
-	@Nullable private final OrderLineId salesOrderLineId;
+	@Nullable private final OrderAndLineId salesOrderLineId;
 	@Nullable private final PPOrderRef forwardPPOrderRef;
 
 	@Nullable private final DistributionNetworkAndLineId distributionNetworkAndLineId;
@@ -97,7 +97,7 @@ public class DDOrderCandidate
 			final boolean isKeepTargetPlant,
 			final boolean processed,
 			@Nullable final BPartnerId customerId,
-			@Nullable final OrderLineId salesOrderLineId,
+			@Nullable final OrderAndLineId salesOrderLineId,
 			@Nullable final PPOrderRef forwardPPOrderRef,
 			@Nullable final DistributionNetworkAndLineId distributionNetworkAndLineId,
 			@Nullable final ProductPlanningId productPlanningId,
@@ -156,7 +156,7 @@ public class DDOrderCandidate
 				.isSimulated(data.isSimulated())
 				//
 				.customerId(BPartnerId.ofRepoIdOrNull(data.getCustomerId()))
-				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(data.getSalesOrderLineId()))
+				.salesOrderLineId(OrderAndLineId.ofRepoIdsOrNull(data.getSalesOrderId(), data.getSalesOrderLineId()))
 				.forwardPPOrderRef(data.getForwardPPOrderRef())
 				//
 				.distributionNetworkAndLineId(data.getDistributionNetworkAndLineId())
@@ -182,7 +182,8 @@ public class DDOrderCandidate
 				.targetPlantId(targetPlantId)
 				.shipperId(shipperId)
 				.customerId(BPartnerId.toRepoId(customerId))
-				.salesOrderLineId(OrderLineId.toRepoId(salesOrderLineId))
+				.salesOrderId(OrderAndLineId.toOrderRepoId(salesOrderLineId))
+				.salesOrderLineId(OrderAndLineId.toOrderLineRepoId(salesOrderLineId))
 				.forwardPPOrderRef(forwardPPOrderRef)
 				.productDescriptor(productDescriptor)
 				.hupiItemProductId(hupiItemProductId)
