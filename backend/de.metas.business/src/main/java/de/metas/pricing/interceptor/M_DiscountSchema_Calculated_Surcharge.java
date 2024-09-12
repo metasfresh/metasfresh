@@ -43,6 +43,7 @@ public class M_DiscountSchema_Calculated_Surcharge
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_M_DiscountSchema_Calculated_Surcharge.COLUMNNAME_Surcharge_Calc_SQL })
 	public void validateSQL(@NonNull final I_M_DiscountSchema_Calculated_Surcharge record)
 	{
+		// needs to be its own transaction, because validate_surcharge_calculation_SQL sets transaction to read only, and it can't be changed again before save then
 		trxManager.runInNewTrx(() -> {
 			DB.executeFunctionCallEx(Trx.TRXNAME_ThreadInherited, "SELECT validate_surcharge_calculation_SQL(?,?,?)", new Object[]{record.getSurcharge_Calc_SQL(), 0, 0});
 		});
