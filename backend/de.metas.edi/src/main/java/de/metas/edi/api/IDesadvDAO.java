@@ -55,6 +55,8 @@ public interface IDesadvDAO extends ISingletonService
 
 	I_EDI_Desadv retrieveById(@NonNull EDIDesadvId ediDesadvId);
 
+	I_EDI_DesadvLine retrieveLineById(@NonNull EDIDesadvLineId ediDesadvLineId);
+
 	/**
 	 * Retrieves the desadv line that has the given <code>desadv</code> and <code>line</code> number.
 	 */

@@ -303,7 +303,12 @@ public class DesadvBL implements IDesadvBL
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID());
 		final I_M_ShipmentSchedule shipSched = shipmentSchedulePA.getByOrderLineId(orderLineId);
-		return shipSched != null ? shipSched.getQtyOrdered_Override() : null;
+		if (shipSched == null || InterfaceWrapperHelper.isNull(shipSched, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override))
+		{
+			return null;
+		}
+
+		return shipSched.getQtyOrdered_Override();
 	}
 
 	private I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine)
@@ -1141,13 +1146,17 @@ public class DesadvBL implements IDesadvBL
 	@Override
 	public void updateQtyOrdered_OverrideFromShipSchedAndSave(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(schedule.getC_OrderLine(), I_C_OrderLine.class);
-		final I_EDI_DesadvLine desadvLineRecord = orderLineRecord.getEDI_DesadvLine();
-		if (desadvLineRecord != null)
+		final I_C_OrderLine orderLineRecord = (I_C_OrderLine)orderDAO.getOrderLineById(schedule.getC_OrderLine_ID());
+		final EDIDesadvLineId ediDesadvLineId = EDIDesadvLineId.ofRepoIdOrNull(orderLineRecord.getEDI_DesadvLine_ID());
+		if (ediDesadvLineId == null)
 		{
-			desadvLineRecord.setQtyOrdered_Override(schedule.getQtyOrdered_Override());
-			desadvDAO.save(desadvLineRecord);
+			return;
 		}
+
+		final I_EDI_DesadvLine desadvLineRecord = desadvDAO.retrieveLineById(ediDesadvLineId);
+		final BigDecimal qtyOrdered_Override = InterfaceWrapperHelper.isNull(schedule, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override) ? null : schedule.getQtyOrdered_Override();
+		desadvLineRecord.setQtyOrdered_Override(qtyOrdered_Override);
+		desadvDAO.save(desadvLineRecord);
 	}
 
 	public void propagateEDIStatus(@NonNull final I_EDI_Desadv desadv)

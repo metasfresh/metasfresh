@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIDesadvId;
+import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
@@ -89,6 +90,12 @@ public class DesadvDAO implements IDesadvDAO
 	public I_EDI_Desadv retrieveById(final @NonNull EDIDesadvId ediDesadvId)
 	{
 		return InterfaceWrapperHelper.load(ediDesadvId, I_EDI_Desadv.class);
+	}
+
+	@Override
+	public I_EDI_DesadvLine retrieveLineById(final @NonNull EDIDesadvLineId ediDesadvLineId)
+	{
+		return InterfaceWrapperHelper.load(ediDesadvLineId, I_EDI_DesadvLine.class);
 	}
 
 	@Override
