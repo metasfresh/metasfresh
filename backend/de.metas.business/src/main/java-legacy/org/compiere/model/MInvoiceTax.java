@@ -186,8 +186,8 @@ public class MInvoiceTax extends X_C_InvoiceTax
 	 */
 	protected void setPrecision(int precision)
 	{
-		m_precision = new Integer(precision);
-	}    // setPrecision
+		m_precision = precision;
+	}
 
 	/**
 	 * Get Tax
@@ -207,8 +207,6 @@ public class MInvoiceTax extends X_C_InvoiceTax
 	 * Calculate/Set Tax Base Amt from Invoice Lines.
 	 *
 	 * If there were no invoice lines found for this tax, this record will be inactivated. In this way, the caller method can know about this and it can decide if this record will be deleted.
-	 *
-	 * @return true if tax calculated
 	 */
 	public boolean calculateTaxFromLines()
 	{

@@ -13,11 +13,13 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Forecast;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
@@ -29,6 +31,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -304,6 +307,23 @@ public class DDOrderLowLevelDAO
 				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, order.getDD_Order_ID())
 				.create()
 				.deleteDirectly();
+	}
+
+	public void updateForwardPPOrderByIds(@NonNull final Set<DDOrderId> ddOrderIds, @Nullable final PPOrderId newPPOrderId)
+	{
+		if (ddOrderIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_DD_Order.class)
+				.addInArrayFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderIds)
+				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_Forward_PP_Order_ID, newPPOrderId)
+				.create()
+				.update(ddOrder -> {
+					ddOrder.setForward_PP_Order_ID(PPOrderId.toRepoId(newPPOrderId));
+					return IQueryUpdater.MODEL_UPDATED;
+				});
 	}
 
 }
