@@ -63,7 +63,8 @@ IsFullyQualified,Updated,UpdatedBy,UserElementString1,UserElementString2,UserEle
 -- ;
 
 -- 2024-09-10T13:13:40.395Z
-UPDATE C_AcctSchema_GL SET AD_Org_ID=0, CashRounding_Acct=540610,Updated=TO_TIMESTAMP('2024-09-10 16:13:40.395','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_AcctSchema_GL_ID=1000000
+UPDATE C_AcctSchema_GL SET CashRounding_Acct=540610,Updated=TO_TIMESTAMP('2024-09-10 16:13:40.395','YYYY-MM-DD HH24:MI:SS.US'),
+UpdatedBy=100 WHERE CashRounding_Acct IS NULL
 ;
 
 
