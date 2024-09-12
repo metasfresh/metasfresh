@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorService;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
@@ -57,7 +56,6 @@ public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentSche
 {
 	private final IUOMConversionBL uomConversionBL;
 	private final IProductBL productBL;
-	private final IHandlingUnitsBL handlingUnitsBL;
 
 	private final HUReservationRepository huReservationRepository;
 	private final HUDescriptorService huDescriptorService;
@@ -65,14 +63,12 @@ public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentSche
 	public ShipmentScheduleQtyExternalPropertyStorage(@NonNull final HUReservationRepository huReservationRepository,
 			@NonNull final HUDescriptorService huDescriptorService,
 			@NonNull final IUOMConversionBL uomConversionBL,
-			@NonNull final IProductBL productBL,
-			@NonNull final IHandlingUnitsBL handlingUnitsBL)
+			@NonNull final IProductBL productBL)
 	{
 		this.huReservationRepository = huReservationRepository;
 		this.huDescriptorService = huDescriptorService;
 		this.uomConversionBL = uomConversionBL;
 		this.productBL = productBL;
-		this.handlingUnitsBL = handlingUnitsBL;
 	}
 
 	@Override
@@ -115,8 +111,11 @@ public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentSche
 	{
 		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
 		final UomId uomId = productBL.getStockUOMId(productId);
-		final WarehouseId warehouseId = handlingUnitsBL.getWarehouseIdForHuId(vhuId);
 
+		// When we deal with service-repair orders, there might be HUs reserved to this sched's Orderline, that still don't have a warehause
+		// Anyways, since the HU is reserved to the sched's orderLine, we count it as available, no matter its current location
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(sched.getM_Warehouse_ID());
+		
 		final Quantity reservedQtyByVhuId = huRes.getReservedQtyByVhuId(vhuId);
 		final Quantity quantityInProductUom = uomConversionBL.convertQuantityTo(reservedQtyByVhuId, productId, uomId);
 		return ShipmentScheduleAvailableStockDetail.builder()
@@ -125,7 +124,6 @@ public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentSche
 				.warehouseId(warehouseId)
 				.storageAttributesKey(AttributesKey.ALL) // it's reserved, don't care about attributes at this point
 				.build();
-
 	}
 }
 
