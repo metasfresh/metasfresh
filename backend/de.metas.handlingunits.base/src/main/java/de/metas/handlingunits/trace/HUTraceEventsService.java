@@ -23,6 +23,7 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
@@ -37,12 +38,14 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mmovement.MovementId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.slf4j.Logger;
@@ -131,14 +134,12 @@ public class HUTraceEventsService
 	/**
 	 * Creates one event for the given cost collector and adds it to the {@link HUTraceRepository}.<br>
 	 * The event has no source VHU ID, even in case of a 1:1 PP_Order.
-	 *
-	 * @param costCollector
 	 */
 	public void createAndAddFor(@NonNull final I_PP_Cost_Collector costCollector)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.ppCostCollectorId(costCollector.getPP_Cost_Collector_ID())
-				.ppOrderId(costCollector.getPP_Order_ID())
+				.ppCostCollectorId(PPCostCollectorId.ofRepoId(costCollector.getPP_Cost_Collector_ID()))
+				.ppOrderId(PPOrderId.ofRepoId(costCollector.getPP_Order_ID()))
 				.docTypeId(DocTypeId.optionalOfRepoId(costCollector.getC_DocType_ID()))
 				.docStatus(costCollector.getDocStatus())
 				.eventTime(costCollector.getMovementDate().toInstant());
@@ -164,7 +165,7 @@ public class HUTraceEventsService
 			@NonNull final List<I_M_InOutLine> iols)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.inOutId(inOut.getM_InOut_ID())
+				.inOutId(InOutId.ofRepoId(inOut.getM_InOut_ID()))
 				.docTypeId(DocTypeId.optionalOfRepoId(inOut.getC_DocType_ID()))
 				.docStatus(inOut.getDocStatus())
 				.eventTime(inOut.getMovementDate().toInstant());
@@ -187,7 +188,7 @@ public class HUTraceEventsService
 			@NonNull final List<I_M_MovementLine> movementLines)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.movementId(movement.getM_Movement_ID())
+				.movementId(MovementId.ofRepoId(movement.getM_Movement_ID()))
 				.docTypeId(DocTypeId.optionalOfRepoId(movement.getC_DocType_ID()))
 				.docStatus(movement.getDocStatus())
 				.type(HUTraceType.MATERIAL_MOVEMENT)
@@ -377,7 +378,7 @@ public class HUTraceEventsService
 				.orgId(returnedQtyRequest.getOrgId())
 				.eventTime(returnedQtyRequest.getEventTime())
 				.docStatus(returnedQtyRequest.getDocStatus())
-				.inOutId(returnedQtyRequest.getCustomerReturnId().getRepoId())
+				.inOutId(InOutId.ofRepoId(returnedQtyRequest.getCustomerReturnId().getRepoId()))
 				.type(HUTraceType.MATERIAL_RECEIPT)
 				.topLevelHuId(returnedQtyRequest.getTopLevelReturnedHUId())
 				.vhuId(HuId.ofRepoId(returnedQtyRequest.getReturnedVirtualHU().getM_HU_ID()))
@@ -390,7 +391,7 @@ public class HUTraceEventsService
 	}
 
 	private void setSourceVHUAndAddEvent(
-			@NonNull final Set<HuId> sourceShippedVHUIds, @NonNull HUTraceEventBuilder huTraceEventBuilder)
+			@NonNull final Set<HuId> sourceShippedVHUIds, @NonNull final HUTraceEventBuilder huTraceEventBuilder)
 	{
 		sourceShippedVHUIds.stream()
 				.map(huTraceEventBuilder::vhuSourceId)
@@ -401,7 +402,7 @@ public class HUTraceEventsService
 	/**
 	 * Iterate the given {@link I_M_HU_Trx_Line}s and add events for those lines that
 	 * <ul>
-	 * <li>have a {@link IHandlingUnitsBL#isPhysicalHU(String) physical} {@code M_HU_ID}.<br>
+	 * <li>have a {@link IHUStatusBL#isPhysicalHU(I_M_HU) physical} {@code M_HU_ID}.<br>
 	 * We don't care about planned HUs and we assume that destroyed or shipped HUs won't be altered anymore.
 	 * <li>have a partner ({@code Parent_HU_Trx_Line_ID > 0}) which also has a a M_HU_ID
 	 * <li>have {@code Quantity > 0}
@@ -460,7 +461,7 @@ public class HUTraceEventsService
 				}
 
 				final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
-				if (!productAndQty.isPresent())
+				if (productAndQty.isEmpty())
 				{
 					logger.debug("vhu of the current trxLine has no product and quantity; nothing to do with that trxLine; vhu={}; trxLine={}", vhu, trxLine);
 					continue;
@@ -531,9 +532,6 @@ public class HUTraceEventsService
 
 	/**
 	 * Filters for the trx lines we actually want to create events from.
-	 *
-	 * @param trxLines
-	 * @return
 	 */
 	@VisibleForTesting
 	List<I_M_HU_Trx_Line> filterTrxLinesToUse(
@@ -611,7 +609,7 @@ public class HUTraceEventsService
 		{
 			final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
 
-			if (!productAndQty.isPresent())
+			if (productAndQty.isEmpty())
 			{
 				logger.debug("vhu has no product and quantity (yet), so skipping it; vhu={}", vhu);
 				continue;
