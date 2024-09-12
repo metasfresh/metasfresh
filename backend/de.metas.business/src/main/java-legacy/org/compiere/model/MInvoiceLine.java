@@ -495,7 +495,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		if (M_AttributeSetInstance_ID == 0)
 		{
-			set_Value("M_AttributeSetInstance_ID", new Integer(0));
+			set_Value("M_AttributeSetInstance_ID", 0);
 		}
 		else
 		{
@@ -1215,10 +1215,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 * Recalculate invoice tax
 	 *
 	 * @param oldTax true if the old C_Tax_ID should be used
-	 * @return true if success, false otherwise
 	 * @author teo_sarca [ 1583825 ]
 	 */
-	private boolean updateInvoiceTax(final boolean oldTax)
+	private void updateInvoiceTax(final boolean oldTax)
 	{
 		// NOTE: keep in sync with org.compiere.model.MOrderLine.updateOrderTax(boolean)
 
@@ -1227,13 +1226,10 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		final MInvoiceTax tax = MInvoiceTax.get(this, taxPrecision.toInt(), oldTax, trxName);
 		if (tax == null)
 		{
-			return true;
+			return;
 		}
 
-		if (!tax.calculateTaxFromLines())
-		{
-			return false;
-		}
+		tax.calculateTaxFromLines();
 
 		//
 		// If tax has invoice lines behind => fine, save it
@@ -1249,8 +1245,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				InterfaceWrapperHelper.delete(tax);
 			}
 		}
-
-		return true;
 	}
 
 	/**
@@ -1270,12 +1264,11 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		if (!newRecord && is_ValueChanged("C_Tax_ID"))
 		{
 			// Recalculate Tax for old Tax
-			if (!updateInvoiceTax(true))
-			{
-				return false;
-			}
+			updateInvoiceTax(true);
 		}
-		return updateHeaderTax();
+		updateHeaderTax();
+		
+		return true;
 	}    // afterSave
 
 	/**
@@ -1300,7 +1293,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			sLine.saveEx();
 		}
 
-		return updateHeaderTax();
+		updateHeaderTax();
+		
+		return true;
 	}    // afterDelete
 
 	/**
@@ -1308,19 +1303,16 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 *
 	 * @return true if header updated with tax
 	 */
-	private boolean updateHeaderTax()
+	private void updateHeaderTax()
 	{
 		// Update header only if the document is not processed - teo_sarca BF [ 2317305 ]
 		if (isProcessed() && !is_ValueChanged(COLUMNNAME_Processed))
 		{
-			return true;
+			return;
 		}
 
 		// Recalculate Tax for this Tax
-		if (!updateInvoiceTax(false))
-		{
-			return false;
-		}
+		updateInvoiceTax(false);
 
 		// Update Invoice Header: TotalLines
 		{
@@ -1350,8 +1342,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			}
 		}
 		m_parent = null;
-
-		return true;
 	}    // updateHeaderTax
 
 	/**************************************************************************
