@@ -302,19 +302,19 @@ public class DesadvBL implements IDesadvBL
 	private BigDecimal getQtyOrdered_Override(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID());
-		final I_M_ShipmentSchedule shipSched = shipmentSchedulePA.getByOrderLineId(orderLineId);
-		return getQtyOrdered_Override(shipSched);
+		final I_M_ShipmentSchedule schedule = shipmentSchedulePA.getByOrderLineId(orderLineId);
+		return getQtyOrdered_Override(schedule);
 	}
 
 	@Nullable
-	private BigDecimal getQtyOrdered_Override(@NonNull final I_M_ShipmentSchedule shipSched)
+	private static BigDecimal getQtyOrdered_Override(@Nullable final I_M_ShipmentSchedule schedule)
 	{
-		if (shipSched == null || InterfaceWrapperHelper.isNull(shipSched, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override))
+		if (schedule == null || InterfaceWrapperHelper.isNull(schedule, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override))
 		{
 			return null;
 		}
 
-		return shipSched.getQtyOrdered_Override();
+		return schedule.getQtyOrdered_Override();
 	}
 
 
@@ -1153,7 +1153,8 @@ public class DesadvBL implements IDesadvBL
 	@Override
 	public void updateQtyOrdered_OverrideFromShipSchedAndSave(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		final I_C_OrderLine orderLineRecord = (I_C_OrderLine)orderDAO.getOrderLineById(schedule.getC_OrderLine_ID());
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(schedule.getC_OrderLine_ID());
+		final I_C_OrderLine orderLineRecord = orderDAO.getOrderLineById(orderLineId, I_C_OrderLine.class);
 		final EDIDesadvLineId ediDesadvLineId = EDIDesadvLineId.ofRepoIdOrNull(orderLineRecord.getEDI_DesadvLine_ID());
 		if (ediDesadvLineId == null)
 		{
