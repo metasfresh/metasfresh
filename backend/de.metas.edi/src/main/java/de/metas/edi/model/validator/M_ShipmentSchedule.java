@@ -14,11 +14,10 @@ import javax.annotation.Nonnull;
 @Component
 public class M_ShipmentSchedule
 {
-	private final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
-
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override)
 	public void updateQtyOrdered_Override(@Nonnull final I_M_ShipmentSchedule schedule)
 	{
+		final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
 		desadvBL.updateQtyOrdered_OverrideFromShipSchedAndSave(schedule);
 	}
 }
