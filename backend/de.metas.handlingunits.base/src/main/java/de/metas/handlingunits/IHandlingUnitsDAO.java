@@ -244,7 +244,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @param huUnitType optional, may be {@code null} or empty. If given, then only return items whose {@link I_M_HU_PI_Version} has the given {@link I_M_HU_PI_Version#COLUMN_HU_UnitType}.
 	 * @return unique {@link I_M_HU_PI_Item}s of the selected {@link I_M_HU_PI}'s parent PI
 	 */
-	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(I_M_HU_PI huPI, String huUnitType, BPartnerId bpartnerId);
+	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(@NonNull I_M_HU_PI huPI, @Nullable String huUnitType, @Nullable BPartnerId bpartnerId);
 
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull HuPackingInstructionsId packingInstructionsId,

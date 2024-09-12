@@ -713,13 +713,15 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 		else if (isTransportUnit(hu))
 		{
-			@SuppressWarnings("UnnecessaryLocalVariable") final I_M_HU tuHU = hu;
+			@SuppressWarnings("UnnecessaryLocalVariable")
+			final I_M_HU tuHU = hu;
 			final I_M_HU luHU = getLoadingUnitHU(tuHU);
 			return LUTUCUPair.ofTU(tuHU, luHU);
 		}
 		else // virtual or aggregate
 		{
-			@SuppressWarnings("UnnecessaryLocalVariable") final I_M_HU vhu = hu;
+			@SuppressWarnings("UnnecessaryLocalVariable")
+			final I_M_HU vhu = hu;
 			final I_M_HU tuHU = getTransportUnitHU(vhu);
 			final I_M_HU luHU = tuHU != null ? getLoadingUnitHU(tuHU) : null;
 			return LUTUCUPair.ofVHU(vhu, tuHU, luHU);
@@ -762,8 +764,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		if (lastLU != null && lastLU.getM_HU_Item_Parent_ID() > 0)
 		{
 			final AdempiereException ex = new AdempiereException("While searching for LU of " + hu + " we found an LU which is included in another handling unit."
-					+ "\nThis shall not happen."
-					+ "\nWe consider our LU to be NULL.");
+																		 + "\nThis shall not happen."
+																		 + "\nWe consider our LU to be NULL.");
 			logger.warn(ex.getLocalizedMessage(), ex);
 
 			lastLU = null;
@@ -1378,12 +1380,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	@NonNull
-	public WarehouseId getWarehouseIdForHuId(@NonNull final HuId huId)
+	@Nullable
+	public WarehouseId getWarehouseIdForHuIdOrNull(@NonNull final HuId huId)
 	{
-		final WarehouseId warehouseIdByLocatorRepoId = warehouseDAO.getWarehouseIdByLocatorRepoId(getById(huId).getM_Locator_ID());
-		Check.assumeNotNull(warehouseIdByLocatorRepoId, "Warehouse cannot be determined for hu: {}", huId);
-		return warehouseIdByLocatorRepoId;
+		final I_M_HU huRecord = getById(huId);
+		return warehouseDAO.getWarehouseIdByLocatorRepoId(huRecord.getM_Locator_ID());
 	}
 
 	@Override
@@ -1444,7 +1445,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	@Override
 	@NonNull
-	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds)
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull final Collection<HuPackingInstructionsItemId> piItemIds)
 	{
 		return handlingUnitsRepo.retrievePIInfo(piItemIds);
 	}

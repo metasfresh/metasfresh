@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.inout;
 
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -47,6 +48,7 @@ public class ShipmentScheduleQtyExternalPropertyProvider implements IShipmentSch
 	private final HUDescriptorService huDescriptorService;
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	public ShipmentScheduleQtyExternalPropertyProvider(@NonNull final HUReservationRepository huReservationRepository, @NonNull final HUDescriptorService huDescriptorService)
 	{
@@ -57,7 +59,7 @@ public class ShipmentScheduleQtyExternalPropertyProvider implements IShipmentSch
 	@Override
 	public IShipmentScheduleQtyOnHandStorage getStorageFor(@NonNull final List<I_M_ShipmentSchedule> lines)
 	{
-		return new ShipmentScheduleQtyExternalPropertyStorage(huReservationRepository, huDescriptorService, uomConversionBL, productBL);
+		return new ShipmentScheduleQtyExternalPropertyStorage(huReservationRepository, huDescriptorService, uomConversionBL, productBL, handlingUnitsBL);
 	}
 
 }

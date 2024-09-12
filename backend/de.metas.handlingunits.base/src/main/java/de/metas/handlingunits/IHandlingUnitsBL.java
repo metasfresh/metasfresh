@@ -242,7 +242,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Gets HU Item Type.
 	 * <p>
-	 * <b>Important:</b> HU items that were created prior to https://github.com/metasfresh/metasfresh/issues/460 might have an empty
+	 * <b>Important:</b> HU items that were created prior to <a href="https://github.com/metasfresh/metasfresh/issues/460">https://github.com/metasfresh/metasfresh/issues/460</a> might have an empty
 	 * {@link I_M_HU_Item#COLUMN_ItemType}. So unless you know what you do, please use this method rather than {@link I_M_HU_Item#getItemType()}, because otherwise you might stumble over an old/pre-existing item and get wrong results.
 	 *
 	 * @see I_M_HU_PI_Item#getItemType()
@@ -287,8 +287,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	I_M_HU_PI_Item getPackingInstructionItemById(HuPackingInstructionsItemId piItemId);
 
-	@NonNull
-	WarehouseId getWarehouseIdForHuId(@NonNull HuId huId);
+	@Nullable
+	WarehouseId getWarehouseIdForHuIdOrNull(@NonNull HuId huId);
 
 	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
 

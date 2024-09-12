@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorService;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
@@ -41,6 +42,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.IShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
 import org.adempiere.warehouse.WarehouseId;
@@ -56,6 +58,7 @@ public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentSche
 {
 	private final IUOMConversionBL uomConversionBL;
 	private final IProductBL productBL;
+	private final IHandlingUnitsBL handlingUnitsBL;
 
 	private final HUReservationRepository huReservationRepository;
 	private final HUDescriptorService huDescriptorService;
@@ -63,12 +66,14 @@ public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentSche
 	public ShipmentScheduleQtyExternalPropertyStorage(@NonNull final HUReservationRepository huReservationRepository,
 			@NonNull final HUDescriptorService huDescriptorService,
 			@NonNull final IUOMConversionBL uomConversionBL,
-			@NonNull final IProductBL productBL)
+			@NonNull final IProductBL productBL,
+			@NonNull final IHandlingUnitsBL handlingUnitsBL)
 	{
 		this.huReservationRepository = huReservationRepository;
 		this.huDescriptorService = huDescriptorService;
 		this.uomConversionBL = uomConversionBL;
 		this.productBL = productBL;
+		this.handlingUnitsBL = handlingUnitsBL;
 	}
 
 	@Override
@@ -112,9 +117,15 @@ public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentSche
 		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
 		final UomId uomId = productBL.getStockUOMId(productId);
 
-		// When we deal with service-repair orders, there might be HUs reserved to this sched's Orderline, that still don't have a warehause
-		// Anyways, since the HU is reserved to the sched's orderLine, we count it as available, no matter its current location
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(sched.getM_Warehouse_ID());
+		// if the HU has no locator we won't be able to continue. Latest when the shipment schedule is delivered we will need to pick it from somewhere
+		final WarehouseId warehouseId = handlingUnitsBL.getWarehouseIdForHuIdOrNull(vhuId);
+		if(warehouseId == null)
+		{
+			throw new AdempiereException("The M_HU reserved to the current M_ShipmentSchedule's OrderLine has no M_Locator_ID")
+					.appendParametersToMessage()
+					.setParameter("M_HU_ID", vhuId.getRepoId())
+					.setParameter("M_ShipmentSchedule_ID", sched.getM_ShipmentSchedule_ID());
+		}
 		
 		final Quantity reservedQtyByVhuId = huRes.getReservedQtyByVhuId(vhuId);
 		final Quantity quantityInProductUom = uomConversionBL.convertQuantityTo(reservedQtyByVhuId, productId, uomId);
