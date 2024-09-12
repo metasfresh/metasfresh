@@ -129,17 +129,4 @@ public class C_InvoiceLine
 			invoiceLine.setC_Tax_ID(tax.getTaxId().getRepoId());
 		}
 	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
-			ifColumnsChanged = {
-					I_C_InvoiceLine.COLUMNNAME_LineNetAmt,
-					I_C_InvoiceLine.COLUMNNAME_C_Tax_ID,
-					I_C_InvoiceLine.COLUMNNAME_TaxAmt },
-			ifUIAction = true //optimize: update only in case it's a user action
-	)
-	public void updateGrandTotal(final I_C_InvoiceLine invoiceLine)
-	{
-		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID());
-		invoiceBL.updateTaxesAndGrandTotal(invoiceId);
-	}
 }
