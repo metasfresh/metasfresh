@@ -32,9 +32,12 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.process.ProcessExecutionResult;
@@ -99,6 +102,7 @@ public class DesadvBL implements IDesadvBL
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
 	private final transient EDIDesadvPackService ediDesadvPackService;
 	private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
@@ -199,6 +203,7 @@ public class DesadvBL implements IDesadvBL
 		newDesadvLine.setPriceActual(orderLineRecord.getPriceActual());
 
 		newDesadvLine.setQtyOrdered(orderLineRecord.getQtyOrdered());
+		newDesadvLine.setQtyOrdered_Override(getQtyOrdered_Override(orderLineRecord));
 		newDesadvLine.setQtyDeliveredInStockingUOM(ZERO);
 		newDesadvLine.setM_Product_ID(productId.getRepoId());
 
@@ -252,6 +257,25 @@ public class DesadvBL implements IDesadvBL
 
 		InterfaceWrapperHelper.save(newDesadvLine);
 		return newDesadvLine;
+	}
+
+	@Nullable
+	private BigDecimal getQtyOrdered_Override(@NonNull final I_C_OrderLine orderLineRecord)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID());
+		final I_M_ShipmentSchedule schedule = shipmentSchedulePA.getByOrderLineId(orderLineId);
+		return getQtyOrdered_Override(schedule);
+	}
+
+	@Nullable
+	private static BigDecimal getQtyOrdered_Override(@Nullable final I_M_ShipmentSchedule schedule)
+	{
+		if (schedule == null || InterfaceWrapperHelper.isNull(schedule, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override))
+		{
+			return null;
+		}
+
+		return schedule.getQtyOrdered_Override();
 	}
 
 	private I_EDI_Desadv retrieveOrCreateDesadv(@NonNull final I_C_Order order)
@@ -326,7 +350,7 @@ public class DesadvBL implements IDesadvBL
 		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
 		final int maxDesadvPackLine = desadvDAO.retrieveMaxDesadvPackLine(EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID()));
 		final SimpleSequence packLineSequence = SimpleSequence.createWithInitial(maxDesadvPackLine);
-		
+
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : inOutLines)
 		{
@@ -340,7 +364,7 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	private void addInOutLine(
-			@NonNull final I_M_InOutLine inOutLineRecord, 
+			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final BPartnerId recipientBPartnerId,
 			@NonNull final SimpleSequence packLineSequence)
 	{
@@ -665,6 +689,22 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	@Override
+	public void updateQtyOrdered_OverrideFromShipSchedAndSave(@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(schedule.getC_OrderLine_ID());
+		final I_C_OrderLine orderLineRecord = orderDAO.getOrderLineById(orderLineId, I_C_OrderLine.class);
+		final EDIDesadvLineId ediDesadvLineId = EDIDesadvLineId.ofRepoIdOrNull(orderLineRecord.getEDI_DesadvLine_ID());
+		if (ediDesadvLineId == null)
+		{
+			return;
+		}
+
+		final I_EDI_DesadvLine desadvLineRecord = desadvDAO.retrieveLineById(ediDesadvLineId);
+		final BigDecimal qtyOrdered_Override = getQtyOrdered_Override(schedule);
+		desadvLineRecord.setQtyOrdered_Override(qtyOrdered_Override);
+		desadvDAO.save(desadvLineRecord);
+	}
+
 	public void propagateEDIStatus(@NonNull final I_EDI_Desadv desadv)
 	{
 		desadvDAO.retrieveShipmentsWithStatus(desadv, ImmutableSet.of(EDIExportStatus.SendingStarted))
@@ -832,4 +872,5 @@ public class DesadvBL implements IDesadvBL
 		newDesadvLine.setQtyEnteredInBPartnerUOM(ZERO);
 		newDesadvLine.setBPartner_QtyItemCapacity(orderLineRecord.getBPartner_QtyItemCapacity());
 	}
+
 }

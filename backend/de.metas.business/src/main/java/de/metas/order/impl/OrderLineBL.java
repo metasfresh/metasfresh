@@ -1046,4 +1046,11 @@ public class OrderLineBL implements IOrderLineBL
 		return BPartnerId.optionalOfRepoId(orderLine.getC_BPartner_ID());
 	}
 
+	@Override
+	public Optional<BPartnerId> getBPartnerId(@NonNull final OrderAndLineId orderLineId)
+	{
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
+		return BPartnerId.optionalOfRepoId(orderLine.getC_BPartner_ID());
+	}
+
 }
