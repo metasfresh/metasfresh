@@ -129,6 +129,11 @@
             <artifactId>de.metas.distribution.rest-api</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.metas.pos</groupId>
+            <artifactId>de.metas.pos.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
