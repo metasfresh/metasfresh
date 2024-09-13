@@ -1524,6 +1524,7 @@ public class MOrder extends X_C_Order implements IDocument
 					newOTax.setPrecision(taxPrecision.toInt());
 					newOTax.setIsTaxIncluded(taxIncluded);
 					newOTax.setIsReverseCharge(childTax.isReverseCharge());
+					newOTax.setIsDocumentLevel(cTax.isDocumentLevel());
 					newOTax.setTaxBaseAmt(oTax.getTaxBaseAmt());
 					newOTax.setTaxAmt(calculateTaxResult.getTaxAmount());
 					newOTax.setReverseChargeTaxAmt(calculateTaxResult.getReverseChargeAmt());

@@ -683,16 +683,13 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			return;
 		}
-
-		final ITaxBL taxBL = Services.get(ITaxBL.class);
-
-		final Tax tax = taxBL.getTaxById(taxId);
+		final Tax tax = Services.get(ITaxBL.class).getTaxById(taxId);
 		if (tax.isDocumentLevel() && m_IsSOTrx)
 		{
 			return;
 		}
 		//
-		final BigDecimal taxAmt = tax.calculateTax(getLineNetAmt(), isTaxIncluded(), getAmountPrecision().toInt()).getTaxAmount();
+		final BigDecimal taxAmt = tax.calculateTax(getLineNetAmt(), isTaxIncluded(), getAmountPrecision().toInt());
 		if (isTaxIncluded())
 		{
 			setLineTotalAmt(getLineNetAmt());
@@ -701,6 +698,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			setLineTotalAmt(getLineNetAmt().add(taxAmt));
 		}
+		
 		super.setTaxAmt(taxAmt);
 	}    // setTaxAmt
 

@@ -169,6 +169,29 @@ public interface I_C_OrderTax
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Document Level.
+	 * Tax is calculated on document level (rather than line by line)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDocumentLevel (boolean IsDocumentLevel);
+
+	/**
+	 * Get Document Level.
+	 * Tax is calculated on document level (rather than line by line)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDocumentLevel();
+
+	ModelColumn<I_C_OrderTax, Object> COLUMN_IsDocumentLevel = new ModelColumn<>(I_C_OrderTax.class, "IsDocumentLevel", null);
+	String COLUMNNAME_IsDocumentLevel = "IsDocumentLevel";
+
+	/**
 	 * Set Packaging Tax.
 	 *
 	 * <br>Type: YesNo
@@ -188,27 +211,6 @@ public interface I_C_OrderTax
 
 	ModelColumn<I_C_OrderTax, Object> COLUMN_IsPackagingTax = new ModelColumn<>(I_C_OrderTax.class, "IsPackagingTax", null);
 	String COLUMNNAME_IsPackagingTax = "IsPackagingTax";
-
-	/**
-	 * Set Reverse Charge.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsReverseCharge (boolean IsReverseCharge);
-
-	/**
-	 * Get Reverse Charge.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isReverseCharge();
-
-	ModelColumn<I_C_OrderTax, Object> COLUMN_IsReverseCharge = new ModelColumn<>(I_C_OrderTax.class, "IsReverseCharge", null);
-	String COLUMNNAME_IsReverseCharge = "IsReverseCharge";
 
 	/**
 	 * Set Price incl. Tax.
@@ -276,27 +278,6 @@ public interface I_C_OrderTax
 
 	ModelColumn<I_C_OrderTax, Object> COLUMN_Processed = new ModelColumn<>(I_C_OrderTax.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
-
-	/**
-	 * Set Reverse Charge Tax Amount.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setReverseChargeTaxAmt (BigDecimal ReverseChargeTaxAmt);
-
-	/**
-	 * Get Reverse Charge Tax Amount.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getReverseChargeTaxAmt();
-
-	ModelColumn<I_C_OrderTax, Object> COLUMN_ReverseChargeTaxAmt = new ModelColumn<>(I_C_OrderTax.class, "ReverseChargeTaxAmt", null);
-	String COLUMNNAME_ReverseChargeTaxAmt = "ReverseChargeTaxAmt";
 
 	/**
 	 * Set Tax Amount.

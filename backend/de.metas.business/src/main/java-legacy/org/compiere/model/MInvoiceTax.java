@@ -77,7 +77,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 			{
 				return null;
 			}
-			C_Tax_ID = ((Integer)old).intValue();
+			C_Tax_ID = (Integer)old;
 		}
 
 		if (C_Tax_ID <= 0)
@@ -120,16 +120,17 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		retValue.setC_Tax_ID(tax.getTaxId().getRepoId());
 		retValue.setC_VAT_Code_ID(line.getC_VAT_Code_ID());
 		retValue.setIsWholeTax(tax.isWholeTax());
+		retValue.setIsDocumentLevel(tax.isDocumentLevel());
 		retValue.setPrecision(precision);
 		retValue.setIsTaxIncluded(taxIncluded);
-		s_log.debug("(new) " + retValue);
+		s_log.debug("(new) {}", retValue);
 		return retValue;
 	}    // get
 
 	/**
 	 * Static Logger
 	 */
-	private static Logger s_log = LogManager.getLogger(MInvoiceTax.class);
+	private static final Logger s_log = LogManager.getLogger(MInvoiceTax.class);
 
 	/**************************************************************************
 	 * Persistency Constructor
@@ -137,24 +138,19 @@ public class MInvoiceTax extends X_C_InvoiceTax
 	public MInvoiceTax(Properties ctx, int id, String trxName)
 	{
 		super(ctx, id, trxName);
-
-		setTaxAmt(BigDecimal.ZERO);
-		setTaxBaseAmt(BigDecimal.ZERO);
-		setIsTaxIncluded(false);
+		if(id <= 0)
+		{
+			setTaxAmt(BigDecimal.ZERO);
+			setTaxBaseAmt(BigDecimal.ZERO);
+			setIsTaxIncluded(false);
+		}
 	}    // MInvoiceTax
 
-	/**
-	 * Load Constructor.
-	 * Set Precision and TaxIncluded for tax calculations!
-	 *
-	 * @param ctx     context
-	 * @param rs      result set
-	 * @param trxName transaction
-	 */
+	@SuppressWarnings("unused")
 	public MInvoiceTax(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}    // MInvoiceTax
+	}
 
 	/**
 	 * Tax
@@ -172,16 +168,11 @@ public class MInvoiceTax extends X_C_InvoiceTax
 	 */
 	private int getPrecision()
 	{
-		if (m_precision == null)
-		{
-			return 2;
-		}
-		return m_precision.intValue();
+		final Integer precision = this.m_precision;
+		return precision != null ? precision : 2;
 	}    // getPrecision
 
 	/**
-	 * Set Precision
-	 *
 	 * @param precision The precision to set.
 	 */
 	protected void setPrecision(int precision)
@@ -205,9 +196,9 @@ public class MInvoiceTax extends X_C_InvoiceTax
 
 	/**************************************************************************
 	 * Calculate/Set Tax Base Amt from Invoice Lines.
-	 *
 	 * If there were no invoice lines found for this tax, this record will be inactivated. In this way, the caller method can know about this and it can decide if this record will be deleted.
 	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean calculateTaxFromLines()
 	{
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
@@ -338,8 +329,6 @@ public class MInvoiceTax extends X_C_InvoiceTax
 	}
 
 	/**
-	 * @param havePackingMaterialLines
-	 * @param haveNonPackingMaterialLines
 	 * @return true if there are no non packing material lines with the same tax as the packing material lines, false otherwise
 	 */
 	private boolean checkIsPackagingMaterialTax(final boolean havePackingMaterialLines, final boolean haveNonPackingMaterialLines)
