@@ -1,38 +1,23 @@
 package de.metas.handlingunits;
 
-import static de.metas.business.BusinessTestHelper.createWarehouse;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
+import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.form.swing.SwingClientUI;
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
+import de.metas.handlingunits.attributes.impl.WeightAttributeValueCalloutTest;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.adempiere.model.I_C_POS_Profile;
-import org.adempiere.model.I_C_POS_Profile_Warehouse;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_SysConfig;
@@ -50,21 +35,10 @@ import org.eevolution.model.I_M_Warehouse_Routing;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_M_Warehouse_Routing;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.form.swing.SwingClientUI;
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
-import de.metas.handlingunits.attributes.impl.WeightAttributeValueCalloutTest;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+import static de.metas.business.BusinessTestHelper.createWarehouse;
 
 /**
  * This helper class declares master data and objects that are useful for testing.
@@ -100,8 +74,6 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	public static final String NAME_Product1 = "Product 1";
 	public static final String NAME_Product2 = "Product 2";
 
-	private I_C_POS_Profile posProfile;
-
 	public I_M_Warehouse warehouse1;
 	public I_M_Warehouse warehouse2;
 	public I_M_Warehouse warehouse3;
@@ -134,8 +106,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	private I_M_HU_PI_Item_Product huDefIFCO_pip_Tomato;
 
 	/**
-	 * An IFCO definition that contains {@link #huDefIFCO2_pip_Salad} and {@link #huDefIFCO2_pip_Tomato}. Therefore can can call
-	 * {@link HUTestHelper#createHUs(IHUContext, I_M_HU_PI, I_M_Product, BigDecimal, org.compiere.model.I_C_UOM)} with this PIP and both {@link HUTestHelper#pTomato} and {@link HUTestHelper#pSalad}.
+	 * An IFCO definition that contains {@link #huDefIFCO2_pip_Salad} and {@link #huDefIFCO2_pip_Tomato}.
 	 */
 	public I_M_HU_PI huDefIFCO2;
 	public I_M_HU_PI_Item_Product huDefIFCO2_pip_Tomato;
@@ -168,10 +139,6 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		super.setupMasterData();
 
 		WeightAttributeValueCalloutTest.setupWeightsToNoPI(this);
-
-		posProfile = InterfaceWrapperHelper.newInstance(I_C_POS_Profile.class, contextProvider);
-		posProfile.setAD_Role_ID(adRole.getAD_Role_ID());
-		InterfaceWrapperHelper.save(posProfile);
 
 		//
 		// Document Types
@@ -456,19 +423,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		warehouseRouting.setIsActive(true);
 		InterfaceWrapperHelper.save(warehouseRouting);
 
-		// ... also create the POS Profile Warehouse
-		createPOSProfileWarehouse(warehouse);
-
 		return warehouseRouting;
-	}
-
-	private I_C_POS_Profile_Warehouse createPOSProfileWarehouse(final I_M_Warehouse warehouse)
-	{
-		final I_C_POS_Profile_Warehouse posProfileWarehouse = InterfaceWrapperHelper.newInstance(I_C_POS_Profile_Warehouse.class, posProfile);
-		posProfileWarehouse.setC_POS_Profile(posProfile);
-		posProfileWarehouse.setM_Warehouse(warehouse);
-		InterfaceWrapperHelper.save(posProfileWarehouse);
-		return posProfileWarehouse;
 	}
 
 	private void createHU_Report_Process(final String name)
