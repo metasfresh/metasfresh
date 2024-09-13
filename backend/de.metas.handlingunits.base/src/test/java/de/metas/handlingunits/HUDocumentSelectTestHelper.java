@@ -32,7 +32,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_Attribute;
 import org.eevolution.model.I_M_Warehouse_Routing;
-import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_M_Warehouse_Routing;
 
 import javax.annotation.Nullable;
@@ -44,7 +43,6 @@ import static de.metas.business.BusinessTestHelper.createWarehouse;
  * This helper class declares master data and objects that are useful for testing.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class HUDocumentSelectTestHelper extends HUTestHelper
 {
@@ -70,9 +68,6 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	public static final String NAME_PurchaseOrder7 = "PO 7";
 	public static final String NAME_PurchaseOrder8 = "PO 8";
 	public static final String NAME_PurchaseOrder9 = "PO 9";
-
-	public static final String NAME_Product1 = "Product 1";
-	public static final String NAME_Product2 = "Product 2";
 
 	public I_M_Warehouse warehouse1;
 	public I_M_Warehouse warehouse2;
@@ -357,17 +352,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		return order;
 	}
 
-	public I_PP_Order createManufacturingOrder(final String docNo, final I_M_Warehouse warehouse)
-	{
-		final I_PP_Order order = InterfaceWrapperHelper.create(ctx, I_PP_Order.class, ITrx.TRXNAME_None);
-		order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-		order.setDocumentNo(docNo);
-		order.setProcessed(true);
-		InterfaceWrapperHelper.save(order);
-		return order;
-	}
-
-	public I_M_ReceiptSchedule createReceiptSchedule(
+	public void createReceiptSchedule(
 			@Nullable final I_M_Warehouse warehouse,
 			@Nullable final I_M_Warehouse warehouseDest,
 			@NonNull final I_C_Order order,
@@ -395,7 +380,6 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		rSched.setQualityNote("Quality des");
 		rSched.setM_HU_PI_Item_Product(pip);
 		InterfaceWrapperHelper.save(rSched);
-		return rSched;
 	}
 
 	private I_M_AttributeSetInstance createASI()
@@ -415,7 +399,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		return asi;
 	}
 
-	public I_M_Warehouse_Routing createWarehouseRouting(final I_M_Warehouse warehouse, final String docBaseType)
+	public void createWarehouseRouting(final I_M_Warehouse warehouse, final String docBaseType)
 	{
 		final I_M_Warehouse_Routing warehouseRouting = InterfaceWrapperHelper.newInstance(I_M_Warehouse_Routing.class, contextProvider);
 		warehouseRouting.setDocBaseType(docBaseType);
@@ -423,7 +407,6 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		warehouseRouting.setIsActive(true);
 		InterfaceWrapperHelper.save(warehouseRouting);
 
-		return warehouseRouting;
 	}
 
 	private void createHU_Report_Process(final String name)
