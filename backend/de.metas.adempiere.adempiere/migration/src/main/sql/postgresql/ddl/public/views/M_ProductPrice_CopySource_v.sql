@@ -35,7 +35,7 @@ SELECT pp.target_pricelist_version_id,
        pp.IsSkipInactivePrices
 FROM (SELECT target_plv.m_pricelist_version_id                                                                                                                                                                                 AS target_pricelist_version_id,
              m_discountschemaline_transformprices(dsl => dsl.*, p_pricelist => source_pp.pricelist, p_pricestd => source_pp.pricestd, p_pricelimit => source_pp.pricelimit, p_source_currency_id => source_pl.c_currency_id, p_target_currency_id => target_pl.c_currency_id, p_conv_client_id => target_plv.ad_client_id, p_conv_org_id => target_plv.ad_org_id,
-                                                  p_Source_M_ProductPrice_ID => source_pp.m_productprice_id, p_Target_PriceList_Version_ID => target_plv.m_pricelist_version_id
+                                                  p_Source_M_ProductPrice_ID => source_pp.m_productprice_id, p_Target_PriceList_Version_ID => target_plv.m_pricelist_version_id,
                                                   p_applydiscountschema => source_pp.isseasonfixedprice = 'N'::bpchar AND source_pp.isactive = 'Y'::bpchar, p_donotchangezeroprices => ds.donotchangezeroprices = 'Y'::bpchar) AS prices,
              source_pp.m_product_id,
              source_pp.c_uom_id,
