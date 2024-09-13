@@ -1,4 +1,4 @@
-﻿DROP VIEW IF EXISTS M_ProductScalePrice_CopySource_v
+DROP VIEW IF EXISTS M_ProductScalePrice_CopySource_v
 ;
 
 CREATE VIEW M_ProductScalePrice_CopySource_v(target_pricelist_version_id, m_productprice_id, qty, pricelist, pricestd, pricelimit, m_discountschemaline_id, ad_client_id, ad_org_id, isactive, source_productprice_id, source_productscaleprice_id, IsSkipInactivePrices) AS
@@ -20,6 +20,7 @@ FROM (SELECT target_plv.m_pricelist_version_id                                  
              source_pp.m_productprice_id                                                                                                                                                                                                                             AS source_productprice_id,
              source_psp.qty,
              m_discountschemaline_transformprices(dsl => dsl.*, p_pricelist => source_psp.pricelist, p_pricestd => source_psp.pricestd, p_pricelimit => source_psp.pricelimit, p_source_currency_id => source_pl.c_currency_id, p_target_currency_id => target_pl.c_currency_id, p_conv_client_id => target_plv.ad_client_id, p_conv_org_id => target_plv.ad_org_id,
+                                                  p_Source_M_ProductPrice_ID => source_pp.m_productprice_id, p_Target_PriceList_Version_ID => target_plv.m_pricelist_version_id
                                                   p_applydiscountschema => source_pp.isseasonfixedprice = 'N'::bpchar AND source_pp.isactive = 'Y'::bpchar AND source_psp.isactive = 'Y'::bpchar, p_donotchangezeroprices => ds.donotchangezeroprices = 'Y'::bpchar) AS prices,
              target_plv.ad_client_id,
              target_plv.ad_org_id,
