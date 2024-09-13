@@ -10,7 +10,9 @@ import de.metas.location.CountryId;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -74,7 +76,7 @@ import org.compiere.model.I_M_PriceList_Version;
 	@Override
 	public int getC_Currency_ID()
 	{
-		return getM_PriceList_Version().getM_PriceList().getC_Currency_ID();
+		return Services.get(IPriceListDAO.class).getById(PriceListId.ofRepoId(getM_PriceList_Version().getM_PriceList_ID())).getC_Currency_ID();
 	}
 
 	@Override
