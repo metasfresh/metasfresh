@@ -197,14 +197,13 @@ public class DesadvBL implements IDesadvBL
 		//
 		// set infos from C_BPartner_Product
 		final I_C_BPartner_Product bPartnerProduct = bPartnerProductDAO.retrieveBPartnerProductAssociation(buyerBPartner, product, orgId);
-		// don't throw an error for missing bPartnerProduct; it might prevent users from creating shipments
-		// instead, just don't set the values and let the user fix it in the DESADV window later on
-		// Check.assumeNotNull(bPartnerProduct, "there is a C_BPartner_Product for C_BPArtner {} and M_Product {}", inOut.getC_BPartner(), inOutLine.getM_Product());
+		// Don't throw an error for missing bPartnerProduct; it might prevent users from creating shipments.
+		// Instead, just don't set the values and let the user fix it in the DESADV window later on
 		if (bPartnerProduct != null)
 		{
 			newDesadvLine.setProductNo(bPartnerProduct.getProductNo());
-			newDesadvLine.setUPC_CU(bPartnerProduct.getUPC());
-			newDesadvLine.setEAN_CU(bPartnerProduct.getEAN_CU());
+			newDesadvLine.setUPC_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getUPC(), product.getUPC()));
+			newDesadvLine.setEAN_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getGTIN(), bPartnerProduct.getEAN_CU(), product.getGTIN()));
 
 			if (Check.isEmpty(newDesadvLine.getProductDescription(), true))
 			{
@@ -217,6 +216,11 @@ public class DesadvBL implements IDesadvBL
 				newDesadvLine.setProductDescription(bPartnerProduct.getProductName());
 			}
 		}
+		else 
+		{
+			newDesadvLine.setUPC_CU(product.getUPC());
+			newDesadvLine.setEAN_CU(product.getGTIN());
+		}
 
 		if (Check.isEmpty(newDesadvLine.getProductDescription(), true))
 		{
@@ -227,12 +231,10 @@ public class DesadvBL implements IDesadvBL
 		//
 		// set infos from M_HU_PI_Item_Product
 		final I_M_HU_PI_Item_Product materialItemProduct = ediDesadvPackService.extractHUPIItemProduct(orderRecord, orderLineRecord);
-		if (materialItemProduct != null)
-		{
-			newDesadvLine.setGTIN(materialItemProduct.getGTIN());
-			newDesadvLine.setUPC_TU(materialItemProduct.getUPC());
-			newDesadvLine.setEAN_TU(materialItemProduct.getEAN_TU());
-		}
+		newDesadvLine.setGTIN(materialItemProduct.getGTIN());
+		newDesadvLine.setUPC_TU(materialItemProduct.getUPC());
+		newDesadvLine.setEAN_TU(materialItemProduct.getEAN_TU());
+
 		newDesadvLine.setIsSubsequentDeliveryPlanned(false); // the default
 
 		setExternalBPartnerInfo(newDesadvLine, orderLineRecord);
