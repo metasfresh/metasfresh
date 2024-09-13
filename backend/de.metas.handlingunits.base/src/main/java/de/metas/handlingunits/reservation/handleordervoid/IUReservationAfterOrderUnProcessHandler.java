@@ -1,16 +1,8 @@
-package de.metas.currency;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.money.CurrencyId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.business
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,24 +20,16 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class Currency
+package de.metas.handlingunits.reservation.handleordervoid;
+
+import de.metas.order.OrderId;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.DocTimingType;
+
+/**
+ * To be implemented everywhere in metasfresh where any handling of HU-reservations is needed as an order is reactivated, reversed, or voided. 
+ */
+public interface IUReservationAfterOrderUnProcessHandler
 {
-	@NonNull
-	CurrencyId id;
-
-	@NonNull
-	CurrencyCode currencyCode;
-
-	@NonNull
-	ITranslatableString symbol;
-
-	@NonNull
-	CurrencyPrecision precision;
-
-	@NonNull
-	CurrencyPrecision costingPrecision;
-
-	boolean isApply5CentCashRounding;
+	HandlerResult onOrderVoid(@NonNull final OrderId orderId, @NonNull final DocTimingType timing);
 }

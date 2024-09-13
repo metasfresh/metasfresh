@@ -1,17 +1,7 @@
 package de.metas.ui.web.handlingunits.trace;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.util.Date;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.X_M_HU_Trace;
@@ -22,8 +12,18 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Date;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -76,7 +76,7 @@ public class DocumentFilterToHuTraceQueryTest
 
 		assertThat(huTraceQuery).isNotNull();
 		assertThat(huTraceQuery.getRecursionMode()).isEqualTo(RecursionMode.BOTH);
-		assertThat(huTraceQuery.getInOutId()).isEqualTo(20);
+		assertThat(huTraceQuery.getInOutId().getRepoId()).isEqualTo(20);
 	}
 
 	@Test
@@ -110,7 +110,7 @@ public class DocumentFilterToHuTraceQueryTest
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_M_ShipmentSchedule_ID, Operator.EQUAL, IntegerLookupValue.of(120, "test-M_ShipmentSchedule_ID")))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_PP_Cost_Collector_ID, Operator.EQUAL, IntegerLookupValue.of(130, "test-PP_Cost_Collector_ID")))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_PP_Order_ID, Operator.EQUAL, IntegerLookupValue.of(140, "test-PP_Order_ID")))
-				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_EventTime, Operator.EQUAL, TimeUtil.parseTimestamp("2017-10-13")))
+				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_EventTime, Operator.EQUAL, TimeUtil.parseLocalDateAsTimestamp("2017-10-13")))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_VHU_ID, Operator.EQUAL, IntegerLookupValue.of(160, "test-VHU_ID")))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, Operator.EQUAL, IntegerLookupValue.of(170, "test-VHU_Source_ID")))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_VHUStatus, Operator.EQUAL, StringLookupValue.of(X_M_HU_Trace.VHUSTATUS_Active, "test-VHUStatus")))
@@ -127,23 +127,69 @@ public class DocumentFilterToHuTraceQueryTest
 		assertThat(huTraceQuery.getTopLevelHuIds()).isEqualTo(ImmutableSet.of(HuId.ofRepoId(60)));
 		assertThat(huTraceQuery.getHuTraceEventId().getAsInt()).isEqualTo(70);
 		assertThat(huTraceQuery.getHuTrxLineId()).isEqualTo(80);
-		assertThat(huTraceQuery.getInOutId()).isEqualTo(90);
-		assertThat(huTraceQuery.getMovementId()).isEqualTo(100);
+		assertThat(huTraceQuery.getInOutId().getRepoId()).isEqualTo(90);
+		assertThat(huTraceQuery.getMovementId().getRepoId()).isEqualTo(100);
 		assertThat(huTraceQuery.getProductId().getRepoId()).isEqualTo(110);
 		assertThat(huTraceQuery.getShipmentScheduleId().getRepoId()).isEqualTo(120);
-		assertThat(huTraceQuery.getPpCostCollectorId()).isEqualTo(130);
-		assertThat(huTraceQuery.getPpOrderId()).isEqualTo(140);
+		assertThat(huTraceQuery.getPpCostCollectorId().getRepoId()).isEqualTo(130);
+		assertThat(huTraceQuery.getPpOrderId().getRepoId()).isEqualTo(140);
 		assertThat(huTraceQuery.getVhuIds()).isEqualTo(ImmutableSet.of(HuId.ofRepoId(160)));
 		assertThat(huTraceQuery.getVhuSourceId().getRepoId()).isEqualTo(170);
 		assertThat(huTraceQuery.getVhuStatus()).isEqualTo(X_M_HU_Trace.VHUSTATUS_Active);
-		assertThat(huTraceQuery.getEventTime()).isEqualTo(TimeUtil.parseTimestamp("2017-10-13").toInstant());
+		assertThat(huTraceQuery.getEventTime()).isEqualTo(TimeUtil.parseLocalDateAsTimestamp("2017-10-13").toInstant());
+	}
+
+	@Test
+	public void createTraceQueryFromDocumentFilter_HUWhereClause_no_param()
+	{
+		testForWhereClause(SqlAndParams.of("M_HU_ID=123"));
+	}
+
+	@Test
+	public void createTraceQueryFromDocumentFilter_HUWhereClause_ID_as_param()
+	{
+		testForWhereClause(SqlAndParams.of("M_HU_ID=?", ImmutableList.of(123)));
+	}
+
+	private static void testForWhereClause(@NonNull final SqlAndParams sqlWhereClause)
+	{
+		final DocumentFilterParam filterParam = DocumentFilterParam.of(sqlWhereClause);
+
+		// given
+		final DocumentFilter filter = DocumentFilter.builder()
+				.setFilterId("filter")
+				.addParameter(filterParam)
+				.build();
+
+		// when
+		final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(filter);
+
+		// then
+		assertThat(huTraceQuery.getAnyHuId()).isEqualTo(HuId.ofRepoId(123));
+	}
+
+	@Test
+	public void createTraceQueryFromDocumentFilter_onrelatedquereclause()
+	{
+		final DocumentFilterParam filterParam = DocumentFilterParam.of(SqlAndParams.of("AD_Table_ID=123"));
+
+		// given
+		final DocumentFilter filter = DocumentFilter.builder()
+				.setFilterId("filter")
+				.addParameter(filterParam)
+				.build();
+
+		// when
+		assertThatThrownBy(() -> HuTraceQueryCreator.createTraceQueryFromDocumentFilter(filter))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageStartingWith("The given filterParam has has nothing we can extract into the HUTraceQuery");
 	}
 
 	@Test
 	public void createTraceQueryFromDocumentFilter_eventdate()
 	{
-		final Date date = TimeUtil.parseTimestamp("2017-10-13");
-		final Date dateTo = TimeUtil.parseTimestamp("2017-10-15");
+		final Date date = TimeUtil.parseLocalDateAsTimestamp("2017-10-13");
+		final Date dateTo = TimeUtil.parseLocalDateAsTimestamp("2017-10-15");
 		final DocumentFilter filter = DocumentFilter.builder()
 				.setFilterId("filter")
 				.addParameter(createEventTimeBetweenParameter(date, dateTo))

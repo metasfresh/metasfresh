@@ -180,8 +180,8 @@ public class MInvoiceTax extends X_C_InvoiceTax
 	 */
 	protected void setPrecision(int precision)
 	{
-		m_precision = new Integer(precision);
-	}	// setPrecision
+		m_precision = precision;
+	}
 
 	/**
 	 * Get Tax
@@ -201,15 +201,13 @@ public class MInvoiceTax extends X_C_InvoiceTax
 	 * Calculate/Set Tax Base Amt from Invoice Lines.
 	 *
 	 * If there were no invoice lines found for this tax, this record will be inactivated. In this way, the caller method can know about this and it can decide if this record will be deleted.
-	 *
-	 * @return true if tax calculated
 	 */
-	public boolean calculateTaxFromLines()
+	public void calculateTaxFromLines()
 	{
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
 
-		BigDecimal taxBaseAmt = Env.ZERO;
-		BigDecimal taxAmt = Env.ZERO;
+		BigDecimal taxBaseAmt = BigDecimal.ZERO;
+		BigDecimal taxAmt = BigDecimal.ZERO;
 		boolean foundInvoiceLines = false;
 		//
 		final boolean documentLevel = getTax().isDocumentLevel();
@@ -249,7 +247,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 				BigDecimal amt = rs.getBigDecimal(2);
 				if (amt == null)
 				{
-					amt = Env.ZERO;
+					amt = BigDecimal.ZERO;
 				}
 				boolean isSOTrx = "Y".equals(rs.getString(3));
 				//
@@ -261,7 +259,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 				}
 				else if (documentLevel || baseAmt.signum() == 0)
 				{
-					amt = Env.ZERO;
+					amt = BigDecimal.ZERO;
 				}
 				else
 				{
@@ -314,8 +312,6 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		setIsActive(foundInvoiceLines);
 
 		setIsPackagingTax(checkIsPackagingMaterialTax(havePackingMaterialLines, haveNonPackingMaterialLines));
-
-		return true;
 	}	// calculateTaxFromLines
 
 	/**

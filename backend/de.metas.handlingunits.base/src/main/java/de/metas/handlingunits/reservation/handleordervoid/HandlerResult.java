@@ -1,16 +1,8 @@
-package de.metas.currency;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.money.CurrencyId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.business
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,24 +20,22 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class Currency
+package de.metas.handlingunits.reservation.handleordervoid;
+
+public enum HandlerResult
 {
-	@NonNull
-	CurrencyId id;
+	/**
+	 * The handler took no action.
+	 */
+	NOT_HANDELED,
 
-	@NonNull
-	CurrencyCode currencyCode;
+	/**
+	 * The handler took action and believes that no other handler would have any business with the given order.
+	 */
+	HANDELED_DONE,
 
-	@NonNull
-	ITranslatableString symbol;
-
-	@NonNull
-	CurrencyPrecision precision;
-
-	@NonNull
-	CurrencyPrecision costingPrecision;
-
-	boolean isApply5CentCashRounding;
+	/**
+	 * The handler took action, but wouldn't mind if another handler also took a shot at the given order.
+	 */
+	HANDELED_CONTINUE
 }

@@ -1,8 +1,21 @@
 package de.metas.handlingunits.trace;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
+import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
+import de.metas.inout.InOutId;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import org.adempiere.mmovement.MovementId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.eevolution.api.PPCostCollectorId;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestWatcher;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -10,20 +23,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
-
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
-import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /*
  * #%L
@@ -355,9 +357,9 @@ public class HUTraceRepositoryTests
 				.vhuId(HuId.ofRepoId(14));
 
 		result.add(eventBefore.build());
-		result.add(eventBefore.eventTime(eventTime.plusSeconds(1)).inOutId(24).build());
-		result.add(eventBefore.eventTime(eventTime.plusSeconds(2)).movementId(34).build());
-		result.add(eventBefore.eventTime(eventTime.plusSeconds(3)).ppCostCollectorId(44).build());
+		result.add(eventBefore.eventTime(eventTime.plusSeconds(1)).inOutId(InOutId.ofRepoId(24)).build());
+		result.add(eventBefore.eventTime(eventTime.plusSeconds(2)).movementId(MovementId.ofRepoId(34)).build());
+		result.add(eventBefore.eventTime(eventTime.plusSeconds(3)).ppCostCollectorId(PPCostCollectorId.ofRepoId(44)).build());
 		result.add(eventBefore.eventTime(eventTime.plusSeconds(4)).shipmentScheduleId(ShipmentScheduleId.ofRepoId(54)).build());
 		// eventBefore is the first of three and therefore has no sourceHuId
 
@@ -367,9 +369,9 @@ public class HUTraceRepositoryTests
 				.vhuId(HuId.ofRepoId(15));
 
 		result.add(eventMiddle.build());
-		result.add(eventMiddle.eventTime(eventTime.plusSeconds(6)).inOutId(25).build());
-		result.add(eventMiddle.eventTime(eventTime.plusSeconds(7)).movementId(35).build());
-		result.add(eventMiddle.eventTime(eventTime.plusSeconds(8)).ppCostCollectorId(45).build());
+		result.add(eventMiddle.eventTime(eventTime.plusSeconds(6)).inOutId(InOutId.ofRepoId(25)).build());
+		result.add(eventMiddle.eventTime(eventTime.plusSeconds(7)).movementId(MovementId.ofRepoId(35)).build());
+		result.add(eventMiddle.eventTime(eventTime.plusSeconds(8)).ppCostCollectorId(PPCostCollectorId.ofRepoId(45)).build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(9)).shipmentScheduleId(ShipmentScheduleId.ofRepoId(55)).build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(10)).vhuSourceId(HuId.ofRepoId(14)).build()); // this event is the middle one of three and has the M_HU_ID of 'eventBefore' as its source
 
@@ -379,9 +381,9 @@ public class HUTraceRepositoryTests
 				.vhuId(HuId.ofRepoId(16));
 
 		result.add(eventAfter.build());
-		result.add(eventAfter.eventTime(eventTime.plusSeconds(12)).inOutId(26).build());
-		result.add(eventAfter.eventTime(eventTime.plusSeconds(13)).movementId(36).build());
-		result.add(eventAfter.eventTime(eventTime.plusSeconds(14)).ppCostCollectorId(46).build());
+		result.add(eventAfter.eventTime(eventTime.plusSeconds(12)).inOutId(InOutId.ofRepoId(26)).build());
+		result.add(eventAfter.eventTime(eventTime.plusSeconds(13)).movementId(MovementId.ofRepoId(36)).build());
+		result.add(eventAfter.eventTime(eventTime.plusSeconds(14)).ppCostCollectorId(PPCostCollectorId.ofRepoId(46)).build());
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(15)).shipmentScheduleId(ShipmentScheduleId.ofRepoId(56)).build());
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(16)).vhuSourceId(HuId.ofRepoId(15)).build()); // this event is the last of three and has the M_HU_ID of 'eventMiddle' as its source
 
