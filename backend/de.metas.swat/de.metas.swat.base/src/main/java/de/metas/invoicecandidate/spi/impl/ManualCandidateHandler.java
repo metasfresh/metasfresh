@@ -97,15 +97,6 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	 * Does nothing.
 	 */
 	@Override
-	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
-	{
-		// nothing to do
-	}
-
-	/**
-	 * Does nothing.
-	 */
-	@Override
 	public void setOrderedData(final I_C_Invoice_Candidate ic)
 	{
 		// nothing to do
