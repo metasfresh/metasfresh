@@ -161,7 +161,15 @@ public interface IInvoiceBL extends ISingletonService {
      */
     void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
 
-    I_C_Invoice getByLineId(@NonNull InvoiceLineId invoiceLineId);
+	Optional<I_C_Invoice> getByIdIfExists(@NonNull InvoiceId invoiceId);
+
+	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+
+	List<? extends I_C_Invoice> getByOrderId(@NonNull OrderId orderId);
+
+	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
+
+	I_C_Invoice getByLineId(@NonNull InvoiceLineId invoiceLineId);
 
     I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
 
