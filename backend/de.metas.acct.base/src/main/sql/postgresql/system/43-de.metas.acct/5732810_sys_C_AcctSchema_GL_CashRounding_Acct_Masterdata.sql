@@ -2,6 +2,13 @@
 
 
 
+
+
+UPDATE c_acctschema_gl SET cashrounding_acct = currencybalancing_acct ;
+
+-- IN CASE THIS SCRIPT FAILS ON ROLLOUT !!!!!!
+-- The rest of the script is not necessarry since a cash rounding account was already set (see above).
+
 -- 2024-09-10T08:42:59.321Z
 INSERT INTO C_ElementValue (AccountSign,AccountType,AD_Client_ID,AD_Org_ID,C_Element_ID,C_ElementValue_ID,Created,CreatedBy,IsActive,IsAutoTaxAccount,
 IsBankAccount,IsDocControlled,IsForeignCurrency,IsMandatoryActivity,IsSummary,Name,PostActual,PostBudget,PostEncumbrance,PostStatistical,SeqNo,ShowIntCurrency,
@@ -63,8 +70,6 @@ IsFullyQualified,Updated,UpdatedBy,UserElementString1,UserElementString2,UserEle
 -- ;
 
 -- 2024-09-10T13:13:40.395Z
-UPDATE C_AcctSchema_GL SET CashRounding_Acct=540610,Updated=TO_TIMESTAMP('2024-09-10 16:13:40.395','YYYY-MM-DD HH24:MI:SS.US'),
-UpdatedBy=100 WHERE CashRounding_Acct IS NULL
 ;
 
 
