@@ -27,6 +27,8 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -44,6 +46,9 @@ public final class NumberUtils
 	private NumberUtils()
 	{
 	}
+
+	private static final BigDecimal TWENTY = new BigDecimal("20");
+
 
 	/**
 	 * Remove trailing zeros after decimal separator
@@ -368,4 +373,11 @@ public final class NumberUtils
 		return 0;
 	}
 
+	@NonNull
+	public static BigDecimal roundTo5Cent(@NonNull final BigDecimal initialValue)
+	{
+		final BigDecimal multiplyBy20 = initialValue.multiply(TWENTY);
+		final BigDecimal intPart = multiplyBy20.setScale(0, RoundingMode.HALF_UP);
+		return intPart.divide(TWENTY);
+	}
 }

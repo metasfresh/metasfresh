@@ -1,216 +1,168 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Currency
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_Currency 
 {
 
-    /** TableName=C_Currency */
-    public static final String Table_Name = "C_Currency";
+	String Table_Name = "C_Currency";
 
-    /** AD_Table_ID=141 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=141 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 6 - System - Client
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Currency, org.compiere.model.I_AD_Client>(I_C_Currency.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Currency, org.compiere.model.I_AD_Org>(I_C_Currency.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Währung.
+	 * Set Currency.
 	 * The Currency for this record
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Currency_ID (int C_Currency_ID);
+	void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Währung.
+	 * Get Currency.
 	 * The Currency for this record
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Currency_ID();
+	int getC_Currency_ID();
 
-    /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, Object> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_Currency, Object>(I_C_Currency.class, "C_Currency_ID", null);
-    /** Column name C_Currency_ID */
-    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+	ModelColumn<I_C_Currency, Object> COLUMN_C_Currency_ID = new ModelColumn<>(I_C_Currency.class, "C_Currency_ID", null);
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Kostenrechnungsgenauigkeit.
+	 * Set Costing Precision.
 	 * Rounding used costing calculations
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setCostingPrecision (int CostingPrecision);
+	void setCostingPrecision (int CostingPrecision);
 
 	/**
-	 * Get Kostenrechnungsgenauigkeit.
+	 * Get Costing Precision.
 	 * Rounding used costing calculations
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCostingPrecision();
+	int getCostingPrecision();
 
-    /** Column definition for CostingPrecision */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, Object> COLUMN_CostingPrecision = new org.adempiere.model.ModelColumn<I_C_Currency, Object>(I_C_Currency.class, "CostingPrecision", null);
-    /** Column name CostingPrecision */
-    public static final String COLUMNNAME_CostingPrecision = "CostingPrecision";
+	ModelColumn<I_C_Currency, Object> COLUMN_CostingPrecision = new ModelColumn<>(I_C_Currency.class, "CostingPrecision", null);
+	String COLUMNNAME_CostingPrecision = "CostingPrecision";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Currency, Object>(I_C_Currency.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_Currency, Object> COLUMN_Created = new ModelColumn<>(I_C_Currency.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Currency, org.compiere.model.I_AD_User>(I_C_Currency.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Symbol.
-	 * Symbol of the currency (opt used for printing only)
+	 * Set Currency Symbol.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCurSymbol (java.lang.String CurSymbol);
+	void setCurSymbol (@Nullable java.lang.String CurSymbol);
 
 	/**
-	 * Get Symbol.
-	 * Symbol of the currency (opt used for printing only)
+	 * Get Currency Symbol.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCurSymbol();
+	@Nullable java.lang.String getCurSymbol();
 
-    /** Column definition for CurSymbol */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, Object> COLUMN_CurSymbol = new org.adempiere.model.ModelColumn<I_C_Currency, Object>(I_C_Currency.class, "CurSymbol", null);
-    /** Column name CurSymbol */
-    public static final String COLUMNNAME_CurSymbol = "CurSymbol";
+	ModelColumn<I_C_Currency, Object> COLUMN_CurSymbol = new ModelColumn<>(I_C_Currency.class, "CurSymbol", null);
+	String COLUMNNAME_CurSymbol = "CurSymbol";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_Currency, Object>(I_C_Currency.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_C_Currency, Object> COLUMN_Description = new ModelColumn<>(I_C_Currency.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set EMU Entry Date.
@@ -220,7 +172,7 @@ public interface I_C_Currency
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEMUEntryDate (java.sql.Timestamp EMUEntryDate);
+	void setEMUEntryDate (@Nullable java.sql.Timestamp EMUEntryDate);
 
 	/**
 	 * Get EMU Entry Date.
@@ -230,12 +182,10 @@ public interface I_C_Currency
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getEMUEntryDate();
+	@Nullable java.sql.Timestamp getEMUEntryDate();
 
-    /** Column definition for EMUEntryDate */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, Object> COLUMN_EMUEntryDate = new org.adempiere.model.ModelColumn<I_C_Currency, Object>(I_C_Currency.class, "EMUEntryDate", null);
-    /** Column name EMUEntryDate */
-    public static final String COLUMNNAME_EMUEntryDate = "EMUEntryDate";
+	ModelColumn<I_C_Currency, Object> COLUMN_EMUEntryDate = new ModelColumn<>(I_C_Currency.class, "EMUEntryDate", null);
+	String COLUMNNAME_EMUEntryDate = "EMUEntryDate";
 
 	/**
 	 * Set EMU Rate.
@@ -245,7 +195,7 @@ public interface I_C_Currency
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEMURate (java.math.BigDecimal EMURate);
+	void setEMURate (@Nullable BigDecimal EMURate);
 
 	/**
 	 * Get EMU Rate.
@@ -255,37 +205,54 @@ public interface I_C_Currency
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getEMURate();
+	BigDecimal getEMURate();
 
-    /** Column definition for EMURate */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, Object> COLUMN_EMURate = new org.adempiere.model.ModelColumn<I_C_Currency, Object>(I_C_Currency.class, "EMURate", null);
-    /** Column name EMURate */
-    public static final String COLUMNNAME_EMURate = "EMURate";
+	ModelColumn<I_C_Currency, Object> COLUMN_EMURate = new ModelColumn<>(I_C_Currency.class, "EMURate", null);
+	String COLUMNNAME_EMURate = "EMURate";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Currency, Object>(I_C_Currency.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_Currency, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Currency.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Apply 5 Cent Cash Rounding.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsApply5CentCashRounding (boolean IsApply5CentCashRounding);
+
+	/**
+	 * Get Apply 5 Cent Cash Rounding.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isApply5CentCashRounding();
+
+	ModelColumn<I_C_Currency, Object> COLUMN_IsApply5CentCashRounding = new ModelColumn<>(I_C_Currency.class, "IsApply5CentCashRounding", null);
+	String COLUMNNAME_IsApply5CentCashRounding = "IsApply5CentCashRounding";
 
 	/**
 	 * Set EMU Member.
@@ -295,7 +262,7 @@ public interface I_C_Currency
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsEMUMember (boolean IsEMUMember);
+	void setIsEMUMember (boolean IsEMUMember);
 
 	/**
 	 * Get EMU Member.
@@ -305,12 +272,10 @@ public interface I_C_Currency
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isEMUMember();
+	boolean isEMUMember();
 
-    /** Column definition for IsEMUMember */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, Object> COLUMN_IsEMUMember = new org.adempiere.model.ModelColumn<I_C_Currency, Object>(I_C_Currency.class, "IsEMUMember", null);
-    /** Column name IsEMUMember */
-    public static final String COLUMNNAME_IsEMUMember = "IsEMUMember";
+	ModelColumn<I_C_Currency, Object> COLUMN_IsEMUMember = new ModelColumn<>(I_C_Currency.class, "IsEMUMember", null);
+	String COLUMNNAME_IsEMUMember = "IsEMUMember";
 
 	/**
 	 * Set The Euro Currency.
@@ -320,7 +285,7 @@ public interface I_C_Currency
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsEuro (boolean IsEuro);
+	void setIsEuro (boolean IsEuro);
 
 	/**
 	 * Get The Euro Currency.
@@ -330,115 +295,102 @@ public interface I_C_Currency
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isEuro();
+	boolean isEuro();
 
-    /** Column definition for IsEuro */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, Object> COLUMN_IsEuro = new org.adempiere.model.ModelColumn<I_C_Currency, Object>(I_C_Currency.class, "IsEuro", null);
-    /** Column name IsEuro */
-    public static final String COLUMNNAME_IsEuro = "IsEuro";
+	ModelColumn<I_C_Currency, Object> COLUMN_IsEuro = new ModelColumn<>(I_C_Currency.class, "IsEuro", null);
+	String COLUMNNAME_IsEuro = "IsEuro";
 
 	/**
-	 * Set ISO Währungscode.
+	 * Set ISO Currency Code.
 	 * Three letter ISO 4217 Code of the Currency
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setISO_Code (java.lang.String ISO_Code);
+	void setISO_Code (java.lang.String ISO_Code);
 
 	/**
-	 * Get ISO Währungscode.
+	 * Get ISO Currency Code.
 	 * Three letter ISO 4217 Code of the Currency
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getISO_Code();
+	java.lang.String getISO_Code();
 
-    /** Column definition for ISO_Code */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, Object> COLUMN_ISO_Code = new org.adempiere.model.ModelColumn<I_C_Currency, Object>(I_C_Currency.class, "ISO_Code", null);
-    /** Column name ISO_Code */
-    public static final String COLUMNNAME_ISO_Code = "ISO_Code";
+	ModelColumn<I_C_Currency, Object> COLUMN_ISO_Code = new ModelColumn<>(I_C_Currency.class, "ISO_Code", null);
+	String COLUMNNAME_ISO_Code = "ISO_Code";
 
 	/**
 	 * Set Round Off Factor.
 	 * Used to Round Off Payment Amount
 	 *
 	 * <br>Type: Number
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRoundOffFactor (java.math.BigDecimal RoundOffFactor);
+	void setRoundOffFactor (@Nullable BigDecimal RoundOffFactor);
 
 	/**
 	 * Get Round Off Factor.
 	 * Used to Round Off Payment Amount
 	 *
 	 * <br>Type: Number
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getRoundOffFactor();
+	BigDecimal getRoundOffFactor();
 
-    /** Column definition for RoundOffFactor */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, Object> COLUMN_RoundOffFactor = new org.adempiere.model.ModelColumn<I_C_Currency, Object>(I_C_Currency.class, "RoundOffFactor", null);
-    /** Column name RoundOffFactor */
-    public static final String COLUMNNAME_RoundOffFactor = "RoundOffFactor";
+	ModelColumn<I_C_Currency, Object> COLUMN_RoundOffFactor = new ModelColumn<>(I_C_Currency.class, "RoundOffFactor", null);
+	String COLUMNNAME_RoundOffFactor = "RoundOffFactor";
 
 	/**
-	 * Set Standardgenauigkeit.
+	 * Set Standard Precision.
 	 * Rule for rounding  calculated amounts
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setStdPrecision (int StdPrecision);
+	void setStdPrecision (int StdPrecision);
 
 	/**
-	 * Get Standardgenauigkeit.
+	 * Get Standard Precision.
 	 * Rule for rounding  calculated amounts
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getStdPrecision();
+	int getStdPrecision();
 
-    /** Column definition for StdPrecision */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, Object> COLUMN_StdPrecision = new org.adempiere.model.ModelColumn<I_C_Currency, Object>(I_C_Currency.class, "StdPrecision", null);
-    /** Column name StdPrecision */
-    public static final String COLUMNNAME_StdPrecision = "StdPrecision";
+	ModelColumn<I_C_Currency, Object> COLUMN_StdPrecision = new ModelColumn<>(I_C_Currency.class, "StdPrecision", null);
+	String COLUMNNAME_StdPrecision = "StdPrecision";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Currency, Object>(I_C_Currency.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_Currency, Object> COLUMN_Updated = new ModelColumn<>(I_C_Currency.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Currency, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Currency, org.compiere.model.I_AD_User>(I_C_Currency.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

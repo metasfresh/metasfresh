@@ -45,6 +45,7 @@ import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -160,15 +161,7 @@ public interface IInvoiceBL extends ISingletonService {
      */
     void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
 
-	Optional<I_C_Invoice> getByIdIfExists(@NonNull InvoiceId invoiceId);
-
-	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
-
-	List<? extends I_C_Invoice> getByOrderId(@NonNull OrderId orderId);
-
-	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
-
-	I_C_Invoice getByLineId(@NonNull InvoiceLineId invoiceLineId);
+    I_C_Invoice getByLineId(@NonNull InvoiceLineId invoiceLineId);
 
     I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
 
@@ -444,4 +437,8 @@ public interface IInvoiceBL extends ISingletonService {
 
 	@Nullable
 	String getPOReference(@NonNull InvoiceId invoiceId);
+
+	boolean isApply5CentCashRounding(@NonNull CurrencyId currencyId, @NonNull SOTrx soTrx);
+
+	BigDecimal roundTo5CentIfNeeded(@NonNull BigDecimal grandTotal, @NonNull CurrencyId currencyId, @NonNull SOTrx soTrx);
 }

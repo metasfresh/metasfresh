@@ -35,6 +35,7 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
@@ -1228,7 +1229,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			updateInvoiceTax(true);
 		}
 		updateHeaderTax();
-		
+
 		return true;
 	}    // afterSave
 
@@ -1255,7 +1256,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		}
 
 		updateHeaderTax();
-		
+
 		return true;
 	}    // afterDelete
 
@@ -1275,34 +1276,37 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// Recalculate Tax for this Tax
 		updateInvoiceTax(false);
 
-		// Update Invoice Header: TotalLines
-		{
-			final String sql = "UPDATE C_Invoice i"
-					+ " SET TotalLines="
-					+ " (SELECT COALESCE(SUM(LineNetAmt),0) FROM C_InvoiceLine il WHERE i.C_Invoice_ID=il.C_Invoice_ID) "
-					+ " WHERE C_Invoice_ID=?";
-			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { getC_Invoice_ID() }, get_TrxName());
-			if (no != 1)
-			{
-				throw new AdempiereException("Updating TotalLines failed; updated records=" + no + "; sql=" + sql);
-			}
-		}
-
 		//
-		// Update Invoice Header: GrandTotal
+		// Update Invoice Header: GrandTotal, TotalLines and CashRoundingAmt
 		{
-			final String sql = "UPDATE C_Invoice i "
-					+ " SET GrandTotal=TotalLines+"
-					// SUM up C_InvoiceTax.TaxAmt only for those lines which does not have Tax Included
-					+ " (SELECT COALESCE(SUM(TaxAmt),0) FROM C_InvoiceTax it WHERE i.C_Invoice_ID=it.C_Invoice_ID AND it.IsActive='Y' AND it.IsTaxIncluded='N') "
-					+ " WHERE C_Invoice_ID=?";
-			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { getC_Invoice_ID() }, get_TrxName());
-			if (no != 1)
-			{
-				throw new AdempiereException("Updating GrandTotal failed; updated records=" + no + "; sql=" + sql);
+			final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
+			final String totalLinesSQL = "SELECT COALESCE(SUM(LineNetAmt),0) FROM C_InvoiceLine il WHERE il.C_Invoice_ID=?";
+			final BigDecimal totalLines = DB.getSQLValueBD(get_TrxName(), totalLinesSQL, getC_Invoice_ID());
+
+			final String taxAmtSQL = "SELECT COALESCE(SUM(TaxAmt),0) FROM C_InvoiceTax it WHERE it.C_Invoice_ID=? AND it.IsActive='Y' AND it.IsTaxIncluded='N'";
+			final BigDecimal taxAmt = DB.getSQLValueBD(get_TrxName(), taxAmtSQL, getC_Invoice_ID());
+
+			final BigDecimal notRoundedGrandTotal = totalLines.add(taxAmt);
+
+			final BigDecimal roundedGrandTotal = invoiceBL.roundTo5CentIfNeeded(notRoundedGrandTotal, CurrencyId.ofRepoId(getC_Invoice().getC_Currency_ID()), SOTrx.ofBoolean(m_IsSOTrx));
+
+			final BigDecimal cashRoundingAmt = roundedGrandTotal.subtract(notRoundedGrandTotal);
+
+				final String sql = "UPDATE C_Invoice i "
+						+ " SET GrandTotal = " + roundedGrandTotal
+						+ ", TotalLines = " + totalLines
+						+ ", CashRoundingAmt = " + cashRoundingAmt
+						+ " WHERE i.C_Invoice_ID=?";
+
+				final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { getC_Invoice_ID() }, get_TrxName());
+				if (no != 1)
+				{
+					throw new AdempiereException("Updating GrandTotal failed; updated records=" + no + "; sql=" + sql);
+				}
 			}
-		}
-		
+
+
 		m_parent = null;
 		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(get_TrxName(), CacheInvalidateMultiRequest.rootRecord(I_C_Invoice.Table_Name, getC_Invoice_ID()));
 	}    // updateHeaderTax

@@ -226,6 +226,7 @@ public class ManualInvoiceRepository
 				.soTrx(SOTrx.ofBoolean(invoiceRecord.isSOTrx()))
 				.currencyId(CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID()))
 				.grandTotal(invoiceRecord.getGrandTotal())
-				.totalLines(invoiceRecord.getTotalLines());
+				.totalLines(invoiceRecord.getTotalLines())
+				.cashRoundingAmt(invoiceRecord.getCashRoundingAmt());
 	}
 }

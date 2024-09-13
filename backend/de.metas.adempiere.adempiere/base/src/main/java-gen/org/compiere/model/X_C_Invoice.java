@@ -153,6 +153,19 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public void setCashRoundingAmt (final BigDecimal CashRoundingAmt)
+	{
+		set_Value (COLUMNNAME_CashRoundingAmt, CashRoundingAmt);
+	}
+
+	@Override
+	public BigDecimal getCashRoundingAmt()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CashRoundingAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public org.compiere.model.I_C_Auction getC_Auction()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Auction_ID, org.compiere.model.I_C_Auction.class);
@@ -249,21 +262,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getC_BPartner_SalesRep_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_ID);
-	}
-
-	@Override
-	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
-	{
-		if (C_BP_BankAccount_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
-	}
-
-	@Override
-	public int getC_BP_BankAccount_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
 	}
 
 	@Override
@@ -709,33 +707,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public java.lang.String getCreditMemoReason() 
 	{
 		return get_ValueAsString(COLUMNNAME_CreditMemoReason);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Country getC_Tax_Departure_Country()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Tax_Departure_Country_ID, org.compiere.model.I_C_Country.class);
-	}
-
-	@Override
-	public void setC_Tax_Departure_Country(final org.compiere.model.I_C_Country C_Tax_Departure_Country)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Tax_Departure_Country_ID, org.compiere.model.I_C_Country.class, C_Tax_Departure_Country);
-	}
-
-	@Override
-	public void setC_Tax_Departure_Country_ID (final int C_Tax_Departure_Country_ID)
-	{
-		if (C_Tax_Departure_Country_ID < 1) 
-			set_Value (COLUMNNAME_C_Tax_Departure_Country_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Tax_Departure_Country_ID, C_Tax_Departure_Country_ID);
-	}
-
-	@Override
-	public int getC_Tax_Departure_Country_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Tax_Departure_Country_ID);
 	}
 
 	@Override
