@@ -1085,7 +1085,7 @@ public class PriceListDAOTest
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		return queryBL.createQueryBuilder(I_M_PriceList_Version.class)
-				.addEqualsFilter(I_M_PriceList_Version.COLUMN_M_PriceList_ID, priceList.getM_PriceList_ID())
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceList.getM_PriceList_ID())
 				.create()
 				.count();
 

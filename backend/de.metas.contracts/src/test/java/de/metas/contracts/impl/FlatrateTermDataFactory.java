@@ -341,7 +341,7 @@ public class FlatrateTermDataFactory
 	public static I_M_PriceList_Version createPriceListVersion(@NonNull final I_M_PriceList priceList, @NonNull final Timestamp validFrom)
 	{
 		final I_M_PriceList_Version priceListVersion = newInstance(I_M_PriceList_Version.class);
-		priceListVersion.setM_PriceList(priceList);
+		priceListVersion.setM_PriceList_ID(priceList.getM_PriceList_ID());
 		priceListVersion.setName(valuePricingSystem);
 		priceListVersion.setValidFrom(validFrom);
 		save(priceListVersion);

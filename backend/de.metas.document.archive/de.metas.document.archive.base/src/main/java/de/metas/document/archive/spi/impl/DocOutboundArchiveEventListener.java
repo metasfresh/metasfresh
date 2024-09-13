@@ -225,6 +225,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogRecord.setAD_Table_ID(adTableId);
 		docOutboundLogRecord.setRecord_ID(recordId);
 		docOutboundLogRecord.setC_BPartner_ID(archiveRecord.getC_BPartner_ID());
+		docOutboundLogRecord.setPOReference(archiveRecord.getPOReference());
 		docOutboundLogRecord.setC_Async_Batch_ID(archiveRecord.getC_Async_Batch_ID());
 
 		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
@@ -253,7 +254,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		return docOutboundLogRecord;
 	}
-
+	
 	private void setMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		final Optional<DocOutBoundRecipient> mailRecipient = docOutboundLogMailRecipientRegistry.getRecipient(

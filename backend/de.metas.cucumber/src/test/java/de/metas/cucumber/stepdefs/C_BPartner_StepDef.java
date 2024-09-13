@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -29,6 +30,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
@@ -62,6 +64,7 @@ import java.util.Optional;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient;
+import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
@@ -93,6 +96,7 @@ public class C_BPartner_StepDef
 	private final M_Product_StepDefData productTable;
 	private final M_DiscountSchema_StepDefData discountSchemaTable;
 	private final AD_Org_StepDefData orgTable;
+	private final C_Aggregation_StepDefData aggregationTable;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -105,7 +109,8 @@ public class C_BPartner_StepDef
 			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_DiscountSchema_StepDefData discountSchemaTable,
-			@NonNull final AD_Org_StepDefData orgTable)
+			@NonNull final AD_Org_StepDefData orgTable,
+			@NonNull final C_Aggregation_StepDefData aggregationTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
@@ -113,6 +118,7 @@ public class C_BPartner_StepDef
 		this.productTable = productTable;
 		this.discountSchemaTable = discountSchemaTable;
 		this.orgTable = orgTable;
+		this.aggregationTable = aggregationTable;
 	}
 
 	@Given("metasfresh contains C_BPartners:")
@@ -198,6 +204,16 @@ public class C_BPartner_StepDef
 		}
 	}
 
+	@Given("update C_BPartner:")
+	public void update_c_bpartner(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			updateBPartner(tableRow);
+		}
+	}
+
 	private void createC_BPartner(@NonNull final Map<String, String> tableRow, final boolean addDefaultLocationIfNewBPartner)
 	{
 		final String bPartnerName = tableRow.get("Name");
@@ -241,7 +257,6 @@ public class C_BPartner_StepDef
 
 		final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DeliveryRule);
 		bPartnerRecord.setDeliveryRule(CoalesceUtil.firstNotBlank(deliveryRule, DELIVERYRULE_Force));
-
 
 		final String pricingSystemIdentifier = tableRow.get(I_M_PricingSystem.COLUMNNAME_M_PricingSystem_ID + ".Identifier");
 		if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
@@ -413,5 +428,23 @@ public class C_BPartner_StepDef
 
 			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
 		}
+	}
+
+	private void updateBPartner(@NonNull final Map<String, String> tableRow)
+	{
+		final String bPartnerIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner");
+		
+		final de.metas.invoicecandidate.model.I_C_BPartner bPartner = InterfaceWrapperHelper.create(bPartnerTable.get(bPartnerIdentifier), de.metas.invoicecandidate.model.I_C_BPartner.class);
+
+		final String soInvoiceAggregationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_SO_Invoice_Aggregation_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(soInvoiceAggregationIdentifier))
+		{
+			final I_C_Aggregation aggregationRecord = aggregationTable.get(soInvoiceAggregationIdentifier);
+			bPartner.setSO_Invoice_Aggregation_ID(aggregationRecord.getC_Aggregation_ID());
+		}
+
+		InterfaceWrapperHelper.save(bPartner);
+
+		bPartnerTable.putOrReplace(bPartnerIdentifier, bPartner);
 	}
 }

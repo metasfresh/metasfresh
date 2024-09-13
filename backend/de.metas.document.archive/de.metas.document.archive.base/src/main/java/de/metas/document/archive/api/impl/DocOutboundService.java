@@ -140,4 +140,10 @@ public class DocOutboundService implements IPDFArchiveProvider
 		return null;
 	}
 
+	public void updatePOReferenceIfExists(
+			@NonNull final TableRecordReference recordReference,
+			@Nullable final String poReference)
+	{
+		archiveDAO.updatePOReferenceIfExists(recordReference, poReference);
+	}
 }

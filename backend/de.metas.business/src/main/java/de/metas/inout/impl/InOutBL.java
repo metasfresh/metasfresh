@@ -630,4 +630,11 @@ public class InOutBL implements IInOutBL
 
 		return Objects.requireNonNull(TimeUtil.asLocalDate(inOut.getMovementDate(), timeZone));
 	}
+
+	@Override
+	@Nullable
+	public String getPOReference(@NonNull final InOutId inOutId)
+	{
+		return getById(inOutId).getPOReference();
+	}
 }

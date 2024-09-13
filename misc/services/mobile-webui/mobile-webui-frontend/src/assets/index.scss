@@ -6,10 +6,12 @@
 @import './view-header.scss';
 @import './buttons.scss';
 @import './launchers.scss';
-@import './code-scanner.scss';
 @import './prompt-dialog.scss';
 @import './pick-products.scss';
 @import './get-qty-dialog.scss';
+@import './BarcodeScannerComponent.scss';
+@import './toast.scss';
+@import './spinner.scss';
 
 * {
   box-sizing: border-box;
@@ -32,3 +34,8 @@ code {
 #root {
   width: 100%;
 }
+
+.centered-text {
+  text-align: center;
+}
+
