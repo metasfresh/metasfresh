@@ -28,6 +28,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -52,6 +53,7 @@ public class PricingContextBuilder
 {
 	// Services
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	//
 	// Parameters
@@ -65,7 +67,7 @@ public class PricingContextBuilder
 		Check.assumeNotNull(plv,
 				"Param 'vendorInvoicingInfo.M_PriceList_Version' not null; vendorInvoicingInfo={}", vendorInvoicingInfo);
 
-		final I_M_PriceList pl = plv.getM_PriceList();
+		final I_M_PriceList pl = priceListDAO.getById(PriceListId.ofRepoId(plv.getM_PriceList_ID()));
 		Check.assumeNotNull(pl,
 				"Param 'vendorInvoicingInfo.M_PriceList_Version.M_PriceList' not null; vendorInvoicingInfo={}", vendorInvoicingInfo);
 
@@ -81,7 +83,7 @@ public class PricingContextBuilder
 	/**
 	 * @return vendor invoicing info; never return null
 	 */
-	private final IVendorInvoicingInfo getVendorInvoicingInfo()
+	private IVendorInvoicingInfo getVendorInvoicingInfo()
 	{
 		Check.assumeNotNull(_vendorInvoicingInfo, "_vendorInvoicingInfo not null");
 		return _vendorInvoicingInfo;
