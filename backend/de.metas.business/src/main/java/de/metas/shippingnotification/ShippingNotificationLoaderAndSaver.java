@@ -221,6 +221,7 @@ class ShippingNotificationLoaderAndSaver
 				.contactId(BPartnerContactId.ofRepoIdOrNull(record.getC_BPartner_ID(), record.getAD_User_ID()))
 				.auctionId(record.getC_Auction_ID())
 				.locatorId(LocatorId.ofRepoId(record.getM_Warehouse_ID(), record.getM_Locator_ID()))
+				.shipFromBPartnerAndLocationId(BPartnerLocationId.ofRepoId(record.getShipFrom_Partner_ID(), record.getShipFrom_Location_ID()))
 				.salesOrderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.dateAcct(record.getDateAcct().toInstant())
 				.physicalClearanceDate(record.getPhysicalClearanceDate().toInstant())
