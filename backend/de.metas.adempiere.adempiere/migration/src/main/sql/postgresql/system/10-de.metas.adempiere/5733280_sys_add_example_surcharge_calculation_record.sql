@@ -8,8 +8,8 @@ from m_productprice mpp
          left join m_hu_pi pi_lu on pi_lu.isdefaultlu = ''Y''
          left join m_hu_pi_version piv_lu on pi_lu.m_hu_pi_id = piv_lu.m_hu_pi_id and piv_lu.iscurrent = ''Y''
          left join m_hu_pi_item piitem_lu on pi.m_hu_pi_id = piitem_lu.included_hu_pi_id
-         left join m_pricelist_version plv on plv.m_pricelist_version_id = $1
-         left join M_DiscountSchema_Calculated_Surcharge_Price dsc ON dsc.isActive = ''Y'' AND (dsc.c_region_id = plv.c_region_id OR dsc.c_region_id ISNULL) -- $1 = Target_PriceList_Version_ID
+         left join m_pricelist_version plv on plv.m_pricelist_version_id = $1 -- Target_PriceList_Version_ID
+         left join M_DiscountSchema_Calculated_Surcharge_Price dsc ON dsc.isActive = ''Y'' AND (dsc.c_region_id = plv.c_region_id OR dsc.c_region_id ISNULL)
 where mpp.m_productprice_id = $2 --Source_M_ProductPrice_ID
 ORDER BY dsc.c_region_id DESC NULLS LAST, surcharge_transport DESC
 LIMIT 1;',TO_TIMESTAMP('2024-09-12 13:57:16.725000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
