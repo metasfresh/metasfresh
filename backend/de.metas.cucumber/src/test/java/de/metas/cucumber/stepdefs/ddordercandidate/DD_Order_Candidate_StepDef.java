@@ -2,6 +2,7 @@ package de.metas.cucumber.stepdefs.ddordercandidate;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.ItemProvider;
@@ -19,6 +20,8 @@ import de.metas.distribution.ddordercandidate.DDOrderCandidateId;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateQuery;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
 import de.metas.material.event.pporder.PPOrderRef;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -49,6 +52,7 @@ public class DD_Order_Candidate_StepDef
 	@NonNull private final DD_Order_Candidate_StepDefData ddOrderCandidateTable;
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final C_Order_StepDefData orderTable;
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 	@NonNull private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
 	@NonNull private final PP_OrderLine_Candidate_StepDefData ppOrderLineCandidateTable;
@@ -158,13 +162,29 @@ public class DD_Order_Candidate_StepDef
 					+ "\n\tcandidate=" + actual);
 		}
 
+		final StepDefDataIdentifier salesOrderIdentifier = expected.getAsOptionalIdentifier("C_OrderSO_ID").orElse(null);
+		if (salesOrderIdentifier != null)
+		{
+			final OrderId salesOrderId = salesOrderIdentifier.lookupIdIn(orderTable);
+			final OrderAndLineId actualSalesOrderAndLineId = actual.getSalesOrderLineId();
+			final OrderId actualSalesOrderId = actualSalesOrderAndLineId != null ? actualSalesOrderAndLineId.getOrderId() : null;
+			if (!OrderId.equals(salesOrderId, actualSalesOrderId))
+			{
+				return ItemProvider.ProviderResult.resultWasNotFound("C_OrderSO_ID not matching, expected " + salesOrderId + " but found " + actualSalesOrderId
+						+ "\n\trow=" + expected
+						+ "\n\tcandidate=" + actual);
+			}
+		}
+
 		final StepDefDataIdentifier salesOrderLineIdentifier = expected.getAsOptionalIdentifier("C_OrderLineSO_ID").orElse(null);
 		if (salesOrderLineIdentifier != null)
 		{
 			final OrderLineId salesOrderLineId = salesOrderLineIdentifier.lookupIdIn(orderLineTable);
-			if (!OrderLineId.equals(salesOrderLineId, actual.getSalesOrderLineId()))
+			final OrderAndLineId actualSalesOrderAndLineId = actual.getSalesOrderLineId();
+			final OrderLineId actualSalesOrderLineId = actualSalesOrderAndLineId != null ? actualSalesOrderAndLineId.getOrderLineId() : null;
+			if (!OrderLineId.equals(salesOrderLineId, actualSalesOrderLineId))
 			{
-				return ItemProvider.ProviderResult.resultWasNotFound("IsSimulated not matching, expected " + salesOrderLineId + " but found " + actual.getSalesOrderLineId()
+				return ItemProvider.ProviderResult.resultWasNotFound("C_OrderLineSO_ID not matching, expected " + salesOrderLineId + " but found " + actualSalesOrderLineId
 						+ "\n\trow=" + expected
 						+ "\n\tcandidate=" + actual);
 			}
