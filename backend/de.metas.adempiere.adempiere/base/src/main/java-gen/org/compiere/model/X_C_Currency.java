@@ -1,311 +1,186 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Currency
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 943687438L;
+	private static final long serialVersionUID = -1586514238L;
 
     /** Standard Constructor */
-    public X_C_Currency (Properties ctx, int C_Currency_ID, String trxName)
+    public X_C_Currency (final Properties ctx, final int C_Currency_ID, @Nullable final String trxName)
     {
       super (ctx, C_Currency_ID, trxName);
-      /** if (C_Currency_ID == 0)
-        {
-			setC_Currency_ID (0);
-			setCostingPrecision (0);
-// 4
-			setDescription (null);
-			setIsEMUMember (false);
-// N
-			setIsEuro (false);
-// N
-			setISO_Code (null);
-			setRoundOffFactor (Env.ZERO);
-// 1
-			setStdPrecision (0);
-// 2
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Currency (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Currency (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Währung.
-		@param C_Currency_ID 
-		The Currency for this record
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setC_Currency_ID (int C_Currency_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, C_Currency_ID);
 	}
 
-	/** Get Währung.
-		@return The Currency for this record
-	  */
 	@Override
-	public int getC_Currency_ID () 
+	public int getC_Currency_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
 
-	/** Set Kostenrechnungsgenauigkeit.
-		@param CostingPrecision 
-		Rounding used costing calculations
-	  */
 	@Override
-	public void setCostingPrecision (int CostingPrecision)
+	public void setCostingPrecision (final int CostingPrecision)
 	{
-		set_Value (COLUMNNAME_CostingPrecision, Integer.valueOf(CostingPrecision));
+		set_Value (COLUMNNAME_CostingPrecision, CostingPrecision);
 	}
 
-	/** Get Kostenrechnungsgenauigkeit.
-		@return Rounding used costing calculations
-	  */
 	@Override
-	public int getCostingPrecision () 
+	public int getCostingPrecision() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_CostingPrecision);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_CostingPrecision);
 	}
 
-	/** Set Symbol.
-		@param CurSymbol 
-		Symbol of the currency (opt used for printing only)
-	  */
 	@Override
-	public void setCurSymbol (java.lang.String CurSymbol)
+	public void setCurSymbol (final @Nullable java.lang.String CurSymbol)
 	{
 		set_Value (COLUMNNAME_CurSymbol, CurSymbol);
 	}
 
-	/** Get Symbol.
-		@return Symbol of the currency (opt used for printing only)
-	  */
 	@Override
-	public java.lang.String getCurSymbol () 
+	public java.lang.String getCurSymbol() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CurSymbol);
+		return get_ValueAsString(COLUMNNAME_CurSymbol);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set EMU Entry Date.
-		@param EMUEntryDate 
-		Date when the currency joined / will join the EMU
-	  */
 	@Override
-	public void setEMUEntryDate (java.sql.Timestamp EMUEntryDate)
+	public void setEMUEntryDate (final @Nullable java.sql.Timestamp EMUEntryDate)
 	{
 		set_Value (COLUMNNAME_EMUEntryDate, EMUEntryDate);
 	}
 
-	/** Get EMU Entry Date.
-		@return Date when the currency joined / will join the EMU
-	  */
 	@Override
-	public java.sql.Timestamp getEMUEntryDate () 
+	public java.sql.Timestamp getEMUEntryDate() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_EMUEntryDate);
+		return get_ValueAsTimestamp(COLUMNNAME_EMUEntryDate);
 	}
 
-	/** Set EMU Rate.
-		@param EMURate 
-		Official rate to the Euro
-	  */
 	@Override
-	public void setEMURate (java.math.BigDecimal EMURate)
+	public void setEMURate (final @Nullable BigDecimal EMURate)
 	{
 		set_Value (COLUMNNAME_EMURate, EMURate);
 	}
 
-	/** Get EMU Rate.
-		@return Official rate to the Euro
-	  */
 	@Override
-	public java.math.BigDecimal getEMURate () 
+	public BigDecimal getEMURate() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_EMURate);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_EMURate);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set EMU Member.
-		@param IsEMUMember 
-		This currency is member if the European Monetary Union
-	  */
 	@Override
-	public void setIsEMUMember (boolean IsEMUMember)
+	public void setIsApply5CentCashRounding (final boolean IsApply5CentCashRounding)
 	{
-		set_Value (COLUMNNAME_IsEMUMember, Boolean.valueOf(IsEMUMember));
+		set_Value (COLUMNNAME_IsApply5CentCashRounding, IsApply5CentCashRounding);
 	}
 
-	/** Get EMU Member.
-		@return This currency is member if the European Monetary Union
-	  */
 	@Override
-	public boolean isEMUMember () 
+	public boolean isApply5CentCashRounding() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsEMUMember);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsApply5CentCashRounding);
 	}
 
-	/** Set The Euro Currency.
-		@param IsEuro 
-		This currency is the Euro
-	  */
 	@Override
-	public void setIsEuro (boolean IsEuro)
+	public void setIsEMUMember (final boolean IsEMUMember)
 	{
-		set_Value (COLUMNNAME_IsEuro, Boolean.valueOf(IsEuro));
+		set_Value (COLUMNNAME_IsEMUMember, IsEMUMember);
 	}
 
-	/** Get The Euro Currency.
-		@return This currency is the Euro
-	  */
 	@Override
-	public boolean isEuro () 
+	public boolean isEMUMember() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsEuro);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsEMUMember);
 	}
 
-	/** Set ISO Währungscode.
-		@param ISO_Code 
-		Three letter ISO 4217 Code of the Currency
-	  */
 	@Override
-	public void setISO_Code (java.lang.String ISO_Code)
+	public void setIsEuro (final boolean IsEuro)
+	{
+		set_Value (COLUMNNAME_IsEuro, IsEuro);
+	}
+
+	@Override
+	public boolean isEuro() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsEuro);
+	}
+
+	@Override
+	public void setISO_Code (final java.lang.String ISO_Code)
 	{
 		set_Value (COLUMNNAME_ISO_Code, ISO_Code);
 	}
 
-	/** Get ISO Währungscode.
-		@return Three letter ISO 4217 Code of the Currency
-	  */
 	@Override
-	public java.lang.String getISO_Code () 
+	public java.lang.String getISO_Code() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ISO_Code);
+		return get_ValueAsString(COLUMNNAME_ISO_Code);
 	}
 
-	/** Set Round Off Factor.
-		@param RoundOffFactor 
-		Used to Round Off Payment Amount
-	  */
 	@Override
-	public void setRoundOffFactor (java.math.BigDecimal RoundOffFactor)
+	public void setRoundOffFactor (final @Nullable BigDecimal RoundOffFactor)
 	{
 		set_Value (COLUMNNAME_RoundOffFactor, RoundOffFactor);
 	}
 
-	/** Get Round Off Factor.
-		@return Used to Round Off Payment Amount
-	  */
 	@Override
-	public java.math.BigDecimal getRoundOffFactor () 
+	public BigDecimal getRoundOffFactor() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RoundOffFactor);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_RoundOffFactor);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Standardgenauigkeit.
-		@param StdPrecision 
-		Rule for rounding  calculated amounts
-	  */
 	@Override
-	public void setStdPrecision (int StdPrecision)
+	public void setStdPrecision (final int StdPrecision)
 	{
-		set_Value (COLUMNNAME_StdPrecision, Integer.valueOf(StdPrecision));
+		set_Value (COLUMNNAME_StdPrecision, StdPrecision);
 	}
 
-	/** Get Standardgenauigkeit.
-		@return Rule for rounding  calculated amounts
-	  */
 	@Override
-	public int getStdPrecision () 
+	public int getStdPrecision() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_StdPrecision);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_StdPrecision);
 	}
 }
