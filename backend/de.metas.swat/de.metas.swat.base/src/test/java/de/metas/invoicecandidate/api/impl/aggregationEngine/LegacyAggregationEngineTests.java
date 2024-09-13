@@ -476,4 +476,24 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 			assertThat(invoiceLine2.getNetLineAmt().toBigDecimal()).as("InvoiceLine2 - Invalid NetLineAmt").isEqualByComparingTo("-4");
 		}
 	}
+
+	@Test
+	public void test_regularLines_with_PartialCreditMemo_QtyNotOne()
+	{
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+
+		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(bPartner.getC_BPartner_ID(), 10, 5, true, true);
+		InterfaceWrapperHelper.save(ic1);
+
+		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate(bPartner.getC_BPartner_ID(), -30, 2, true, true);
+		ic2.setC_ILCandHandler(manualHandler);
+		InterfaceWrapperHelper.save(ic2);
+		Assert.assertEquals("IC2- IsError", false, ic2.isError());
+
+		// should not throw exception because invoice candidates with negative amount are valid and lead to the creation of credit memos.
+		updateInvalidCandidates();
+
+		InterfaceWrapperHelper.refresh(ic2);
+		Assert.assertEquals("IC2- IsError", false, ic2.isError());
+	}
 }
