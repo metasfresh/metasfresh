@@ -207,7 +207,7 @@ public class InvoiceToExportFactory
 
 		for (final de.metas.invoice.InvoiceTax invoiceTaxRecord : invoiceTaxRecords)
 		{
-			final Tax tax = taxDAO.getTaxById(invoiceTaxRecord.getC_Tax_ID());
+			final Tax tax = taxDAO.getTaxById(invoiceTaxRecord.getTaxId());
 			final InvoiceTax invoiceTax = InvoiceTax.builder()
 					.baseAmount(invoiceTaxRecord.getTaxBaseAmt())
 					.ratePercent(tax.getRate())

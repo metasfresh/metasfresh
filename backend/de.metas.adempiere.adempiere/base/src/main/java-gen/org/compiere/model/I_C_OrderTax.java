@@ -20,7 +20,7 @@ public interface I_C_OrderTax
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -115,7 +115,7 @@ public interface I_C_OrderTax
 	 * Get Created By.
 	 * User who created this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -127,7 +127,7 @@ public interface I_C_OrderTax
 	 * Set Tax.
 	 * Tax identifier
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -137,7 +137,7 @@ public interface I_C_OrderTax
 	 * Get Tax.
 	 * Tax identifier
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -213,8 +213,29 @@ public interface I_C_OrderTax
 	String COLUMNNAME_IsPackagingTax = "IsPackagingTax";
 
 	/**
-	 * Set Price incl. Tax.
-	 * Tax is included in the price
+	 * Set Reverse Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReverseCharge (boolean IsReverseCharge);
+
+	/**
+	 * Get Reverse Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReverseCharge();
+
+	ModelColumn<I_C_OrderTax, Object> COLUMN_IsReverseCharge = new ModelColumn<>(I_C_OrderTax.class, "IsReverseCharge", null);
+	String COLUMNNAME_IsReverseCharge = "IsReverseCharge";
+
+	/**
+	 * Set Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -223,8 +244,8 @@ public interface I_C_OrderTax
 	void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
-	 * Get Price incl. Tax.
-	 * Tax is included in the price
+	 * Get Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -278,6 +299,27 @@ public interface I_C_OrderTax
 
 	ModelColumn<I_C_OrderTax, Object> COLUMN_Processed = new ModelColumn<>(I_C_OrderTax.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Reverse Charge Tax Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setReverseChargeTaxAmt (BigDecimal ReverseChargeTaxAmt);
+
+	/**
+	 * Get Reverse Charge Tax Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getReverseChargeTaxAmt();
+
+	ModelColumn<I_C_OrderTax, Object> COLUMN_ReverseChargeTaxAmt = new ModelColumn<>(I_C_OrderTax.class, "ReverseChargeTaxAmt", null);
+	String COLUMNNAME_ReverseChargeTaxAmt = "ReverseChargeTaxAmt";
 
 	/**
 	 * Set Tax Amount.
@@ -342,7 +384,7 @@ public interface I_C_OrderTax
 	 * Get Updated By.
 	 * User who updated this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

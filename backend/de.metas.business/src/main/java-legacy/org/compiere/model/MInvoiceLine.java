@@ -689,7 +689,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			return;
 		}
 		//
-		final BigDecimal taxAmt = tax.calculateTax(getLineNetAmt(), isTaxIncluded(), getAmountPrecision().toInt());
+		final BigDecimal taxAmt = tax.calculateTax(getLineNetAmt(), isTaxIncluded(), getAmountPrecision().toInt()).getTaxAmount();
 		if (isTaxIncluded())
 		{
 			setLineTotalAmt(getLineNetAmt());

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_InvoiceTax extends org.compiere.model.PO implements I_C_InvoiceTax, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -871159980L;
+	private static final long serialVersionUID = -1030320363L;
 
     /** Standard Constructor */
     public X_C_InvoiceTax (final Properties ctx, final int C_InvoiceTax_ID, @Nullable final String trxName)
@@ -93,6 +93,21 @@ public class X_C_InvoiceTax extends org.compiere.model.PO implements I_C_Invoice
 	}
 
 	@Override
+	public void setC_VAT_Code_ID (final int C_VAT_Code_ID)
+	{
+		if (C_VAT_Code_ID < 1) 
+			set_Value (COLUMNNAME_C_VAT_Code_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_VAT_Code_ID, C_VAT_Code_ID);
+	}
+
+	@Override
+	public int getC_VAT_Code_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_VAT_Code_ID);
+	}
+
+	@Override
 	public void setIsDocumentLevel (final boolean IsDocumentLevel)
 	{
 		set_Value (COLUMNNAME_IsDocumentLevel, IsDocumentLevel);
@@ -114,6 +129,18 @@ public class X_C_InvoiceTax extends org.compiere.model.PO implements I_C_Invoice
 	public boolean isPackagingTax() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPackagingTax);
+	}
+
+	@Override
+	public void setIsReverseCharge (final boolean IsReverseCharge)
+	{
+		set_Value (COLUMNNAME_IsReverseCharge, IsReverseCharge);
+	}
+
+	@Override
+	public boolean isReverseCharge() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReverseCharge);
 	}
 
 	@Override
@@ -150,6 +177,19 @@ public class X_C_InvoiceTax extends org.compiere.model.PO implements I_C_Invoice
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public void setReverseChargeTaxAmt (final BigDecimal ReverseChargeTaxAmt)
+	{
+		set_Value (COLUMNNAME_ReverseChargeTaxAmt, ReverseChargeTaxAmt);
+	}
+
+	@Override
+	public BigDecimal getReverseChargeTaxAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ReverseChargeTaxAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
