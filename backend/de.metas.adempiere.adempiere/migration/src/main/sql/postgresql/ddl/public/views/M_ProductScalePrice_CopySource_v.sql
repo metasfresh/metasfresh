@@ -35,6 +35,8 @@ from (
 			, p_Target_Currency_ID := target_pl.C_Currency_ID
 			, p_Conv_Client_ID := target_plv.AD_Client_ID
 			, p_Conv_Org_ID := target_plv.AD_Org_ID
+            , p_Source_M_ProductPrice_ID := source_pp.m_productprice_id
+            , p_Target_PriceList_Version_ID := target_plv.m_pricelist_version_id
 			, p_ApplyDiscountSchema := source_pp.IsSeasonFixedPrice='N' and source_pp.IsActive='Y' and source_psp.IsActive='Y'
 		    , p_donotchangezeroprices := ds.donotchangezeroprices = 'Y'
 		) as prices

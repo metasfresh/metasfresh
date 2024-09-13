@@ -2,7 +2,6 @@ package de.metas.pricing.attributebased.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -11,12 +10,14 @@ import de.metas.pricing.IPackingMaterialAware;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
 import de.metas.pricing.rules.IPricingRule;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.pricing.service.ProductScalePriceService;
@@ -53,6 +54,7 @@ public class AttributePricing implements IPricingRule
 
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
 
@@ -132,7 +134,7 @@ public class AttributePricing implements IPricingRule
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 		final I_M_PriceList_Version pricelistVersion = loadOutOfTrx(productPrice.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
-		final I_M_PriceList priceList = pricelistVersion.getM_PriceList();
+		final I_M_PriceList priceList = priceListDAO.getById(PriceListId.ofRepoId(pricelistVersion.getM_PriceList_ID()));
 
 		final ProductScalePriceService.ProductPriceSettings productPriceSettings = productScalePriceService.getProductPriceSettings(productPrice, pricingCtx.getQuantity());
 		if (productPriceSettings == null)
