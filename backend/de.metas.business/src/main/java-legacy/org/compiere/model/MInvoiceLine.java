@@ -16,32 +16,8 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Properties;
-
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionService;
-import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
-import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.project.ProjectId;
-import de.metas.tax.api.TaxId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.dimension.Dimension;
@@ -49,7 +25,9 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
@@ -59,9 +37,11 @@ import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
 import de.metas.util.Services;
@@ -732,19 +712,19 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 */
 	public void setTaxAmt()
 	{
-		BigDecimal TaxAmt = ZERO;
-		if (getC_Tax_ID() == 0)
+		final TaxId taxId = TaxId.ofRepoIdOrNull(getC_Tax_ID());
+		if (taxId == null)
 		{
 			return;
 		}
 		// setLineNetAmt();
-		MTax tax = MTax.get(getCtx(), getC_Tax_ID());
+		final Tax tax = Services.get(ITaxBL.class).getTaxById(taxId);
 		if (tax.isDocumentLevel() && m_IsSOTrx)
 		{
 			return;
 		}
 		//
-		TaxAmt = tax.calculateTax(getLineNetAmt(), isTaxIncluded(), getAmountPrecision().toInt());
+		final BigDecimal TaxAmt = tax.calculateTax(getLineNetAmt(), isTaxIncluded(), getAmountPrecision().toInt());
 		if (isTaxIncluded())
 		{
 			setLineTotalAmt(getLineNetAmt());
@@ -753,6 +733,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			setLineTotalAmt(getLineNetAmt().add(TaxAmt));
 		}
+		
 		super.setTaxAmt(TaxAmt);
 	}    // setTaxAmt
 
