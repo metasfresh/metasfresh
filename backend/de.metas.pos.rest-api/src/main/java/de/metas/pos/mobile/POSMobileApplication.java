@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class POSMobileApplication implements MobileApplication
 {
-	private static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("POS");
+	private static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("pos");
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.POS.appName");
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
 			.id(APPLICATION_ID)

@@ -3,6 +3,7 @@ import * as scanAnythingApp from './scanAnything';
 import * as workplaceManagerApp from './workplaceManager';
 import * as workstationManagerApp from './workstationManager';
 import * as pickingApp from './picking';
+import * as posApp from './pos';
 
 const registeredApplications = {};
 
@@ -98,3 +99,4 @@ registerApplication(scanAnythingApp.applicationDescriptor);
 registerApplication(workplaceManagerApp.applicationDescriptor);
 registerApplication(workstationManagerApp.applicationDescriptor);
 registerApplication(pickingApp.applicationDescriptor);
+registerApplication(posApp.applicationDescriptor);
