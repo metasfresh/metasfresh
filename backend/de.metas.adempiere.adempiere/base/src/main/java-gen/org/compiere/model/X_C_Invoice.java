@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1156654742L;
+	private static final long serialVersionUID = 1874130321L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -150,6 +150,19 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getC_Activity_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+	}
+
+	@Override
+	public void setCashRoundingAmt (final BigDecimal CashRoundingAmt)
+	{
+		set_Value (COLUMNNAME_CashRoundingAmt, CashRoundingAmt);
+	}
+
+	@Override
+	public BigDecimal getCashRoundingAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CashRoundingAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -1383,6 +1396,21 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
+	@Override
+	public void setOrg_BP_Account_ID (final int Org_BP_Account_ID)
+	{
+		if (Org_BP_Account_ID < 1) 
+			set_Value (COLUMNNAME_Org_BP_Account_ID, null);
+		else 
+			set_Value (COLUMNNAME_Org_BP_Account_ID, Org_BP_Account_ID);
+	}
+
+	@Override
+	public int getOrg_BP_Account_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Org_BP_Account_ID);
+	}
+
 	/** 
 	 * PaymentRule AD_Reference_ID=195
 	 * Reference name: _Payment Rule
@@ -1483,33 +1511,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
-	}
-
-	@Override
-	public org.compiere.model.I_C_BP_BankAccount getOrg_BP_Account()
-	{
-		return get_ValueAsPO(COLUMNNAME_Org_BP_Account_ID, org.compiere.model.I_C_BP_BankAccount.class);
-	}
-
-	@Override
-	public void setOrg_BP_Account(final org.compiere.model.I_C_BP_BankAccount Org_BP_Account)
-	{
-		set_ValueFromPO(COLUMNNAME_Org_BP_Account_ID, org.compiere.model.I_C_BP_BankAccount.class, Org_BP_Account);
-	}
-
-	@Override
-	public void setOrg_BP_Account_ID (final int Org_BP_Account_ID)
-	{
-		if (Org_BP_Account_ID < 1)
-			set_Value (COLUMNNAME_Org_BP_Account_ID, null);
-		else
-			set_Value (COLUMNNAME_Org_BP_Account_ID, Org_BP_Account_ID);
-	}
-
-	@Override
-	public int getOrg_BP_Account_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_Org_BP_Account_ID);
 	}
 
 	@Override

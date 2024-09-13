@@ -952,9 +952,14 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	public static final int AMTTYPE_Charge = 2;
 
 	/**
+	 * Amount Type - Invoice - Cash Rounding
+	 */
+	protected static int AMTTYPE_CashRounding = 3;
+
+	/**
 	 * Source Amounts (may not all be used)
 	 */
-	private final BigDecimal[] m_Amounts = new BigDecimal[] { BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO };
+	private final BigDecimal[] m_Amounts = new BigDecimal[] { BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO };
 
 	/**
 	 * Get the Amount (loaded in loadDocumentDetails)

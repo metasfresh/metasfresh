@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Invoice
  *  @author metasfresh (generated) 
@@ -219,6 +218,27 @@ public interface I_C_Invoice
 	int getC_Activity_ID();
 
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set CashRoundingAmt.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCashRoundingAmt (BigDecimal CashRoundingAmt);
+
+	/**
+	 * Get CashRoundingAmt.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCashRoundingAmt();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_CashRoundingAmt = new ModelColumn<>(I_C_Invoice.class, "CashRoundingAmt", null);
+	String COLUMNNAME_CashRoundingAmt = "CashRoundingAmt";
 
 	/**
 	 * Set Auction.
@@ -1782,8 +1802,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Price incl. Tax.
-	 * Tax is included in the price
+	 * Set Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1792,8 +1812,8 @@ public interface I_C_Invoice
 	void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
-	 * Get Price incl. Tax.
-	 * Tax is included in the price
+	 * Get Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1945,6 +1965,26 @@ public interface I_C_Invoice
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set Organisation Bank Account.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrg_BP_Account_ID (int Org_BP_Account_ID);
+
+	/**
+	 * Get Organisation Bank Account.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOrg_BP_Account_ID();
+
+	String COLUMNNAME_Org_BP_Account_ID = "Org_BP_Account_ID";
+
+	/**
 	 * Set Payment Rule.
 	 * How you pay the invoice
 	 *
@@ -2074,33 +2114,6 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_Processing = new ModelColumn<>(I_C_Invoice.class, "Processing", null);
 	String COLUMNNAME_Processing = "Processing";
-
-
-	/**
-	 * Set Organization Bank account.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setOrg_BP_Account_ID (int Org_BP_Account_ID);
-
-	/**
-	 * Get Organization Bank account.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getOrg_BP_Account_ID();
-
-	@Nullable org.compiere.model.I_C_BP_BankAccount getOrg_BP_Account();
-
-	void setOrg_BP_Account(@Nullable org.compiere.model.I_C_BP_BankAccount Org_BP_Account);
-
-	ModelColumn<I_C_Invoice, org.compiere.model.I_C_BP_BankAccount> COLUMN_Org_BP_Account_ID = new ModelColumn<>(I_C_Invoice.class, "Org_BP_Account_ID", org.compiere.model.I_C_BP_BankAccount.class);
-	String COLUMNNAME_Org_BP_Account_ID = "Org_BP_Account_ID";
-
 
 	/**
 	 * Set Referenced Invoice.

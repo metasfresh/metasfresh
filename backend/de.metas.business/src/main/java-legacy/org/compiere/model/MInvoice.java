@@ -40,6 +40,7 @@ import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -200,6 +201,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setChargeAmt(BigDecimal.ZERO);
 			setTotalLines(BigDecimal.ZERO);
 			setGrandTotal(BigDecimal.ZERO);
+			setCashRoundingAmt(BigDecimal.ZERO);
 			//
 			setIsSOTrx(true);
 			setIsTaxIncluded(false);
@@ -1015,9 +1017,14 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				}
 			}
 		}
+
+		final BigDecimal grandTotalNoRounding = grandTotal;
+		final BigDecimal roundedGrandTotal = apply5CentRoundingIfNeeded(grandTotal);
+
 		//
 		setTotalLines(totalLines);
-		setGrandTotal(grandTotal);
+		setGrandTotal(roundedGrandTotal);
+		setCashRoundingAmt(roundedGrandTotal.subtract(grandTotalNoRounding));
 		return true;
 	}    // calculateTaxTotal
 
@@ -1669,6 +1676,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setGrandTotal(rma.getAmt());
 		setIsSOTrx(rma.isSOTrx());
 		setTotalLines(rma.getAmt());
+		setCashRoundingAmt(BigDecimal.ZERO);
 
 		setC_Currency_ID(originalInvoice.getC_Currency_ID());
 		setIsTaxIncluded(originalInvoice.isTaxIncluded());
@@ -1696,6 +1704,13 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		final boolean annotateInvoice = sysConfigBL.getBooleanValue(SYS_Config_Annotate_DocNo_INVOICE, true);
 		return annotateInvoice;
+	}
+
+	private BigDecimal apply5CentRoundingIfNeeded(@NonNull final BigDecimal grandTotal)
+	{
+
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		return invoiceBL.roundTo5CentIfNeeded(grandTotal, CurrencyId.ofRepoId(getC_Currency_ID()) , SOTrx.ofBoolean(isSOTrx()));
 	}
 
 }    // MInvoice
