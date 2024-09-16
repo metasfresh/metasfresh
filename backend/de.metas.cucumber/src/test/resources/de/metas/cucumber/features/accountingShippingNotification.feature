@@ -14,6 +14,9 @@ Feature: accounting for shipping notification
     And update C_AcctSchema:
       | C_AcctSchema_ID.Identifier | OPT.CostingMethod |
       | acctSchema_1               | M                 |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                           | Value                         | OPT.Description                       | OPT.IsActive |
+      | ps_1       | pricing_system_name_04022023_1 | pricing_system_value_101023_1 | pricing_system_description_04022023_1 | true         |
     And metasfresh contains C_BPartners:
       | Identifier  | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | bpartner_1  | BPartner_101023_1  | Y            | Y              | ps_1                          |
@@ -43,9 +46,6 @@ Feature: accounting for shipping notification
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | huItemPurchaseProduct              | huPiItemTU                 | p_1                     | 20  | 2021-01-01 |
-    And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                         | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_04022023_1 | pricing_system_value_101023_1 | pricing_system_description_04022023_1 | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_101023_1 | null            | false | false         | 2              | true         |
