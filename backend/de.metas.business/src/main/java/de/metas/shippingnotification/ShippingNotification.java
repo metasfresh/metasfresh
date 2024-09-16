@@ -73,7 +73,7 @@ public class ShippingNotification
 	@Nullable private final BPartnerContactId contactId;
 	private final int auctionId;
 	@NonNull private final LocatorId locatorId;
-	@NonNull private final BPartnerLocationId shipFromBPartnerAndLocationId;
+	@Nullable private final BPartnerLocationId shipFromBPartnerAndLocationId;
 	@Nullable private final BPartnerContactId shipFroContactId;
 	@NonNull private final OrderId salesOrderId;
 	@NonNull private final Instant dateAcct;
