@@ -132,7 +132,7 @@ public class ShippingNotificationFromShipmentScheduleProducer
 					.physicalClearanceDate(physicalClearanceDate)
 					.locatorId(LocatorId.ofRepoId(warehouseId, salesOrderRecord.getM_Locator_ID()))
 					.shipFromBPartnerAndLocationId(warehouseBL.getBPartnerLocationId(warehouseId))
-					.shipFroContactId(warehouseBL.getBPartnerContactId(warehouseId))
+					.shipFromContactId(warehouseBL.getBPartnerContactId(warehouseId))
 					.harvestingYearId(extractHarvestingYearId(salesOrderRecord).orElse(null))
 					.poReference(salesOrderRecord.getPOReference())
 					.description(salesOrderRecord.getDescription())

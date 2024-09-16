@@ -20,7 +20,7 @@ Feature: accounting for shipping notification
     And metasfresh contains C_BPartners:
       | Identifier  | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | bpartner_1  | BPartner_101023_1  | Y            | Y              | ps_1                          |
-      | bpartner_wh | BPartner_101023_wh | Y            | N              | ps_1                          |
+      | bpartner_wh | BPartner_101023_wh | Y            | Y              | ps_1                          |
     And metasfresh contains C_BPartner_Locations:
       | Identifier        | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | bpLocationDefault | 0123451010023 | bpartner_1               | Y                   | Y                   |

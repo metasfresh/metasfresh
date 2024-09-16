@@ -221,7 +221,8 @@ class ShippingNotificationLoaderAndSaver
 				.contactId(BPartnerContactId.ofRepoIdOrNull(record.getC_BPartner_ID(), record.getAD_User_ID()))
 				.auctionId(record.getC_Auction_ID())
 				.locatorId(LocatorId.ofRepoId(record.getM_Warehouse_ID(), record.getM_Locator_ID()))
-				.shipFromBPartnerAndLocationId(BPartnerLocationId.ofRepoId(record.getShipFrom_Partner_ID(), record.getShipFrom_Location_ID()))
+				.shipFromBPartnerAndLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getShipFrom_Partner_ID(), record.getShipFrom_Location_ID()))
+				.shipFromContactId(BPartnerContactId.ofRepoIdOrNull(record.getShipFrom_Partner_ID(), record.getShipFrom_User_ID()))
 				.salesOrderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.dateAcct(record.getDateAcct().toInstant())
 				.physicalClearanceDate(record.getPhysicalClearanceDate().toInstant())
@@ -305,7 +306,7 @@ class ShippingNotificationLoaderAndSaver
 		record.setM_Warehouse_ID(from.getLocatorId().getWarehouseId().getRepoId());
 		record.setM_Locator_ID(from.getLocatorId().getRepoId());
 		record.setShipFrom_Partner_ID(from.getShipFromBPartnerAndLocationId().getBpartnerId().getRepoId());
-		record.setShipFrom_User_ID(from.getShipFroContactId() != null ? from.getShipFroContactId().getRepoId() : -1);
+		record.setShipFrom_User_ID(from.getShipFromContactId() != null ? from.getShipFromContactId().getRepoId() : -1);
 		record.setShipFrom_Location_ID(from.getShipFromBPartnerAndLocationId().getRepoId());
 		record.setC_Order_ID(from.getSalesOrderId().getRepoId());
 		record.setDateAcct(Timestamp.from(from.getDateAcct()));

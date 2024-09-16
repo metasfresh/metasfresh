@@ -74,7 +74,7 @@ public class ShippingNotification
 	private final int auctionId;
 	@NonNull private final LocatorId locatorId;
 	@Nullable private final BPartnerLocationId shipFromBPartnerAndLocationId;
-	@Nullable private final BPartnerContactId shipFroContactId;
+	@Nullable private final BPartnerContactId shipFromContactId;
 	@NonNull private final OrderId salesOrderId;
 	@NonNull private final Instant dateAcct;
 	@NonNull private final Instant physicalClearanceDate;
@@ -102,7 +102,7 @@ public class ShippingNotification
 			final int auctionId,
 			@NonNull final LocatorId locatorId,
 			@NonNull final BPartnerLocationId shipFromBPartnerAndLocationId,
-			@Nullable final BPartnerContactId shipFroContactId,
+			@Nullable final BPartnerContactId shipFromContactId,
 			@NonNull final OrderId salesOrderId,
 			final @NonNull Instant dateAcct, @NonNull final Instant physicalClearanceDate,
 			@Nullable final YearAndCalendarId harvestingYearId,
@@ -123,7 +123,7 @@ public class ShippingNotification
 		this.auctionId = auctionId;
 		this.locatorId = locatorId;
 		this.shipFromBPartnerAndLocationId = shipFromBPartnerAndLocationId;
-		this.shipFroContactId = shipFroContactId;
+		this.shipFromContactId = shipFromContactId;
 		this.salesOrderId = salesOrderId;
 		this.dateAcct = dateAcct;
 		this.physicalClearanceDate = physicalClearanceDate;
@@ -167,7 +167,7 @@ public class ShippingNotification
 		return DocumentLocation.builder()
 				.bpartnerId(shipFromBPartnerAndLocationId.getBpartnerId())
 				.bpartnerLocationId(shipFromBPartnerAndLocationId)
-				.contactId(shipFroContactId)
+				.contactId(shipFromContactId)
 				.build();
 	}
 

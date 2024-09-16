@@ -38,7 +38,7 @@ public class M_Shipping_Notification
 {
 	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW},
 			ifColumnsChanged = {
 					I_M_Shipping_Notification.COLUMNNAME_C_BPartner_ID,
 					I_M_Shipping_Notification.COLUMNNAME_C_BPartner_Location_ID,
@@ -50,7 +50,7 @@ public class M_Shipping_Notification
 	}
 
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW},
 			ifColumnsChanged = {
 					I_M_Shipping_Notification.COLUMNNAME_ShipFrom_Partner_ID,
 					I_M_Shipping_Notification.COLUMNNAME_ShipFrom_Location_ID,
