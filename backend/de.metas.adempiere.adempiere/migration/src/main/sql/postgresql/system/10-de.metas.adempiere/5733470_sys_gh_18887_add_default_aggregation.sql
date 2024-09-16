@@ -1,0 +1,94 @@
+-- 2024-09-16T10:41:32.895Z
+INSERT INTO C_Aggregation (AD_Client_ID,AD_Org_ID,AD_Table_ID,C_Aggregation_ID,Created,CreatedBy,EntityType,IsActive,IsDefault,IsDefaultPO,IsDefaultSO,Name,Updated,UpdatedBy) VALUES (1000000,1000000,541913,540020,TO_TIMESTAMP('2024-09-16 13:41:32','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','N','N','N','pp_order_candidate-agg',TO_TIMESTAMP('2024-09-16 13:41:32','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-09-16T10:41:42.945Z
+INSERT INTO C_Aggregation (AD_Client_ID,AD_Org_ID,AD_Table_ID,C_Aggregation_ID,Created,CreatedBy,EntityType,IsActive,IsDefault,IsDefaultPO,IsDefaultSO,Name,Updated,UpdatedBy) VALUES (1000000,1000000,541913,540020,TO_TIMESTAMP('2024-09-16 13:41:42','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','N','N','N','pp_order_candidate-agg-default',TO_TIMESTAMP('2024-09-16 13:41:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-09-16T10:41:58.368Z
+UPDATE C_Aggregation SET AggregationUsageLevel='H',Updated=TO_TIMESTAMP('2024-09-16 13:41:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Aggregation_ID=540020
+;
+
+-- 2024-09-16T10:42:13.423Z
+INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,577869,1000000,540020,540104,TO_TIMESTAMP('2024-09-16 13:42:13','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:42:13','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-09-16T10:42:20.635Z
+INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,587978,1000000,540020,540105,TO_TIMESTAMP('2024-09-16 13:42:20','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:42:20','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-09-16T10:42:36.262Z
+UPDATE C_AggregationItem SET AD_Column_ID=577876,Updated=TO_TIMESTAMP('2024-09-16 13:42:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_AggregationItem_ID=540105
+;
+
+-- 2024-09-16T10:42:41.469Z
+INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,577877,1000000,540020,540106,TO_TIMESTAMP('2024-09-16 13:42:41','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:42:41','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-09-16T10:42:49.397Z
+INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,577878,1000000,540020,540107,TO_TIMESTAMP('2024-09-16 13:42:49','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:42:49','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-09-16T10:42:55.666Z
+INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,587967,1000000,540020,540108,TO_TIMESTAMP('2024-09-16 13:42:55','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:42:55','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-09-16T10:43:01.102Z
+INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,577879,1000000,540020,540109,TO_TIMESTAMP('2024-09-16 13:43:01','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:43:01','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-09-16T10:43:10.503Z
+INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,577880,1000000,540020,540110,TO_TIMESTAMP('2024-09-16 13:43:10','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:43:10','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-09-16T10:43:19.369Z
+INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,577881,1000000,540020,540111,TO_TIMESTAMP('2024-09-16 13:43:19','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:43:19','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-09-16T10:43:28.880Z
+INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,577882,1000000,540020,540112,TO_TIMESTAMP('2024-09-16 13:43:28','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:43:28','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-09-16T10:43:29.838Z
+UPDATE T_WEBUI_ViewSelection_ToDelete SET Executor_UUID=? WHERE Executor_UUID IS NULL
+;
+
+-- 2024-09-16T10:43:29.849Z
+DELETE FROM T_WEBUI_ViewSelectionLine t 
+ WHERE EXISTS (SELECT 1 FROM T_WEBUI_ViewSelection_ToDelete s 
+       WHERE 
+           s.View_UUID=t.UUID
+           AND s.Executor_UUID=?
+ )
+;
+
+-- 2024-09-16T10:43:29.855Z
+DELETE FROM T_ES_FTS_Search_Result t 
+ WHERE EXISTS (SELECT 1 FROM T_WEBUI_ViewSelection_ToDelete s 
+       WHERE 
+           s.View_UUID=t.Search_UUID
+           AND s.Executor_UUID=?
+ )
+;
+
+-- 2024-09-16T10:43:29.857Z
+DELETE FROM T_WEBUI_ViewSelection_ToDelete WHERE Executor_UUID=?
+;
+
+-- 2024-09-16T10:43:36.716Z
+INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,578711,1000000,540020,540113,TO_TIMESTAMP('2024-09-16 13:43:36','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:43:36','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-09-16T10:43:44.247Z
+INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,577883,1000000,540020,540114,TO_TIMESTAMP('2024-09-16 13:43:44','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:43:44','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-09-16T10:43:50.397Z
+INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,577884,1000000,540020,540115,TO_TIMESTAMP('2024-09-16 13:43:50','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:43:50','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2024-09-16T10:43:59.649Z
+INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,577886,1000000,540020,540116,TO_TIMESTAMP('2024-09-16 13:43:59','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:43:59','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
