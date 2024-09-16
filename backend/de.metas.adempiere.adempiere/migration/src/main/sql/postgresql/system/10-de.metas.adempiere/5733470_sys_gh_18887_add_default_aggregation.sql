@@ -1,7 +1,3 @@
--- 2024-09-16T10:41:32.895Z
-INSERT INTO C_Aggregation (AD_Client_ID,AD_Org_ID,AD_Table_ID,C_Aggregation_ID,Created,CreatedBy,EntityType,IsActive,IsDefault,IsDefaultPO,IsDefaultSO,Name,Updated,UpdatedBy) VALUES (1000000,1000000,541913,540020,TO_TIMESTAMP('2024-09-16 13:41:32','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','N','N','N','pp_order_candidate-agg',TO_TIMESTAMP('2024-09-16 13:41:32','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
 -- 2024-09-16T10:41:42.945Z
 INSERT INTO C_Aggregation (AD_Client_ID,AD_Org_ID,AD_Table_ID,C_Aggregation_ID,Created,CreatedBy,EntityType,IsActive,IsDefault,IsDefaultPO,IsDefaultSO,Name,Updated,UpdatedBy) VALUES (1000000,1000000,541913,540020,TO_TIMESTAMP('2024-09-16 13:41:42','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','N','N','N','pp_order_candidate-agg-default',TO_TIMESTAMP('2024-09-16 13:41:42','YYYY-MM-DD HH24:MI:SS'),100)
 ;
