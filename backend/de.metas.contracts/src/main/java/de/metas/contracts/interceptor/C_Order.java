@@ -38,8 +38,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static org.compiere.model.X_C_DocType.DOCSUBTYPE_StandardOrder;
-
 @Interceptor(I_C_Order.class)
 @Component
 public class C_Order
@@ -145,8 +143,7 @@ public class C_Order
 			return;
 		}
 
-		final String docSubType = docTypeBL.getById(docTypeId).getDocSubType();
-		if (!DOCSUBTYPE_StandardOrder.equals(docSubType))
+		if (!docTypeBL.isStandardOrder(docTypeId))
 		{
 			return;
 		}
