@@ -14,9 +14,17 @@ Feature: accounting for shipping notification
     And update C_AcctSchema:
       | C_AcctSchema_ID.Identifier | OPT.CostingMethod |
       | acctSchema_1               | M                 |
+    And metasfresh contains C_BPartners:
+      | Identifier  | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | bpartner_1  | BPartner_101023_1  | Y            | Y              | ps_1                          |
+      | bpartner_wh | BPartner_101023_wh | Y            | N              | ps_1                          |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier        | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bpLocationDefault | 0123451010023 | bpartner_1               | Y                   | Y                   |
+      | warehouseLocation | 0123451010024 | bpartner_wh              | Y                   | Y                   |
     And load M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value        |
-      | warehouseStd              | StdWarehouse |
+      | M_Warehouse_ID.Identifier | Value        | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_ID.Identifier |
+      | warehouseStd              | StdWarehouse | warehouseLocation                     | bpartner_wh                  |
     And metasfresh contains M_Products:
       | Identifier | Name                     |
       | p_1        | purchaseProduct_101023_1 |
@@ -50,12 +58,6 @@ Feature: accounting for shipping notification
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
       | pp_2       | plv_2                             | p_1                     | 10.0     | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
-      | Identifier | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | bpartner_1 | BPartner_101023_1 | Y            | Y              | ps_1                          |
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier        | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | bpLocationDefault | 0123451010023 | bpartner_1               | Y                   | Y                   |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier |
       | o_1        | N       | bpartner_1               | 2021-04-16  | 1000012              | po_ref_mock     | POO             | ps_1                              |

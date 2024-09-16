@@ -80,6 +80,7 @@ import static de.metas.shippingnotification.model.I_M_Shipping_Notification.COLU
 import static de.metas.shippingnotification.model.I_M_Shipping_Notification.COLUMNNAME_POReference;
 import static de.metas.shippingnotification.model.I_M_Shipping_Notification.COLUMNNAME_PhysicalClearanceDate;
 import static de.metas.shippingnotification.model.I_M_Shipping_Notification.COLUMNNAME_Reversal_ID;
+import static de.metas.shippingnotification.model.I_M_Shipping_Notification.COLUMNNAME_ShipFrom_Location_ID;
 
 public class M_Shipping_Notification_StepDef
 {
@@ -92,6 +93,7 @@ public class M_Shipping_Notification_StepDef
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final AD_User_StepDefData userTable;
 	private final M_Locator_StepDefData locatorTable;
+	private final C_BPartner_Location_StepDefData shipFromPartnerLocationTable;
 	private final C_Calendar_StepDefData calendarTable;
 	private final C_Year_StepDefData yearTable;
 	private final C_Auction_StepDefData auctionTable;
@@ -104,6 +106,7 @@ public class M_Shipping_Notification_StepDef
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final AD_User_StepDefData userTable,
 			@NonNull final M_Locator_StepDefData locatorTable,
+			@NonNull final C_BPartner_Location_StepDefData shipFromPartnerLocationTable,
 			@NonNull final C_Calendar_StepDefData calendarTable,
 			@NonNull final C_Year_StepDefData yearTable,
 			@NonNull final C_Auction_StepDefData auctionTable,
@@ -115,6 +118,7 @@ public class M_Shipping_Notification_StepDef
 		this.bPartnerLocationTable = bPartnerLocationTable;
 		this.userTable = userTable;
 		this.locatorTable = locatorTable;
+		this.shipFromPartnerLocationTable = shipFromPartnerLocationTable;
 		this.calendarTable = calendarTable;
 		this.yearTable = yearTable;
 		this.auctionTable = auctionTable;
@@ -207,6 +211,14 @@ public class M_Shipping_Notification_StepDef
 			final String locatorIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_M_Locator locator = locatorTable.get(locatorIdentifier);
 			softly.assertThat(locator.getM_Locator_ID()).isEqualTo(shippingNotification.getM_Locator_ID()).isEqualTo(order.getM_Locator_ID());
+
+
+			final String shipFromPartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_ShipFrom_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(shipFromPartnerLocationIdentifier))
+			{
+				final I_C_BPartner_Location shipFromPartnerLocation = shipFromPartnerLocationTable.get(shipFromPartnerLocationIdentifier);
+				softly.assertThat(shipFromPartnerLocation.getC_BPartner_Location_ID()).isEqualTo(shippingNotification.getShipFrom_Location_ID());
+			}
 
 			final String harvestingCalendarIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(harvestingCalendarIdentifier))
