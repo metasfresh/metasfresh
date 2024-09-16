@@ -60,7 +60,6 @@ import de.metas.tax.api.CalculateTaxResult;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
-import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -980,6 +979,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 					newITax.setPrecision(taxPrecision.toInt());
 					newITax.setIsTaxIncluded(taxIncluded);
 					newITax.setIsReverseCharge(childTax.isReverseCharge());
+					newITax.setIsDocumentLevel(childTax.isDocumentLevel());
 					newITax.setTaxBaseAmt(taxBaseAmt);
 					newITax.setTaxAmt(calculateTaxResult.getTaxAmount());
 					newITax.setReverseChargeTaxAmt(calculateTaxResult.getReverseChargeAmt());
