@@ -195,9 +195,9 @@ public class C_InvoiceLine_StepDef
 			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
 
 			final I_C_InvoiceLine currentInvoiceLine = Check.singleElement(invoiceLines.stream()
-																				   .filter(line -> line.getM_Product_ID() == productID)
-																				   .filter(line -> line.getQtyInvoiced().equals(qtyinvoiced))
-																				   .collect(ImmutableList.toImmutableList()));
+					.filter(line -> line.getM_Product_ID() == productID)
+					.filter(line -> line.getQtyInvoiced().equals(qtyinvoiced))
+					.collect(ImmutableList.toImmutableList()));
 
 			validateInvoiceLine(currentInvoiceLine, row);
 		}
@@ -246,8 +246,8 @@ public class C_InvoiceLine_StepDef
 								.append(COLUMNNAME_QtyInvoiced).append(" : ").append(line.getQtyInvoiced()).append(" ; ")
 								.append(I_C_InvoiceLine.COLUMNNAME_ProductName).append(" : ").append(line.getProductName()).append(" ; ")
 								.append("\n"));
-
-				logger.error("*** Error while looking for C_InvoiceLine, see all lines: \n" + message);
+				final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+				logger.error("*** Error while looking for C_InvoiceLine: " + invoiceLineIdentifier + ", see all lines: \n" + message);
 			}
 
 			validateInvoiceLine(invoiceLineRecord.get(), row);
@@ -388,9 +388,6 @@ public class C_InvoiceLine_StepDef
 			softly.assertThat(invoiceLine.getQtyInvoicedInPriceUOM()).as(COLUMNNAME_QtyInvoicedInPriceUOM).isEqualByComparingTo(qtyInvoicedInPriceUOM);
 		}
 
-		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLine);
-
 		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
 		if (Check.isNotBlank(projectIdentifier))
@@ -416,6 +413,9 @@ public class C_InvoiceLine_StepDef
 		}
 
 		validateInvoiceLine_HarvestingCalendarAndYear(invoiceLine, row, softly);
+
+		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLine);
 
 		softly.assertAll();
 	}

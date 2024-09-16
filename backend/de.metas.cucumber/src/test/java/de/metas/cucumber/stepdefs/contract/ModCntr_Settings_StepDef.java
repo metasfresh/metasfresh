@@ -41,6 +41,7 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -112,6 +113,12 @@ public class ModCntr_Settings_StepDef
 		modCntrSettingsRecord.setC_Year_ID(yearRecord.getC_Year_ID());
 		modCntrSettingsRecord.setIsSOTrx(isSoTrx);
 		modCntrSettingsRecord.setStorageCostStartDate(storageDate);
+
+		final BigDecimal interestRate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_InterestRate);
+		if (interestRate != null)
+		{
+			modCntrSettingsRecord.setInterestRate(interestRate);
+		}
 
 		final String pricingSystemIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Flatrate_Conditions.COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_PricingSystem pricingSystem = pricingSysTable.get(pricingSystemIdentifier);
