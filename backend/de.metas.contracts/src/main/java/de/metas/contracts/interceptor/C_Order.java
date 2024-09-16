@@ -17,7 +17,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
-import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.util.Check;
@@ -38,6 +38,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+import static org.compiere.model.X_C_DocType.DOCSUBTYPE_StandardOrder;
+
 @Interceptor(I_C_Order.class)
 @Component
 public class C_Order
@@ -46,22 +48,20 @@ public class C_Order
 
 	private static final AdMessageKey MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = AdMessageKey.of("Order_DateOrdered_Change_Forbidden");
 	
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
 
 	@ModelChange( //
 			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
 			ifColumnsChanged = I_C_Order.COLUMNNAME_DateOrdered)
 	public void updateDataEntry(@NonNull final I_C_Order order)
 	{
-		final IOrderDAO orderDAO = this.orderDAO;
-		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
-
-		for (final I_C_OrderLine ol : orderDAO.retrieveOrderLines(order, I_C_OrderLine.class))
+		for (final I_C_OrderLine ol : orderBL.retrieveOrderLines(order, I_C_OrderLine.class))
 		{
 			for (final I_C_Invoice_Candidate icOfOl : invoiceCandDB.retrieveReferencing(TableRecordReference.of(ol)))
 			{
@@ -82,7 +82,7 @@ public class C_Order
 			return;
 		}
 
-		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
+		final List<I_C_OrderLine> orderLines = orderBL.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine ol : orderLines)
 		{
 			if (!subscriptionBL.isSubscription(ol))
@@ -136,10 +136,22 @@ public class C_Order
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REACTIVATE })
-	public void handleReactivate(final I_C_Order order)
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE )
+	public void handleReactivate(@NonNull final I_C_Order order)
 	{
-		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
+		final DocTypeId docTypeId = orderBL.getDocTypeIdEffectiveOrNull(order);
+		if (docTypeId == null)
+		{
+			return;
+		}
+
+		final String docSubType = docTypeBL.getById(docTypeId).getDocSubType();
+		if (!DOCSUBTYPE_StandardOrder.equals(docSubType))
+		{
+			return;
+		}
+		
+		final List<I_C_OrderLine> orderLines = orderBL.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine ol : orderLines)
 		{
 			if (ol.getC_Flatrate_Conditions_ID() <= 0)
@@ -187,7 +199,7 @@ public class C_Order
 	}, ifColumnsChanged = I_C_Order.COLUMNNAME_DatePromised)
 	public void updateOrderLineFromContract(final I_C_Order order)
 	{
-		orderDAO.retrieveOrderLines(order)
+		orderBL.retrieveOrderLines(order)
 				.stream()
 				.map(ol -> InterfaceWrapperHelper.create(ol, de.metas.contracts.order.model.I_C_OrderLine.class))
 				.filter(subscriptionBL::isSubscription)

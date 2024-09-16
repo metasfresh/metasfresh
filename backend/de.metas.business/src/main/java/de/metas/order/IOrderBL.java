@@ -44,6 +44,7 @@ import org.compiere.model.I_M_PriceList_Version;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 
 public interface IOrderBL extends ISingletonService
@@ -272,4 +273,11 @@ public interface IOrderBL extends ISingletonService
 	String getDocumentNoById(OrderId orderId);
 
 	String getLocationEmail(OrderId ofRepoId);
+
+	@Nullable
+	DocTypeId getDocTypeIdEffectiveOrNull(@NonNull I_C_Order order);
+	
+	<T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(I_C_Order order, Class<T> clazz);
+
+	List<de.metas.interfaces.I_C_OrderLine> retrieveOrderLines(I_C_Order order);
 }
