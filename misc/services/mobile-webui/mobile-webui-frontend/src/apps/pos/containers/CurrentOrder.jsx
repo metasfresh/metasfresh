@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCurrentOrderOrNew } from '../actions';
 import CurrentOrderActions from './CurrentOrderActions';
+import PropTypes from 'prop-types';
 
 const CurrentOrder = () => {
   const { isCurrentOrderLoading, currentOrder } = useCurrentOrderOrNew();
@@ -37,6 +38,10 @@ const OrderLine = ({ /*uuid,*/ productName }) => {
       <td>?</td>
     </tr>
   );
+};
+
+OrderLine.propTypes = {
+  productName: PropTypes.string.isRequired,
 };
 
 export default CurrentOrder;
