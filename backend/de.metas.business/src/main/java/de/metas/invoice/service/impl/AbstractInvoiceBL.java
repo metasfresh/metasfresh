@@ -121,6 +121,7 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.user.User;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -401,6 +402,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// Amounts are updated by trigger when adding lines
 		to.setGrandTotal(BigDecimal.ZERO);
 		to.setTotalLines(BigDecimal.ZERO);
+		to.setCashRoundingAmt(BigDecimal.ZERO);
 		//
 		to.setIsTransferred(false);
 		to.setPosted(false);
@@ -2116,5 +2118,29 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public String getPOReference(@NonNull final InvoiceId invoiceId)
 	{
 		return getById(invoiceId).getPOReference();
+	}
+
+	@Override
+	public boolean isApply5CentCashRounding(@NonNull final CurrencyId currencyId, @NonNull final SOTrx soTrx)
+	{
+		if (soTrx.isPurchase())
+		{
+			return false;
+		}
+
+		return currencyBL.isApply5CentCashRounding(currencyId);
+
+	}
+
+	@Override
+	public BigDecimal roundTo5CentIfNeeded(@NonNull final BigDecimal grandTotal,
+			@NonNull final CurrencyId currencyId,
+			@NonNull final SOTrx soTrx)
+	{
+		if (!isApply5CentCashRounding(currencyId, soTrx))
+		{
+			return grandTotal;
+		}
+		return NumberUtils.roundTo5Cent(grandTotal);
 	}
 }

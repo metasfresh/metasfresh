@@ -220,6 +220,27 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set CashRoundingAmt.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCashRoundingAmt (BigDecimal CashRoundingAmt);
+
+	/**
+	 * Get CashRoundingAmt.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCashRoundingAmt();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_CashRoundingAmt = new ModelColumn<>(I_C_Invoice.class, "CashRoundingAmt", null);
+	String COLUMNNAME_CashRoundingAmt = "CashRoundingAmt";
+
+	/**
 	 * Set Auction.
 	 *
 	 * <br>Type: TableDir
