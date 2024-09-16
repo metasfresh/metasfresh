@@ -189,7 +189,7 @@ public class EDIDesadvPackService
 					desadvLineRecord, 
 					inOutLineRecord, 
 					topLevelHU, 
-					recipientBPartnerId, 
+					recipientBPartnerId,
 					desadvLineWithDraftedPackItems, 
 					invoicableQtyBasedOn, 
 					uomToStockRatio,
@@ -394,7 +394,7 @@ public class EDIDesadvPackService
 	private StockQtyAndUOMQty createPackUsingHU(
 			@NonNull final I_EDI_DesadvLine desadvLineRecord,
 			@NonNull final I_M_InOutLine inOutLineRecord,
-			@NonNull final I_M_HU huRecord,
+			@NonNull final I_M_HU topLevelHURecord,
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final DesadvLineWithDraftedPackItems desadvLineWithPacks,
 			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn,
@@ -403,25 +403,24 @@ public class EDIDesadvPackService
 	{
 		final ProductId productId = ProductId.ofRepoId(desadvLineRecord.getM_Product_ID());
 
-		final HU rootLU = huRepository
-				.getById(HuId.ofRepoId(huRecord.getM_HU_ID()))
+		final HU topLevelHU = huRepository
+				.getById(HuId.ofRepoId(topLevelHURecord.getM_HU_ID()))
 				.retainProduct(productId) // no need to blindly hope that the HU is homogenous
-				.filter(hu -> hu.getType().isLU())
 				.orElse(null);
 
-		if (rootLU == null)
+		if (topLevelHU == null)
 		{
 			// we don't do HU-related stuffs if the HU is not an LU.
 			final UomId desadvUomId = UomId.ofRepoId(desadvLineRecord.getC_UOM_ID());
 			return StockQtyAndUOMQtys.createZero(productId, desadvUomId);
 		}
 
-		final StockQtyAndUOMQty qtyCUsPerLU = getQuantity(rootLU, productId);
+		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(topLevelHU, productId);
 
 		final CreateEDIDesadvPackRequest createEDIDesadvPackRequest = buildCreateDesadvPackRequest(
-				rootLU,
+				topLevelHU,
 				bPartnerId,
-				qtyCUsPerLU,
+				qtyCUsPerTopLevelHU,
 				productId,
 				desadvLineRecord,
 				inOutLineRecord,
@@ -432,7 +431,7 @@ public class EDIDesadvPackService
 
 		ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequest);
 
-		return qtyCUsPerLU;
+		return qtyCUsPerTopLevelHU;
 	}
 
 	@NonNull
@@ -462,7 +461,7 @@ public class EDIDesadvPackService
 
 	@NonNull
 	private CreateEDIDesadvPackRequest buildCreateDesadvPackRequest(
-			@NonNull final HU rootHU,
+			@NonNull final HU topLevelHU,
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final StockQtyAndUOMQty quantity,
 			@NonNull final ProductId productId,
@@ -477,12 +476,12 @@ public class EDIDesadvPackService
 				.line(packLineSequence.next())
 				.orgId(OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()))
 				.ediDesadvId(EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID()))
-				.huId(rootHU.getId());
+				.huId(topLevelHU.getId());
 
-		final Quantity qtyCUInStockUOM = rootHU.extractMedianCUQtyPerChildHU(productId);
+		final Quantity qtyCUInStockUOM = topLevelHU.extractMedianCUQtyPerChildHU(productId);
 
 		// get minimum best before of all HUs and sub-HUs
-		final Date bestBefore = rootHU.extractSingleAttributeValue(
+		final Date bestBefore = topLevelHU.extractSingleAttributeValue(
 				attrSet -> attrSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate) ? attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate) : null,
 				TimeUtil::min);
 
@@ -493,10 +492,10 @@ public class EDIDesadvPackService
 						.inOutLineId(InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()))
 						.qtyItemCapacity(qtyCUInStockUOM.toBigDecimal())
 						.bestBeforeDate(TimeUtil.asTimestamp(bestBefore))
-						.qtyTu(rootHU.getChildHUs().size());
+						.qtyTu(topLevelHU.getChildHUs().size());
 
 		// Lot
-		final String lotNumber = rootHU.getAttributes().getValueAsString(AttributeConstants.ATTR_LotNumber);
+		final String lotNumber = topLevelHU.getAttributes().getValueAsString(AttributeConstants.ATTR_LotNumber);
 		if (!isEmpty(lotNumber, true))
 		{
 			createEDIDesadvPackItemRequestBuilder.lotNumber(lotNumber);
@@ -511,10 +510,10 @@ public class EDIDesadvPackService
 
 		setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUInStockUOM, quantity, stockUomId, invoiceUomId, movementQty, invoicableQtyBasedOn, uomToStockRatio);
 
-		extractAndSetPackagingCodes(rootHU, createDesadvPackRequestBuilder, createEDIDesadvPackItemRequestBuilder);
-		extractAndSetPackagingGTINs(rootHU, bPartnerId, createDesadvPackRequestBuilder, createEDIDesadvPackItemRequestBuilder);
+		extractAndSetPackagingCodes(topLevelHU, createDesadvPackRequestBuilder, createEDIDesadvPackItemRequestBuilder);
+		extractAndSetPackagingGTINs(topLevelHU, bPartnerId, createDesadvPackRequestBuilder, createEDIDesadvPackItemRequestBuilder);
 
-		setSSCC18(rootHU, createDesadvPackRequestBuilder);
+		setSSCC18(topLevelHU, createDesadvPackRequestBuilder);
 
 		createDesadvPackRequestBuilder.createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequestBuilder.build());
 
