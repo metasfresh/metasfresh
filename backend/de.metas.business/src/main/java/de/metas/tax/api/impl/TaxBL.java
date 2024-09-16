@@ -426,4 +426,11 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	{
 		return taxDAO.getChildTaxes(taxId);
 	}
+
+	@Override
+	public Tax getDefaultTax(final TaxCategoryId taxCategoryId)
+	{
+		return taxDAO.getDefaultTax(taxCategoryId);
+	}
+
 }
