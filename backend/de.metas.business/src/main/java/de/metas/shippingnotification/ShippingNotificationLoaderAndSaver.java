@@ -320,7 +320,6 @@ class ShippingNotificationLoaderAndSaver
 		record.setDocAction(from.getDocAction());
 		record.setProcessed(from.isProcessed());
 		record.setReversal_ID(ShippingNotificationId.toRepoId(from.getReversalId()));
-		record.setBPartnerAddress(from.getBpaddress());
 	}
 
 	private static void updateRecord(

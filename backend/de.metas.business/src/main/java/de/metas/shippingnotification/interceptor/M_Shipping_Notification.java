@@ -62,15 +62,4 @@ public class M_Shipping_Notification
 	}
 
 
-	// @ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
-	// 		ifColumnsChanged = { I_M_Shipping_Notification.COLUMNNAME_ShipFrom_Partner_ID,
-	// 				I_M_Shipping_Notification.COLUMNNAME_ShipFrom_Location_ID,
-	// 				I_M_Shipping_Notification.COLUMNNAME_ShipFrom_User_ID },
-	// 		skipIfCopying = true
-	// )
-	// public void updateNextLocation(final I_C_BPartner_Location bpLocation)
-	// {
-	// 	documentLocationBL.updateCapturedLocation(ShippingNotificationDocumentLocationAdapterFactory.billLocationAdapter(order));
-	// }
-
 }
