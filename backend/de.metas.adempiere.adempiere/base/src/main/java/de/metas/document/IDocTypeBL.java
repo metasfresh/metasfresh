@@ -85,4 +85,6 @@ public interface IDocTypeBL extends ISingletonService
 	void save(I_C_DocType dt);
 
 	boolean isModularManufacturingOrder(@NonNull DocTypeId docTypeId);
+
+	boolean isStandardOrder(@NonNull DocTypeId docTypeId);
 }

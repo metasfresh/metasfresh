@@ -36,6 +36,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 
+import static org.compiere.model.X_C_DocType.DOCSUBTYPE_StandardOrder;
+
 public class DocTypeBL implements IDocTypeBL
 {
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
@@ -259,6 +261,14 @@ public class DocTypeBL implements IDocTypeBL
 		return DocBaseType.equals(docBaseType, DocBaseType.ModularOrder);
 	}
 
+	@Override
+	public boolean isStandardOrder(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
+
+		return DOCSUBTYPE_StandardOrder.equals(dt.getDocSubType());
+	}
+	
 	@NonNull
 	private DocBaseType getDocBaseType(final @NonNull DocTypeId docTypeId)
 	{
