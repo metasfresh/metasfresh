@@ -307,7 +307,7 @@ class ShippingNotificationLoaderAndSaver
 		record.setM_Locator_ID(from.getLocatorId().getRepoId());
 		record.setShipFrom_Partner_ID(from.getShipFromBPartnerAndLocationId().getBpartnerId().getRepoId());
 		record.setShipFrom_User_ID(from.getShipFromContactId() != null ? from.getShipFromContactId().getRepoId() : -1);
-		record.setShipFrom_Location_ID(from.getShipFromBPartnerAndLocationId() != null ? from.getShipFromBPartnerAndLocationId().getRepoId() : -1));
+		record.setShipFrom_Location_ID(from.getShipFromBPartnerAndLocationId() != null ? from.getShipFromBPartnerAndLocationId().getRepoId() : -1);
 		record.setC_Order_ID(from.getSalesOrderId().getRepoId());
 		record.setDateAcct(Timestamp.from(from.getDateAcct()));
 		record.setPhysicalClearanceDate(Timestamp.from(from.getPhysicalClearanceDate()));
