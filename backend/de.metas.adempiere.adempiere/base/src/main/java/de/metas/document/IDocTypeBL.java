@@ -2,6 +2,7 @@ package de.metas.document;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_C_DocType;
 
 public interface IDocTypeBL extends ISingletonService
@@ -59,4 +60,6 @@ public interface IDocTypeBL extends ISingletonService
 	boolean isMediated(DocTypeId docTypeId);
 
 	boolean isCallOrder(DocTypeId docTypeId);
+
+	boolean isStandardOrder(@NonNull DocTypeId docTypeId);
 }

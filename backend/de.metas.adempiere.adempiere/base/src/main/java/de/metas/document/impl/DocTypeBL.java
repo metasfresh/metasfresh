@@ -11,6 +11,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 
+import static org.compiere.model.X_C_DocType.DOCSUBTYPE_StandardOrder;
+
 public class DocTypeBL implements IDocTypeBL
 {
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
@@ -134,5 +136,13 @@ public class DocTypeBL implements IDocTypeBL
 
 		return (X_C_DocType.DOCBASETYPE_SalesOrder.equals(dt.getDocBaseType()) || X_C_DocType.DOCBASETYPE_PurchaseOrder.equals(dt.getDocBaseType()))
 				&& X_C_DocType.DOCSUBTYPE_CallOrder.equals(dt.getDocSubType());
+	}
+
+	@Override
+	public boolean isStandardOrder(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		
+		return DOCSUBTYPE_StandardOrder.equals(dt.getDocSubType());
 	}
 }
