@@ -264,7 +264,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isStandardOrder(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 
 		return DOCSUBTYPE_StandardOrder.equals(dt.getDocSubType());
 	}
