@@ -1073,7 +1073,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 			if (posId != 0)
 			{
-				final MPOS pos = new MPOS(getCtx(), posId, get_TrxName());
+				final I_C_POS pos = InterfaceWrapperHelper.load(posId, I_C_POS.class);
 				final int cashBookId = pos.getC_CashBook_ID();
 				cash = MCash.get(getCtx(), cashBookId, getDateInvoiced(), get_TrxName());
 			}
