@@ -55,6 +55,9 @@ public class CreateEDIDesadvPackRequest
 	@NonNull
 	String sscc18;
 
+	/** 
+	 * true means the SSCC was just created on-the-fly. false means it's coming from a HU's SSCC-Attribute. 
+	 */
 	@NonNull
 	Boolean isManualIpaSSCC;
 
