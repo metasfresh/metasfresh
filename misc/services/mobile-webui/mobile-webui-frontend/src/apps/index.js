@@ -73,11 +73,17 @@ export const getApplicationMessages = () => {
 export const getApplicationReduxReducers = () => {
   return Object.values(registeredApplications).reduce((result, applicationDescriptor) => {
     if (applicationDescriptor.reduxReducer) {
-      result['applications/' + applicationDescriptor.applicationId] = applicationDescriptor.reduxReducer;
+      result[computeApplicationStateKey(applicationDescriptor.applicationId)] = applicationDescriptor.reduxReducer;
     }
     return result;
   }, {});
 };
+
+export const getApplicationState = (globalState, applicationId) => {
+  return globalState?.[computeApplicationStateKey(applicationId)] ?? {};
+};
+
+const computeApplicationStateKey = (applicationId) => 'applications/' + applicationId;
 
 export const fireWFActivityCompleted = ({ applicationId, defaultAction, ...params }) => {
   const onWFActivityCompleted = registeredApplications[applicationId]?.onWFActivityCompleted;

@@ -1,0 +1,25 @@
+.pos-screen {
+  display: flex;
+  flex-flow: row nowrap;
+  font-size: 2rem;
+  
+  .products {
+    .product-button {
+      font-size: 2rem;
+      border: 0;
+      background-color: #a1e9ff;
+    }
+  }
+  
+  .current-order {
+    
+  }
+  
+  .current-order-actions {
+    button {
+      font-size: 2rem;
+    }
+  }
+}
+
+
