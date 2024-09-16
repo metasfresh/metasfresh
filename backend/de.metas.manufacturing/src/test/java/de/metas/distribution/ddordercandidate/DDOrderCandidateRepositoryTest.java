@@ -6,7 +6,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -71,7 +71,7 @@ class DDOrderCandidateRepositoryTest
 				// isKeepTargetPlant;
 				//
 				.customerId(BPartnerId.ofRepoId(94))
-				.salesOrderLineId(OrderLineId.ofRepoId(95))
+				.salesOrderLineId(OrderAndLineId.ofRepoIds(95, 951))
 				.forwardPPOrderRef(PPOrderRef.builder()
 						.ppOrderCandidateId(96)
 						.ppOrderLineCandidateId(97)

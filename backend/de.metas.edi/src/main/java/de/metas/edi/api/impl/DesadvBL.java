@@ -318,7 +318,7 @@ public class DesadvBL implements IDesadvBL
 		{
 			if (inOutLine.getC_OrderLine_ID() <= 0)
 			{
-				continue;
+				continue; // the DESADV-Line needs to relate to an orderline to make sense
 			}
 			addInOutLine(inOutLine, recipientBPartnerId, packLineSequence);
 		}
