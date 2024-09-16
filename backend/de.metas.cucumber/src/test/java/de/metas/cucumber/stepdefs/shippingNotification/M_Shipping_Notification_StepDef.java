@@ -213,7 +213,7 @@ public class M_Shipping_Notification_StepDef
 			softly.assertThat(locator.getM_Locator_ID()).isEqualTo(shippingNotification.getM_Locator_ID()).isEqualTo(order.getM_Locator_ID());
 
 
-			final String shipFromPartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_ShipFrom_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String shipFromPartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ShipFrom_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(shipFromPartnerLocationIdentifier))
 			{
 				final I_C_BPartner_Location shipFromPartnerLocation = shipFromPartnerLocationTable.get(shipFromPartnerLocationIdentifier);

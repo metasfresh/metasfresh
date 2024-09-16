@@ -101,7 +101,7 @@ public class ShippingNotification
 			@Nullable final BPartnerContactId contactId,
 			final int auctionId,
 			@NonNull final LocatorId locatorId,
-			@NonNull final BPartnerLocationId shipFromBPartnerAndLocationId,
+			@Nullable final BPartnerLocationId shipFromBPartnerAndLocationId,
 			@Nullable final BPartnerContactId shipFromContactId,
 			@NonNull final OrderId salesOrderId,
 			final @NonNull Instant dateAcct, @NonNull final Instant physicalClearanceDate,
