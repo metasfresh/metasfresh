@@ -271,6 +271,7 @@ export class RawLookup extends Component {
           if (!mandatory) {
             this.fireOnDropdownListToggle(true);
           }
+          this.handleInputTextChange(undefined, true);
         }
       );
     }
@@ -335,7 +336,10 @@ export class RawLookup extends Component {
       typeaheadSupplier,
     } = this.props;
 
-    const inputValue = this.inputSearch.value;
+    let inputValue = this.inputSearch.value;
+    if (inputValue.trim() === '') {
+      inputValue = ' ';
+    }
     let typeaheadRequest;
     const typeaheadParams = {
       entity,
@@ -457,7 +461,7 @@ export class RawLookup extends Component {
         { isInputEmpty: false, loading: true, query: inputValue },
         () => {
           const query = this.state.query;
-          if (query.length >= this.minQueryLength) {
+          if (query.length >= this.minQueryLength || allowEmpty) {
             this.autocompleteSearchDebounced();
           }
         }
