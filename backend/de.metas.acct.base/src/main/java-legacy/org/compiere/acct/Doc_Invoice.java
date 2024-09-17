@@ -154,6 +154,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		setAmount(Doc.AMTTYPE_Gross, invoice.getGrandTotal());
 		setAmount(Doc.AMTTYPE_Net, invoice.getTotalLines());
 		setAmount(Doc.AMTTYPE_Charge, invoice.getChargeAmt());
+		setAmount(Doc.AMTTYPE_CashRounding, invoice.getCashRoundingAmt());
 
 		setDocLines(loadLines(invoice));
 	}
@@ -414,6 +415,17 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
+		final BigDecimal cashRoundingAmt = getAmount(Doc.AMTTYPE_CashRounding);
+		if (cashRoundingAmt.signum() != 0)
+		{
+			fact.createLine()
+					.setAccount(as.getGeneralLedger().getCashRoundingAcct())
+					.setCurrencyId(getCurrencyId())
+					.setAmtSource(null, cashRoundingAmt)
+					.buildAndAdd();
+		}
+
+
 		//
 		// TaxDue CR
 		for (final DocTax docTax : getTaxes())
@@ -526,6 +538,17 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.setAmtSource(chargeAmt, null)
 					.buildAndAdd();
 		}
+
+		final BigDecimal cashRoundingAmt = getAmount(Doc.AMTTYPE_CashRounding);
+		if (cashRoundingAmt.signum() != 0)
+		{
+			fact.createLine()
+					.setAccount(as.getGeneralLedger().getCashRoundingAcct())
+					.setCurrencyId(getCurrencyId())
+					.setAmtSource(cashRoundingAmt, null)
+					.buildAndAdd();
+		}
+
 
 		//
 		// TaxDue DR

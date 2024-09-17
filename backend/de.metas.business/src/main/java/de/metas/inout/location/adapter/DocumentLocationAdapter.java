@@ -29,6 +29,8 @@ import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.shippingnotification.location.adapter.ShippingNotificationDocumentLocationAdapterFactory;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -128,6 +130,11 @@ public class DocumentLocationAdapter
 	public void setFrom(@NonNull final I_C_Invoice from)
 	{
 		setFrom(InvoiceDocumentLocationAdapterFactory.locationAdapter(from).toDocumentLocation());
+	}
+
+	public void setFrom(@NonNull final I_M_Shipping_Notification from)
+	{
+		setFrom(ShippingNotificationDocumentLocationAdapterFactory.locationAdapter(from).toDocumentLocation());
 	}
 
 	@Override

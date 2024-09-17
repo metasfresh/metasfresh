@@ -28,21 +28,25 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_De
                                                                                       ad_language character varying)
     RETURNS TABLE
             (
-                line        numeric,
-                p_value     character varying,
-                product_value     character varying,
-                Name        character varying,
-                Attributes  character varying,
-                MovementQty numeric,
-                UOMSymbol   character varying,
-                QtyPattern  character varying,
-                priceactual numeric
+                OrderNo       character varying,
+                auction       character varying,
+                line          numeric,
+                p_value       character varying,
+                product_value character varying,
+                Name          character varying,
+                Attributes    character varying,
+                MovementQty   numeric,
+                UOMSymbol     character varying,
+                QtyPattern    character varying,
+                priceactual   numeric
             )
     STABLE
     LANGUAGE sql
 AS
 $$
-SELECT snl.line,
+SELECT o.documentno                                           AS OrderNo,
+       a.name                                                 AS auction,
+       snl.line,
        COALESCE(NULLIF(bpp.ProductNo, ''), p.value)           AS p_value,
        p.value                                                AS product_value,
        COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) AS Name,
@@ -62,8 +66,10 @@ SELECT snl.line,
 
 FROM m_shipping_notificationline snl
          INNER JOIN M_Shipping_Notification sn ON snl.m_shipping_notification_id = sn.m_shipping_notification_id
+         INNER JOIN C_Auction a ON sn.c_auction_id = a.c_auction_id
          INNER JOIN C_BPartner bp ON sn.C_BPartner_ID = bp.C_BPartner_ID
-         LEFT OUTER JOIN C_OrderLine ol ON snl.c_orderline_id = ol.c_orderline_id
+         INNER JOIN C_OrderLine ol ON snl.c_orderline_id = ol.c_orderline_id
+         INNER JOIN C_Order o ON ol.c_order_id = o.c_order_id
          INNER JOIN C_UOM uom ON uom.C_UOM_ID = snl.C_UOM_ID
          LEFT OUTER JOIN C_UOM_Trl uomt
                          ON uomt.C_UOM_ID = uom.C_UOM_ID AND uomt.AD_Language = $2

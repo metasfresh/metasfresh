@@ -144,7 +144,6 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new DD_Order(ddOrderMoveScheduleService, ddOrderService));
 		engine.addModelValidator(new DD_OrderLine(ddOrderMoveScheduleService));
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item_Product());
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order());
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_Movement.instance);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU(huUniqueAttributesService));
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Attribute(huUniqueAttributesService));
