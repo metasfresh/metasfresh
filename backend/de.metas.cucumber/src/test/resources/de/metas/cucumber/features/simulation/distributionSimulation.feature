@@ -62,12 +62,11 @@ Feature: create distribution simulation
     And create and process 'simulated demand' for:
       | C_Order_ID | C_OrderLine_ID |
       | o_1        | ol_1           |
-    And after not more than 99960s, the MD_Candidate table has only the following records
+    And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | simulated |
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14 | true      |
       | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0   | true      |
       | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14 | true      |
-      | c_4        | SUPPLY            |                           | p_1          | 2022-07-04T00:00:00Z | 14  | 0   | true      |
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | IsSimulated | C_OrderLineSO_ID |
       | c1         | p_1          | warehouse_2         | warehouseStd     | 14 PCE | N         | Y           | ol_1             |
