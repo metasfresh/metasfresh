@@ -126,6 +126,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.maxManufacturedQtyPerOrderDispo(extractMaxManufacturedQtyPerOrderDispo(record))
 				.distributionNetworkId(DistributionNetworkId.ofRepoIdOrNull(record.getDD_NetworkDistribution_ID()))
 				.onMaterialReceiptWithDestWarehouse(OnMaterialReceiptWithDestWarehouse.ofNullableCode(record.getOnMaterialReceiptWithDestWarehouse()))
+				.manufacturingAggregationId(record.getC_Manufacturing_Aggregation_ID())
 				.build();
 	}
 
@@ -158,6 +159,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		record.setIsMatured(from.isMatured());
 		record.setM_Maturing_Configuration_ID(MaturingConfigId.toRepoId(from.getMaturingConfigId()));
 		record.setM_Maturing_Configuration_Line_ID(MaturingConfigLineId.toRepoId(from.getMaturingConfigLineId()));
+		record.setC_Manufacturing_Aggregation_ID(from.getManufacturingAggregationId() > 0 ? from.getManufacturingAggregationId() : -1);
 	}
 
 	@Nullable
