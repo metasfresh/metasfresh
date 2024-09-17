@@ -110,7 +110,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 		{
 			final Candidate candidateWithQtyDeltaAndId = candidateSaveResult.toCandidateWithQtyDelta();
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator.createSupplyRequiredEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty, null);
-			materialEventService.enqueueEventAfterNextCommit(supplyRequiredEvent); // want to avoid the situation that some response comes back before the data here was even committed to DB
+			materialEventService.enqueueEventNow(supplyRequiredEvent);
 		}
 
 		//return candidateWithQtyDeltaAndId;

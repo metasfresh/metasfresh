@@ -38,12 +38,7 @@ public class GenerateDDOrderFromDDOrderCandidate extends WorkpackageProcessorAda
 	private DDOrderCandidateProcessRequest getProcessRequest()
 	{
 		final DDOrderCandidateEnqueueRequest enqueueRequest = DDOrderCandidateEnqueueService.extractRequest(getParameters());
-		final PInstanceId selectionId = enqueueRequest.getSelectionId();
-
-		final List<DDOrderCandidate> candidates = ddOrderCandidateService.getBySelectionId(selectionId);
-
-		logCandidatesToProcess(candidates, selectionId);
-
+		final List<DDOrderCandidate> candidates = ddOrderCandidateService.getBySelectionId(enqueueRequest.getSelectionId());
 		return DDOrderCandidateProcessRequest.builder()
 				.candidates(candidates)
 				.build();

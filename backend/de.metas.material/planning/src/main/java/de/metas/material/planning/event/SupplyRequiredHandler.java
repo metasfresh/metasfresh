@@ -108,9 +108,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		}
 		else
 		{
-			// enqueing the response only after commit;
-			// i don't know that anothing we did here creates/changes data that would be needed by the event's handler(s), but better safe than sorry
-			events.forEach(postMaterialEventService::enqueueEventAfterNextCommit);
+			events.forEach(postMaterialEventService::enqueueEventNow);
 		}
 	}
 
