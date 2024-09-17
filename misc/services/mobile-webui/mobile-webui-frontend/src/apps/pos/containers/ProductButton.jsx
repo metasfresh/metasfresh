@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { addOrderLine } from '../actions';
@@ -6,12 +6,16 @@ import { formatAmountToHumanReadableStr } from '../../../utils/money';
 
 const ProductButton = ({ productId, name, price, currencySymbol, uomId, uomSymbol, order_uuid }) => {
   const dispatch = useDispatch();
+  const [isProcessing, setProcessing] = useState(false);
 
-  const isEnabled = !!order_uuid;
+  const isEnabled = !!order_uuid && !isProcessing;
   const priceStr = formatAmountToHumanReadableStr({ amount: price, currency: currencySymbol }) + '/' + uomSymbol;
 
-  const onClick = () => {
+  const onClick = async () => {
+    if (!isEnabled) return;
+    setProcessing(true);
     dispatch(addOrderLine({ order_uuid, productId, productName: name, price, qty: 1, uomId, uomSymbol }));
+    dispatch(() => setProcessing(false));
   };
   return (
     <button className="product-button" onClick={onClick} disabled={!isEnabled}>

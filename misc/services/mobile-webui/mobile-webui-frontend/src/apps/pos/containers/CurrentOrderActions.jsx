@@ -7,8 +7,8 @@ const CurrentOrderActions = () => {
   const { isCurrentOrderLoading, currentOrder } = useCurrentOrder();
 
   const isNewOrderAllowed = !isCurrentOrderLoading && (!currentOrder || currentOrder?.lines?.length > 0);
-  const isVoidAllowed = !isCurrentOrderLoading && currentOrder?.uuid;
-  const isPayAllowed = !isCurrentOrderLoading && currentOrder?.uuid;
+  const isVoidAllowed = !isCurrentOrderLoading && currentOrder && currentOrder.lines?.length > 0;
+  const isPayAllowed = !isCurrentOrderLoading && currentOrder && currentOrder.lines?.length > 0;
 
   const onNewOrderClick = () => {
     dispatch(addNewOrderAction());
@@ -24,14 +24,16 @@ const CurrentOrderActions = () => {
 
   return (
     <div className="current-order-actions">
-      <button onClick={onNewOrderClick} disabled={!isNewOrderAllowed}>
-        New
-      </button>
-      <button onClick={onVoidCurrentOrderClick} disabled={!isVoidAllowed}>
-        Void
-      </button>
-      <button onClick={onPayClick} disabled={!isPayAllowed}>
-        Pay
+      <div className="other-actions-container">
+        <button onClick={onNewOrderClick} disabled={!isNewOrderAllowed}>
+          New
+        </button>
+        <button onClick={onVoidCurrentOrderClick} disabled={!isVoidAllowed}>
+          Void
+        </button>
+      </div>
+      <button className="pay-action" onClick={onPayClick} disabled={!isPayAllowed}>
+        &gt; Pay
       </button>
     </div>
   );
