@@ -162,12 +162,6 @@ public interface IWorkPackageBuilder
 	IWorkPackageBuilder setElementsLocker(ILockCommand elementsLocker);
 
 	/**
-	 * @return Lock acquired when enqueued elements were locked (on {@link #buildAndEnqueue()}).
-	 * Could be null if no lock was acquired.
-	 */
-	Future<ILock> getElementsLock();
-
-	/**
 	 * Overloading set async batch, to enable setting async batch also by id (optional).
 	 * If the asyncBatchId is not set, it will be inherited.
 	 */
