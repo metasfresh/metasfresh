@@ -336,7 +336,7 @@ Feature: create production order
       | 5          | SUPPLY            | PRODUCTION                | p_3          | 2021-06-16T21:00:00Z | 10  | 0    | bomASI                    |
       | 6          | DEMAND            | PRODUCTION                | p_4          | 2021-06-16T21:00:00Z | 100 | -100 | bomLineASI                |
       | 8          | SUPPLY            | PRODUCTION                | p_3          | 2021-06-16T21:00:00Z | 12  | 12   | bomASI                    |
-      | 9          | DEMAND            | PRODUCTION                | p_4          | 2021-06-16T21:00:00Z | 120 | -120 | bomLineASI                |
+      | 9          | DEMAND            | PRODUCTION                | p_4          | 2021-06-16T21:00:00Z | 120 | -220 | bomLineASI                |
 
     
     
