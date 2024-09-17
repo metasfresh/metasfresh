@@ -1,13 +1,13 @@
 import React from 'react';
-import CurrentOrder from './CurrentOrder';
 import './POSScreen.scss';
-import Products from './Products';
+import Header from './Header';
+import POSOrderPanel from './POSOrderPanel';
 
 const POSScreen = () => {
   return (
     <div className="pos-screen">
-      <CurrentOrder />
-      <Products />
+      <Header />
+      <POSOrderPanel />
     </div>
   );
 };
