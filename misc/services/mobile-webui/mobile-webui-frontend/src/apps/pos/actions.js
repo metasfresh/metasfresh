@@ -118,17 +118,17 @@ export const removeOrderAction = ({ order_uuid }) => {
   };
 };
 
-export const addOrderLine = ({ order_uuid, productId, productName, price, qty, uomId, uomSymbol }) => {
+export const addOrderLine = ({ order_uuid, productId, productName, currencySymbol, price, qty, uomId, uomSymbol }) => {
   return (dispatch) => {
-    dispatch(addOrderLineAction({ order_uuid, productId, productName, price, qty, uomId, uomSymbol }));
+    dispatch(addOrderLineAction({ order_uuid, productId, productName, currencySymbol, price, qty, uomId, uomSymbol }));
     dispatch(syncOrderToBackend({ order_uuid }));
   };
 };
 
-const addOrderLineAction = ({ order_uuid, productId, productName, price, qty, uomId, uomSymbol }) => {
+const addOrderLineAction = ({ order_uuid, productId, productName, currencySymbol, price, qty, uomId, uomSymbol }) => {
   return {
     type: ADD_ORDER_LINE,
-    payload: { order_uuid, productId, productName, price, qty, uomId, uomSymbol },
+    payload: { order_uuid, productId, productName, currencySymbol, price, qty, uomId, uomSymbol },
   };
 };
 

@@ -14,7 +14,9 @@ const ProductButton = ({ productId, name, price, currencySymbol, uomId, uomSymbo
   const onClick = async () => {
     if (!isEnabled) return;
     setProcessing(true);
-    dispatch(addOrderLine({ order_uuid, productId, productName: name, price, qty: 1, uomId, uomSymbol }));
+    dispatch(
+      addOrderLine({ order_uuid, productId, productName: name, currencySymbol, price, qty: 1, uomId, uomSymbol })
+    );
     dispatch(() => setProcessing(false));
   };
   return (
