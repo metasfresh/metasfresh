@@ -46,32 +46,6 @@ INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation
 INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,577882,1000000,540020,540112,TO_TIMESTAMP('2024-09-16 13:43:28','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:43:28','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2024-09-16T10:43:29.838Z
-UPDATE T_WEBUI_ViewSelection_ToDelete SET Executor_UUID=? WHERE Executor_UUID IS NULL
-;
-
--- 2024-09-16T10:43:29.849Z
-DELETE FROM T_WEBUI_ViewSelectionLine t 
- WHERE EXISTS (SELECT 1 FROM T_WEBUI_ViewSelection_ToDelete s 
-       WHERE 
-           s.View_UUID=t.UUID
-           AND s.Executor_UUID=?
- )
-;
-
--- 2024-09-16T10:43:29.855Z
-DELETE FROM T_ES_FTS_Search_Result t 
- WHERE EXISTS (SELECT 1 FROM T_WEBUI_ViewSelection_ToDelete s 
-       WHERE 
-           s.View_UUID=t.Search_UUID
-           AND s.Executor_UUID=?
- )
-;
-
--- 2024-09-16T10:43:29.857Z
-DELETE FROM T_WEBUI_ViewSelection_ToDelete WHERE Executor_UUID=?
-;
-
 -- 2024-09-16T10:43:36.716Z
 INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,578711,1000000,540020,540113,TO_TIMESTAMP('2024-09-16 13:43:36','YYYY-MM-DD HH24:MI:SS'),100,'EE01','Y','COL',TO_TIMESTAMP('2024-09-16 13:43:36','YYYY-MM-DD HH24:MI:SS'),100)
 ;
