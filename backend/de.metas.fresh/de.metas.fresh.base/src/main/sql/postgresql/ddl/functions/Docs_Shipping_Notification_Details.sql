@@ -20,12 +20,12 @@
  * #L%
  */
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details(record_id   numeric,
-                                                                                              ad_language character varying)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details(p_record_id   numeric,
+                                                                                              p_ad_language character varying)
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details(record_id   numeric,
-                                                                                      ad_language character varying)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details(p_record_id   numeric,
+                                                                                      p_ad_language character varying)
     RETURNS TABLE
             (
                 OrderNo       character varying,
@@ -66,16 +66,16 @@ SELECT o.documentno                                           AS OrderNo,
 
 FROM m_shipping_notificationline snl
          INNER JOIN M_Shipping_Notification sn ON snl.m_shipping_notification_id = sn.m_shipping_notification_id
-         INNER JOIN C_Auction a ON sn.c_auction_id = a.c_auction_id
+         LEFT OUTER JOIN C_Auction a ON sn.c_auction_id = a.c_auction_id
          INNER JOIN C_BPartner bp ON sn.C_BPartner_ID = bp.C_BPartner_ID
          INNER JOIN C_OrderLine ol ON snl.c_orderline_id = ol.c_orderline_id
          INNER JOIN C_Order o ON ol.c_order_id = o.c_order_id
          INNER JOIN C_UOM uom ON uom.C_UOM_ID = snl.C_UOM_ID
          LEFT OUTER JOIN C_UOM_Trl uomt
-                         ON uomt.C_UOM_ID = uom.C_UOM_ID AND uomt.AD_Language = $2
+                         ON uomt.C_UOM_ID = uom.C_UOM_ID AND uomt.AD_Language = p_ad_language
     -- Product and its translation
          INNER JOIN M_Product p ON snl.M_Product_ID = p.M_Product_ID
-         LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2
+         LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_ad_language
 
     -- Attributes
          LEFT OUTER JOIN (SELECT STRING_AGG(at.ai_value, ', '
@@ -94,14 +94,13 @@ FROM m_shipping_notificationline snl
                                    JOIN m_shipping_notificationline snla
                                         ON at.M_AttributeSetInstance_ID = snla.M_AttributeSetInstance_ID
                           WHERE at.IsPrintedInDocument = 'Y'
-                            AND snla.m_shipping_notification_id = $1
+                            AND snla.m_shipping_notification_id = p_record_id
                           GROUP BY at.M_AttributeSetInstance_ID) att ON snl.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
 
          LEFT OUTER JOIN
      de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(snl.M_Product_ID, bp.C_BPartner_ID,
                                                                       att.M_AttributeSetInstance_ID) AS bpp ON TRUE
-WHERE snl.m_shipping_notification_id = $1
-  AND snl.isactive = 'Y'
+WHERE snl.m_shipping_notification_id = p_record_id
 ORDER BY line
     ;
 $$
