@@ -31,6 +31,7 @@ Feature: Modular contract log from purchase order for raw product
       | org_1                | 001   |
 
   @from:cucumber
+  @Id:S0458_100
   @ghActions:run_on_executor4
   Scenario: raw product with the following computing methods:
   - InformativeLogs
@@ -182,9 +183,10 @@ Feature: Modular contract log from purchase order for raw product
       | price_90                             | moduleLogContract_1           | storageCost_module           | storageCostForRawProduct | 90        | 0.06      | EUR                        | PCE                   | N                | 0            |
 
     And after not more than 30s, ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName       | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.ProductName        | OPT.IsBillable |
-      | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | rawProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine     | moduleLogContract_1           | modCntr_type_0             | false         | PurchaseOrder                | EUR                        | PCE                   | 10000      | y2022                             | informative_module               | 10.00           | PCE                       | informative_06032024_1 | N              |
-      | poLog_1                   | moduleLogContract_1  | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | rawProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_0             | false         | PurchaseModularContract      | EUR                        | PCE                   | 10000      | y2022                             | informative_module               | 10.00           | PCE                       | informative_06032024_1 | N              |
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName       | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.ProductName              | OPT.IsBillable |
+      | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | rawProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine     | moduleLogContract_1           | modCntr_type_0             | false         | PurchaseOrder                | EUR                        | PCE                   | 10000      | y2022                             | informative_module               | 10.00           | PCE                       | informative_06032024_1       | N              |
+      | poLog_1                   | moduleLogContract_1  | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | rawProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_0             | false         | PurchaseModularContract      | EUR                        | PCE                   | 10000      | y2022                             | informative_module               | 10.00           | PCE                       | informative_06032024_1       | N              |
+      | log_sv                    | moduleLogContract_1  | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | rawProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_6             | false         | PurchaseModularContract      | EUR                        | PCE                   | 7500       | y2022                             | avOnInterim_module               | 7.5             | PCE                       | addValueOnInterim_06032024_1 | Y              |
 
     And there is no C_Invoice_Candidate for C_Order po_order
 
@@ -214,6 +216,7 @@ Feature: Modular contract log from purchase order for raw product
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU_2   | receiptSchedule_PO              | inOut_06032024_2      |
+
     And validate the created material receipt lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | receiptLine_2             | inOut_06032024_2      | rawProduct              | 800         | true      | 800            |
@@ -282,6 +285,11 @@ Feature: Modular contract log from purchase order for raw product
       | metasfresh_user       | invGroup                             | 2022-02-15  | 2022-04-20  |
 
     And load latest ModCntr_Interest_Run for invoicing group invGroup as lastInterestRun
+
+    And validate created interestRun records for lastInterestRun
+      | ModCntr_Interest_ID.Identifier | FinalInterest | C_Currency.ISO_Code | InterestDays | ShippingNotification_ModCntr_Log_ID.Identifier | OPT.InterimContract_ModCntr_Log_ID.Identifier |
+      | interest_1                     | 40            | EUR                 | 18           | log_avInterim_snline                           | log_sv                                        |
+
 
     And create final invoice
       | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier | OPT.DateInvoiced | OPT.DateAcct |

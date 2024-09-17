@@ -22,13 +22,21 @@
 
 package de.metas.cucumber.stepdefs.contract;
 
+import de.metas.contracts.model.I_ModCntr_Interest;
 import de.metas.contracts.model.I_ModCntr_Interest_Run;
 import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
 import de.metas.contracts.modular.interest.EnqueueInterestComputationRequest;
 import de.metas.contracts.modular.interest.InterestService;
+import de.metas.contracts.modular.interest.log.ModularLogInterest;
+import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
+import de.metas.contracts.modular.interest.run.InterestRunId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.user.UserId;
@@ -39,10 +47,14 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class ModCntr_Interest_Run_StepDef
@@ -52,7 +64,11 @@ public class ModCntr_Interest_Run_StepDef
 	@NonNull private final ModCntr_InvoicingGroup_StepDefData invoicingGroupTable;
 	@NonNull private final ModCntr_Interest_Run_StepDefData interestRunTable;
 	@NonNull private final AD_User_StepDefData userTable;
+	@NonNull private final ModCntr_Log_StepDefData logTable;
+
+	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final InterestService interestService = SpringContextHolder.instance.getBean(InterestService.class);
+	private final ModularLogInterestRepository modularLogInterestRepository = SpringContextHolder.instance.getBean(ModularLogInterestRepository.class);
 
 	@And("^load latest ModCntr_Interest_Run for invoicing group (.*) as (.*)$")
 	public void metasfresh_contains_ModCntr_InvoicingGroup(@NonNull final String invoicingGroupIdentifier, @NonNull final String interestRunIdentifier)
@@ -74,6 +90,71 @@ public class ModCntr_Interest_Run_StepDef
 		interestService.distributeInterestAndBonus(getRequest(DataTableRow.singleRow(dataTable)));
 	}
 
+	@And("^validate created interestRun records for (.*)$")
+	public void verifyInterest(@NonNull final String interestRunIdentifier, @NonNull final DataTable dataTable)
+	{
+		final InterestRunId interestRunId = InterestRunId.ofRepoId(interestRunTable.get(interestRunIdentifier).getModCntr_Interest_Run_ID());
+		// make sure it's modifiable, we want to be able to remove matched records from it
+		final ArrayList<ModularLogInterest> modularLogInterestsForRun = new ArrayList<>(modularLogInterestRepository.getModularLogInterestsForRun(interestRunId));
+		for (final DataTableRow row : DataTableRow.toRows(dataTable))
+		{
+			validateInterestRow(row, modularLogInterestsForRun);
+		}
+	}
+
+	private void validateInterestRow(@NonNull final DataTableRow row, @NonNull final List<ModularLogInterest> modularLogInterestsForRun)
+	{
+		final ModularLogInterest modularLogInterest = modularLogInterestsForRun.stream()
+				.filter(interest -> isRowMatchingInterestRecord(row, interest))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException(getNoMatchingInterestRowMessage(row.getAsIdentifier(I_ModCntr_Interest.COLUMNNAME_ModCntr_Interest_ID), modularLogInterestsForRun)));
+
+		modularLogInterestsForRun.remove(modularLogInterest);
+	}
+
+	private static @NonNull String getNoMatchingInterestRowMessage(final @NonNull StepDefDataIdentifier rowIdentifier, final @NonNull List<ModularLogInterest> modularLogInterestsForRun)
+	{
+		final StringBuilder message = new StringBuilder("No interest record found for ID: ");
+		message.append(rowIdentifier)
+				.append(" in the following rows: ");
+		for (final ModularLogInterest modularLogInterest : modularLogInterestsForRun)
+		{
+			message.append("\n ShippingNotificationLogId: ").append(modularLogInterest.getShippingNotificationLogId())
+					.append(", InterimContractLogId: ").append(modularLogInterest.getInterimContractLogId())
+					.append(", InterestDays ").append(modularLogInterest.getInterestDays())
+					.append(", FinalInterest ").append(modularLogInterest.getFinalInterest());
+
+		}
+
+		return message.toString();
+	}
+
+	private boolean isRowMatchingInterestRecord(final @NonNull DataTableRow row, @NonNull final ModularLogInterest interest)
+	{
+		final ModularContractLogEntryId shippingNotificationLogId = ModularContractLogEntryId.ofRepoId(logTable.get(row.getAsIdentifier(I_ModCntr_Interest.COLUMNNAME_ShippingNotification_ModCntr_Log_ID)).getModCntr_Log_ID());
+		final int interestDays = row.getAsInt(I_ModCntr_Interest.COLUMNNAME_InterestDays);
+		final BigDecimal finalInterestBD = row.getAsBigDecimal(I_ModCntr_Interest.COLUMNNAME_FinalInterest);
+		final CurrencyId currencyId = getCurrencyIdByCurrencyISO(row.getAsString("C_Currency.ISO_Code"));
+		final Money finalInterest = Money.of(finalInterestBD, currencyId);
+
+		final Boolean interimContractMatches = row.getAsOptionalIdentifier(I_ModCntr_Interest.COLUMNNAME_InterimContract_ModCntr_Log_ID)
+				.map(identifier -> ModularContractLogEntryId.ofRepoId(logTable.get(identifier).getModCntr_Log_ID()))
+				.map(logId -> logId.equals(interest.getInterimContractLogId()))
+				.orElse(interest.getInterimContractLogId() == null);
+
+		return interimContractMatches &&
+				shippingNotificationLogId.equals(interest.getShippingNotificationLogId()) &&
+				interest.getInterestDays() == interestDays &&
+				finalInterest.equals(interest.getFinalInterest());
+	}
+
+	@NonNull
+	private CurrencyId getCurrencyIdByCurrencyISO(@NonNull final String currencyISO)
+	{
+		final CurrencyCode convertedToCurrencyCode = CurrencyCode.ofThreeLetterCode(currencyISO);
+		return currencyRepository.getCurrencyIdByCurrencyCode(convertedToCurrencyCode);
+	}
+
 	private EnqueueInterestComputationRequest getRequest(final DataTableRow tableRow)
 	{
 		final I_ModCntr_InvoicingGroup invoicingGroup = invoicingGroupTable.get(tableRow.getAsIdentifier(I_ModCntr_InvoicingGroup.COLUMNNAME_ModCntr_InvoicingGroup_ID));
@@ -91,4 +172,5 @@ public class ModCntr_Interest_Run_StepDef
 				.invoicingGroupId(invoicingGroupId)
 				.build();
 	}
+
 }
