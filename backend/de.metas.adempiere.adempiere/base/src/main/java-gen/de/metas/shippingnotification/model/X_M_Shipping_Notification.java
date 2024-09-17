@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Shipping_Notification extends org.compiere.model.PO implements I_M_Shipping_Notification, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1656125332L;
+	private static final long serialVersionUID = 102568548L;
 
     /** Standard Constructor */
     public X_M_Shipping_Notification (final Properties ctx, final int M_Shipping_Notification_ID, @Nullable final String trxName)
@@ -116,6 +116,33 @@ public class X_M_Shipping_Notification extends org.compiere.model.PO implements 
 	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getC_BPartner_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value(final org.compiere.model.I_C_Location C_BPartner_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class, C_BPartner_Location_Value);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value_ID (final int C_BPartner_Location_Value_ID)
+	{
+		if (C_BPartner_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, C_BPartner_Location_Value_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_Value_ID);
 	}
 
 	@Override
@@ -498,6 +525,48 @@ public class X_M_Shipping_Notification extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public void setShipFrom_Location_ID (final int ShipFrom_Location_ID)
+	{
+		if (ShipFrom_Location_ID < 1) 
+			set_Value (COLUMNNAME_ShipFrom_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_ShipFrom_Location_ID, ShipFrom_Location_ID);
+	}
+
+	@Override
+	public int getShipFrom_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ShipFrom_Location_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getShipFrom_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_ShipFrom_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setShipFrom_Location_Value(final org.compiere.model.I_C_Location ShipFrom_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_ShipFrom_Location_Value_ID, org.compiere.model.I_C_Location.class, ShipFrom_Location_Value);
+	}
+
+	@Override
+	public void setShipFrom_Location_Value_ID (final int ShipFrom_Location_Value_ID)
+	{
+		if (ShipFrom_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_ShipFrom_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_ShipFrom_Location_Value_ID, ShipFrom_Location_Value_ID);
+	}
+
+	@Override
+	public int getShipFrom_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ShipFrom_Location_Value_ID);
+	}
+
+	@Override
 	public void setShipFrom_Partner_ID (final int ShipFrom_Partner_ID)
 	{
 		if (ShipFrom_Partner_ID < 1) 
@@ -510,5 +579,20 @@ public class X_M_Shipping_Notification extends org.compiere.model.PO implements 
 	public int getShipFrom_Partner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ShipFrom_Partner_ID);
+	}
+
+	@Override
+	public void setShipFrom_User_ID (final int ShipFrom_User_ID)
+	{
+		if (ShipFrom_User_ID < 1) 
+			set_Value (COLUMNNAME_ShipFrom_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_ShipFrom_User_ID, ShipFrom_User_ID);
+	}
+
+	@Override
+	public int getShipFrom_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ShipFrom_User_ID);
 	}
 }

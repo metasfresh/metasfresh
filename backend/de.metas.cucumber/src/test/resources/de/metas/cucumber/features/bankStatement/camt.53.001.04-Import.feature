@@ -1336,7 +1336,6 @@ Feature: import bank statement in camt.53.001.04 import format
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
 
-  @dev:runThisOne
   @from:cucumber
   @Id:S0337_600
   Scenario: Import one statement, identify org-account by IBAN, split QRR transactions from regular transactions and import as only QRR transacations as one summary line

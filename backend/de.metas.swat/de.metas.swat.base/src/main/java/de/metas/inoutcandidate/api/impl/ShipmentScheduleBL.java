@@ -77,6 +77,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
@@ -183,6 +184,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IWarehouseBL warehouseBL =Services.get(IWarehouseBL.class);
+
 
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
@@ -982,7 +985,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				this,
 				orderBL,
 				SpringContextHolder.instance.getBean(DocTypeService.class),
-				SpringContextHolder.instance.getBean(IDocumentLocationBL.class)
+				SpringContextHolder.instance.getBean(IDocumentLocationBL.class),
+				warehouseBL
 		);
 	}
 

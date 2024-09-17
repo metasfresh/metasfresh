@@ -23,6 +23,7 @@
 package org.adempiere.warehouse.api;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.location.DocumentLocation;
@@ -65,6 +66,9 @@ public interface IWarehouseBL extends ISingletonService
 	LocatorId getOrCreateDefaultLocatorId(WarehouseId warehouse);
 
 	BPartnerLocationId getBPartnerLocationId(@NonNull WarehouseId warehouseId);
+
+	@Nullable
+	BPartnerContactId getBPartnerContactId(@NonNull WarehouseId warehouseId);
 
 	@Nullable
 	CountryId getCountryId(WarehouseId warehouseId);
