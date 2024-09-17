@@ -25,12 +25,11 @@ package de.metas.contracts.modular.interest;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import lombok.NonNull;
+import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 public class InterestComputationWorkPackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -39,28 +38,18 @@ public class InterestComputationWorkPackageProcessor extends WorkpackageProcesso
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, @Nullable final String localTrxName)
 	{
-		final InterestBonusComputationRequest computationRequest = getRequest();
-		try
-		{
-			interestService.distributeInterestAndBonus(computationRequest);
-		}
-		finally
-		{
-			computationRequest.getInvolvedModularLogsLock().unlockAll();
-		}
-
+		interestService.distributeInterestAndBonus(getRequest());
 		return Result.SUCCESS;
 	}
 
-	@NonNull
-	private InterestBonusComputationRequest getRequest()
+	private EnqueueInterestComputationRequest getRequest()
 	{
-		final EnqueueInterestComputationRequest enqueueRequest = Optional.of(getParameters())
-				.map(params -> params.getParameterAsString(InterestComputationEnqueuer.ENQUEUED_REQUEST_PARAM))
-				.map(serializedRequest -> JsonObjectMapperHolder.fromJson(serializedRequest, EnqueueInterestComputationRequest.class))
-				.orElseThrow(() -> new AdempiereException("Missing mandatory ENQUEUED_REQUEST_PARAM!"));
-
-		return interestService.getInterestBonusComputationRequest(enqueueRequest);
+		final String requestJsonStr = getParameters().getParameterAsString(InterestComputationEnqueuer.ENQUEUED_REQUEST_PARAM);
+		if (Check.isBlank(requestJsonStr))
+		{
+			throw new AdempiereException("Missing mandatory ENQUEUED_REQUEST_PARAM!");
+		}
+		return JsonObjectMapperHolder.fromJson(requestJsonStr, EnqueueInterestComputationRequest.class);
 	}
 
 }

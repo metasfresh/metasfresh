@@ -61,7 +61,29 @@ public class InterestService
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 
-	public void distributeInterestAndBonus(@NonNull final InterestBonusComputationRequest request)
+	public void distributeInterestAndBonus(@NonNull final EnqueueInterestComputationRequest enqueueRequest)
+	{
+		final ILock lock = lockModularContractLogsForInvoicingGroup(enqueueRequest.getInvoicingGroupId());
+		try
+		{
+			distributeInterestAndBonus(
+					InterestBonusComputationRequest.builder()
+							.interestToDistribute(enqueueRequest.getInterestToDistribute())
+							.billingDate(enqueueRequest.getBillingDate())
+							.interimDate(enqueueRequest.getInterimDate())
+							.invoicingGroupId(enqueueRequest.getInvoicingGroupId())
+							.involvedModularLogsLock(lock)
+							.userId(enqueueRequest.getUserId())
+							.build()
+			);
+		}
+		finally
+		{
+			lock.unlockAll();
+		}
+	}
+
+	private void distributeInterestAndBonus(@NonNull final InterestBonusComputationRequest request)
 	{
 		InterestComputationCommand.builder()
 				.modularContractService(modularContractService)
@@ -75,20 +97,6 @@ public class InterestService
 				.queryBL(queryBL)
 				.build()
 				.distributeInterestAndBonus(request);
-	}
-
-	public InterestBonusComputationRequest getInterestBonusComputationRequest(final EnqueueInterestComputationRequest enqueueRequest)
-	{
-		final ILock lock = lockModularContractLogsForInvoicingGroup(enqueueRequest.getInvoicingGroupId());
-
-		return InterestBonusComputationRequest.builder()
-				.interestToDistribute(enqueueRequest.getInterestToDistribute())
-				.billingDate(enqueueRequest.getBillingDate())
-				.interimDate(enqueueRequest.getInterimDate())
-				.invoicingGroupId(enqueueRequest.getInvoicingGroupId())
-				.involvedModularLogsLock(lock)
-				.userId(enqueueRequest.getUserId())
-				.build();
 	}
 
 	private ILock lockModularContractLogsForInvoicingGroup(@NonNull final InvoicingGroupId invoicingGroupId)

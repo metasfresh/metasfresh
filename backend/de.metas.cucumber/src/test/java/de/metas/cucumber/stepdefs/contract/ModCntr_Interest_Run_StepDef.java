@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.contract;
 import de.metas.contracts.model.I_ModCntr_Interest_Run;
 import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
 import de.metas.contracts.modular.interest.EnqueueInterestComputationRequest;
-import de.metas.contracts.modular.interest.InterestBonusComputationRequest;
 import de.metas.contracts.modular.interest.InterestService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
@@ -72,18 +71,10 @@ public class ModCntr_Interest_Run_StepDef
 	@And("distribute interest")
 	public void distributeInterest(@NonNull final DataTable dataTable)
 	{
-		final InterestBonusComputationRequest computationRequest = getRequest(DataTableRow.singleRow(dataTable));
-		try
-		{
-			interestService.distributeInterestAndBonus(computationRequest);
-		}
-		finally
-		{
-			computationRequest.getInvolvedModularLogsLock().unlockAll();
-		}
+		interestService.distributeInterestAndBonus(getRequest(DataTableRow.singleRow(dataTable)));
 	}
 
-	private InterestBonusComputationRequest getRequest(final DataTableRow tableRow)
+	private EnqueueInterestComputationRequest getRequest(final DataTableRow tableRow)
 	{
 		final I_ModCntr_InvoicingGroup invoicingGroup = invoicingGroupTable.get(tableRow.getAsIdentifier(I_ModCntr_InvoicingGroup.COLUMNNAME_ModCntr_InvoicingGroup_ID));
 		final InvoicingGroupId invoicingGroupId = InvoicingGroupId.ofRepoId(invoicingGroup.getModCntr_InvoicingGroup_ID());
@@ -92,12 +83,12 @@ public class ModCntr_Interest_Run_StepDef
 		final Money interestToDistribute = Money.of(invoicingGroup.getTotalInterest(), CurrencyId.ofRepoId(invoicingGroup.getC_Currency_ID()));
 		final UserId userId = userTable.getUserId(tableRow.getAsIdentifier(I_AD_User.COLUMNNAME_AD_User_ID));
 
-		return interestService.getInterestBonusComputationRequest(EnqueueInterestComputationRequest.builder()
+		return EnqueueInterestComputationRequest.builder()
 				.billingDate(billingDate)
 				.interimDate(interimDate)
 				.interestToDistribute(interestToDistribute)
 				.userId(userId)
 				.invoicingGroupId(invoicingGroupId)
-				.build());
+				.build();
 	}
 }
