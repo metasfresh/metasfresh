@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -111,6 +112,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		}
 	}
 
+	@Nullable
 	private MaterialPlanningContext createContextOrNull(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		final OrgId orgId = supplyRequiredDescriptor.getOrgId();

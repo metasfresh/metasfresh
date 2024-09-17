@@ -406,7 +406,7 @@ public class CandidateRepositoryRetrieval
 				.map(record -> fromCandidateRecord(record).get())
 				.collect(Collectors.toList());
 	}
-
+	
 	private IQueryBuilder<I_MD_Candidate> addOrderingYoungestFirst(final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering)
 	{
 		return queryBuilderWithoutOrdering

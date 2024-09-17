@@ -2,12 +2,14 @@ package de.metas.material.dispo.service.event.handler.attributes;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.attributes.AttributesChangedEvent;
 import de.metas.material.event.attributes.AttributesKeyWithASI;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
@@ -105,7 +107,9 @@ public class AttributesChangedEventHandler implements MaterialEventHandler<Attri
 
 	private static ProductDescriptor toProductDescriptor(final int productId, final AttributesKeyWithASI attributes)
 	{
-		return ProductDescriptor.forProductAndAttributes(productId, attributes.getAttributesKey(), attributes.getAttributeSetInstanceId().getRepoId());
+		return ProductDescriptor.forProductAndAttributes(productId,
+														 CoalesceUtil.coalesceNotNull(attributes.getAttributesKey(), AttributesKey.NONE),
+														 attributes.getAttributeSetInstanceId().getRepoId());
 	}
 
 }

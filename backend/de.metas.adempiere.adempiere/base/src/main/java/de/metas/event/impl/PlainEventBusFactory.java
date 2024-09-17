@@ -1,7 +1,6 @@
 package de.metas.event.impl;
 
 import com.google.common.collect.ImmutableList;
-
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
@@ -129,7 +128,7 @@ public class PlainEventBusFactory implements IEventBusFactory
 	}
 
 	@Override
-	public void unregisterUserNotificationsListener(IEventListener listener)
+	public void unregisterUserNotificationsListener(final IEventListener listener)
 	{
 		assertJUnitTestMode();
 	}

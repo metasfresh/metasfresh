@@ -76,7 +76,7 @@ public class DataTableUtil
 				() -> dataTableRow.get(columnNamePrefix + "." + TABLECOLUMN_IDENTIFIER),
 				() -> createFallbackRecordIdentifier(fallbackPrefix));
 	}
-
+	
 	private String createFallbackRecordIdentifier(@NonNull final String prefix)
 	{
 		return prefix + '_' + (++recordIdentifierFallback);

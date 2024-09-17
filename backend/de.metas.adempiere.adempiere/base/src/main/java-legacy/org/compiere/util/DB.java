@@ -1754,7 +1754,7 @@ public class DB
 	 * @param trxName optional Transaction Name
 	 * @return next primary key number
 	 */
-	public int getNextID(final int AD_Client_ID, final String TableName, final String trxName)
+	public int getNextID(final int AD_Client_ID, @NonNull final String TableName, @Nullable final String trxName)
 	{
 		if (Adempiere.isUnitTestMode())
 		{
