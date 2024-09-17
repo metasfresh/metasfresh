@@ -46,6 +46,7 @@ public class PPOrderCandidateAggregationFactory
 		return Optional.ofNullable(ProductPlanningId.ofRepoIdOrNull(candidate.getPP_Product_Planning_ID()))
 				.map(productPlanningsRepo::getById)
 				.map(ProductPlanning::getManufacturingAggregationId)
+				.filter(aggregationId -> aggregationId > 0)
 				.map(aggregationId -> aggregationFactory.getAggregationKeyBuilder(Env.getCtx(), I_PP_Order_Candidate.class, aggregationId))
 				.map(keyBuilder -> keyBuilder.buildAggregationKey(candidate))
 				.map(AggregationKey::getAggregationKeyString)

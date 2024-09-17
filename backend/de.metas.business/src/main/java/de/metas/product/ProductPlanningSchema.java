@@ -74,8 +74,7 @@ public class ProductPlanningSchema
 	@NonNull
 	private final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse;
 
-	@Nullable
-	private final Integer manufacturingAggregationId;
+	private final int manufacturingAggregationId;
 
 	public ProductPlanningSchemaId getIdNotNull() {return Check.assumeNotNull(id, "id is set {}", this);}
 }

@@ -127,9 +127,7 @@ final class ProductPlanningSchemaDAO
 		record.setAD_Workflow_ID(PPRoutingId.toRepoId(schema.getRoutingId()));
 		record.setDD_NetworkDistribution_ID(DistributionNetworkId.toRepoId(schema.getDistributionNetworkId()));
 		record.setOnMaterialReceiptWithDestWarehouse(schema.getOnMaterialReceiptWithDestWarehouse().getCode());
-		record.setC_Manufacturing_Aggregation_ID(schema.getManufacturingAggregationId() != null && schema.getManufacturingAggregationId() > 0
-														 ? schema.getManufacturingAggregationId()
-														 : -1);
+		record.setC_Manufacturing_Aggregation_ID(schema.getManufacturingAggregationId() > 0 ? schema.getManufacturingAggregationId() : -1);
 
 		saveRecord(record);
 

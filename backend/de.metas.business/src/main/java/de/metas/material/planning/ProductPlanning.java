@@ -83,7 +83,7 @@ public class ProductPlanning
 	@Nullable Quantity maxManufacturedQtyPerOrderDispo;
 	@Nullable MaturingConfigId maturingConfigId;
 	@Nullable MaturingConfigLineId maturingConfigLineId;
-	@Nullable Integer manufacturingAggregationId;
+	int manufacturingAggregationId;
 	// Picking
 	boolean isPickingOrder;
 	boolean isPickDirectlyIfFeasible;
@@ -120,7 +120,7 @@ public class ProductPlanning
 						   @Nullable final Quantity maxManufacturedQtyPerOrderDispo,
 						   @Nullable final MaturingConfigId maturingConfigId,
 						   @Nullable final MaturingConfigLineId maturingConfigLineId,
-						   @Nullable final Integer manufacturingAggregationId,
+						   final int manufacturingAggregationId,
            				   final boolean isPickingOrder,
 						   final boolean isPickDirectlyIfFeasible,
 						   final boolean isPurchased,
