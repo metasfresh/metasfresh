@@ -20,16 +20,16 @@
  * #L%
  */
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details(p_record_id   numeric,
-                                                                                              p_ad_language character varying)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details(record_id   numeric,
+                                                                                              ad_language character varying)
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details(p_record_id   numeric,
-                                                                                      p_ad_language character varying)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details(record_id   numeric,
+                                                                                      ad_language character varying)
     RETURNS TABLE
             (
                 OrderNo       character varying,
-                auction       timestamp WITHOUT TIME ZONE,
+                auction       character varying,
                 line          numeric,
                 p_value       character varying,
                 product_value character varying,
@@ -45,7 +45,7 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_De
 AS
 $$
 SELECT o.documentno                                           AS OrderNo,
-       a.date                                                 AS auction,
+       a.name                                                 AS auction,
        snl.line,
        COALESCE(NULLIF(bpp.ProductNo, ''), p.value)           AS p_value,
        p.value                                                AS product_value,
@@ -66,16 +66,16 @@ SELECT o.documentno                                           AS OrderNo,
 
 FROM m_shipping_notificationline snl
          INNER JOIN M_Shipping_Notification sn ON snl.m_shipping_notification_id = sn.m_shipping_notification_id
-         LEFT OUTER JOIN C_Auction a ON sn.c_auction_id = a.c_auction_id
+         INNER JOIN C_Auction a ON sn.c_auction_id = a.c_auction_id
          INNER JOIN C_BPartner bp ON sn.C_BPartner_ID = bp.C_BPartner_ID
          INNER JOIN C_OrderLine ol ON snl.c_orderline_id = ol.c_orderline_id
          INNER JOIN C_Order o ON ol.c_order_id = o.c_order_id
          INNER JOIN C_UOM uom ON uom.C_UOM_ID = snl.C_UOM_ID
          LEFT OUTER JOIN C_UOM_Trl uomt
-                         ON uomt.C_UOM_ID = uom.C_UOM_ID AND uomt.AD_Language = p_ad_language
+                         ON uomt.C_UOM_ID = uom.C_UOM_ID AND uomt.AD_Language = $2
     -- Product and its translation
          INNER JOIN M_Product p ON snl.M_Product_ID = p.M_Product_ID
-         LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_ad_language
+         LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2
 
     -- Attributes
          LEFT OUTER JOIN (SELECT STRING_AGG(at.ai_value, ', '
@@ -94,14 +94,90 @@ FROM m_shipping_notificationline snl
                                    JOIN m_shipping_notificationline snla
                                         ON at.M_AttributeSetInstance_ID = snla.M_AttributeSetInstance_ID
                           WHERE at.IsPrintedInDocument = 'Y'
-                            AND snla.m_shipping_notification_id = p_record_id
+                            AND snla.m_shipping_notification_id = $1
                           GROUP BY at.M_AttributeSetInstance_ID) att ON snl.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
 
          LEFT OUTER JOIN
      de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(snl.M_Product_ID, bp.C_BPartner_ID,
                                                                       att.M_AttributeSetInstance_ID) AS bpp ON TRUE
-WHERE snl.m_shipping_notification_id = p_record_id
+WHERE snl.m_shipping_notification_id = $1
+  AND snl.isactive = 'Y'
 ORDER BY line
+    ;
+$$
+;
+
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Clearence_Notice(p_record_id numeric)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Clearence_Notice(p_record_id numeric)
+    RETURNS TABLE
+            (
+                ad_org_id                  numeric,
+                ad_user_id                 numeric,
+                m_shipping_notification_id numeric,
+                c_bpartner_id              numeric,
+                c_bpartner_location_id     numeric,
+                ShipFrom_Partner_ID        numeric,
+                documentno                 varchar,
+                poreference                varchar,
+                orgName                    varchar,
+                orgAddress                 varchar,
+                varcharorgvataxid          varchar,
+                orgPhone                   varchar,
+                orgPhone2                  varchar,
+                orgfax                     varchar,
+                orgEmail                   varchar,
+                orgURL                     varchar,
+                customerAddress            varchar,
+                customerPhone              varchar,
+                customerFax                varchar,
+                customerEmail              varchar,
+                DeliveryFrom               varchar,
+                deliveryfromPhone          varchar,
+                deliveryfromFax            varchar,
+                deliveryfromEmail          varchar,
+                locatorName                varchar
+            )
+    STABLE
+    LANGUAGE sql
+AS
+$$
+SELECT sn.ad_org_id,
+       sn.ad_user_id,
+       sn.m_shipping_notification_id,
+       sn.c_bpartner_id,
+       sn.c_bpartner_location_id,
+       sn.ShipFrom_Partner_ID,
+       sn.documentno,
+       sn.poreference,
+       t3.name            AS orgName,
+       t3.address         AS orgAddress,
+       t3.vataxid         AS orgvataxid,
+       t3.phone           AS orgPhone,
+       t3.phone2          AS orgPhone2,
+       t3.fax             AS orgfax,
+       t3.email           AS orgEmail,
+       t3.url             AS orgURL,
+       sn.bpartneraddress AS customerAddress,
+       u.phone            AS customerPhone,
+       u.fax              AS customerFax,
+       u.email            AS customerEmail,
+       sn.shipfromaddress AS DeliveryFrom,
+       wu.phone           AS deliveryfromPhone,
+       wu.fax             AS deliveryfromFax,
+       wu.email           AS deliveryfromEmail,
+       l.name             AS locatorName
+FROM M_Shipping_Notification sn
+         INNER JOIN C_BPartner bp ON sn.C_BPartner_ID = bp.C_BPartner_ID
+         LEFT OUTER JOIN AD_user u ON sn.ad_user_id = u.ad_user_id
+         INNER JOIN c_bpartner wbp ON sn.ShipFrom_Partner_ID = wbp.c_bpartner_id
+         LEFT OUTER JOIN AD_user wu ON sn.shipfrom_user_id = wu.ad_user_id
+         INNER JOIN m_locator l ON sn.m_locator_id = l.m_locator_id
+         INNER JOIN de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report(NULL, 'Y', sn.ad_org_ID) AS t3 ON TRUE
+WHERE sn.M_Shipping_Notification_ID = p_record_id
+  AND sn.isActive = 'Y'
     ;
 $$
 ;
