@@ -5,16 +5,16 @@ const MAX_maximumFractionDigits = 20; // ... to avoid "maximumFractionDigits val
 export const formatAmountToHumanReadableStr = ({ amount, currency, precision = null }) => {
   let amountEffective = amount ?? 0;
 
-  const maximumFractionDigits = Math.min(precision != null ? precision : 2, MAX_maximumFractionDigits);
+  const fractionDigits = Math.min(precision != null ? precision : 2, MAX_maximumFractionDigits);
 
-  amountEffective = parseFloat(amountEffective.toFixed(maximumFractionDigits));
+  amountEffective = parseFloat(amountEffective.toFixed(fractionDigits));
 
   const formatOptions = {
     useGrouping: true,
   };
-  if (maximumFractionDigits < MAX_maximumFractionDigits) {
-    formatOptions.minimumFractionDigits = 0;
-    formatOptions.maximumFractionDigits = maximumFractionDigits;
+  if (fractionDigits < MAX_maximumFractionDigits) {
+    formatOptions.minimumFractionDigits = fractionDigits;
+    formatOptions.maximumFractionDigits = fractionDigits;
   }
 
   const amountEffectiveStr = amountEffective.toLocaleString(getLanguage(), formatOptions);

@@ -23,6 +23,7 @@ public class JsonPOSConfig
 	@NonNull DocTypeId salesOrderDocTypeId;
 	@NonNull String currencySymbol;
 	int pricePrecision;
+	int currencyPrecision;
 
 	@NonNull
 	public static JsonPOSConfig from(@NonNull final POSConfig config, @NonNull final String adLanguage)
@@ -34,6 +35,7 @@ public class JsonPOSConfig
 				.salesOrderDocTypeId(config.getSalesOrderDocTypeId())
 				.currencySymbol(config.getCurrencySymbol(adLanguage))
 				.pricePrecision(config.getPricePrecision().toInt())
+				.currencyPrecision(config.getCurrencyPrecision().toInt())
 				.build();
 	}
 }

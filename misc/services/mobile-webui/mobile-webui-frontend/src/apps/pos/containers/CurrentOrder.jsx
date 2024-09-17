@@ -6,9 +6,12 @@ import PropTypes from 'prop-types';
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import { formatAmountToHumanReadableStr } from '../../../utils/money';
 import { useDispatch } from 'react-redux';
+import { usePOSConfiguration } from '../api/config';
 
 const CurrentOrder = () => {
   const dispatch = useDispatch();
+  const config = usePOSConfiguration();
+  console.log('CurrentOrder', { config });
   const { /*isCurrentOrderLoading,*/ currentOrder } = useCurrentOrderOrNew();
 
   const lines = currentOrder?.lines ?? [];
@@ -26,6 +29,8 @@ const CurrentOrder = () => {
             currencySymbol={line.currencySymbol}
             price={line.price}
             amount={line.amount}
+            pricePrecision={config?.pricePrecision}
+            currencyPrecision={config?.currencyPrecision}
             selected={line.uuid === currentOrder.selectedLineUUID}
             onClick={() => {
               dispatch(
@@ -55,11 +60,26 @@ const CurrentOrder = () => {
 //
 //
 
-const OrderLine = ({ /*uuid,*/ productName, qty, uom, currencySymbol, price, amount, selected, onClick }) => {
+const OrderLine = ({
+  /*uuid,*/ productName,
+  qty,
+  uom,
+  currencySymbol,
+  price,
+  amount,
+  pricePrecision,
+  currencyPrecision,
+  selected,
+  onClick,
+}) => {
   const elementRef = useRef();
-  const amountStr = amount != null ? formatAmountToHumanReadableStr({ amount: amount, currency: currencySymbol }) : '';
+  const amountStr =
+    amount != null
+      ? formatAmountToHumanReadableStr({ amount: amount, currency: currencySymbol, precision: currencyPrecision })
+      : '';
   const qtyStr = formatQtyToHumanReadableStr({ qty, uom });
-  const priceStr = formatAmountToHumanReadableStr({ amount: price, currency: currencySymbol }) + '/' + uom;
+  const priceStr =
+    formatAmountToHumanReadableStr({ amount: price, currency: currencySymbol, precision: pricePrecision }) + '/' + uom;
   const description = `${qtyStr} at ${priceStr}`;
 
   useEffect(() => {
@@ -86,6 +106,8 @@ OrderLine.propTypes = {
   currencySymbol: PropTypes.string,
   price: PropTypes.number,
   amount: PropTypes.number,
+  pricePrecision: PropTypes.number,
+  currencyPrecision: PropTypes.number,
   selected: PropTypes.bool.isRequired,
   onClick: PropTypes.func.isRequired,
 };

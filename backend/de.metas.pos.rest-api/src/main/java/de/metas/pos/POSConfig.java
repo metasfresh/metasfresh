@@ -37,4 +37,7 @@ public class POSConfig
 	public CurrencyId getCurrencyId() {return currency.getId();}
 
 	public String getCurrencySymbol(final String adLanguage) {return currency.getSymbol().translate(adLanguage);}
+
+	public CurrencyPrecision getCurrencyPrecision() {return currency.getPrecision();}
+
 }
