@@ -26,6 +26,7 @@ import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.interest.run.InterestRunRepository;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.currency.ICurrencyBL;
@@ -78,19 +79,7 @@ public class InterestService
 
 	public InterestBonusComputationRequest getInterestBonusComputationRequest(final EnqueueInterestComputationRequest enqueueRequest)
 	{
-		final ModularContractLogQuery query = ModularContractLogQuery.builder()
-				.computingMethodTypes(INTEREST_SPECIFIC_METHODS)
-				.processed(false)
-				.billable(true)
-				.invoicingGroupId(enqueueRequest.getInvoicingGroupId())
-				.build();
-
-		final ILock lock = lockManager.lock()
-				.setOwner(LockOwner.newOwner(InterestComputationWorkPackageProcessor.class.getSimpleName() + "_" + Instant.now()))
-				.setAutoCleanup(false)
-				.setFailIfAlreadyLocked(true)
-				.setSetRecordsByFilter(I_ModCntr_Log.class, modularContractLogService.getModularContractLogEntryFilter(query))
-				.acquire();
+		final ILock lock = lockModularContractLogsForInvoicingGroup(enqueueRequest.getInvoicingGroupId());
 
 		return InterestBonusComputationRequest.builder()
 				.interestToDistribute(enqueueRequest.getInterestToDistribute())
@@ -100,5 +89,22 @@ public class InterestService
 				.involvedModularLogsLock(lock)
 				.userId(enqueueRequest.getUserId())
 				.build();
+	}
+
+	private ILock lockModularContractLogsForInvoicingGroup(@NonNull final InvoicingGroupId invoicingGroupId)
+	{
+		final ModularContractLogQuery query = ModularContractLogQuery.builder()
+				.computingMethodTypes(INTEREST_SPECIFIC_METHODS)
+				.processed(false)
+				.billable(true)
+				.invoicingGroupId(invoicingGroupId)
+				.build();
+
+		return lockManager.lock()
+				.setOwner(LockOwner.newOwner(InterestComputationWorkPackageProcessor.class.getSimpleName() + "_" + Instant.now()))
+				.setAutoCleanup(false)
+				.setFailIfAlreadyLocked(true)
+				.setSetRecordsByFilter(I_ModCntr_Log.class, modularContractLogService.getModularContractLogEntryFilter(query))
+				.acquire();
 	}
 }
