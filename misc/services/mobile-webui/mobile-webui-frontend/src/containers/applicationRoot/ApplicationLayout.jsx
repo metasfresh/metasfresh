@@ -37,7 +37,6 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
     return null;
   }
 
-  console.log('ApplicationLayout', { applicationInfo });
   if (isApplicationFullScreen(applicationId)) {
     return (
       <div className="app-container app-container-fullscreen">
