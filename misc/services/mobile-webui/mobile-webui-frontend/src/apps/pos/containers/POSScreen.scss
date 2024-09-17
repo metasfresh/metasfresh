@@ -2,24 +2,113 @@
   display: flex;
   flex-flow: row nowrap;
   font-size: 2rem;
-  
-  .products {
-    .product-button {
-      font-size: 2rem;
-      border: 0;
-      background-color: #a1e9ff;
-    }
-  }
-  
+  background-color: #f0f0f0;
+  height: 100dvh;
+
+
   .current-order {
-    
-  }
-  
-  .current-order-actions {
-    button {
-      font-size: 2rem;
+    flex-grow: 0;
+
+    background-color: #ffffff;
+    font-size: 1rem;
+    min-width: 500px;
+
+    display: flex;
+    flex-flow: column nowrap;
+
+    .lines-container {
+      flex-grow: 1;
+
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-gutter: stable both-edges;
+
+
+      .line {
+        padding: 8px;
+
+        .main {
+          font-weight: bold;
+
+          display: flex;
+          flex-direction: row;
+
+          .productName {
+            flex-grow: 1;
+          }
+
+          .amount {
+            flex-grow: 0;
+          }
+        }
+
+        .description {
+          padding-left: 10px;
+        }
+      }
+      
+      .line-selected {
+        background-color: rgba(116, 183, 39, 0.49);
+      }
+    }
+
+    .summary {
+      flex-grow: 0;
+      padding: 8px;
+      display: flex;
+      justify-content: flex-end;
+
+      .totalAmt {
+        font-size: 2em;
+        font-weight: bold;
+      }
+    }
+
+    .current-order-actions {
+      flex-grow: 0;
+
+      button {
+        font-size: 2rem;
+      }
     }
   }
+
+  .products-container {
+    width: 100%;
+    
+    .products {
+      padding: 10px;
+      flex-grow: 1;
+
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      column-gap: 3px;
+      row-gap: 3px;
+
+
+      .product-button {
+        border: 0;
+        border-radius: 4px;
+        background-color: #ffffff;
+        font-size: 1.5rem;
+        max-height: 200px;
+        cursor: pointer;
+
+        .name {
+          padding: 4px;
+        }
+
+        .price {
+          padding: 4px;
+        }
+      }
+
+      .product-button:hover {
+        background-color: #e6e6e6;
+      }
+    }
+  }
+
 }
 
 

@@ -11,23 +11,30 @@ const registerApplication = ({
   applicationId,
   routes,
   messages,
+  isFullScreen,
   startApplication,
   startApplicationByQRCode,
   reduxReducer,
   onWFActivityCompleted,
 }) => {
-  registeredApplications[applicationId] = {
+  const applicationInfo = {
     applicationId,
     routes,
     messages,
+    isFullScreen,
     startApplication,
     startApplicationByQRCode,
     reduxReducer,
     onWFActivityCompleted,
   };
+  registeredApplications[applicationId] = applicationInfo;
 
-  console.log(`Registered application ${applicationId}`);
-  //console.log('=>registeredApplications', registeredApplications);
+  console.log(`Registered application ${applicationId}`, { applicationInfo });
+  // console.log('=>registeredApplications', registeredApplications);
+};
+
+export const isApplicationFullScreen = (applicationId) => {
+  return !!registeredApplications?.[applicationId]?.isFullScreen;
 };
 
 export const getApplicationStartFunction = (applicationId) => {

@@ -1,4 +1,11 @@
-import { ADD_ORDER_LINE, NEW_ORDER, ORDERS_LIST_INIT, REMOVE_ORDER, UPDATE_ORDER_FROM_BACKEND } from './actionTypes';
+import {
+  ADD_ORDER_LINE,
+  NEW_ORDER,
+  ORDERS_LIST_INIT,
+  REMOVE_ORDER,
+  SET_SELECTED_ORDER_LINE,
+  UPDATE_ORDER_FROM_BACKEND,
+} from './actionTypes';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { getApplicationState } from '../index';
@@ -138,5 +145,12 @@ const updateOrderFromBackendAction = ({ order }) => {
   return {
     type: UPDATE_ORDER_FROM_BACKEND,
     payload: { order },
+  };
+};
+
+export const setSelectedOrderLineAction = ({ order_uuid, selectedLineUUID }) => {
+  return {
+    type: SET_SELECTED_ORDER_LINE,
+    payload: { order_uuid, selectedLineUUID },
   };
 };

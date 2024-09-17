@@ -12,6 +12,7 @@ export const applicationDescriptor = {
     en: messages_en,
     de: messages_de,
   },
+  isFullScreen: true,
   startApplication: () => {
     return (dispatch) => {
       dispatch(push(posLocation()));

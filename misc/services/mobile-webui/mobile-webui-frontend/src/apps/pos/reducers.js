@@ -1,4 +1,11 @@
-import { ADD_ORDER_LINE, NEW_ORDER, ORDERS_LIST_INIT, REMOVE_ORDER, UPDATE_ORDER_FROM_BACKEND } from './actionTypes';
+import {
+  ADD_ORDER_LINE,
+  NEW_ORDER,
+  ORDERS_LIST_INIT,
+  REMOVE_ORDER,
+  SET_SELECTED_ORDER_LINE,
+  UPDATE_ORDER_FROM_BACKEND,
+} from './actionTypes';
 import { v4 as uuidv4 } from 'uuid';
 
 const initialState = {
@@ -64,6 +71,15 @@ export function posReducer(applicationState = initialState, action) {
         }),
       };
     }
+    case SET_SELECTED_ORDER_LINE: {
+      const {
+        payload: { order_uuid, selectedLineUUID },
+      } = action;
+      return {
+        ...applicationState,
+        orders: setSelectedOrderLine({ orders: applicationState.orders, order_uuid, selectedLineUUID }),
+      };
+    }
     default: {
       return applicationState;
     }
@@ -76,7 +92,7 @@ export function posReducer(applicationState = initialState, action) {
 
 const setOrders = ({ orders, ordersArray }) => {
   const byUUID = {};
-  ordersArray.forEach((order) => (byUUID[order.uuid] = order));
+  ordersArray.forEach((order) => (byUUID[order.uuid] = recomputeOrderDetails({ order })));
 
   // Reset current_uuid if is no longer present in the orders array
   let current_uuid = orders.current_uuid;
@@ -149,10 +165,14 @@ const changeOrder = ({ orders, order_uuid, mapper }) => {
   }
 
   const orderChanged = mapper(order);
-  return {
-    ...orders,
-    byUUID: { ...orders.byUUID, [orderChanged.uuid]: orderChanged },
-  };
+  if (order === orderChanged) {
+    return orders;
+  } else {
+    return {
+      ...orders,
+      byUUID: { ...orders.byUUID, [orderChanged.uuid]: orderChanged },
+    };
+  }
 };
 
 const removeOrderByUUID = ({ orders, order_uuid }) => {
@@ -168,6 +188,32 @@ const removeOrderByUUID = ({ orders, order_uuid }) => {
 
 const updateOrderFromBackend = ({ orders, order }) => {
   const byUUID = { ...orders.byUUID };
-  byUUID[order.uuid] = order;
+  byUUID[order.uuid] = recomputeOrderDetails({ order });
   return { ...orders, byUUID };
+};
+
+const recomputeOrderDetails = ({ order }) => {
+  let orderChanged = order;
+
+  if (!orderChanged.selectedLineUUID || !orderChanged.lines.some((line) => line.uuid === order.selectedLineUUID)) {
+    const lines = orderChanged.lines;
+    const selectedLineUUID = lines.length > 0 ? lines[lines.length - 1].uuid : null;
+    orderChanged = { ...orderChanged, selectedLineUUID };
+  }
+
+  return orderChanged;
+};
+
+const setSelectedOrderLine = ({ orders, order_uuid, selectedLineUUID }) => {
+  return changeOrder({
+    orders,
+    order_uuid,
+    mapper: (order) => {
+      if (order.selectedLineUUID === selectedLineUUID) {
+        return order;
+      } else {
+        return { ...order, selectedLineUUID };
+      }
+    },
+  });
 };

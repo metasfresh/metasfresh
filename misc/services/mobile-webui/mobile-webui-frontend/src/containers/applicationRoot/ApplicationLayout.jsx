@@ -8,6 +8,7 @@ import { getCaptionFromHeaders, useHomeLocation } from '../../reducers/headers';
 import { isWfProcessLoaded } from '../../reducers/wfProcesses';
 import { trl } from '../../utils/translations';
 import { useApplicationInfo } from '../../reducers/applications';
+import { isApplicationFullScreen } from '../../apps';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useHistory();
@@ -35,6 +36,17 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   if (redirectToHome) {
     return null;
   }
+
+  console.log('ApplicationLayout', { applicationInfo });
+  if (isApplicationFullScreen(applicationId)) {
+    return (
+      <div className="app-container app-container-fullscreen">
+        <Component />
+        <ScreenToaster />
+      </div>
+    );
+  }
+
   return (
     <div className="app-container">
       <div className="app-header">
