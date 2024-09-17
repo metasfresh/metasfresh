@@ -26,6 +26,7 @@ import de.metas.material.event.pporder.PPOrderLineData;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
@@ -137,7 +138,7 @@ public class RequestMaterialOrderService
 	private void createAndFirePPOrderRequestedEvent(@NonNull final CandidatesGroup group)
 	{
 		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestedEvent(group);
-		materialEventService.postEventAsync(ppOrderRequestEvent);
+		materialEventService.enqueueEventNow(ppOrderRequestEvent);
 	}
 
 	@VisibleForTesting
@@ -222,7 +223,7 @@ public class RequestMaterialOrderService
 	private void createAndFireDDOrderRequestedEvent(@NonNull final CandidatesGroup group, @Nullable final String traceId)
 	{
 		final DDOrderCandidateRequestedEvent event = createDDOrderCandidateRequestedEvent(group, traceId);
-		materialEventService.postEventAsync(event);
+		materialEventService.enqueueEventNow(event);
 	}
 
 	@VisibleForTesting
@@ -241,6 +242,7 @@ public class RequestMaterialOrderService
 		final Candidate demandCandidate = group.getSingleDemandCandidate();
 
 		final DistributionDetail supplyDistributionDetail = DistributionDetail.cast(supplyCandidate.getBusinessCaseDetail());
+		final OrderAndLineId salesOrderLineId = demandCandidate.getSalesOrderLineId();
 
 		return DDOrderCandidateData.builder()
 				.clientAndOrgId(supplyCandidate.getClientAndOrgId())
@@ -253,7 +255,8 @@ public class RequestMaterialOrderService
 				.shipperId(supplyDistributionDetail.getShipperId())
 				//
 				.customerId(BPartnerId.toRepoId(supplyCandidate.getCustomerId()))
-				.salesOrderLineId(OrderLineId.toRepoId(demandCandidate.getSalesOrderLineId()))
+				.salesOrderId(OrderAndLineId.toOrderRepoId(salesOrderLineId))
+				.salesOrderLineId(OrderAndLineId.toOrderLineRepoId(salesOrderLineId))
 				.forwardPPOrderRef(getPpOrderRef(supplyCandidate))
 				//
 				.productDescriptor(supplyCandidate.getMaterialDescriptor())
@@ -272,7 +275,7 @@ public class RequestMaterialOrderService
 	private void createAndFirePurchaseCandidateRequestedEvent(@NonNull final CandidatesGroup group, @Nullable final String traceId)
 	{
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createPurchaseCandidateRequestedEvent(group, traceId);
-		materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
+		materialEventService.enqueueEventAfterNextCommit(purchaseCandidateRequestedEvent);
 	}
 
 	private PurchaseCandidateRequestedEvent createPurchaseCandidateRequestedEvent(@NonNull final CandidatesGroup group, @Nullable final String traceId)
@@ -309,7 +312,7 @@ public class RequestMaterialOrderService
 	private void createAndFireForecastRequestedEvent(@NonNull final CandidatesGroup group)
 	{
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createForecastRequestedEvent(group);
-		materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
+		materialEventService.enqueueEventAfterNextCommit(purchaseCandidateRequestedEvent);
 	}
 
 	private PurchaseCandidateRequestedEvent createForecastRequestedEvent(@NonNull final CandidatesGroup group)

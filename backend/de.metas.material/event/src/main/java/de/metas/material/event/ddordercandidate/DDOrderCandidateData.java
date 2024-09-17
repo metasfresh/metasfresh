@@ -40,6 +40,7 @@ public class DDOrderCandidateData
 	@NonNull ShipperId shipperId;
 
 	int customerId;
+	int salesOrderId;
 	int salesOrderLineId;
 	@Nullable PPOrderRef forwardPPOrderRef;
 
@@ -75,6 +76,7 @@ public class DDOrderCandidateData
 			@Nullable final ResourceId targetPlantId,
 			@NonNull final ShipperId shipperId,
 			final int customerId,
+			final int salesOrderId,
 			final int salesOrderLineId,
 			@Nullable final PPOrderRef forwardPPOrderRef,
 			@NonNull final ProductDescriptor productDescriptor,
@@ -96,6 +98,7 @@ public class DDOrderCandidateData
 		this.targetPlantId = targetPlantId;
 		this.shipperId = shipperId;
 		this.customerId = customerId;
+		this.salesOrderId = salesOrderId;
 		this.salesOrderLineId = salesOrderLineId;
 		this.forwardPPOrderRef = forwardPPOrderRef;
 		this.productDescriptor = productDescriptor;
