@@ -6,13 +6,13 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.error.AdIssueId;
 import de.metas.error.IssueCategory;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
@@ -40,6 +40,8 @@ import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 public class AdempiereException extends RuntimeException
 		implements IIssueReportableAware
 {
+	public static final AdMessageKey MSG_NoLines = AdMessageKey.of("NoLines");
+
 	/**
 	 * Wraps given <code>throwable</code> as {@link AdempiereException}, if it's not already an {@link AdempiereException}.<br>
 	 * Note that this method also tries to pick the most specific adempiere exception (work in progress).
@@ -172,6 +174,11 @@ public class AdempiereException extends RuntimeException
 			return cause;
 		}
 
+		if (throwable instanceof CalloutExecutionException)
+		{
+			return cause;
+		}
+
 		return throwable;
 	}
 
@@ -202,7 +209,7 @@ public class AdempiereException extends RuntimeException
 		AdempiereException.captureLanguageOnConstructionTime = true;
 	}
 
-	/** 
+	/**
 	 * Tells if a throwable passsing thourgh trx-manager shall be logged there or not.
 	 * We currently have one exception where whe know that it needs not to be logged and can clutter the whole output when it is logged.
 	 */
@@ -243,31 +250,35 @@ public class AdempiereException extends RuntimeException
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = TranslatableStrings.parse(message);
+		this.userValidationError = TranslatableStrings.isPossibleTranslatableString(message);
 		this.mdcContextMap = captureMDCContextMap();
 	}
 
 	public AdempiereException(@NonNull final ITranslatableString message)
 	{
-		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-		this.messageTrl = message;
-		this.mdcContextMap = captureMDCContextMap();
-
 		// when this constructor is called, usually we have nice error messages,
 		// so we can consider those user-friendly errors
-		this.userValidationError = true;
+		this(message, true);
+	}
+
+	protected AdempiereException(@NonNull final ITranslatableString message, final boolean userValidationError)
+	{
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+		this.messageTrl = message;
+		this.userValidationError = userValidationError;
+		this.mdcContextMap = captureMDCContextMap();
 	}
 
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
 	{
-		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(messageKey);
-		this.mdcContextMap = captureMDCContextMap();
+		this(TranslatableStrings.adMessage(messageKey), true);
 	}
 
 	public AdempiereException(final String adLanguage, @NonNull final AdMessageKey adMessage, final Object... params)
 	{
-		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(adMessage, params);
+		this.messageTrl = TranslatableStrings.adMessage(adMessage, params);
 		this.adLanguage = captureLanguageOnConstructionTime ? adLanguage : null;
+		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
 
 		setParameter("AD_Language", this.adLanguage);
@@ -284,6 +295,7 @@ public class AdempiereException extends RuntimeException
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = TranslatableStrings.empty();
+		this.userValidationError = false;
 		this.mdcContextMap = captureMDCContextMap();
 	}
 
@@ -292,6 +304,7 @@ public class AdempiereException extends RuntimeException
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = TranslatableStrings.constant(plainMessage);
+		this.userValidationError = false;
 		this.mdcContextMap = captureMDCContextMap();
 	}
 
@@ -300,8 +313,15 @@ public class AdempiereException extends RuntimeException
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = message;
+		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
 	}
+
+	public static AdempiereException noLines() {return new AdempiereException(MSG_NoLines);}
+
+	public static AdempiereException newWithTranslatableMessage(@Nullable final String translatableMessage) {return new AdempiereException(TranslatableStrings.parse(translatableMessage));}
+
+	public static AdempiereException newWithPlainMessage(@Nullable final String plainMessage) {return new AdempiereException(TranslatableStrings.constant(plainMessage), false);}
 
 	private static Map<String, String> captureMDCContextMap()
 	{
@@ -707,9 +727,9 @@ public class AdempiereException extends RuntimeException
 	}
 
 	/**
-	 * Override with a method returning false if your exception is more of a signal than an error 
+	 * Override with a method returning false if your exception is more of a signal than an error
 	 * and shall not clutter the log when it is caught and rethrown by the transaction manager.
-	 * 
+	 * <p>
 	 * To be invoked by {@link AdempiereException#isThrowableLoggedInTrxManager(Throwable)}.
 	 */
 	protected boolean isLoggedInTrxManager()

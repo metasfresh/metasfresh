@@ -7,7 +7,6 @@ import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
 import de.metas.marketing.base.model.DeactivatedOnRemotePlatform;
 import de.metas.marketing.base.model.EmailAddress;
-import de.metas.util.OptionalBoolean;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;

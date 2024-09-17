@@ -64,6 +64,7 @@
 
         <module>de.metas.manufacturing</module>
         <module>de.metas.manufacturing.rest-api</module>
+        <module>de.metas.manufacturing.webui</module>
 
         <module>de.metas.adempiere.libero.liberoHR</module>
 
@@ -649,6 +650,41 @@
                                 <configuration>
                                     <sources>
                                         <source>src/main/java-gen</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <!-- If there is a maven java-xsd sources directory, this profile will
+                activate and add the directory as another sources directory -->
+            <id>add-source-java-xjc</id>
+            <activation>
+                <file>
+                    <exists>src/main/java-xjc</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- Adds src/main/java-xsd as additional source folder (if the directory
+                            is present) -->
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>add-source-java-xjc</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/main/java-xjc</source>
                                     </sources>
                                 </configuration>
                             </execution>

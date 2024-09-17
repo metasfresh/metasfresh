@@ -23,9 +23,10 @@ package de.metas.printing.client.endpoint;
  */
 
 import de.metas.printing.client.IPrintConnectionEndpoint;
+import de.metas.printing.esb.api.LoginRequest;
 
 /**
- * Exception thrown if {@link IPrintConnectionEndpoint#login(de.metas.printing.esb.api.LoginRequest)} fails.
+ * Exception thrown if {@link IPrintConnectionEndpoint#login(LoginRequest)} fails.
  *
  * @author tsa
  *

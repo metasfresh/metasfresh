@@ -31,7 +31,6 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.X_C_DocType;
 
 public class C_Invoice_PO_CreateAdjustmentCharge extends JavaProcess implements IProcessPrecondition

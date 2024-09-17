@@ -204,7 +204,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			//
 			// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
 			final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice,
-					false); // creditMemoAdjusted = false
+																						  false); // creditMemoAdjusted = false
 
 			// 'invoice' is not paid, so the open amount won't be zero
 			if (openAmt.signum() == 0)
@@ -221,13 +221,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// create the credit memo as a copy of the original invoice
 		final I_C_Invoice creditMemo = InterfaceWrapperHelper.create(
 				copyFrom(invoice, de.metas.common.util.time.SystemTime.asTimestamp(),
-						targetDocTypeId.getRepoId(),
-						invoice.isSOTrx(),
-						false, // counter == false
-						creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
-						creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
-						true, // copyLines == true
-						new CreditMemoInvoiceCopyHandler(creditCtx)),
+						 targetDocTypeId.getRepoId(),
+						 invoice.isSOTrx(),
+						 false, // counter == false
+						 creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
+						 creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
+						 true, // copyLines == true
+						 new CreditMemoInvoiceCopyHandler(creditCtx)),
 				I_C_Invoice.class);
 		return creditMemo;
 	}
@@ -684,12 +684,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		final BPartnerLocationId billBPartnerLocationId = getBillBPartnerLocationId(bpartnerId, soTrx);
 		final User billContact = bpartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-				.onlyActive(true)
-				.contactType(ContactType.BILL_TO_DEFAULT)
-				.bpartnerId(billBPartnerLocationId.getBpartnerId())
-				.bPartnerLocationId(billBPartnerLocationId)
-				.ifNotFound(IfNotFound.RETURN_NULL)
-				.build());
+																		  .onlyActive(true)
+																		  .contactType(ContactType.BILL_TO_DEFAULT)
+																		  .bpartnerId(billBPartnerLocationId.getBpartnerId())
+																		  .bPartnerLocationId(billBPartnerLocationId)
+																		  .ifNotFound(IfNotFound.RETURN_NULL)
+																		  .build());
 		final Optional<BPartnerContactId> billContactId = billContact != null
 				? Optional.of(BPartnerContactId.of(billContact.getBpartnerId(), billContact.getId()))
 				: Optional.empty();
@@ -1291,7 +1291,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				lineNetAmt = lineNetAmt.subtract(taxStdAmt).add(taxThisAmt);
 
 				log.debug("Price List includes Tax and Tax Changed on Invoice Line: New Tax Amt: "
-						+ taxThisAmt + " Standard Tax Amt: " + taxStdAmt + " Line Net Amt: " + lineNetAmt);
+								  + taxThisAmt + " Standard Tax Amt: " + taxStdAmt + " Line Net Amt: " + lineNetAmt);
 			}
 		}
 
@@ -1628,11 +1628,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final Boolean isSOTrx = adjustmentChargeCreateRequest.getIsSOTrx();
 
 		final DocTypeId targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docBaseAndSubType.getDocBaseType())
-				.docSubType(docBaseAndSubType.getDocSubType())
-				.adClientId(invoice.getAD_Client_ID())
-				.adOrgId(invoice.getAD_Org_ID())
-				.build());
+																							   .docBaseType(docBaseAndSubType.getDocBaseType())
+																							   .docSubType(docBaseAndSubType.getDocSubType())
+																							   .adClientId(invoice.getAD_Client_ID())
+																							   .adOrgId(invoice.getAD_Org_ID())
+																							   .build());
 		final I_C_Invoice adjustmentCharge = InterfaceWrapperHelper.create(
 				copyFrom(
 						invoice,
@@ -1646,7 +1646,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				I_C_Invoice.class);
 
 		adjustmentCharge.setDescription("Nachbelastung zu Rechnung " + invoice.getDocumentNo() + ", Order-Referenz " + invoice.getPOReference() + "\n\nUrsprünglicher Rechnungstext:\n"
-				+ invoice.getDescription());
+												+ invoice.getDescription());
 
 		adjustmentCharge.setRef_Invoice_ID(invoice.getC_Invoice_ID());
 		InterfaceWrapperHelper.save(adjustmentCharge);
@@ -1919,12 +1919,16 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		if (contactLocationId != null)
 		{
 			final I_C_BPartner_Location contactLocationRecord = partnersRepo.getBPartnerLocationByIdEvenInactive(contactLocationId);
+			if (contactLocationRecord == null)
+			{
+				return null;
+			}
 			final String contactLocationEmail = contactLocationRecord.getEMail();
-
 			if (!Check.isEmpty(contactLocationEmail))
 			{
 				return contactLocationEmail;
 			}
+
 		}
 
 		return null;

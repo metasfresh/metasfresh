@@ -25,7 +25,6 @@ import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository;

@@ -35,13 +35,19 @@ import de.metas.CommandLineParser;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.ServerBoot;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfigs;
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
+import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.logging.LogManager;
 import io.cucumber.datatable.DataTable;
@@ -51,6 +57,8 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product;
+import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -67,6 +75,7 @@ import java.util.function.Function;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_HU_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PP_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
@@ -81,16 +90,23 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final M_HU_StepDefData huTable;
 	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
+	private final PP_Order_StepDefData ppOrderTable;
+	private final M_Product_StepDefData productTable;
+	
 	private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
 	public MetasfreshToExternalSystemRabbitMQ_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final M_HU_StepDefData huTable,
-			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable)
+			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable,
+			@NonNull final PP_Order_StepDefData ppOrderTable,
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.huTable = huTable;
 		this.externalSystemConfigTable = externalSystemConfigTable;
+		this.ppOrderTable = ppOrderTable;
+		this.productTable = productTable;
 
 		final ServerBoot serverBoot = SpringContextHolder.instance.getBean(ServerBoot.class);
 		final CommandLineParser.CommandLineOptions commandLineOptions = serverBoot.getCommandLineOptions();
@@ -180,6 +196,12 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 				assertThat(bPartner).isNotNull();
 
 				checkExistingJsonExternalSystemRequestForBPartner(requests, externalSystemConfig, bPartner);
+			}
+
+			final String ppOrderIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(ppOrderIdentifier))
+			{
+				validateExportPPOrderWithPLUFile(ppOrderIdentifier, requests, externalSystemConfig, tableRow);
 			}
 		}
 	}
@@ -286,7 +308,18 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		final String bpIdentifier = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT.parameters." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
 				.orElseGet(() -> DataTableUtil.extractStringOrNullForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER));
 
-		return checkMatchingESRequestBasedOnBPartner(bpIdentifier, externalSystemRequest);
+		if (isMatchingESRequestBasedOnBPartner(bpIdentifier, externalSystemRequest))
+		{
+			return true;
+		}
+
+		final String ppOrderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (isMatchingESRequestBasedOnPPOrderIdentifier(ppOrderIdentifier, externalSystemRequest))
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	private void checkExistingJsonExternalSystemRequestForHu(
@@ -396,7 +429,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		return false;
 	}
 
-	private boolean checkMatchingESRequestBasedOnBPartner(@Nullable final String bpartnerIdentifier, @NonNull final JsonExternalSystemRequest externalSystemRequest)
+	private boolean isMatchingESRequestBasedOnBPartner(@Nullable final String bpartnerIdentifier, @NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
 		if (Check.isNotBlank(bpartnerIdentifier))
 		{
@@ -405,6 +438,171 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 			return Check.isNotBlank(bpartnerIdAsString) && Integer.parseInt(bpartnerIdAsString) == bPartner.getC_BPartner_ID();
 		}
+		return false;
+	}
+
+	private void validateExportPPOrderWithPLUFile(
+			@NonNull final String ppOrderIdentifier,
+			@NonNull final List<JsonExternalSystemRequest> requests,
+			@NonNull final I_ExternalSystem_Config externalSystemConfig,
+			@NonNull final Map<String, String> tableRow) throws JsonProcessingException
+	{
+		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+
+		final JsonExternalSystemRequest jsonExternalSystemRequest = findJsonExternalSystemRequestForPPOrder(requests, externalSystemConfig, ppOrder);
+
+		if (jsonExternalSystemRequest == null)
+		{
+			logger.info("*** Target JsonExternalSystemRequest not found, see list: " + JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(requests));
+		}
+
+		assertThat(jsonExternalSystemRequest).isNotNull();
+
+		final Map<String, String> params = jsonExternalSystemRequest.getParameters();
+
+		final String portNumber = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_PortNumber);
+		assertThat(params.get(ExternalSystemConstants.PARAM_TCP_PORT_NUMBER)).isEqualTo(portNumber);
+
+		final String host = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_Host);
+		assertThat(params.get(ExternalSystemConstants.PARAM_TCP_HOST)).isEqualTo(host);
+
+		final String product_BaseFolderName = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_Product_BaseFolderName);
+		assertThat(params.get(ExternalSystemConstants.PARAM_PRODUCT_BASE_FOLDER_NAME)).isEqualTo(product_BaseFolderName);
+
+		final boolean pluFileEnabled = DataTableUtil.extractBooleanForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_IsPluFileExportAuditEnabled);
+		final String pluFileEnabledConfig = params.get(ExternalSystemConstants.PARAM_PLU_FILE_EXPORT_AUDIT_ENABLED);
+		assertThat(Boolean.parseBoolean(pluFileEnabledConfig)).isEqualTo(pluFileEnabled);
+
+		final String productMappingString = params.get(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS);
+		assertThat(productMappingString).isNotNull();
+
+		final JsonExternalSystemLeichMehlConfigProductMapping productMapping = JsonObjectMapperHolder.sharedJsonObjectMapper()
+				.readValue(productMappingString, JsonExternalSystemLeichMehlConfigProductMapping.class);
+
+		final String pluFile = DataTableUtil.extractStringForColumnName(tableRow, "ConfigMappings.pluFile");
+		assertThat(productMapping.getPluFile()).isEqualTo(pluFile);
+
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "ConfigMappings.M_Product_ID.Identifier");
+		final I_M_Product product = productTable.get(productIdentifier);
+		assertThat(productMapping.getProductId().getValue()).isEqualTo(product.getM_Product_ID());
+
+		final String expectedPluFileConfigsString = DataTableUtil.extractStringForColumnName(tableRow, ExternalSystemConstants.PARAM_PLU_FILE_CONFIG);
+		final JsonExternalSystemLeichMehlPluFileConfigs expectedPluFileConfigs = JsonObjectMapperHolder.sharedJsonObjectMapper()
+				.readValue(expectedPluFileConfigsString, JsonExternalSystemLeichMehlPluFileConfigs.class);
+
+		final String actualPluFileConfigsString = params.get(ExternalSystemConstants.PARAM_PLU_FILE_CONFIG);
+		final JsonExternalSystemLeichMehlPluFileConfigs actualPluFileConfigs = JsonObjectMapperHolder.sharedJsonObjectMapper()
+				.readValue(actualPluFileConfigsString, JsonExternalSystemLeichMehlPluFileConfigs.class);
+
+		assertThat(actualPluFileConfigs).isEqualTo(expectedPluFileConfigs);
+	}
+
+	@Nullable
+	private JsonExternalSystemRequest findJsonExternalSystemRequestForHu(
+			@NonNull final List<JsonExternalSystemRequest> requests,
+			@NonNull final I_ExternalSystem_Config externalSystemConfig,
+			@NonNull final I_M_HU hu)
+	{
+		JsonExternalSystemRequest foundRequest = null;
+
+		for (final JsonExternalSystemRequest request : requests)
+		{
+			boolean found;
+
+			if (request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+			{
+				found = true;
+			}
+			else
+			{
+				logger.info("*** JsonExternalSystemRequest:" + request + " skipped;\nExternalSystemConfigId:" + externalSystemConfig.getExternalSystem_Config_ID() + " does not match");
+				continue;
+			}
+
+			if (Integer.parseInt(request.getParameters().get(PARAM_HU_ID)) == hu.getM_HU_ID())
+			{
+				found = true;
+			}
+			else
+			{
+				logger.info("*** JsonExternalSystemRequest:" + request + " skipped;\nHUId:" + hu.getM_HU_ID() + " does not match");
+				continue;
+			}
+
+			if (found)
+			{
+				foundRequest = request;
+				break;
+			}
+		}
+
+		return Optional.ofNullable(foundRequest)
+				.orElse(null);
+	}
+
+	@Nullable
+	private JsonExternalSystemRequest findJsonExternalSystemRequestForPPOrder(
+			@NonNull final List<JsonExternalSystemRequest> requests,
+			@NonNull final I_ExternalSystem_Config externalSystemConfig,
+			@NonNull final I_PP_Order ppOrder)
+	{
+		JsonExternalSystemRequest foundRequest = null;
+
+		for (final JsonExternalSystemRequest request : requests)
+		{
+			boolean found;
+
+			if (request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+			{
+				found = true;
+			}
+			else
+			{
+				logger.info("*** JsonExternalSystemRequest:" + request + " skipped;\nExternalSystemConfigId:" + externalSystemConfig.getExternalSystem_Config_ID() + " does not match");
+				continue;
+			}
+
+			if (request.getParameters().get(PARAM_PP_ORDER_ID) != null)
+			{
+				found = true;
+			}
+			else
+			{
+				logger.info("*** JsonExternalSystemRequest:" + request + " skipped;\nParam PP_Order_ID:" + ppOrder.getPP_Order_ID() + " not present");
+				continue;
+			}
+
+			if (Integer.parseInt(request.getParameters().get(PARAM_PP_ORDER_ID)) == ppOrder.getPP_Order_ID())
+			{
+				found = true;
+			}
+			else
+			{
+				logger.info("*** JsonExternalSystemRequest:" + request + " skipped;\nParam PP_Order_ID:" + ppOrder.getPP_Order_ID() + " does not match");
+				continue;
+			}
+
+			if (found)
+			{
+				foundRequest = request;
+				break;
+			}
+		}
+
+		return Optional.ofNullable(foundRequest)
+				.orElse(null);
+	}
+
+	private boolean isMatchingESRequestBasedOnPPOrderIdentifier(@Nullable final String ppOrderIdentifier, @NonNull final JsonExternalSystemRequest externalSystemRequest)
+	{
+		if (Check.isNotBlank(ppOrderIdentifier))
+		{
+			final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+			final String ppOrderIdAsString = externalSystemRequest.getParameters().get(PARAM_PP_ORDER_ID);
+
+			return Check.isNotBlank(ppOrderIdAsString) && Integer.parseInt(ppOrderIdAsString) == ppOrder.getPP_Order_ID();
+		}
+
 		return false;
 	}
 }

@@ -99,30 +99,27 @@ public class DispoTestUtils
 
 	public List<I_MD_Candidate> retrieveAllRecords()
 	{
-		final List<I_MD_Candidate> allRecords = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.orderBy().addColumn(I_MD_Candidate.COLUMN_MD_Candidate_ID).endOrderBy()
+				.orderBy(I_MD_Candidate.COLUMN_MD_Candidate_ID)
 				.create().list();
-		return allRecords;
 	}
 
 	public List<I_MD_Candidate> sortBySeqNo(@NonNull final List<I_MD_Candidate> candidateRecords)
 	{
-		final List<I_MD_Candidate> allRecordBySeqNo = DispoTestUtils.retrieveAllRecords().stream()
+		return DispoTestUtils.retrieveAllRecords().stream()
 				.sorted(Comparator.comparing(I_MD_Candidate::getSeqNo))
 				.collect(Collectors.toList());
-		return allRecordBySeqNo;
 	}
 
 	public List<I_MD_Candidate> sortByDateProjected(@NonNull final List<I_MD_Candidate> candidateRecords)
 	{
-		final List<I_MD_Candidate> sorted = candidateRecords.stream()
+		return candidateRecords.stream()
 				.sorted(Comparator
 						.comparing(I_MD_Candidate::getDateProjected)
 						.thenComparing(I_MD_Candidate::getSeqNo))
 				.collect(ImmutableList.toImmutableList());
-		return sorted;
 	}
 
 	public I_MD_Candidate retrieveStockCandidate(@NonNull final I_MD_Candidate candidate)

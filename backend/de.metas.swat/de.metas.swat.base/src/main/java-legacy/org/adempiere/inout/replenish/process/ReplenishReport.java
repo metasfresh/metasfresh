@@ -595,7 +595,7 @@ public class ReplenishReport extends JavaProcess
 				info += " - " + move.getDocumentNo();
 			}
 			//	To
-			int M_LocatorTo_ID = Services.get(IWarehouseBL.class).getDefaultLocator(wh).getM_Locator_ID();
+			int M_LocatorTo_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(wh).getM_Locator_ID();
 			//	From: Look-up Storage
 			String MMPolicy = Services.get(IProductBL.class).getMMPolicy(replenish.getM_Product_ID());
 			MStorage[] storages = MStorage.getWarehouse(getCtx(),

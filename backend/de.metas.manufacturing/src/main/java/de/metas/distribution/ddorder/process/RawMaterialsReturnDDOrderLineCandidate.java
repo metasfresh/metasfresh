@@ -22,13 +22,27 @@ package de.metas.distribution.ddorder.process;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ddorder.DistributionNetwork;
+import de.metas.material.planning.ddorder.DistributionNetworkLine;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
+import de.metas.storage.IStorageRecord;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.warehouse.WarehouseId;
@@ -37,43 +51,31 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
-import org.eevolution.model.I_DD_NetworkDistribution;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
-import org.eevolution.model.I_PP_Product_Planning;
 
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
-import de.metas.material.planning.exception.NoPlantForWarehouseException;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
-import de.metas.storage.IStorageRecord;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
- * See http://dewiki908/mediawiki/index.php/08118_Wie_geht_das_zur%C3%BCck%2C_was_noch_bei_der_Linie_steht_%28Prozess%29_%28107566315908%29
+ * See <a href="http://dewiki908/mediawiki/index.php/08118_Wie_geht_das_zur%C3%BCck%2C_was_noch_bei_der_Linie_steht_%28Prozess%29_%28107566315908%29">task</a>
  */
 /* package */final class RawMaterialsReturnDDOrderLineCandidate
 {
 	// Services
-	private final transient IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	private final transient IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-	private final transient IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final transient IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
-	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 
 	// Parameters
 	private final IAttributeSetInstanceAware attributeSetInstanceAware;
 
-	/** Current locator */
+	/**
+	 * Current locator
+	 */
 	private final I_M_Locator locator;
 	private final Timestamp dateOrdered;
 
@@ -85,10 +87,10 @@ import lombok.NonNull;
 	// Planning data
 	private boolean loaded = false;
 	private final Set<String> notValidReasons = new LinkedHashSet<>();
-	private I_PP_Product_Planning productPlanning;
-	private I_DD_NetworkDistributionLine networkLine;
+	private ProductPlanning productPlanning;
+	private DistributionNetworkLine networkLine;
 	// Raw Materials Warehouse / Locator
-	private I_S_Resource rawMaterialsPlant;
+	private ResourceId rawMaterialsPlantId;
 	private I_M_Warehouse rawMaterialsWarehouse;
 	private I_M_Locator rawMaterialsLocator;
 	// Org, Organization BP, In Transit Warehouse /Locator
@@ -97,10 +99,13 @@ import lombok.NonNull;
 	private BPartnerLocationId orgBPLocationId;
 	private WarehouseId inTransitWarehouseId;
 
-	public RawMaterialsReturnDDOrderLineCandidate(
+	@Builder
+	private RawMaterialsReturnDDOrderLineCandidate(
+			@NonNull final DistributionNetworkRepository distributionNetworkRepository,
 			@NonNull final IAttributeSetInstanceAware attributeSetInstanceAware,
 			@NonNull final I_M_Locator locator)
 	{
+		this.distributionNetworkRepository = distributionNetworkRepository;
 		this.attributeSetInstanceAware = attributeSetInstanceAware;
 		this.uom = productBL.getStockUOM(attributeSetInstanceAware.getM_Product_ID());
 
@@ -140,7 +145,7 @@ import lombok.NonNull;
 		//
 		// Retrieve Plant of current warehouse (where our Quantitites currently are)
 		final I_M_Warehouse warehouse = locator.getM_Warehouse();
-		final I_S_Resource warehousePlant = productPlanningDAO.findPlant(warehouse.getAD_Org_ID(),
+		final ResourceId warehousePlantId = productPlanningDAO.findPlant(warehouse.getAD_Org_ID(),
 				warehouse,
 				attributeSetInstanceAware.getM_Product_ID(),
 				attributeSetInstanceAware.getM_AttributeSetInstance_ID());
@@ -151,7 +156,7 @@ import lombok.NonNull;
 				.builder()
 				.orgId(OrgId.ofRepoId(warehouse.getAD_Org_ID()))
 				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
-				.plantId(warehousePlant != null ? ResourceId.ofRepoId(warehousePlant.getS_Resource_ID()) : null)
+				.plantId(warehousePlantId)
 				.productId(ProductId.ofRepoId(attributeSetInstanceAware.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(attributeSetInstanceAware.getM_AttributeSetInstance_ID()))
 				.build();
@@ -164,19 +169,19 @@ import lombok.NonNull;
 
 		//
 		// Retrieve Distribution Network line
-		if (productPlanning.getDD_NetworkDistribution_ID() <= 0)
+		if (productPlanning.getDistributionNetworkId() == null)
 		{
 			notValidReasons.add("@NotFound@ @DD_NetworkDistribution_ID@");
 			return;
 		}
-		final I_DD_NetworkDistribution network = productPlanning.getDD_NetworkDistribution();
-		final List<I_DD_NetworkDistributionLine> networkLines = distributionNetworkDAO.retrieveNetworkLinesByTargetWarehouse(network, warehouse.getM_Warehouse_ID());
-		if (Check.isEmpty(networkLines))
+		final DistributionNetwork network = distributionNetworkRepository.getById(productPlanning.getDistributionNetworkId());
+		final List<DistributionNetworkLine> networkLines = network.getLinesByTargetWarehouse(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+		if (networkLines.isEmpty())
 		{
 			notValidReasons.add("@NotFound@ @DD_NetworkDistributionLine_ID@ ("
 					+ "@DD_NetworkDistribution_ID@=" + network.getName()
 					+ ", @M_Warehouse_ID@=" + warehouse.getName()
-					+ ", @PP_Product_Planning_ID@=" + productPlanning.getPP_Product_Planning_ID()
+					+ ", @PP_Product_Planning_ID@=" + productPlanning.getId()
 					+ ")");
 			return;
 		}
@@ -184,13 +189,13 @@ import lombok.NonNull;
 
 		//
 		// Retrieve Raw materials Warehouse (where we will send our quantitites back)
-		rawMaterialsWarehouse = networkLine.getM_WarehouseSource();
+		rawMaterialsWarehouse = warehouseDAO.getById(networkLine.getSourceWarehouseId());
 		if (rawMaterialsWarehouse == null)
 		{
 			notValidReasons.add("@NotFound@ @M_Warehouse_ID@");
 			return;
 		}
-		rawMaterialsLocator = Services.get(IWarehouseBL.class).getDefaultLocator(rawMaterialsWarehouse);
+		rawMaterialsLocator = Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(rawMaterialsWarehouse);
 		if (rawMaterialsLocator == null)
 		{
 			notValidReasons.add("@NotFound@ @M_Locator_ID@ (@M_Warehouse_ID@:" + rawMaterialsWarehouse.getName() + ")");
@@ -201,7 +206,7 @@ import lombok.NonNull;
 		// Retrive Raw materials Plant
 		try
 		{
-			rawMaterialsPlant = productPlanningDAO.findPlant(
+			rawMaterialsPlantId = productPlanningDAO.findPlant(
 					rawMaterialsWarehouse.getAD_Org_ID(),
 					warehouse,
 					attributeSetInstanceAware.getM_Product_ID(),
@@ -212,7 +217,7 @@ import lombok.NonNull;
 			notValidReasons.add("@NotFound@ @PP_Plant_ID@: " + ex.getLocalizedMessage());
 			return;
 		}
-		if (rawMaterialsPlant == null)
+		if (rawMaterialsPlantId == null)
 		{
 			notValidReasons.add("@NotFound@ @PP_Plant_ID@: " + rawMaterialsWarehouse.getName());
 			return;
@@ -275,22 +280,24 @@ import lombok.NonNull;
 		return dateOrdered;
 	}
 
-	/** @return locator where Quantity currently is */
+	/**
+	 * @return locator where Quantity currently is
+	 */
 	public I_M_Locator getM_Locator()
 	{
 		return locator;
 	}
 
-	public I_DD_NetworkDistributionLine getDD_NetworkDistributionLine()
+	public DistributionNetworkLine getDD_NetworkDistributionLine()
 	{
 		loadIfNeeded();
 		return networkLine;
 	}
 
-	public I_S_Resource getRawMaterialsPlant()
+	public ResourceId getRawMaterialsPlantId()
 	{
 		loadIfNeeded();
-		return rawMaterialsPlant;
+		return rawMaterialsPlantId;
 	}
 
 	public I_M_Warehouse getRawMaterialsWarehouse()
@@ -317,10 +324,10 @@ import lombok.NonNull;
 		return orgBPLocationId;
 	}
 
-	public int getPlanner_ID()
+	public UserId getPlannerId()
 	{
 		loadIfNeeded();
-		return productPlanning == null ? 0 : productPlanning.getPlanner_ID();
+		return productPlanning == null ? null : productPlanning.getPlannerId();
 	}
 
 	public WarehouseId getInTransitWarehouseId()

@@ -18,6 +18,7 @@ package org.compiere.model;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.dimension.Dimension;
@@ -540,13 +541,22 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		}
 		//
 		log.debug("M_PriceList_ID={}", M_PriceList_ID);
-		m_productPricing = new MProductPricing(getM_Product_ID(), C_BPartner_ID,
-											   getQtyInvoiced(), m_IsSOTrx);
+
+		final CountryId countryId = getC_Invoice().getC_BPartner_Location_ID() > 0
+				? Services.get(IBPartnerDAO.class).getCountryId(BPartnerLocationId.ofRepoId(getC_Invoice().getC_BPartner_ID(), getC_Invoice().getC_BPartner_Location_ID()))
+				: null;
+
+		m_productPricing = new MProductPricing(
+				OrgId.ofRepoId(getAD_Org_ID()),
+				getM_Product_ID(),
+				C_BPartner_ID,
+				countryId,
+				getQtyInvoiced(),
+				m_IsSOTrx);
 		m_productPricing.setM_PriceList_ID(M_PriceList_ID);
 		m_productPricing.setPriceDate(m_DateInvoiced);
 
 		final I_C_InvoiceLine il = create(this, I_C_InvoiceLine.class);
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 		// Set the IsManualPrice in the pricing engine based on the value in the invoice Line
 		m_productPricing.setManualPrice(il.isManualPrice());
@@ -733,7 +743,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			setLineTotalAmt(getLineNetAmt().add(TaxAmt));
 		}
-		
+
 		super.setTaxAmt(TaxAmt);
 	}    // setTaxAmt
 

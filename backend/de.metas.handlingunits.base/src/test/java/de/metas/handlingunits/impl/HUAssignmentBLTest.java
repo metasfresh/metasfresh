@@ -7,6 +7,7 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
@@ -44,7 +45,7 @@ import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUAssignmentBLTest
 {
@@ -81,8 +82,9 @@ public class HUAssignmentBLTest
 				ddOrderMoveScheduleService,
 				ddOrderService,
 				new PickingBOMService()));
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order(ddOrderMoveScheduleService, ddOrderService));
-		
+
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order(ddOrderService, ddOrderMoveScheduleService, DDOrderCandidateService.newInstanceForUnitTesting()));
+
 		//
 		// BL under test
 		huAssignmentBL = Services.get(IHUAssignmentBL.class);

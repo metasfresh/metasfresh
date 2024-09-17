@@ -13,17 +13,18 @@ const SelectOptionsScreen = () => {
     params: { applicationId, wfProcessId, activityId },
   } = useRouteMatch();
 
-  const { activityCaption, options } = useSelector((state) => {
+  const { activityCaption, userInstructions, options } = useSelector((state) => {
     const activity = getActivityById(state, wfProcessId, activityId);
     return {
       activityCaption: activity.caption,
+      userInstructions: activity.userInstructions,
       options: getOptionsFromActivity(activity),
     };
   });
 
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(pushHeaderEntry({ location: url, caption: activityCaption }));
+    dispatch(pushHeaderEntry({ location: url, caption: activityCaption, userInstructions }));
   }, []);
 
   const history = useHistory();

@@ -94,7 +94,7 @@ import java.util.stream.Stream;
 /* package */ class ADProcessDescriptorsFactory
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(ADProcessDescriptorsFactory.class);
+	private static final Logger logger = LogManager.getLogger(ADProcessDescriptorsFactory.class);
 	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
 	private final transient DefaultValueExpressionsFactory defaultValueExpressions = DefaultValueExpressionsFactory.newInstance();
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
@@ -119,7 +119,7 @@ import java.util.stream.Stream;
 
 		Stream<RelatedProcessDescriptor> relatedProcessDescriptors = preconditionsContext.getAdditionalRelatedProcessDescriptors().stream();
 
-		if (preconditionsContext.isConsiderTableRelatedProcessDescriptors())
+		if (preconditionsContext.isConsiderTableRelatedProcessDescriptors(ProcessId.PROCESSHANDLERTYPE_AD_Process))
 		{
 			final Stream<RelatedProcessDescriptor> tableRelatedProcessDescriptors = adProcessService.getRelatedProcessDescriptors(adTableId, adWindowId, adTabId)
 					.stream();
@@ -212,10 +212,7 @@ import java.util.stream.Stream;
 					.disableDefaultTableCallouts();
 
 			// Get AD_Process_Para(s) and populate the entity descriptor
-			adProcessService.retrieveProcessParameters(processId.toAdProcessId())
-					.stream()
-					.map(adProcessParam -> createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam))
-					.forEach(parametersDescriptorBuilder::addField);
+			addProcessParameters(processId, webuiProcesClassInfo, parametersDescriptorBuilder);
 
 			parametersDescriptor = parametersDescriptorBuilder.build();
 		}
@@ -245,6 +242,26 @@ import java.util.stream.Stream;
 				.setStartProcessDirectly(startProcessDirectly)
 				.setLayout(layout.build())
 				.build();
+	}
+
+	public void addProcessParameters(@NonNull final ProcessId processId, @NonNull final DocumentEntityDescriptor.Builder parametersDescriptorBuilder)
+	{
+		final I_AD_Process adProcess = adProcessService.getById(processId.toAdProcessId());
+		if (adProcess == null)
+		{
+			throw new EntityNotFoundException("@NotFound@ @AD_Process_ID@ (" + processId + ")");
+		}
+
+		final WebuiProcessClassInfo webuiProcesClassInfo = WebuiProcessClassInfo.of(adProcess.getClassname());
+		addProcessParameters(processId, webuiProcesClassInfo, parametersDescriptorBuilder);
+	}
+
+	private void addProcessParameters(@NonNull final ProcessId processId, @NonNull final WebuiProcessClassInfo webuiProcesClassInfo, @NonNull final DocumentEntityDescriptor.Builder parametersDescriptorBuilder)
+	{
+		adProcessService.retrieveProcessParameters(processId.toAdProcessId())
+				.stream()
+				.map(adProcessParam -> createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam))
+				.forEach(parametersDescriptorBuilder::addField);
 	}
 
 	private static boolean computeIsStartProcessDirectly(
@@ -493,7 +510,7 @@ import java.util.stream.Stream;
 
 	private static final class ProcessParametersDataBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder
 	{
-		public static final transient ProcessParametersDataBindingDescriptorBuilder instance = new ProcessParametersDataBindingDescriptorBuilder();
+		public static final ProcessParametersDataBindingDescriptorBuilder instance = new ProcessParametersDataBindingDescriptorBuilder();
 
 		private static final DocumentEntityDataBindingDescriptor dataBinding = () -> ADProcessParametersRepository.instance;
 

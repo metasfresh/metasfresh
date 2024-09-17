@@ -216,7 +216,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 
 		if (expr == null)
 		{
-			throw new ExpressionEvaluationException("Cannot evaluate null expression");
+			throw ExpressionEvaluationException.newWithPlainMessage("Cannot evaluate null expression");
 		}
 
 		try
@@ -260,7 +260,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 				final ILogicExpression leftExpression = logicExpr.getLeft();
 				if (leftExpression == null)
 				{
-					throw new ExpressionEvaluationException("Invalid compiled expression: " + expr + " (left expression is missing)");
+					throw ExpressionEvaluationException.newWithPlainMessage("Invalid compiled expression: " + expr + " (left expression is missing)");
 				}
 				final BooleanValueSupplier leftValueSupplier = () -> evaluateOrNull(ctx, leftExpression);
 
@@ -284,7 +284,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 			}
 			else
 			{
-				throw new ExpressionEvaluationException("Unsupported ILogicExpression type: " + expr + " (class: " + expr.getClass() + ")");
+				throw ExpressionEvaluationException.newWithPlainMessage("Unsupported ILogicExpression type: " + expr + " (class: " + expr.getClass() + ")");
 			}
 		}
 		catch (final Exception ex)
@@ -302,7 +302,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		if (logicExprEvaluator == null)
 		{
 			// shall not happen because expression was already compiled and validated
-			throw new ExpressionEvaluationException("Invalid operator: " + logicOperator);
+			throw ExpressionEvaluationException.newWithPlainMessage("Invalid operator: " + logicOperator);
 		}
 		return logicExprEvaluator;
 	}
@@ -422,7 +422,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		else
 		{
 			// shall not happen because expression was already compiled
-			throw new ExpressionEvaluationException("Unknown operator '" + operand + "' while evaluating '" + value1 + " " + operand + " " + value2 + "'");
+			throw ExpressionEvaluationException.newWithPlainMessage("Unknown operator '" + operand + "' while evaluating '" + value1 + " " + operand + " " + value2 + "'");
 		}
 	}
 
@@ -471,7 +471,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 
 		if (expr == null)
 		{
-			throw new ExpressionEvaluationException("Cannot evaluate null expression");
+			throw ExpressionEvaluationException.newWithPlainMessage("Cannot evaluate null expression");
 		}
 		else if (expr.isConstant())
 		{
@@ -538,7 +538,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		}
 		else
 		{
-			throw new ExpressionEvaluationException("Unsupported ILogicExpression type: " + expr + " (class: " + expr.getClass() + ")");
+			throw ExpressionEvaluationException.newWithPlainMessage("Unsupported ILogicExpression type: " + expr + " (class: " + expr.getClass() + ")");
 		}
 	}
 
@@ -631,13 +631,13 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 				}
 				else if (onVariableNotFound == OnVariableNotFound.Fail)
 				{
-					throw new ExpressionEvaluationException("Parameter '" + ctxName.getName() + "' not found in context"
+					throw ExpressionEvaluationException.newWithPlainMessage("Parameter '" + ctxName.getName() + "' not found in context"
 							+ "\n Context: " + params
 							+ "\n Evaluator: " + this);
 				}
 				else
 				{
-					throw new ExpressionEvaluationException("Unknown " + OnVariableNotFound.class + " value: " + onVariableNotFound);
+					throw ExpressionEvaluationException.newWithPlainMessage("Unknown " + OnVariableNotFound.class + " value: " + onVariableNotFound);
 				}
 			}
 

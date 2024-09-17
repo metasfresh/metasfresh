@@ -1,5 +1,16 @@
 package org.adempiere.util.lang.impl;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimaps;
+import de.metas.util.lang.RepoIdAware;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.exceptions.AdempiereException;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -12,19 +23,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
-
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.exceptions.AdempiereException;
-
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimaps;
-
-import de.metas.util.lang.RepoIdAware;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -72,6 +70,20 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 		return of(TableRecordReference.of(tableName, recordId));
 	}
 
+	public static <T extends RepoIdAware> TableRecordReferenceSet of(final String tableName, final Collection<T> recordIds)
+	{
+		if (recordIds.isEmpty())
+		{
+			return EMPTY;
+		}
+
+		final ImmutableSet<TableRecordReference> recordRefs = recordIds.stream()
+				.map(recordId -> TableRecordReference.of(tableName, recordId))
+				.collect(ImmutableSet.toImmutableSet());
+
+		return of(recordRefs);
+	}
+
 	public static Collector<TableRecordReference, ?, TableRecordReferenceSet> collect()
 	{
 		final Supplier<Set<TableRecordReference>> supplier = LinkedHashSet::new;
@@ -94,10 +106,13 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 	}
 
 	@Override
+	@NonNull
 	public Iterator<TableRecordReference> iterator()
 	{
 		return recordRefs.iterator();
 	}
+
+	public Stream<TableRecordReference> stream() {return recordRefs.stream();}
 
 	public TableRecordReferenceSet filter(@NonNull final Predicate<TableRecordReference> filter)
 	{

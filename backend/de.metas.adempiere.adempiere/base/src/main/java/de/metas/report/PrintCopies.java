@@ -32,11 +32,16 @@ import org.adempiere.exceptions.AdempiereException;
 public final class PrintCopies
 {
 	@JsonCreator
-	public static final PrintCopies ofInt(final int copies)
+	public static PrintCopies ofInt(final int copies)
 	{
 		return copies >= 0 && copies < CACHE.length
 				? CACHE[copies]
 				: new PrintCopies(copies);
+	}
+
+	public static PrintCopies ofIntOrOne(final int copies)
+	{
+		return copies >= 1 ? ofInt(copies) : ONE;
 	}
 
 	public static final PrintCopies ZERO = new PrintCopies(0);

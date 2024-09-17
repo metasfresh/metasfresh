@@ -24,6 +24,7 @@ package de.metas.document.archive.spi.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerPrintFormatRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -69,7 +70,7 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 		final DocumentReportAdvisorUtil util = new DocumentReportAdvisorUtil(
 				new BPartnerBL(new UserRepository()),
 				new PrintFormatRepository(),
-				new DefaultPrintFormatsRepository());
+				new DefaultPrintFormatsRepository(), new BPartnerPrintFormatRepository());
 
 		return new MockedDocumentReportService(
 				ImmutableList.of(),

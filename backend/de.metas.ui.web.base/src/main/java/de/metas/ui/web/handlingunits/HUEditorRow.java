@@ -6,16 +6,17 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.report.HUEditorRowAsHUToReport;
+import de.metas.ui.web.handlingunits.report.HUReportAwareViewRow;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -40,7 +41,6 @@ import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
@@ -52,7 +52,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -82,9 +84,10 @@ import java.util.function.Function;
  * @author metas-dev <dev@metasfresh.com>
  */
 @EqualsAndHashCode
-public final class HUEditorRow implements IViewRow
+public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 {
 	public static final String SYSCFG_PREFIX = "de.metas.ui.web.handlingunits.field";
+
 
 	public static Builder builder(final WindowId windowId)
 	{
@@ -99,7 +102,7 @@ public final class HUEditorRow implements IViewRow
 	private final DocumentPath documentPath;
 	private final HUEditorRowId rowId;
 	private final HUEditorRowType type;
-	private final boolean topLevel;
+	@Getter private final boolean topLevel;
 	private final boolean processed;
 	@Getter
 	private final BPartnerId bpartnerId;
@@ -107,7 +110,7 @@ public final class HUEditorRow implements IViewRow
 	private final LocatorId locatorId;
 
 	public static final String FIELDNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
-	@ViewColumn(fieldName = FIELDNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
+	@Getter @ViewColumn(fieldName = FIELDNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
 	private final HuId huId;
 
 	public static final String FIELDNAME_HUCode = I_M_HU.COLUMNNAME_Value;
@@ -199,6 +202,7 @@ public final class HUEditorRow implements IViewRow
 			})
 	private final JSONLookupValue uom;
 
+
 	public static final String FIELDNAME_HUStatus = I_M_HU.COLUMNNAME_HUStatus;
 	@ViewColumn(fieldName = FIELDNAME_HUStatus,//
 			widgetType = DocumentFieldWidgetType.Lookup, //
@@ -226,7 +230,7 @@ public final class HUEditorRow implements IViewRow
 
 	public static final String FIELDNAME_ClearanceStatus = I_M_HU.COLUMNNAME_ClearanceStatus;
 	@ViewColumn(fieldName = FIELDNAME_ClearanceStatus, widgetType = DocumentFieldWidgetType.Text, sorting = false, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)})
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final JSONLookupValue clearanceStatus;
 
 	private final Optional<HUEditorRowAttributesSupplier> attributesSupplier;
@@ -238,6 +242,7 @@ public final class HUEditorRow implements IViewRow
 
 	private transient String _summary; // lazy
 	private final ViewRowFieldNameAndJsonValuesHolder<HUEditorRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(HUEditorRow.class);
+	private final BiPredicate<HUEditorRow, ProcessDescriptor> customProcessApplyPredicate;
 
 	private HUEditorRow(@NonNull final Builder builder)
 	{
@@ -279,10 +284,10 @@ public final class HUEditorRow implements IViewRow
 		if (attributesProvider != null)
 		{
 			attributesSupplier = Optional.of(HUEditorRowAttributesSupplier.builder()
-													 .viewRowId(rowId.toDocumentId())
-													 .huId(huId)
-													 .provider(attributesProvider)
-													 .build());
+					.viewRowId(rowId.toDocumentId())
+					.huId(huId)
+					.provider(attributesProvider)
+					.build());
 		}
 		else
 		{
@@ -299,6 +304,7 @@ public final class HUEditorRow implements IViewRow
 		}
 
 		serviceContract = null;
+		customProcessApplyPredicate = builder.getCustomProcessApplyPredicate();
 	}
 
 	@Override
@@ -320,6 +326,11 @@ public final class HUEditorRow implements IViewRow
 	public DocumentPath getDocumentPath()
 	{
 		return documentPath;
+	}
+
+	public JSONLookupValue getClearanceStatus()
+	{
+		return clearanceStatus;
 	}
 
 	public HUEditorRowId getHURowId()
@@ -403,9 +414,10 @@ public final class HUEditorRow implements IViewRow
 				.anyMatch(row -> childId.equals(row.getId()));
 	}
 
-	public HuId getHuId()
+	@Override
+	public HuUnitType getHUUnitTypeOrNull()
 	{
-		return huId;
+		return getType().toHUUnitTypeOrNull();
 	}
 
 	/**
@@ -421,22 +433,6 @@ public final class HUEditorRow implements IViewRow
 		}
 
 		return Services.get(IHandlingUnitsDAO.class).getById(huId);
-	}
-
-	public HUToReport getAsHUToReport()
-	{
-		final HUToReport huToReport = getAsHUToReportOrNull();
-		if (huToReport == null)
-		{
-			throw new AdempiereException("Cannot convert " + this + " to " + HUToReport.class);
-		}
-		return huToReport;
-	}
-
-	public HUToReport getAsHUToReportOrNull()
-	{
-		// allow reports for all types ; see task https://github.com/metasfresh/metasfresh/issues/5540
-		return HUEditorRowAsHUToReport.of(this);
 	}
 
 	public boolean isHUPlanningReceiptOwnerPM()
@@ -500,15 +496,19 @@ public final class HUEditorRow implements IViewRow
 		return getType() == HUEditorRowType.LU;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean hasIncludedTUs()
 	{
 		return getIncludedRows().stream().anyMatch(HUEditorRow::isTU);
 	}
 
-	public boolean isTopLevel()
+	@Override
+	public Stream<HUReportAwareViewRow> streamIncludedHUReportAwareRows()
 	{
-		return topLevel;
+		return getIncludedRows().stream().map(HUEditorRow::toHUReportAwareViewRow);
 	}
+
+	private HUReportAwareViewRow toHUReportAwareViewRow() {return this;}
 
 	public String getSummary()
 	{
@@ -636,6 +636,16 @@ public final class HUEditorRow implements IViewRow
 		return rowDisplayNameNorm.contains(stringFilterNorm);
 	}
 
+	@Override
+	public boolean applies(final @NonNull ProcessDescriptor processDescriptor)
+	{
+		if (customProcessApplyPredicate == null)
+		{
+			return true;
+		}
+		return customProcessApplyPredicate.test(this, processDescriptor);
+	}
+
 	//
 	//
 	//
@@ -666,6 +676,7 @@ public final class HUEditorRow implements IViewRow
 		private LocatorId locatorId;
 		private String locatorCaption;
 		private BPartnerId bpartnerId;
+		private BiPredicate<HUEditorRow, ProcessDescriptor> customProcessApplyPredicate;
 
 		@Nullable
 		private JSONLookupValue clearanceStatus;
@@ -888,6 +899,18 @@ public final class HUEditorRow implements IViewRow
 		{
 			clearanceStatus = clearanceStatusLookupValue;
 			return this;
+		}
+
+		public Builder setCustomProcessApplyPredicate(@Nullable final BiPredicate<HUEditorRow, ProcessDescriptor> processApplyPredicate)
+		{
+			this.customProcessApplyPredicate = processApplyPredicate;
+			return this;
+		}
+
+		@Nullable
+		private BiPredicate<HUEditorRow, ProcessDescriptor> getCustomProcessApplyPredicate()
+		{
+			return this.customProcessApplyPredicate;
 		}
 
 		/**

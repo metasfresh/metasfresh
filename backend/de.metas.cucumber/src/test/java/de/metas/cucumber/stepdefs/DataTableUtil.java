@@ -51,7 +51,7 @@ public class DataTableUtil
 	 */
 	private static int recordIdentifierFallback = 0;
 
-	private static final String NULL_STRING = "null";
+	public static final String NULL_STRING = "null";
 
 	/**
 	 * @param fallbackPrefix if the given dataTableRow has no {@value StepDefConstants#TABLECOLUMN_IDENTIFIER} column,
@@ -107,6 +107,7 @@ public class DataTableUtil
 
 		try
 		{
+			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : Integer.parseInt(string);
 		}
 		catch (final NumberFormatException e)
@@ -121,6 +122,13 @@ public class DataTableUtil
 			@NonNull final String columnName)
 	{
 		return extractIntOrDefaultForColumnName(dataTableRow, columnName, 0);
+	}
+
+	public int extractIntOrMinusOneForColumnName(
+			@NonNull final DataTableRow dataTableRow,
+			@NonNull final String columnName)
+	{
+		return extractIntOrMinusOneForColumnName(dataTableRow.asMap(), columnName);
 	}
 
 	public int extractIntOrMinusOneForColumnName(
@@ -144,6 +152,12 @@ public class DataTableUtil
 	}
 
 	@Nullable
+	public String extractStringOrNullForColumnName(@NonNull final DataTableRow dataTableRow, @NonNull final String columnName)
+	{
+		return extractStringOrNullForColumnName(dataTableRow.asMap(), columnName);
+	}
+
+	@Nullable
 	public String extractStringOrNullForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
 		// it's OK for "OPT." columns to be missing!
@@ -163,22 +177,34 @@ public class DataTableUtil
 	}
 
 	@Nullable
+	public String extractNullableStringForColumnName(@NonNull final DataTableRow dataTableRow, @NonNull final String columnName)
+	{
+		return extractNullableStringForColumnName(dataTableRow.asMap(), columnName);
+	}
+
+	@Nullable
 	public String extractNullableStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
 		return dataTableRow.get(columnName);
 	}
 
 	@Nullable
-	public String nullToken2Null(@NonNull final String value)
+	public String nullToken2Null(@Nullable final String value)
 	{
-		return NULL_STRING.equals(value) ? null : value;
+		return value == null || NULL_STRING.equals(value) ? null : value;
+	}
+
+	@NonNull
+	public String extractStringForColumnName(@NonNull final DataTableRow dataTableRow, @NonNull final String columnName)
+	{
+		return extractStringForColumnName(dataTableRow.asMap(), columnName);
 	}
 
 	@NonNull
 	public String extractStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
 		final String string = dataTableRow.get(columnName);
-		if (Check.isBlank(string))
+		if (string == null || Check.isBlank(string))
 		{
 			throw new AdempiereException("Missing value for columnName=" + columnName).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
@@ -186,6 +212,7 @@ public class DataTableUtil
 		return string;
 	}
 
+	@SuppressWarnings("unused")
 	public int extractIntForIndex(
 			@NonNull final List<String> dataTableRow,
 			final int index)
@@ -216,6 +243,7 @@ public class DataTableUtil
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public Instant extractInstantForIndex(final List<String> dataTableRow, final int index)
 	{
 		final String string = extractStringForIndex(dataTableRow, index);
@@ -236,7 +264,9 @@ public class DataTableUtil
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
 		try
 		{
-			return Check.isBlank(string) ? null : ZonedDateTime.parse(string);
+			return StringUtils.trimBlankToOptional(string)
+					.map(ZonedDateTime::parse)
+					.orElse(null);
 		}
 		catch (final DateTimeParseException e)
 		{
@@ -259,11 +289,17 @@ public class DataTableUtil
 		}
 	}
 
+	public static Timestamp extractDateTimestampForColumnName(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractDateTimestampForColumnName(dataTableRow.asMap(), columnName);
+	}
+
 	public static Timestamp extractDateTimestampForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
 		final String string = extractStringForColumnName(dataTableRow, columnName);
 		try
 		{
+			//noinspection deprecation
 			return TimeUtil.parseTimestamp(string);
 		}
 		catch (final DateTimeParseException e)
@@ -286,6 +322,7 @@ public class DataTableUtil
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public BigDecimal extractBigDecimalForIndex(final List<String> dataTableRow, final int index)
 	{
 		final String string = extractStringForIndex(dataTableRow, index);
@@ -301,12 +338,19 @@ public class DataTableUtil
 	}
 
 	@Nullable
+	public static BigDecimal extractBigDecimalOrNullForColumnName(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractBigDecimalOrNullForColumnName(dataTableRow.asMap(), columnName);
+	}
+
+	@Nullable
 	public static BigDecimal extractBigDecimalOrNullForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
 
 		try
 		{
+			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : new BigDecimal(string);
 		}
 		catch (final NumberFormatException e)
@@ -347,6 +391,13 @@ public class DataTableUtil
 	}
 
 	public static boolean extractBooleanForColumnName(
+			@NonNull final DataTableRow dataTableRow,
+			@NonNull final String columnName)
+	{
+		return extractBooleanForColumnName(dataTableRow.asMap(), columnName);
+	}
+
+	public static boolean extractBooleanForColumnName(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
 	{
@@ -357,6 +408,15 @@ public class DataTableUtil
 					.setParameter("dataTableRow", dataTableRow);
 		}
 		return result;
+	}
+
+	@Nullable
+	public static Boolean extractBooleanForColumnNameOr(
+			@NonNull final DataTableRow dataTableRow,
+			@NonNull final String columnName,
+			@Nullable final Boolean defaultValue)
+	{
+		return extractBooleanForColumnNameOr(dataTableRow.asMap(), columnName, defaultValue);
 	}
 
 	@Nullable
@@ -412,6 +472,7 @@ public class DataTableUtil
 
 		try
 		{
+			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : Double.parseDouble(string);
 		}
 		catch (final NumberFormatException e)

@@ -73,6 +73,7 @@ public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 
 		Assert.assertEquals("DateOrdered do not match", fromOrder.getDateOrdered(), rc.getDateOrdered());
 		Assert.assertEquals("MovementDate do not match", fromOrder.getDatePromised(), rc.getMovementDate());
+		Assert.assertEquals("POReference do not match", fromOrder.getPOReference(), rc.getPOReference());
 	}
 
 	protected void assertOrderLineMatches(final I_M_ReceiptSchedule rc, final I_C_OrderLine fromOrderLine)

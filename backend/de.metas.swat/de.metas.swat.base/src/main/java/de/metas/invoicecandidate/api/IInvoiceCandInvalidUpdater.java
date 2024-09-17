@@ -132,7 +132,7 @@ public interface IInvoiceCandInvalidUpdater
 		}
 		if (priceAndTax.getInvoicableQtyBasedOn() != null)
 		{
-			ic.setInvoicableQtyBasedOn(priceAndTax.getInvoicableQtyBasedOn().getRecordString());
+			ic.setInvoicableQtyBasedOn(priceAndTax.getInvoicableQtyBasedOn().getCode());
 		}
 		//
 		// Tax

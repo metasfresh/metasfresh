@@ -302,7 +302,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		final IHUAttributesDAO huAttributesRepo = Services.get(IHUAttributesDAO.class);
 
 		final AttributeId serialNoAttributeId = serialNoContext.isPresent()
-				? attributesRepo.retrieveAttributeIdByValue(AttributeConstants.ATTR_SerialNo)
+				? attributesRepo.getAttributeIdByCode(AttributeConstants.ATTR_SerialNo)
 				: null;
 
 		final List<I_M_HU_Attribute> existingHUAttributes = huAttributesRepo.retrieveAttributesOrdered(hu).getHuAttributes();

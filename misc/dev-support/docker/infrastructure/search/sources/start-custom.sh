@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Give the folder to the docker image's elasticsearch user.
 # This is needed so that we can mount it on the dockerhost.

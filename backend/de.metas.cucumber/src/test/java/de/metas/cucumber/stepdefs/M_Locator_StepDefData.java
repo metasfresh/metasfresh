@@ -22,12 +22,17 @@
 
 package de.metas.cucumber.stepdefs;
 
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_Locator;
 
 public class M_Locator_StepDefData extends StepDefData<I_M_Locator>
+		implements StepDefDataGetIdAware<LocatorId, I_M_Locator>
 {
 	public M_Locator_StepDefData()
 	{
 		super(I_M_Locator.class);
 	}
+
+	@Override
+	public LocatorId extractIdFromRecord(final I_M_Locator record) {return LocatorId.ofRecord(record);}
 }
