@@ -31,6 +31,7 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.report.ReportResultData;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -98,6 +99,8 @@ public interface IDesadvBL extends ISingletonService
 
 	/** Iterate the given list and create user-friendly messages for all desadvs whose delivered quantity (fulfillment) is below their respective treshold. */
 	ImmutableList<ITranslatableString> createMsgsForDesadvsBelowMinimumFulfilment(ImmutableList<I_EDI_Desadv> desadvRecords);
+
+	void updateQtyOrdered_OverrideFromShipSchedAndSave(@NonNull I_M_ShipmentSchedule schedule);
 
 	void propagateEDIStatus(@NonNull I_EDI_Desadv desadv);
 }
