@@ -1,6 +1,5 @@
 package de.metas.pos;
 
-import de.metas.cache.CCache;
 import de.metas.document.DocTypeId;
 import de.metas.pricing.PriceListId;
 import de.metas.user.UserId;
@@ -12,21 +11,11 @@ import org.compiere.model.I_C_POS;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class POSConfigRepository
+public class POSConfigRawRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final CCache<Integer, POSConfig> cache = CCache.<Integer, POSConfig>builder()
-			.tableName(I_C_POS.Table_Name)
-			.initialCapacity(1)
-			.expireMinutes(0)
-			.build();
 
-	public POSConfig getConfig()
-	{
-		return cache.getOrLoad(0, this::retrieveConfig);
-	}
-
-	private POSConfig retrieveConfig()
+	public POSConfigRaw getConfig()
 	{
 		return fromRecord(retrieveConfigRecord());
 	}
@@ -39,9 +28,9 @@ public class POSConfigRepository
 				.firstOnly(I_C_POS.class);
 	}
 
-	private static POSConfig fromRecord(@NonNull final I_C_POS record)
+	private static POSConfigRaw fromRecord(@NonNull final I_C_POS record)
 	{
-		return POSConfig.builder()
+		return POSConfigRaw.builder()
 				.priceListId(PriceListId.ofRepoId(record.getM_PriceList_ID()))
 				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
 				.salesRepId(UserId.ofRepoIdOrNull(record.getSalesRep_ID()))

@@ -1,4 +1,4 @@
-import { ADD_ORDER_LINE, NEW_ORDER, REMOVE_ORDER } from './actionTypes';
+import { ADD_ORDER_LINE, NEW_ORDER, ORDERS_LIST_INIT, REMOVE_ORDER, UPDATE_ORDER_FROM_BACKEND } from './actionTypes';
 import { v4 as uuidv4 } from 'uuid';
 
 const initialState = {
@@ -10,6 +10,16 @@ const initialState = {
 
 export function posReducer(applicationState = initialState, action) {
   switch (action.type) {
+    case ORDERS_LIST_INIT: {
+      const {
+        payload: { ordersArray },
+      } = action;
+
+      return {
+        ...applicationState,
+        orders: setOrders({ orders: applicationState.orders, ordersArray }),
+      };
+    }
     case NEW_ORDER: {
       return {
         ...applicationState,
@@ -26,14 +36,32 @@ export function posReducer(applicationState = initialState, action) {
         orders: removeOrderByUUID({ orders: applicationState.orders, order_uuid }),
       };
     }
-    case ADD_ORDER_LINE: {
+    case UPDATE_ORDER_FROM_BACKEND: {
       const {
-        payload: { productId, productName },
+        payload: { order },
       } = action;
 
       return {
         ...applicationState,
-        orders: addOrderLineToCurrentOrder(applicationState.orders, { productId, productName }),
+        orders: updateOrderFromBackend({ orders: applicationState.orders, order }),
+      };
+    }
+    case ADD_ORDER_LINE: {
+      const {
+        payload: { order_uuid, productId, productName, price, qty, uomId, uomSymbol },
+      } = action;
+
+      return {
+        ...applicationState,
+        orders: addOrderLineToCurrentOrder(applicationState.orders, {
+          order_uuid,
+          productId,
+          productName,
+          price,
+          qty,
+          uomId,
+          uomSymbol,
+        }),
       };
     }
     default: {
@@ -41,6 +69,40 @@ export function posReducer(applicationState = initialState, action) {
     }
   }
 }
+
+//
+//
+//
+
+const setOrders = ({ orders, ordersArray }) => {
+  const byUUID = {};
+  ordersArray.forEach((order) => (byUUID[order.uuid] = order));
+
+  // Reset current_uuid if is no longer present in the orders array
+  let current_uuid = orders.current_uuid;
+  if (current_uuid && !byUUID[current_uuid]) {
+    current_uuid = null;
+  }
+
+  if (!current_uuid) {
+    if (ordersArray.length > 0) {
+      current_uuid = ordersArray[0].uuid;
+    } else {
+      const newOrder = {
+        uuid: uuidv4(),
+        lines: [],
+      };
+      current_uuid = newOrder.uuid;
+      byUUID[newOrder.uuid] = newOrder;
+    }
+  }
+
+  return {
+    ...orders,
+    current_uuid,
+    byUUID,
+  };
+};
 
 const addNewOrderAndSetCurrent = (orders) => {
   const newOrder = {
@@ -55,14 +117,22 @@ const addNewOrderAndSetCurrent = (orders) => {
   };
 };
 
-const addOrderLineToCurrentOrder = (orders, { productId, productName }) => {
+const addOrderLineToCurrentOrder = (orders, { order_uuid, productId, productName, price, qty, uomId, uomSymbol }) => {
   const newOrderLine = {
     uuid: uuidv4(),
     productId,
     productName,
+    price,
+    qty,
+    uomId,
+    uomSymbol,
   };
 
-  return changeCurrentOrder(orders, (order) => addOrderLineToOrder({ order, newOrderLine }));
+  return changeOrder({
+    orders,
+    order_uuid,
+    mapper: (order) => addOrderLineToOrder({ order, newOrderLine }),
+  });
 };
 
 const addOrderLineToOrder = ({ order, newOrderLine }) => {
@@ -72,18 +142,17 @@ const addOrderLineToOrder = ({ order, newOrderLine }) => {
   };
 };
 
-const changeCurrentOrder = (orders, currentOrderMapper) => {
-  const currentOrder = getCurrentOrder({ orders });
+const changeOrder = ({ orders, order_uuid, mapper }) => {
+  const order = orders.byUUID[order_uuid];
+  if (!order) {
+    throw 'No order found for ' + order_uuid;
+  }
 
-  const currentOrderChanged = currentOrderMapper(currentOrder);
+  const orderChanged = mapper(order);
   return {
     ...orders,
-    byUUID: { ...orders.byUUID, [currentOrderChanged.uuid]: currentOrderChanged },
+    byUUID: { ...orders.byUUID, [orderChanged.uuid]: orderChanged },
   };
-};
-
-const getCurrentOrder = ({ orders }) => {
-  return orders.byUUID[orders.current_uuid];
 };
 
 const removeOrderByUUID = ({ orders, order_uuid }) => {
@@ -95,4 +164,10 @@ const removeOrderByUUID = ({ orders, order_uuid }) => {
   console.log('removeOrderByUUID', { new: { byUUID, current_uuid }, old: orders });
 
   return { ...orders, current_uuid, byUUID };
+};
+
+const updateOrderFromBackend = ({ orders, order }) => {
+  const byUUID = { ...orders.byUUID };
+  byUUID[order.uuid] = order;
+  return { ...orders, byUUID };
 };
