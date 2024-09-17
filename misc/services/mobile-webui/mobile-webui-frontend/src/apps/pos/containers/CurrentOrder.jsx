@@ -11,7 +11,6 @@ import { usePOSConfiguration } from '../api/config';
 const CurrentOrder = () => {
   const dispatch = useDispatch();
   const config = usePOSConfiguration();
-  console.log('CurrentOrder', { config });
   const { /*isCurrentOrderLoading,*/ currentOrder } = useCurrentOrderOrNew();
 
   const lines = currentOrder?.lines ?? [];
