@@ -36,6 +36,7 @@ import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.location.AddressDisplaySequence;
+import de.metas.document.location.adapter.IDocumentShipFromLocationAdapter;
 import de.metas.location.LocationId;
 import de.metas.location.impl.AddressBuilder;
 import de.metas.organization.OrgId;
@@ -207,6 +208,28 @@ public class DocumentLocationBL implements IDocumentLocationBL
 	}
 
 	@Override
+	public Optional<DocumentLocation> toPlainDocumentLocation(@NonNull final IDocumentShipFromLocationAdapter locationAdapter)
+	{
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(locationAdapter.getShipFrom_Partner_ID(), locationAdapter.getShipFrom_Location_ID());
+		if (bpLocationId == null)
+		{
+			return Optional.empty();
+		}
+		else
+		{
+			return Optional.of(
+					DocumentLocation.builder()
+							.bpartnerId(bpLocationId.getBpartnerId())
+							.bpartnerLocationId(bpLocationId)
+							.locationId(LocationId.ofRepoIdOrNull(locationAdapter.getShipFrom_Location_Value_ID()))
+							.contactId(BPartnerContactId.ofRepoIdOrNull(bpLocationId.getBpartnerId(), locationAdapter.getShipFrom_User_ID()))
+							.bpartnerAddress(locationAdapter.getShipFromAddress())
+							.build());
+		}
+	}
+
+
+	@Override
 	public void updateRenderedAddressAndCapturedLocation(final IDocumentLocationAdapter locationAdapter)
 	{
 		toPlainDocumentLocation(locationAdapter)
@@ -268,5 +291,21 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		toPlainDocumentLocation(locationAdapter)
 				.map(this::withUpdatedLocationId)
 				.ifPresent(location -> locationAdapter.setHandOver_Location_Value_ID(LocationId.toRepoId(location.getLocationId())));
+	}
+
+	@Override
+	public void updateRenderedAddressAndCapturedLocation(final IDocumentShipFromLocationAdapter locationAdapter)
+	{
+		toPlainDocumentLocation(locationAdapter)
+				.map(this::computeRenderedAddress)
+				.ifPresent(locationAdapter::setRenderedAddressAndCapturedLocation);
+	}
+
+	@Override
+	public void updateCapturedLocation(final IDocumentShipFromLocationAdapter locationAdapter)
+	{
+		toPlainDocumentLocation(locationAdapter)
+				.map(this::withUpdatedLocationId)
+				.ifPresent(location -> locationAdapter.setShipFrom_Location_Value_ID(LocationId.toRepoId(location.getLocationId())));
 	}
 }

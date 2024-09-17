@@ -20,33 +20,31 @@
  * #L%
  */
 
-package de.metas.inout.location.adapter;
+package de.metas.shippingnotification.location.adapter;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RecordBasedLocationAdapter;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
-import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
-import de.metas.shippingnotification.location.adapter.ShippingNotificationDocumentLocationAdapterFactory;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOut;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @ToString
-public class DocumentLocationAdapter
-		implements IDocumentLocationAdapter, RecordBasedLocationAdapter<DocumentLocationAdapter>
+public class ShippingNotificationMainLocationAdapter
+		implements IDocumentLocationAdapter, RecordBasedLocationAdapter<ShippingNotificationMainLocationAdapter>
 {
-	private final I_M_InOut delegate;
+	private final I_M_Shipping_Notification delegate;
 
-	DocumentLocationAdapter(@NonNull final I_M_InOut delegate)
+	ShippingNotificationMainLocationAdapter(@NonNull final I_M_Shipping_Notification delegate)
 	{
 		this.delegate = delegate;
 	}
@@ -117,28 +115,13 @@ public class DocumentLocationAdapter
 		IDocumentLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
 	}
 
-	public void setFrom(@NonNull final I_M_InOut from)
-	{
-		setFrom(new DocumentLocationAdapter(from).toDocumentLocation());
-	}
-
-	public void setFrom(@NonNull final I_C_Order from)
-	{
-		setFrom(OrderDocumentLocationAdapterFactory.locationAdapter(from).toDocumentLocation());
-	}
-
-	public void setFrom(@NonNull final I_C_Invoice from)
-	{
-		setFrom(InvoiceDocumentLocationAdapterFactory.locationAdapter(from).toDocumentLocation());
-	}
-
 	public void setFrom(@NonNull final I_M_Shipping_Notification from)
 	{
 		setFrom(ShippingNotificationDocumentLocationAdapterFactory.locationAdapter(from).toDocumentLocation());
 	}
 
 	@Override
-	public I_M_InOut getWrappedRecord()
+	public I_M_Shipping_Notification getWrappedRecord()
 	{
 		return delegate;
 	}
@@ -150,9 +133,16 @@ public class DocumentLocationAdapter
 	}
 
 	@Override
-	public DocumentLocationAdapter toOldValues()
+	public ShippingNotificationMainLocationAdapter toOldValues()
 	{
 		InterfaceWrapperHelper.assertNotOldValues(delegate);
-		return new DocumentLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_M_InOut.class));
+		return new ShippingNotificationMainLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_M_Shipping_Notification.class));
+	}
+
+	public void setLocationAndResetRenderedAddress(@Nullable final BPartnerLocationAndCaptureId from)
+	{
+		setC_BPartner_Location_ID(from != null ? from.getBPartnerLocationRepoId() : -1);
+		setC_BPartner_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
+		setBPartnerAddress(null);
 	}
 }
