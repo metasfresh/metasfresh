@@ -315,3 +315,27 @@ INSERT INTO AD_UI_ElementField (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_UI_Element
 INSERT INTO AD_UI_ElementField (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_UI_ElementField_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,SeqNo,Type,Updated,UpdatedBy) VALUES (0,729847,0,541835,625300,TO_TIMESTAMP('2024-09-03 10:15:18.848','YYYY-MM-DD HH24:MI:SS.US'),100,'Y',20,'widget',TO_TIMESTAMP('2024-09-03 10:15:18.848','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
+-- Run mode: SWING_CLIENT
+
+-- UI Element: Lieferavis(541734,de.metas.shippingnotification) -> Lieferavis(547218,de.metas.shippingnotification) -> main -> 10 -> default.Lieferung von
+-- Column: M_Shipping_Notification.ShipFrom_Partner_ID
+-- 2024-09-16T13:41:26.439Z
+UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=50,Updated=TO_TIMESTAMP('2024-09-16 16:41:26.439','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=625300
+;
+
+-- UI Element: Lieferavis(541734,de.metas.shippingnotification) -> Lieferavis(547218,de.metas.shippingnotification) -> main -> 10 -> default.Auktion
+-- Column: M_Shipping_Notification.C_Auction_ID
+-- 2024-09-16T13:41:26.455Z
+UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=60,Updated=TO_TIMESTAMP('2024-09-16 16:41:26.454','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620440
+;
+
+-- Column: M_Shipping_Notification.ShipFrom_Partner_ID
+-- 2024-09-17T11:40:47.301Z
+UPDATE AD_Column SET AD_Reference_ID=30, AD_Val_Rule_ID=540244,Updated=TO_TIMESTAMP('2024-09-17 14:40:47.301','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588928
+;
+
+-- Column: M_Shipping_Notification.ShipFrom_Partner_ID
+-- 2024-09-17T11:41:07.720Z
+UPDATE AD_Column SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2024-09-17 14:41:07.72','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588928
+;
+
