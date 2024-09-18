@@ -85,7 +85,7 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PriceList_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 
@@ -328,9 +328,24 @@ public class M_PriceList_StepDef
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(productIdentifier::getAsInt);
 
-		final BigDecimal priceStd = row.getAsBigDecimal(I_M_ProductPrice.COLUMNNAME_PriceStd);
+		final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
+		final Optional<TaxCategoryId> taxCategoryId;
 
-		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(row.getAsUOMCode("C_UOM_ID"));
+		final String taxCategoryInternalName = DataTableUtil.extractNullableStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
+		final String taxCategoryName = DataTableUtil.extractNullableStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_Name);
+		if (Check.isNotBlank(taxCategoryInternalName))
+		{
+			taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
+		}
+		else if (Check.isNotBlank(taxCategoryName))
+		{
+			taxCategoryId = taxBL.getTaxCategoryIdByName(taxCategoryName);
+		}
+		else
+		{
+			taxCategoryId = Optional.of(taxBL.retrieveRegularTaxCategoryId());
+		}
+		assertThat(taxCategoryId).as("Missing taxCategory for internalName=%s", taxCategoryInternalName).isPresent();
 
 		final @NonNull StepDefDataIdentifier plvIdentifier = row.getAsIdentifier(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID);
 		final Optional<I_M_PriceList_Version> priceListVersionOptional = priceListVersionTable.getOptional(plvIdentifier);

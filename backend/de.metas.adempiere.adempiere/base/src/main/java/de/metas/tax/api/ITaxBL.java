@@ -112,4 +112,5 @@ public interface ITaxBL extends ISingletonService
 	List<Tax> getChildTaxes(@NonNull TaxId taxId);
 
 	Tax getDefaultTax(TaxCategoryId taxCategoryId);
+	Optional<TaxCategoryId> getTaxCategoryIdByName(String name);
 }
