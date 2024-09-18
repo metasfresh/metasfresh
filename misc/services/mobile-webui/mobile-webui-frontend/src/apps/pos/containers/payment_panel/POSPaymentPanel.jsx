@@ -33,6 +33,7 @@ const POSPaymentPanel = () => {
   const payments = currentOrder?.payments ?? [];
 
   const isAllowAddPayment = openAmt > 0;
+  const isAllowValidate = openAmt === 0;
 
   const onAddPaymentClick = ({ paymentMethod }) => {
     if (!isAllowAddPayment) return;
@@ -57,6 +58,10 @@ const POSPaymentPanel = () => {
 
   const onBackClick = () => {
     dispatch(changeOrderStatusToDraft({ order_uuid: currentOrder?.uuid }));
+  };
+
+  const onValidateClick = () => {
+    console.log('VALIDATE!!!');
   };
 
   return (
@@ -97,7 +102,16 @@ const POSPaymentPanel = () => {
         ))}
       </div>
       <div className="payment-bottom">
-        <button onClick={onBackClick}>Back</button>
+        <button className="back" onClick={onBackClick}>
+          &lt; Back
+        </button>
+        <button
+          className={cx('validate', { 'is-disabled': !isAllowValidate })}
+          disabled={!isAllowValidate}
+          onClick={onValidateClick}
+        >
+          &gt; Validate
+        </button>
       </div>
     </div>
   );
