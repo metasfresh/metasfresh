@@ -312,9 +312,9 @@ public class DesadvBL implements IDesadvBL
 		inOut.setEDI_Desadv(desadv);
 
 		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
-		final int maxDesadvPackLine = desadvDAO.retrieveMaxDesadvPackLine(EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID()));
-		final SimpleSequence packLineSequence = SimpleSequence.createWithInitial(maxDesadvPackLine);
 		
+		final EDIDesadvPackService.Sequences sequences = createSequences(desadv);
+
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : inOutLines)
 		{
@@ -322,15 +322,33 @@ public class DesadvBL implements IDesadvBL
 			{
 				continue; // the DESADV-Line needs to relate to an orderline to make sense
 			}
-			addInOutLine(inOutLine, recipientBPartnerId, packLineSequence);
+			addInOutLine(inOutLine, recipientBPartnerId, sequences);
 		}
 		return desadv;
+	}
+
+	@NonNull
+	private EDIDesadvPackService.Sequences createSequences(@NonNull final I_EDI_Desadv desadv)
+	{
+		final EDIDesadvId desadvId = EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID());
+		
+		final int maxDesadvPackSeqNo = desadvDAO.retrieveMaxDesadvPackSeqNo(desadvId);
+		final SimpleSequence packSeqNoSequence = SimpleSequence.builder()
+				.initial(maxDesadvPackSeqNo)
+				.increment(1).build();
+		
+		final int maxDesadvPackItemLine = desadvDAO.retrieveMaxDesadvPackItemLine(desadvId);
+		final SimpleSequence packItemLineSequence = SimpleSequence.builder()
+				.initial(maxDesadvPackItemLine)
+				.increment(10).build();
+
+		return new EDIDesadvPackService.Sequences(packSeqNoSequence, packItemLineSequence);
 	}
 
 	private void addInOutLine(
 			@NonNull final I_M_InOutLine inOutLineRecord, 
 			@NonNull final BPartnerId recipientBPartnerId,
-			@NonNull final SimpleSequence packLineSequence)
+			@NonNull final EDIDesadvPackService.Sequences sequences)
 	{
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLineRecord.getC_OrderLine(), I_C_OrderLine.class);
 
@@ -356,7 +374,7 @@ public class DesadvBL implements IDesadvBL
 		inOutLineRecord.setEDI_DesadvLine_ID(desadvLineRecord.getEDI_DesadvLine_ID());
 		InterfaceWrapperHelper.save(inOutLineRecord);
 
-		ediDesadvPackService.createPacks(inOutLineRecord, recipientBPartnerId, packLineSequence);
+		ediDesadvPackService.createOrExtendPacks(inOutLineRecord, recipientBPartnerId, sequences);
 	}
 
 	@Override

@@ -69,7 +69,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -120,7 +120,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -177,7 +177,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -233,7 +233,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -301,7 +301,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -372,7 +372,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -443,7 +443,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -526,7 +526,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -612,7 +612,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -698,7 +698,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -792,7 +792,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -878,7 +878,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -964,7 +964,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1047,7 +1047,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1132,7 +1132,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1218,7 +1218,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1286,7 +1286,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1357,7 +1357,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1428,7 +1428,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1496,7 +1496,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1567,7 +1567,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | OPT.QtyOrdered_TU | Processed |
       | s_s_1                            | 100          | 0            | 100        | 10                | false     |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 

@@ -57,7 +57,7 @@ Feature: Picking workflow - abort not started picking jobs after shipment
     And validate M_PickingSlot:
       | M_PickingSlot_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
       | 180.0                       | pickingCustomer_17813    | pickingCustomer_17813Location     |
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | pickingShipmentSchedule          | D            | true                | false       |
     And after not more than 60s, M_InOut is found:

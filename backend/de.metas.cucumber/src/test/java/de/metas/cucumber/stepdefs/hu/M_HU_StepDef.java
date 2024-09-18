@@ -128,7 +128,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Ite
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_M_Inventory.COLUMNNAME_MovementDate;
 import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
@@ -242,9 +242,9 @@ public class M_HU_StepDef
 			final HuId huId = HuId.ofRepoId(inventoryLine.getM_HU_ID());
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(LoadHURequest.builder()
-					.huId(huId)
-					.huIdentifier(huIdentifier)
-					.build()));
+																		 .huId(huId)
+																		 .huIdentifier(huIdentifier)
+																		 .build()));
 
 			restTestContext.setIdVariableFromRow(row, huId);
 		});
@@ -272,16 +272,25 @@ public class M_HU_StepDef
 		});
 	}
 
+	/**
+	 * @param dataTable: <ul>
+	 *                   <li>OPT.resultedNewTUs: comma-separated identifiers of the TUs that are expected when the given quantity is transferred using the given packing-instruction.<br>
+	 *                   If given, then the stepdef expects one identifier for each TU that resulted from the transfer.</li>
+	 *                   <li>OPT.resultedNewCUs: comma-separated identifiers of the CUs that are expected from the transfer.<br>
+	 *                   If given, then there need to be as many CU-identifiers as there are TU-identifiers.</li>
+	 *                   </ul>
+	 */
 	@And("transform CU to new TUs")
 	public void transformCUtoNewTUs(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((row) -> {
+
 			final StepDefDataIdentifier sourceCuIdentifier = row.getAsIdentifier("sourceCU");
 			final BigDecimal cuQty = row.getAsBigDecimal("cuQty");
 			final StepDefDataIdentifier huPIItemProductIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_PI_Item_Product_ID);
 
 			final I_M_HU cuHU = huTable.get(sourceCuIdentifier);
-			assertThat(cuHU).isNotNull();
+			assertThat(cuHU).as("sourceCU").isNotNull();
 
 			final I_C_UOM uom = uomDAO.getById(StepDefConstants.PCE_UOM_ID);
 			final Quantity cuQuantity = Quantity.of(cuQty, uom);
@@ -296,7 +305,7 @@ public class M_HU_StepDef
 					.orElse(null);
 			if (tuIdentifiers != null)
 			{
-				assertThat(tuIdentifiers).hasSameSizeAs(resultedNewTUs);
+				assertThat(tuIdentifiers).as("resultedNewTUs").hasSameSizeAs(resultedNewTUs);
 			}
 
 			final List<StepDefDataIdentifier> cuIdentifiers = row.getAsOptionalIdentifier("resultedNewCUs")
@@ -304,7 +313,7 @@ public class M_HU_StepDef
 					.orElse(null);
 			if (cuIdentifiers != null)
 			{
-				assertThat(cuIdentifiers).hasSameSizeAs(resultedNewTUs);
+				assertThat(cuIdentifiers).as("resultedNewCUs").hasSameSizeAs(resultedNewTUs);
 			}
 
 			for (int index = 0; index < resultedNewTUs.size(); index++)
@@ -371,7 +380,8 @@ public class M_HU_StepDef
 			huTrxBL.process(huContext -> {
 				final LULoader luLoader = new LULoader(huContext);
 
-				@NonNull final List<StepDefDataIdentifier> sourceTUIdentifiers = row.getAsIdentifier("sourceTUs").toCommaSeparatedList();
+				@NonNull
+				final List<StepDefDataIdentifier> sourceTUIdentifiers = row.getAsIdentifier("sourceTUs").toCommaSeparatedList();
 				for (StepDefDataIdentifier sourceTUIdentifier : sourceTUIdentifiers)
 				{
 					final I_M_HU sourceTU = huTable.get(sourceTUIdentifier);
@@ -440,12 +450,12 @@ public class M_HU_StepDef
 				.source(HUListAllocationSourceDestination.of(sourceCU))
 				.destination(producer)
 				.load(AllocationUtils.builder()
-						.setHUContext(huContext)
-						.setProduct(productId)
-						.setQuantity(Quantity.of(qtyCUsPerTU.multiply(qtyTUs.toBigDecimal()), uom))
-						.setDateAsToday()
-						.setForceQtyAllocation(true)
-						.create());
+							  .setHUContext(huContext)
+							  .setProduct(productId)
+							  .setQuantity(Quantity.of(qtyCUsPerTU.multiply(qtyTUs.toBigDecimal()), uom))
+							  .setDateAsToday()
+							  .setForceQtyAllocation(true)
+							  .create());
 
 		final I_M_HU newLU = producer.getSingleCreatedHU().orElseThrow(() -> new AdempiereException("No LU was created"));
 		row.getAsIdentifier("newLU").put(huTable, newLU);
@@ -507,7 +517,7 @@ public class M_HU_StepDef
 
 		final Map<String, Map<String, String>> identifierToRow = rows.stream()
 				.collect(Collectors.toMap(row -> DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER),
-						Function.identity()));
+										  Function.identity()));
 
 		final Map<String, String> topRow = rows.get(0);
 		final String huIdentifier = DataTableUtil.extractStringForColumnName(topRow, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
