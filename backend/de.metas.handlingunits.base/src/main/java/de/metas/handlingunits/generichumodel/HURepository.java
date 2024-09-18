@@ -19,11 +19,9 @@ import de.metas.handlingunits.generichumodel.HU.HUBuilder;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackagingCode;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -288,30 +286,6 @@ public class HURepository
 					.value(packagingCodeRecord.getPackagingCode())
 					.build());
 
-		}
-
-		@Override
-		public Result beforeHUItem(final IMutable<I_M_HU_Item> item)
-		{
-			return getDefaultResult();
-		}
-
-		@Override
-		public Result afterHUItem(final I_M_HU_Item item)
-		{
-			return getDefaultResult();
-		}
-
-		@Override
-		public Result beforeHUItemStorage(final IMutable<IHUItemStorage> itemStorage)
-		{
-			return getDefaultResult();
-		}
-
-		@Override
-		public Result afterHUItemStorage(final IHUItemStorage itemStorage)
-		{
-			return getDefaultResult();
 		}
 
 		public HU getResult()

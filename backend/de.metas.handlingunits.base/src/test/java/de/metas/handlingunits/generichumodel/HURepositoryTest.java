@@ -134,7 +134,7 @@ class HURepositoryTest
 				huPIItemProductRecord,
 				new BigDecimal("49"));
 
-		final String sscc18String = sscc18CodeBL.generate(OrgId.ANY).toString();
+		final String sscc18String = sscc18CodeBL.generate(OrgId.ANY).asString();
 		final I_M_HU_Attribute huAttrRecord = newInstance(I_M_HU_Attribute.class);
 		huAttrRecord.setM_Attribute_ID(attrRecord.getM_Attribute_ID());
 		huAttrRecord.setM_HU_ID(lu.getM_HU_ID());
