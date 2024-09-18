@@ -384,6 +384,20 @@ public class M_Product_StepDef
 		return productType;
 	}
 
+	private void loadProduct(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final String id = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Product.COLUMNNAME_M_Product_ID);
+
+		if (de.metas.util.Check.isNotBlank(id))
+		{
+			final I_M_Product productRecord = productDAO.getById(Integer.parseInt(id));
+
+			productTable.putOrReplace(identifier, productRecord);
+		}
+	}
+
 	private void updateMProduct(@NonNull final Map<String, String> tableRow)
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -404,16 +418,5 @@ public class M_Product_StepDef
 		}
 
 		saveRecord(productRecord);
-	}
-
-	private void loadProduct(@NonNull final Map<String, String> tableRow)
-	{
-		final int productId = DataTableUtil.extractIntForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID);
-
-		final I_M_Product product = productDAO.getById(productId);
-		assertThat(product).isNotNull();
-
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		productTable.put(productIdentifier, product);
 	}
 }
