@@ -22,13 +22,7 @@
 
 package org.eevolution.productioncandidate.service.produce;
 
-import de.metas.common.util.time.SystemTime;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.planning.IResourceProductService;
-import de.metas.material.planning.ProductPlanningId;
-import de.metas.order.OrderLineId;
-import de.metas.material.planning.IResourceDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
