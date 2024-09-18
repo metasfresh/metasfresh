@@ -1,5 +1,5 @@
 import React from 'react';
-import { addNewOrderAction, useCurrentOrder, voidOrder } from '../actions';
+import { addNewOrderAction, useCurrentOrder, voidOrder } from '../../actions';
 import { useDispatch } from 'react-redux';
 
 const CurrentOrderActions = () => {

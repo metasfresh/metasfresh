@@ -1,8 +1,8 @@
 import React from 'react';
-import { useProducts } from '../api/products';
+import { useProducts } from '../../api/products';
 import ProductButton from './ProductButton';
-import Spinner from '../../../components/Spinner';
-import { useCurrentOrder } from '../actions';
+import Spinner from '../../../../components/Spinner';
+import { useCurrentOrder } from '../../actions';
 
 const Products = () => {
   const { isCurrentOrderLoading, currentOrder } = useCurrentOrder();

@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import cx from 'classnames';
-import { setSelectedOrderLineAction, useCurrentOrderOrNew } from '../actions';
+import { setSelectedOrderLineAction, useCurrentOrderOrNew } from '../../actions';
 import CurrentOrderActions from './CurrentOrderActions';
 import PropTypes from 'prop-types';
-import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
-import { formatAmountToHumanReadableStr } from '../../../utils/money';
+import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
+import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import { useDispatch } from 'react-redux';
-import { usePOSConfiguration } from '../api/pos_configuration';
+import { usePOSConfiguration } from '../../api/pos_configuration';
 
 const CurrentOrder = () => {
   const dispatch = useDispatch();

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-import { addOrderLine } from '../actions';
-import { formatAmountToHumanReadableStr } from '../../../utils/money';
+import { addOrderLine } from '../../actions';
+import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 
 const ProductButton = ({ productId, name, price, currencySymbol, uomId, uomSymbol, taxCategoryId, order_uuid }) => {
   const dispatch = useDispatch();

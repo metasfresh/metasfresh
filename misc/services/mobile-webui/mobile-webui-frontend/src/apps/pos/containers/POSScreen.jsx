@@ -1,7 +1,7 @@
 import React from 'react';
 import './POSScreen.scss';
 import Header from './Header';
-import POSOrderPanel from './POSOrderPanel';
+import POSOrderPanel from './order_panel/POSOrderPanel';
 
 const POSScreen = () => {
   return (
