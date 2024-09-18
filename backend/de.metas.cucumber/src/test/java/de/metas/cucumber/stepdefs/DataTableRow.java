@@ -37,6 +37,7 @@ import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -135,6 +136,10 @@ public class DataTableRow
 	public BigDecimal getAsBigDecimal(@NonNull final String columnName)
 	{
 		return DataTableUtil.extractBigDecimalForColumnName(map, columnName);
+	}
+
+	public Timestamp getAsTimestamp(@NonNull final String columnName) {
+		return DataTableUtil.extractDateTimestampForColumnName(map, columnName);
 	}
 
 	public Optional<BigDecimal> getAsOptionalBigDecimal(@NonNull final String columnName)

@@ -76,7 +76,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Auction;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -392,18 +391,12 @@ public class C_Order_StepDef
 				order.setSalesRep_ID(salesRepID);
 			}
 
-			final String harvestingCalendarIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(harvestingCalendarIdentifier))
-			{
-				final I_C_Calendar harvestingCalendarRecord = calendarTable.get(harvestingCalendarIdentifier);
-				order.setC_Harvesting_Calendar_ID(harvestingCalendarRecord.getC_Calendar_ID());
-			}
-
 			final String harvestingYearIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(harvestingYearIdentifier))
 			{
 				final I_C_Year harvestingYearRecord = yearTable.get(harvestingYearIdentifier);
 				order.setHarvesting_Year_ID(harvestingYearRecord.getC_Year_ID());
+				order.setC_Harvesting_Calendar_ID(harvestingYearRecord.getC_Calendar_ID());
 			}
 
 			final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
