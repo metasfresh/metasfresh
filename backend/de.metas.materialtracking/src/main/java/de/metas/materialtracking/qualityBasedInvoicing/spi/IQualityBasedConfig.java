@@ -22,18 +22,16 @@ package de.metas.materialtracking.qualityBasedInvoicing.spi;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-
 import de.metas.currency.Currency;
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Interface containing all the information needed to do quality based invoicing
@@ -94,7 +92,7 @@ public interface IQualityBasedConfig
 
 	String getFeeNameForProducedProduct(I_M_Product product);
 
-	List<IInvoicingItem> getAdditionalFeeProducts();
+	List<IInvoicingItem> getProducedTotalWithoutByProductsAdditionalFeeProducts();
 
 	Currency getCurrency();
 
@@ -136,4 +134,6 @@ public interface IQualityBasedConfig
 	 * @task 08720
 	 */
 	I_M_Product getRegularPPOrderProduct();
+
+	List<IInvoicingItem> getRawAdditionalFeeProducts();
 }

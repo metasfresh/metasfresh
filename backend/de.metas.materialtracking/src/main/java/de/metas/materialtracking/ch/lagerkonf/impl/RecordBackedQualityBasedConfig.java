@@ -22,6 +22,30 @@ package de.metas.materialtracking.ch.lagerkonf.impl;
  * #L%
  */
 
+import de.metas.currency.Currency;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.materialtracking.ch.lagerkonf.IQualityInspLagerKonfDAO;
+import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Month_Adj;
+import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_ProcessingFee;
+import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Version;
+import de.metas.materialtracking.ch.lagerkonf.model.X_M_QualityInsp_LagerKonf_Month_Adj;
+import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
+import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingBL;
+import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
+import de.metas.money.CurrencyId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.MultiValueMap;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -34,29 +58,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
-import de.metas.currency.Currency;
-import de.metas.currency.ICurrencyDAO;
-import de.metas.materialtracking.ch.lagerkonf.IQualityInspLagerKonfDAO;
-import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_AdditionalFee;
-import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Month_Adj;
-import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_ProcessingFee;
-import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Version;
-import de.metas.materialtracking.ch.lagerkonf.model.X_M_QualityInsp_LagerKonf_Month_Adj;
-import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
-import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingBL;
-import de.metas.money.CurrencyId;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.X12DE355;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 /* package */class RecordBackedQualityBasedConfig extends AbstractQualityBasedConfig
 {
@@ -79,7 +80,7 @@ import de.metas.util.Services;
 
 		month2qualityAdjustment = new HashMap<>(12);
 
-		final List<I_M_QualityInsp_LagerKonf_Month_Adj> adjustments = Services.get(IQualityInspLagerKonfDAO.class).retriveMonthAdjustments(qualityInspLagerKonfVersion);
+		final List<I_M_QualityInsp_LagerKonf_Month_Adj> adjustments = qualityInspLagerKonfDAO.retriveMonthAdjustments(qualityInspLagerKonfVersion);
 		BigDecimal maximumFee = null;
 		for (final I_M_QualityInsp_LagerKonf_Month_Adj adj : adjustments)
 		{
@@ -141,21 +142,19 @@ import de.metas.util.Services;
 		regularPPOrderProduct = qualityInspLagerKonfVersion.getM_Product_RegularPPOrder();
 
 		feeProductPercentage2fee = new TreeMap<>();
-		final List<I_M_QualityInsp_LagerKonf_ProcessingFee> processingFees = Services.get(IQualityInspLagerKonfDAO.class).retriveProcessingFees(qualityInspLagerKonfVersion);
+		final List<I_M_QualityInsp_LagerKonf_ProcessingFee> processingFees = qualityInspLagerKonfDAO.retriveProcessingFees(qualityInspLagerKonfVersion);
 		for (final I_M_QualityInsp_LagerKonf_ProcessingFee processingFee : processingFees)
 		{
 			feeProductPercentage2fee.put(processingFee.getPercentFrom(), processingFee.getProcessing_Fee_Amt_Per_UOM());
 		}
 
-		additionaFeeProducts = new ArrayList<>();
-		final List<I_M_QualityInsp_LagerKonf_AdditionalFee> aditionalFees = Services.get(IQualityInspLagerKonfDAO.class).retriveAdditionalFees(qualityInspLagerKonfVersion);
-		for (final I_M_QualityInsp_LagerKonf_AdditionalFee additionalFee : aditionalFees)
-		{
-			additionaFeeProducts.add(qualityBasedInvoicingBL.createPlainInvoicingItem(
-					additionalFee.getM_Product(),
-					BigDecimal.ONE,
-					uomDAO.getByX12DE355(C_UOM_FEE_X12DE355)));
-		}
+		type2AdditionalFeeProducts = new MultiValueMap<>();
+		qualityInspLagerKonfDAO.retriveAdditionalFees(qualityInspLagerKonfVersion)
+				.forEach(additionalFee -> type2AdditionalFeeProducts.add(QualityInspectionLineType.ofCode(additionalFee.getApplyFeeTo()),
+																		 qualityBasedInvoicingBL.createPlainInvoicingItem(
+																				 productBL.getById(ProductId.ofRepoId(additionalFee.getM_Product_ID())),
+																				 BigDecimal.ONE,
+																				 uomDAO.getByX12DE355(C_UOM_FEE_X12DE355))));
 
 		numberOfInspections = qualityInspLagerKonfVersion.getNumberOfQualityInspections();
 
@@ -173,6 +172,8 @@ import de.metas.util.Services;
 	// Services
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final transient IQualityBasedInvoicingBL qualityBasedInvoicingBL = Services.get(IQualityBasedInvoicingBL.class);
+	private final transient IQualityInspLagerKonfDAO qualityInspLagerKonfDAO = Services.get(IQualityInspLagerKonfDAO.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
 	private final Map<Integer, BigDecimal> month2qualityAdjustment;
 	private final SortedMap<BigDecimal, BigDecimal> feeProductPercentage2fee;
@@ -186,7 +187,7 @@ import de.metas.util.Services;
 	private final BigDecimal scrapPercentageTreshold;
 	private final BigDecimal scrapFee;
 
-	private final ArrayList<IInvoicingItem> additionaFeeProducts;
+	private final MultiValueMap<QualityInspectionLineType, IInvoicingItem> type2AdditionalFeeProducts;
 
 	private final IInvoicingItem witholdingProduct;
 
@@ -254,9 +255,15 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public List<IInvoicingItem> getAdditionalFeeProducts()
+	public List<IInvoicingItem> getProducedTotalWithoutByProductsAdditionalFeeProducts()
 	{
-		return additionaFeeProducts;
+		return type2AdditionalFeeProducts.get(QualityInspectionLineType.ProducedTotalWithoutByProducts);
+	}
+
+	@Override
+	public List<IInvoicingItem> getRawAdditionalFeeProducts()
+	{
+		return type2AdditionalFeeProducts.get(QualityInspectionLineType.Raw);
 	}
 
 	@Override

@@ -22,16 +22,15 @@ package de.metas.materialtracking.ch.lagerkonf;
  * #L%
  */
 
+import de.metas.currency.Currency;
+import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
+import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
+import org.compiere.model.I_M_Product;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-
-import org.compiere.model.I_M_Product;
-
-import de.metas.currency.Currency;
-import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
-import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 
 /**
  * Interface containing all the information needed to do quality based invoicing
@@ -91,7 +90,7 @@ public interface ILagerKonfQualityBasedConfig extends IQualityBasedConfig
 	String getFeeNameForProducedProduct(I_M_Product product);
 
 	@Override
-	List<IInvoicingItem> getAdditionalFeeProducts();
+	List<IInvoicingItem> getProducedTotalWithoutByProductsAdditionalFeeProducts();
 
 	@Override
 	Currency getCurrency();
@@ -100,4 +99,7 @@ public interface ILagerKonfQualityBasedConfig extends IQualityBasedConfig
 	 * returns the last date at which this config is valid
 	 */
 	Timestamp getValidToDate();
+
+	@Override
+	List<IInvoicingItem> getRawAdditionalFeeProducts();
 }
