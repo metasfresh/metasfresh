@@ -57,8 +57,10 @@ public class TaxId implements RepoIdAware
 		return id != null ? id.getRepoId() : -1;
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static int toRepoId(@Nullable final Optional<TaxId> optional)
 	{
+		//noinspection OptionalAssignedToNull
 		final TaxId id = optional != null ? optional.orElse(null) : null;
 		return toRepoId(id);
 	}

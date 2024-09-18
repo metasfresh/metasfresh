@@ -60,7 +60,6 @@ public class TaxNotFoundException extends AdempiereException
 
 	@Builder
 	private TaxNotFoundException(
-			final String adMessage,
 			final ProductId productId,
 			final int chargeId,
 			final TaxCategoryId taxCategoryId,

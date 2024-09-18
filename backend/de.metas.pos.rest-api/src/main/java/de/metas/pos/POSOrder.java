@@ -84,9 +84,6 @@ public class POSOrder
 
 	public ImmutableList<POSOrderLine> getLines() {return ImmutableList.copyOf(lines);}
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public boolean isDrafted() {return status.isDrafted();}
-
 	public void changeStatusTo(POSOrderStatus nextStatus)
 	{
 		if (POSOrderStatus.equals(this.status, nextStatus))
