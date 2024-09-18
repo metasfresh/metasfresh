@@ -703,10 +703,10 @@ public class StepComXMLDesadvBean
 			eancProdInfo.setPRODUCTID(eant);
 			detail.getDPRIN1().add(eancProdInfo);
 		}
-		if (settings.isDesadvLineGTINRequired())
+		if (settings.isDesadvLineGTINTURequired())
 		{
-			final String gtin = ValidationHelper.validateString(line.getGTIN(),
-																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @GTIN@");
+			final String gtin = ValidationHelper.validateString(line.getGTINTU(),
+																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @GTIN_TU@");
 
 			final DPRIN1 gtinProdInfo = DESADV_objectFactory.createDPRIN1();
 			gtinProdInfo.setDOCUMENTID(documentId);
@@ -717,8 +717,8 @@ public class StepComXMLDesadvBean
 		}
 		if (settings.isDesadvLineUPCCRequired())
 		{
-			final String upcc = ValidationHelper.validateString(line.getUPC(),
-																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @UPC@");
+			final String upcc = ValidationHelper.validateString(line.getUPCCU(),
+																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @UPCCU@");
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
 			eancProdInfo.setPRODUCTQUAL(ProductQual.UPCC.toString());
