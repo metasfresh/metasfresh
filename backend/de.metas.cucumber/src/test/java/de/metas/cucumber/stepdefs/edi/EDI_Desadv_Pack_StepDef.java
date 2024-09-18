@@ -35,7 +35,6 @@ import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.handlingunits.HuId;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.text.tabular.Cell;
@@ -124,10 +123,12 @@ public class EDI_Desadv_Pack_StepDef
 		final String packIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_EDI_Desadv_Pack_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_EDI_Desadv_Pack packRecord = ediDesadvPackTable.get(packIdentifier);
 
-		final String ipaSSCC18 = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_IPA_SSCC18);
-		if (Check.isNotBlank(ipaSSCC18))
+		final String ipaSSCC18 = DataTableUtil.nullToken2Null(
+				DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_IPA_SSCC18)
+		);
+		if (ipaSSCC18 != null)
 		{
-			packRecord.setIPA_SSCC18(DataTableUtil.nullToken2Null(ipaSSCC18));
+			packRecord.setIPA_SSCC18(ipaSSCC18.trim());
 		}
 
 		saveRecord(packRecord);
@@ -225,7 +226,7 @@ public class EDI_Desadv_Pack_StepDef
 
 	private static <T extends RepoIdAware> Cell toCell(
 			@Nullable final T id,
-			@NonNull StepDefDataGetIdAware<T, ?> lookupTable)
+			@NonNull final StepDefDataGetIdAware<T, ?> lookupTable)
 	{
 		if (id == null)
 		{

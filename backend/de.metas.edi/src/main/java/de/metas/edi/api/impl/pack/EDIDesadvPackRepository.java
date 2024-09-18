@@ -176,7 +176,7 @@ public class EDIDesadvPackRepository
 		final List<I_EDI_Desadv_Pack_Item> packItemRecords = queryBL.createQueryBuilder(I_EDI_Desadv_Pack_Item.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID, huId)
-				//.orderBy(I_EDI_Desadv_Pack_Item.COLUMNNAME_Line) // TODO add that column
+				.orderBy(I_EDI_Desadv_Pack_Item.COLUMNNAME_Line)
 				.create()
 				.list();
 		if(packItemRecords.isEmpty())
