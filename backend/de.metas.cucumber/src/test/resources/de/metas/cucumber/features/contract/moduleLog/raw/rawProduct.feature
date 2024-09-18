@@ -66,8 +66,8 @@ Feature: Modular contract log from purchase order for raw product
       | warehouseStd              | StdWarehouse |
 
     And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
-      | shipper_1               | 540006           |
+      | Identifier | Name |
+      | shipper_1  | Dhl  |
 
     And load DD_NetworkDistribution:
       | DD_NetworkDistribution_ID.Identifier | Value   |
@@ -150,8 +150,8 @@ Feature: Modular contract log from purchase order for raw product
       | storageCost_module           | 90    | storageCost_06032024_1               | storageCostForRawProduct | Costs          | modCntr_settings_1             | modCntr_type_8             |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | moduleLogConditions_06032024_1      | moduleLogConditions_06032024_1 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 | CO            |
+      | Identifier                     | Name                           | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | moduleLogConditions_06032024_1 | moduleLogConditions_06032024_1 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 | CO            |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                    | OPT.M_Warehouse_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
@@ -195,8 +195,8 @@ Feature: Modular contract log from purchase order for raw product
       | receiptSchedule_PO              | po_order              | po_orderLine              | bp_moduleLogPO           | bp_moduleLogPO_Location           | rawProduct              | 1000       | warehouse_06032024_1      | moduleLogContract_1               |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU_1   | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 200   | 101                                | 1000006                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU_1   | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 200         | 101                                | 1000006                      |
 
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.MovementDate |
@@ -211,8 +211,8 @@ Feature: Modular contract log from purchase order for raw product
       | log_3                     | receiptLine_1        | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | addValueOnRaw_PO        | bp_moduleLogPO                      | bp_moduleLogPO                  | 200 | M_InOutLine | moduleLogContract_1           | modCntr_type_4             | false         | MaterialReceipt              | EUR                        | PCE                   | 1600       | y2022                             | avOnRawProduct_module_1          | 8.00            | PCE                       | addValueOnRawProduct_06032024_1 | Y              |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU_2   | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 800   | 101                                | 1000006                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU_2   | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 800         | 101                                | 1000006                      |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU_2   | receiptSchedule_PO              | inOut_06032024_2      |

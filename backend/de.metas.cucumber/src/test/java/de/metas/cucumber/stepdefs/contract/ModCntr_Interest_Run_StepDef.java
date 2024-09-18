@@ -34,6 +34,7 @@ import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -96,10 +97,7 @@ public class ModCntr_Interest_Run_StepDef
 		final InterestRunId interestRunId = InterestRunId.ofRepoId(interestRunTable.get(interestRunIdentifier).getModCntr_Interest_Run_ID());
 		// make sure it's modifiable, we want to be able to remove matched records from it
 		final ArrayList<ModularLogInterest> modularLogInterestsForRun = new ArrayList<>(modularLogInterestRepository.getModularLogInterestsForRun(interestRunId));
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
-			validateInterestRow(row, modularLogInterestsForRun);
-		}
+		DataTableRows.of(dataTable).forEach(row -> validateInterestRow(row, modularLogInterestsForRun));
 	}
 
 	private void validateInterestRow(@NonNull final DataTableRow row, @NonNull final List<ModularLogInterest> modularLogInterestsForRun)

@@ -67,8 +67,8 @@ Feature: Modular contract log from purchase order for processed product
       | warehouseStd              | StdWarehouse |
 
     And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
-      | shipper_1               | 540006           |
+      | Identifier | Name |
+      | shipper_1  | Dhl  |
 
     And load DD_NetworkDistribution:
       | DD_NetworkDistribution_ID.Identifier | Value   |
@@ -185,7 +185,7 @@ Feature: Modular contract log from purchase order for processed product
       | storageCost_module             | 80    | storageCost_06062024_1                | storageCostForProcessedProduct | Costs          | modCntr_settings_1             | modCntr_type_7             |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier    | Name                                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | Identifier                             | Name                                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
       | moduleLogConditions_06062024_1         | moduleLogConditions_06062024_1         | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 | CO            |
       | moduleLogConditions_interim_06062024_1 | moduleLogConditions_interim_06062024_1 | InterimInvoice  | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 | CO            |
 
@@ -244,8 +244,8 @@ Feature: Modular contract log from purchase order for processed product
 
     #Material Receipts
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | rawTopHU_1         | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 1000  | 101                                | 1000006                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | rawTopHU_1         | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 1000        | 101                                | 1000006                      |
 
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.MovementDate |
@@ -265,8 +265,8 @@ Feature: Modular contract log from purchase order for processed product
       | ppo_1                  | MMO         | processedProduct        | 1000       | testResource             | 2022-02-28T23:59:00.00Z | 2022-02-28T23:59:00.00Z | 2022-02-28T23:59:00.00Z | N                | moduleLogContract_1                     | warehouse_06062024_1          |
 
     And after not more than 60s, PP_Order_BomLines are found
-      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | ppOrderBOMLine_1               | ppo_1                  | rawProduct              | 1000         | true            | PCE               | CO            |
+      | Identifier       | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppOrderBOMLine_1 | ppo_1                  | rawProduct              | 1000         | true            | PCE               | CO            |
 
     And the manufacturing order identified by ppo_1 is completed
 
@@ -275,8 +275,8 @@ Feature: Modular contract log from purchase order for processed product
       | rawTopHU_1         | pp_order_qty_1             | ppOrderBOMLine_1               | 2022-02-28T23:59:00.00Z |
 
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier |
-      | huLuTuConfig                          | ppo_1                  | processedProductTU | N               | 0     | N               | 1     | N               | 1000  | huItemManufacturingProduct         |
+      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | huLuTuConfig                          | ppo_1                  | processedProductTU | N               | 0     | N               | 1     | N               | 1000        | huItemManufacturingProduct         |
 
     And complete planning for PP_Order:
       | PP_Order_ID.Identifier |
@@ -294,9 +294,9 @@ Feature: Modular contract log from purchase order for processed product
       | log_4                     | ppo_1                | ModularContract | bp_moduleLogPO                             | warehouse_06062024_1          | processedProduct         | bp_moduleLogPO                  | 1000 | PP_Order  | moduleLogContract_1           | modCntr_type_3             | false         | Production                   | EUR                        | PCE                   | 20000      | y2022                             | salesOnProcessedProduct_module   | 20.00           | PCE                       | salesOnProcessedProduct_06062024_1    | Y              |
 
     And after not more than 60s, PP_Cost_Collector are found:
-      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
-      | ppOrder_CostCollector_1         | ppo_1                  | processedProduct        | 1000        | CO        |
-      | ppOrder_CostCollector_2         | ppo_1                  | rawProduct              | 1000        | CO        |
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
+      | ppOrder_CostCollector_1         | ppo_1                  | processedProduct        | 1000        | CO        | MaterialReceipt   |
+      | ppOrder_CostCollector_2         | ppo_1                  | rawProduct              | 1000        | CO        | MaterialReceipt   |
 
     #SO
     And metasfresh contains C_Orders:
