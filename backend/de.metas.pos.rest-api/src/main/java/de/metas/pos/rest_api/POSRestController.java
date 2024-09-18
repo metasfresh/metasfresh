@@ -93,6 +93,12 @@ public class POSRestController
 		return changeStatusTo(orderIdStr, POSOrderStatus.Voided);
 	}
 
+	@PostMapping("/orders/{orderId}/complete")
+	public JsonPOSOrder changeStatusToComplete(@PathVariable("orderId") @NonNull final String orderIdStr)
+	{
+		return changeStatusTo(orderIdStr, POSOrderStatus.Completed);
+	}
+
 	private JsonPOSOrder changeStatusTo(@NonNull final String orderIdStr, @NonNull final POSOrderStatus nextStatus)
 	{
 		final POSOrderExternalId externalId = POSOrderExternalId.ofString(orderIdStr);

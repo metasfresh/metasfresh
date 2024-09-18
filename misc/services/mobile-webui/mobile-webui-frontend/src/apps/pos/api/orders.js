@@ -25,3 +25,9 @@ export const changeOrderStatusToWaitingPayment = ({ order_uuid }) => {
 export const changeOrderStatusToVoid = ({ order_uuid }) => {
   return axios.post(`${apiBasePath}/pos/orders/${order_uuid}/void`).then((response) => unboxAxiosResponse(response));
 };
+
+export const changeOrderStatusToComplete = ({ order_uuid }) => {
+  return axios
+    .post(`${apiBasePath}/pos/orders/${order_uuid}/complete`)
+    .then((response) => unboxAxiosResponse(response));
+};

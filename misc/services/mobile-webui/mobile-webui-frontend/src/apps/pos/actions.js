@@ -129,6 +129,13 @@ export const changeOrderStatusToVoid = ({ order_uuid }) => {
   };
 };
 
+export const changeOrderStatusToComplete = ({ order_uuid }) => {
+  return async (dispatch) => {
+    await ordersAPI.changeOrderStatusToComplete({ order_uuid });
+    dispatch(removeOrderAction({ order_uuid }));
+  };
+};
+
 export const removeOrderAction = ({ order_uuid }) => {
   return {
     type: REMOVE_ORDER,

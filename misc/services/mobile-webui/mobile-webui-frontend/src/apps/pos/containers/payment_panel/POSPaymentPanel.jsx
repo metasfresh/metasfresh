@@ -1,6 +1,12 @@
 import React from 'react';
 import cx from 'classnames';
-import { addPayment, changeOrderStatusToDraft, removePayment, useCurrentOrder } from '../../actions';
+import {
+  addPayment,
+  changeOrderStatusToComplete,
+  changeOrderStatusToDraft,
+  removePayment,
+  useCurrentOrder,
+} from '../../actions';
 import { useDispatch } from 'react-redux';
 import './POSPaymentPanel.scss';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
@@ -12,6 +18,8 @@ const POSPaymentPanel = () => {
   const dispatch = useDispatch();
   const config = usePOSConfiguration();
   const { currentOrder } = useCurrentOrder();
+
+  const order_uuid = currentOrder?.uuid;
 
   const currencyPrecision = config?.currencyPrecision ?? 2;
   const currency = currentOrder?.currencySymbol;
@@ -38,30 +46,20 @@ const POSPaymentPanel = () => {
   const onAddPaymentClick = ({ paymentMethod }) => {
     if (!isAllowAddPayment) return;
 
-    dispatch(
-      addPayment({
-        order_uuid: currentOrder.uuid,
-        paymentMethod,
-        amount: openAmt,
-      })
-    );
+    dispatch(addPayment({ order_uuid, paymentMethod, amount: openAmt }));
   };
 
   const onPaymentDelete = ({ uuid }) => {
-    dispatch(
-      removePayment({
-        order_uuid: currentOrder.uuid,
-        payment_uuid: uuid,
-      })
-    );
+    dispatch(removePayment({ order_uuid, payment_uuid: uuid }));
   };
 
   const onBackClick = () => {
-    dispatch(changeOrderStatusToDraft({ order_uuid: currentOrder?.uuid }));
+    dispatch(changeOrderStatusToDraft({ order_uuid }));
   };
 
   const onValidateClick = () => {
-    console.log('VALIDATE!!!');
+    if (!isAllowValidate) return;
+    dispatch(changeOrderStatusToComplete({ order_uuid }));
   };
 
   return (
