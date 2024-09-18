@@ -33,9 +33,9 @@ public class POSService
 		return ordersService.getOpenOrders(userId);
 	}
 
-	public void voidOrder(@NonNull final POSOrderExternalId externalId, @NonNull final UserId userId)
+	public POSOrder changeStatusTo(@NonNull final POSOrderExternalId externalId, @NonNull final POSOrderStatus nextStatus, @NonNull final UserId userId)
 	{
-		ordersService.voidOrder(externalId, userId);
+		return ordersService.changeStatusTo(externalId, nextStatus, userId);
 	}
 
 	public POSOrder updateOrderFromRemote(final @NonNull JsonPOSOrder remoteOrder, final UserId userId)

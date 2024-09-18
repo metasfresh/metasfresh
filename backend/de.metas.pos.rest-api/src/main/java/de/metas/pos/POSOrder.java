@@ -87,22 +87,31 @@ public class POSOrder
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isDrafted() {return status.isDrafted();}
 
-	public void assertDrafted()
+	public void changeStatusTo(POSOrderStatus nextStatus)
 	{
-		if (!isDrafted())
+		if (POSOrderStatus.equals(this.status, nextStatus))
 		{
-			throw new AdempiereException("Expected " + externalId + " to be Drafted but it is " + status);
-		}
-	}
-
-	public void voidId()
-	{
-		if (!isDrafted())
-		{
-			throw new AdempiereException("Only Drafted orders can be voided");
+			return;
 		}
 
-		this.status = POSOrderStatus.Voided;
+		this.status.assertCanTransitionTo(nextStatus);
+
+		switch (nextStatus)
+		{
+			case Drafted:
+				break;
+			case WaitingPayment:
+				break;
+			case Completed:
+				throw new UnsupportedOperationException("not implemented");
+				//break;
+			case Voided:
+				break;
+			default:
+				throw new AdempiereException("Unknown next status " + nextStatus);
+		}
+
+		this.status = nextStatus;
 	}
 
 	public void createOrUpdateLine(@NonNull final String externalId, @NonNull final UnaryOperator<POSOrderLine> updater)

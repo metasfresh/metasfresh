@@ -54,24 +54,26 @@ const getCurrentOrderFromState = (globalState) => {
 
 export const useOpenOrders = () => {
   const dispatch = useDispatch();
-  const [isLoading, setLoading] = useState();
+  const [loadStatus, setLoadStatus] = useState('new');
   const openOrders = useSelector(getOpenOrdersArrayFromState);
 
   useEffect(() => {
-    setLoading(true);
-    ordersAPI
-      .getOpenOrdersArray()
-      .then((ordersArray) =>
-        dispatch({
-          type: ORDERS_LIST_INIT,
-          payload: { ordersArray },
-        })
-      )
-      .finally(() => setLoading(false));
+    if (loadStatus === 'new') {
+      setLoadStatus('loading');
+      ordersAPI
+        .getOpenOrdersArray()
+        .then((ordersArray) =>
+          dispatch({
+            type: ORDERS_LIST_INIT,
+            payload: { ordersArray },
+          })
+        )
+        .finally(() => setLoadStatus('load-done'));
+    }
   }, []);
 
   return {
-    isOpenOrdersLoading: isLoading,
+    isOpenOrdersLoading: loadStatus === 'loading',
     openOrders,
   };
 };
@@ -104,9 +106,23 @@ export const addNewOrderAction = () => {
   };
 };
 
-export const voidOrder = ({ order_uuid }) => {
+export const changeOrderStatusToDraft = ({ order_uuid }) => {
   return async (dispatch) => {
-    await ordersAPI.voidOrder({ order_uuid });
+    const order = await ordersAPI.changeOrderStatusToDraft({ order_uuid });
+    dispatch(updateOrderFromBackendAction({ order }));
+  };
+};
+
+export const changeOrderStatusToWaitingPayment = ({ order_uuid }) => {
+  return async (dispatch) => {
+    const order = await ordersAPI.changeOrderStatusToWaitingPayment({ order_uuid });
+    dispatch(updateOrderFromBackendAction({ order }));
+  };
+};
+
+export const changeOrderStatusToVoid = ({ order_uuid }) => {
+  return async (dispatch) => {
+    await ordersAPI.changeOrderStatusToVoid({ order_uuid });
     dispatch(removeOrderAction({ order_uuid }));
   };
 };

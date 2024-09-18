@@ -1,0 +1,62 @@
+.pos-screen {
+  .pos-header {
+    background-color: #ffffff;
+    padding-left: 12px;
+    padding-right: 12px;
+
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+
+    .pos-header-button {
+      font-size: 1rem;
+      font-weight: bold;
+      height: 100%;
+      padding-left: 10px;
+      padding-right: 10px;
+      border-radius: 2px;
+
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: center;
+
+      .icon-letter {
+        width: 25px;
+        height: 25px;
+        border-radius: 4px;
+        text-align: center;
+        color: white;
+        background-color: #74b727;
+      }
+
+      .text {
+        margin-left: 3px;
+      }
+    }
+
+    .pos-header-button:focus {
+      outline: none;
+    }
+
+    .pos-header-button:active {
+      background-color: #e6e6e6;
+    }
+
+    .logo {
+      flex-grow: 0;
+      padding-top: 11px; // correction because the logo.png contains some more white space at bottom
+      img {
+        max-height: 48px;
+      }
+    }
+
+    .center {
+      flex-grow: 1;
+    }
+
+    .right {
+      flex-grow: 0;
+      height: 100%;
+    }
+  }
+}

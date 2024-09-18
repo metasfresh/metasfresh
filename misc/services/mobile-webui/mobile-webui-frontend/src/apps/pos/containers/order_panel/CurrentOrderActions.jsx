@@ -1,5 +1,10 @@
 import React from 'react';
-import { addNewOrderAction, useCurrentOrder, voidOrder } from '../../actions';
+import {
+  addNewOrderAction,
+  changeOrderStatusToVoid,
+  changeOrderStatusToWaitingPayment,
+  useCurrentOrder,
+} from '../../actions';
 import { useDispatch } from 'react-redux';
 
 const CurrentOrderActions = () => {
@@ -15,11 +20,12 @@ const CurrentOrderActions = () => {
   };
   const onVoidCurrentOrderClick = () => {
     if (!isVoidAllowed) return;
-    dispatch(voidOrder({ order_uuid: currentOrder?.uuid }));
+    dispatch(changeOrderStatusToVoid({ order_uuid: currentOrder?.uuid }));
   };
 
   const onPayClick = () => {
-    console.log('PAY!');
+    if (!isPayAllowed) return;
+    dispatch(changeOrderStatusToWaitingPayment({ order_uuid: currentOrder?.uuid }));
   };
 
   return (

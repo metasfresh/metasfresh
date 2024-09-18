@@ -5,6 +5,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
+import de.metas.pos.POSOrderStatus;
 import de.metas.pos.POSProductsList;
 import de.metas.pos.POSService;
 import de.metas.pos.rest_api.json.JsonContext;
@@ -74,14 +75,30 @@ public class POSRestController
 		return JsonPOSOrdersList.of(posService.getOpenOrders(loggedUserId), newJsonContext());
 	}
 
+	@PostMapping("/orders/{orderId}/draft")
+	public JsonPOSOrder changeStatusToDraft(@PathVariable("orderId") @NonNull final String orderIdStr)
+	{
+		return changeStatusTo(orderIdStr, POSOrderStatus.Drafted);
+	}
+
+	@PostMapping("/orders/{orderId}/waitingPayment")
+	public JsonPOSOrder changeStatusToWaitingPayment(@PathVariable("orderId") @NonNull final String orderIdStr)
+	{
+		return changeStatusTo(orderIdStr, POSOrderStatus.WaitingPayment);
+	}
+
 	@PostMapping("/orders/{orderId}/void")
-	public void voidOrder(
-			@PathVariable("orderId") @NonNull final String orderIdStr
-	)
+	public JsonPOSOrder changeStatusToVoid(@PathVariable("orderId") @NonNull final String orderIdStr)
+	{
+		return changeStatusTo(orderIdStr, POSOrderStatus.Voided);
+	}
+
+	private JsonPOSOrder changeStatusTo(@NonNull final String orderIdStr, @NonNull final POSOrderStatus nextStatus)
 	{
 		final POSOrderExternalId externalId = POSOrderExternalId.ofString(orderIdStr);
 		final UserId loggedUserId = getLoggedUserId();
-		posService.voidOrder(externalId, loggedUserId);
+		final POSOrder order = posService.changeStatusTo(externalId, nextStatus, loggedUserId);
+		return JsonPOSOrder.of(order, newJsonContext());
 	}
 
 	@PostMapping("/orders")

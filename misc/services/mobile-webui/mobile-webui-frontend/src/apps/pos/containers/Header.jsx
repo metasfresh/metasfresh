@@ -2,6 +2,7 @@ import React from 'react';
 import logoImage from '../../../assets/images/logo.png';
 import { useSelector } from 'react-redux';
 import { getUserFullnameFromState } from '../../../reducers/appHandler';
+import './Header.scss';
 
 const Header = () => {
   const userFullname = useSelector(getUserFullnameFromState);

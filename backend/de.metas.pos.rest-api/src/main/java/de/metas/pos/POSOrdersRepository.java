@@ -23,13 +23,14 @@ public class POSOrdersRepository
 	{
 		return ordersByExternalId.values()
 				.stream()
-				.filter(order -> order.isDrafted() && UserId.equals(order.getCashierId(), cashierId))
+				.filter(order -> UserId.equals(order.getCashierId(), cashierId))
+				.filter(order -> order.getStatus().isDrafted() || order.getStatus().isWaitingPayment())
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public void updateByExternalId(final @NonNull POSOrderExternalId externalId, final @NonNull Consumer<POSOrder> updater)
+	public POSOrder updateByExternalId(final @NonNull POSOrderExternalId externalId, final @NonNull Consumer<POSOrder> updater)
 	{
-		createOrUpdateByExternalId(
+		return createOrUpdateByExternalId(
 				externalId,
 				externalId0 -> {
 					throw new AdempiereException("No order found for external id " + externalId);

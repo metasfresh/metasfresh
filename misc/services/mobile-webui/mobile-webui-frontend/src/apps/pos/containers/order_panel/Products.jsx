@@ -3,6 +3,7 @@ import { useProducts } from '../../api/products';
 import ProductButton from './ProductButton';
 import Spinner from '../../../../components/Spinner';
 import { useCurrentOrder } from '../../actions';
+import './Products.scss';
 
 const Products = () => {
   const { isCurrentOrderLoading, currentOrder } = useCurrentOrder();

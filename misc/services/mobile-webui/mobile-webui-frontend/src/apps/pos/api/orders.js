@@ -13,6 +13,15 @@ export const updateOrder = ({ order }) => {
   return axios.post(`${apiBasePath}/pos/orders`, order).then((response) => unboxAxiosResponse(response));
 };
 
-export const voidOrder = ({ order_uuid }) => {
+export const changeOrderStatusToDraft = ({ order_uuid }) => {
+  return axios.post(`${apiBasePath}/pos/orders/${order_uuid}/draft`).then((response) => unboxAxiosResponse(response));
+};
+export const changeOrderStatusToWaitingPayment = ({ order_uuid }) => {
+  return axios
+    .post(`${apiBasePath}/pos/orders/${order_uuid}/waitingPayment`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const changeOrderStatusToVoid = ({ order_uuid }) => {
   return axios.post(`${apiBasePath}/pos/orders/${order_uuid}/void`).then((response) => unboxAxiosResponse(response));
 };

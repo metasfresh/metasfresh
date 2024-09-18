@@ -41,18 +41,16 @@ public class POSOrdersService
 		return ordersRepository.getOpenOrders(userId);
 	}
 
-	public void voidOrder(@NonNull final POSOrderExternalId externalId, @NonNull final UserId userId)
+	public POSOrder changeStatusTo(@NonNull final POSOrderExternalId externalId, @NonNull final POSOrderStatus nextStatus, @NonNull final UserId userId)
 	{
-		ordersRepository.updateByExternalId(externalId, order -> {
+		return ordersRepository.updateByExternalId(externalId, order -> {
 			assertCanEdit(order, userId);
-			order.voidId();
+			order.changeStatusTo(nextStatus);
 		});
 	}
 
 	private void assertCanEdit(@NonNull final POSOrder order, @NonNull final UserId userId)
 	{
-		order.assertDrafted();
-
 		if (!UserId.equals(order.getCashierId(), userId))
 		{
 			throw new AdempiereException("Edit not allowed");
