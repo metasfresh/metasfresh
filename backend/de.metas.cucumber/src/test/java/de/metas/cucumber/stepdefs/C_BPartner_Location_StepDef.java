@@ -30,6 +30,7 @@ import de.metas.location.ILocationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -82,16 +83,6 @@ public class C_BPartner_Location_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			updateCBPartnerLocation(tableRow);
-		}
-	}
-
-	@Given("update C_Location of the following C_BPartner_Location")
-	public void update_C_Location_of_the_C_BPartner_Location(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			updateLocationOfTheBPartnerLocation(tableRow);
 		}
 	}
 
@@ -187,10 +178,10 @@ public class C_BPartner_Location_StepDef
 			bPartnerLocationRecord.setPhone(phone);
 		}
 
-		final Integer bpartnerLocationId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
-		if (bpartnerLocationId != null && bpartnerLocationId > 0)
+		final int bpartnerLocationRepoId = tableRow.getAsOptionalInt(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID).orElse(-1);
+		if (bpartnerLocationRepoId > 0)
 		{
-			bPartnerLocationRecord.setC_BPartner_Location_ID(bpartnerLocationId);
+			bPartnerLocationRecord.setC_BPartner_Location_ID(bpartnerLocationRepoId);
 		}
 
 		saveRecord(bPartnerLocationRecord);

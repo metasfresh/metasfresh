@@ -32,6 +32,7 @@ import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -209,8 +210,7 @@ public class C_Invoice_Candidate_StepDef
 	@And("^after not more than (.*)s, C_Invoice_Candidate are found:$")
 	public void find_C_Invoice_Candidate(final int timeoutSec, @NonNull final DataTable dataTable) throws Throwable
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			try
 			{
 				StepDefUtil.tryAndWait(timeoutSec, 1000, () -> load_C_Invoice_Candidate(row));
@@ -221,7 +221,7 @@ public class C_Invoice_Candidate_StepDef
 
 				StepDefUtil.tryAndWait(5, 1000, () -> load_C_Invoice_Candidate(row));
 			}
-		}
+		});
 	}
 
 	@And("validate C_Invoice_Candidates does not exist")
@@ -930,15 +930,6 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
-	@Deprecated
-	public void manuallyRecomputeInvoiceCandidate(
-			@NonNull final Throwable throwable,
-			@NonNull final Map<String, String> row,
-			final int timeoutSec) throws Throwable
-	{
-		manuallyRecomputeInvoiceCandidate(throwable, DataTableRow.singleRow(row), timeoutSec);
-	}
-
 	public void manuallyRecomputeInvoiceCandidate(
 			@NonNull final Throwable throwable,
 			@NonNull final DataTableRow row,
@@ -1017,8 +1008,10 @@ public class C_Invoice_Candidate_StepDef
 		return candQueryBuilder.create();
 	}
 
-	private boolean load_C_Invoice_Candidate(@NonNull final Map<String, String> row)
+	private boolean load_C_Invoice_Candidate(@NonNull final DataTableRow rowObj)
 	{
+		final Map<String, String> row = rowObj.asMap();
+
 		final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
 
 		final IQueryBuilder<I_C_Invoice_Candidate> invCandQueryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)

@@ -46,8 +46,6 @@ import static de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine.COL
 
 public class C_InvoiceCandidate_InOutLine_StepDef
 {
-	private final static Logger logger = LogManager.getLogger(C_InvoiceCandidate_InOutLine_StepDef.class);
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_InvoiceCandidate_InOutLine_StepDefData invoiceCandInOuLineTable;
