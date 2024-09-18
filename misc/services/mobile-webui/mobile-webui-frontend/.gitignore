@@ -24,7 +24,7 @@ yarn-error.log*
 
 # ignore lock files either from npm or yarn
 package-lock.json
-*.lock
+# *.lock
 
 config.js*
 src/.env
