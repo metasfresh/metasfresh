@@ -89,7 +89,7 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 UPDATE AD_Ref_List_Trl SET name='Produziert Insgesamt ohne Nebenprodukte', description='Gesamterzeugung ohne Nebenerzeugnisse (Haupt- und Nebenerzeugnisse)', updated = TO_TIMESTAMP('2024-09-16 14:16:39.844000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp WITHOUT TIME ZONE AT TIME ZONE 'UTC', updatedby = 100 where ad_ref_list_id = 543713 and ad_language IN ('de_CH', 'de_DE', 'fr_CH', 'nl_NL')
 ;
 
-UPDATE AD_Ref_List_Trl SET name='Rohe', description='RAW-Material', updated = TO_TIMESTAMP('2024-09-16 14:16:39.844000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp WITHOUT TIME ZONE AT TIME ZONE 'UTC', updatedby = 100 where ad_ref_list_id = 543714 and ad_language IN ('de_CH', 'de_DE', 'fr_CH', 'nl_NL')
+UPDATE AD_Ref_List_Trl SET name='Insgesamt empfangenes Rohmaterial', description='RAW-Material', updated = TO_TIMESTAMP('2024-09-16 14:16:39.844000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp WITHOUT TIME ZONE AT TIME ZONE 'UTC', updatedby = 100 where ad_ref_list_id = 543714 and ad_language IN ('de_CH', 'de_DE', 'fr_CH', 'nl_NL')
 ;
 
 -- 2024-09-16T14:33:06.408Z
