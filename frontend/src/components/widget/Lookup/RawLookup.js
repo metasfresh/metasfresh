@@ -125,7 +125,7 @@ export class RawLookup extends Component {
     }
 
     if (fireDropdownList && prevProps.fireDropdownList !== fireDropdownList) {
-      this.handleInputTextChange('', true);
+      this.handleInputTextChange();
     }
 
     this.checkIfComponentOutOfFilter();
@@ -271,7 +271,7 @@ export class RawLookup extends Component {
           if (!mandatory) {
             this.fireOnDropdownListToggle(true);
           }
-          this.handleInputTextChange(undefined, true);
+          this.handleInputTextChange();
         }
       );
     }
@@ -286,7 +286,7 @@ export class RawLookup extends Component {
       return;
     }
 
-    const { defaultValue } = this.props;
+    const { isOpen, defaultValue } = this.props;
     const { inputTextOnFocus } = this.state;
     const inputTextNow = this.inputSearch.value;
 
@@ -295,6 +295,7 @@ export class RawLookup extends Component {
     //   inputTextNow,
     //   inputTextOnFocus,
     //   defaultValue,
+    //   isOpen,
     //   props: this.props,
     //   state: this.state,
     // });
@@ -308,6 +309,10 @@ export class RawLookup extends Component {
         this.inputSearch.value = computeInputTextFromSelectedItem(defaultValue);
         //console.log(`handleInputTextBlur - RESTORED value to "${this.inputSearch.value}"`);
       }
+    }
+
+    if (isOpen) {
+      this.fireOnDropdownListToggle(false);
     }
   };
 
@@ -336,17 +341,19 @@ export class RawLookup extends Component {
       typeaheadSupplier,
     } = this.props;
 
-    let inputValue = this.inputSearch.value;
-    if (inputValue.trim() === '') {
-      inputValue = ' ';
+    let query = this.inputSearch.value;
+    // workaround: make sure query is not null/empty so we will always trigger a search at the backend
+    if (!query) {
+      query = ' ';
     }
+
     let typeaheadRequest;
     const typeaheadParams = {
       entity,
       docType: windowType,
       docId: filterWidget ? viewId : dataId,
       propertyName: filterWidget ? parameterName : mainProperty.field,
-      query: inputValue,
+      query,
       rowId,
       tabId,
     };
@@ -439,8 +446,8 @@ export class RawLookup extends Component {
     this.setState({ ...newState });
   };
 
-  handleInputTextChange = (handleChangeOnFocus, allowEmpty) => {
-    const { handleInputEmptyStatus, enableAutofocus, isOpen } = this.props;
+  handleInputTextChange = () => {
+    const { enableAutofocus, isOpen } = this.props;
 
     enableAutofocus();
 
@@ -450,27 +457,16 @@ export class RawLookup extends Component {
 
     const inputValue = this.inputSearch.value;
 
-    if (inputValue || allowEmpty) {
-      !allowEmpty && handleInputEmptyStatus && handleInputEmptyStatus(false);
-
-      if (!isOpen) {
-        this.fireOnDropdownListToggle(true);
-      }
-
-      this.setState(
-        { isInputEmpty: false, loading: true, query: inputValue },
-        () => {
-          const query = this.state.query;
-          if (query.length >= this.minQueryLength || allowEmpty) {
-            this.autocompleteSearchDebounced();
-          }
-        }
-      );
-    } else {
-      this.setState({ isInputEmpty: true, query: inputValue, list: [] });
-
-      handleInputEmptyStatus && handleInputEmptyStatus(true);
+    if (!isOpen) {
+      this.fireOnDropdownListToggle(true);
     }
+
+    this.setState(
+      { isInputEmpty: false, loading: true, query: inputValue },
+      () => {
+        this.autocompleteSearchDebounced();
+      }
+    );
   };
 
   // TODO: improve code quality
