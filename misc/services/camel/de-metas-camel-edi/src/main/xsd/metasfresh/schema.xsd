@@ -288,6 +288,30 @@
             </xsd:enumeration>
         </xsd:restriction>
     </xsd:simpleType>
+    <xsd:element name="EDI_Imp_C_OLCands" type="EDI_Imp_C_OLCandsType"/>
+    <xsd:complexType name="EDI_Imp_C_OLCandsType">
+        <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_Imp_C_OLCand" type="EDI_Imp_C_OLCandType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="EDI_Message">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="Header">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="SenderID" type="xsd:string"/>
+                            <xsd:element name="RecipientID" type="xsd:string"/>
+                            <xsd:element name="InterchangeRef" type="xsd:string" minOccurs="0"/>
+                            <xsd:element name="DateTime" type="xsd:dateTime" minOccurs="0"/>
+                            <xsd:element name="TestIndicator" type="xsd:string" minOccurs="0"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element ref="EDI_Imp_C_OLCands" minOccurs="0"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="EDI_Imp_C_OLCand" type="EDI_Imp_C_OLCandType"/>
     <xsd:element name="EDI_Imp_C_BPartner_Location_Lookup_GLN" type="EDI_Imp_C_BPartner_Location_Lookup_GLNType"/>
     <xsd:element name="EDI_Imp_C_UOM_Lookup_UOMSymbol" type="EDI_Imp_C_UOM_Lookup_UOMSymbolType"/>
@@ -809,7 +833,7 @@
     </xsd:complexType>
     <xsd:complexType name="EDI_Exp_Desadv_PackType">
         <xsd:sequence>
-            <xsd:element name="Line" type="xsd:integer"/>
+            <xsd:element name="SeqNo" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="GTIN_LU_PackingMaterial" type="xsd:string"/>
             <xsd:element minOccurs="0" name="IPA_SSCC18" type="xsd:string"/>
             <xsd:element minOccurs="0" name="M_HU_PackagingCode_LU_Text" type="xsd:string"/>
