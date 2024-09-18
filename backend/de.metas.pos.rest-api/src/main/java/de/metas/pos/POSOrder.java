@@ -121,8 +121,9 @@ public class POSOrder
 			case WaitingPayment:
 				break;
 			case Completed:
-				throw new UnsupportedOperationException("not implemented");
-				//break;
+				// TODO implement
+				// throw new UnsupportedOperationException("not implemented");
+				break;
 			case Voided:
 				break;
 			default:
