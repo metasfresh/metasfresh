@@ -3,9 +3,6 @@
 # See https://help.testspace.com/dashboard/project#configuration
 # Please keep in sync with the branch list in .mergify.yml
 release:
-  - onboarding_test_uat
-  - temporary_test996_uat
-  - temporary_test_uat_2
   - arctic_north_uat
   - blue_horizon_uat
   - big_coconut_uat
