@@ -30,7 +30,6 @@ import lombok.Value;
 import lombok.experimental.NonFinal;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.model.I_PP_Order_Candidate;
-import org.eevolution.productioncandidate.service.PPOrderCandidateHeaderAggregationKeyHelper;
 
 @Value
 public class PPOrderCandidateToAllocate
@@ -46,15 +45,13 @@ public class PPOrderCandidateToAllocate
 	Quantity openQty;
 
 	@NonNull
-	public static PPOrderCandidateToAllocate of(@NonNull final I_PP_Order_Candidate candidate)
+	public static PPOrderCandidateToAllocate of(@NonNull final I_PP_Order_Candidate candidate, @NonNull final String headerAggregationKey)
 	{
 		final UomId uomId = UomId.ofRepoId(candidate.getC_UOM_ID());
 
 		final Quantity openQty = Quantitys.of(candidate.getQtyToProcess(), uomId);
 
-		final String headerAggKey = PPOrderCandidateHeaderAggregationKeyHelper.generateHeaderAggregationKey(candidate);
-
-		return new PPOrderCandidateToAllocate(candidate, headerAggKey, openQty);
+		return new PPOrderCandidateToAllocate(candidate, headerAggregationKey, openQty);
 	}
 
 	public void subtractAllocatedQty(@NonNull final Quantity allocatedQty)

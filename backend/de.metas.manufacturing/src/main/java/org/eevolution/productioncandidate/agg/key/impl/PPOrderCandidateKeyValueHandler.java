@@ -38,7 +38,7 @@ import java.util.List;
  * AggregationKey value handler for production order candidates.
  */
 @Component
-public class PPOrderCandidateKeyValueHandler implements IAggregationKeyValueHandler<I_PP_Order_Candidate>
+class PPOrderCandidateKeyValueHandler implements IAggregationKeyValueHandler<I_PP_Order_Candidate>
 {
 	@Override
 	public List<Object> getValues(@NonNull final I_PP_Order_Candidate orderCandidateRecord)
@@ -92,6 +92,7 @@ public class PPOrderCandidateKeyValueHandler implements IAggregationKeyValueHand
 		keyRegistry.registerDependsOnColumnnames(PPOrderCandidateHeaderAggregationKeyBuilder.REGISTRATION_KEY,
 												 I_PP_Order_Candidate.COLUMNNAME_M_Warehouse_ID,
 												 I_PP_Order_Candidate.COLUMNNAME_S_Resource_ID,
+												 I_PP_Order_Candidate.COLUMNNAME_WorkStation_ID,
 												 I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID,
 												 I_PP_Order_Candidate.COLUMNNAME_PP_Product_BOM_ID,
 												 I_PP_Order_Candidate.COLUMNNAME_M_Product_ID,
