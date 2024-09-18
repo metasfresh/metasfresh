@@ -3,10 +3,12 @@ package de.metas.quantity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.uom.UOMPrecision;
+import de.metas.uom.UOMType;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
@@ -22,6 +24,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -749,6 +752,12 @@ public final class Quantity implements Comparable<Quantity>
 				sourceUom);
 	}
 
+	public Quantity divide(final int divisor)
+	{
+		final UOMPrecision precision = getUOMPrecision();
+		return divide(BigDecimal.valueOf(divisor), precision.toInt(), precision.getRoundingMode());
+	}
+
 	public Quantity multiply(final int multiplicand)
 	{
 		return multiply(BigDecimal.valueOf(multiplicand));
@@ -816,5 +825,43 @@ public final class Quantity implements Comparable<Quantity>
 	public int intValueExact()
 	{
 		return toBigDecimal().intValueExact();
+	}
+
+	public boolean isWeightable()
+	{
+		return UOMType.ofNullableCodeOrOther(uom.getUOMType()).isWeight();
+	}
+
+	public List<Quantity> spreadEqually(final int count)
+	{
+		if (count <= 0)
+		{
+			throw new AdempiereException("count shall be greater than zero, but it was " + count);
+		}
+		else if (count == 1)
+		{
+			return ImmutableList.of(this);
+		}
+		else // count > 1
+		{
+			final ImmutableList.Builder<Quantity> result = ImmutableList.builder();
+			final Quantity qtyPerPart = divide(count);
+			Quantity qtyRemainingToSpread = this;
+			for (int i = 1; i <= count; i++)
+			{
+				final boolean isLast = i == count;
+				if (isLast)
+				{
+					result.add(qtyRemainingToSpread);
+				}
+				else
+				{
+					result.add(qtyPerPart);
+					qtyRemainingToSpread = qtyRemainingToSpread.subtract(qtyPerPart);
+				}
+			}
+
+			return result.build();
+		}
 	}
 }

@@ -10,7 +10,7 @@ Map build(
         final boolean forceSkipBackend = false,
         final boolean forceSkipCucumber = false,
         final String multithreadParam = "-T 2C") {
-    
+
     final dockerImages = [:]
     String publishedDBInitDockerImageName
 
@@ -91,7 +91,7 @@ final DockerConf appDockerConf = reportDockerConf
                         .withArtifactName('metasfresh-app')
                         .withWorkDir('metasfresh-dist/dist/target/docker/app');
                 final String publishedAppImageName = dockerBuildAndPush(appDockerConf)
-                
+
 //                // postgres DB init container
 //                final DockerConf dbInitDockerConf = reportDockerConf
 //                        .withArtifactName('metasfresh-db-init-pg-14-2')
@@ -110,7 +110,7 @@ final DockerConf appDockerConf = reportDockerConf
 				<li><code>${publishedMsv3ServerImageName}</code></li>
 				<li><code>${publishedWebuiApiImageName}</code></li>
 				<li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
-				<li><code>${publishedAppImageName}</code></li>
+                <li><code>${publishedAppImageName}</code></li>
 				<!-- <li><code>${publishedDBInitDockerImageName}</code></li> -->
 				</ul>
 				"""

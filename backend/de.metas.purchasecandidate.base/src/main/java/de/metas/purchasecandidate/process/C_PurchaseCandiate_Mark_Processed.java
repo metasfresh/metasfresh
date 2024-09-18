@@ -50,12 +50,12 @@ public class C_PurchaseCandiate_Mark_Processed
 	{
 		if (!I_C_PurchaseCandidate.Table_Name.equals(context.getTableName()))
 		{
-			ProcessPreconditionsResolution.reject();
+			return ProcessPreconditionsResolution.reject();
 		}
 
-		final boolean containsEligibleRecords = context.getSelectedModels(I_C_PurchaseCandidate.class).stream()
-					.filter(not(I_C_PurchaseCandidate::isProcessed))
-				.findAny().isPresent();
+		final boolean containsEligibleRecords = context
+				.streamSelectedModels(I_C_PurchaseCandidate.class)
+				.anyMatch(not(I_C_PurchaseCandidate::isProcessed));
 
 		return ProcessPreconditionsResolution.acceptIf(containsEligibleRecords);
 	}

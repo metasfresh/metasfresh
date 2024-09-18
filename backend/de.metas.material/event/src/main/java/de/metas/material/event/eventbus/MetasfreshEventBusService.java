@@ -59,11 +59,6 @@ public final class MetasfreshEventBusService
 		return new MetasfreshEventBusService(Type.LOCAL, materialEventConverter, eventBusFactory, materialEventObserver);
 	}
 
-	/**
-	 * Also see {@link #subscribeToEventBus()}.
-	 *
-	 * @return
-	 */
 	public static MetasfreshEventBusService createDistributedServiceThatNeedsToSubscribe(
 			@NonNull final MaterialEventConverter materialEventConverter,
 			@NonNull final IEventBusFactory eventBusFactory,

@@ -30,6 +30,7 @@ import de.metas.document.DocTypeId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
+import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.request.RequestTypeId;
 import de.metas.tax.api.Tax;
@@ -44,6 +45,9 @@ import org.compiere.model.I_M_PriceList_Version;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface IOrderBL extends ISingletonService
@@ -51,7 +55,9 @@ public interface IOrderBL extends ISingletonService
 	I_C_Order getById(OrderId orderId);
 
 	/**
-	 * Sets price list if there is a price list for the given location and pricing system.
+	 * Sets price list if there is a price list for the given order's location and pricing system.
+	 * <p>
+	 * ! If {@link I_C_Order#COLUMNNAME_C_BPartner_Location_Value_ID} is set, its country takes precendence over the country of {@link I_C_Order#COLUMNNAME_C_BPartner_Location_ID}.
 	 * <p>
 	 * This method does nothing if:
 	 * <ul>
@@ -272,4 +278,14 @@ public interface IOrderBL extends ISingletonService
 	String getDocumentNoById(OrderId orderId);
 
 	String getLocationEmail(OrderId ofRepoId);
+
+	@NonNull
+	List<I_C_Order> getByIds(Collection<OrderId> orderIds);
+
+	Map<OrderId, String> getDocumentNosByIds(@NonNull Collection<OrderId> orderIds);
+
+	void setWeightFromLines(@NonNull I_C_Order order);
+	
+	@NonNull
+	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
 }

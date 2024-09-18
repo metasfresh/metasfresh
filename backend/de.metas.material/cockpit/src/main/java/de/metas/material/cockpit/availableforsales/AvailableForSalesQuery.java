@@ -1,6 +1,6 @@
 package de.metas.material.cockpit.availableforsales;
 
-import de.metas.material.commons.attributes.AttributesKeyPattern;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;

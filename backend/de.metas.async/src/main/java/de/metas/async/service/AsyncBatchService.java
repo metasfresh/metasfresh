@@ -125,7 +125,7 @@ public class AsyncBatchService
 			{
 				asyncBatchObserver.waitToBeProcessed(asyncBatchId);
 			}
-			else 
+			else
 			{
 				Loggables.withLogger(logger, Level.INFO).addLog("*** executeBatch: C_Async_Batch_ID: {} no workpackages were enqeued; Not waiting for asyncBatchObserver!", asyncBatchId.getRepoId());
 			}

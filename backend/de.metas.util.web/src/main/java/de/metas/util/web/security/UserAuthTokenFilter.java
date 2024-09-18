@@ -1,9 +1,14 @@
 package de.metas.util.web.security;
 
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.i18n.ADLanguageList;
+import de.metas.i18n.ILanguageDAO;
 import de.metas.security.UserNotAuthorizedException;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -15,23 +20,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
+import java.util.Optional;
 
+@RequiredArgsConstructor
 public class UserAuthTokenFilter implements Filter
 {
 	public static final String HEADER_Authorization = "Authorization";
+	public static final String HEADER_AcceptLanguage = "Accept-Language";
 	public static final String QUERY_PARAM_API_KEY = "apiKey";
 
 	private final UserAuthTokenService userAuthTokenService;
 	private final UserAuthTokenFilterConfiguration configuration;
-
-	public UserAuthTokenFilter(
-			@NonNull final UserAuthTokenService userAuthTokenService,
-			@NonNull final UserAuthTokenFilterConfiguration configuration)
-	{
-		this.userAuthTokenService = userAuthTokenService;
-		this.configuration = configuration;
-	}
-
+	private final ILanguageDAO languageDAO;
+	
 	@Override
 	public void init(final FilterConfig filterConfig) throws ServletException
 	{
@@ -58,7 +59,10 @@ public class UserAuthTokenFilter implements Filter
 			{
 				userAuthTokenService.run(
 						() -> extractTokenString(httpRequest),
-						() -> chain.doFilter(httpRequest, httpResponse));
+						() -> {
+							extractAdLanguage(httpRequest).ifPresent(Env::setAD_Language);
+							chain.doFilter(httpRequest, httpResponse);
+						});
 			}
 			catch (final UserNotAuthorizedException ex)
 			{
@@ -111,6 +115,15 @@ public class UserAuthTokenFilter implements Filter
 
 		throw new AdempiereException("Provide token in `" + HEADER_Authorization + "` HTTP header"
 				+ " or `" + QUERY_PARAM_API_KEY + "` query parameter");
+	}
+
+	@VisibleForTesting
+	Optional<String> extractAdLanguage(@NonNull final HttpServletRequest httpRequest)
+	{
+		final String acceptLanguageHeader = StringUtils.trimBlankToNull(httpRequest.getHeader(HEADER_AcceptLanguage));
+		final ADLanguageList availableLanguages = languageDAO.retrieveAvailableLanguages();
+		final String adLanguage = availableLanguages.getAD_LanguageFromHttpAcceptLanguage(acceptLanguageHeader, availableLanguages.getBaseADLanguage());
+		return Optional.ofNullable(adLanguage);
 	}
 
 }

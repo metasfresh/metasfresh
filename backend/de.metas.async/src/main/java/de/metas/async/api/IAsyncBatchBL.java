@@ -16,8 +16,8 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ImmutablePair;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 /**

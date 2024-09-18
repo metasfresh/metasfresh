@@ -22,6 +22,10 @@ package org.adempiere.util.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import de.metas.util.lang.RepoIdAware;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -29,12 +33,6 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Optional;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.lang.RepoIdAware;
-
-import javax.annotation.Nullable;
 
 /**
  * No parameters implementation of {@link IParams}. Get your instance using {@link IParams#NULL}.

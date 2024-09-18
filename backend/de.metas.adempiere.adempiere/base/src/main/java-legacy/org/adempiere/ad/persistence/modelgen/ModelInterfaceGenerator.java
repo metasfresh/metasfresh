@@ -139,6 +139,8 @@ public class ModelInterfaceGenerator
 			//
 			.add("org.compiere.model.I_C_Element")
 			//
+			.add("org.eevolution.model.I_PP_Product_Planning")
+			//
 			.build();
 
 	private final TableAndColumnInfoRepository repository;

@@ -23,12 +23,21 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 
 public class M_HU_StepDefData extends StepDefData<I_M_HU>
+		implements StepDefDataGetIdAware<HuId, I_M_HU>
 {
 	public M_HU_StepDefData()
 	{
 		super(I_M_HU.class);
+	}
+
+	@Override
+	public HuId extractIdFromRecord(final I_M_HU record)
+	{
+		return HuId.ofRepoId(record.getM_HU_ID());
 	}
 }

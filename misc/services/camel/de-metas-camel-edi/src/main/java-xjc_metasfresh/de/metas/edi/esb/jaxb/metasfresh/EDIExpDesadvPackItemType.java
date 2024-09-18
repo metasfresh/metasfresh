@@ -48,8 +48,10 @@ import javax.xml.datatype.XMLGregorianCalendar;
 @XmlType(name = "EDI_Exp_Desadv_Pack_ItemType", propOrder = {
     "bestBeforeDate",
     "lotNumber",
-    "qtyCU",
+    "qtyCUsPerTU",
     "qtyCUsPerLU",
+    "qtyCUsPerLUInInvoiceUOM",
+    "qtyCUsPerTUInInvoiceUOM",
     "qtyTU",
     "ediDesadvLineID",
     "gtintuPackingMaterial",
@@ -62,10 +64,14 @@ public class EDIExpDesadvPackItemType {
     protected XMLGregorianCalendar bestBeforeDate;
     @XmlElement(name = "LotNumber")
     protected String lotNumber;
-    @XmlElement(name = "QtyCU")
-    protected BigDecimal qtyCU;
+    @XmlElement(name = "QtyCUsPerTU")
+    protected BigDecimal qtyCUsPerTU;
     @XmlElement(name = "QtyCUsPerLU")
     protected BigDecimal qtyCUsPerLU;
+    @XmlElement(name = "QtyCUsPerLU_InInvoiceUOM")
+    protected BigDecimal qtyCUsPerLUInInvoiceUOM;
+    @XmlElement(name = "QtyCUsPerTU_InInvoiceUOM")
+    protected BigDecimal qtyCUsPerTUInInvoiceUOM;
     @XmlElement(name = "QtyTU")
     protected BigInteger qtyTU;
     @XmlElement(name = "EDI_DesadvLine_ID")
@@ -124,27 +130,27 @@ public class EDIExpDesadvPackItemType {
     }
 
     /**
-     * Gets the value of the qtyCU property.
+     * Gets the value of the qtyCUsPerTU property.
      * 
      * @return
      *     possible object is
      *     {@link BigDecimal }
      *     
      */
-    public BigDecimal getQtyCU() {
-        return qtyCU;
+    public BigDecimal getQtyCUsPerTU() {
+        return qtyCUsPerTU;
     }
 
     /**
-     * Sets the value of the qtyCU property.
+     * Sets the value of the qtyCUsPerTU property.
      * 
      * @param value
      *     allowed object is
      *     {@link BigDecimal }
      *     
      */
-    public void setQtyCU(BigDecimal value) {
-        this.qtyCU = value;
+    public void setQtyCUsPerTU(BigDecimal value) {
+        this.qtyCUsPerTU = value;
     }
 
     /**
@@ -169,6 +175,54 @@ public class EDIExpDesadvPackItemType {
      */
     public void setQtyCUsPerLU(BigDecimal value) {
         this.qtyCUsPerLU = value;
+    }
+
+    /**
+     * Gets the value of the qtyCUsPerLUInInvoiceUOM property.
+     *
+     * @return
+     *     possible object is
+     *     {@link BigDecimal }
+     *
+     */
+    public BigDecimal getQtyCUsPerLUInInvoiceUOM() {
+        return qtyCUsPerLUInInvoiceUOM;
+    }
+
+    /**
+     * Sets the value of the qtyCUsPerLUInInvoiceUOM property.
+     *
+     * @param value
+     *     allowed object is
+     *     {@link BigDecimal }
+     *
+     */
+    public void setQtyCUsPerLUInInvoiceUOM(BigDecimal value) {
+        this.qtyCUsPerLUInInvoiceUOM = value;
+    }
+
+    /**
+     * Gets the value of the qtyCUsPerTUInInvoiceUOM property.
+     *
+     * @return
+     *     possible object is
+     *     {@link BigDecimal }
+     *
+     */
+    public BigDecimal getQtyCUsPerTUInInvoiceUOM() {
+        return qtyCUsPerTUInInvoiceUOM;
+    }
+
+    /**
+     * Sets the value of the qtyCUsPerTUInInvoiceUOM property.
+     *
+     * @param value
+     *     allowed object is
+     *     {@link BigDecimal }
+     *
+     */
+    public void setQtyCUsPerTUInInvoiceUOM(BigDecimal value) {
+        this.qtyCUsPerTUInInvoiceUOM = value;
     }
 
     /**

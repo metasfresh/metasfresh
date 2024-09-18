@@ -61,6 +61,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 public abstract class AbstractHUIterator implements IHUIterator
 {
@@ -114,7 +115,8 @@ public abstract class AbstractHUIterator implements IHUIterator
 	}
 
 	@Override
-	public final IHUIterator setListener(@NonNull final IHUIteratorListener listener)
+	@OverridingMethodsMustInvokeSuper
+	public IHUIterator setListener(@NonNull final IHUIteratorListener listener)
 	{
 		this.listener = listener;
 		return this;

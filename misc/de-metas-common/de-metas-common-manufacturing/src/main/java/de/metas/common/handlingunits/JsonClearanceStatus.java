@@ -24,5 +24,5 @@ package de.metas.common.handlingunits;
 
 public enum JsonClearanceStatus
 {
-	Cleared, Locked, Quarantined
+	Cleared, Locked, Quarantined, TestPending
 }

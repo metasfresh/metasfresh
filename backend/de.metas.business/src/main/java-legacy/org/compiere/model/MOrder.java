@@ -76,6 +76,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -434,11 +435,6 @@ public class MOrder extends X_C_Order implements IDocument
 			setC_PaymentTerm_ID(paymentTermID);
 		}
 		//
-		final int priceLisId = isSOTrx() ? bp.getM_PriceList_ID() : bp.getPO_PriceList_ID();
-		if (priceLisId != 0)
-		{
-			setM_PriceList_ID(priceLisId);
-		}
 		// Default Delivery/Via Rule
 		String ss = bp.getDeliveryRule();
 		if (!Check.isEmpty(ss, true))
@@ -570,7 +566,7 @@ public class MOrder extends X_C_Order implements IDocument
 	 * @param fromLine
 	 * @return <code>1</code>
 	 */
-	public int copyLineFrom(
+	private int copyLineFrom(
 			final boolean counter,
 			final boolean copyASI,
 			final MOrderLine fromLine)
@@ -1199,8 +1195,7 @@ public class MOrder extends X_C_Order implements IDocument
 		final List<MOrderLine> lines = getLinesRequeryOrderedByProduct();
 		if (lines.isEmpty())
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 
 		// Bug 1564431
@@ -1424,12 +1419,12 @@ public class MOrder extends X_C_Order implements IDocument
 							// product has default locator defined but is not from the order warehouse
 							if (locator.getM_Warehouse_ID() != lineWarehouseId.getRepoId())
 							{
-								M_Locator_ID = warehouseBL.getDefaultLocatorId(lineWarehouseId).getRepoId();
+								M_Locator_ID = warehouseBL.getOrCreateDefaultLocatorId(lineWarehouseId).getRepoId();
 							}
 						}
 						else
 						{
-							M_Locator_ID = warehouseBL.getDefaultLocatorId(lineWarehouseId).getRepoId();
+							M_Locator_ID = warehouseBL.getOrCreateDefaultLocatorId(lineWarehouseId).getRepoId();
 						}
 					}
 					// Update Storage
@@ -1822,7 +1817,7 @@ public class MOrder extends X_C_Order implements IDocument
 														MovementQty, get_TrxName());
 			if (M_Locator_ID <= 0)        // Get default Location
 			{
-				M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId();
+				M_Locator_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId).getRepoId();
 			}
 			//
 			ioLine.setOrderLine(oLine, M_Locator_ID, MovementQty);

@@ -32,6 +32,7 @@ import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
 import de.metas.ui.web.handlingunits.filter.HuIdsFilterList;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.view.SqlViewRowIdsOrderedSelectionFactory;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
@@ -85,6 +86,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -136,6 +138,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final SqlViewBinding sqlViewBinding;
 	private final ViewRowIdsOrderedSelectionFactory viewSelectionFactory;
 	private final SqlViewSelectData sqlViewSelect;
+	private final BiPredicate<HUEditorRow, ProcessDescriptor> customProcessApplyPredicate;
 
 	@Builder
 	private SqlHUEditorViewRepository(
@@ -145,7 +148,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@Nullable final HUEditorRowIsProcessedPredicate rowProcessedPredicate,
 			@NonNull final HUReservationService huReservationService,
 			final boolean showBestBeforeDate,
-			final boolean showWeightGross)
+			final boolean showWeightGross,
+			@Nullable final BiPredicate<HUEditorRow, ProcessDescriptor> customProcessApplyPredicate)
 	{
 		this.windowId = windowId;
 
@@ -159,6 +163,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		sqlViewSelect = sqlViewBinding.getSqlViewSelect();
 
 		this.huReservationService = huReservationService;
+		this.customProcessApplyPredicate = customProcessApplyPredicate;
 	}
 
 	@Override
@@ -268,7 +273,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setHUStatus(hu.getHUStatus())
 				.setReservedForOrderLine(orderLineIdWithReservation.orElse(null))
 				.setPackingInfo(extractPackingInfo(hu, huRecordType))
-				.setClearanceStatus(getHUClearanceStatusLookupValue(hu));
+				.setClearanceStatus(getHUClearanceStatusLookupValue(hu))
+				.setCustomProcessApplyPredicate(customProcessApplyPredicate);
 		//
 		// Acquire Best Before Date if required
 		if (showBestBeforeDate)
@@ -416,6 +422,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
 				.setQtyCU(huStorage.getQty().toBigDecimal())
 				.setClearanceStatus(getHUClearanceStatusLookupValue(hu))
+				.setCustomProcessApplyPredicate(customProcessApplyPredicate)
 				.build();
 	}
 

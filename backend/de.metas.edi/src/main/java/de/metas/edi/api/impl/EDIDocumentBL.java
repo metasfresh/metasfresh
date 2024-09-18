@@ -142,12 +142,6 @@ public class EDIDocumentBL implements IEDIDocumentBL
 				&& Services.get(IInvoiceBL.class).isCreditMemo(docType.getDocBaseType())
 				&& X_C_DocType.DOCSUBTYPE_GS_Retoure.equals(docType.getDocSubType());
 
-		if (invoice.getC_Order_ID() <= 0 && !invoiceIsRMCreditMemo)
-		{
-			// an order must be linked to an invoice for successful EDI export
-			feedback.add(new EDIFillMandatoryException(null, null, org.compiere.model.I_C_Invoice.COLUMNNAME_C_Order_ID));
-		}
-
 		// an invoice order must have AT LEAST one M_InOut for successful EDI export
 		if (invoice.getC_Order_ID() > 0 // to avoid NPE in OrderDAO impl
 				&& !invoiceIsRMCreditMemo)

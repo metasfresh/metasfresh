@@ -22,15 +22,20 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.bpartner.BPartnerId;
 import org.compiere.model.I_C_BPartner;
 
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
 public class C_BPartner_StepDefData extends StepDefData<I_C_BPartner>
+		implements StepDefDataGetIdAware<BPartnerId, I_C_BPartner>
 {
 	public C_BPartner_StepDefData()
 	{
 		super(I_C_BPartner.class);
+	}
+
+	@Override
+	public BPartnerId extractIdFromRecord(final I_C_BPartner record)
+	{
+		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
 	}
 }

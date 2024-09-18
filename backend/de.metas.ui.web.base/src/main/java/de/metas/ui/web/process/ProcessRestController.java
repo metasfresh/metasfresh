@@ -111,7 +111,7 @@ public class ProcessRestController
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/process";
 
 	private static final Logger logger = LogManager.getLogger(ProcessRestController.class);
-	private final ImmutableMap<String, IProcessInstancesRepository> pinstancesRepositoriesByHandlerType;
+	private final ImmutableMap<ProcessHandlerType, IProcessInstancesRepository> pinstancesRepositoriesByHandlerType;
 	private final UserSession userSession;
 	private final IViewsRepository viewsRepo;
 	private final DocumentCollection documentsCollection;
@@ -169,7 +169,7 @@ public class ProcessRestController
 
 	private IProcessInstancesRepository getRepository(@NonNull final ProcessId processId)
 	{
-		final String processHandlerType = processId.getProcessHandlerType();
+		final ProcessHandlerType processHandlerType = processId.getProcessHandlerType();
 		final IProcessInstancesRepository processInstanceRepo = pinstancesRepositoriesByHandlerType.get(processHandlerType);
 		if (processInstanceRepo == null)
 		{
@@ -228,7 +228,7 @@ public class ProcessRestController
 			DocumentPath singleDocumentPath = jsonRequest.getSingleDocumentPath();
 			if (singleDocumentPath == null && viewSelectedRowIds.isSingleDocumentId())
 			{
-				final IView view = viewsRepo.getView(viewId);
+				final IView view = viewsRepo.getView(Check.assumeNotNull(viewId, "viewId shall not be null"));
 				singleDocumentPath = view.getById(viewSelectedRowIds.getSingleDocumentId()).getDocumentPath();
 			}
 
