@@ -248,6 +248,12 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@Override
+	public @NonNull Optional<Tax> getByIfPresent(@NonNull final TaxQuery taxQuery)
+	{
+		return Optional.ofNullable(getBy(taxQuery));
+	}
+
+	@Override
 	@Nullable
 	public Tax getBy(@NonNull final TaxQuery taxQuery)
 	{
@@ -439,9 +445,9 @@ public class TaxDAO implements ITaxDAO
 		{
 			final String countryCode = countryDAO.retrieveCountryCode2ByCountryId(toCountryId);
 			final boolean isEULocation = countryAreaBL.isMemberOf(Env.getCtx(),
-																  ICountryAreaBL.COUNTRYAREAKEY_EU,
-																  countryCode,
-																  Env.getDate());
+					ICountryAreaBL.COUNTRYAREAKEY_EU,
+					countryCode,
+					Env.getDate());
 			typeOfDestCountry = isEULocation ? WITHIN_COUNTRY_AREA : OUTSIDE_COUNTRY_AREA;
 		}
 		return typeOfDestCountry;

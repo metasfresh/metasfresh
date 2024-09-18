@@ -13,7 +13,19 @@ const CurrentOrder = () => {
   const config = usePOSConfiguration();
   const { /*isCurrentOrderLoading,*/ currentOrder } = useCurrentOrderOrNew();
 
+  const pricePrecision = config?.pricePrecision ?? 2;
+  const currencyPrecision = config?.currencyPrecision ?? 2;
   const lines = currentOrder?.lines ?? [];
+  const totalAmtStr = formatAmountToHumanReadableStr({
+    amount: currentOrder?.totalAmt,
+    currency: currentOrder?.currencySymbol,
+    precision: currencyPrecision,
+  });
+  const taxAmtStr = formatAmountToHumanReadableStr({
+    amount: currentOrder?.taxAmt,
+    currency: currentOrder?.currencySymbol,
+    precision: currencyPrecision,
+  });
 
   return (
     <div className="current-order">
@@ -28,8 +40,8 @@ const CurrentOrder = () => {
             currencySymbol={line.currencySymbol}
             price={line.price}
             amount={line.amount}
-            pricePrecision={config?.pricePrecision}
-            currencyPrecision={config?.currencyPrecision}
+            pricePrecision={pricePrecision}
+            currencyPrecision={currencyPrecision}
             selected={line.uuid === currentOrder.selectedLineUUID}
             onClick={() => {
               dispatch(
@@ -43,10 +55,8 @@ const CurrentOrder = () => {
         ))}
       </div>
       <div className="summary">
-        <div className="totalAmt">
-          Total:&nbsp;
-          {formatAmountToHumanReadableStr({ amount: currentOrder?.totalAmt, currency: currentOrder?.currencySymbol })}
-        </div>
+        <div className="summary-line totalAmt">Total: {totalAmtStr}</div>
+        <div className="summary-line taxAmt">Taxes: {taxAmtStr}</div>
       </div>
       <CurrentOrderActions />
     </div>

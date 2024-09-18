@@ -68,6 +68,8 @@ public interface ITaxDAO extends ISingletonService
 
 	Percent getRateById(@NonNull TaxId taxId);
 
+	Optional<Tax> getByIfPresent(@NonNull TaxQuery taxQuery);
+
 	Tax getBy(final TaxQuery taxQuery);
 
 	@Builder

@@ -54,22 +54,9 @@ export function posReducer(applicationState = initialState, action) {
       };
     }
     case ADD_ORDER_LINE: {
-      const {
-        payload: { order_uuid, productId, productName, currencySymbol, price, qty, uomId, uomSymbol },
-      } = action;
-
       return {
         ...applicationState,
-        orders: addOrderLineToCurrentOrder(applicationState.orders, {
-          order_uuid,
-          productId,
-          productName,
-          currencySymbol,
-          price,
-          qty,
-          uomId,
-          uomSymbol,
-        }),
+        orders: addOrderLineToCurrentOrder(applicationState.orders, action.payload),
       };
     }
     case SET_SELECTED_ORDER_LINE: {
@@ -136,18 +123,20 @@ const addNewOrderAndSetCurrent = (orders) => {
 
 const addOrderLineToCurrentOrder = (
   orders,
-  { order_uuid, productId, productName, currencySymbol, price, qty, uomId, uomSymbol }
+  { order_uuid, productId, productName, taxCategoryId, currencySymbol, price, qty, uomId, uomSymbol }
 ) => {
   const newOrderLine = {
     uuid: uuidv4(),
     productId,
     productName,
+    taxCategoryId,
     currencySymbol,
     price,
     qty,
     uomId,
     uomSymbol,
   };
+  console.log('addOrderLineToCurrentOrder', { newOrderLine });
 
   return changeOrder({
     orders,

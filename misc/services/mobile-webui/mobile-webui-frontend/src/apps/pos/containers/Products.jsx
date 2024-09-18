@@ -23,6 +23,7 @@ const Products = () => {
             currencySymbol={product.currencySymbol}
             uomId={product.uomId}
             uomSymbol={product.uomSymbol}
+            taxCategoryId={product.taxCategoryId}
             order_uuid={order_uuid}
           />
         ))}

@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { addOrderLine } from '../actions';
 import { formatAmountToHumanReadableStr } from '../../../utils/money';
 
-const ProductButton = ({ productId, name, price, currencySymbol, uomId, uomSymbol, order_uuid }) => {
+const ProductButton = ({ productId, name, price, currencySymbol, uomId, uomSymbol, taxCategoryId, order_uuid }) => {
   const dispatch = useDispatch();
   const [isProcessing, setProcessing] = useState(false);
 
@@ -15,7 +15,17 @@ const ProductButton = ({ productId, name, price, currencySymbol, uomId, uomSymbo
     if (!isEnabled) return;
     setProcessing(true);
     dispatch(
-      addOrderLine({ order_uuid, productId, productName: name, currencySymbol, price, qty: 1, uomId, uomSymbol })
+      addOrderLine({
+        order_uuid,
+        productId,
+        productName: name,
+        taxCategoryId,
+        currencySymbol,
+        price,
+        qty: 1,
+        uomId,
+        uomSymbol,
+      })
     );
     dispatch(() => setProcessing(false));
   };
@@ -34,6 +44,7 @@ ProductButton.propTypes = {
   currencySymbol: PropTypes.string.isRequired,
   uomId: PropTypes.number.isRequired,
   uomSymbol: PropTypes.string.isRequired,
+  taxCategoryId: PropTypes.number.isRequired,
   order_uuid: PropTypes.string,
 };
 

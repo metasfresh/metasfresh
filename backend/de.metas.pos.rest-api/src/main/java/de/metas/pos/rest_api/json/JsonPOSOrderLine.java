@@ -2,6 +2,7 @@ package de.metas.pos.rest_api.json;
 
 import de.metas.pos.POSOrderLine;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -20,6 +21,7 @@ public class JsonPOSOrderLine
 
 	@NonNull ProductId productId;
 	@NonNull String productName;
+	@NonNull TaxCategoryId taxCategoryId;
 
 	@Nullable String currencySymbol;
 	@NonNull BigDecimal price;
@@ -36,6 +38,7 @@ public class JsonPOSOrderLine
 				.uuid(line.getExternalId())
 				.productId(line.getProductId())
 				.productName(line.getProductName())
+				.taxCategoryId(line.getTaxCategoryId())
 				.currencySymbol(currencySymbol)
 				.price(line.getPrice())
 				.qty(line.getQty().toBigDecimal())

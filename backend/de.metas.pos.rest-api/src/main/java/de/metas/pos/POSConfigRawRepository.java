@@ -1,5 +1,6 @@
 package de.metas.pos;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.pricing.PriceListId;
 import de.metas.user.UserId;
@@ -32,7 +33,8 @@ public class POSConfigRawRepository
 	{
 		return POSConfigRaw.builder()
 				.priceListId(PriceListId.ofRepoId(record.getM_PriceList_ID()))
-				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
+				.shipFromWarehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
+				.walkInCustomerId(BPartnerId.ofRepoId(record.getC_BPartnerCashTrx_ID()))
 				.salesRepId(UserId.ofRepoIdOrNull(record.getSalesRep_ID()))
 				.salesOrderDocTypeId(DocTypeId.ofRepoId(record.getC_DocType_ID()))
 				.build();

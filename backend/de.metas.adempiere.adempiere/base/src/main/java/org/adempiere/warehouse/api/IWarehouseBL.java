@@ -61,7 +61,7 @@ public interface IWarehouseBL extends ISingletonService
 	 */
 	LocatorId getOrCreateDefaultLocatorId(WarehouseId warehouse);
 
-	@Nullable
+	@NonNull
 	CountryId getCountryId(WarehouseId warehouseId);
 
 	@NonNull

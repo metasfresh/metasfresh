@@ -2,6 +2,7 @@ package de.metas.pos.rest_api.json;
 
 import de.metas.pos.POSProduct;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -21,6 +22,7 @@ public class JsonProduct
 	@NonNull String currencySymbol;
 	@NonNull UomId uomId;
 	@NonNull String uomSymbol;
+	@NonNull TaxCategoryId taxCategoryId;
 
 	public static JsonProduct from(@NonNull final POSProduct product, @NonNull final String adLanguage)
 	{
@@ -31,6 +33,7 @@ public class JsonProduct
 				.currencySymbol(product.getCurrencySymbol(adLanguage))
 				.uomId(product.getUomId())
 				.uomSymbol(product.getUomSymbol())
+				.taxCategoryId(product.getTaxCategoryId())
 				.build();
 	}
 }

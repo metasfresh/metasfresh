@@ -1,5 +1,6 @@
 package de.metas.pos;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.pricing.PriceListId;
 import de.metas.user.UserId;
@@ -15,7 +16,8 @@ import javax.annotation.Nullable;
 public class POSConfigRaw
 {
 	@NonNull PriceListId priceListId;
-	@NonNull WarehouseId warehouseId;
+	@NonNull WarehouseId shipFromWarehouseId;
+	@NonNull BPartnerId walkInCustomerId;
 	@Nullable UserId salesRepId;
 	@NonNull DocTypeId salesOrderDocTypeId;
 }

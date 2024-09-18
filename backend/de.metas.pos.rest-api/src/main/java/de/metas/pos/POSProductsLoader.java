@@ -10,6 +10,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.StringUtils;
@@ -82,6 +83,7 @@ class POSProductsLoader
 				.currencySymbol(config.getCurrency().getSymbol())
 				.uomId(uomId)
 				.uomSymbol(getUOMSymbol(uomId))
+				.taxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()))
 				.build();
 	}
 

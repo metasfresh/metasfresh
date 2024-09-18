@@ -165,12 +165,12 @@ public class WarehouseBL implements IWarehouseBL
 		return LocationId.ofRepoId(bpLocation.getC_Location_ID());
 	}
 
-	@Nullable
 	@Override
+	@NonNull
 	public CountryId getCountryId(@NonNull final WarehouseId warehouseId)
 	{
 		final I_C_Location location = getC_Location(warehouseId);
-		return CountryId.ofRepoIdOrNull(location.getC_Country_ID());
+		return CountryId.ofRepoId(location.getC_Country_ID());
 	}
 
 	@Override

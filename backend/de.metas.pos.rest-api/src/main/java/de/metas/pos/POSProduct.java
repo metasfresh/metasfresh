@@ -3,6 +3,7 @@ package de.metas.pos;
 import de.metas.currency.Amount;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -18,6 +19,7 @@ public class POSProduct
 	@NonNull ITranslatableString currencySymbol;
 	@NonNull UomId uomId;
 	@NonNull String uomSymbol;
+	@NonNull TaxCategoryId taxCategoryId;
 
 	public String getName(@NonNull final String adLanguage) {return name.translate(adLanguage);}
 

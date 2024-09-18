@@ -30,7 +30,7 @@ public class JsonPOSConfig
 	{
 		return JsonPOSConfig.builder()
 				.priceListId(config.getPriceListId())
-				.warehouseId(config.getWarehouseId())
+				.warehouseId(config.getShipFrom().getWarehouseId())
 				.salesRepId(config.getSalesRepId())
 				.salesOrderDocTypeId(config.getSalesOrderDocTypeId())
 				.currencySymbol(config.getCurrencySymbol(adLanguage))

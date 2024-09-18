@@ -1,6 +1,7 @@
 package de.metas.pos;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.money.CurrencyId;
 import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
@@ -13,6 +14,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,9 +29,14 @@ public class POSOrder
 
 	@NonNull @Getter POSOrderStatus status;
 	@NonNull @Getter private final UserId cashierId;
+	@NonNull @Getter private final Instant date;
+	@NonNull @Getter private final BPartnerLocationAndCaptureId shipToCustomerAndLocationId;
+	@NonNull @Getter private final POSShipFrom shipFrom;
 
+	@Getter private final boolean isTaxIncluded;
 	@NonNull @Getter private final CurrencyId currencyId;
 	@NonNull @Getter BigDecimal totalAmt;
+	@NonNull @Getter BigDecimal taxAmt;
 
 	@NonNull private final ArrayList<POSOrderLine> lines;
 
@@ -39,6 +46,10 @@ public class POSOrder
 			final int localId,
 			@Nullable final POSOrderStatus status,
 			@NonNull final UserId cashierId,
+			@NonNull final Instant date,
+			@NonNull final BPartnerLocationAndCaptureId shipToCustomerAndLocationId,
+			@NonNull final POSShipFrom shipFrom,
+			final boolean isTaxIncluded,
 			@NonNull final CurrencyId currencyId,
 			@Nullable final List<POSOrderLine> lines)
 	{
@@ -46,18 +57,29 @@ public class POSOrder
 		this.localId = localId;
 		this.status = status != null ? status : POSOrderStatus.Drafted;
 		this.cashierId = cashierId;
+		this.date = date;
+		this.shipToCustomerAndLocationId = shipToCustomerAndLocationId;
+		this.shipFrom = shipFrom;
+		this.isTaxIncluded = isTaxIncluded;
 		this.currencyId = currencyId;
 		this.lines = lines != null ? new ArrayList<>(lines) : new ArrayList<>();
 
 		this.totalAmt = BigDecimal.ZERO;
+		this.taxAmt = BigDecimal.ZERO;
 		updateTotals();
 	}
 
 	private void updateTotals()
 	{
-		this.totalAmt = this.lines.stream()
-				.map(POSOrderLine::getAmount)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal orderTotalAmt = BigDecimal.ZERO;
+		BigDecimal orderTaxAmt = BigDecimal.ZERO;
+		for (final POSOrderLine line : lines)
+		{
+			orderTotalAmt = orderTotalAmt.add(line.getLineTotalAmt(isTaxIncluded));
+			orderTaxAmt = orderTaxAmt.add(line.getTaxAmt());
+		}
+		this.totalAmt = orderTotalAmt;
+		this.taxAmt = orderTaxAmt;
 	}
 
 	public ImmutableList<POSOrderLine> getLines() {return ImmutableList.copyOf(lines);}

@@ -45,9 +45,11 @@
         margin-left: 3px;
       }
     }
+
     .pos-header-button:focus {
       outline: none;
     }
+
     .pos-header-button:active {
       background-color: #e6e6e6;
     }
@@ -128,17 +130,26 @@
         flex-grow: 0;
         padding: 8px;
         display: flex;
+        flex-flow: column;
         justify-content: flex-end;
+
+        .summary-line {
+          font-weight: bold;
+          text-align: right;
+        }
 
         .totalAmt {
           font-size: 2em;
-          font-weight: bold;
+        }
+
+        .taxAmt {
+          font-size: 1em;
         }
       }
 
       .current-order-actions {
         flex-grow: 0;
-        
+
         display: flex;
         flex-flow: row nowrap;
         background-color: #a0a0a0;
@@ -148,9 +159,11 @@
           border: 0;
           padding: 10px;
         }
+
         button:focus {
           outline: none;
         }
+
         button:active:enabled {
           color: white;
           background-color: #4b830d;
@@ -159,19 +172,19 @@
         .other-actions-container {
           flex-grow: 1;
           margin-right: 1px;
-          
+
           display: flex;
           flex-flow: column nowrap;
           row-gap: 1px;
-          
+
           button {
-            
+
           }
         }
 
         .pay-action {
           flex-grow: 1;
-          
+
           background-color: #74b727;
           color: white;
           font-weight: bold;
