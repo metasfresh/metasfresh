@@ -30,6 +30,7 @@ import de.metas.inout.InOutLineId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -41,12 +42,14 @@ public class CreateEDIDesadvPackItemRequest
 {
 	/**
 	 * Might be not-null when we use this class to add an item to an existing pack.
+	 * Ignored if this instance is included with a {@link CreateEDIDesadvPackRequest}.
 	 */
+	@With
 	@Nullable
 	EDIDesadvPackId ediDesadvPackId;
 
 	/**
-	 * Looking at the code using this, the whole class is not just about creating, but also about updating pack-items!
+	 * Looking at the code which uses this, the whole class is not just about creating, but also about updating pack-items!
 	 */
 	@Nullable
 	EDIDesadvPackItemId ediDesadvPackItemId;

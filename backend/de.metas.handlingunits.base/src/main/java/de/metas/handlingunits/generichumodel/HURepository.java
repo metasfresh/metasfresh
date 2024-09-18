@@ -27,6 +27,7 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -36,6 +37,7 @@ import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
@@ -174,13 +176,25 @@ public class HURepository
 			if (packagingProductIds.size() == 1)
 			{
 				final List<I_C_BPartner_Product> bPartnerProductRecords = partnerProductDAO.retrieveForProductIds(packagingProductIds);
+				boolean gtinFoundInBPartnerProductRecord = false;
 				for (final I_C_BPartner_Product bPartnerProductRecord : bPartnerProductRecords)
 				{
-					if (isNotBlank(bPartnerProductRecord.getGTIN()))
+					final String partnerProductGTIN = bPartnerProductRecord.getGTIN();
+					if (isNotBlank(partnerProductGTIN))
 					{
 						packagingGTINs.put(
 								BPartnerId.ofRepoId(bPartnerProductRecord.getC_BPartner_ID()),
-								bPartnerProductRecord.getGTIN());
+								partnerProductGTIN);
+						gtinFoundInBPartnerProductRecord = true;
+					}
+				}
+				if(!gtinFoundInBPartnerProductRecord)
+				{
+					final I_M_Product product = Services.get(IProductDAO.class).getById(packagingProductIds.iterator().next());
+					final String productGTIN = product.getGTIN();
+					if(isNotBlank(productGTIN))
+					{
+						packagingGTINs.put(BPartnerId.NONE, productGTIN);
 					}
 				}
 			}

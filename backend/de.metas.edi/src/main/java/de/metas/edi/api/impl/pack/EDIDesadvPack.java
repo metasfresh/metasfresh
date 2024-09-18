@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class EDIDesadvPack
 {
 	@NonNull

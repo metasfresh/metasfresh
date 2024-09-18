@@ -202,6 +202,7 @@ public class DesadvBL implements IDesadvBL
 		if (bPartnerProduct != null)
 		{
 			newDesadvLine.setProductNo(bPartnerProduct.getProductNo());
+			newDesadvLine.setGTIN_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getGTIN(), product.getGTIN()));
 			newDesadvLine.setUPC_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getUPC(), product.getUPC()));
 			newDesadvLine.setEAN_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getGTIN(), bPartnerProduct.getEAN_CU(), product.getGTIN()));
 
@@ -218,6 +219,7 @@ public class DesadvBL implements IDesadvBL
 		}
 		else 
 		{
+			newDesadvLine.setGTIN_CU(product.getGTIN());
 			newDesadvLine.setUPC_CU(product.getUPC());
 			newDesadvLine.setEAN_CU(product.getGTIN());
 		}
@@ -231,7 +233,7 @@ public class DesadvBL implements IDesadvBL
 		//
 		// set infos from M_HU_PI_Item_Product
 		final I_M_HU_PI_Item_Product materialItemProduct = ediDesadvPackService.extractHUPIItemProduct(orderRecord, orderLineRecord);
-		newDesadvLine.setGTIN(materialItemProduct.getGTIN());
+		newDesadvLine.setGTIN_TU(materialItemProduct.getGTIN());
 		newDesadvLine.setUPC_TU(materialItemProduct.getUPC());
 		newDesadvLine.setEAN_TU(materialItemProduct.getEAN_TU());
 

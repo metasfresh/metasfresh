@@ -150,7 +150,7 @@ class HURepositoryTest
 		assertThat(result.getProductQtysInStockUOM().get(productId).toBigDecimal()).isEqualByComparingTo("49");
 		assertThat(result.getAttributes().getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value)).isEqualTo(sscc18String);
 
-		assertThat(result.getPackagingGTINs()).containsExactly(
+		assertThat(result.getAllPackaginGTINs()).containsExactly(
 				entry(BPartnerId.ofRepoId(10), "LU-GTIN1"),
 				entry(BPartnerId.ofRepoId(20), "LU-GTIN2"));
 
@@ -170,7 +170,7 @@ class HURepositoryTest
 						new Quantity(new BigDecimal("4"), uomRecord));
 
 		assertThat(result.getChildHUs()).allSatisfy(childHU -> {
-			assertThat(childHU.getPackagingGTINs()).containsExactly(entry(BPartnerId.ofRepoId(10), "TU-GTIN1"));
+			assertThat(childHU.getAllPackaginGTINs()).containsExactly(entry(BPartnerId.ofRepoId(10), "TU-GTIN1"));
 		});
 	}
 
