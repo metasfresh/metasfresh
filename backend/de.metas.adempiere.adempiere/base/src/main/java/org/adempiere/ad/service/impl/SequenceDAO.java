@@ -10,20 +10,20 @@ package org.adempiere.ad.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.util.Properties;
-
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -36,14 +36,18 @@ import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.util.DB;
 
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.util.Properties;
 
 public class SequenceDAO implements ISequenceDAO
 {
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
-	public I_AD_Sequence retrieveTableSequenceOrNull(Properties ctx, String tableName, String trxName)
+	public I_AD_Sequence retrieveTableSequenceOrNull(@NonNull final Properties ctx, @NonNull final String tableName, @Nullable final String trxName)
 	{
-		final IQueryBuilder<I_AD_Sequence> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_AD_Sequence> queryBuilder = queryBL
 				.createQueryBuilder(I_AD_Sequence.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_AD_Sequence> filters = queryBuilder.getCompositeFilter();
@@ -58,7 +62,7 @@ public class SequenceDAO implements ISequenceDAO
 	}
 
 	@Override
-	public I_AD_Sequence retrieveTableSequenceOrNull(Properties ctx, String tableName)
+	public I_AD_Sequence retrieveTableSequenceOrNull(@NonNull final Properties ctx, @Nullable final String tableName)
 	{
 		final String trxName = ITrx.TRXNAME_None;
 		return retrieveTableSequenceOrNull(ctx, tableName, trxName);
@@ -89,5 +93,18 @@ public class SequenceDAO implements ISequenceDAO
 			final String dbSequenceNameNew = DB.getTableSequenceName(tableNameNew);
 			DB.getDatabase().renameSequence(dbSequenceNameOld, dbSequenceNameNew);
 		}
+	}
+
+	@Override
+	@NonNull
+	public I_AD_Sequence retrieveSequenceByName(@NonNull final String sequenceName)
+	{
+		return queryBL
+				.createQueryBuilder(I_AD_Sequence.class)
+				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_Name, sequenceName)
+				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_AD_Sequence.COLUMNNAME_AD_Client_ID)
+				.create()
+				.firstNotNull(I_AD_Sequence.class);
 	}
 }

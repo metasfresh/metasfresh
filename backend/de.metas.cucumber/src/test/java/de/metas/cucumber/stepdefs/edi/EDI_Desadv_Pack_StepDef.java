@@ -162,6 +162,9 @@ public class EDI_Desadv_Pack_StepDef
 		row.getAsOptionalInt(COLUMNNAME_SeqNo)
 				.ifPresent(line -> queryBuilder.addEqualsFilter(COLUMNNAME_SeqNo, line));
 
+		row.getAsOptionalString(COLUMNNAME_IPA_SSCC18)
+				.ifPresent(sscc -> queryBuilder.addEqualsFilter(COLUMNNAME_IPA_SSCC18, sscc));
+		
 		final I_EDI_Desadv_Pack desadvPack = StepDefUtil.tryAndWaitForItem(
 				timeoutSec,
 				1000,

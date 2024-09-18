@@ -1174,6 +1174,15 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
       | huPiItemLU_S0457_010       | packingVersionLU_S0457_010    | 10  | HU       | huPackingTU_S0457_010            |
       | huPiItemTU_S0457_010       | packingVersionTU_S0457_010    | 0   | MI       |                                  |
+    And metasfresh contains M_HU_PI_Attribute:
+      | M_HU_PI_Attribute.Identifier   | M_HU_PI_Version_ID.Identifier | M_Attribute.Value |
+      | huPiAttribute_SSCC18_S0457_010 | packingVersionLU_S0457_010    | SSCC18            |
+
+    # This controls the SSCC18 value that our LU and desc-pack shall get to be 012345670010000081
+    And set AD_Sequence.CurrentNext=1000000 for sequence DocumentNo_SSCC18_SerialNumber
+    And set sys config String value 1234567 for sys config de.metas.handlingunit.GS1ManufacturerCode
+    And set sys config String value 0 for sys config de.metas.handlingunit.GS1ExtensionDigit
+
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | huProductTU_1_S0457_010            | huPiItemTU_S0457_010       | p_1_S0457_010           | 10  | 2021-01-01 |
@@ -1207,7 +1216,6 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | sourceTUs                                                             | newLUs              |
       | createdTU_1_S0457_010,createdTU_2_1_S0457_010,createdTU_2_2_S0457_010 | createdLU_S0457_010 |
 
-    # TODO: make sure we have an SSCC
     And update M_HU_Attribute:
       | M_HU_ID.Identifier  | M_Attribute_ID | Value       | AttributeValueType |
       | createdLU_S0457_010 | 1000017        | luLotNumber | S                  |
@@ -1277,25 +1285,20 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | shipmentLine_2_S0457_010  | s_2_S0457_010         | p_2_S0457_010           | 20          | true      | ol_2_S0457_010                |
 
     Then after not more than 30s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID             | M_HU_PackagingCode_ID       | GTIN_PackingMaterial   | SeqNo |
-      | p_1_S0457_010      | true                | createdLU_S0457_010 | huPackagingCode_1_S0457_010 | bPartnerProductGTIN_LU | 1     |
+      | EDI_Desadv_Pack_ID | OPT.IsManual_IPA_SSCC18 | OPT.M_HU_ID         | OPT.M_HU_PackagingCode_ID   | OPT.GTIN_PackingMaterial | OPT.SeqNo | OPT.IPA_SSCC18     |
+      | p_1_S0457_010      | false                   | createdLU_S0457_010 | huPackagingCode_1_S0457_010 | bPartnerProductGTIN_LU   | 1         | 012345670010000081 |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
       | pi_1_S0457_010                     | p_1_S0457_010                 | 10              | 10              | 10              | 10                  | 1         | s_1_S0457_010             | shipmentLine_1_S0457_010      | 2021-04-20         | luLotNumber   | huPackagingCode_2_S0457_010             | bPartnerProductGTIN_TU      |
       | pi_2_S0457_010                     | p_1_S0457_010                 | 20              | 10              | 20              | 10                  | 2         | s_2_S0457_010             | shipmentLine_2_S0457_010      | 2021-04-20         | luLotNumber   | huPackagingCode_2_S0457_010             | bPartnerProductGTIN_TU      |
 
-    # TODO: check closely if this update makes sense. after all, the HU bring its own SSCC into the DESADV-Pack
-    And EDI_Desadv_Pack records are updated
-      | EDI_Desadv_Pack_ID.Identifier | OPT.IPA_SSCC18     |
-      | p_1_S0457_010                 | ipaSSCC18_13092022 |
-
     And generate csv file for sscc labels for 'p_1_S0457_010'
       | ReportDataLine                                                                                                                                  |
       | %BTW% /AF="\\\V-APSRV01\PRAGMA\ETIKETTEN\LAYOUTS\SSCC.BTW" /D="<TRIGGER FILE NAME>" /PRN="\\\V-DCSRV02\ETIKETTEN01" /R=3 /P /D                  |
       | %END%                                                                                                                                           |
-      | "1","ipaSSCC18_13092022","@o_1_S0457_010@","16.04.2021","","@p_1_S0457_010@","1","0","210420","luLotNumber","","","","","","","","","","","","" |
-      | "1","ipaSSCC18_13092022","@o_1_S0457_010@","16.04.2021","","@p_2_S0457_010@","2","0","210420","luLotNumber","","","","","","","","","","","","" |
+      | "1","012345670010000081","@o_1_S0457_010@","16.04.2021","","@p_1_S0457_010@","1","0","210420","luLotNumber","","","","","","","","","","","","" |
+      | "1","012345670010000081","@o_1_S0457_010@","16.04.2021","","@p_2_S0457_010@","2","0","210420","luLotNumber","","","","","","","","","","","","" |
 
     And the shipment identified by s_1_S0457_010 is reversed
     And the shipment identified by s_2_S0457_010 is reversed
