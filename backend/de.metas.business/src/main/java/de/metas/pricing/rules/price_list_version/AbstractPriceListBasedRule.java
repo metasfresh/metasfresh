@@ -22,19 +22,17 @@
 
 package de.metas.pricing.rules.price_list_version;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import de.metas.pricing.rules.IPricingRule;
-import org.compiere.util.Trace;
-
-import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.rules.IPricingRule;
 import de.metas.util.Loggables;
+import org.compiere.util.Trace;
+import org.slf4j.Logger;
 
-public abstract class AbstractPriceListBasedRule implements IPricingRule
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+abstract class AbstractPriceListBasedRule implements IPricingRule
 {
 	private static final Logger log = LogManager.getLogger(AbstractPriceListBasedRule.class);
 
