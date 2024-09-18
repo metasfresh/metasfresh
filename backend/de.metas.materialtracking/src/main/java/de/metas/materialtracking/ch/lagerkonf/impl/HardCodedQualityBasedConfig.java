@@ -22,23 +22,8 @@ package de.metas.materialtracking.ch.lagerkonf.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.TimeUtil;
-
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -49,6 +34,21 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 {
@@ -158,7 +158,7 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	}
 
 	@Override
-	public List<IInvoicingItem> getAdditionalFeeProducts()
+	public List<IInvoicingItem> getProducedTotalWithoutByProductsAdditionalFeeProducts()
 	{
 		final IContextAware ctxAware = getContext();
 
@@ -176,6 +176,12 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 				BigDecimal.ONE,
 				uomDAO.getByX12DE355(C_UOM_FEE_X12DE355)));
 		return result;
+	}
+
+	@Override
+	public List<IInvoicingItem> getRawAdditionalFeeProducts()
+	{
+		return ImmutableList.of();
 	}
 
 	@Override
