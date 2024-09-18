@@ -1,0 +1,105 @@
+.pos-payment-panel {
+  display: flex;
+  flex-flow: column nowrap;
+  padding: 10%;
+  background-color: #f0f0f0;
+
+  .payment-summary {
+    .payment-summary-line {
+      display: flex;
+      flex-flow: row nowrap;
+
+      .payment-summary-label {
+        flex-grow: 1;
+      }
+
+      .payment-summary-value {
+        flex-grow: 0;
+        font-weight: bold;
+      }
+
+      .payment-summary-actions {
+        flex-grow: 0;
+        font-weight: bold;
+        font-size: 1em;
+        min-width: 4rem;
+        max-width: 4rem;
+        text-align: center;
+      }
+    }
+
+    .payment-summary-line.totalAmt {
+      font-size: 3rem !important;
+    }
+  }
+
+
+  .payment-lines-container {
+    .payment-line {
+      display: flex;
+      flex-flow: row nowrap;
+
+      .payment-line-label {
+        flex-grow: 1;
+      }
+
+      .payment-line-value {
+        flex-grow: 0;
+        font-weight: bold;
+      }
+
+      .payment-line-actions {
+        flex-grow: 0;
+        min-width: 4rem;
+        max-width: 4rem;
+        padding-left: 5px;
+
+        .payment-line-action-item {
+          font-weight: bold;
+          font-size: 1em;
+          width: 4rem;
+          text-align: center;
+        }
+
+        .payment-line-action-item:active {
+          background-color: whitesmoke;
+          border-radius: 2rem;
+        }
+      }
+    }
+  }
+
+
+  .payment-methods-container {
+    display: flex;
+    column-gap: 10px;
+    row-gap: 10px;
+    justify-content: center; // main axis (x)
+    align-items: center; // cross axis (y)
+
+    .payment-method {
+      background-color: white;
+      border-radius: 10px;
+      display: flex;
+      flex-flow: column nowrap;
+      width: 8em;
+      height: 8em;
+      align-items: center; // main axis (x)
+      justify-content: center; // cross axis (y)
+      cursor: pointer;
+
+      .payment-method-icon {
+        font-size: 3em;
+      }
+
+      .payment-method-caption {
+        text-align: center;
+      }
+    }
+
+    .payment-method.is-disabled {
+      background-color: lightgrey;
+      color: gray;
+    }
+  }
+}

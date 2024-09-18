@@ -1,8 +1,10 @@
 import {
   ADD_ORDER_LINE,
+  ADD_PAYMENT,
   NEW_ORDER,
   ORDERS_LIST_INIT,
   REMOVE_ORDER,
+  REMOVE_PAYMENT,
   SET_SELECTED_ORDER_LINE,
   UPDATE_ORDER_FROM_BACKEND,
 } from './actionTypes';
@@ -68,12 +70,28 @@ export function posReducer(applicationState = initialState, action) {
         orders: setSelectedOrderLine({ orders: applicationState.orders, order_uuid, selectedLineUUID }),
       };
     }
+    //
+    //
+    case ADD_PAYMENT: {
+      const { order_uuid, paymentMethod, amount } = action.payload;
+      return addPayment({ applicationState, order_uuid, paymentMethod, amount });
+    }
+    case REMOVE_PAYMENT: {
+      const { order_uuid, payment_uuid } = action.payload;
+      return removePayment({ applicationState, order_uuid, payment_uuid });
+    }
+    //
+    //
+
     default: {
       return applicationState;
     }
   }
 }
 
+//
+//
+//
 //
 //
 //
@@ -136,8 +154,6 @@ const addOrderLineToCurrentOrder = (
     uomId,
     uomSymbol,
   };
-  console.log('addOrderLineToCurrentOrder', { newOrderLine });
-
   return changeOrder({
     orders,
     order_uuid,
@@ -150,6 +166,16 @@ const addOrderLineToOrder = ({ order, newOrderLine }) => {
     ...order,
     lines: [...order.lines, newOrderLine],
   };
+};
+
+const changeOrderInApplicationState = ({ applicationState, order_uuid, mapper }) => {
+  const orders = applicationState.orders;
+  const ordersChanged = changeOrder({ orders, order_uuid, mapper });
+  if (orders === ordersChanged) {
+    return applicationState;
+  } else {
+    return { ...applicationState, orders: ordersChanged };
+  }
 };
 
 const changeOrder = ({ orders, order_uuid, mapper }) => {
@@ -210,4 +236,73 @@ const setSelectedOrderLine = ({ orders, order_uuid, selectedLineUUID }) => {
       }
     },
   });
+};
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+const addPayment = ({ applicationState, order_uuid, paymentMethod, amount }) => {
+  return changeOrderInApplicationState({
+    applicationState,
+    order_uuid,
+    mapper: (order) => addPaymentToOrder({ order, paymentMethod, amount }),
+  });
+};
+
+const addPaymentToOrder = ({ order, paymentMethod, amount }) => {
+  const newPayment = {
+    uuid: uuidv4(),
+    paymentMethod,
+    amount,
+  };
+
+  const paymentsPrev = order?.payments ?? [];
+  const payments = [...paymentsPrev, newPayment];
+
+  let orderChanged = { ...order, payments };
+  orderChanged = updatePaymentAmounts(orderChanged);
+  return orderChanged;
+};
+
+const removePayment = ({ applicationState, order_uuid, payment_uuid }) => {
+  return changeOrderInApplicationState({
+    applicationState,
+    order_uuid,
+    mapper: (order) => removePaymentFromOrder({ order, payment_uuid }),
+  });
+};
+
+const removePaymentFromOrder = ({ order, payment_uuid }) => {
+  if (!order.payments) {
+    return order;
+  }
+
+  const paymentsPrev = order?.payments ?? [];
+  const payments = order.payments.filter((payment) => payment.uuid !== payment_uuid);
+  if (payments.length === paymentsPrev.length) {
+    return order;
+  }
+
+  let orderChanged = { ...order, payments };
+  orderChanged = updatePaymentAmounts(orderChanged);
+  return orderChanged;
+};
+
+const updatePaymentAmounts = (order) => {
+  let paidAmt = 0;
+  const payments = order.payments ?? [];
+
+  payments.forEach((payment) => {
+    paidAmt += payment.amount ?? 0;
+  });
+
+  let openAmt = order.totalAmt - paidAmt;
+  return { ...order, paidAmt, openAmt };
 };

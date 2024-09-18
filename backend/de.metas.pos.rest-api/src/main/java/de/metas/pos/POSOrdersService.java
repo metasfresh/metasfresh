@@ -5,8 +5,10 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.lang.SOTrx;
 import de.metas.pos.POSOrderLine.POSOrderLineBuilder;
+import de.metas.pos.POSPayment.POSPaymentBuilder;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
 import de.metas.pos.rest_api.json.JsonPOSOrderLine;
+import de.metas.pos.rest_api.json.JsonPOSPayment;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxDAO;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -94,14 +97,36 @@ public class POSOrdersService
 			throw new AdempiereException("Changing status is not allowed");
 		}
 
-		final ArrayList<String> lineExternalIdsInOrder = new ArrayList<>();
-		for (final JsonPOSOrderLine remoteOrderLine : remoteOrder.getLines())
+		//
+		// Update order lines
 		{
-			createOrUpdateOrderLineFromRemote(order, remoteOrderLine);
-			lineExternalIdsInOrder.add(remoteOrderLine.getUuid());
+			final ArrayList<String> lineExternalIdsInOrder = new ArrayList<>();
+			for (final JsonPOSOrderLine remoteOrderLine : remoteOrder.getLines())
+			{
+				createOrUpdateOrderLineFromRemote(order, remoteOrderLine);
+				lineExternalIdsInOrder.add(remoteOrderLine.getUuid());
+			}
+
+			order.preserveOnlyLineExternalIdsInOrder(lineExternalIdsInOrder);
 		}
 
-		order.preserveOnlyLineExternalIdsInOrder(lineExternalIdsInOrder);
+		//
+		// Update payments
+		{
+			final HashSet<String> paymentExternalIdsToKeep = new HashSet<>();
+			final List<JsonPOSPayment> remotePayments = remoteOrder.getPayments();
+			if (remotePayments != null && !remotePayments.isEmpty())
+			{
+				for (final JsonPOSPayment remotePayment : remotePayments)
+				{
+					createOrUpdatePaymentFromRemote(order, remotePayment);
+					paymentExternalIdsToKeep.add(remotePayment.getUuid());
+				}
+			}
+
+			order.preserveOnlyPaymentExternalIds(paymentExternalIdsToKeep);
+		}
+
 	}
 
 	private void createOrUpdateOrderLineFromRemote(
@@ -182,6 +207,24 @@ public class POSOrdersService
 					.setParameter("tax", tax);
 		}
 		return tax;
+	}
+
+	//
+	//
+	//
+
+	private void createOrUpdatePaymentFromRemote(final POSOrder order, final JsonPOSPayment remotePayment)
+	{
+		order.createOrUpdatePayment(remotePayment.getUuid(), existingPayment -> {
+			final POSPaymentBuilder builder = existingPayment != null
+					? existingPayment.toBuilder()
+					: POSPayment.builder();
+
+			return builder.externalId(remotePayment.getUuid())
+					.paymentMethod(remotePayment.getPaymentMethod())
+					.amount(remotePayment.getAmount())
+					.build();
+		});
 	}
 
 }

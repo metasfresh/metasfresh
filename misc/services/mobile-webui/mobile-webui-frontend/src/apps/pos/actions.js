@@ -1,8 +1,10 @@
 import {
   ADD_ORDER_LINE,
+  ADD_PAYMENT,
   NEW_ORDER,
   ORDERS_LIST_INIT,
   REMOVE_ORDER,
+  REMOVE_PAYMENT,
   SET_SELECTED_ORDER_LINE,
   UPDATE_ORDER_FROM_BACKEND,
 } from './actionTypes';
@@ -201,4 +203,25 @@ export const setSelectedOrderLineAction = ({ order_uuid, selectedLineUUID }) => 
     type: SET_SELECTED_ORDER_LINE,
     payload: { order_uuid, selectedLineUUID },
   };
+};
+
+export const addPayment = ({ order_uuid, paymentMethod, amount }) => {
+  return (dispatch) => {
+    dispatch(addPaymentAction({ order_uuid, paymentMethod, amount }));
+    dispatch(syncOrderToBackend({ order_uuid }));
+  };
+};
+
+const addPaymentAction = ({ order_uuid, paymentMethod, amount }) => {
+  return { type: ADD_PAYMENT, payload: { order_uuid, paymentMethod, amount } };
+};
+
+export const removePayment = ({ order_uuid, payment_uuid }) => {
+  return (dispatch) => {
+    dispatch(removePaymentAction({ order_uuid, payment_uuid }));
+    dispatch(syncOrderToBackend({ order_uuid }));
+  };
+};
+export const removePaymentAction = ({ order_uuid, payment_uuid }) => {
+  return { type: REMOVE_PAYMENT, payload: { order_uuid, payment_uuid } };
 };

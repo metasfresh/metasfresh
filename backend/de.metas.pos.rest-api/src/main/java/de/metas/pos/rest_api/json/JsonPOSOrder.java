@@ -23,7 +23,10 @@ public class JsonPOSOrder
 	@Nullable String currencySymbol;
 	@Nullable BigDecimal totalAmt;
 	@Nullable BigDecimal taxAmt;
+	@Nullable BigDecimal paidAmt;
+	@Nullable BigDecimal openAmt;
 	@NonNull List<JsonPOSOrderLine> lines;
+	@Nullable List<JsonPOSPayment> payments;
 
 	public static JsonPOSOrder of(@NonNull final POSOrder order, @NonNull final JsonContext jsonContext)
 	{
@@ -34,8 +37,13 @@ public class JsonPOSOrder
 				.currencySymbol(currencySymbol)
 				.totalAmt(order.getTotalAmt())
 				.taxAmt(order.getTaxAmt())
+				.paidAmt(order.getPaidAmt())
+				.openAmt(order.getOpenAmt())
 				.lines(order.getLines().stream()
 						.map(line -> JsonPOSOrderLine.of(line, currencySymbol))
+						.collect(ImmutableList.toImmutableList()))
+				.payments(order.getPayments().stream()
+						.map(JsonPOSPayment::of)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
