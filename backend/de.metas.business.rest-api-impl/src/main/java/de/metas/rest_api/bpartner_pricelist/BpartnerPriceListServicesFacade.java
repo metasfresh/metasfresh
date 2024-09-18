@@ -28,6 +28,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
