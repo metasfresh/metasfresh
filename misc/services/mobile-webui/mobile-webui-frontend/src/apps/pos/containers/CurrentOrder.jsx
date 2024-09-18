@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import { formatAmountToHumanReadableStr } from '../../../utils/money';
 import { useDispatch } from 'react-redux';
-import { usePOSConfiguration } from '../api/config';
+import { usePOSConfiguration } from '../api/pos_configuration';
 
 const CurrentOrder = () => {
   const dispatch = useDispatch();
