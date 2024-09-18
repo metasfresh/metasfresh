@@ -44,6 +44,7 @@ public class SequenceDAO implements ISequenceDAO
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	@Nullable
 	@Override
 	public I_AD_Sequence retrieveTableSequenceOrNull(@NonNull final Properties ctx, @NonNull final String tableName, @Nullable final String trxName)
 	{
@@ -55,14 +56,13 @@ public class SequenceDAO implements ISequenceDAO
 		filters.addEqualsFilter(I_AD_Sequence.COLUMNNAME_IsTableID, true);
 		filters.addEqualsFilter(I_AD_Sequence.COLUMNNAME_AD_Client_ID, IClientDAO.SYSTEM_CLIENT_ID);
 
-		final I_AD_Sequence sequence = queryBuilder.create()
+		return queryBuilder.create()
 				.firstOnly(I_AD_Sequence.class);
-
-		return sequence;
 	}
 
+	@Nullable
 	@Override
-	public I_AD_Sequence retrieveTableSequenceOrNull(@NonNull final Properties ctx, @Nullable final String tableName)
+	public I_AD_Sequence retrieveTableSequenceOrNull(@NonNull final Properties ctx, @NonNull final String tableName)
 	{
 		final String trxName = ITrx.TRXNAME_None;
 		return retrieveTableSequenceOrNull(ctx, tableName, trxName);

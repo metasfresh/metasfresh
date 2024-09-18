@@ -44,6 +44,7 @@ public class HUPIAttributeId implements RepoIdAware
 		return new HUPIAttributeId(repoId);
 	}
 
+	@Nullable
 	public static HUPIAttributeId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
