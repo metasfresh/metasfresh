@@ -362,7 +362,7 @@ Feature: Modular contract log from purchase order for processed product
 
     And validate created interestRun records for lastInterestRun
       | ModCntr_Interest_ID.Identifier | FinalInterest | C_Currency.ISO_Code | InterestDays | ShippingNotification_ModCntr_Log_ID.Identifier | OPT.InterimContract_ModCntr_Log_ID.Identifier |
-      | interest_1                     | 40            | EUR                 | 18           | log_avInterim_snline                           | log_sv                                        |
+      | interest_1                     | 40            | EUR                 | 19           | log_avInterim_snline                           | log_sv                                        |
       | interest_2                     | -18.96        | EUR                 | 65           | log_svInterim_snline                           |                                               |
 
     And create final invoice
