@@ -422,6 +422,7 @@ public class AdempiereException extends RuntimeException
 		return message.build();
 	}
 
+	@Nullable
 	protected final String getADLanguage()
 	{
 		return coalesceSuppliers(() -> adLanguage, Env::getAD_Language);

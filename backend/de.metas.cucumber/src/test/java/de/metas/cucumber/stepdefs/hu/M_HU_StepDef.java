@@ -231,7 +231,7 @@ public class M_HU_StepDef
 	}
 
 	@And("^after not more than (.*)s, there are added M_HUs for inventory$")
-	public void find_HUs(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void find_HUs(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((row) -> {
 			final InventoryLineId inventoryLineId = inventoryLineTable.getId(row.getAsIdentifier(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID));
@@ -251,7 +251,7 @@ public class M_HU_StepDef
 	}
 
 	@And("^after not more than (.*)s, M_HUs should have$")
-	public void wait_M_HUs_status(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void wait_M_HUs_status(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((row) -> {
 			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
@@ -382,7 +382,7 @@ public class M_HU_StepDef
 
 				@NonNull
 				final List<StepDefDataIdentifier> sourceTUIdentifiers = row.getAsIdentifier("sourceTUs").toCommaSeparatedList();
-				for (StepDefDataIdentifier sourceTUIdentifier : sourceTUIdentifiers)
+				for (final StepDefDataIdentifier sourceTUIdentifier : sourceTUIdentifiers)
 				{
 					final I_M_HU sourceTU = huTable.get(sourceTUIdentifier);
 					luLoader.addTU(sourceTU);

@@ -500,11 +500,10 @@ public class DesadvBL implements IDesadvBL
 
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(desadvLineRecord.getM_Product_ID());
 
-		final Quantity newQtyDeliveredInUOM = Quantitys
+		return Quantitys
 				.add(conversionCtx,
 					 desadvLineQtyToAugment,
 					 augentQtyDeliveredInUOM);
-		return newQtyDeliveredInUOM;
 	}
 
 	@Override
@@ -579,6 +578,7 @@ public class DesadvBL implements IDesadvBL
 		desadvRecord.setFulfillmentPercent(fullfilment.toBigDecimal());
 	}
 
+	@Nullable
 	@Override
 	public ReportResultData printSSCC18_Labels(
 			@NonNull final Properties ctx,

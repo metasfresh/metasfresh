@@ -409,7 +409,10 @@ public class EDIDesadvPackService
 		final HU topLevelHU = huRepository
 				.getById(HuId.ofRepoId(topLevelHURecord.getM_HU_ID()))
 				.retainProduct(productId) // no need to blindly hope that the HU is homogenous
-				.orElse(null);
+				.orElseThrow(()->new AdempiereException("Missing M_HU").appendParametersToMessage()
+						.setParameter("M_HU_ID", topLevelHURecord.getM_HU_ID())
+						.setParameter("M_InOutLine_ID", inOutLineRecord.getM_InOutLine_ID())
+						.setParameter("EDI_DesadvLin_ID", desadvLineRecord.getEDI_DesadvLine_ID()));
 
 		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(topLevelHU, productId);
 
@@ -646,8 +649,10 @@ public class EDIDesadvPackService
 			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder,
 			@NonNull final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder)
 	{
+		// if rootHU has a packaging-code, then set it to the packRequestBuilder
 		rootHU.getPackagingCode().ifPresent(code -> createEDIDesadvPackRequestBuilder.huPackagingCodeID(code.getId()));
 
+		// if all childHUs have the same packingCode, then set that to the packItemRequestBuilder
 		final PackagingCode tuPackagingCode = CollectionUtils.extractSingleElementOrDefault(
 				rootHU.getChildHUs(), // don't iterate all HUs; we just care for the level below our LU (aka TU level).
 				hu -> hu.getPackagingCode().orElse(PackagingCode.NONE), // don't use null because CollectionUtils runs with ImmutableList
