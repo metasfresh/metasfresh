@@ -85,7 +85,7 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PriceList_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 
@@ -329,7 +329,6 @@ public class M_PriceList_StepDef
 				.orElseGet(productIdentifier::getAsInt);
 
 		final BigDecimal priceStd = row.getAsBigDecimal(I_M_ProductPrice.COLUMNNAME_PriceStd);
-
 		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(row.getAsUOMCode("C_UOM_ID"));
 
 		final @NonNull StepDefDataIdentifier plvIdentifier = row.getAsIdentifier(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID);

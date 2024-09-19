@@ -294,6 +294,10 @@ public class DataTableRow
 		return parseBigDecimal(getAsString(columnName), columnName);
 	}
 
+	public Timestamp getAsTimestamp(@NonNull final String columnName) {
+		return DataTableUtil.extractDateTimestampForColumnName(map, columnName);
+	}
+
 	public Optional<BigDecimal> getAsOptionalBigDecimal(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName).map(valueStr -> parseBigDecimal(valueStr, columnName));

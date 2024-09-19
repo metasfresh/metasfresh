@@ -57,8 +57,8 @@ Feature: Extend Modular Contract Period
       | bp_modularCntrPeriod_Location | 5823198505483 | bp_modularCntrPeriod     | true                | true                |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | settings_23072023_1 | module_log_product          | harvesting_calendar      | y2022                | modularCntrPricingSystem          |
+      | ModCntr_Settings_ID.Identifier | Name                | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | M_PricingSystem_ID.Identifier |
+      | modCntr_settings_1             | settings_23072023_1 | module_log_product          | harvesting_calendar      | y2022                | modularCntrPricingSystem      |
 
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier              | Name                             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |

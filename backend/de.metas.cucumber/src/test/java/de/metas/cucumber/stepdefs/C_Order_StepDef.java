@@ -336,7 +336,7 @@ public class C_Order_StepDef
 						final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
 								.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
 								.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
-						.addOnlyActiveRecordsFilter()
+								.addOnlyActiveRecordsFilter()
 								.orderByDescending(COLUMNNAME_IsDefault)
 								.create()
 								.firstNotNull(I_C_DocType.class);
@@ -412,6 +412,7 @@ public class C_Order_StepDef
 					{
 						final I_C_Year harvestingYearRecord = yearTable.get(harvestingYearIdentifier);
 						order.setHarvesting_Year_ID(harvestingYearRecord.getC_Year_ID());
+						order.setC_Harvesting_Calendar_ID(harvestingYearRecord.getC_Calendar_ID());
 					}
 
 					final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -662,7 +663,7 @@ public class C_Order_StepDef
 
 	@Then("a PurchaseOrder with externalId {string} is created after not more than {int} seconds and has values")
 	public void verifyOrder(final String externalId, final int timeoutSec,
-							@NonNull final DataTable dataTable) throws InterruptedException
+			@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final Map<String, String> dataTableRow = dataTable.asMaps().get(0);
 
@@ -995,7 +996,7 @@ public class C_Order_StepDef
 
 	@Then("the following group compensation order lines were created for externalHeaderId: {string}")
 	public void verifyOrderLines(final String externalHeaderId,
-								 @NonNull final DataTable dataTable)
+			@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
