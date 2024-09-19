@@ -62,7 +62,7 @@ export class RawLookup extends Component {
     };
 
     const debounceTime = props.item.lookupSearchStartDelayMillis || 100;
-    this.minQueryLength = props.item.lookupSearchStringMinLength || 0;
+    //this.minQueryLength = props.item.lookupSearchStringMinLength || 0;
 
     this.typeaheadRequest = this.typeaheadRequest.bind(this);
     this.autocompleteSearchDebounced = debounce(
@@ -125,7 +125,7 @@ export class RawLookup extends Component {
     }
 
     if (fireDropdownList && prevProps.fireDropdownList !== fireDropdownList) {
-      this.handleInputTextChange('', true);
+      this.handleInputTextChange();
     }
 
     this.checkIfComponentOutOfFilter();
@@ -271,6 +271,7 @@ export class RawLookup extends Component {
           if (!mandatory) {
             this.fireOnDropdownListToggle(true);
           }
+          this.handleInputTextChange();
         }
       );
     }
@@ -285,7 +286,7 @@ export class RawLookup extends Component {
       return;
     }
 
-    const { defaultValue } = this.props;
+    const { isOpen, defaultValue } = this.props;
     const { inputTextOnFocus } = this.state;
     const inputTextNow = this.inputSearch.value;
 
@@ -294,6 +295,7 @@ export class RawLookup extends Component {
     //   inputTextNow,
     //   inputTextOnFocus,
     //   defaultValue,
+    //   isOpen,
     //   props: this.props,
     //   state: this.state,
     // });
@@ -306,6 +308,22 @@ export class RawLookup extends Component {
         // on focus lost always restore the input text field to last valid value
         this.inputSearch.value = computeInputTextFromSelectedItem(defaultValue);
         //console.log(`handleInputTextBlur - RESTORED value to "${this.inputSearch.value}"`);
+      }
+    }
+
+    if (isOpen) {
+      this.fireOnDropdownListToggle(false);
+    }
+  };
+
+  handleInputTextKeyDown = (e) => {
+    const { isOpen } = this.props;
+
+    if (e.key === 'ArrowDown') {
+      if (!isOpen) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleInputTextChange();
       }
     }
   };
@@ -335,14 +353,19 @@ export class RawLookup extends Component {
       typeaheadSupplier,
     } = this.props;
 
-    const inputValue = this.inputSearch.value;
+    let query = this.inputSearch.value;
+    // workaround: make sure query is not null/empty so we will always trigger a search at the backend
+    if (!query) {
+      query = ' ';
+    }
+
     let typeaheadRequest;
     const typeaheadParams = {
       entity,
       docType: windowType,
       docId: filterWidget ? viewId : dataId,
       propertyName: filterWidget ? parameterName : mainProperty.field,
-      query: inputValue,
+      query,
       rowId,
       tabId,
     };
@@ -435,8 +458,8 @@ export class RawLookup extends Component {
     this.setState({ ...newState });
   };
 
-  handleInputTextChange = (handleChangeOnFocus, allowEmpty) => {
-    const { handleInputEmptyStatus, enableAutofocus, isOpen } = this.props;
+  handleInputTextChange = () => {
+    const { enableAutofocus, isOpen } = this.props;
 
     enableAutofocus();
 
@@ -446,27 +469,16 @@ export class RawLookup extends Component {
 
     const inputValue = this.inputSearch.value;
 
-    if (inputValue || allowEmpty) {
-      !allowEmpty && handleInputEmptyStatus && handleInputEmptyStatus(false);
-
-      if (!isOpen) {
-        this.fireOnDropdownListToggle(true);
-      }
-
-      this.setState(
-        { isInputEmpty: false, loading: true, query: inputValue },
-        () => {
-          const query = this.state.query;
-          if (query.length >= this.minQueryLength) {
-            this.autocompleteSearchDebounced();
-          }
-        }
-      );
-    } else {
-      this.setState({ isInputEmpty: true, query: inputValue, list: [] });
-
-      handleInputEmptyStatus && handleInputEmptyStatus(true);
+    if (!isOpen) {
+      this.fireOnDropdownListToggle(true);
     }
+
+    this.setState(
+      { isInputEmpty: false, loading: true, query: inputValue },
+      () => {
+        this.autocompleteSearchDebounced();
+      }
+    );
   };
 
   // TODO: improve code quality
@@ -542,28 +554,6 @@ export class RawLookup extends Component {
   };
 
   render() {
-    const { align, readonly, disabled, tabIndex, isOpen, idValue } = this.props;
-    const {
-      isInputEmpty,
-      list,
-      loading,
-      selected,
-      forceEmpty,
-      isFocused,
-      query,
-      hasMoreResults,
-    } = this.state;
-
-    const showDropdown = query.length >= this.minQueryLength;
-
-    const adaptiveWidth = this.props.forcedWidth
-      ? this.props.forcedWidth
-      : this.wrapper && this.wrapper.offsetWidth;
-    const adaptiveHeight =
-      showDropdown && isOpen && !isInputEmpty && this.props.forceHeight
-        ? this.props.forceHeight - this.wrapper.offsetHeight
-        : undefined;
-
     return (
       <TetherComponent
         attachment="top left"
@@ -577,93 +567,108 @@ export class RawLookup extends Component {
             pin: ['bottom'],
           },
         ]}
-        renderTarget={(ref) => (
-          <div id={idValue || ''} ref={ref} className="raw-lookup-wrapper">
-            <div
-              className={classnames(
-                'lookup-widget-wrapper lookup-widget-wrapper-bcg',
-                {
-                  'raw-lookup-disabled': disabled,
-                  'input-disabled': readonly,
-                  focused: isFocused,
-                }
-              )}
-              ref={(ref) => (this.wrapper = ref)}
-            >
-              <div className={'input-dropdown input-block'}>
-                <div
-                  className={'input-editable' + (align ? ' text-' + align : '')}
-                >
-                  <input
-                    ref={(c) => (this.inputSearch = c)}
-                    type="text"
-                    className="input-field js-input-field font-weight-semibold"
-                    autoComplete="new-password"
-                    readOnly={readonly}
-                    disabled={readonly && !disabled}
-                    tabIndex={tabIndex}
-                    placeholder={this.props.item.emptyText}
-                    onChange={this.handleInputTextChange}
-                    onClick={this.handleInputTextClick}
-                    onFocus={this.handleInputTextFocus}
-                    onBlur={this.handleInputTextBlur}
-                  />{' '}
-                </div>
-              </div>
-            </div>
-            {showDropdown && isOpen && !isInputEmpty && (
-              <div>
-                <SelectionDropdown
-                  loading={loading}
-                  options={list}
-                  empty={`${counterpart.translate(
-                    'widget.lookup.hasNoResults'
-                  )}`}
-                  forceEmpty={forceEmpty}
-                  selected={selected}
-                  width={
-                    this.props.forcedWidth
-                      ? this.props.forcedWidth
-                      : this.wrapper && this.wrapper.offsetWidth
-                  }
-                  height={
-                    this.props.forceHeight
-                      ? this.props.forceHeight - this.wrapper.offsetHeight
-                      : undefined
-                  }
-                  onChange={this.handleTemporarySelection}
-                  onSelect={this.handleSelect}
-                  onCancel={this.handleDropdownBlur}
-                />
-                {hasMoreResults && (
-                  <div
-                    className="input-dropdown-hasmore"
-                    style={{
-                      width: adaptiveWidth,
-                      left:
-                        parseInt(adaptiveWidth) > LOOKUP_SHOW_MORE_PIXEL_NO &&
-                        !(
-                          parseInt(adaptiveWidth) > 900 &&
-                          this.inputSearch.value
-                        ) &&
-                        (this.inputSearch || !this.inputSearch.value)
-                          ? '-2px'
-                          : '0px',
-                      top: parseInt(adaptiveHeight) + 28 + 'px',
-                    }}
-                  >
-                    {` ${counterpart.translate(
-                      'widget.lookup.hasMoreResults'
-                    )}`}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+        renderTarget={(ref) => this.renderInputTextField(ref)}
+        renderElement={(ref) => this.renderDropdown(ref)}
       />
     );
   }
+
+  renderInputTextField = (ref) => {
+    const { align, readonly, disabled, tabIndex, idValue } = this.props;
+    const { isFocused } = this.state;
+
+    return (
+      <div id={idValue || ''} ref={ref} className="raw-lookup-wrapper">
+        <div
+          className={classnames(
+            'lookup-widget-wrapper lookup-widget-wrapper-bcg',
+            {
+              'raw-lookup-disabled': disabled,
+              'input-disabled': readonly,
+              focused: isFocused,
+            }
+          )}
+          ref={(ref) => (this.wrapper = ref)}
+        >
+          <div className={'input-dropdown input-block'}>
+            <div className={'input-editable' + (align ? ' text-' + align : '')}>
+              <input
+                ref={(c) => (this.inputSearch = c)}
+                type="text"
+                className="input-field js-input-field font-weight-semibold"
+                autoComplete="new-password"
+                readOnly={readonly}
+                disabled={readonly && !disabled}
+                tabIndex={tabIndex}
+                placeholder={this.props.item.emptyText}
+                onChange={this.handleInputTextChange}
+                onClick={this.handleInputTextClick}
+                onFocus={this.handleInputTextFocus}
+                onBlur={this.handleInputTextBlur}
+                onKeyDown={this.handleInputTextKeyDown}
+              />{' '}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  renderDropdown = (ref) => {
+    const { isOpen } = this.props;
+    if (!isOpen) return;
+
+    const { list, loading, selected, forceEmpty, hasMoreResults } = this.state;
+
+    const adaptiveWidth = this.props.forcedWidth
+      ? this.props.forcedWidth
+      : this.wrapper && this.wrapper.offsetWidth;
+    const adaptiveHeight = this.props.forceHeight
+      ? this.props.forceHeight - this.wrapper.offsetHeight
+      : undefined;
+
+    return (
+      <div ref={ref}>
+        <SelectionDropdown
+          loading={loading}
+          options={list}
+          empty={`${counterpart.translate('widget.lookup.hasNoResults')}`}
+          forceEmpty={forceEmpty}
+          selected={selected}
+          width={
+            this.props.forcedWidth
+              ? this.props.forcedWidth
+              : this.wrapper && this.wrapper.offsetWidth
+          }
+          height={
+            this.props.forceHeight
+              ? this.props.forceHeight - this.wrapper.offsetHeight
+              : undefined
+          }
+          onChange={this.handleTemporarySelection}
+          onSelect={this.handleSelect}
+          onCancel={this.handleDropdownBlur}
+        />
+        {hasMoreResults && (
+          <div
+            className="input-dropdown-hasmore"
+            style={{
+              width: adaptiveWidth,
+              left:
+                parseInt(adaptiveWidth) > LOOKUP_SHOW_MORE_PIXEL_NO &&
+                !(parseInt(adaptiveWidth) > 900 && this.inputSearch.value) &&
+                (this.inputSearch || !this.inputSearch.value)
+                  ? '-2px'
+                  : '0px',
+              top: parseInt(adaptiveHeight) + 28 + 'px',
+            }}
+          >
+            {` ${counterpart.translate('widget.lookup.hasMoreResults')}`}
+          </div>
+        )}
+      </div>
+    );
+  };
 }
 
 const mapStateToProps = (state) => ({
