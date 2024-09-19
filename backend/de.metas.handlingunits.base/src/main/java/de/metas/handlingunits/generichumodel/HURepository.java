@@ -75,7 +75,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 @Repository
 public class HURepository
 {
-	private final static transient Logger logger = LogManager.getLogger(HURepository.class);
+	private final static Logger logger = LogManager.getLogger(HURepository.class);
 	private static final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -111,7 +111,7 @@ public class HURepository
 		private IPair<HuId, HUBuilder> currentIdAndBuilder;
 
 		@Override
-		public Result beforeHU(final IMutable<I_M_HU> huMutable)
+		public Result beforeHU(@NonNull final IMutable<I_M_HU> huMutable)
 		{
 			final I_M_HU huRecord = huMutable.getValue();
 			huStack.push(extractIdAndBuilder(huRecord));
@@ -263,7 +263,7 @@ public class HURepository
 			return entrySet
 					.stream()
 					.collect(ImmutableMap.toImmutableMap(
-							e -> e.getKey(),
+							Entry::getKey,
 							e -> e.getValue().divide(divisorBD)));
 
 		}
