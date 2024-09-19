@@ -20,7 +20,7 @@
 	<title>
 		<band height="85" splitType="Stretch">
 			<image scaleImage="RetainShape" hAlign="Right">
-				<reportElement key="image-1" x="356" y="2" width="217" height="79" uuid="8a7336c5-5f63-41d5-8edd-dfc316734e2b"/>
+				<reportElement key="image-1" stretchType="ContainerHeight" x="356" y="2" width="217" height="79" uuid="8a7336c5-5f63-41d5-8edd-dfc316734e2b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
