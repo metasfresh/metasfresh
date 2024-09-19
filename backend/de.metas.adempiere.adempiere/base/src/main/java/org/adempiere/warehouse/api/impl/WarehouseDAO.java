@@ -239,7 +239,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	{
 		final I_M_Warehouse warehouse = getById(warehouseId);
 		final I_M_Locator locatorNew = newInstance(I_M_Locator.class, warehouse);
-		
+
 		// for some reason, in case warehouse has trxName=null then locatorNew will use thread inherited?!
 		// so to avoid this case we are setting it the trxName again
 		InterfaceWrapperHelper.setTrxName(locatorNew, InterfaceWrapperHelper.getTrxName(warehouse));
@@ -904,10 +904,10 @@ public class WarehouseDAO implements IWarehouseDAO
 		saveRecord(warehouseRecord);
 
 		createDefaultLocator(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()));
-		
+
 		return ofRecord(warehouseRecord);
 	}
-	
+
 	@NonNull
 	private I_M_Warehouse toRecord(@NonNull final Warehouse warehouse)
 	{

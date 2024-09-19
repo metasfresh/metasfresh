@@ -86,6 +86,7 @@ public class ProductPlanning
 	@Nullable BigDecimal qtyProcessed_OnDate;
 	@Nullable MaturingConfigId maturingConfigId;
 	@Nullable MaturingConfigLineId maturingConfigLineId;
+	int manufacturingAggregationId;
 	// Picking
 	boolean isPickingOrder;
 	boolean isPickDirectlyIfFeasible;
@@ -124,7 +125,8 @@ public class ProductPlanning
 			@Nullable final BigDecimal qtyProcessedOnDate,
 						   @Nullable final MaturingConfigId maturingConfigId,
 						   @Nullable final MaturingConfigLineId maturingConfigLineId,
-						   final boolean isPickingOrder,
+						   final int manufacturingAggregationId,
+           				   final boolean isPickingOrder,
 						   final boolean isPickDirectlyIfFeasible,
 						   final boolean isPurchased,
 						   @Nullable final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse,
@@ -167,6 +169,7 @@ public class ProductPlanning
 		this.isPurchased = isPurchased;
 		this.onMaterialReceiptWithDestWarehouse = onMaterialReceiptWithDestWarehouse;
 		this.distributionNetworkId = distributionNetworkId;
+		this.manufacturingAggregationId = manufacturingAggregationId;
 	}
 
 	public ProductPlanningId getIdNotNull()

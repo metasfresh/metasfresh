@@ -2,7 +2,7 @@
  * #%L
  * de.metas.manufacturing
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,15 +20,14 @@
  * #L%
  */
 
-package org.eevolution.productioncandidate.service;
+package org.eevolution.productioncandidate.agg.key.impl;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.eevolution.model.I_PP_Order_Candidate;
-import org.eevolution.productioncandidate.agg.key.impl.PPOrderCandidateHeaderAggregationKeyBuilder;
 
 @UtilityClass
-public class PPOrderCandidateHeaderAggregationKeyHelper
+class PPOrderCandidateHeaderAggregationKeyHelper
 {
 	@NonNull
 	public String generateHeaderAggregationKey(@NonNull final I_PP_Order_Candidate orderCandidateRecord)
@@ -38,7 +37,7 @@ public class PPOrderCandidateHeaderAggregationKeyHelper
 	}
 
 	@NonNull
-	public PPOrderCandidateHeaderAggregationKeyBuilder mkPPOrderCandidateHeaderAggregationKeyBuilder()
+	private PPOrderCandidateHeaderAggregationKeyBuilder mkPPOrderCandidateHeaderAggregationKeyBuilder()
 	{
 		return new PPOrderCandidateHeaderAggregationKeyBuilder();
 	}
