@@ -16,9 +16,9 @@
     <MovementDate>2021-01-20+01:00</MovementDate>
     <POReference>6666666666</POReference>
     <EDI_Exp_Desadv_Pack>
-        <GTIN_LU_PackingMaterial>EURO</GTIN_LU_PackingMaterial>
+        <GTIN_PackingMaterial>EURO</GTIN_PackingMaterial>
         <IPA_SSCC18>123456789012345678</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>ISO</M_HU_PackagingCode_LU_Text>
+        <M_HU_PackagingCode_Text>ISO</M_HU_PackagingCode_Text>
         <EDI_Exp_Desadv_Pack_Item>
             <BestBeforeDate>2021-03-10+01:00</BestBeforeDate>
             <LotNumber>19</LotNumber>

@@ -17,8 +17,8 @@
     <POReference>6666666666</POReference>
     <EDI_Exp_Desadv_Pack>
         <IPA_SSCC18>123456789012345678</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>ISO</M_HU_PackagingCode_LU_Text>
-        <GTIN_LU_PackingMaterial>EURO</GTIN_LU_PackingMaterial>
+        <M_HU_PackagingCode_Text>ISO</M_HU_PackagingCode_Text>
+        <GTIN_PackingMaterial>EURO</GTIN_PackingMaterial>
         <EDI_Exp_Desadv_Pack_Item>
             <QtyCUsPerTU>1</QtyCUsPerTU>
             <QtyCUsPerTU_InInvoiceUOM>0.25</QtyCUsPerTU_InInvoiceUOM>

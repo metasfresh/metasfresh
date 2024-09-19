@@ -322,7 +322,7 @@ public class StepComXMLDesadvBean
 						if (settings.isDesadvLinePackagingCodeLURequired())
 						{
 							final String packagingCodeLU = validateString(
-									lineAndPack.getSinglePack().getPack().getMHUPackagingCodeLUText(),
+									lineAndPack.getSinglePack().getPack().getMHUPackagingCodeText(),
 									"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @M_HU_PackagingCode_LU_ID@");
 							ppack1.setPACKAGINGCODE(packagingCodeLU);
 							ppack1.setPACKAGINGLEVEL(PackagingLevel.OUTE.toString());
@@ -444,7 +444,7 @@ public class StepComXMLDesadvBean
 				}
 				else
 				{
-					packagingCodeLU = StringUtils.isEmpty(pack.getPack().getMHUPackagingCodeLUText()) ? "NONE" : pack.getPack().getMHUPackagingCodeLUText();
+					packagingCodeLU = StringUtils.isEmpty(pack.getPack().getMHUPackagingCodeText()) ? "NONE" : pack.getPack().getMHUPackagingCodeText();
 				}
 
 				packingLUGroupings.add(packagingCodeLU, line, pack);
