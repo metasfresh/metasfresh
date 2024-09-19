@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.ExpressionContext;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpressionCompiler;
@@ -73,7 +74,7 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 	}
 
 	@Override
-	public ILogicExpression compile(final ExpressionContext context, final String expressionStr)
+	public ILogicExpression compile(final ExpressionContext context, @NonNull final String expressionStr)
 	{
 		Check.assume(!Check.isEmpty(expressionStr, true), "expressionStr is not empty");
 

@@ -174,7 +174,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And after not more than 30s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID | M_HU_PackagingCode_ID | GTIN_PackingMaterial | SeqNo |
-      | p_1_11212023_4     | true                | null    | null                  | null                 | 10    |
+      | p_1_11212023_4     | true                | null    | null                  | null                 | 1     |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
@@ -270,7 +270,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And after not more than 30s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID | M_HU_PackagingCode_ID | GTIN_PackingMaterial | SeqNo |
-      | p_1_11212023_1     | true                | null    | null                  | null                 | 10    |
+      | p_1_11212023_1     | true                | null    | null                  | null                 | 1     |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
@@ -1178,11 +1178,6 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | M_HU_PI_Attribute.Identifier   | M_HU_PI_Version_ID.Identifier | M_Attribute.Value |
       | huPiAttribute_SSCC18_S0457_010 | packingVersionLU_S0457_010    | SSCC18            |
 
-    # This controls the SSCC18 value that our LU and desc-pack shall get to be 012345670010000081
-    And set AD_Sequence.CurrentNext=1000000 for sequence DocumentNo_SSCC18_SerialNumber
-    And set sys config String value 1234567 for sys config de.metas.handlingunit.GS1ManufacturerCode
-    And set sys config String value 0 for sys config de.metas.handlingunit.GS1ExtensionDigit
-
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | huProductTU_1_S0457_010            | huPiItemTU_S0457_010       | p_1_S0457_010           | 10  | 2021-01-01 |
@@ -1212,9 +1207,15 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | createdTU_2_1_S0457_010 | huProductTU_2_S0457_010                |
       | createdTU_2_2_S0457_010 | huProductTU_2_S0457_010                |
 
+     # This controls the SSCC18 value that our LU and desc-pack shall get to be 012345670010000081
+    And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
+    
     And aggregate TUs to new LU
       | sourceTUs                                                             | newLUs              |
       | createdTU_1_S0457_010,createdTU_2_1_S0457_010,createdTU_2_2_S0457_010 | createdLU_S0457_010 |
+
+    # cleanup; otherwise, all HUs with an SSCC18 will have the same
+    And reset the SSCC18 code generator's next sequence number back to its actual AD_Sequence.
 
     And update M_HU_Attribute:
       | M_HU_ID.Identifier  | M_Attribute_ID | Value       | AttributeValueType |

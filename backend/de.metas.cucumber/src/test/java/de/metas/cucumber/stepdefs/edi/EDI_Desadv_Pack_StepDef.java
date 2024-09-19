@@ -181,7 +181,6 @@ public class EDI_Desadv_Pack_StepDef
 				.orderBy(COLUMNNAME_EDI_Desadv_Pack_ID)
 				.create()
 				.list();
-
 		return "EDI_Desadv_Pack records:"
 				+ "\n" + toTabular(list).toPrint().ident(1);
 	}
@@ -224,6 +223,7 @@ public class EDI_Desadv_Pack_StepDef
 		row.put(COLUMNNAME_M_HU_PackagingCode_ID, record.getM_HU_PackagingCode_ID());
 		row.put(COLUMNNAME_GTIN_PackingMaterial, record.getGTIN_PackingMaterial());
 		row.put(COLUMNNAME_SeqNo, record.getSeqNo());
+		row.put(COLUMNNAME_IPA_SSCC18, record.getIPA_SSCC18());
 		return row;
 	}
 

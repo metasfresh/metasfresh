@@ -33,6 +33,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -73,7 +74,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 
 	@Override
 	@Cached(cacheName = I_AD_Sequence.Table_Name + "#DocumentSequenceInfo#By#SequenceName")
-	public DocumentSequenceInfo retriveDocumentSequenceInfo(final String sequenceName, final int adClientId, final int adOrgId)
+	public DocumentSequenceInfo retriveDocumentSequenceInfo(@NonNull final String sequenceName, final int adClientId, final int adOrgId)
 	{
 		final IQueryBuilder<I_AD_Sequence> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Sequence.class, Env.getCtx(), ITrx.TRXNAME_None)
@@ -98,6 +99,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		return toDocumentSequenceInfo(adSequence);
 	}
 
+	@Nullable
 	@Override
 	@Cached(cacheName = I_AD_Sequence.Table_Name + "#DocumentSequenceInfo#By#AD_Sequence_ID")
 	public DocumentSequenceInfo retriveDocumentSequenceInfo(@NonNull final DocSequenceId sequenceId)
@@ -142,13 +144,14 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		{
 			return StringExpressionCompiler.instance.compile(expr);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed compiling '{}' string expression. Using it as is", expr, ex);
 			return ConstantStringExpression.ofNullable(expr);
 		}
 	}
 
+	@Nullable
 	private CustomSequenceNoProvider createCustomSequenceNoProviderOrNull(final I_AD_Sequence adSequence)
 	{
 		if (adSequence.getCustomSequenceNoProvider_JavaClass_ID() <= 0)
