@@ -30,10 +30,11 @@ import io.cucumber.java.en.And;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 
+import static org.assertj.core.api.Assertions.*;
+
 public class SSCC18Code_StepDef
-
 {
-
+	
 	@And("setup the SSCC18 code generator with GS1ManufacturerCode {int}, GS1ExtensionDigit {int} and next sequence number always={int}.")
 	public void setupTheSSCCCodeGeneratorWithGSManufacturerCodeGSExtensionDigitAndNextSequenceNumber(
 			final int manufacturerCode,
@@ -44,12 +45,20 @@ public class SSCC18Code_StepDef
 		sysConfigBL.setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, String.valueOf(manufacturerCode), ClientId.SYSTEM, OrgId.ANY);
 		sysConfigBL.setValue(SSCC18CodeBL.SYSCONFIG_ExtensionDigit, String.valueOf(extensionDigit), ClientId.SYSTEM, OrgId.ANY);
 
-		Services.registerService(ISSCC18CodeBL.class, new SSCC18CodeBL(orgId -> nextSequenceNumber));
+		getSSCC18CodeBL().setOverrideNextSerialNumberProvider(orgId -> nextSequenceNumber);
 	}
 
-	@And("reset the SSCC18 code generator's next sequence number back to its actual AD_Sequence.")
+	@And("reset the SSCC18 code generator's next sequence number back to its actual sequence.")
 	public void resetTheSSCCCodeGenerator()
 	{
-		Services.registerService(ISSCC18CodeBL.class, new SSCC18CodeBL());
+		getSSCC18CodeBL().setOverrideNextSerialNumberProvider(null);
 	}
+
+	private static SSCC18CodeBL getSSCC18CodeBL()
+	{
+		final ISSCC18CodeBL sscc18CodeBL = Services.get(ISSCC18CodeBL.class);
+		assertThat(sscc18CodeBL).as("Our ISSCC18CodeBL needs to be instanceof SSCC18CodeBL").isInstanceOf(SSCC18CodeBL.class);
+		return (SSCC18CodeBL)sscc18CodeBL;
+	}
+
 }

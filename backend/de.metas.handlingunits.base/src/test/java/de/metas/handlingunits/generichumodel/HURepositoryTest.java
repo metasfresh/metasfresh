@@ -81,7 +81,8 @@ class HURepositoryTest
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx(); // we need to do this before registering our custom SSCC18CodeBL
 
 		sscc18SerialNo = 0;
-		sscc18CodeBL = new SSCC18CodeBL(orgId -> ++sscc18SerialNo);
+		sscc18CodeBL = new SSCC18CodeBL();
+		sscc18CodeBL.setOverrideNextSerialNumberProvider(orgId -> ++sscc18SerialNo);
 		Services.registerService(ISSCC18CodeBL.class, sscc18CodeBL);
 
 		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, "111111", ClientId.METASFRESH, OrgId.ANY);
@@ -169,9 +170,7 @@ class HURepositoryTest
 						new Quantity(new BigDecimal("5"), uomRecord),
 						new Quantity(new BigDecimal("4"), uomRecord));
 
-		assertThat(result.getChildHUs()).allSatisfy(childHU -> {
-			assertThat(childHU.getAllPackaginGTINs()).containsExactly(entry(BPartnerId.ofRepoId(10), "TU-GTIN1"));
-		});
+		assertThat(result.getChildHUs()).allSatisfy(childHU -> assertThat(childHU.getAllPackaginGTINs()).containsExactly(entry(BPartnerId.ofRepoId(10), "TU-GTIN1")));
 	}
 
 	private void setupPackagingGTINs()

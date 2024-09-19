@@ -22,13 +22,10 @@ package org.adempiere.ad.expression.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
-import lombok.NonNull;
+import com.google.common.base.Joiner;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.expression.api.ExpressionContext;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpressionCompiler;
@@ -37,11 +34,12 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 
-import com.google.common.base.Joiner;
-
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
 public class LogicExpressionCompiler implements ILogicExpressionCompiler
 {
@@ -73,8 +71,11 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_UseOperatorPrecedence, enabled, ClientId.SYSTEM, OrgId.ANY);
 	}
 
+	/**
+	 * @param expressionStr may not be blank. Otherwise, an {@link ExpressionCompileException} should be thrown. 
+	 */
 	@Override
-	public ILogicExpression compile(final ExpressionContext context, @NonNull final String expressionStr)
+	public ILogicExpression compile(final ExpressionContext context, @Nullable final String expressionStr)
 	{
 		Check.assume(!Check.isEmpty(expressionStr, true), "expressionStr is not empty");
 
@@ -185,11 +186,10 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 					+ "'@context@=value' where operand could be one of '" + TUPLE_OPERATORS + "' => " + tupleExpressionStr);
 		}
 
-		final LogicTuple tuple = LogicTuple.parseFrom(tokenizer.nextToken(), tokenizer.nextToken(), tokenizer.nextToken());
-		return tuple;
+		return LogicTuple.parseFrom(tokenizer.nextToken(), tokenizer.nextToken(), tokenizer.nextToken());
 	}
 
-	private static final boolean isTuple(final String token)
+	private static boolean isTuple(final String token)
 	{
 		for (int i = 0, size = TUPLE_OPERATORS.length(); i < size; i++)
 		{

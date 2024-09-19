@@ -1215,7 +1215,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | createdTU_1_S0457_010,createdTU_2_1_S0457_010,createdTU_2_2_S0457_010 | createdLU_S0457_010 |
 
     # cleanup; otherwise, all HUs with an SSCC18 will have the same
-    And reset the SSCC18 code generator's next sequence number back to its actual AD_Sequence.
+    And reset the SSCC18 code generator's next sequence number back to its actual sequence.
 
     And update M_HU_Attribute:
       | M_HU_ID.Identifier  | M_Attribute_ID | Value       | AttributeValueType |

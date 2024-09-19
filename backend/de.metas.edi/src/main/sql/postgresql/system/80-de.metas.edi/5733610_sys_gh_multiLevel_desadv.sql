@@ -775,3 +775,20 @@ UPDATE EXP_FormatLine SET Name='SeqNo', Value='SeqNo',Updated=TO_TIMESTAMP('2024
 -- 2024-09-19T07:41:25.708Z
 /* DDL */ SELECT public.db_alter_table('EDI_DesadvLine','ALTER TABLE public.EDI_DesadvLine ADD COLUMN GTIN_TU VARCHAR(50)')
 ;
+
+-- 2024-09-19T14:56:44.083Z
+UPDATE EXP_FormatLine SET Name='M_HU_PackagingCode_Text', Value='M_HU_PackagingCode_Text',Updated=TO_TIMESTAMP('2024-09-19 16:56:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_FormatLine_ID=550460
+;
+
+-- 2024-09-19T14:56:54.145Z
+UPDATE EXP_FormatLine SET Value='GTIN_PackingMaterial',Updated=TO_TIMESTAMP('2024-09-19 16:56:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_FormatLine_ID=550453
+;
+
+-- Column: EDI_Desadv_Pack.M_HU_PackagingCode_Text
+-- Column SQL (old): (select PackagingCode from M_HU_PackagingCode c where c.M_HU_PackagingCode_ID=M_HU_PackagingCode_ID)
+-- Column: EDI_Desadv_Pack.M_HU_PackagingCode_Text
+-- Column SQL (old): (select PackagingCode from M_HU_PackagingCode c where c.M_HU_PackagingCode_ID=M_HU_PackagingCode_ID)
+-- 2024-09-19T14:59:35.092Z
+UPDATE AD_Column SET ColumnSQL='(select c.PackagingCode from M_HU_PackagingCode c where c.M_HU_PackagingCode_ID=EDI_Desadv_Pack.M_HU_PackagingCode_ID)',Updated=TO_TIMESTAMP('2024-09-19 16:59:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=583430
+;
+
