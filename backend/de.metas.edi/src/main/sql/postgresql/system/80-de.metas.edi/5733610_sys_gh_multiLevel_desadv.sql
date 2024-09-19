@@ -772,3 +772,6 @@ UPDATE EXP_FormatLine SET Value='GTIN_TU',Updated=TO_TIMESTAMP('2024-09-18 15:24
 UPDATE EXP_FormatLine SET Name='SeqNo', Value='SeqNo',Updated=TO_TIMESTAMP('2024-09-18 16:59:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_FormatLine_ID=550771
 ;
 
+-- 2024-09-19T07:41:25.708Z
+/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine','ALTER TABLE public.EDI_DesadvLine ADD COLUMN GTIN_TU VARCHAR(50)')
+;

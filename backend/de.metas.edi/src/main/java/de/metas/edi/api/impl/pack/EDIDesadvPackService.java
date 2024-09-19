@@ -33,6 +33,7 @@ import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOutLine;
+import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.handlingunits.HuId;
@@ -128,6 +129,24 @@ public class EDIDesadvPackService
 		this.ediDesadvPackRepository = ediDesadvPackRepository;
 	}
 
+	@NonNull
+	public EDIDesadvPackService.Sequences createSequences(@NonNull final I_EDI_Desadv desadv)
+	{
+		final EDIDesadvId desadvId = EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID());
+
+		final int maxDesadvPackSeqNo = desadvDAO.retrieveMaxDesadvPackSeqNo(desadvId);
+		final SimpleSequence packSeqNoSequence = SimpleSequence.builder()
+				.initial(maxDesadvPackSeqNo)
+				.increment(1).build();
+
+		final int maxDesadvPackItemLine = desadvDAO.retrieveMaxDesadvPackItemLine(desadvId);
+		final SimpleSequence packItemLineSequence = SimpleSequence.builder()
+				.initial(maxDesadvPackItemLine)
+				.increment(10).build();
+
+		return new EDIDesadvPackService.Sequences(packSeqNoSequence, packItemLineSequence);
+	}
+	
 	@NonNull
 	public I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine)
 	{
@@ -295,9 +314,7 @@ public class EDIDesadvPackService
 							.line(sequences.getPackItemLineSequence().next())
 							.qtyItemCapacity(lutuConfigurationInStockUOM.getQtyCUsPerTU())
 							.inOutId(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()))
-							.inOutLineId(InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()))
-					// TODO: add EAN-TU, GTIN-TU and UPC-TU from tuPIItemProduct
-					;
+							.inOutLineId(InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()));
 
 			// BestBefore
 			final Optional<Timestamp> bestBeforeDate = extractBestBeforeDate(inOutLineRecord);
@@ -494,7 +511,7 @@ public class EDIDesadvPackService
 	}
 
 	/**
-	 * Creates a "complete" request, jsut without a pack-ID
+	 * Creates a "complete" request, just without a pack-ID
 	 */
 	private CreateEDIDesadvPackItemRequest buildCreateDesadvPackItemRequest(
 			@NonNull final RequestParameters parameters)

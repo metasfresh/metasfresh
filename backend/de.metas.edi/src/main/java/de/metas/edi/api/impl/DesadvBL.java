@@ -9,8 +9,6 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.common.util.SimpleSequence;
-import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
@@ -204,7 +202,7 @@ public class DesadvBL implements IDesadvBL
 			newDesadvLine.setProductNo(bPartnerProduct.getProductNo());
 			newDesadvLine.setGTIN_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getGTIN(), product.getGTIN()));
 			newDesadvLine.setUPC_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getUPC(), product.getUPC()));
-			newDesadvLine.setEAN_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getGTIN(), bPartnerProduct.getEAN_CU(), product.getGTIN()));
+			newDesadvLine.setEAN_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getEAN_CU(), product.getUPC()/*no EAN on M_Product; UPC plays both roles*/));
 
 			if (Check.isEmpty(newDesadvLine.getProductDescription(), true))
 			{
@@ -221,10 +219,10 @@ public class DesadvBL implements IDesadvBL
 		{
 			newDesadvLine.setGTIN_CU(product.getGTIN());
 			newDesadvLine.setUPC_CU(product.getUPC());
-			newDesadvLine.setEAN_CU(product.getGTIN());
+			newDesadvLine.setEAN_CU(product.getUPC()/*no EAN on M_Product; UPC plays both roles*/);
 		}
 
-		if (Check.isEmpty(newDesadvLine.getProductDescription(), true))
+		if (Check.isBlank(newDesadvLine.getProductDescription()))
 		{
 			// fallback for product description
 			newDesadvLine.setProductDescription(product.getName());
@@ -248,7 +246,8 @@ public class DesadvBL implements IDesadvBL
 	private I_EDI_Desadv retrieveOrCreateDesadv(@NonNull final I_C_Order order)
 	{
 		I_EDI_Desadv desadv = desadvDAO.retrieveMatchingDesadvOrNull(
-				order.getPOReference(),
+				Check.assumeNotNull(order.getPOReference(),
+									"In the DESADV-Context, POReference is mandatory; C_Order_ID={}", order.getC_Order_ID()),
 				InterfaceWrapperHelper.getContextAware(order));
 		if (desadv == null)
 		{
@@ -315,7 +314,7 @@ public class DesadvBL implements IDesadvBL
 
 		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
 		
-		final EDIDesadvPackService.Sequences sequences = createSequences(desadv);
+		final EDIDesadvPackService.Sequences sequences = ediDesadvPackService.createSequences(desadv);
 
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : inOutLines)
@@ -329,23 +328,6 @@ public class DesadvBL implements IDesadvBL
 		return desadv;
 	}
 
-	@NonNull
-	private EDIDesadvPackService.Sequences createSequences(@NonNull final I_EDI_Desadv desadv)
-	{
-		final EDIDesadvId desadvId = EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID());
-		
-		final int maxDesadvPackSeqNo = desadvDAO.retrieveMaxDesadvPackSeqNo(desadvId);
-		final SimpleSequence packSeqNoSequence = SimpleSequence.builder()
-				.initial(maxDesadvPackSeqNo)
-				.increment(1).build();
-		
-		final int maxDesadvPackItemLine = desadvDAO.retrieveMaxDesadvPackItemLine(desadvId);
-		final SimpleSequence packItemLineSequence = SimpleSequence.builder()
-				.initial(maxDesadvPackItemLine)
-				.increment(10).build();
-
-		return new EDIDesadvPackService.Sequences(packSeqNoSequence, packItemLineSequence);
-	}
 
 	private void addInOutLine(
 			@NonNull final I_M_InOutLine inOutLineRecord, 

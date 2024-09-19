@@ -76,6 +76,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class HURepository
 {
 	private final static transient Logger logger = LogManager.getLogger(HURepository.class);
+	private static final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
@@ -106,7 +107,6 @@ public class HURepository
 		private final transient IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
 		private final transient HUStack huStack = new HUStack();
-
 
 		private IPair<HuId, HUBuilder> currentIdAndBuilder;
 
@@ -157,7 +157,9 @@ public class HURepository
 					.packagingGTINs(extractPackagingGTINs(huRecord));
 		}
 
-		/** This is a bad case of the n+1 problem; feel free to reimplement properly when needed. */
+		/**
+		 * This is a bad case of the n+1 problem; feel free to reimplement properly when needed.
+		 */
 		@NonNull
 		private ImmutableMap<BPartnerId, String> extractPackagingGTINs(@NonNull final I_M_HU huRecord)
 		{
@@ -174,7 +176,6 @@ public class HURepository
 			if (packagingProductIds.size() == 1)
 			{
 				final List<I_C_BPartner_Product> bPartnerProductRecords = partnerProductDAO.retrieveForProductIds(packagingProductIds);
-				boolean gtinFoundInBPartnerProductRecord = false;
 				for (final I_C_BPartner_Product bPartnerProductRecord : bPartnerProductRecords)
 				{
 					final String partnerProductGTIN = bPartnerProductRecord.getGTIN();
@@ -183,17 +184,14 @@ public class HURepository
 						packagingGTINs.put(
 								BPartnerId.ofRepoId(bPartnerProductRecord.getC_BPartner_ID()),
 								partnerProductGTIN);
-						gtinFoundInBPartnerProductRecord = true;
 					}
 				}
-				if(!gtinFoundInBPartnerProductRecord)
+
+				final I_M_Product product = productDAO.getById(packagingProductIds.iterator().next());
+				final String productGTIN = product.getGTIN();
+				if (isNotBlank(productGTIN))
 				{
-					final I_M_Product product = Services.get(IProductDAO.class).getById(packagingProductIds.iterator().next());
-					final String productGTIN = product.getGTIN();
-					if(isNotBlank(productGTIN))
-					{
-						packagingGTINs.put(BPartnerId.NONE, productGTIN);
-					}
+					packagingGTINs.put(BPartnerId.NONE, productGTIN);
 				}
 			}
 			else
@@ -281,10 +279,10 @@ public class HURepository
 			final I_M_HU_PackagingCode packagingCodeRecord = loadOutOfTrx(packagingCodeRecordId, I_M_HU_PackagingCode.class);
 
 			return Optional.of(PackagingCode.builder()
-					.id(PackagingCodeId.ofRepoId(packagingCodeRecordId))
-					.onlyForType(Optional.ofNullable(HUType.ofCodeOrNull(packagingCodeRecord.getHU_UnitType())))
-					.value(packagingCodeRecord.getPackagingCode())
-					.build());
+									   .id(PackagingCodeId.ofRepoId(packagingCodeRecordId))
+									   .onlyForType(Optional.ofNullable(HUType.ofCodeOrNull(packagingCodeRecord.getHU_UnitType())))
+									   .value(packagingCodeRecord.getPackagingCode())
+									   .build());
 
 		}
 
