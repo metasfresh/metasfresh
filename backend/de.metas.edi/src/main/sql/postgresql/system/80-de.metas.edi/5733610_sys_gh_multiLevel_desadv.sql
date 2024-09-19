@@ -678,9 +678,10 @@ DELETE FROM AD_Column WHERE AD_Column_ID=588986
 ;
 
 
-SELECT public.db_alter_table('EDI_Desadv_Pack_Item','ALTER TABLE public.EDI_Desadv_Pack_Item DROP COLUMN TU_GTIN')
-SELECT public.db_alter_table('EDI_Desadv_Pack_Item','ALTER TABLE public.EDI_Desadv_Pack_Item DROP COLUMN UPC_TU')
-SELECT public.db_alter_table('EDI_Desadv_Pack_Item','ALTER TABLE public.EDI_Desadv_Pack_Item DROP COLUMN EAN_TU')
+SELECT public.db_alter_table('EDI_Desadv_Pack_Item','ALTER TABLE public.EDI_Desadv_Pack_Item DROP COLUMN TU_GTIN');
+SELECT public.db_alter_table('EDI_Desadv_Pack_Item','ALTER TABLE public.EDI_Desadv_Pack_Item DROP COLUMN UPC_TU');
+SELECT public.db_alter_table('EDI_Desadv_Pack_Item','ALTER TABLE public.EDI_Desadv_Pack_Item DROP COLUMN EAN_TU');
+
 -- Column: EDI_DesadvLine.UPC_TU
 -- Column: EDI_DesadvLine.UPC_TU
 -- 2024-09-18T13:14:19.378Z

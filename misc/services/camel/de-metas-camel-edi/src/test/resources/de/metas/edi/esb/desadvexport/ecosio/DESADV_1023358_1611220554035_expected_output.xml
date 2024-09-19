@@ -45,7 +45,10 @@
                 <ProductNo>ProductNo</ProductNo>
                 <QtyEntered>1.00</QtyEntered>
                 <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
-                <GTIN>1234567890125</GTIN>
+                <EAN_CU>3234567890125</EAN_CU>
+                <GTIN_CU>1234567890125</GTIN_CU>
+                <EAN_TU>4234567890125</EAN_TU>
+                <GTIN_TU>2234567890125</GTIN_TU>
                 <PriceActual>19.900</PriceActual>
                 <EanCom_Invoice_UOM>KGM</EanCom_Invoice_UOM>
                 <InvoicableQtyBasedOn>CatchWeight</InvoicableQtyBasedOn>
