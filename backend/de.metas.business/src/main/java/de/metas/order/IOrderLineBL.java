@@ -22,6 +22,7 @@
 
 package de.metas.order;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -43,6 +44,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public interface IOrderLineBL extends ISingletonService
@@ -95,8 +97,8 @@ public interface IOrderLineBL extends ISingletonService
 	/**
 	 * Utility method to subtract the given <code>discount</code> (in percent!) from the given <code>priceEntered</code> and return the result.
 	 *
-	 * @param discount   the discount to subtract in percent (between 0 and 100). Example: 10
-	 * @param precision  the precision of the expected result (relevant for rounding)
+	 * @param discount  the discount to subtract in percent (between 0 and 100). Example: 10
+	 * @param precision the precision of the expected result (relevant for rounding)
 	 * @deprecated Use {@link Percent#subtractFromBase(BigDecimal, int)}
 	 */
 	@Deprecated
@@ -228,4 +230,8 @@ public interface IOrderLineBL extends ISingletonService
 	void updateIsOnConsignmentNoSave(@NonNull I_C_OrderLine orderLine);
 
 	boolean isCatchWeight(@NonNull org.compiere.model.I_C_OrderLine orderLine);
+
+	Optional<BPartnerId> getBPartnerId(OrderLineId orderLineId);
+
+	Optional<BPartnerId> getBPartnerId(@NonNull OrderAndLineId orderLineId);
 }

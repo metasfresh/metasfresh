@@ -156,6 +156,7 @@ class PlanningHUAttributesUpdater
 		if (huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
 				&& huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate) == null
 				&& huAttributesBL.isAutomaticallySetBestBeforeDate()
+				&& receiptSchedule.getMovementDate() != null /*won't happen because we always set the order's datePromised as MovementDate..but better safe than sorry*/
 		)
 		{
 			final LocalDate bestBeforeDate = computeBestBeforeDate(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()), TimeUtil.asLocalDate(receiptSchedule.getMovementDate()));

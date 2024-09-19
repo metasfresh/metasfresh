@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_Doc_Outbound_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1073925950L;
+	private static final long serialVersionUID = -1911580358L;
 
     /** Standard Constructor */
     public X_C_Doc_Outbound_Log (final Properties ctx, final int C_Doc_Outbound_Log_ID, @Nullable final String trxName)
@@ -33,6 +33,23 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
+
+
+	@Override
+	public void setAD_Archive_ID (final int AD_Archive_ID)
+	{
+		if (AD_Archive_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_AD_Archive_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_AD_Archive_ID, AD_Archive_ID);
+	}
+
+	@Override
+	public int getAD_Archive_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Archive_ID);
+	}
+
 
 	@Override
 	public void setAD_Table_ID (final int AD_Table_ID)
@@ -139,7 +156,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
-	public java.lang.String getCurrentEMailAddress() 
+	public String getCurrentEMailAddress() 
 	{
 		return get_ValueAsString(COLUMNNAME_CurrentEMailAddress);
 	}
@@ -243,7 +260,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
-	public java.lang.String getDocStatus() 
+	public String getDocStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
@@ -255,7 +272,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
-	public java.lang.String getDocumentNo() 
+	public String getDocumentNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
@@ -286,7 +303,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
-	public java.lang.String getEDI_ExportStatus() 
+	public String getEDI_ExportStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_EDI_ExportStatus);
 	}
@@ -303,13 +320,13 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
-	public void setFileName (final @Nullable java.lang.String FileName)
+	public void setFileName (final @Nullable String FileName)
 	{
 		set_Value (COLUMNNAME_FileName, FileName);
 	}
 
 	@Override
-	public java.lang.String getFileName() 
+	public String getFileName() 
 	{
 		return get_ValueAsString(COLUMNNAME_FileName);
 	}
@@ -351,10 +368,11 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	@Override
 	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
-		throw new IllegalArgumentException ("POReference is virtual column");	}
+		set_ValueNoCheck (COLUMNNAME_POReference, POReference);
+	}
 
 	@Override
-	public java.lang.String getPOReference() 
+	public String getPOReference() 
 	{
 		return get_ValueAsString(COLUMNNAME_POReference);
 	}

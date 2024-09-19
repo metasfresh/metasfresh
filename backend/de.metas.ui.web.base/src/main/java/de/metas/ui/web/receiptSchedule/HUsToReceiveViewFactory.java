@@ -1,14 +1,19 @@
 package de.metas.ui.web.receiptSchedule;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.process.M_HU_Report_QRCode;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
+import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 
 /*
@@ -64,5 +69,26 @@ public class HUsToReceiveViewFactory extends HUEditorViewFactoryTemplate
 	protected AttributeSourceDocument getAttributeSourceDocument()
 	{
 		return AttributeSourceDocument.MaterialReceipt;
+	}
+
+	@Override
+	protected void customizeHUEditorViewRepository(final SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder huEditorViewRepositoryBuilder)
+	{
+		huEditorViewRepositoryBuilder.customProcessApplyPredicate(this::checkIfProcessDescriptorApplies);
+	}
+
+	private boolean checkIfProcessDescriptorApplies(@NonNull final HUEditorRow row, @NonNull final ProcessDescriptor processDescriptor)
+	{
+		if (M_HU_Report_QRCode.class.getName().equals(processDescriptor.getProcessClassname()))
+		{
+			return checkIfLabelCanBePrinted(row);
+		}
+
+		return true;
+	}
+
+	private boolean checkIfLabelCanBePrinted(@NonNull final HUEditorRow row)
+	{
+		return X_M_HU.HUSTATUS_Active.equals(row.getHUStatus());
 	}
 }

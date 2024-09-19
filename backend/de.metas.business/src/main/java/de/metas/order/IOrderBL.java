@@ -368,4 +368,11 @@ public interface IOrderBL extends ISingletonService
 
 	@NonNull
 	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
+
+	@Nullable
+	DocTypeId getDocTypeIdEffectiveOrNull(@NonNull I_C_Order order);
+
+	<T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(I_C_Order order, Class<T> clazz);
+
+	List<de.metas.interfaces.I_C_OrderLine> retrieveOrderLines(I_C_Order order);
 }

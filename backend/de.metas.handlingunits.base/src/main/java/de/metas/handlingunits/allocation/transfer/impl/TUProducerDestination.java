@@ -180,6 +180,7 @@ import java.util.stream.Collectors;
 			final Capacity exceedingCapacityOfTU = capacityPerTU.subtractQuantity(request.getQuantity(), uomConversionBL);
 
 			if (HuPackingInstructionsId.isVirtualRepoId(parentPIItem.getIncluded_HU_PI_ID())
+					|| exceedingCapacityOfTU.isInfiniteCapacity()
 					|| exceedingCapacityOfTU.isPositive())
 			{
 				// Either this loading is about putting CUs directly on an LU which can be done, but then an aggregate HU is not supported and doesn't make sense (issue gh #1194).
@@ -257,12 +258,12 @@ import java.util.stream.Collectors;
 		final ArrayList<LUTUResult.TU> result = new ArrayList<>();
 		for (final I_M_HU tu : getCreatedHUs())
 		{
-			if (handlingUnitsBL.isAggregateHU(tu))
+			if (handlingUnitsBL.isAggregateHU(tu) && handlingUnitsBL.getTUsCount(tu).isPositive())
 			{
 				final QtyTU qtyTU = handlingUnitsBL.getTUsCount(tu);
 				result.add(LUTUResult.TU.ofAggregatedTU(tu, qtyTU));
 			}
-			else
+			else if (!handlingUnitsBL.isAggregateHU(tu))
 			{
 				result.add(LUTUResult.TU.ofSingleTU(tu));
 			}

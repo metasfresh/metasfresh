@@ -9,8 +9,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-
 /*
  * #%L
  * metasfresh-material-event
@@ -59,10 +57,11 @@ public class PostMaterialEventService
 
 	/**
 	 * Fires the given event using our (distributed) event framework.
+	 * <b>Important:</b> Please make sure to only use this method if you know that all the data which this event refers to is already committed to database!
 	 */
 	public void enqueueEventNow(final MaterialEvent event)
 	{
 		materialEventService.enqueueEvent(event);
-		logger.info("Posted MaterialEvent={}, Timestamp={}, ThreadId={}", event, Instant.now(), Thread.currentThread().getId());
+		logger.info("Posted MaterialEvent={}", event);
 	}
 }

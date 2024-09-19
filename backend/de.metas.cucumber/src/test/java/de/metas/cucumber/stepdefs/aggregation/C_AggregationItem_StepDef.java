@@ -58,6 +58,16 @@ public class C_AggregationItem_StepDef
 		this.aggregationAttributeTable = aggregationAttributeTable;
 	}
 
+	@Given("metasfresh contains C_AggregationItems:")
+	public void metasfresh_contains_c_aggregation_item(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			createC_Aggregation_Item(tableRow);
+		}
+	}
+	
 	@And("load C_AggregationItem")
 	public void load_C_AggregationItem(@NonNull final DataTable dataTable)
 	{
@@ -170,5 +180,39 @@ public class C_AggregationItem_StepDef
 		aggregationItemRecord.setIsActive(isActive);
 
 		InterfaceWrapperHelper.saveRecord(aggregationItemRecord);
+	}
+
+	private void createC_Aggregation_Item(@NonNull final Map<String, String> tableRow)
+	{
+		final String type = DataTableUtil.extractStringForColumnName(tableRow, I_C_AggregationItem.COLUMNNAME_Type);
+		final String entityType = DataTableUtil.extractStringForColumnName(tableRow, I_C_AggregationItem.COLUMNNAME_EntityType);
+
+		final String aggregationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_AggregationItem.COLUMNNAME_C_Aggregation_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Aggregation aggregationRecord = aggregationTable.get(aggregationIdentifier);
+
+		final I_C_AggregationItem aggregationItemRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_AggregationItem.class);
+
+		aggregationItemRecord.setType(type);
+		aggregationItemRecord.setEntityType(entityType);
+		aggregationItemRecord.setC_Aggregation_ID(aggregationRecord.getC_Aggregation_ID());
+
+		final String includedAggregationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_AggregationItem.COLUMNNAME_Included_Aggregation_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(includedAggregationIdentifier))
+		{
+			final I_C_Aggregation includedAggregationRecord = aggregationTable.get(includedAggregationIdentifier);
+			aggregationItemRecord.setIncluded_Aggregation_ID(includedAggregationRecord.getC_Aggregation_ID());
+		}
+
+		final String aggregationAttributeIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_AggregationItem.COLUMNNAME_C_Aggregation_Attribute_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(aggregationAttributeIdentifier))
+		{
+			final I_C_Aggregation_Attribute aggregationAttributeRecord = aggregationAttributeTable.get(aggregationAttributeIdentifier);
+			aggregationItemRecord.setC_Aggregation_Attribute_ID(aggregationAttributeRecord.getC_Aggregation_Attribute_ID());
+		}
+
+		InterfaceWrapperHelper.saveRecord(aggregationItemRecord);
+
+		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_AggregationItem");
+		aggregationItemTable.putOrReplace(recordIdentifier, aggregationItemRecord);
 	}
 }

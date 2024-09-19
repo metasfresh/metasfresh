@@ -218,6 +218,8 @@ public class PlainCurrencyDAO extends CurrencyDAO
 		record.setStdPrecision(precisionToUse.toInt());
 		record.setCostingPrecision(precisionToUse.toInt() + 2);
 
+		record.setIsApply5CentCashRounding(false);
+
 		if (currencyId != null)
 		{
 			record.setC_Currency_ID(currencyId.getRepoId());

@@ -280,7 +280,7 @@ abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProd
 	{
 		this.processReceiptCandidates = false;
 		this.receiveUsingLUTUSpec = PreciseTUSpec.of(HuPackingInstructionsId.VIRTUAL,
-				Quantity.of(BigDecimal.ONE, qtyToReceive.getUOM()));
+													 Quantity.of(BigDecimal.ONE, qtyToReceive.getUOM()));
 
 		return trxManager.callInThreadInheritedTrx(() -> createReceiptCandidatesAndHUs(qtyToReceive).getHus());
 	}
@@ -447,9 +447,9 @@ abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProd
 			if (sequenceId != null)
 			{
 				lotNumber = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
-						.sequenceId(sequenceId)
-						.clientId(ClientId.ofRepoId(ppOrderBom.getAD_Client_ID()))
-						.build());
+																	 .sequenceId(sequenceId)
+																	 .clientId(ClientId.ofRepoId(ppOrderBom.getAD_Client_ID()))
+																	 .build());
 
 			}
 			this.lotNumberFromSequence = lotNumber;
@@ -510,12 +510,12 @@ abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProd
 		}
 
 		return AllocationUtils.createQtyRequest(huContext,
-				productId, // product
-				qtyToReceive, // the quantity to receive
-				date, // transaction date
-				referencedModel, // referenced model
-				true, // forceQtyAllocation: make sure we will transfer the given qty, no matter what
-				clearanceStatusInfo // clearance status
+												productId, // product
+												qtyToReceive, // the quantity to receive
+												date, // transaction date
+												referencedModel, // referenced model
+												true, // forceQtyAllocation: make sure we will transfer the given qty, no matter what
+												clearanceStatusInfo // clearance status
 		);
 	}
 
@@ -869,7 +869,10 @@ abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProd
 		@NonNull ImmutableList<I_M_HU> hus;
 		@NonNull ImmutableList<I_PP_Order_Qty> receiptCandidates;
 
-		public I_M_HU getSingleHU() {return CollectionUtils.singleElement(hus);}
+		public I_M_HU getSingleHU()
+		{
+			return CollectionUtils.singleElement(hus);
+		}
 	}
 
 }

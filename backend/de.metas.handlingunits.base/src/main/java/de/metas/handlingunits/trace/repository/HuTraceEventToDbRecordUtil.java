@@ -6,6 +6,7 @@ import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
@@ -13,7 +14,10 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import lombok.NonNull;
+import org.adempiere.mmovement.MovementId;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderId;
 
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -48,8 +52,8 @@ public class HuTraceEventToDbRecordUtil
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.orgId(OrgId.ofRepoIdOrAny(dbRecord.getAD_Org_ID()))
-				.ppCostCollectorId(dbRecord.getPP_Cost_Collector_ID())
-				.ppOrderId(dbRecord.getPP_Order_ID())
+				.ppCostCollectorId(PPCostCollectorId.ofRepoIdOrNull(dbRecord.getPP_Cost_Collector_ID()))
+				.ppOrderId(PPOrderId.ofRepoIdOrNull(dbRecord.getPP_Order_ID()))
 				.docStatus(dbRecord.getDocStatus())
 				.eventTime(dbRecord.getEventTime().toInstant()) // EeventTime is a mandatory column, so no NPE
 				.vhuId(HuId.ofRepoId(dbRecord.getVHU_ID()))
@@ -59,8 +63,8 @@ public class HuTraceEventToDbRecordUtil
 				.vhuStatus(dbRecord.getVHUStatus())
 				.topLevelHuId(HuId.ofRepoId(dbRecord.getM_HU_ID()))
 				.vhuSourceId(HuId.ofRepoIdOrNull(dbRecord.getVHU_Source_ID()))
-				.inOutId(dbRecord.getM_InOut_ID())
-				.movementId(dbRecord.getM_Movement_ID())
+				.inOutId(InOutId.ofRepoIdOrNull(dbRecord.getM_InOut_ID()))
+				.movementId(MovementId.ofRepoIdOrNull(dbRecord.getM_Movement_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(dbRecord.getM_ShipmentSchedule_ID()))
 				.type(HUTraceType.ofCode(dbRecord.getHUTraceType())) // HUTraceType is also a mandatory column, so no NPE
 				.lotNumber(dbRecord.getLotNumber())
@@ -104,12 +108,12 @@ public class HuTraceEventToDbRecordUtil
 		dbRecord.setM_HU_Trx_Line_ID(huTraceRecord.getHuTrxLineId());
 		dbRecord.setM_HU_ID(huTraceRecord.getTopLevelHuId().getRepoId());
 		dbRecord.setVHU_Source_ID(HuId.toRepoId(huTraceRecord.getVhuSourceId()));
-		dbRecord.setM_InOut_ID(huTraceRecord.getInOutId());
-		dbRecord.setM_Movement_ID(huTraceRecord.getMovementId());
+		dbRecord.setM_InOut_ID(InOutId.toRepoId(huTraceRecord.getInOutId()));
+		dbRecord.setM_Movement_ID(MovementId.toRepoId(huTraceRecord.getMovementId()));
 		dbRecord.setM_Inventory_ID(InventoryId.toRepoId(huTraceRecord.getInventoryId()));
 		dbRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(huTraceRecord.getShipmentScheduleId()));
-		dbRecord.setPP_Cost_Collector_ID(huTraceRecord.getPpCostCollectorId());
-		dbRecord.setPP_Order_ID(huTraceRecord.getPpOrderId());
+		dbRecord.setPP_Cost_Collector_ID(PPCostCollectorId.toRepoId(huTraceRecord.getPpCostCollectorId()));
+		dbRecord.setPP_Order_ID(PPOrderId.toRepoId(huTraceRecord.getPpOrderId()));
 		dbRecord.setLotNumber(huTraceRecord.getLotNumber());
 	}
 }

@@ -39,7 +39,6 @@ import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionBL;
-import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -425,12 +424,14 @@ public class LUTUProducerDestination
 	@Override
 	public I_M_HU_PI_Item getLUItemPI()
 	{
-		if (_luPIItem == null && _luPI != null)
+		if (_luPIItem == null && _luPI != null && tuPI != null)
 		{
 			final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoId(_luPI.getM_HU_PI_ID());
+			final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID());
 			final BPartnerId bpartnerId = getBPartnerId();
-			_luPIItem = handlingUnitsDAO.retrieveFirstPIItem(luPIId, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId)
-					.orElseThrow(() -> new AdempiereException("No LU PI Item found for " + _luPI + " and " + bpartnerId));
+
+			_luPIItem = handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId)
+					.orElseThrow(() -> new AdempiereException("No LU Item found for " + tuPIId + " and " + bpartnerId));
 		}
 		return _luPIItem;
 	}
@@ -455,8 +456,13 @@ public class LUTUProducerDestination
 	public void setLU(@NonNull final HuId luId)
 	{
 		assertConfigurable();
+		setLU(handlingUnitsBL.getById(luId));
+	}
 
-		final I_M_HU lu = handlingUnitsBL.getById(luId);
+	public void setLU(@NonNull final I_M_HU lu)
+	{
+		assertConfigurable();
+
 		final I_M_HU_PI luPI = handlingUnitsBL.getPI(lu);
 
 		this._existingLU = lu;
@@ -565,9 +571,11 @@ public class LUTUProducerDestination
 		final IMutableAllocationResult result = AllocationUtils.createMutableAllocationResult(request);
 
 		// 06647: create and add a HU-trx just so that HULoader.load0() will later on transfer the source's attributes also to the LU and not just to the TUs
-		final I_M_HU_PI_Item luItemPI = getLUItemPI();
-		final IHUTransactionCandidate luTrx = huTransactionBL.createLUTransactionForAttributeTransfer(luHU, luItemPI, request);
-		result.addTransaction(luTrx);
+		// do this only if we created the LU, else we would override the attributes of already existing TUs
+		if (!isExistingLU(luHU))
+		{
+			result.addTransaction(huTransactionBL.createLUTransactionForAttributeTransfer(luHU, getLUItemPI(), request));
+		}
 
 		final TUProducerDestination tuProducer = getOrCreateTUProducer(luHU);
 

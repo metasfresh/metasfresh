@@ -27,3 +27,14 @@ export const toUrl = (path, queryParams) => {
 };
 
 export const isNullOrUndefined = (arg) => arg === null || arg === undefined;
+
+export const doFinally = (promise, func) => {
+  if (!func) return;
+
+  if (promise?.finally) {
+    return promise.finally(func);
+  } else {
+    func();
+    return promise;
+  }
+};

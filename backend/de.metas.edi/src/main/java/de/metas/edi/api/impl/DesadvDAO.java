@@ -35,6 +35,7 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
 import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -90,6 +91,12 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
+	public I_EDI_DesadvLine retrieveLineById(final @NonNull EDIDesadvLineId ediDesadvLineId)
+	{
+		return InterfaceWrapperHelper.load(ediDesadvLineId, I_EDI_DesadvLine.class);
+	}
+
+	@Override
 	public I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(
 			@NonNull final I_EDI_Desadv desadv,
 			final int line,
@@ -131,10 +138,14 @@ public class DesadvDAO implements IDesadvDAO
 
 	}
 
-	@NonNull
-	public I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId)
+	@Override
+	public int retrieveMaxDesadvPackLine(@NonNull final EDIDesadvId desadvId)
 	{
-		return InterfaceWrapperHelper.load(ediDesadvLineId, I_EDI_DesadvLine.class);
+		return queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
+				.create()
+				.maxInt(I_EDI_Desadv_Pack.COLUMNNAME_Line);
 	}
 
 	@Override
@@ -275,6 +286,12 @@ public class DesadvDAO implements IDesadvDAO
 	public void save(@NonNull final I_EDI_Desadv ediDesadv)
 	{
 		InterfaceWrapperHelper.save(ediDesadv);
+	}
+
+	@Override
+	public void save(@NonNull final I_EDI_DesadvLine ediDesadvLine)
+	{
+		InterfaceWrapperHelper.save(ediDesadvLine);
 	}
 
 	@Override

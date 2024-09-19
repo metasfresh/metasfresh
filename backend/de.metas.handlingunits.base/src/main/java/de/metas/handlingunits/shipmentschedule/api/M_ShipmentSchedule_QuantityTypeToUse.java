@@ -78,4 +78,9 @@ public enum M_ShipmentSchedule_QuantityTypeToUse implements ReferenceListAwareEn
 	{
 		return TYPE_QTY_TO_DELIVER == this;
 	}
+
+	public boolean isSplitShipment()
+	{
+		return TYPE_SPLIT_SHIPMENT == this;
+	}
 }

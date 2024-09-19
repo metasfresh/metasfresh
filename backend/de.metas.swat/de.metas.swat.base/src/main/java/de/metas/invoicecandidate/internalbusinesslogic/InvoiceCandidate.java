@@ -406,7 +406,7 @@ public class InvoiceCandidate
 			case AfterDelivery:
 			case OrderCompletelyDelivered:
 			case CustomerScheduleAfterDelivery:
-				if (product.isStocked())
+				if (product.isItemType())
 				{
 					qtyToInvoice = computeInvoicableQtysDelivered();
 				}

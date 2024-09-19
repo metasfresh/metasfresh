@@ -81,9 +81,15 @@ public class ArchiveRequest
 	@Nullable
 	String documentNo;
 
+	@Builder.Default
+	boolean isMainReport = true;
+
 	@Nullable
 	Language language;
 
+	@Nullable
+	String poReference;
+	
 	//
 	// Printing:
 	boolean isDirectEnqueue;

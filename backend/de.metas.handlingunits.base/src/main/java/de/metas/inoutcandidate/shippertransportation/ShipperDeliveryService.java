@@ -29,6 +29,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
+import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.transportation.InOutToTransportationOrderService;
 import de.metas.inout.IInOutBL;
@@ -61,6 +62,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -89,7 +91,19 @@ public class ShipperDeliveryService
 		this.inOutToTransportationOrderService = inOutToTransportationOrderService;
 	}
 
+	public void addToDailyTransportationOrder(@NonNull final InOutId inOutId)
+	{
+		createTransportationAndPackagesForShipment(inOutId, true);
+	}
+
 	public void createTransportationAndPackagesForShipment(@NonNull final InOutId inOutId)
+	{
+		createTransportationAndPackagesForShipment(inOutId, false);
+	}
+
+	private void createTransportationAndPackagesForShipment(
+			@NonNull final InOutId inOutId,
+			final boolean createOneTransportationOrderPerDay)
 	{
 		final I_M_InOut shipment = inOutDAO.getById(inOutId);
 
@@ -101,21 +115,16 @@ public class ShipperDeliveryService
 			return;
 		}
 
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipment.getM_Warehouse_ID());
-		final BPartnerLocationAndCaptureId shipFromBPWarehouseLocation = warehouseDAO.getWarehouseLocationById(warehouseId);
-
-		final LocalDate shipDate = inOutBL.retrieveMovementDate(shipment);
-
-		final CreateShipperTransportationRequest createShipperTransportationRequest = CreateShipperTransportationRequest
-				.builder()
-				.shipperId(shipperId)
-				.shipperBPartnerAndLocationId(shipFromBPWarehouseLocation.getBpartnerLocationId())
-				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
-				.shipDate(shipDate)
-				.assignAnonymouslyPickedHUs(true) // a metasfresh user is supposed to find and ship exactly those HUs
-				.build();
-
-		final ShipperTransportationId shipperTransportationId = shipperTransportationRepository.create(createShipperTransportationRequest);
+		final ShipperTransportationId shipperTransportationId;
+		if (createOneTransportationOrderPerDay)
+		{
+			shipperTransportationId = getTransportationOrder(shipment, shipperId)
+					.orElseGet(() -> createTransportationOrder(shipment, shipperId));
+		}
+		else
+		{
+			shipperTransportationId = createTransportationOrder(shipment, shipperId);
+		}
 
 		final List<I_M_Package> addedPackages = inOutToTransportationOrderService.addShipmentsToTransportationOrder(shipperTransportationId, ImmutableList.of(inOutId));
 		if (addedPackages.isEmpty())
@@ -180,5 +189,47 @@ public class ShipperDeliveryService
 		return CoalesceUtil.coalesce(
 				TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched(), timeZone), 
 				TimeUtil.asLocalDate(shipperTransportation.getDateDoc(), timeZone));
+	}
+
+	@NonNull
+	private Optional<ShipperTransportationId> getTransportationOrder(
+			@NonNull final I_M_InOut shipment,
+			@NonNull final ShipperId shipperId)
+	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipment.getM_Warehouse_ID());
+		final BPartnerLocationAndCaptureId shipFromBPWarehouseLocation = warehouseDAO.getWarehouseLocationById(warehouseId);
+
+		final LocalDate shipDate = inOutBL.retrieveMovementDate(shipment);
+
+		final ShipperTransportationQuery query = ShipperTransportationQuery.builder()
+				.shipperId(shipperId)
+				.shipperBPartnerAndLocationId(shipFromBPWarehouseLocation.getBpartnerLocationId())
+				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
+				.shipDate(shipDate)
+				.build();
+
+		return shipperTransportationRepository.getSingleByQuery(query);
+	}
+
+	@NonNull
+	private ShipperTransportationId createTransportationOrder(
+			@NonNull final I_M_InOut shipment,
+			@NonNull final ShipperId shipperId)
+	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipment.getM_Warehouse_ID());
+		final BPartnerLocationAndCaptureId shipFromBPWarehouseLocation = warehouseDAO.getWarehouseLocationById(warehouseId);
+
+		final LocalDate shipDate = inOutBL.retrieveMovementDate(shipment);
+
+		final CreateShipperTransportationRequest createShipperTransportationRequest = CreateShipperTransportationRequest
+				.builder()
+				.shipperId(shipperId)
+				.shipperBPartnerAndLocationId(shipFromBPWarehouseLocation.getBpartnerLocationId())
+				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
+				.shipDate(shipDate)
+				.assignAnonymouslyPickedHUs(true)
+				.build();
+
+		return shipperTransportationRepository.create(createShipperTransportationRequest);
 	}
 }

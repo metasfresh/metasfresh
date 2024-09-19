@@ -63,6 +63,8 @@ public interface IInOutBL extends ISingletonService
 
 	List<I_M_InOut> getByOrderId(@NonNull OrderId orderId);
 
+	List<I_M_InOut> getByIds(@NonNull Set<InOutId> inoutIds);
+
 	void save(I_M_InOut inout);
 
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
@@ -219,4 +221,7 @@ public interface IInOutBL extends ISingletonService
 	Money getCOGSBySalesOrderId(
 			@NonNull OrderLineId salesOrderLineId,
 			@NonNull AcctSchemaId acctSchemaId);
+
+	@Nullable
+	String getPOReference(@NonNull InOutId inOutId);
 }

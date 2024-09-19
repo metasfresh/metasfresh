@@ -23,12 +23,21 @@
 package de.metas.cucumber.stepdefs.material.cockpit;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.material.cockpit.CockpitId;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 
 public class MD_Cockpit_StepDefData extends StepDefData<I_MD_Cockpit>
+		implements StepDefDataGetIdAware<CockpitId, I_MD_Cockpit>
 {
 	public MD_Cockpit_StepDefData()
 	{
 		super(I_MD_Cockpit.class);
+	}
+
+	@Override
+	public CockpitId extractIdFromRecord(final I_MD_Cockpit record)
+	{
+		return CockpitId.ofRepoId(record.getMD_Cockpit_ID());
 	}
 }

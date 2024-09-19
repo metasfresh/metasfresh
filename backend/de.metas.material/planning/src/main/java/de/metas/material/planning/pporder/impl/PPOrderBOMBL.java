@@ -55,6 +55,9 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
@@ -92,6 +95,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	//FIXME: just a quick way of allowing qtyIssued to be more than planned; such configs should be available on the proper records (pp_product_planning, pp_order_bomLine..)
 	private final static String SYS_CONFIG_DO_NOT_RESTRICT_QTY_ISSUED = "de.metas.material.planning.pporder.impl.DO_NOT_RESTRICT_QTY_ISSUED";
@@ -740,5 +744,12 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 				.filter(bomLine -> BOMComponentType.ofNullableCodeOrComponent(bomLine.getComponentType()).isIssue())
 				.map(bomLine -> ProductId.ofRepoId(bomLine.getM_Product_ID()))
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public ImmutableSet<WarehouseId> getIssueFromWarehouseIds(@NonNull final I_PP_Order ppOrder)
+	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
+		return warehouseDAO.getWarehouseIdsOfSameGroup(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
 	}
 }

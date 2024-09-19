@@ -97,6 +97,11 @@ public class ModularContractPriceService
 		modularContractPriceRepository.deleteById(id);
 	}
 
+	public boolean existsSimilarContractSpecificScalePrice(@NonNull final ModCntrSpecificPriceId id)
+	{
+		return modularContractPriceRepository.existsSimilarContractSpecificScalePrice(id);
+	}
+
 	public void createModularContractSpecificPricesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID());

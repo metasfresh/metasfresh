@@ -23,6 +23,9 @@
 package de.metas.picking.workflow;
 
 import de.metas.ad_reference.ADRefList;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
@@ -32,11 +35,9 @@ import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
-import de.metas.handlingunits.picking.job.model.PickingTarget;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
-import de.metas.picking.config.MobileUIPickingUserProfile;
-import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import lombok.NonNull;
@@ -151,19 +152,48 @@ public class PickingJobRestService
 		return pickingJobService.getQtyRejectedReasons();
 	}
 
-	public List<PickingTarget> getAvailableTargets(@NonNull final PickingJob pickingJob)
+	public List<LUPickingTarget> getLUAvailableTargets(@NonNull final PickingJob pickingJob)
 	{
-		return pickingJobService.getAvailableTargets(pickingJob);
+		return pickingJobService.getLUAvailableTargets(pickingJob);
 	}
 
-	public PickingJob setPickTarget(@NonNull final PickingJob pickingJob, @Nullable final PickingTarget target)
+	public List<TUPickingTarget> getTUAvailableTargets(@NonNull final PickingJob pickingJob)
+	{
+		return pickingJobService.getTUAvailableTargets(pickingJob);
+	}
+
+	public PickingJob setPickTarget(@NonNull final PickingJob pickingJob, @Nullable final LUPickingTarget target)
 	{
 		return pickingJobService.setPickTarget(pickingJob, target);
 	}
 
-	public PickingJob closePickTarget(@NonNull final PickingJob pickingJob)
+	public PickingJob setPickTarget(@NonNull final PickingJob pickingJob, @Nullable final TUPickingTarget target)
 	{
-		return pickingJobService.closePickTarget(pickingJob);
+		return pickingJobService.setPickTarget(pickingJob, target);
 	}
 
+	public PickingJob closeLUPickTarget(@NonNull final PickingJob pickingJob)
+	{
+		return pickingJobService.closeLUPickTarget(pickingJob);
+	}
+
+	public PickingJob closeTUPickTarget(@NonNull final PickingJob pickingJob)
+	{
+		return pickingJobService.closeTUPickTarget(pickingJob);
+	}
+
+	public boolean isPickWithNewLU()
+	{
+		return mobileUIPickingUserProfileRepository.getProfile().isPickWithNewLU();
+	}
+
+	public boolean isAllowSkippingRejectedReasons()
+	{
+		return mobileUIPickingUserProfileRepository.getProfile().isAllowSkippingRejectedReason();
+	}
+
+	public boolean isAllowNewTU()
+	{
+		return mobileUIPickingUserProfileRepository.getProfile().isAllowNewTU();
+	}
 }

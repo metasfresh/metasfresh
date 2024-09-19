@@ -38,11 +38,9 @@ import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrderCandidate;
@@ -75,10 +73,9 @@ import java.util.function.Function;
 public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventHandler
 		implements MaterialEventHandler<PPOrderCandidateAdvisedEvent>
 {
-	private final PostMaterialEventService materialEventService;
-	private final ProductPlanningService productPlanningService;
-
-	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull private final PostMaterialEventService materialEventService;
+	@NonNull private final ProductPlanningService productPlanningService;
 
 	private final SupplyCandidateHandler supplyCandidateHandler;
 
@@ -130,9 +127,8 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 					.lotForLot(supplyRequiredDescriptor.getIsLotForLot())
 					.build();
 
-			final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, CandidateHandler.OnNewOrChangeAdvise.DONT_UPDATE);
-			final int supplyCandidateId = supplyCandidateWithId.getId().getRepoId();
-			final SupplyRequiredDescriptor updatedSupplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().supplyCandidateId(supplyCandidateId).build();
+			final CandidateId supplyCandidateId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, CandidateHandler.OnNewOrChangeAdvise.DONT_UPDATE).getId();
+			final SupplyRequiredDescriptor updatedSupplyRequiredDescriptor = supplyRequiredDescriptor.toBuilder().supplyCandidateId(supplyCandidateId.getRepoId()).build();
 			updatedEvent = event.toBuilder().supplyRequiredDescriptor(updatedSupplyRequiredDescriptor).build();
 		}
 		else
@@ -153,15 +149,15 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 				.getPpOrderCandidate()
 				.toBuilder()
 				.ppOrderData(eventWithRecomputedQty.getPpOrderCandidate()
-									 .getPpOrderData()
-									 .toBuilder()
-									 .materialDispoGroupId(groupId)
-									 .build())
+						.getPpOrderData()
+						.toBuilder()
+						.materialDispoGroupId(groupId)
+						.build())
 				.build();
 
 		final PPOrderCandidateRequestedEvent ppOrderRequestEvent = PPOrderCandidateRequestedEvent
 				.builder()
-				.eventDescriptor(EventDescriptor.ofEventDescriptor(eventWithRecomputedQty.getEventDescriptor()))
+				.eventDescriptor(eventWithRecomputedQty.getEventDescriptor().withNewEventId())
 				.ppOrderCandidate(ppOrderCandidateWithGroupId)
 				.supplyRequiredDescriptor(eventWithRecomputedQty.getSupplyRequiredDescriptor())
 				.directlyCreatePPOrder(eventWithRecomputedQty.isDirectlyCreatePPOrder())
@@ -173,7 +169,6 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 	private MaterialDispoGroupId handlePPOrderCandidateAdvisedEvent(@NonNull final PPOrderCandidateAdvisedEvent ppOrderCandidateAdvisedEvent)
 	{
 		final Candidate headerCandidate = createHeaderCandidate(ppOrderCandidateAdvisedEvent);
-
 		return headerCandidate.getGroupId();
 	}
 
@@ -181,7 +176,6 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 	private Candidate createHeaderCandidate(@NonNull final PPOrderCandidateAdvisedEvent event)
 	{
 		final CandidatesQuery preExistingSupplyQuery = createPreExistingSupplyCandidateQuery(event);
-
 		return createHeaderCandidate(event, preExistingSupplyQuery);
 	}
 
@@ -241,7 +235,7 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 			return event;
 		}
 
-		final Function<BigDecimal,Instant> recalculateProductionDatePromisedFormula = (qtyRequired) -> getNewDatePromisedForQty(qtyRequired, event);
+		final Function<BigDecimal, Instant> recalculateProductionDatePromisedFormula = (qtyRequired) -> getNewDatePromisedForQty(qtyRequired, event);
 
 		ProductionTimingResult bestProductionTiming = ProductionTimingResult.builder()
 				.datePromised(ppOrderData.getDatePromised())
@@ -252,9 +246,9 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 		for (final Candidate futureStockCandidate : stockCandidatesBetweenDemandAndPossibleSupply)
 		{
 			final Optional<ProductionTimingResult> ppOrderDataWithBetterTiming = getBetterTimingIfAvailable(recalculateProductionDatePromisedFormula,
-																											futureStockCandidate,
-																											supplyRequiredDescriptor,
-																											bestProductionTiming.getMissingQtySolvedTime());
+					futureStockCandidate,
+					supplyRequiredDescriptor,
+					bestProductionTiming.getMissingQtySolvedTime());
 
 			if (ppOrderDataWithBetterTiming.isPresent())
 			{
@@ -272,14 +266,14 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 
 	@NonNull
 	private Optional<ProductionTimingResult> getBetterTimingIfAvailable(
-			@NonNull final Function<BigDecimal,Instant> recalculateProductionDateFormula,
+			@NonNull final Function<BigDecimal, Instant> recalculateProductionDateFormula,
 			@NonNull final Candidate stockCandidate,
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final Instant currentMissingQtySolvingTime)
 	{
 		final BigDecimal demandQty = supplyRequiredDescriptor.isSimulated()
 				? supplyRequiredDescriptor.getFullDemandQty()
-				: supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+				: supplyRequiredDescriptor.getQtyToSupplyBD();
 
 		final BigDecimal qtyRequiredWithFutureStock = getQtyRequiredConsideringFutureStock(stockCandidate, demandQty);
 
@@ -308,14 +302,14 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 		final Instant missingQtySolvedDate = newProductionDatePromised.isAfter(stockCandidate.getDate())
 				? newProductionDatePromised
 				: stockCandidate.getDate();
-		
+
 		if (missingQtySolvedDate.isAfter(currentMissingQtySolvingTime))
 		{
 			return Optional.empty();
 		}
-		
+
 		final BigDecimal qtyRequiredToBeInStock = demandQty.subtract(qtyRequiredWithFutureStock);
-		
+
 		if (!validateThereWillBeEnoughStockAtGivenDate(supplyRequiredDescriptor, qtyRequiredToBeInStock, missingQtySolvedDate))
 		{
 			return Optional.empty();
@@ -335,7 +329,7 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final PPOrderData ppOrderData)
 	{
-		final Instant demandDate = supplyRequiredDescriptor.getMaterialDescriptor().getDate();
+		final Instant demandDate = supplyRequiredDescriptor.getDemandDate();
 		final Instant productionEarliestSupplyDate = ppOrderData.getDatePromised();
 
 		final boolean isDemandDateInThePast = Instant.now().isAfter(demandDate);
@@ -360,12 +354,12 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private boolean willProductionBeReadyInTimeForDemand(
+	private static boolean willProductionBeReadyInTimeForDemand(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final PPOrderData ppOrderData)
 	{
 		return ppOrderData.getDatePromised()
-				.compareTo(supplyRequiredDescriptor.getMaterialDescriptor().getDate()) <= 0;
+				.compareTo(supplyRequiredDescriptor.getDemandDate()) <= 0;
 	}
 
 	@NonNull
@@ -403,9 +397,9 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 		final DateAndSeqNo rangeEndDate = DateAndSeqNo.atTimeNoSeqNo(rangeEndTime).withOperator(DateAndSeqNo.Operator.EXCLUSIVE);
 
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.forDescriptor(supplyRequiredDescriptor.getMaterialDescriptor(),
-																									  MaterialDescriptorQuery.CustomerIdOperator.GIVEN_ID_OR_NULL,
-																									  rangeStartDate,
-																									  rangeEndDate);
+				MaterialDescriptorQuery.CustomerIdOperator.GIVEN_ID_OR_NULL,
+				rangeStartDate,
+				rangeEndDate);
 
 		final CandidatesQuery stockCandidatesQuery = CandidatesQuery.builder()
 				.materialDescriptorQuery(materialDescriptorQuery)
@@ -419,7 +413,7 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 	}
 
 	@NonNull
-	private BigDecimal getQtyRequiredConsideringFutureStock(
+	private static BigDecimal getQtyRequiredConsideringFutureStock(
 			@NonNull final Candidate stockCandidate,
 			@NonNull final BigDecimal initialQtyRequired)
 	{
@@ -441,14 +435,14 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 
 		return ppOrderCandidateAdvisedEvent.getPpOrderCandidate().getPpOrderData().getDateStartSchedule().plus(durationDays, ChronoUnit.DAYS);
 	}
-	
+
 	private boolean validateThereWillBeEnoughStockAtGivenDate(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final BigDecimal requiredQtyInStock,
 			@NonNull final Instant givenTime)
 	{
 		final Optional<Candidate> latestStockAtGivenTime = getLatestStockAtGivenTime(supplyRequiredDescriptor, givenTime, DateAndSeqNo.Operator.INCLUSIVE);
-		
+
 		return latestStockAtGivenTime
 				.map(Candidate::getQuantity)
 				.map(availableStock -> availableStock.compareTo(requiredQtyInStock) >= 0)

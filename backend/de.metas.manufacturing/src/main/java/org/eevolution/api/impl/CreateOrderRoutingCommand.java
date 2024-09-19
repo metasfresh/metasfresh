@@ -228,6 +228,7 @@ final class CreateOrderRoutingCommand
 				//
 				.activityTemplateId(activity.getActivityTemplateId())
 				//
+				.rawMaterialsIssueStrategy(activity.getRawMaterialsIssueStrategy())
 				.build();
 	}
 }

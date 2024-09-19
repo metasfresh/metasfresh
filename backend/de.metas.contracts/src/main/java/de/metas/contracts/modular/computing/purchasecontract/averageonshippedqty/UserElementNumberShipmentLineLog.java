@@ -45,6 +45,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
@@ -55,6 +56,7 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -121,16 +123,29 @@ public class UserElementNumberShipmentLineLog extends AbstractModularContractLog
 		final LocalDateAndOrgId transactionDate = extractTransactionDate(inOutRecord);
 
 		final ProductPriceWithFlags contractSpecificScalePrice = getContractSpecificScalePrice(createLogRequest).orElse(null);
+
+		ProductPrice productPrice;
+
+		// we shall create a log, even there is no match, but with price 0
 		if (contractSpecificScalePrice == null)
 		{
-			return ExplainedOptional.emptyBecause("There is no contract specific price ");
+			final Money zero = Money.zero(CurrencyId.ofRepoId(flatrateTermRecord.getC_Currency_ID()));
+			productPrice = ProductPrice.builder()
+					.productId(createLogRequest.getProductId())
+					.money(zero)
+					.uomId(UomId.ofRepoId(inOutLineRecord.getC_UOM_ID()))
+					.build();
+		}
+		else
+		{
+			productPrice = contractSpecificScalePrice.toProductPrice();
 		}
 
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
 
-		final ProductPrice productPrice = contractSpecificScalePrice.toProductPrice();
+
 		final LogEntryCreateRequest.LogEntryCreateRequestBuilder builder = LogEntryCreateRequest.builder()
 				.contractId(createLogRequest.getContractId())
 				.productId(createLogRequest.getProductId())
@@ -216,7 +231,16 @@ public class UserElementNumberShipmentLineLog extends AbstractModularContractLog
 	{
 		// dev-note ignoring the just updated price as because of scaling the system can't know if it's actually the price to be used
 		final ProductPriceWithFlags scalePriceWithFlags = getContractSpecificScalePrice(logEntry)
-				.orElseThrow(() -> new AdempiereException("No ContractSpecificScalePrice found for id=" + logEntry.getId()));
+				.orElseGet(		// we shall create a log, even there is no match, but with price 0
+		() ->
+		{
+			final Money zero = Money.zero(logEntry.getPriceActual().getCurrencyId());
+			return ProductPriceWithFlags.ofZero(ProductPrice.builder()
+					.productId(logEntry.getProductId())
+					.money(zero)
+					.uomId(logEntry.getQuantity().getUomId())
+					.build());
+		});
 
 		final Quantity qty = Check.assumeNotNull(logEntry.getQuantity(), "Quantity shouldn't be null");
 		final ProductPrice price = scalePriceWithFlags.toProductPrice();
@@ -255,6 +279,7 @@ public class UserElementNumberShipmentLineLog extends AbstractModularContractLog
 				.build();
 
 		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificScalePrice(contractSpecificScalePriceRequest);
+
 		return Optional.ofNullable(contractSpecificPrice)
 				.map(price -> ProductPriceWithFlags.builder()
 						.price(price)
@@ -289,6 +314,8 @@ public class UserElementNumberShipmentLineLog extends AbstractModularContractLog
 				.build();
 
 		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificScalePrice(contractSpecificScalePriceRequest);
+
+
 		return Optional.ofNullable(contractSpecificPrice)
 				.map(price -> ProductPriceWithFlags.builder()
 						.price(price)

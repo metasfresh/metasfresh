@@ -42,6 +42,7 @@ import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -59,7 +60,6 @@ import de.metas.tax.api.CalculateTaxResult;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
-import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -109,6 +109,9 @@ import static org.adempiere.util.CustomColNames.C_Invoice_ISUSE_BPARTNER_ADDRESS
 @SuppressWarnings("serial")
 public class MInvoice extends X_C_Invoice implements IDocument
 {
+	private final static String SYS_Config_Annotate_DocNo_INVOICE = "org.compiere.model.MInvoice.ANNOTATE_DOCNO_INVOICE_TO_DESCRIPTION";
+	private final static ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	/**
 	 * Get Payments Of BPartner
 	 *
@@ -164,7 +167,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Deprecated
 	public static MInvoice get(final Properties ctx, final int C_Invoice_ID)
 	{
-		final Integer key = new Integer(C_Invoice_ID);
+		final Integer key = C_Invoice_ID;
 		MInvoice retValue = s_cache.get(key);
 		if (retValue != null)
 		{
@@ -202,6 +205,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setChargeAmt(BigDecimal.ZERO);
 			setTotalLines(BigDecimal.ZERO);
 			setGrandTotal(BigDecimal.ZERO);
+			setCashRoundingAmt(BigDecimal.ZERO);
 			//
 			setIsSOTrx(true);
 			setIsTaxIncluded(false);
@@ -947,10 +951,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			}
 
 			iTax.setIsTaxIncluded(invoiceBL.isTaxIncluded(line));
-			if (!iTax.calculateTaxFromLines())
-			{
-				return false;
-			}
+			iTax.calculateTaxFromLines();
 			Check.assume(iTax.isActive(), "InvoiceTax shall be active: {}", iTax);
 			InterfaceWrapperHelper.save(iTax);
 			taxIds.add(taxId);
@@ -978,6 +979,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 					newITax.setPrecision(taxPrecision.toInt());
 					newITax.setIsTaxIncluded(taxIncluded);
 					newITax.setIsReverseCharge(childTax.isReverseCharge());
+					newITax.setIsDocumentLevel(childTax.isDocumentLevel());
 					newITax.setTaxBaseAmt(taxBaseAmt);
 					newITax.setTaxAmt(calculateTaxResult.getTaxAmount());
 					newITax.setReverseChargeTaxAmt(calculateTaxResult.getReverseChargeAmt());
@@ -1000,9 +1002,14 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				}
 			}
 		}
+
+		final BigDecimal grandTotalNoRounding = grandTotal;
+		final BigDecimal roundedGrandTotal = apply5CentRoundingIfNeeded(grandTotal);
+
 		//
 		setTotalLines(totalLines);
-		setGrandTotal(grandTotal);
+		setGrandTotal(roundedGrandTotal);
+		setCashRoundingAmt(roundedGrandTotal.subtract(grandTotalNoRounding));
 		return true;
 	}    // calculateTaxTotal
 
@@ -1067,7 +1074,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		// Create Cash
 		final PaymentRule paymentRule = PaymentRule.ofCode(getPaymentRule());
-		if (paymentRule.isCash() && 
+		if (paymentRule.isCash() &&
 				!fromPOS &&
 				!Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
 		{
@@ -1483,7 +1490,10 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			rLine.saveEx(get_TrxName());
 		}
 		reversal.setC_Order_ID(getC_Order_ID());
-		reversal.addDescription("{->" + getDocumentNo() + ")");
+		if (annotateDocNoToDescription())
+		{
+			reversal.addDescription("{->" + getDocumentNo() + ")");
+		}
 		// FR1948157
 		// metas: we need to set the Reversal_ID, before we process (and other model validators are invoked)
 		reversal.setReversal_ID(getC_Invoice_ID());
@@ -1501,7 +1511,10 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		InterfaceWrapperHelper.save(reversal);
 
 		//
-		addDescription("(" + reversal.getDocumentNo() + "<-)");
+		if (annotateDocNoToDescription())
+		{
+			addDescription("(" + reversal.getDocumentNo() + "<-)");
+		}
 
 		// Clean up Reversed (this)
 		final MInvoiceLine[] iLines = getLines(false);
@@ -1650,6 +1663,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setGrandTotal(rma.getAmt());
 		setIsSOTrx(rma.isSOTrx());
 		setTotalLines(rma.getAmt());
+		setCashRoundingAmt(BigDecimal.ZERO);
 
 		setC_Currency_ID(originalInvoice.getC_Currency_ID());
 		setIsTaxIncluded(originalInvoice.isTaxIncluded());
@@ -1672,5 +1686,18 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		return Services.get(IInvoiceBL.class).isComplete(this);
 	}    // isComplete
+
+	private boolean annotateDocNoToDescription()
+	{
+		final boolean annotateInvoice = sysConfigBL.getBooleanValue(SYS_Config_Annotate_DocNo_INVOICE, true);
+		return annotateInvoice;
+	}
+
+	private BigDecimal apply5CentRoundingIfNeeded(@NonNull final BigDecimal grandTotal)
+	{
+
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		return invoiceBL.roundTo5CentIfNeeded(grandTotal, CurrencyId.ofRepoId(getC_Currency_ID()) , SOTrx.ofBoolean(isSOTrx()));
+	}
 
 }    // MInvoice

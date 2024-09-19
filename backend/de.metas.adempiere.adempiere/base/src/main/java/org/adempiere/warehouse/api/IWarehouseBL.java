@@ -23,6 +23,7 @@
 package org.adempiere.warehouse.api;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.location.DocumentLocation;
@@ -38,6 +39,7 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Optional;
 
 public interface IWarehouseBL extends ISingletonService
@@ -64,6 +66,9 @@ public interface IWarehouseBL extends ISingletonService
 	LocatorId getOrCreateDefaultLocatorId(WarehouseId warehouse);
 
 	BPartnerLocationId getBPartnerLocationId(@NonNull WarehouseId warehouseId);
+
+	@Nullable
+	BPartnerContactId getBPartnerContactId(@NonNull WarehouseId warehouseId);
 
 	@Nullable
 	CountryId getCountryId(WarehouseId warehouseId);
@@ -116,4 +121,7 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull WarehouseId warehouseId);
+
+	@NonNull
+	ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull Collection<Integer> locatorIds);
 }

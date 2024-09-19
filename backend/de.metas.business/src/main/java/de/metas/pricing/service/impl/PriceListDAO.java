@@ -299,7 +299,10 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public List<I_M_PriceList> retrievePriceLists(final PricingSystemId pricingSystemId, final CountryId countryId, final SOTrx soTrx)
+	public List<I_M_PriceList> retrievePriceLists(
+			@NonNull final PricingSystemId pricingSystemId, 
+			@NonNull final CountryId countryId, 
+			@Nullable final SOTrx soTrx)
 	{
 		return retrievePriceListsCollectionByPricingSystemId(pricingSystemId)
 				.filterAndList(countryId, soTrx);
@@ -639,7 +642,7 @@ public class PriceListDAO implements IPriceListDAO
 		final I_M_PriceList_Version previousPlv = Services.get(IPriceListDAO.class).retrievePreviousVersionOrNull(plv, true);
 		if (previousPlv != null)
 		{
-			plv.setM_Pricelist_Version_Base(previousPlv);
+			plv.setM_Pricelist_Version_Base_ID(previousPlv.getM_PriceList_Version_ID());
 			save(plv);
 		}
 
@@ -908,7 +911,7 @@ public class PriceListDAO implements IPriceListDAO
 				.matchingColumnNames(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
 				.subQuery(customerQuery)
 				.end()
-				.andCollectChildren(I_M_PriceList_Version.COLUMN_M_PriceList_ID)
+				.andCollectChildren(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, I_M_PriceList_Version.class)
 				.addOnlyActiveRecordsFilter()
 
 				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePriceListId)

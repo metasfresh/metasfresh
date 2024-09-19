@@ -2,7 +2,7 @@
  * #%L
  * de.metas.edi
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -116,11 +116,11 @@ public interface I_EDI_Desadv_Pack
 	 */
 	int getEDI_Desadv_ID();
 
-	I_EDI_Desadv getEDI_Desadv();
+	de.metas.esb.edi.model.I_EDI_Desadv getEDI_Desadv();
 
-	void setEDI_Desadv(I_EDI_Desadv EDI_Desadv);
+	void setEDI_Desadv(de.metas.esb.edi.model.I_EDI_Desadv EDI_Desadv);
 
-	ModelColumn<I_EDI_Desadv_Pack, I_EDI_Desadv> COLUMN_EDI_Desadv_ID = new ModelColumn<>(I_EDI_Desadv_Pack.class, "EDI_Desadv_ID", I_EDI_Desadv.class);
+	ModelColumn<I_EDI_Desadv_Pack, de.metas.esb.edi.model.I_EDI_Desadv> COLUMN_EDI_Desadv_ID = new ModelColumn<>(I_EDI_Desadv_Pack.class, "EDI_Desadv_ID", de.metas.esb.edi.model.I_EDI_Desadv.class);
 	String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
 
 	/**
@@ -145,7 +145,7 @@ public interface I_EDI_Desadv_Pack
 	String COLUMNNAME_EDI_Desadv_Pack_ID = "EDI_Desadv_Pack_ID";
 
 	/**
-	 * Set EDI_Desadv_Parent_Pack_ID.
+	 * Set Parent Pack.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -154,7 +154,7 @@ public interface I_EDI_Desadv_Pack
 	void setEDI_Desadv_Parent_Pack_ID (int EDI_Desadv_Parent_Pack_ID);
 
 	/**
-	 * Get EDI_Desadv_Parent_Pack_ID.
+	 * Get Parent Pack.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -162,11 +162,11 @@ public interface I_EDI_Desadv_Pack
 	 */
 	int getEDI_Desadv_Parent_Pack_ID();
 
-	@Nullable I_EDI_Desadv_Pack getEDI_Desadv_Parent_Pack();
+	@Nullable de.metas.esb.edi.model.I_EDI_Desadv_Pack getEDI_Desadv_Parent_Pack();
 
-	void setEDI_Desadv_Parent_Pack(@Nullable I_EDI_Desadv_Pack EDI_Desadv_Parent_Pack);
+	void setEDI_Desadv_Parent_Pack(@Nullable de.metas.esb.edi.model.I_EDI_Desadv_Pack EDI_Desadv_Parent_Pack);
 
-	ModelColumn<I_EDI_Desadv_Pack, I_EDI_Desadv_Pack> COLUMN_EDI_Desadv_Parent_Pack_ID = new ModelColumn<>(I_EDI_Desadv_Pack.class, "EDI_Desadv_Parent_Pack_ID", I_EDI_Desadv_Pack.class);
+	ModelColumn<I_EDI_Desadv_Pack, de.metas.esb.edi.model.I_EDI_Desadv_Pack> COLUMN_EDI_Desadv_Parent_Pack_ID = new ModelColumn<>(I_EDI_Desadv_Pack.class, "EDI_Desadv_Parent_Pack_ID", de.metas.esb.edi.model.I_EDI_Desadv_Pack.class);
 	String COLUMNNAME_EDI_Desadv_Parent_Pack_ID = "EDI_Desadv_Parent_Pack_ID";
 
 	/**
@@ -177,7 +177,7 @@ public interface I_EDI_Desadv_Pack
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setGTIN_LU_PackingMaterial (@Nullable String GTIN_LU_PackingMaterial);
+	void setGTIN_LU_PackingMaterial (@Nullable java.lang.String GTIN_LU_PackingMaterial);
 
 	/**
 	 * Get LU Packaging-GTIN.
@@ -187,7 +187,7 @@ public interface I_EDI_Desadv_Pack
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getGTIN_LU_PackingMaterial();
+	@Nullable java.lang.String getGTIN_LU_PackingMaterial();
 
 	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_GTIN_LU_PackingMaterial = new ModelColumn<>(I_EDI_Desadv_Pack.class, "GTIN_LU_PackingMaterial", null);
 	String COLUMNNAME_GTIN_LU_PackingMaterial = "GTIN_LU_PackingMaterial";
@@ -199,7 +199,7 @@ public interface I_EDI_Desadv_Pack
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIPA_SSCC18 (String IPA_SSCC18);
+	void setIPA_SSCC18 (java.lang.String IPA_SSCC18);
 
 	/**
 	 * Get SSCC18.
@@ -208,7 +208,7 @@ public interface I_EDI_Desadv_Pack
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getIPA_SSCC18();
+	java.lang.String getIPA_SSCC18();
 
 	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_IPA_SSCC18 = new ModelColumn<>(I_EDI_Desadv_Pack.class, "IPA_SSCC18", null);
 	String COLUMNNAME_IPA_SSCC18 = "IPA_SSCC18";
@@ -258,6 +258,27 @@ public interface I_EDI_Desadv_Pack
 
 	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_IsManual_IPA_SSCC18 = new ModelColumn<>(I_EDI_Desadv_Pack.class, "IsManual_IPA_SSCC18", null);
 	String COLUMNNAME_IsManual_IPA_SSCC18 = "IsManual_IPA_SSCC18";
+
+	/**
+	 * Set SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setLine (int Line);
+
+	/**
+	 * Get SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getLine();
+
+	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_Line = new ModelColumn<>(I_EDI_Desadv_Pack.class, "Line", null);
+	String COLUMNNAME_Line = "Line";
 
 	/**
 	 * Set Handling Unit.
@@ -310,7 +331,7 @@ public interface I_EDI_Desadv_Pack
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	void setM_HU_PackagingCode_LU_Text (@Nullable String M_HU_PackagingCode_LU_Text);
+	void setM_HU_PackagingCode_LU_Text (@Nullable java.lang.String M_HU_PackagingCode_LU_Text);
 
 	/**
 	 * Get M_HU_PackagingCode_LU_Text.
@@ -319,7 +340,7 @@ public interface I_EDI_Desadv_Pack
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	@Nullable String getM_HU_PackagingCode_LU_Text();
+	@Nullable java.lang.String getM_HU_PackagingCode_LU_Text();
 
 	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_M_HU_PackagingCode_LU_Text = new ModelColumn<>(I_EDI_Desadv_Pack.class, "M_HU_PackagingCode_LU_Text", null);
 	String COLUMNNAME_M_HU_PackagingCode_LU_Text = "M_HU_PackagingCode_LU_Text";

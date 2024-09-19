@@ -70,7 +70,7 @@ public class EDIDesadvPackRepository
 
 		desadvPackRecord.setAD_Org_ID(createEDIDesadvPackRequest.getOrgId().getRepoId());
 		desadvPackRecord.setEDI_Desadv_ID(EDIDesadvId.toRepoId(createEDIDesadvPackRequest.getEdiDesadvId()));
-
+		desadvPackRecord.setLine(createEDIDesadvPackRequest.getLine());
 		desadvPackRecord.setM_HU_ID(HuId.toRepoId(createEDIDesadvPackRequest.getHuId()));
 		desadvPackRecord.setIPA_SSCC18(createEDIDesadvPackRequest.getSscc18());
 		desadvPackRecord.setIsManual_IPA_SSCC18(createEDIDesadvPackRequest.getIsManualIpaSSCC());

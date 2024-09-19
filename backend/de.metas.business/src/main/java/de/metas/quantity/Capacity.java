@@ -26,6 +26,7 @@ import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
@@ -39,16 +40,17 @@ import java.util.Optional;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@EqualsAndHashCode(exclude = "uom")
+@EqualsAndHashCode(exclude = "uom", doNotUseGetters = true)
 public final class Capacity
 {
 
-	private final ProductId productId;
+	@Getter private final ProductId productId;
 	private final UomId uomId;
 	private final I_C_UOM uom;
 	private final BigDecimal capacity;
-	private final boolean infiniteCapacity;
+	@Getter private final boolean infiniteCapacity;
 	private final boolean allowNegativeCapacity;
+
 	/**
 	 * Constructs a finite capacity definition
 	 */
@@ -67,6 +69,7 @@ public final class Capacity
 		infiniteCapacity = false;
 		this.allowNegativeCapacity = allowNegativeCapacity;
 	}
+
 	/**
 	 * Constructs an infinite capacity definition
 	 */
@@ -81,6 +84,7 @@ public final class Capacity
 		infiniteCapacity = true;
 		allowNegativeCapacity = true;
 	}
+
 	public static Capacity createInfiniteCapacity(
 			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom)
@@ -112,11 +116,6 @@ public final class Capacity
 		return new Capacity(qty.toBigDecimal(), productId, qty.getUOM(), false);
 	}
 
-	public boolean isInfiniteCapacity()
-	{
-		return infiniteCapacity;
-	}
-
 	public boolean isAllowNegativeCapacity()
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve if it's infinite for {}", this);
@@ -133,7 +132,7 @@ public final class Capacity
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity as BigDecimal if it's infinite; this={}", this);
 		return capacity;
 	}
-	
+
 	public boolean isPositive()
 	{
 		return toBigDecimal().signum() > 0;
@@ -182,9 +181,9 @@ public final class Capacity
 
 		final BigDecimal qtyUsedConv = uomConverter
 				.convertQty(getProductId(),
-							quantity.toBigDecimal(),
-							quantity.getUOM(),
-							uom);
+						quantity.toBigDecimal(),
+						quantity.getUOM(),
+						uom);
 
 		final BigDecimal capacityAvailable = capacity.subtract(qtyUsedConv);
 
@@ -199,15 +198,15 @@ public final class Capacity
 			if (mustCreateZeroCapacity)
 			{
 				return createZeroCapacity(productId,
-										  uom,
-										  allowNegativeCapacity);
+						uom,
+						allowNegativeCapacity);
 			}
 		}
 
 		return createCapacity(capacityAvailable,
-							  productId,
-							  uom,
-							  allowNegativeCapacity);
+				productId,
+				uom,
+				allowNegativeCapacity);
 	}
 
 	/**
@@ -216,9 +215,7 @@ public final class Capacity
 	 * <p>
 	 * e.g. if Qty=13 and Capacity=10 then QtyPacks=2 (13/10 rounded up).
 	 *
-	 * @param qty
-	 * @param targetUom   quantity's unit of measure
-	 * @param capacityDef
+	 * @param targetUom quantity's unit of measure
 	 * @return how many capacities are required or NULL if capacity is not available
 	 */
 	public Optional<QuantityTU> calculateQtyTU(
@@ -268,11 +265,6 @@ public final class Capacity
 				productId,
 				uom,
 				allowNegativeCapacity);
-	}
-
-	public ProductId getProductId()
-	{
-		return productId;
 	}
 
 	public I_C_UOM getC_UOM()

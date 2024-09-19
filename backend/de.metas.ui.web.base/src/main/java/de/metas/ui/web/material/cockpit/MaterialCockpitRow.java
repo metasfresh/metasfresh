@@ -454,7 +454,8 @@ public class MaterialCockpitRow implements IViewRow
 			final Quantity pmm_QtyPromised_NextDay,
 			@Singular final List<MaterialCockpitRow> includedRows,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
-			@NonNull final Set<Integer> allIncludedStockRecordIds)
+			@NonNull final Set<Integer> allIncludedStockRecordIds,
+			@Nullable final QtyConvertor qtyConvertor)
 	{
 		this.rowType = DefaultRowType.Row;
 
@@ -482,7 +483,8 @@ public class MaterialCockpitRow implements IViewRow
 
 		final UomId uomId = CoalesceUtil.coalesce(cockpitProduct.getPackingUomId(), cockpitProduct.getUomId());
 
-		this.uom = lookups.lookupUOMById(uomId);
+		final QtyConvertor convertor = qtyConvertor != null ? qtyConvertor : QtyConvertor.getNoOp(uomId);
+		this.uom = lookups.lookupUOMById(convertor.getTargetUomId());
 
 		final BPartnerId manufacturerId = cockpitProduct.getManufacturerId();
 		this.manufacturer = lookups.lookupBPartnerById(manufacturerId);
@@ -493,36 +495,36 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.includedRows = includedRows;
 
-		this.pmmQtyPromisedAtDate = Quantity.toBigDecimal(pmmQtyPromisedAtDate);
-		this.qtyDemandSalesOrderAtDate = Quantity.toBigDecimal(qtyDemandSalesOrderAtDate);
-		this.qtyDemandSalesOrder = Quantity.toBigDecimal(qtyDemandSalesOrder);
-		this.qtyDemandDDOrderAtDate = Quantity.toBigDecimal(qtyDemandDDOrderAtDate);
-		this.qtyDemandPPOrderAtDate = Quantity.toBigDecimal(qtyDemandPPOrderAtDate);
-		this.qtyDemandSumAtDate = Quantity.toBigDecimal(qtyDemandSumAtDate);
-		this.qtySupplyPPOrderAtDate = Quantity.toBigDecimal(qtySupplyPPOrderAtDate);
-		this.qtySupplyPurchaseOrderAtDate = Quantity.toBigDecimal(qtySupplyPurchaseOrderAtDate);
-		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(qtySupplyPurchaseOrder);
-		this.qtySupplyDDOrderAtDate = Quantity.toBigDecimal(qtySupplyDDOrderAtDate);
-		this.qtySupplySumAtDate = Quantity.toBigDecimal(qtySupplySumAtDate);
-		this.qtySupplyRequiredAtDate = Quantity.toBigDecimal(qtySupplyRequiredAtDate);
-		this.qtySupplyToScheduleAtDate = Quantity.toBigDecimal(qtySupplyToScheduleAtDate);
-		this.qtyMaterialentnahmeAtDate = Quantity.toBigDecimal(qtyMaterialentnahmeAtDate);
-		this.qtyStockCurrentAtDate = Quantity.toBigDecimal(qtyStockCurrentAtDate);
-		this.qtyExpectedSurplusAtDate = Quantity.toBigDecimal(qtyExpectedSurplusAtDate);
-		this.qtyOnHandStock = Quantity.toBigDecimal(qtyOnHandStock);
-		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(qtyStockEstimateCountAtDate);
+		this.pmmQtyPromisedAtDate = Quantity.toBigDecimal(convertor.convert(pmmQtyPromisedAtDate));
+		this.qtyDemandSalesOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandSalesOrderAtDate));
+		this.qtyDemandSalesOrder = Quantity.toBigDecimal(convertor.convert(qtyDemandSalesOrder));
+		this.qtyDemandDDOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandDDOrderAtDate));
+		this.qtyDemandPPOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandPPOrderAtDate));
+		this.qtyDemandSumAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandSumAtDate));
+		this.qtySupplyPPOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyPPOrderAtDate));
+		this.qtySupplyPurchaseOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyPurchaseOrderAtDate));
+		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(convertor.convert(qtySupplyPurchaseOrder));
+		this.qtySupplyDDOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyDDOrderAtDate));
+		this.qtySupplySumAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplySumAtDate));
+		this.qtySupplyRequiredAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyRequiredAtDate));
+		this.qtySupplyToScheduleAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyToScheduleAtDate));
+		this.qtyMaterialentnahmeAtDate = Quantity.toBigDecimal(convertor.convert(qtyMaterialentnahmeAtDate));
+		this.qtyStockCurrentAtDate = Quantity.toBigDecimal(convertor.convert(qtyStockCurrentAtDate));
+		this.qtyExpectedSurplusAtDate = Quantity.toBigDecimal(convertor.convert(qtyExpectedSurplusAtDate));
+		this.qtyOnHandStock = Quantity.toBigDecimal(convertor.convert(qtyOnHandStock));
+		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(convertor.convert(qtyStockEstimateCountAtDate));
 		this.qtyStockEstimateTimeAtDate = qtyStockEstimateTimeAtDate;
 		this.qtyStockEstimateSeqNoAtDate = qtyStockEstimateSeqNoAtDate;
-		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(qtyInventoryCountAtDate);
+		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(convertor.convert(qtyInventoryCountAtDate));
 		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
 
 		this.procurementStatus = procurementStatus;
 		this.highestPurchasePrice_AtDate = Money.toBigDecimalOrZero(highestPurchasePrice_AtDate);
-		this.qtyOrdered_PurchaseOrder_AtDate = Quantity.toBigDecimal(qtyOrdered_PurchaseOrder_AtDate);
-		this.qtyOrdered_SalesOrder_AtDate = Quantity.toBigDecimal(qtyOrdered_SalesOrder_AtDate);
-		this.availableQty_AtDate = Quantity.toBigDecimal(availableQty_AtDate);
-		this.remainingStock_AtDate = Quantity.toBigDecimal(remainingStock_AtDate);
-		this.pmm_QtyPromised_NextDay = Quantity.toBigDecimal(pmm_QtyPromised_NextDay);
+		this.qtyOrdered_PurchaseOrder_AtDate = Quantity.toBigDecimal(convertor.convert(qtyOrdered_PurchaseOrder_AtDate));
+		this.qtyOrdered_SalesOrder_AtDate = Quantity.toBigDecimal(convertor.convert(qtyOrdered_SalesOrder_AtDate));
+		this.availableQty_AtDate = Quantity.toBigDecimal(convertor.convert(availableQty_AtDate));
+		this.remainingStock_AtDate = Quantity.toBigDecimal(convertor.convert(remainingStock_AtDate));
+		this.pmm_QtyPromised_NextDay = Quantity.toBigDecimal(convertor.convert(pmm_QtyPromised_NextDay));
 
 		final List<Quantity> quantitiesToVerify = Arrays.asList(
 				pmmQtyPromisedAtDate,
@@ -599,7 +601,8 @@ public class MaterialCockpitRow implements IViewRow
 			final Quantity remainingStock_AtDate,
 			final Quantity pmm_QtyPromised_NextDay,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
-			@NonNull final Set<Integer> allIncludedStockRecordIds)
+			@NonNull final Set<Integer> allIncludedStockRecordIds,
+			@Nullable final QtyConvertor qtyConvertor)
 	{
 		this.rowType = DefaultRowType.Line;
 
@@ -624,7 +627,8 @@ public class MaterialCockpitRow implements IViewRow
 		this.productCategoryOrSubRowName = dimensionGroupName;
 
 		final UomId uomId = CoalesceUtil.coalesce(cockpitProduct.getPackingUomId(), cockpitProduct.getUomId());
-		this.uom = lookups.lookupUOMById(uomId);
+		final QtyConvertor convertor = qtyConvertor != null ? qtyConvertor : QtyConvertor.getNoOp(uomId);
+		this.uom = lookups.lookupUOMById(convertor.getTargetUomId());
 
 		final BPartnerId manufacturerId = cockpitProduct.getManufacturerId();
 		this.manufacturer = lookups.lookupBPartnerById(manufacturerId);
@@ -637,38 +641,38 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.includedRows = ImmutableList.of();
 
-		this.pmmQtyPromisedAtDate = Quantity.toBigDecimal(pmmQtyPromisedAtDate);
-		this.qtyDemandSalesOrderAtDate = Quantity.toBigDecimal(qtyDemandSalesOrderAtDate);
-		this.qtyDemandSalesOrder = Quantity.toBigDecimal(qtyDemandSalesOrder);
-		this.qtyDemandDDOrderAtDate = Quantity.toBigDecimal(qtyDemandDDOrderAtDate);
-		this.qtyDemandSumAtDate = Quantity.toBigDecimal(qtyDemandSumAtDate);
-		this.qtyDemandPPOrderAtDate = Quantity.toBigDecimal(qtyDemandPPOrderAtDate);
-		this.qtyMaterialentnahmeAtDate = Quantity.toBigDecimal(qtyMaterialentnahmeAtDate);
+		this.pmmQtyPromisedAtDate = Quantity.toBigDecimal(convertor.convert(pmmQtyPromisedAtDate));
+		this.qtyDemandSalesOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandSalesOrderAtDate));
+		this.qtyDemandSalesOrder = Quantity.toBigDecimal(convertor.convert(qtyDemandSalesOrder));
+		this.qtyDemandDDOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandDDOrderAtDate));
+		this.qtyDemandSumAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandSumAtDate));
+		this.qtyDemandPPOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandPPOrderAtDate));
+		this.qtyMaterialentnahmeAtDate = Quantity.toBigDecimal(convertor.convert(qtyMaterialentnahmeAtDate));
 
-		this.qtySupplyPurchaseOrderAtDate = Quantity.toBigDecimal(qtySupplyPurchaseOrderAtDate);
-		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(qtySupplyPurchaseOrder);
-		this.qtySupplyPPOrderAtDate = Quantity.toBigDecimal(qtySupplyPPOrderAtDate);
-		this.qtySupplyDDOrderAtDate = Quantity.toBigDecimal(qtySupplyDDOrderAtDate);
-		this.qtySupplySumAtDate = Quantity.toBigDecimal(qtySupplySumAtDate);
-		this.qtySupplyRequiredAtDate = Quantity.toBigDecimal(qtySupplyRequiredAtDate);
-		this.qtySupplyToScheduleAtDate = Quantity.toBigDecimal(qtySupplyToScheduleAtDate);
+		this.qtySupplyPurchaseOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyPurchaseOrderAtDate));
+		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(convertor.convert(qtySupplyPurchaseOrder));
+		this.qtySupplyPPOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyPPOrderAtDate));
+		this.qtySupplyDDOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyDDOrderAtDate));
+		this.qtySupplySumAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplySumAtDate));
+		this.qtySupplyRequiredAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyRequiredAtDate));
+		this.qtySupplyToScheduleAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyToScheduleAtDate));
 
 		this.qtyStockCurrentAtDate = null;
-		this.qtyOnHandStock = Quantity.toBigDecimal(qtyOnHandStock);
-		this.qtyExpectedSurplusAtDate = Quantity.toBigDecimal(qtyExpectedSurplusAtDate);
-		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(qtyStockEstimateCountAtDate);
+		this.qtyOnHandStock = Quantity.toBigDecimal(convertor.convert(qtyOnHandStock));
+		this.qtyExpectedSurplusAtDate = Quantity.toBigDecimal(convertor.convert(qtyExpectedSurplusAtDate));
+		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(convertor.convert(qtyStockEstimateCountAtDate));
 		this.qtyStockEstimateTimeAtDate = qtyStockEstimateTimeAtDate;
 		this.qtyStockEstimateSeqNoAtDate = qtyStockEstimateSeqNoAtDate;
-		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(qtyInventoryCountAtDate);
+		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(convertor.convert(qtyInventoryCountAtDate));
 		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
 
 		this.procurementStatus = procurementStatus;
 		this.highestPurchasePrice_AtDate = Money.toBigDecimalOrZero(highestPurchasePrice_AtDate);
-		this.qtyOrdered_PurchaseOrder_AtDate = Quantity.toBigDecimal(qtyOrdered_PurchaseOrder_AtDate);
-		this.qtyOrdered_SalesOrder_AtDate = Quantity.toBigDecimal(qtyOrdered_SalesOrder_AtDate);
-		this.availableQty_AtDate = Quantity.toBigDecimal(availableQty_AtDate);
-		this.remainingStock_AtDate = Quantity.toBigDecimal(remainingStock_AtDate);
-		this.pmm_QtyPromised_NextDay = Quantity.toBigDecimal(pmm_QtyPromised_NextDay);
+		this.qtyOrdered_PurchaseOrder_AtDate = Quantity.toBigDecimal(convertor.convert(qtyOrdered_PurchaseOrder_AtDate));
+		this.qtyOrdered_SalesOrder_AtDate = Quantity.toBigDecimal(convertor.convert(qtyOrdered_SalesOrder_AtDate));
+		this.availableQty_AtDate = Quantity.toBigDecimal(convertor.convert(availableQty_AtDate));
+		this.remainingStock_AtDate = Quantity.toBigDecimal(convertor.convert(remainingStock_AtDate));
+		this.pmm_QtyPromised_NextDay = Quantity.toBigDecimal(convertor.convert(pmm_QtyPromised_NextDay));
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
 		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);
@@ -693,7 +697,8 @@ public class MaterialCockpitRow implements IViewRow
 			@Nullable final Quantity qtyStockCurrentAtDate,
 			@Nullable final Quantity qtyOnHandStock,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
-			@NonNull final Set<Integer> allIncludedStockRecordIds)
+			@NonNull final Set<Integer> allIncludedStockRecordIds,
+			@Nullable final QtyConvertor qtyConvertor)
 	{
 		this.rowType = DefaultRowType.Line;
 
@@ -754,7 +759,8 @@ public class MaterialCockpitRow implements IViewRow
 		this.productCategoryOrSubRowName = aggregatorName;
 
 		final UomId uomId = CoalesceUtil.coalesce(cockpitProduct.getPackingUomId(), cockpitProduct.getUomId());
-		this.uom = lookups.lookupUOMById(uomId);
+		final QtyConvertor convertor = qtyConvertor != null ? qtyConvertor : QtyConvertor.getNoOp(uomId);
+		this.uom = lookups.lookupUOMById(convertor.getTargetUomId());
 
 		final BPartnerId manufacturerId = (cockpitProduct.getManufacturerId());
 		this.manufacturer = lookups.lookupBPartnerById(manufacturerId);
@@ -768,25 +774,25 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.pmmQtyPromisedAtDate = null;
 		this.qtyDemandSalesOrderAtDate = null;
-		this.qtyDemandSalesOrder = Quantity.toBigDecimal(qtyDemandSalesOrder);
+		this.qtyDemandSalesOrder = Quantity.toBigDecimal(convertor.convert(qtyDemandSalesOrder));
 		this.qtyDemandDDOrderAtDate = null;
 		this.qtyDemandSumAtDate = null;
 		this.qtySupplyPPOrderAtDate = null;
 		this.qtySupplyPurchaseOrderAtDate = null;
-		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(qtySupplyPurchaseOrder);
+		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(convertor.convert(qtySupplyPurchaseOrder));
 		this.qtyMaterialentnahmeAtDate = null;
 		this.qtyDemandPPOrderAtDate = null;
 		this.qtySupplyDDOrderAtDate = null;
 		this.qtySupplySumAtDate = null;
 		this.qtySupplyRequiredAtDate = null;
 		this.qtySupplyToScheduleAtDate = null;
-		this.qtyStockCurrentAtDate = Quantity.toBigDecimal(qtyStockCurrentAtDate);
-		this.qtyOnHandStock = Quantity.toBigDecimal(qtyOnHandStock);
+		this.qtyStockCurrentAtDate = Quantity.toBigDecimal(convertor.convert(qtyStockCurrentAtDate));
+		this.qtyOnHandStock = Quantity.toBigDecimal(convertor.convert(qtyOnHandStock));
 		this.qtyExpectedSurplusAtDate = null;
-		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(qtyStockEstimateCountAtDate);
+		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(convertor.convert(qtyStockEstimateCountAtDate));
 		this.qtyStockEstimateTimeAtDate = qtyStockEstimateTimeAtDate;
 		this.qtyStockEstimateSeqNoAtDate = qtyStockEstimateSeqNoAtDate;
-		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(qtyInventoryCountAtDate);
+		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(convertor.convert(qtyInventoryCountAtDate));
 		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
 
 		this.procurementStatus = null;

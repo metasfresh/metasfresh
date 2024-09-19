@@ -22,15 +22,25 @@
 
 package de.metas.cucumber.stepdefs.edi;
 
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_HU_PackagingCode_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
+import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
+import de.metas.handlingunits.HuId;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.text.tabular.Cell;
+import de.metas.util.text.tabular.Row;
+import de.metas.util.text.tabular.Table;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -41,14 +51,15 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_Pack_ID;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_GTIN_LU_PackingMaterial;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_IPA_SSCC18;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_IsManual_IPA_SSCC18;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_Line;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_M_HU_PackagingCode_LU_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -80,13 +91,11 @@ public class EDI_Desadv_Pack_StepDef
 	}
 
 	@Then("^after not more than (.*)s, EDI_Desadv_Pack records are found:$")
-	public void packsAreFound(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
+	public void packsAreFound(final int timeoutSec, @NonNull final DataTable table)
 	{
-		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> row : dataTable)
-		{
-			packIsFound(row, timeoutSec);
-		}
+		DataTableRows.of(table)
+				.setAdditionalRowIdentifierColumnName(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_Pack_ID)
+				.forEach(row -> packIsFound(row, timeoutSec));
 	}
 
 	@Then("EDI_Desadv_Pack records are updated")
@@ -102,11 +111,12 @@ public class EDI_Desadv_Pack_StepDef
 	@Then("^after not more than (.*)s, there are no records in EDI_Desadv_Pack$")
 	public void tableIsEmpty(final int timeoutSec) throws InterruptedException
 	{
-		final Supplier<Boolean> emptyTable = () -> queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
-				.create()
-				.count() == 0;
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, emptyTable, this::logCurrentContext);
+		StepDefUtil.tryAndWait(
+				timeoutSec,
+				500,
+				() -> queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class).create().count() == 0,
+				() -> logger.error(getCurrentContext())
+		);
 	}
 
 	private void updatePack(@NonNull final Map<String, String> tableRow)
@@ -129,87 +139,107 @@ public class EDI_Desadv_Pack_StepDef
 	}
 
 	private void packIsFound(
-			@NonNull final Map<String, String> tableRow,
+			@NonNull final DataTableRow row,
 			final int timeoutSec) throws InterruptedException
 	{
-		final String packIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_Pack_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final boolean isManualSSCC18 = DataTableUtil.extractBooleanForColumnNameOr(tableRow, COLUMNNAME_IsManual_IPA_SSCC18, false);
+		final boolean isManualSSCC18 = row.getAsOptionalBoolean(COLUMNNAME_IsManual_IPA_SSCC18).orElseFalse();
 
 		final IQueryBuilder<I_EDI_Desadv_Pack> queryBuilder = queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+				.orderByDescending(COLUMNNAME_EDI_Desadv_Pack_ID)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(COLUMNNAME_IsManual_IPA_SSCC18, isManualSSCC18);
 
-		final String huIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(huIdentifier))
-		{
-			final Integer huId = DataTableUtil.nullToken2Null(huIdentifier) == null
-					? null
-					: getHuId(huIdentifier);
+		row.getAsOptionalIdentifier(I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID)
+				.ifPresent(huIdentifier -> queryBuilder.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID, getHuId(huIdentifier)));
 
-			queryBuilder.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID, huId);
-		}
+		row.getAsOptionalIdentifier(COLUMNNAME_M_HU_PackagingCode_LU_ID)
+				.ifPresent(huPackagingCodeLuIdentifier -> queryBuilder.addEqualsFilter(COLUMNNAME_M_HU_PackagingCode_LU_ID, getHuPackagingCodeId(huPackagingCodeLuIdentifier)));
 
-		final String huPackagingCodeLuIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_M_HU_PackagingCode_LU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(huPackagingCodeLuIdentifier))
-		{
-			final Integer huPackagingCodeId = DataTableUtil.nullToken2Null(huPackagingCodeLuIdentifier) == null
-					? null
-					: getHuPackagingCodeId(huPackagingCodeLuIdentifier);
+		row.getAsOptionalString(COLUMNNAME_GTIN_LU_PackingMaterial)
+				.ifPresent(gtinLuPackingMaterial -> queryBuilder.addEqualsFilter(COLUMNNAME_GTIN_LU_PackingMaterial, DataTableUtil.nullToken2Null(gtinLuPackingMaterial)));
 
-			queryBuilder.addEqualsFilter(COLUMNNAME_M_HU_PackagingCode_LU_ID, huPackagingCodeId);
-		}
+		row.getAsOptionalInt(COLUMNNAME_Line)
+				.ifPresent(line -> queryBuilder.addEqualsFilter(COLUMNNAME_Line, line));
 
-		final String gtinLuPackingMaterial = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_GTIN_LU_PackingMaterial);
-		if (Check.isNotBlank(gtinLuPackingMaterial))
-		{
-			queryBuilder.addEqualsFilter(COLUMNNAME_GTIN_LU_PackingMaterial, DataTableUtil.nullToken2Null(gtinLuPackingMaterial));
-		}
+		final I_EDI_Desadv_Pack desadvPack = StepDefUtil.tryAndWaitForItem(
+				timeoutSec,
+				500,
+				queryBuilder.create(),
+				this::getCurrentContext
+		);
 
-		final Supplier<Boolean> packIsFound = () -> queryBuilder
-				.orderByDescending(COLUMNNAME_EDI_Desadv_Pack_ID)
-				.create()
-				.first(I_EDI_Desadv_Pack.class) != null;
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, packIsFound, this::logCurrentContext);
-
-		final I_EDI_Desadv_Pack desadvPack = queryBuilder
-				.orderByDescending(COLUMNNAME_EDI_Desadv_Pack_ID)
-				.create()
-				.firstNotNull(I_EDI_Desadv_Pack.class);
-
-		ediDesadvPackTable.put(packIdentifier, desadvPack);
+		row.getAsOptionalIdentifier().ifPresent(packIdentifier -> ediDesadvPackTable.put(packIdentifier, desadvPack));
 	}
 
-	private void logCurrentContext()
+	private String getCurrentContext()
 	{
-		final StringBuilder message = new StringBuilder();
-
-		message.append("EDI_Desadv_Pack records:").append("\n");
-
-		queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+		final List<I_EDI_Desadv_Pack> list = queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+				.orderBy(COLUMNNAME_EDI_Desadv_Pack_ID)
 				.create()
-				.stream(I_EDI_Desadv_Pack.class)
-				.forEach(desadvPack -> message
-						.append(COLUMNNAME_EDI_Desadv_Pack_ID).append(" : ").append(desadvPack.getEDI_Desadv_Pack_ID()).append(" ; ")
-						.append(COLUMNNAME_IsManual_IPA_SSCC18).append(" : ").append(desadvPack.isManual_IPA_SSCC18()).append(" ; ")
-						.append(COLUMNNAME_M_HU_ID).append(" : ").append(desadvPack.getM_HU_ID()).append(" ; ")
-						.append(COLUMNNAME_M_HU_PackagingCode_LU_ID).append(" : ").append(desadvPack.getM_HU_PackagingCode_LU_ID()).append(" ; ")
-						.append(COLUMNNAME_GTIN_LU_PackingMaterial).append(" : ").append(desadvPack.getGTIN_LU_PackingMaterial()).append(" ; ")
-						.append("\n"));
+				.list();
 
-		logger.error("*** Error while looking for EDI_Desadv_Pack, see current context: \n" + message);
+		return "EDI_Desadv_Pack records:"
+				+ "\n" + toTabular(list).toPrint().ident(1);
 	}
 
-	@NonNull
-	private Integer getHuId(@NonNull final String huIdentifier)
+	@Nullable
+	private HuId getHuId(@NonNull final StepDefDataIdentifier huIdentifier)
 	{
-		return huTable.get(huIdentifier).getM_HU_ID();
+		if (huIdentifier.isNullPlaceholder())
+		{
+			return null;
+		}
+		return huTable.getId(huIdentifier);
 	}
 
-	@NonNull
-	private Integer getHuPackagingCodeId(@NonNull final String huPackagingCodeIdentifier)
+	@Nullable
+	private Integer getHuPackagingCodeId(@NonNull final StepDefDataIdentifier huPackagingCodeIdentifier)
 	{
+		if (huPackagingCodeIdentifier.isNullPlaceholder())
+		{
+			return null;
+		}
 		return huPackagingCodeTable.get(huPackagingCodeIdentifier).getM_HU_PackagingCode_ID();
+	}
+
+	private Table toTabular(final List<I_EDI_Desadv_Pack> list)
+	{
+		final Table table = new Table();
+		list.stream().map(this::toRow).forEach(table::addRow);
+		table.updateHeaderFromRows();
+		table.removeColumnsWithBlankValues();
+		return table;
+	}
+
+	private Row toRow(@NonNull final I_EDI_Desadv_Pack record)
+	{
+		final Row row = new Row();
+		row.put("Identifier", toCell(EDIDesadvPackId.ofRepoIdOrNull(record.getEDI_Desadv_Pack_ID()), ediDesadvPackTable));
+		row.put(COLUMNNAME_IsManual_IPA_SSCC18, record.isManual_IPA_SSCC18());
+		row.put(COLUMNNAME_M_HU_ID, toCell(HuId.ofRepoIdOrNull(record.getM_HU_ID()), huTable));
+		row.put(COLUMNNAME_M_HU_PackagingCode_LU_ID, record.getM_HU_PackagingCode_LU_ID());
+		row.put(COLUMNNAME_GTIN_LU_PackingMaterial, record.getGTIN_LU_PackingMaterial());
+		row.put(COLUMNNAME_Line, record.getLine());
+		return row;
+	}
+
+	private static <T extends RepoIdAware> Cell toCell(
+			@Nullable final T id,
+			@NonNull StepDefDataGetIdAware<T, ?> lookupTable)
+	{
+		if (id == null)
+		{
+			return Cell.NULL;
+		}
+
+		final StepDefDataIdentifier identifier = lookupTable.getFirstIdentifierById(id).orElse(null);
+		if (identifier != null)
+		{
+			return Cell.ofNullable(identifier + "(" + id.getRepoId() + ")");
+		}
+		else
+		{
+			return Cell.ofNullable(id.getRepoId());
+		}
 	}
 }

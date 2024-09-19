@@ -213,6 +213,13 @@ public class ExternalSystemConfigRepo
 		}
 	}
 
+	@NonNull
+	public Optional<IExternalSystemChildConfig> getChildByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		final ExternalSystemType type = ExternalSystemType.ofCode(getParentTypeById(id));
+		return getChildByParentIdAndType(id, type);
+	}
+
 	public Optional<IExternalSystemChildConfig> getChildByParentIdAndType(
 			@NonNull final ExternalSystemParentConfigId id,
 			@NonNull final ExternalSystemType externalSystemType)

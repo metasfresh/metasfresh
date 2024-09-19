@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Picking_Job
  *  @author metasfresh (generated) 
@@ -355,5 +355,32 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU_PI getM_TU_HU_PI()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_TU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
+	}
+
+	@Override
+	public void setM_TU_HU_PI(final de.metas.handlingunits.model.I_M_HU_PI M_TU_HU_PI)
+	{
+		set_ValueFromPO(COLUMNNAME_M_TU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, M_TU_HU_PI);
+	}
+
+	@Override
+	public void setM_TU_HU_PI_ID (final int M_TU_HU_PI_ID)
+	{
+		if (M_TU_HU_PI_ID < 1)
+			set_Value (COLUMNNAME_M_TU_HU_PI_ID, null);
+		else
+			set_Value (COLUMNNAME_M_TU_HU_PI_ID, M_TU_HU_PI_ID);
+	}
+
+	@Override
+	public int getM_TU_HU_PI_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_TU_HU_PI_ID);
 	}
 }

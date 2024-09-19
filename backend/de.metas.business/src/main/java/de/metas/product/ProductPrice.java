@@ -5,6 +5,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
+import de.metas.quantity.Quantitys;
 import de.metas.quantity.UOMConversionRateProvider;
 import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UOMPrecision;
@@ -142,6 +143,18 @@ public class ProductPrice
 	{
 		return toBuilder()
 				.money(money.toZero())
+				.build();
+	}
+
+	public Quantity computeQtyInTotalAmt(@NonNull final Money totalAmt, @NonNull final CurrencyPrecision currencyPrecision)
+	{
+		return Quantitys.of(totalAmt.divide(money, currencyPrecision).toBigDecimal(), uomId);
+	}
+
+	public ProductPrice round(@NonNull final CurrencyPrecision precision)
+	{
+		return toBuilder()
+				.money(money.round(precision))
 				.build();
 	}
 }

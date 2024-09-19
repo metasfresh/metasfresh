@@ -38,8 +38,8 @@ public class CreateModularLogInterestRequest
 	@NonNull InterestRunId interestRunId;
 	@NonNull ModularContractLogEntryId shippingNotificationLogId;
 	@NonNull Money allocatedAmt;
-	@NonNull Integer interestDays;
-	@Nullable ModularContractLogEntryId interimInvoiceLogId;
+	@NonNull Long interestDays;
+	@Nullable ModularContractLogEntryId modularContractLogEntryId;
 	@Nullable Money finalInterest;
 
 	@Builder
@@ -47,8 +47,8 @@ public class CreateModularLogInterestRequest
 			@NonNull final InterestRunId interestRunId,
 			@NonNull final ModularContractLogEntryId shippingNotificationLogId,
 			@NonNull final Money allocatedAmt,
-			@NonNull final Integer interestDays,
-			@Nullable final ModularContractLogEntryId interimInvoiceLogId,
+			@NonNull final Long interestDays,
+			@Nullable final ModularContractLogEntryId modularContractLogEntryId,
 			@Nullable final Money finalInterest)
 	{
 		if (finalInterest != null)
@@ -60,7 +60,7 @@ public class CreateModularLogInterestRequest
 		this.shippingNotificationLogId = shippingNotificationLogId;
 		this.allocatedAmt = allocatedAmt;
 		this.interestDays = interestDays;
-		this.interimInvoiceLogId = interimInvoiceLogId;
+		this.modularContractLogEntryId = modularContractLogEntryId;
 		this.finalInterest = finalInterest;
 	}
 

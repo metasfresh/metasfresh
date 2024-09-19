@@ -43,6 +43,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_InventoryLine_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
@@ -102,13 +103,17 @@ public class M_Inventory_StepDef
 	@Given("metasfresh contains M_Inventories:")
 	public void addNewInventory(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::addNewInventory);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_Inventory.COLUMNNAME_M_Inventory_ID)
+				.forEach(this::addNewInventory);
 	}
 
 	@Given("metasfresh contains M_InventoriesLines:")
 	public void addNewInventoryLines(@NonNull final io.cucumber.datatable.DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::addNewInventoryLine);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID)
+				.forEach(this::addNewInventoryLine);
 	}
 
 	@Given("^the inventory identified by (.*) is (completed|reversed)")
@@ -218,7 +223,6 @@ public class M_Inventory_StepDef
 
 		saveRecord(inventoryRecord);
 
-		row.getAsOptionalIdentifier(I_M_Inventory.COLUMNNAME_M_Inventory_ID).ifPresent(inventoryIdentifier -> inventoryTable.put(inventoryIdentifier, inventoryRecord));
 		row.getAsOptionalIdentifier().ifPresent(inventoryIdentifier -> inventoryTable.put(inventoryIdentifier, inventoryRecord));
 	}
 
@@ -241,6 +245,7 @@ public class M_Inventory_StepDef
 		inventoryLine.setQtyCount(row.getAsBigDecimal("QtyCount"));
 		inventoryLine.setQtyBook(row.getAsBigDecimal("QtyBook"));
 		inventoryLine.setIsCounted(true);
+		inventoryLine.setHUAggregationType(HUAggregationType.SINGLE_HU.getCode());
 
 		final X12DE355 uom = X12DE355.ofCode(row.getAsString("UOM.X12DE355"));
 		final UomId uomId = uomDAO.getUomIdByX12DE355(uom);
@@ -259,8 +264,29 @@ public class M_Inventory_StepDef
 
 		saveRecord(inventoryLine);
 
-		row.getAsOptionalIdentifier(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID).ifPresent(identifier -> inventoryLineTable.put(identifier, inventoryLine));
+		row.getAsOptionalIdentifier(de.metas.handlingunits.model.I_M_InventoryLine.COLUMNNAME_M_HU_ID)
+				.map(huTable::getId)
+				.ifPresent(huId -> {
+							final de.metas.handlingunits.model.I_M_InventoryLine inventoryLineHuRecord = InterfaceWrapperHelper.create(inventoryLine, de.metas.handlingunits.model.I_M_InventoryLine.class);
+
+							inventoryLineHuRecord.setM_HU_ID(huId.getRepoId());
+							saveRecord(inventoryLineHuRecord);
+							createM_InventoryLine_HU(huId, uomId, inventoryLine);
+						}
+				);
 		row.getAsOptionalIdentifier().ifPresent(identifier -> inventoryLineTable.put(identifier, inventoryLine));
+	}
+
+	private void createM_InventoryLine_HU(@NonNull final HuId huId, @NonNull final UomId uomId, @NonNull final de.metas.invoicecandidate.model.I_M_InventoryLine inventoryLine)
+	{
+		final I_M_InventoryLine_HU lineHU = newInstance(I_M_InventoryLine_HU.class, inventoryLine);
+
+		lineHU.setM_Inventory_ID(inventoryLine.getM_Inventory_ID());
+		lineHU.setM_InventoryLine_ID(inventoryLine.getM_InventoryLine_ID());
+		lineHU.setM_HU_ID(huId.getRepoId());
+		lineHU.setC_UOM_ID(uomId.getRepoId());
+
+		saveRecord(lineHU);
 	}
 
 	private void createM_Inventory(@NonNull final DataTableRow row)
@@ -313,7 +339,7 @@ public class M_Inventory_StepDef
 		}
 		inventoryLineRecord.setM_Product_ID(productId.getRepoId());
 
-		InterfaceWrapperHelper.save(inventoryLineRecord);
+		saveRecord(inventoryLineRecord);
 
 		row.getAsOptionalIdentifier("M_InventoryLine_ID")
 				.ifPresent(inventoryLineIdentifier -> inventoryLineTable.put(inventoryLineIdentifier, inventoryLineRecord));

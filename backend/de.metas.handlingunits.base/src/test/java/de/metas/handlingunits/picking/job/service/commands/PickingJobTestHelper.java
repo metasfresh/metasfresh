@@ -33,6 +33,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
@@ -77,6 +78,9 @@ import de.metas.test.MetasfreshSnapshotFunction;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -155,6 +159,8 @@ public class PickingJobTestHelper
                 huQRCodesRepository,
                 new GlobalQRCodeService(DoNothingMassPrintingService.instance),
                 new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
+		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
+		final MobileUIPickingUserProfileRepository profileRepository = new MobileUIPickingUserProfileRepository();
 		InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,
@@ -173,7 +179,9 @@ public class PickingJobTestHelper
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
 						bpartnerBL,
-						huQRCodeService
+						huQRCodeService,
+						workplaceService,
+						profileRepository
 				),
 				pickingConfigRepo,
 				ShipmentService.getInstance(),
@@ -183,7 +191,10 @@ public class PickingJobTestHelper
 						huQRCodeService
 				),
 				inventoryService,
-				huReservationService);
+				huReservationService,
+				pickingJobSlotService,
+				workplaceService,
+				profileRepository);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)

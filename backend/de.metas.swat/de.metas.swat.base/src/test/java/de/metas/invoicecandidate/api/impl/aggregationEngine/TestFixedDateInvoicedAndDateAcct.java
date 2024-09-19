@@ -191,7 +191,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 
 	private int createPaymentTerm()
 	{
-		I_C_PaymentTerm pt = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+		final I_C_PaymentTerm pt = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
 		pt.setC_PaymentTerm_ID(100);
 		pt.setValue("payment term");
 		pt.setName("payment term");

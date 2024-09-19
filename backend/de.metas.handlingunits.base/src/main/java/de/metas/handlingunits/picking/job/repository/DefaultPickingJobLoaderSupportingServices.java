@@ -10,6 +10,7 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -29,6 +30,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -55,12 +57,14 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPartnerBL bpartnerBL;
 	private final PickingJobSlotService pickingSlotService;
+	private final WorkplaceService workplaceService;
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final HUQRCodesService huQRCodeService;
+	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
 	private final HashMap<OrderId, String> salesOrderDocumentNosCache = new HashMap<>();
 	private final HashMap<BPartnerId, String> bpartnerNamesCache = new HashMap<>();
@@ -71,11 +75,15 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	public DefaultPickingJobLoaderSupportingServices(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final PickingJobSlotService pickingSlotService,
-			@NonNull final HUQRCodesService huQRCodeService)
+			@NonNull final HUQRCodesService huQRCodeService,
+			@NonNull final WorkplaceService workplaceService,
+			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.pickingSlotService = pickingSlotService;
 		this.huQRCodeService = huQRCodeService;
+		this.workplaceService = workplaceService;
+		this.mobileUIPickingUserProfileRepository = mobileUIPickingUserProfileRepository;
 	}
 
 	@Override
@@ -93,7 +101,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
-	public void warmUpSalesOrderDocumentNosCache(@NonNull Collection<OrderId> orderIds)
+	public void warmUpSalesOrderDocumentNosCache(@NonNull final Collection<OrderId> orderIds)
 	{
 		CollectionUtils.getAllOrLoad(salesOrderDocumentNosCache, orderIds, orderBL::getDocumentNosByIds);
 	}
@@ -105,7 +113,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
-	public void warmUpBPartnerNamesCache(@NonNull Set<BPartnerId> bpartnerIds)
+	public void warmUpBPartnerNamesCache(@NonNull final Set<BPartnerId> bpartnerIds)
 	{
 		CollectionUtils.getAllOrLoad(bpartnerNamesCache, bpartnerIds, bpartnerBL::getBPartnerNames);
 	}
@@ -188,6 +196,12 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 				lockManager.getLockInfosByRecordIds(ShipmentScheduleId.toTableRecordReferenceSet(shipmentScheduleIds)),
 				recordRef -> recordRef.getIdAssumingTableName(I_M_ShipmentSchedule.Table_Name, ShipmentScheduleId::ofRepoId)
 		);
+	}
+
+	@Override
+	public boolean isCatchWeightTUPickingEnabled()
+	{
+		return mobileUIPickingUserProfileRepository.getProfile().isCatchWeightTUPickingEnabled();
 	}
 
 	//

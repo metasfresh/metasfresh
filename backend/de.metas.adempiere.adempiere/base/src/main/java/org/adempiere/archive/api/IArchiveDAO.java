@@ -82,4 +82,6 @@ public interface IArchiveDAO extends ISingletonService
 	void updatePrintedRecords(ImmutableSet<ArchiveId> ids, UserId userId);
 
 	<T extends I_AD_Archive> T retrieveArchive(@NonNull ArchiveId archiveId, @NonNull Class<T> modelClass);
+
+	void updatePOReferenceIfExists(@NonNull TableRecordReference recordReference, @Nullable String poReference);
 }

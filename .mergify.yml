@@ -16,6 +16,10 @@ pull_request_rules:
       - or: &ALL_BASE_BRANCHES # this rule should apply to both the project-branches from above, and master
           - or: &PROJECT_BRANCHES_UAT # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
               # Please keep in sync with the branches at .testspace.yml
+              # UAT BRANCH. COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=onboardingtest_uat
+              - base=onboarding_test3_uat
+              - base=onboarding_test2_uat
               - base=arctic_north_uat
               - base=blue_horizon_uat
               - base=big_coconut_uat
@@ -35,6 +39,7 @@ pull_request_rules:
               - base=modified_carbon_uat
               - base=modus_operandi_uat
               - base=neon_underwear_uat
+              - base=oasis_sun_uat
               - base=pink_rooster_uat
               - base=release
               - base=soft_panda_uat
@@ -62,240 +67,44 @@ pull_request_rules:
 
   - name: After master-PR is integrated, add two labels branch:master and in:5.177_master; also, delete the PR-branch
     conditions:
-      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
+      - merged-at > '2024-07-09 00:00Z' # don't jump on every merged PR throughout history
       - base=master
     actions:
       label:
         add:
           - "branch:{{base}}"
-          - "in:5.177_master"
+          - "in:5.178_master"
       delete_head_branch:
 
   - name: Automatic squash-merge successful PRs into the respective base-branch
     conditions:
       - check-success=testspace-analytics
       - check-success=continuous-integration/jenkins/branch
-      - or: *ALL_BASE_BRANCHES
+      - label=ops:auto_squash_merge
+      - or:
+          - or: *ALL_BASE_BRANCHES
+          - base=master
       - or:
           - "#approved-reviews-by>=1"
           - label=ops:without_review_approval
-      - not: label=ops:dont_auto_merge
     actions:
       queue:
         name: default
         method: squash
 
-#  # This rule is for the derivitative PRs that we created (note the label)
-#  It's commented out right now, because the rules to create those branches is also commented out
-#  - name: Automatic merge PRs labeled with `ops:merge_towards_master` into the respective `_uat` or `master`-branch
-#    conditions:
-#      - check-success=testspace-analytics
-#      - check-success=continuous-integration/jenkins/branch
-#      - or:
-#          - or: *PROJECT_BRANCHES_UAT
-#          - or:
-#              - base=master
-#      - label=ops:merge_towards_master
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      queue:
-#        name: default
-#        method: merge
-
-
-# The following is commentede out, because too many times this failed doe to conflicts and there is a high probability
-# for PRs from the same base branch getting out of order
-#  #########################
-#  # Create derivative PRs
-#  #########################
-#
-#
-#  # PRs for _uat => master
-#  - name: When a UAT-Branch PR is integrated, create a PR towards the master-branch
-#    conditions:
-#      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
-#      - or: *PROJECT_BRANCHES_UAT
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      copy:
-#        title: "{{ head }} to master - Port PR {{ title }} (copy #{{ number }})"
-#        branches:
-#          - master
-#        assignees: # the original PR's author shall be notified when the merge-towards-master build fails
-#          - "{{ author }}"
-#        labels:
-#          - "ops:merge_towards_master"
-#        body: &MERGIFY_PR_BODY # we include the original body, because it might reference the metasfresh-issue
-#                "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\n----\n\n**Original PR-body (if any):**\n{{ body }}\n\n----\n\n**Mergify-Cherry-Pick-Error (if any)**\n{{cherry_pick_error}}"
-#
-#  #
-#  # PRs for hotfix => _uat
-#  - name: When a adorable_badger_hotfix-Branch PR is integrated, create a PR towards the adorable_badger_uat-branch
-#    conditions:
-#      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
-#      - base=adorable_badger_hotfix
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      copy:
-#        branches:
-#          - adorable_badger_uat
-#        assignees:
-#          - "{{ author }}"
-#        labels:
-#          - "ops:merge_towards_master"
-#        body: *MERGIFY_PR_BODY
-#  - name: When a big_coconut_hotfix-Branch PR is integrated, create a PR towards the big_coconut_uat-branch
-#    conditions:
-#      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
-#      - base=big_coconut_hotfix
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      copy:
-#        branches:
-#          - big_coconut_uat
-#        assignees:
-#          - "{{ author }}"
-#        labels:
-#          - "ops:merge_towards_master"
-#        body: *MERGIFY_PR_BODY
-#  - name: When a blonde_monkey_hotfix-Branch PR is integrated, create a PR towards the blonde_monkey_uat-branch
-#    conditions:
-#      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
-#      - base=blonde_monkey_hotfix
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      copy:
-#        branches:
-#          - blonde_monkey_uat
-#        assignees:
-#          - "{{ author }}"
-#        labels:
-#          - "ops:merge_towards_master"
-#        body: *MERGIFY_PR_BODY
-#  - name: When a hard_encoded_hotfix-Branch PR is integrated, create a PR towards the hard_encoded_uat-branch
-#    conditions:
-#      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
-#      - base=hard_encoded_hotfix
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      copy:
-#        branches:
-#          - hard_encoded_uat
-#        assignees:
-#          - "{{ author }}"
-#        labels:
-#          - "ops:merge_towards_master"
-#        body: *MERGIFY_PR_BODY
-#  - name: When a intensive_care_hotfix-Branch PR is integrated, create a PR towards the intensive_care_uat-branch
-#    conditions:
-#      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
-#      - base=intensive_care_hotfix
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      copy:
-#        branches:
-#          - intensive_care_uat
-#        assignees:
-#          - "{{ author }}"
-#        labels:
-#          - "ops:merge_towards_master"
-#        body: *MERGIFY_PR_BODY
-#  - name: When a mad_orange_hotfix-Branch PR is integrated, create a PR towards the mad_orange_uat-branch
-#    conditions:
-#      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
-#      - base=mad_orange_hotfix
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      copy:
-#        branches:
-#          - mad_orange_uat
-#        assignees:
-#          - "{{ author }}"
-#        labels:
-#          - "ops:merge_towards_master"
-#        body: *MERGIFY_PR_BODY
-#  - name: When a secondary_opinion_hotfix-Branch PR is integrated, create a PR towards the secondary_opinion_uat-branch
-#    conditions:
-#      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
-#      - base=secondary_opinion_hotfix
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      copy:
-#        branches:
-#          - secondary_opinion_uat
-#        assignees:
-#          - "{{ author }}"
-#        labels:
-#          - "ops:merge_towards_master"
-#        body: *MERGIFY_PR_BODY
-#  - name: When a soft_panda_hotfix-Branch PR is integrated, create a PR towards the soft_panda_uat-branch
-#    conditions:
-#      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
-#      - base=soft_panda_hotfix
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      copy:
-#        branches:
-#          - soft_panda_uat
-#        assignees:
-#          - "{{ author }}"
-#        labels:
-#          - "ops:merge_towards_master"
-#        body: *MERGIFY_PR_BODY
-#  - name: When a science_vessel_hotfix-Branch PR is integrated, create a PR towards the science_vessel_uat-branch
-#    conditions:
-#      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
-#      - base=science_vessel_hotfix
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      copy:
-#        branches:
-#          - science_vessel_uat
-#        assignees:
-#          - "{{ author }}"
-#        labels:
-#          - "ops:merge_towards_master"
-#        body: *MERGIFY_PR_BODY
-#  - name: When a tenacious_d_hotfix-Branch PR is integrated, create a PR towards the tenacious_d_uat-branch
-#    conditions:
-#      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
-#      - base=tenacious_d_hotfix
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      copy:
-#        branches:
-#          - tenacious_d_uat
-#        assignees:
-#          - "{{ author }}"
-#        labels:
-#          - "ops:merge_towards_master"
-#        body: *MERGIFY_PR_BODY
-#  - name: When a tasty_ham_hotfix-Branch PR is integrated, create a PR towards the tasty_ham_uat-branch
-#    conditions:
-#      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
-#      - base=tasty_ham_hotfix
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      copy:
-#        branches:
-#          - tasty_ham_uat
-#        assignees: # the original PR's author shall be notified when the merge-towards-_uat build fails
-#          - "{{ author }}"
-#        labels:
-#          - "ops:merge_towards_master"
-#        body: *MERGIFY_PR_BODY
-#  - name: When a yoyo_hotfix-Branch PR is integrated, create a PR towards the yoyo_uat-branch
-#    conditions:
-#      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
-#      - base=yoyo_hotfix
-#      - not: label="ops:dont_auto_create_PR"
-#    actions:
-#      copy:
-#        branches:
-#          - yoyo_uat
-#        assignees: # the original PR's author shall be notified when the merge-towards-_uat build fails
-#          - "{{ author }}"
-#        labels:
-#          - "ops:merge_towards_master"
-#        body: *MERGIFY_PR_BODY
+  - name: Automatic merge commit (not squash) successful PRs
+    conditions:
+      - check-success=testspace-analytics
+      - check-success=continuous-integration/jenkins/branch
+      - label=ops:auto_merge_commit
+      - or:
+          - or: *ALL_BASE_BRANCHES
+          - base=master
+      - or:
+          - "#approved-reviews-by>=1"
+          - label=ops:without_review_approval
+    actions:
+      queue:
+        name: default
+        method: merge
 

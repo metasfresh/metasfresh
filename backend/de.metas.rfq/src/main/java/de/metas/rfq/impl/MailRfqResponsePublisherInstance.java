@@ -30,6 +30,7 @@ import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.util.List;
 
 /*
  * #%L
@@ -121,7 +122,7 @@ import java.sql.Timestamp;
 		final String message = mailTextBuilder.getFullMailText();
 		final PrintFormatId printFormatId = getPrintFormatId(rfqResponse, rfqReportType);
 		final DefaultModelArchiver archiver = DefaultModelArchiver.of(rfqResponse, printFormatId);
-		final ArchiveResult pdfArchive = archiver.archive();
+		final List<ArchiveResult> pdfArchive = archiver.archive();
 
 		final ClientId adClientId = ClientId.ofRepoId(rfqResponse.getAD_Client_ID());
 		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(adClientId);
@@ -136,7 +137,11 @@ import java.sql.Timestamp;
 				subject, // subject
 				message,  // message
 				mailTextBuilder.isHtml()); // html
-		email.addAttachment("RfQ_" + rfqResponse.getC_RfQResponse_ID() + ".pdf", pdfArchive.getData());
+		for (final ArchiveResult archiveResult : pdfArchive)
+		{
+			email.addAttachment("RfQ_" + rfqResponse.getC_RfQResponse_ID()+archiveResult.getArchiveRecord().getName()+"" + ".pdf", archiveResult.getData());
+		}
+
 		final EMailSentStatus emailSentStatus = email.send();
 
 		//
@@ -144,8 +149,11 @@ import java.sql.Timestamp;
 		{
 			final EMailAddress from = email.getFrom();
 			final EMailAddress to = email.getTo();
-			archiveEventManager.fireEmailSent(
-					pdfArchive.getArchiveRecord(), // archive
+
+			for (final ArchiveResult archiveResult : pdfArchive)
+			{
+				archiveEventManager.fireEmailSent(
+						archiveResult.getArchiveRecord(), // archive
 					(UserEMailConfig)null, // user
 					from, // from
 					to, // to
@@ -153,6 +161,7 @@ import java.sql.Timestamp;
 					(EMailAddress)null, // bcc
 					ArchiveEmailSentStatus.ofEMailSentStatus(emailSentStatus) // status
 			);
+			}
 		}
 
 		//

@@ -240,6 +240,10 @@ public class WarehouseDAO implements IWarehouseDAO
 		final I_M_Warehouse warehouse = getById(warehouseId);
 		final I_M_Locator locatorNew = newInstance(I_M_Locator.class, warehouse);
 
+		// for some reason, in case warehouse has trxName=null then locatorNew will use thread inherited?!
+		// so to avoid this case we are setting it the trxName again
+		InterfaceWrapperHelper.setTrxName(locatorNew, InterfaceWrapperHelper.getTrxName(warehouse));
+
 		locatorNew.setAD_Org_ID(warehouse.getAD_Org_ID());
 		locatorNew.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		locatorNew.setValue("Standard");
@@ -900,10 +904,10 @@ public class WarehouseDAO implements IWarehouseDAO
 		saveRecord(warehouseRecord);
 
 		createDefaultLocator(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()));
-		
+
 		return ofRecord(warehouseRecord);
 	}
-	
+
 	@NonNull
 	private I_M_Warehouse toRecord(@NonNull final Warehouse warehouse)
 	{
@@ -947,4 +951,13 @@ public class WarehouseDAO implements IWarehouseDAO
 		return ClientAndOrgId.ofClientAndOrg(warehouse.getAD_Client_ID(), warehouse.getAD_Org_ID());
 	}
 
+	@Override
+	@NonNull
+	public ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull final Collection<Integer> locatorIds)
+	{
+		return getLocatorsByRepoIds(ImmutableSet.copyOf(locatorIds))
+				.stream()
+				.map(LocatorId::ofRecord)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }

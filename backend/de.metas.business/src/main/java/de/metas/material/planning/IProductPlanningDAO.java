@@ -84,6 +84,12 @@ public interface IProductPlanningDAO extends ISingletonService
 	 */
 	ResourceId findPlantId(final int adOrgId, final I_M_Warehouse warehouse, final int productId, int attributeSetInstanceId);
 
+	Optional<ResourceId> findPlantIfExists(
+			OrgId orgId,
+			I_M_Warehouse warehouse,
+			ProductId productId,
+			AttributeSetInstanceId attributeSetInstanceId);
+
 	ProductPlanning save(@NonNull ProductPlanning productPlanning);
 
 	void setProductBOMVersionsIdIfAbsent(ProductId productId, ProductBOMVersionsId bomVersionsId);

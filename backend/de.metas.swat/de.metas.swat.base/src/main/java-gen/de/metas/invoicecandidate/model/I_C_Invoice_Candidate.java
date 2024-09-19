@@ -2889,6 +2889,31 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_Note = "Note";
 
 	/**
+	 * Set Organization Bank account.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrg_BP_Account_ID (int Org_BP_Account_ID);
+
+	/**
+	 * Get Organization Bank account.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOrg_BP_Account_ID();
+
+	@Nullable org.compiere.model.I_C_BP_BankAccount getOrg_BP_Account();
+
+	void setOrg_BP_Account(@Nullable org.compiere.model.I_C_BP_BankAccount Org_BP_Account);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_BP_BankAccount> COLUMN_Org_BP_Account_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "Org_BP_Account_ID", org.compiere.model.I_C_BP_BankAccount.class);
+	String COLUMNNAME_Org_BP_Account_ID = "Org_BP_Account_ID";
+
+	/**
 	 * Set Packing Material.
 	 *
 	 * <br>Type: String

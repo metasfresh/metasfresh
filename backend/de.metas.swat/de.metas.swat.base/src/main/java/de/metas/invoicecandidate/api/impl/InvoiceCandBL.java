@@ -30,6 +30,9 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.aggregation.api.Aggregation;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
@@ -290,6 +293,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 
 	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
@@ -419,7 +423,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final ProductId productId = ProductId.ofRepoId(icRecord.getM_Product_ID());
 		final IProductBL productBL = Services.get(IProductBL.class);
-		if (!productBL.isStocked(productId))
+		if (!productBL.isItemType(productId))
 		{
 			final Timestamp dateOrdered = icRecord.getDateOrdered();
 			logger.debug("computedateToInvoiceBasedOnDeliveryDate - deliveryDate is null and M_Product_ID={} is not stocked; -> return dateOrdered= {} as dateToInvoice", productId.getRepoId(), dateOrdered);
@@ -2329,6 +2333,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							continue;
 						}
 
+						final AggregationId aggregationId = AggregationId.ofRepoIdOrNull(candidate.getHeaderAggregationKeyBuilder_ID());
+						if (aggregationId != null)
+						{
+							final Aggregation aggregation = aggregationDAO.retrieveAggregation(Env.getCtx(), aggregationId.getRepoId());
+							if (aggregation.hasInvoicePerShipmentAttribute())
+							{
+								logger.debug("Has aggregation attribute: InvoicePerShipment ; => not closing invoice candidate with id={}", candidate.getC_Invoice_Candidate_ID());
+								continue;
+							}
+						}
+
 						if (ilRecord.getQtyInvoiced().compareTo(candidate.getQtyOrdered()) < 0)
 						{
 							logger.debug("invoiceLine.qtyInvoiced={} is < invoiceCandidate.qtyOrdered={}; -> closing invoice candidate",
@@ -2824,8 +2839,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
-				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
-
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()),
+				() -> paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.forPartner(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx()))));
 	}
 
 	private void createMatchInvForInOutLine(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)

@@ -38,12 +38,8 @@ import java.util.List;
 public class PPOrderCandidate
 {
 	int ppOrderCandidateId;
-
 	boolean simulated;
-
-	@With
-	PPOrderData ppOrderData;
-
+	@With PPOrderData ppOrderData;
 	List<PPOrderLineCandidate> lines;
 
 	@JsonCreator

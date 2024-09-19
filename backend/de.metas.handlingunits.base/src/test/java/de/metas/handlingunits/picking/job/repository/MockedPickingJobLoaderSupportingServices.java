@@ -123,7 +123,16 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
-	public SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(final Collection<ShipmentScheduleId> shipmentScheduleIds) {return ImmutableSetMultimap.of();}
+	public SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return ImmutableSetMultimap.of();
+	}
+
+	@Override
+	public boolean isCatchWeightTUPickingEnabled()
+	{
+		return false;
+	}
 
 	public void mockQRCode(@NonNull final HuId huId, @NonNull final HUQRCode qrCode)
 	{

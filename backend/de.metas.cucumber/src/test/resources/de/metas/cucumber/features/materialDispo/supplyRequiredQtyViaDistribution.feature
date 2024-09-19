@@ -9,7 +9,23 @@ Feature: Stock shortage solved via distribution
     And metasfresh has date and time 2022-07-04T08:00:00+00:00
     And there is no in transit M_Warehouse
 
-  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7568809968/attempts/1?pr=17166
+    And contains M_Shippers
+      | M_Shipper_ID |
+      | shipper_1    |
+
+    
+    
+    
+    
+    
+    
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+#  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/7568809968/attempts/1?pr=17166
   @from:cucumber
   @Id:S0229_100
   @Id:S0264_800
@@ -27,17 +43,17 @@ Feature: Stock shortage solved via distribution
       | Identifier |
       | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                  | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_05_12_2022 | null            | true  | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | pl_1       | ps_1               | DE                    | EUR                 | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                   | ValidFrom  |
-      | plv_1      | pl_1                      | plv_product_05_12_2022 | 2022-07-01 |
+      | Identifier | M_PriceList_ID |
+      | plv_1      | pl_1           |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                  | p_1          | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | bpartner_1 | N            | Y              | ps_1                          |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | bpartner_1 | N        | Y          | ps_1               |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN          | C_BPartner_ID.Identifier |
       | location_1 | bPLocation_1 | bpartner_1               |
@@ -51,15 +67,12 @@ Feature: Stock shortage solved via distribution
     And metasfresh contains M_Locator:
       | M_Locator_ID.Identifier | Value               | M_Warehouse_ID.Identifier |
       | locator_1               | Standard_05_12_2022 | warehouse_2               |
-    And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
-      | shipper_1               | 540006           |
     And metasfresh contains DD_NetworkDistribution
-      | DD_NetworkDistribution_ID.Identifier | Name                     | Value                     | DocumentNo |
-      | ddNetwork_1                          | DDNetworkName_05_12_2022 | DDNetworkValue_05_12_2022 | docNo2     |
+      | Identifier  |
+      | ddNetwork_1 |
     And metasfresh contains DD_NetworkDistributionLine
-      | DD_NetworkDistributionLine_ID.Identifier | DD_NetworkDistribution_ID.Identifier | M_Warehouse_ID.Identifier | M_WarehouseSource_ID.Identifier | M_Shipper_ID.Identifier |
-      | ddNetworkLine_1                          | ddNetwork_1                          | warehouseStd              | warehouse_2                     | shipper_1               |
+      | DD_NetworkDistributionLine_ID | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
+      | ddNetworkLine_1               | ddNetwork_1               | warehouseStd   | warehouse_2          | shipper_1    |
     And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | IsCreatePlan | OPT.DD_NetworkDistribution_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
       | ppln_1     | p_1                     | true         | ddNetwork_1                              | warehouseStd                  |
@@ -253,6 +266,19 @@ Feature: Stock shortage solved via distribution
       | dd_d_1                                  | dd_ol_1                    | warehouseStd              | cp_1                     | 16             | SUPPLY                |
       | dd_d_2                                  | dd_ol_1                    | warehouse_2               | cp_2                     | 16             | DEMAND                |
 
+
+    
+    
+    
+    
+    
+    
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
   @from:cucumber
   @Id:S0229_200
   @Id:S0264_900
@@ -313,9 +339,6 @@ Feature: Stock shortage solved via distribution
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1                          | hu_1               |
 
-    And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
-      | shipper_1               | 540006           |
     And metasfresh contains DD_NetworkDistribution
       | DD_NetworkDistribution_ID.Identifier | Name          | Value          | DocumentNo |
       | ddNetwork_1                          | DDNetworkName | DDNetworkValue | docNo1     |
@@ -447,6 +470,19 @@ Feature: Stock shortage solved via distribution
     And set sys config boolean value false for sys config DDOrder_isCreateMovementOnComplete
 
 
+
+    
+    
+    
+    
+    
+    
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
   @Id:S0229_300
   @Id:S0264_1000
   @from:cucumber
@@ -508,9 +544,6 @@ Feature: Stock shortage solved via distribution
       | il_12                         | hu_2               |
       | il_21                         | hu_3               |
 
-    And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
-      | shipper_1               | 540006           |
     And metasfresh contains DD_NetworkDistribution
       | DD_NetworkDistribution_ID.Identifier | Name          | Value          | DocumentNo |
       | ddNetwork_1                          | DDNetworkName | DDNetworkValue | docNo1     |
@@ -640,6 +673,19 @@ Feature: Stock shortage solved via distribution
     And set sys config boolean value false for sys config DDOrder_isCreateMovementOnComplete
 
 
+
+    
+    
+    
+    
+    
+    
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
   @Id:S0229_400
   @Id:S0264_1100
   @from:cucumber
@@ -698,9 +744,6 @@ Feature: Stock shortage solved via distribution
       | il_11                         | hu_1               |
       | il_21                         | hu_2               |
 
-    And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
-      | shipper_1               | 540006           |
     And metasfresh contains DD_NetworkDistribution
       | DD_NetworkDistribution_ID.Identifier | Name          | Value          | DocumentNo |
       | ddNetwork_1                          | DDNetworkName | DDNetworkValue | docNo1     |
@@ -727,6 +770,19 @@ Feature: Stock shortage solved via distribution
     And set sys config boolean value false for sys config DDOrder_isCreateMovementOnComplete
 
 
+
+    
+    
+    
+    
+    
+    
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
   @Id:S0229_500
   @Id:S0264_1200
   @from:cucumber
@@ -788,9 +844,6 @@ Feature: Stock shortage solved via distribution
       | il_12                         | hu_2               |
       | il_21                         | hu_3               |
 
-    And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
-      | shipper_1               | 540006           |
     And metasfresh contains DD_NetworkDistribution
       | DD_NetworkDistribution_ID.Identifier | Name          | Value          | DocumentNo |
       | ddNetwork_1                          | DDNetworkName | DDNetworkValue | docNo1     |
@@ -921,6 +974,19 @@ Feature: Stock shortage solved via distribution
     And set sys config boolean value false for sys config DDOrder_isCreateMovementOnComplete
 
 
+
+    
+    
+    
+    
+    
+    
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
   @Id:S0229_600
   @Id:S0264_1300
   @from:cucumber
@@ -982,9 +1048,6 @@ Feature: Stock shortage solved via distribution
       | il_12                         | hu_2               |
       | il_21                         | hu_3               |
 
-    And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
-      | shipper_1               | 540006           |
     And metasfresh contains DD_NetworkDistribution
       | DD_NetworkDistribution_ID.Identifier | Name          | Value          | DocumentNo |
       | ddNetwork_1                          | DDNetworkName | DDNetworkValue | docNo1     |

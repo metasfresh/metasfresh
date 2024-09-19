@@ -51,6 +51,7 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener;
 import de.metas.handlingunits.allocation.strategy.AllocationStrategyType;
+import de.metas.handlingunits.allocation.transfer.LUTUResult.LU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUsList;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
@@ -370,11 +371,9 @@ public class HUTransformService
 		return createdHUs;
 	}
 
-	private IHUProductStorage getSingleProductStorage(@NonNull final I_M_HU cuHU)
+	private IHUProductStorage getSingleProductStorage(@NonNull final I_M_HU hu)
 	{
-		final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
-		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cuHU);
-		return storages.get(0);
+		return huContext.getHUStorageFactory().getStorage(hu).getSingleHUProductStorage();
 	}
 
 	/**
@@ -558,6 +557,7 @@ public class HUTransformService
 			@NonNull final QtyTU qtyTU,
 			@NonNull final I_M_HU luHU)
 	{
+		LUTUResult result = LUTUResult.EMPTY;
 		final List<I_M_HU> tuHUsToAttachToLU;
 
 		final boolean qtyTuExceedsSourceTuHU = qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0;
@@ -583,8 +583,36 @@ public class HUTransformService
 		}
 		else
 		{
-			// create one or many new TUs for qtyTU
-			tuHUsToAttachToLU = tuToNewTUs(sourceTuHU, qtyTU).getTopLevelTURecords();
+			if (handlingUnitsBL.isAggregateHU(sourceTuHU)
+					&& !handlingUnitsBL.isTUIncludedInLU(sourceTuHU, luHU))
+			{
+				final Capacity tuCapacity = extractTUCapacity(sourceTuHU);
+				final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+				lutuProducer.setLU(luHU);
+				lutuProducer.setMaxLUs(0);
+				lutuProducer.setMaxTUsPerLUInfinite();
+				lutuProducer.setTUPI(handlingUnitsBL.getEffectivePI(sourceTuHU));
+				lutuProducer.addCUPerTU(tuCapacity);
+
+				HULoader.builder()
+						.source(HUListAllocationSourceDestination.of(sourceTuHU))
+						.destination(lutuProducer)
+						.load(AllocationUtils.builder()
+								.setHUContext(huContext)
+								.setProduct(tuCapacity.getProductId())
+								.setQuantity(qtyTU.computeTotalQtyCUsUsingQtyCUsPerTU(tuCapacity.toQuantity()))
+								.setFromReferencedModel(sourceTuHU)
+								.setForceQtyAllocation(true)
+								.create());
+
+				result = result.mergeWith(lutuProducer.getResult());
+				tuHUsToAttachToLU = ImmutableList.of();
+			}
+			else
+			{
+				// create one or many new TUs for qtyTU
+				tuHUsToAttachToLU = tuToNewTUs(sourceTuHU, qtyTU).getTopLevelTURecords();
+			}
 		}
 
 		tuHUsToAttachToLU.forEach(tuToAttach -> {
@@ -615,7 +643,10 @@ public class HUTransformService
 					});
 		});
 
-		return LUTUResult.ofLU(luHU, TUsList.ofSingleTUsList(tuHUsToAttachToLU));
+		final LU lu = LU.of(luHU, TUsList.ofSingleTUsList(tuHUsToAttachToLU)).markedAsPreExistingLU();
+		result = result.mergeWith(lu);
+
+		return result;
 	}
 
 	/**
@@ -986,9 +1017,15 @@ public class HUTransformService
 			@NonNull final QtyTU qtyTU,
 			@NonNull final HuPackingInstructionsId luPIId)
 	{
+		final HuPackingInstructionsId tuPackingInstruction = handlingUnitsBL.getEffectivePackingInstructionsId(sourceTuHU);
 		final BPartnerId bpartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(sourceTuHU);
-		final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveFirstPIItem(luPIId, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId)
+
+		final I_M_HU_PI_Item luPIItem = tuPackingInstruction.isRealPackingInstructions()
+				? handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPackingInstruction, bpartnerId)
+				.orElseThrow(() -> new AdempiereException("No LU PI Item found for " + luPIId + ", " + bpartnerId + ", " + tuPackingInstruction))
+				: handlingUnitsDAO.retrieveFirstPIItem(luPIId, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId)
 				.orElseThrow(() -> new AdempiereException("No LU PI Item found for " + luPIId + ", " + bpartnerId));
+
 		return tuToNewLUs(sourceTuHU, qtyTU, luPIItem, true);
 	}
 
@@ -1198,6 +1235,15 @@ public class HUTransformService
 		}
 
 		return result;
+	}
+
+	private Capacity extractTUCapacity(final I_M_HU tu)
+	{
+		final QtyTU qtyTUs = getMaximumQtyTU(tu);
+		final IHUProductStorage productStorage = getSingleProductStorage(tu);
+		final Quantity qtyCUsTotal = productStorage.getQty();
+		final Quantity qtyCUsPerTU = qtyTUs.computeQtyCUsPerTUUsingTotalQty(qtyCUsTotal);
+		return Capacity.createCapacity(qtyCUsPerTU, productStorage.getProductId());
 	}
 
 	private List<IHUProductStorage> retrieveAllProductStoragesOfTU(final I_M_HU tuHU)

@@ -54,6 +54,8 @@ public interface IDesadvDAO extends ISingletonService
 
 	I_EDI_Desadv retrieveById(@NonNull EDIDesadvId ediDesadvId);
 
+	I_EDI_DesadvLine retrieveLineById(@NonNull EDIDesadvLineId ediDesadvLineId);
+
 	/**
 	 * Retrieves the desadv line that has the given <code>desadv</code> and <code>line</code> number.
 	 */
@@ -123,11 +125,16 @@ public interface IDesadvDAO extends ISingletonService
 
 	void save(@NonNull I_EDI_Desadv ediDesadv);
 
-	I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId);
+	void save(@NonNull I_EDI_DesadvLine ediDesadvLine);
 
 	@NonNull
 	List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull I_EDI_Desadv desadv, @NonNull ImmutableSet<EDIExportStatus> statusSet);
 
 	@NonNull
 	I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull InOutId shipmentId);
+
+	/**
+	 * @return the max {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack#COLUMNNAME_Line} value for the given desadvId.
+	 */
+	int retrieveMaxDesadvPackLine(@NonNull EDIDesadvId desadvId);
 }

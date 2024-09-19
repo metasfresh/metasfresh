@@ -57,6 +57,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -177,6 +178,16 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 		return extractBPartnerLocationId(warehouse);
+	}
+
+	@Nullable
+	@Override
+	public BPartnerContactId getBPartnerContactId(@NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(warehouse.getC_BPartner_ID());
+
+		return BPartnerContactId.ofRepoIdOrNull(bpartnerId, warehouse.getAD_User_ID());
 	}
 
 	@Nullable
@@ -389,4 +400,11 @@ public class WarehouseBL implements IWarehouseBL
         final Set<WarehouseId> pickFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
         return warehouseDAO.getLocatorIdsByWarehouseIds(pickFromWarehouseIds);
     }
+
+	@Override
+	@NonNull
+	public ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull final Collection<Integer> locatorIds)
+	{
+		return warehouseDAO.getLocatorIdsByRepoId(locatorIds);
+	}
 }

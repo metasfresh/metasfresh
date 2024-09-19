@@ -154,6 +154,12 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public List<I_M_InOut> getByIds(@NonNull final Set<InOutId> inoutIds)
+	{
+		return inOutDAO.getByIds(inoutIds);
+	}
+
+	@Override
 	public void save(@NonNull final I_M_InOut inout)
 	{
 		inOutDAO.save(inout);
@@ -807,4 +813,10 @@ public class InOutBL implements IInOutBL
 				.orElseGet(() -> Money.zero(acctSchemaBL.getAcctCurrencyId(acctSchemaId)));
 	}
 
+	@Override
+	@Nullable
+	public String getPOReference(@NonNull final InOutId inOutId)
+	{
+		return getById(inOutId).getPOReference();
+	}
 }

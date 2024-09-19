@@ -109,7 +109,7 @@ public class DefaultAggregator implements IAggregator
 		//
 		final String lineAggregationKeyStr = ic.getLineAggregationKey();
 		Check.assume(!Check.isEmpty(lineAggregationKeyStr) || Services.get(IInvoiceCandDAO.class).isToRecompute(ic),
-				"LineAggregationKey may not be empty, except when the ic is new and thus needs recomputation: {}", ic);
+					 "LineAggregationKey may not be empty, except when the ic is new and thus needs recomputation: {}", ic);
 
 		final StringBuilder aggregationKeyToUse = new StringBuilder();
 
