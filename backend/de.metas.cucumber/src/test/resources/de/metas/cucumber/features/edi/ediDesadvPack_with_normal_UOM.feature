@@ -1207,14 +1207,14 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | createdTU_2_1_S0457_010 | huProductTU_2_S0457_010                |
       | createdTU_2_2_S0457_010 | huProductTU_2_S0457_010                |
 
-     # This controls the SSCC18 value that our LU and desc-pack shall get to be 012345670010000081
+     # This controls the SSCC18 value that such our LU and desc-pack get SSCC18-value 012345670010000005
     And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
     
     And aggregate TUs to new LU
       | sourceTUs                                                             | newLUs              |
       | createdTU_1_S0457_010,createdTU_2_1_S0457_010,createdTU_2_2_S0457_010 | createdLU_S0457_010 |
 
-    # cleanup; otherwise, all HUs with an SSCC18 will have the same
+    # cleanup; otherwise, all HUs with an SSCC18 will have the same SSCC18-value for the remainder of this test-run
     And reset the SSCC18 code generator's next sequence number back to its actual sequence.
 
     And update M_HU_Attribute:
@@ -1287,7 +1287,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     Then after not more than 30s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID | OPT.IsManual_IPA_SSCC18 | OPT.M_HU_ID         | OPT.M_HU_PackagingCode_ID   | OPT.GTIN_PackingMaterial | OPT.SeqNo | OPT.IPA_SSCC18     |
-      | p_1_S0457_010      | false                   | createdLU_S0457_010 | huPackagingCode_1_S0457_010 | bPartnerProductGTIN_LU   | 1         | 012345670010000081 |
+      | p_1_S0457_010      | false                   | createdLU_S0457_010 | huPackagingCode_1_S0457_010 | bPartnerProductGTIN_LU   | 1         | 012345670010000005 |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
@@ -1298,8 +1298,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | ReportDataLine                                                                                                                                  |
       | %BTW% /AF="\\\V-APSRV01\PRAGMA\ETIKETTEN\LAYOUTS\SSCC.BTW" /D="<TRIGGER FILE NAME>" /PRN="\\\V-DCSRV02\ETIKETTEN01" /R=3 /P /D                  |
       | %END%                                                                                                                                           |
-      | "1","012345670010000081","@o_1_S0457_010@","16.04.2021","","@p_1_S0457_010@","1","0","210420","luLotNumber","","","","","","","","","","","","" |
-      | "1","012345670010000081","@o_1_S0457_010@","16.04.2021","","@p_2_S0457_010@","2","0","210420","luLotNumber","","","","","","","","","","","","" |
+      | "1","012345670010000005","@o_1_S0457_010@","16.04.2021","","@p_1_S0457_010@","1","0","210420","luLotNumber","","","","","","","","","","","","" |
+      | "1","012345670010000005","@o_1_S0457_010@","16.04.2021","","@p_2_S0457_010@","2","0","210420","luLotNumber","","","","","","","","","","","","" |
 
     And the shipment identified by s_1_S0457_010 is reversed
     And the shipment identified by s_2_S0457_010 is reversed
