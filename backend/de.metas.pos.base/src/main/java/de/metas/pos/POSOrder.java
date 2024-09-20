@@ -15,6 +15,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -32,7 +33,7 @@ import java.util.function.UnaryOperator;
 public class POSOrder
 {
 	@NonNull @Getter private final POSOrderExternalId externalId;
-	@Getter private final int localId;
+	@Nullable @Getter @Setter private POSOrderId localId;
 
 	@NonNull @Getter private POSOrderStatus status;
 	@NonNull @Getter private final DocTypeId salesOrderDocTypeId;
@@ -51,13 +52,14 @@ public class POSOrder
 	@NonNull @Getter BigDecimal openAmt;
 
 	@NonNull private final ArrayList<POSOrderLine> lines;
-
 	@NonNull private final ArrayList<POSPayment> payments;
+
+	@NonNull @Getter private final POSConfigId configId;
 
 	@Builder
 	private POSOrder(
 			@NonNull final POSOrderExternalId externalId,
-			final int localId,
+			@Nullable final POSOrderId localId,
 			@Nullable final POSOrderStatus status,
 			@NonNull final DocTypeId salesOrderDocTypeId,
 			@NonNull final PricingSystemAndListId pricingSystemAndListId,
@@ -69,7 +71,7 @@ public class POSOrder
 			final boolean isTaxIncluded,
 			@NonNull final CurrencyId currencyId,
 			@Nullable final List<POSOrderLine> lines,
-			@Nullable final ArrayList<POSPayment> payments)
+			@Nullable final List<POSPayment> payments, final @NonNull POSConfigId configId)
 	{
 		this.externalId = externalId;
 		this.localId = localId;
@@ -85,6 +87,7 @@ public class POSOrder
 		this.currencyId = currencyId;
 		this.lines = lines != null ? new ArrayList<>(lines) : new ArrayList<>();
 		this.payments = payments != null ? new ArrayList<>(payments) : new ArrayList<>();
+		this.configId = configId;
 
 		this.totalAmt = BigDecimal.ZERO;
 		this.taxAmt = BigDecimal.ZERO;

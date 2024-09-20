@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 public class POSOrderLine
 {
 	@NonNull String externalId;
-	int localId;
 
 	@NonNull ProductId productId;
 	@NonNull String productName;
@@ -28,7 +27,6 @@ public class POSOrderLine
 	@Builder(toBuilder = true)
 	private POSOrderLine(
 			@NonNull final String externalId,
-			final int localId,
 			@NonNull final ProductId productId,
 			@NonNull final String productName,
 			@NonNull final TaxCategoryId taxCategoryId,
@@ -39,7 +37,6 @@ public class POSOrderLine
 			@NonNull BigDecimal taxAmt)
 	{
 		this.externalId = externalId;
-		this.localId = localId;
 		this.productId = productId;
 		this.productName = productName;
 		this.taxCategoryId = taxCategoryId;

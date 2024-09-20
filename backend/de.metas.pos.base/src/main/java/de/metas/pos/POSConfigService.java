@@ -57,6 +57,7 @@ public class POSConfigService
 		final Currency currency = currencyRepository.getById(currencyId);
 
 		return POSConfig.builder()
+				.id(rawConfig.getId())
 				.cashbookId(rawConfig.getCashbookId())
 				.pricingSystemAndListId(PricingSystemAndListId.ofRepoIds(priceList.getM_PricingSystem_ID(), priceList.getM_PriceList_ID()))
 				.isTaxIncluded(priceList.isTaxIncluded())

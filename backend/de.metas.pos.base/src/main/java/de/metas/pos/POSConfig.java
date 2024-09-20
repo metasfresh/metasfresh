@@ -19,6 +19,8 @@ import javax.annotation.Nullable;
 @Builder
 public class POSConfig
 {
+	@NonNull POSConfigId id;
+	
 	@NonNull BankAccountId cashbookId;
 	
 	@NonNull PricingSystemAndListId pricingSystemAndListId;

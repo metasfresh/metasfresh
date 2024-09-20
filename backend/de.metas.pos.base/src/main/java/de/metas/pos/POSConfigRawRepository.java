@@ -33,6 +33,7 @@ public class POSConfigRawRepository
 	private static POSConfigRaw fromRecord(@NonNull final I_C_POS record)
 	{
 		return POSConfigRaw.builder()
+				.id(POSConfigId.ofRepoId(record.getC_POS_ID()))
 				.priceListId(PriceListId.ofRepoId(record.getM_PriceList_ID()))
 				.shipFromWarehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
 				.walkInCustomerId(BPartnerId.ofRepoId(record.getC_BPartnerCashTrx_ID()))

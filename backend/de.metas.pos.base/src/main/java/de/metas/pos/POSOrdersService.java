@@ -87,6 +87,7 @@ public class POSOrdersService
 				.shipFrom(config.getShipFrom())
 				.isTaxIncluded(config.isTaxIncluded())
 				.currencyId(config.getCurrencyId())
+				.configId(config.getId())
 				.build();
 	}
 

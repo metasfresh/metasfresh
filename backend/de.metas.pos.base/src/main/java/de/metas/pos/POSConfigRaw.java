@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 @Builder
 public class POSConfigRaw
 {
+	@NonNull POSConfigId id;
 	@NonNull PriceListId priceListId;
 	@NonNull WarehouseId shipFromWarehouseId;
 	@NonNull BPartnerId walkInCustomerId;
