@@ -52,8 +52,11 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 
+@SuppressWarnings("UnusedReturnValue")
 public class DefaultPaymentBuilder
 {
 	public static DefaultPaymentBuilder newInboundReceiptBuilder()
@@ -216,6 +219,13 @@ public class DefaultPaymentBuilder
 	{
 		assertNotBuilt();
 		payment.setDateTrx(TimeUtil.asTimestamp(dateTrx));
+		return this;
+	}
+
+	public final DefaultPaymentBuilder dateTrx(@Nullable final Instant dateTrx)
+	{
+		assertNotBuilt();
+		payment.setDateTrx(dateTrx != null ? Timestamp.from(dateTrx) : null);
 		return this;
 	}
 
