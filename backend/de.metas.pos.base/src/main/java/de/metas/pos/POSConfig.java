@@ -1,11 +1,13 @@
 package de.metas.pos;
 
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemAndListId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -17,7 +19,9 @@ import javax.annotation.Nullable;
 @Builder
 public class POSConfig
 {
-	@NonNull PriceListId priceListId;
+	@NonNull BankAccountId cashbookId;
+	
+	@NonNull PricingSystemAndListId pricingSystemAndListId;
 	@NonNull CurrencyPrecision pricePrecision;
 	boolean isTaxIncluded;
 
@@ -29,6 +33,8 @@ public class POSConfig
 	@NonNull DocTypeId salesOrderDocTypeId;
 
 	@NonNull Currency currency;
+
+	public PriceListId getPriceListId() {return pricingSystemAndListId.getPriceListId();}
 
 	public CurrencyId getCurrencyId() {return currency.getId();}
 

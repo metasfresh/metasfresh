@@ -1,6 +1,6 @@
 package de.metas.pos;
 
-import de.metas.pos.rest_api.json.JsonPOSOrder;
+import de.metas.pos.remote.RemotePOSOrder;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +38,7 @@ public class POSService
 		return ordersService.changeStatusTo(externalId, nextStatus, userId);
 	}
 
-	public POSOrder updateOrderFromRemote(final @NonNull JsonPOSOrder remoteOrder, final UserId userId)
+	public POSOrder updateOrderFromRemote(final @NonNull RemotePOSOrder remoteOrder, final UserId userId)
 	{
 		return ordersService.updateOrderFromRemote(remoteOrder, userId);
 	}

@@ -8,6 +8,7 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.CurrencyId;
+import de.metas.pricing.PricingSystemAndListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -56,7 +57,8 @@ public class POSConfigService
 		final Currency currency = currencyRepository.getById(currencyId);
 
 		return POSConfig.builder()
-				.priceListId(rawConfig.getPriceListId())
+				.cashbookId(rawConfig.getCashbookId())
+				.pricingSystemAndListId(PricingSystemAndListId.ofRepoIds(priceList.getM_PricingSystem_ID(), priceList.getM_PriceList_ID()))
 				.isTaxIncluded(priceList.isTaxIncluded())
 				.pricePrecision(CurrencyPrecision.ofInt(priceList.getPricePrecision()))
 				.shipFrom(extractShipFrom(rawConfig))

@@ -111,7 +111,7 @@ public class POSRestController
 	public JsonPOSOrder updateOrder(@RequestBody @NonNull final JsonPOSOrder remoteOrder)
 	{
 		final UserId loggedUserId = getLoggedUserId();
-		final POSOrder order = posService.updateOrderFromRemote(remoteOrder, loggedUserId);
+		final POSOrder order = posService.updateOrderFromRemote(remoteOrder.toRemotePOSOrder(), loggedUserId);
 		return JsonPOSOrder.of(order, newJsonContext());
 	}
 }

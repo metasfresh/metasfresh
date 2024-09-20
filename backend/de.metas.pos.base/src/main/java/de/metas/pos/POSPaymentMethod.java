@@ -2,8 +2,10 @@ package de.metas.pos;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.payment.TenderType;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -13,11 +15,12 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public enum POSPaymentMethod implements ReferenceListAwareEnum
 {
-	CASH("CASH"),
-	CARD("CARD");
+	CASH("CASH", TenderType.Cash),
+	CARD("CARD", TenderType.CreditCard);
 	private static final ReferenceListAwareEnums.ValuesIndex<POSPaymentMethod> index = ReferenceListAwareEnums.index(values());
 
-	private final String code;
+	@NonNull private final String code;
+	@NonNull @Getter private final TenderType tenderType;
 
 	@JsonCreator
 	public static POSPaymentMethod ofCode(@NonNull String code) {return index.ofCode(code);}

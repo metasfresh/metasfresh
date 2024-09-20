@@ -6,9 +6,9 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.lang.SOTrx;
 import de.metas.pos.POSOrderLine.POSOrderLineBuilder;
 import de.metas.pos.POSPayment.POSPaymentBuilder;
-import de.metas.pos.rest_api.json.JsonPOSOrder;
-import de.metas.pos.rest_api.json.JsonPOSOrderLine;
-import de.metas.pos.rest_api.json.JsonPOSPayment;
+import de.metas.pos.remote.RemotePOSOrder;
+import de.metas.pos.remote.RemotePOSOrderLine;
+import de.metas.pos.remote.RemotePOSPayment;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxDAO;
@@ -38,6 +38,7 @@ public class POSOrdersService
 	@NonNull private final POSConfigService configService;
 	@NonNull private final POSOrdersRepository ordersRepository;
 	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final POSOrderProcessingServices possOrderProcessingServices;
 
 	public List<POSOrder> getOpenOrders(@NonNull final UserId userId)
 	{
@@ -48,7 +49,7 @@ public class POSOrdersService
 	{
 		return ordersRepository.updateByExternalId(externalId, order -> {
 			assertCanEdit(order, userId);
-			order.changeStatusTo(nextStatus);
+			order.changeStatusTo(nextStatus, possOrderProcessingServices);
 		});
 	}
 
@@ -60,7 +61,7 @@ public class POSOrdersService
 		}
 	}
 
-	public POSOrder updateOrderFromRemote(final @NonNull JsonPOSOrder remoteOrder, final UserId userId)
+	public POSOrder updateOrderFromRemote(final @NonNull RemotePOSOrder remoteOrder, final UserId userId)
 	{
 		return ordersRepository.createOrUpdateByExternalId(
 				remoteOrder.getUuid(),
@@ -77,6 +78,9 @@ public class POSOrdersService
 		return POSOrder.builder()
 				.externalId(externalId)
 				.status(POSOrderStatus.Drafted)
+				.salesOrderDocTypeId(config.getSalesOrderDocTypeId())
+				.pricingSystemAndListId(config.getPricingSystemAndListId())
+				.cashbookId(config.getCashbookId())
 				.cashierId(userId)
 				.date(SystemTime.asInstant())
 				.shipToCustomerAndLocationId(config.getWalkInCustomerShipToLocationId())
@@ -86,22 +90,18 @@ public class POSOrdersService
 				.build();
 	}
 
-	private void updateOrderFromRemote(final POSOrder order, final JsonPOSOrder remoteOrder)
+	private void updateOrderFromRemote(final POSOrder order, final RemotePOSOrder remoteOrder)
 	{
 		if (!POSOrderExternalId.equals(order.getExternalId(), remoteOrder.getUuid()))
 		{
 			throw new AdempiereException("Expected externalIds to match");
-		}
-		if (remoteOrder.getStatus() != null && !POSOrderStatus.equals(order.getStatus(), remoteOrder.getStatus()))
-		{
-			throw new AdempiereException("Changing status is not allowed");
 		}
 
 		//
 		// Update order lines
 		{
 			final ArrayList<String> lineExternalIdsInOrder = new ArrayList<>();
-			for (final JsonPOSOrderLine remoteOrderLine : remoteOrder.getLines())
+			for (final RemotePOSOrderLine remoteOrderLine : remoteOrder.getLines())
 			{
 				createOrUpdateOrderLineFromRemote(order, remoteOrderLine);
 				lineExternalIdsInOrder.add(remoteOrderLine.getUuid());
@@ -114,10 +114,10 @@ public class POSOrdersService
 		// Update payments
 		{
 			final HashSet<String> paymentExternalIdsToKeep = new HashSet<>();
-			final List<JsonPOSPayment> remotePayments = remoteOrder.getPayments();
-			if (remotePayments != null && !remotePayments.isEmpty())
+			final List<RemotePOSPayment> remotePayments = remoteOrder.getPayments();
+			if (!remotePayments.isEmpty())
 			{
-				for (final JsonPOSPayment remotePayment : remotePayments)
+				for (final RemotePOSPayment remotePayment : remotePayments)
 				{
 					createOrUpdatePaymentFromRemote(order, remotePayment);
 					paymentExternalIdsToKeep.add(remotePayment.getUuid());
@@ -131,7 +131,7 @@ public class POSOrdersService
 
 	private void createOrUpdateOrderLineFromRemote(
 			@NonNull final POSOrder order,
-			@NonNull final JsonPOSOrderLine remoteOrderLine)
+			@NonNull final RemotePOSOrderLine remoteOrderLine)
 	{
 		order.createOrUpdateLine(remoteOrderLine.getUuid(), existingLine -> {
 			//
@@ -184,7 +184,7 @@ public class POSOrdersService
 		});
 	}
 
-	private Quantity extractQty(@NonNull final JsonPOSOrderLine remoteOrderLine)
+	private Quantity extractQty(@NonNull final RemotePOSOrderLine remoteOrderLine)
 	{
 		return Quantitys.create(remoteOrderLine.getQty(), remoteOrderLine.getUomId());
 	}
@@ -213,7 +213,7 @@ public class POSOrdersService
 	//
 	//
 
-	private void createOrUpdatePaymentFromRemote(final POSOrder order, final JsonPOSPayment remotePayment)
+	private void createOrUpdatePaymentFromRemote(final POSOrder order, final RemotePOSPayment remotePayment)
 	{
 		order.createOrUpdatePayment(remotePayment.getUuid(), existingPayment -> {
 			final POSPaymentBuilder builder = existingPayment != null

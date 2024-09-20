@@ -1,8 +1,14 @@
 package de.metas.pos;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.banking.BankAccountId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.pricing.PricingSystemAndListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
@@ -28,7 +34,10 @@ public class POSOrder
 	@NonNull @Getter private final POSOrderExternalId externalId;
 	@Getter private final int localId;
 
-	@NonNull @Getter POSOrderStatus status;
+	@NonNull @Getter private POSOrderStatus status;
+	@NonNull @Getter private final DocTypeId salesOrderDocTypeId;
+	@NonNull @Getter private final PricingSystemAndListId pricingSystemAndListId;
+	@NonNull @Getter private final BankAccountId cashbookId;
 	@NonNull @Getter private final UserId cashierId;
 	@NonNull @Getter private final Instant date;
 	@NonNull @Getter private final BPartnerLocationAndCaptureId shipToCustomerAndLocationId;
@@ -50,6 +59,9 @@ public class POSOrder
 			@NonNull final POSOrderExternalId externalId,
 			final int localId,
 			@Nullable final POSOrderStatus status,
+			@NonNull final DocTypeId salesOrderDocTypeId,
+			@NonNull final PricingSystemAndListId pricingSystemAndListId,
+			@NonNull final BankAccountId cashbookId,
 			@NonNull final UserId cashierId,
 			@NonNull final Instant date,
 			@NonNull final BPartnerLocationAndCaptureId shipToCustomerAndLocationId,
@@ -62,6 +74,9 @@ public class POSOrder
 		this.externalId = externalId;
 		this.localId = localId;
 		this.status = status != null ? status : POSOrderStatus.Drafted;
+		this.salesOrderDocTypeId = salesOrderDocTypeId;
+		this.pricingSystemAndListId = pricingSystemAndListId;
+		this.cashbookId = cashbookId;
 		this.cashierId = cashierId;
 		this.date = date;
 		this.shipToCustomerAndLocationId = shipToCustomerAndLocationId;
@@ -77,6 +92,12 @@ public class POSOrder
 		this.openAmt = BigDecimal.ZERO;
 		updateTotals();
 	}
+
+	public OrgId getOrgId() {return getShipFrom().getOrgId();}
+
+	public BPartnerId getShipToCustomerId() {return getShipToCustomerAndLocationId().getBpartnerId();}
+
+	public PricingSystemId getPricingSystemId() {return getPricingSystemAndListId().getPricingSystemId();}
 
 	private void updateTotals()
 	{
@@ -105,7 +126,9 @@ public class POSOrder
 
 	public ImmutableList<POSPayment> getPayments() {return ImmutableList.copyOf(payments);}
 
-	public void changeStatusTo(POSOrderStatus nextStatus)
+	public void changeStatusTo(
+			@NonNull final POSOrderStatus nextStatus,
+			@NonNull final POSOrderProcessingServices services)
 	{
 		if (POSOrderStatus.equals(this.status, nextStatus))
 		{
@@ -121,8 +144,7 @@ public class POSOrder
 			case WaitingPayment:
 				break;
 			case Completed:
-				// TODO implement
-				// throw new UnsupportedOperationException("not implemented");
+				changeStatusTo_Complete(services);
 				break;
 			case Voided:
 				break;
@@ -131,6 +153,26 @@ public class POSOrder
 		}
 
 		this.status = nextStatus;
+	}
+
+	private void changeStatusTo_Complete(@NonNull final POSOrderProcessingServices services)
+	{
+		// TODO implement:
+		// * create payments & process synchronous (to make sure we got the money from card)
+		// * async create sales order, invoice, shipment and allocate the payments to that invoice 
+		// throw new UnsupportedOperationException("not implemented");
+
+		assertPaid();
+		services.createPayments(this);
+		services.scheduleCreateSalesOrderInvoiceAndShipment(this);
+	}
+
+	public void assertPaid()
+	{
+		if (openAmt.signum() != 0)
+		{
+			throw new AdempiereException("POS Order shall be paid");
+		}
 	}
 
 	public void createOrUpdateLine(@NonNull final String externalId, @NonNull final UnaryOperator<POSOrderLine> updater)

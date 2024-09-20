@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
 import de.metas.pos.POSOrderStatus;
+import de.metas.pos.remote.RemotePOSOrder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -45,6 +46,17 @@ public class JsonPOSOrder
 				.payments(order.getPayments().stream()
 						.map(JsonPOSPayment::of)
 						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	public RemotePOSOrder toRemotePOSOrder()
+	{
+		return RemotePOSOrder.builder()
+				.uuid(uuid)
+				.lines(lines.stream().map(JsonPOSOrderLine::toRemotePOSOrderLine).collect(ImmutableList.toImmutableList()))
+				.payments(payments != null && !payments.isEmpty()
+						? payments.stream().map(JsonPOSPayment::toRemotePOSPayment).collect(ImmutableList.toImmutableList())
+						: ImmutableList.of())
 				.build();
 	}
 }

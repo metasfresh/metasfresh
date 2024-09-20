@@ -2,6 +2,7 @@ package de.metas.pos.rest_api.json;
 
 import de.metas.pos.POSPayment;
 import de.metas.pos.POSPaymentMethod;
+import de.metas.pos.remote.RemotePOSPayment;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -24,6 +25,15 @@ public class JsonPOSPayment
 				.uuid(payment.getExternalId())
 				.paymentMethod(payment.getPaymentMethod())
 				.amount(payment.getAmount())
+				.build();
+	}
+
+	RemotePOSPayment toRemotePOSPayment()
+	{
+		return RemotePOSPayment.builder()
+				.uuid(uuid)
+				.paymentMethod(paymentMethod)
+				.amount(amount)
 				.build();
 	}
 }

@@ -1,5 +1,6 @@
 package de.metas.pos;
 
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.pricing.PriceListId;
@@ -37,6 +38,7 @@ public class POSConfigRawRepository
 				.walkInCustomerId(BPartnerId.ofRepoId(record.getC_BPartnerCashTrx_ID()))
 				.salesRepId(UserId.ofRepoIdOrNull(record.getSalesRep_ID()))
 				.salesOrderDocTypeId(DocTypeId.ofRepoId(record.getC_DocType_ID()))
+				.cashbookId(BankAccountId.ofRepoId(record.getC_BP_BankAccount_ID()))
 				.build();
 	}
 }

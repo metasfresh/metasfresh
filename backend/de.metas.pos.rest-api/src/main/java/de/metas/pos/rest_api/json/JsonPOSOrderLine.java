@@ -1,6 +1,7 @@
 package de.metas.pos.rest_api.json;
 
 import de.metas.pos.POSOrderLine;
+import de.metas.pos.remote.RemotePOSOrderLine;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
@@ -45,6 +46,19 @@ public class JsonPOSOrderLine
 				.uomId(line.getQty().getUomId())
 				.uomSymbol(line.getQty().getUOMSymbol())
 				.amount(line.getAmount())
+				.build();
+	}
+
+	RemotePOSOrderLine toRemotePOSOrderLine()
+	{
+		return RemotePOSOrderLine.builder()
+				.uuid(uuid)
+				.productId(productId)
+				.productName(productName)
+				.taxCategoryId(taxCategoryId)
+				.price(price)
+				.qty(qty)
+				.uomId(uomId)
 				.build();
 	}
 

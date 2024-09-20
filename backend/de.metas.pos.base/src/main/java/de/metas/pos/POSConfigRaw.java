@@ -1,5 +1,6 @@
 package de.metas.pos;
 
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.pricing.PriceListId;
@@ -20,4 +21,5 @@ public class POSConfigRaw
 	@NonNull BPartnerId walkInCustomerId;
 	@Nullable UserId salesRepId;
 	@NonNull DocTypeId salesOrderDocTypeId;
+	@NonNull BankAccountId cashbookId;
 }
