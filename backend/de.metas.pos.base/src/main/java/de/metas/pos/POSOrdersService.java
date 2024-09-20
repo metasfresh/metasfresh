@@ -1,7 +1,6 @@
 package de.metas.pos;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.pos.remote.RemotePOSOrder;
 import de.metas.tax.api.ITaxDAO;
