@@ -111,6 +111,7 @@ public final class StepDefDataIdentifier
 		return NumberUtils.asInt(value);
 	}
 
+	@Nullable
 	public <T> T lookupIn(@NonNull final StepDefData<T> table)
 	{
 		if (isNullPlaceholder())

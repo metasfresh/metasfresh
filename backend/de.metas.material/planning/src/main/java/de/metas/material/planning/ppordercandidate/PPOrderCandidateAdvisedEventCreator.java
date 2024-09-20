@@ -28,6 +28,7 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent.PPOrderCandidateAdvisedEventBuilder;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.MaterialRequest;
@@ -74,8 +75,13 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		boolean firstRequest = true;
 		for (final MaterialRequest request : partialRequests)
 		{
-			final PPOrderCandidate ppOrderCandidate = ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(request);
-
+			// this is the PPOrderCandidate which we advise the system to create! 
+			final PPOrderRef ppOrderRef = supplyRequiredDescriptor.getPpOrderRef();
+			final int parentPPOrderCandidateId = ppOrderRef == null ? 0 : ppOrderRef.getPpOrderCandidateId();
+			
+			final PPOrderCandidate ppOrderCandidate = ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(request)
+					.withParentPPOrderCandidateId(parentPPOrderCandidateId);
+			
 			final PPOrderCandidateAdvisedEventBuilder eventBuilder = PPOrderCandidateAdvisedEvent.builder()
 					.supplyRequiredDescriptor(supplyRequiredDescriptor)
 					.eventDescriptor(supplyRequiredDescriptor.newEventDescriptor())

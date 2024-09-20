@@ -97,23 +97,25 @@ public class PPOrderCandidateRequestedEventHandler implements MaterialEventHandl
 		final Quantity qtyRequired = Quantity.of(ppOrderData.getQtyRequired(), productBL.getStockUOM(productId));
 		final String traceId = ppOrderCandidateRequestedEvent.getTraceId();
 		final boolean isSimulated = ppOrderCandidateRequestedEvent.getPpOrderCandidate().isSimulated();
+		final PPOrderCandidateId parentPPOrderCandidateId = PPOrderCandidateId.ofRepoIdOrNull(ppOrderCandidateRequestedEvent.getPpOrderCandidate().getParentPPOrderCandidateId());
 
 		return ppOrderCandidateService.createUpdateCandidate(PPOrderCandidateCreateUpdateRequest.builder()
-															   .clientAndOrgId(ppOrderData.getClientAndOrgId())
-															   .productPlanningId(ProductPlanningId.ofRepoIdOrNull(ppOrderData.getProductPlanningId()))
-															   .materialDispoGroupId(ppOrderData.getMaterialDispoGroupId())
-															   .plantId(ppOrderData.getPlantId())
-															   .warehouseId(ppOrderData.getWarehouseId())
-															   .productId(productId)
-															   .attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(ppOrderData.getProductDescriptor().getAttributeSetInstanceId()))
-															   .qtyRequired(qtyRequired)
-															   .datePromised(ppOrderData.getDatePromised())
-															   .dateStartSchedule(ppOrderData.getDateStartSchedule())
-															   .salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineIdAsRepoId()))
-															   .shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderData.getShipmentScheduleIdAsRepoId()))
-															   .simulated(isSimulated)
-															   .traceId(traceId)
-															   .packingMaterialId(ppOrderData.getPackingMaterialId())
-															   .build());
+																	 .clientAndOrgId(ppOrderData.getClientAndOrgId())
+																	 .parentPPOrderCandidateId(parentPPOrderCandidateId)
+																	 .productPlanningId(ProductPlanningId.ofRepoIdOrNull(ppOrderData.getProductPlanningId()))
+																	 .materialDispoGroupId(ppOrderData.getMaterialDispoGroupId())
+																	 .plantId(ppOrderData.getPlantId())
+																	 .warehouseId(ppOrderData.getWarehouseId())
+																	 .productId(productId)
+																	 .attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(ppOrderData.getProductDescriptor().getAttributeSetInstanceId()))
+																	 .qtyRequired(qtyRequired)
+																	 .datePromised(ppOrderData.getDatePromised())
+																	 .dateStartSchedule(ppOrderData.getDateStartSchedule())
+																	 .salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineIdAsRepoId()))
+																	 .shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderData.getShipmentScheduleIdAsRepoId()))
+																	 .simulated(isSimulated)
+																	 .traceId(traceId)
+																	 .packingMaterialId(ppOrderData.getPackingMaterialId())
+																	 .build());
 	}
 }
