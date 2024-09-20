@@ -38,8 +38,6 @@ public enum POSOrderStatus implements ReferenceListAwareEnum
 
 	public boolean isDrafted() {return this == Drafted;}
 
-	public boolean isWaitingPayment() {return this == WaitingPayment;}
-
 	public boolean isVoided() {return this == Voided;}
 
 	public static boolean equals(@Nullable final POSOrderStatus status1, @Nullable final POSOrderStatus status2) {return Objects.equals(status1, status2);}
