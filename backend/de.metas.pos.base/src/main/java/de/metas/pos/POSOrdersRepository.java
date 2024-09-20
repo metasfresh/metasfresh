@@ -39,10 +39,9 @@ public class POSOrdersRepository
 		return newLoaderAndSaver().loadFromRecords(orderRecords);
 	}
 
-	public POSOrder getByExternalId(@NonNull final POSOrderExternalId externalId)
+	public POSOrder getById(@NonNull final POSOrderId posOrderId)
 	{
-		return newLoaderAndSaver().getByExternalId(externalId)
-				.orElseThrow(() -> new AdempiereException("No POSOrder found for " + externalId));
+		return newLoaderAndSaver().getById(posOrderId);
 	}
 
 	public POSOrder updateByExternalId(final @NonNull POSOrderExternalId externalId, final @NonNull Consumer<POSOrder> updater)

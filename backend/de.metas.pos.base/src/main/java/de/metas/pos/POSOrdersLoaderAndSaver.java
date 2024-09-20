@@ -9,6 +9,7 @@ import de.metas.document.DocTypeId;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.pos.repository.model.I_C_POS_OrderLine;
 import de.metas.pos.repository.model.I_C_POS_Payment;
@@ -24,6 +25,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -44,6 +46,7 @@ class POSOrdersLoaderAndSaver
 {
 	@NonNull private final IQueryBL queryBL;
 
+	private final HashMap<POSOrderId, I_C_POS_Order> orderRecordsById = new HashMap<>();
 	private final HashMap<POSOrderExternalId, Optional<I_C_POS_Order>> orderRecordsByExternalId = new HashMap<>();
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_OrderLine>> lineRecords = new HashMap<>();
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_Payment>> paymentRecords = new HashMap<>();
@@ -54,9 +57,9 @@ class POSOrdersLoaderAndSaver
 		return orderRecords.stream().map(this::fromRecord).collect(ImmutableList.toImmutableList());
 	}
 
-	public Optional<POSOrder> getByExternalId(@NonNull POSOrderExternalId externalId)
+	public POSOrder getById(final @NonNull POSOrderId posOrderId)
 	{
-		return getOrderRecordByExternalId(externalId).map(this::fromRecord);
+		return fromRecord(getOrderRecordById(posOrderId));
 	}
 
 	public POSOrder createOrUpdateByExternalId(
@@ -96,8 +99,9 @@ class POSOrdersLoaderAndSaver
 		CollectionUtils.getAllOrLoad(paymentRecords, posOrderIds, this::retrievePaymentRecordsByOrderIds);
 	}
 
-	private void addToCache(final I_C_POS_Order orderRecord)
+	private void addToCache(@NonNull final I_C_POS_Order orderRecord)
 	{
+		orderRecordsById.put(extractPOSOrderId(orderRecord), orderRecord);
 		orderRecordsByExternalId.put(extractExternalId(orderRecord), Optional.of(orderRecord));
 	}
 
@@ -111,9 +115,43 @@ class POSOrdersLoaderAndSaver
 		paymentRecords.put(posOrderId, ImmutableList.copyOf(payments));
 	}
 
+	private I_C_POS_Order getOrderRecordById(@NonNull final POSOrderId posOrderId)
+	{
+		I_C_POS_Order orderRecord = orderRecordsById.get(posOrderId);
+		if (orderRecord == null)
+		{
+			orderRecord = retrieveOrderRecordById(posOrderId);
+			addToCache(orderRecord);
+		}
+		return orderRecord;
+	}
+
+	private I_C_POS_Order retrieveOrderRecordById(@NonNull final POSOrderId posOrderId)
+	{
+		final I_C_POS_Order orderRecord = InterfaceWrapperHelper.load(posOrderId, I_C_POS_Order.class);
+		if (orderRecord == null)
+		{
+			throw new AdempiereException("No POSOrder found for " + posOrderId);
+		}
+		return orderRecord;
+	}
+
 	private Optional<I_C_POS_Order> getOrderRecordByExternalId(@NonNull final POSOrderExternalId externalId)
 	{
-		return orderRecordsByExternalId.computeIfAbsent(externalId, this::retrieveOrderRecordByExternalId);
+		Optional<I_C_POS_Order> orderRecord = orderRecordsByExternalId.get(externalId);
+		if (orderRecord == null)
+		{
+			orderRecord = retrieveOrderRecordByExternalId(externalId);
+			if (orderRecord.isPresent())
+			{
+				addToCache(orderRecord.get());
+			}
+			else
+			{
+				orderRecordsByExternalId.put(externalId, Optional.empty());
+			}
+		}
+		return orderRecord;
 	}
 
 	private Optional<I_C_POS_Order> retrieveOrderRecordByExternalId(@NonNull final POSOrderExternalId externalId)
@@ -304,9 +342,10 @@ class POSOrdersLoaderAndSaver
 	private static POSPayment fromRecord(final I_C_POS_Payment record)
 	{
 		return POSPayment.builder()
-				.externalId(	record.getExternalId())
+				.externalId(record.getExternalId())
 				.paymentMethod(POSPaymentMethod.ofCode(record.getPOSPaymentMethod()))
 				.amount(record.getAmount())
+				.paymentReceiptId(PaymentId.ofRepoIdOrNull(record.getC_Payment_ID()))
 				.build();
 	}
 
@@ -315,12 +354,21 @@ class POSOrdersLoaderAndSaver
 		paymentRecord.setExternalId(payment.getExternalId());
 		paymentRecord.setPOSPaymentMethod(payment.getPaymentMethod().getCode());
 		paymentRecord.setAmount(payment.getAmount());
+		paymentRecord.setC_Payment_ID(PaymentId.toRepoId(payment.getPaymentReceiptId()));
 	}
 
 	public void save(@NonNull final POSOrder order)
 	{
-		final I_C_POS_Order orderRecord = getOrderRecordByExternalId(order.getExternalId())
-				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_C_POS_Order.class));
+		final I_C_POS_Order orderRecord;
+		if (order.getLocalId() != null)
+		{
+			orderRecord = getOrderRecordById(order.getLocalId());
+		}
+		else
+		{
+			orderRecord = getOrderRecordByExternalId(order.getExternalId())
+					.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_C_POS_Order.class));
+		}
 
 		updateRecord(orderRecord, order);
 		InterfaceWrapperHelper.save(orderRecord);

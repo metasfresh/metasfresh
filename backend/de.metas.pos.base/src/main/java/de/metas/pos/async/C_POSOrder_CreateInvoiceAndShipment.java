@@ -17,7 +17,7 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandValidationResult;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.pos.POSOrder;
-import de.metas.pos.POSOrderExternalId;
+import de.metas.pos.POSOrderId;
 import de.metas.pos.POSOrderLine;
 import de.metas.pos.POSOrdersRepository;
 import de.metas.process.PInstanceId;
@@ -25,7 +25,6 @@ import de.metas.salesorder.candidate.ProcessOLCandsRequest;
 import de.metas.salesorder.candidate.ProcessOLCandsWorkpackageEnqueuer;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,12 +34,12 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ProcessOLCands;
 
 public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAdapter
 {
-	public static final String WP_PARAM_POSOrderExternalId = "posOrderExternalId";
 	private static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE.POS";
 
 	@NonNull private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
@@ -86,11 +85,18 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 
 	private POSOrder getPOSOrder()
 	{
-		final POSOrderExternalId posOrderExternalId = StringUtils.trimBlankToOptional(getParameters().getParameterAsString(WP_PARAM_POSOrderExternalId))
-				.map(POSOrderExternalId::ofString)
-				.orElseThrow(() -> new AdempiereException("Parameter " + WP_PARAM_POSOrderExternalId + " is required"));
-		
-		return posOrdersRepository.getByExternalId(posOrderExternalId);
+		final Set<Integer> posOrderRepoIds = retrieveAllItemIds();
+		if (posOrderRepoIds.isEmpty())
+		{
+			throw new AdempiereException("No elements found");
+		}
+		else if (posOrderRepoIds.size() > 1)
+		{
+			throw new AdempiereException("More than one elements found");
+		}
+
+		final POSOrderId posOrderId = POSOrderId.ofRepoId(posOrderRepoIds.iterator().next());
+		return posOrdersRepository.getById(posOrderId);
 	}
 
 	private static PInstanceId createOLCandsSelection(final List<OLCand> olCands)

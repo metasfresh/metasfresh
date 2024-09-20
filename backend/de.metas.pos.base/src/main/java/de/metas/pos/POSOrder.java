@@ -10,6 +10,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemAndListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.function.UnaryOperator;
 
 @EqualsAndHashCode
@@ -96,6 +98,8 @@ public class POSOrder
 		updateTotals();
 	}
 
+	public POSOrderId getLocalIdNotNull() {return Check.assumeNotNull(this.getLocalId(), "Expected POSOrder to be saved: {}", this);}
+
 	public OrgId getOrgId() {return getShipFrom().getOrgId();}
 
 	public BPartnerId getShipToCustomerId() {return getShipToCustomerAndLocationId().getBpartnerId();}
@@ -143,13 +147,11 @@ public class POSOrder
 		switch (nextStatus)
 		{
 			case Drafted:
-				break;
+			case Voided:
 			case WaitingPayment:
 				break;
 			case Completed:
 				changeStatusTo_Complete(services);
-				break;
-			case Voided:
 				break;
 			default:
 				throw new AdempiereException("Unknown next status " + nextStatus);
@@ -167,7 +169,7 @@ public class POSOrder
 
 		assertPaid();
 		services.createPayments(this);
-		services.scheduleCreateSalesOrderInvoiceAndShipment(this);
+		services.scheduleCreateSalesOrderInvoiceAndShipment(getLocalIdNotNull());
 	}
 
 	public void assertPaid()
@@ -223,6 +225,23 @@ public class POSOrder
 		}
 
 		updateTotals();
+	}
+
+	public void updateAllPayments(@NonNull final UnaryOperator<POSPayment> updater)
+	{
+		for (final ListIterator<POSPayment> it = payments.listIterator(); it.hasNext(); )
+		{
+			final POSPayment payment = it.next();
+			final POSPayment paymentChanged = updater.apply(payment);
+			if (paymentChanged == null)
+			{
+				it.remove();
+			}
+			else
+			{
+				it.set(paymentChanged);
+			}
+		}
 	}
 
 	public void createOrUpdatePayment(@NonNull final String externalId, @NonNull final UnaryOperator<POSPayment> updater)

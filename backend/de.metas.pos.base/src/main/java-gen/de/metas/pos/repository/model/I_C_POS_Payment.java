@@ -74,6 +74,28 @@ public interface I_C_POS_Payment
 	String COLUMNNAME_Amount = "Amount";
 
 	/**
+	 * Set Payment.
+	 * Payment identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Payment_ID (int C_Payment_ID);
+
+	/**
+	 * Get Payment.
+	 * Payment identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Payment_ID();
+
+	String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
+
+	/**
 	 * Set POS Order.
 	 *
 	 * <br>Type: Search
