@@ -13,6 +13,7 @@ import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import { usePOSConfiguration } from '../../api/pos_configuration';
 import PropTypes from 'prop-types';
 import { getPaymentMethodCaption, getPaymentMethodIcon, PAYMENT_METHODS } from '../../utils/paymentMethods';
+import { round } from '../../../../utils/numbers';
 
 const POSPaymentPanel = () => {
   const dispatch = useDispatch();
@@ -31,7 +32,7 @@ const POSPaymentPanel = () => {
     precision: currencyPrecision,
   });
   const paidAmt = currentOrder?.paidAmt ?? 0;
-  const openAmt = totalAmt - paidAmt;
+  const openAmt = round(totalAmt - paidAmt, currencyPrecision);
   const openAmtStr = formatAmountToHumanReadableStr({
     amount: openAmt,
     currency: currency,
