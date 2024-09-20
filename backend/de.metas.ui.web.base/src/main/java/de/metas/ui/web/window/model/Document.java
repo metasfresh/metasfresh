@@ -1439,7 +1439,7 @@ public final class Document
 	{
 		// Check document's readonly logic
 		final DocumentReadonly documentReadonlyLogic = getReadonly();
-		final BooleanWithReason isReadOnly = documentReadonlyLogic.computeFieldReadonly(documentField.getFieldName(), documentField.isAlwaysUpdateable());
+		final BooleanWithReason isReadOnly = documentReadonlyLogic.computeFieldReadonly(documentField);
 
 		if (isReadOnly.isTrue())
 		{

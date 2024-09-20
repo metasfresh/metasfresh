@@ -34,7 +34,7 @@ import java.util.Optional;
  * #L%
  */
 
-/* package */interface IDocumentField extends IDocumentFieldView
+public interface IDocumentField extends IDocumentFieldView
 {
 	enum FieldInitializationMode
 	{
