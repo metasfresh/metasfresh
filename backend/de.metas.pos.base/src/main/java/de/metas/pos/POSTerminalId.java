@@ -11,25 +11,25 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 
 @Value
-public class POSConfigId implements RepoIdAware
+public class POSTerminalId implements RepoIdAware
 {
 	int repoId;
 
-	private POSConfigId(final int repoId)
+	private POSTerminalId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_POS_ID");
 	}
 
 	@JsonCreator
-	public static POSConfigId ofRepoId(final int repoId)
+	public static POSTerminalId ofRepoId(final int repoId)
 	{
-		return new POSConfigId(repoId);
+		return new POSTerminalId(repoId);
 	}
 
 	@Nullable
-	public static POSConfigId ofRepoIdOrNull(final int repoId)
+	public static POSTerminalId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new POSConfigId(repoId) : null;
+		return repoId > 0 ? new POSTerminalId(repoId) : null;
 	}
 
 	public static int toRepoId(@Nullable final OrderId id)
@@ -44,7 +44,7 @@ public class POSConfigId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(@Nullable final POSConfigId id1, @Nullable final POSConfigId id2)
+	public static boolean equals(@Nullable final POSTerminalId id1, @Nullable final POSTerminalId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

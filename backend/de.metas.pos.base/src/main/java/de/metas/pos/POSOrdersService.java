@@ -18,7 +18,7 @@ import java.util.List;
 public class POSOrdersService
 {
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-	@NonNull private final POSConfigService configService;
+	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final POSOrdersRepository ordersRepository;
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final POSOrderProcessingServices possOrderProcessingServices;
@@ -69,20 +69,20 @@ public class POSOrdersService
 
 	private POSOrder newPOSOrder(@NonNull final POSOrderExternalId externalId, @NonNull final UserId userId)
 	{
-		final POSConfig config = configService.getConfig();
+		final POSTerminal posTerminal = posTerminalService.getPOSTerminal();
 		return POSOrder.builder()
 				.externalId(externalId)
 				.status(POSOrderStatus.Drafted)
-				.salesOrderDocTypeId(config.getSalesOrderDocTypeId())
-				.pricingSystemAndListId(config.getPricingSystemAndListId())
-				.cashbookId(config.getCashbookId())
+				.salesOrderDocTypeId(posTerminal.getSalesOrderDocTypeId())
+				.pricingSystemAndListId(posTerminal.getPricingSystemAndListId())
+				.cashbookId(posTerminal.getCashbookId())
 				.cashierId(userId)
 				.date(SystemTime.asInstant())
-				.shipToCustomerAndLocationId(config.getWalkInCustomerShipToLocationId())
-				.shipFrom(config.getShipFrom())
-				.isTaxIncluded(config.isTaxIncluded())
-				.currencyId(config.getCurrencyId())
-				.configId(config.getId())
+				.shipToCustomerAndLocationId(posTerminal.getWalkInCustomerShipToLocationId())
+				.shipFrom(posTerminal.getShipFrom())
+				.isTaxIncluded(posTerminal.isTaxIncluded())
+				.currencyId(posTerminal.getCurrencyId())
+				.posTerminalId(posTerminal.getId())
 				.build();
 	}
 }

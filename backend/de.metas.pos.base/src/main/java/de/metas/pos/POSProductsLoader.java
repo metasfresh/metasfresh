@@ -32,13 +32,13 @@ class POSProductsLoader
 	@NonNull private final IPriceListDAO priceListDAO;
 	@NonNull private final IProductBL productBL;
 	@NonNull private final IUOMDAO uomDAO;
-	@NonNull final POSConfig config;
+	@NonNull final POSTerminal posTerminal;
 
 	private final HashMap<ProductId, I_M_Product> productsById = new HashMap<>();
 
 	public POSProductsList load(@NonNull final Instant evalDate)
 	{
-		final PriceListVersionId priceListVersionId = priceListDAO.retrievePriceListVersionId(config.getPriceListId(), evalDate.atZone(SystemTime.zoneId()));
+		final PriceListVersionId priceListVersionId = priceListDAO.retrievePriceListVersionId(posTerminal.getPriceListId(), evalDate.atZone(SystemTime.zoneId()));
 
 		final List<I_M_ProductPrice> productPrices = priceListDAO.retrieveProductPrices(priceListVersionId).collect(ImmutableList.toImmutableList());
 		loadProductsById(extractProductIds(productPrices));
@@ -80,7 +80,7 @@ class POSProductsLoader
 				.id(productId)
 				.name(getProductName(productId))
 				.price(extractPrice(productPrice))
-				.currencySymbol(config.getCurrency().getSymbol())
+				.currencySymbol(posTerminal.getCurrency().getSymbol())
 				.uomId(uomId)
 				.uomSymbol(getUOMSymbol(uomId))
 				.taxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()))
@@ -96,7 +96,7 @@ class POSProductsLoader
 
 	private Amount extractPrice(final I_M_ProductPrice productPrice)
 	{
-		return Amount.of(productPrice.getPriceStd(), config.getCurrency().getCurrencyCode());
+		return Amount.of(productPrice.getPriceStd(), posTerminal.getCurrency().getCurrencyCode());
 	}
 
 	private String getUOMSymbol(final UomId uomId)

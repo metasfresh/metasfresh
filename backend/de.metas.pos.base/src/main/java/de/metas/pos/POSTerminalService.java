@@ -23,56 +23,55 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class POSConfigService
+public class POSTerminalService
 {
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	@NonNull private final POSConfigRawRepository configRepository;
+	@NonNull private final POSTerminalRawRepository posTerminalRawRepository;
 	@NonNull private final CurrencyRepository currencyRepository;
 
-	private final CCache<Integer, POSConfig> cache = CCache.<Integer, POSConfig>builder()
+	private final CCache<Integer, POSTerminal> cache = CCache.<Integer, POSTerminal>builder()
 			.tableName(I_C_POS.Table_Name)
 			.additionalTableNameToResetFor(I_M_PriceList.Table_Name)
 			.additionalTableNameToResetFor(I_C_Currency.Table_Name)
 			.build();
 
 	@NonNull
-	public POSConfig getConfig()
+	public POSTerminal getPOSTerminal()
 	{
-		return cache.getOrLoad(0, this::retrieveConfig);
+		return cache.getOrLoad(0, this::retrievePOSTerminal);
 	}
 
 	@NonNull
-	private POSConfig retrieveConfig()
+	private POSTerminal retrievePOSTerminal()
 	{
-		final POSConfigRaw rawConfig = configRepository.getConfig();
-		final I_M_PriceList priceList = priceListDAO.getById(rawConfig.getPriceListId());
+		final POSTerminalRaw posTerminalRaw = posTerminalRawRepository.getPOSTerminal();
+		final I_M_PriceList priceList = priceListDAO.getById(posTerminalRaw.getPriceListId());
 		if (priceList == null)
 		{
-			throw new AdempiereException("No price list found for ID: " + rawConfig.getPriceListId());
+			throw new AdempiereException("No price list found for ID: " + posTerminalRaw.getPriceListId());
 		}
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
 		final Currency currency = currencyRepository.getById(currencyId);
 
-		return POSConfig.builder()
-				.id(rawConfig.getId())
-				.cashbookId(rawConfig.getCashbookId())
+		return POSTerminal.builder()
+				.id(posTerminalRaw.getId())
+				.cashbookId(posTerminalRaw.getCashbookId())
 				.pricingSystemAndListId(PricingSystemAndListId.ofRepoIds(priceList.getM_PricingSystem_ID(), priceList.getM_PriceList_ID()))
 				.isTaxIncluded(priceList.isTaxIncluded())
 				.pricePrecision(CurrencyPrecision.ofInt(priceList.getPricePrecision()))
-				.shipFrom(extractShipFrom(rawConfig))
-				.walkInCustomerShipToLocationId(extractWalkInCustomerShipTo(rawConfig))
-				.salesRepId(rawConfig.getSalesRepId())
-				.salesOrderDocTypeId(rawConfig.getSalesOrderDocTypeId())
+				.shipFrom(extractShipFrom(posTerminalRaw))
+				.walkInCustomerShipToLocationId(extractWalkInCustomerShipTo(posTerminalRaw))
+				.salesOrderDocTypeId(posTerminalRaw.getSalesOrderDocTypeId())
 				.currency(currency)
 				.build();
 	}
 
-	private POSShipFrom extractShipFrom(final POSConfigRaw rawConfig)
+	private POSShipFrom extractShipFrom(final POSTerminalRaw posTerminalRaw)
 	{
-		final WarehouseId shipFromWarehouseId = rawConfig.getShipFromWarehouseId();
+		final WarehouseId shipFromWarehouseId = posTerminalRaw.getShipFromWarehouseId();
 		return POSShipFrom.builder()
 				.warehouseId(shipFromWarehouseId)
 				.orgId(warehouseBL.getWarehouseOrgId(shipFromWarehouseId))
@@ -80,12 +79,12 @@ public class POSConfigService
 				.build();
 	}
 
-	private @NonNull BPartnerLocationAndCaptureId extractWalkInCustomerShipTo(final POSConfigRaw rawConfig)
+	private @NonNull BPartnerLocationAndCaptureId extractWalkInCustomerShipTo(final POSTerminalRaw posTerminalRaw)
 	{
 		return BPartnerLocationAndCaptureId.ofRecord(
 				bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
 						.type(BPartnerLocationQuery.Type.SHIP_TO)
-						.bpartnerId(rawConfig.getWalkInCustomerId())
+						.bpartnerId(posTerminalRaw.getWalkInCustomerId())
 						.build())
 		);
 	}

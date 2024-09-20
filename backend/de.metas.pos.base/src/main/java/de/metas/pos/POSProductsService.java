@@ -17,7 +17,7 @@ public class POSProductsService
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	@NonNull private final POSConfigService configService;
+	@NonNull private final POSTerminalService posTerminalService;
 
 	public POSProductsList getProducts(@NonNull final Instant evalDate)
 	{
@@ -30,7 +30,7 @@ public class POSProductsService
 				.priceListDAO(priceListDAO)
 				.productBL(productBL)
 				.uomDAO(uomDAO)
-				.config(configService.getConfig())
+				.posTerminal(posTerminalService.getPOSTerminal())
 				.build();
 	}
 }

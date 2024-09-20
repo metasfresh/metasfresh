@@ -4,23 +4,19 @@ import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.pricing.PriceListId;
-import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
-public class POSConfigRaw
+public class POSTerminalRaw
 {
-	@NonNull POSConfigId id;
+	@NonNull POSTerminalId id;
 	@NonNull PriceListId priceListId;
 	@NonNull WarehouseId shipFromWarehouseId;
 	@NonNull BPartnerId walkInCustomerId;
-	@Nullable UserId salesRepId;
 	@NonNull DocTypeId salesOrderDocTypeId;
 	@NonNull BankAccountId cashbookId;
 }

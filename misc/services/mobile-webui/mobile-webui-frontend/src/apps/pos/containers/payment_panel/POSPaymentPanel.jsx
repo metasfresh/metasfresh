@@ -10,19 +10,19 @@ import {
 import { useDispatch } from 'react-redux';
 import './POSPaymentPanel.scss';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
-import { usePOSConfiguration } from '../../api/pos_configuration';
+import { usePOSTerminal } from '../../api/posTerminal';
 import PropTypes from 'prop-types';
 import { getPaymentMethodCaption, getPaymentMethodIcon, PAYMENT_METHODS } from '../../utils/paymentMethods';
 import { round } from '../../../../utils/numbers';
 
 const POSPaymentPanel = () => {
   const dispatch = useDispatch();
-  const config = usePOSConfiguration();
+  const posTerminal = usePOSTerminal();
   const { currentOrder } = useCurrentOrder();
 
   const order_uuid = currentOrder?.uuid;
 
-  const currencyPrecision = config?.currencyPrecision ?? 2;
+  const currencyPrecision = posTerminal?.currencyPrecision ?? 2;
   const currency = currentOrder?.currencySymbol;
 
   const totalAmt = currentOrder?.totalAmt ?? 0;

@@ -8,18 +8,15 @@ import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemAndListId;
-import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
-public class POSConfig
+public class POSTerminal
 {
-	@NonNull POSConfigId id;
+	@NonNull POSTerminalId id;
 	
 	@NonNull BankAccountId cashbookId;
 	
@@ -31,7 +28,6 @@ public class POSConfig
 
 	@NonNull BPartnerLocationAndCaptureId walkInCustomerShipToLocationId;
 
-	@Nullable UserId salesRepId;
 	@NonNull DocTypeId salesOrderDocTypeId;
 
 	@NonNull Currency currency;

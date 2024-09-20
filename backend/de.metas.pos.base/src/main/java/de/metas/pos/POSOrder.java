@@ -56,7 +56,7 @@ public class POSOrder
 	@NonNull private final ArrayList<POSOrderLine> lines;
 	@NonNull private final ArrayList<POSPayment> payments;
 
-	@NonNull @Getter private final POSConfigId configId;
+	@NonNull @Getter private final POSTerminalId posTerminalId;
 
 	@Builder
 	private POSOrder(
@@ -73,7 +73,8 @@ public class POSOrder
 			final boolean isTaxIncluded,
 			@NonNull final CurrencyId currencyId,
 			@Nullable final List<POSOrderLine> lines,
-			@Nullable final List<POSPayment> payments, final @NonNull POSConfigId configId)
+			@Nullable final List<POSPayment> payments, 
+			@NonNull final POSTerminalId posTerminalId)
 	{
 		this.externalId = externalId;
 		this.localId = localId;
@@ -89,7 +90,7 @@ public class POSOrder
 		this.currencyId = currencyId;
 		this.lines = lines != null ? new ArrayList<>(lines) : new ArrayList<>();
 		this.payments = payments != null ? new ArrayList<>(payments) : new ArrayList<>();
-		this.configId = configId;
+		this.posTerminalId = posTerminalId;
 
 		this.totalAmt = BigDecimal.ZERO;
 		this.taxAmt = BigDecimal.ZERO;

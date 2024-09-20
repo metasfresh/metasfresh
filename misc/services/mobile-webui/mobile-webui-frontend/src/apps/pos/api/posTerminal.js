@@ -3,20 +3,20 @@ import { useEffect, useState } from 'react';
 import { apiBasePath } from '../../../constants';
 import { unboxAxiosResponse } from '../../../utils';
 
-export const usePOSConfiguration = () => {
+export const usePOSTerminal = () => {
   const [isLoading, setLoading] = useState(false);
-  const [config, setConfig] = useState([]);
+  const [posTerminal, setPOSTerminal] = useState([]);
 
   useEffect(() => {
     setLoading(true);
-    getConfig()
-      .then(setConfig)
+    getPOSTerminal()
+      .then(setPOSTerminal)
       .finally(() => setLoading(false));
   }, []);
 
-  return isLoading ? { isLoading: true } : config;
+  return isLoading ? { isLoading: true } : posTerminal;
 };
 
-const getConfig = () => {
-  return axios.get(`${apiBasePath}/pos/config`).then((response) => unboxAxiosResponse(response));
+const getPOSTerminal = () => {
+  return axios.get(`${apiBasePath}/pos/terminal`).then((response) => unboxAxiosResponse(response));
 };

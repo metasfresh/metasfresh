@@ -9,9 +9,9 @@ import de.metas.pos.POSOrderStatus;
 import de.metas.pos.POSProductsList;
 import de.metas.pos.POSService;
 import de.metas.pos.rest_api.json.JsonContext;
-import de.metas.pos.rest_api.json.JsonPOSConfig;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
 import de.metas.pos.rest_api.json.JsonPOSOrdersList;
+import de.metas.pos.rest_api.json.JsonPOSTerminal;
 import de.metas.pos.rest_api.json.JsonProductsList;
 import de.metas.user.UserId;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -49,12 +49,12 @@ public class POSRestController
 				.build();
 	}
 
-	@GetMapping("/config")
-	public JsonPOSConfig getConfiguration()
+	@GetMapping("/terminal")
+	public JsonPOSTerminal getPOSTerminal()
 	{
 		final String adLanguage = getADLanguage();
 
-		return JsonPOSConfig.from(posService.getConfig(), adLanguage);
+		return JsonPOSTerminal.from(posService.getPOSTerminal(), adLanguage);
 	}
 
 	@GetMapping("/products")

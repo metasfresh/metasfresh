@@ -6,16 +6,16 @@ import PropTypes from 'prop-types';
 import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import { useDispatch } from 'react-redux';
-import { usePOSConfiguration } from '../../api/pos_configuration';
+import { usePOSTerminal } from '../../api/posTerminal';
 import './CurrentOrder.scss';
 
 const CurrentOrder = () => {
   const dispatch = useDispatch();
-  const config = usePOSConfiguration();
+  const posTerminal = usePOSTerminal();
   const { /*isCurrentOrderLoading,*/ currentOrder } = useCurrentOrderOrNew();
 
-  const pricePrecision = config?.pricePrecision ?? 2;
-  const currencyPrecision = config?.currencyPrecision ?? 2;
+  const pricePrecision = posTerminal?.pricePrecision ?? 2;
+  const currencyPrecision = posTerminal?.currencyPrecision ?? 2;
   const lines = currentOrder?.lines ?? [];
   const totalAmtStr = formatAmountToHumanReadableStr({
     amount: currentOrder?.totalAmt,

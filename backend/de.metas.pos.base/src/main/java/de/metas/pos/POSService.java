@@ -13,14 +13,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class POSService
 {
-	@NonNull private final POSConfigService configService;
+	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final POSProductsService productsService;
 	@NonNull private final POSOrdersService ordersService;
 
 	@NonNull
-	public POSConfig getConfig()
+	public POSTerminal getPOSTerminal()
 	{
-		return configService.getConfig();
+		return posTerminalService.getPOSTerminal();
 	}
 
 	public POSProductsList getProducts(@NonNull final Instant evalDate)

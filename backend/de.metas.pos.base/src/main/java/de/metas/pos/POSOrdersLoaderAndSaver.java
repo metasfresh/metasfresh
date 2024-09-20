@@ -281,7 +281,7 @@ class POSOrdersLoaderAndSaver
 				.currencyId(CurrencyId.ofRepoId(orderRecord.getC_Currency_ID()))
 				.lines(lineRecords.stream().map(POSOrdersLoaderAndSaver::fromRecord).collect(ImmutableList.toImmutableList()))
 				.payments(paymentRecords.stream().map(POSOrdersLoaderAndSaver::fromRecord).collect(ImmutableList.toImmutableList()))
-				.configId(POSConfigId.ofRepoId(orderRecord.getC_POS_ID()))
+				.posTerminalId(POSTerminalId.ofRepoId(orderRecord.getC_POS_ID()))
 				.build();
 	}
 
@@ -307,7 +307,7 @@ class POSOrdersLoaderAndSaver
 		orderRecord.setTaxAmt(from.getTaxAmt());
 		orderRecord.setPaidAmt(from.getPaidAmt());
 		orderRecord.setOpenAmt(from.getOpenAmt());
-		orderRecord.setC_POS_ID(from.getConfigId().getRepoId());
+		orderRecord.setC_POS_ID(from.getPosTerminalId().getRepoId());
 	}
 
 	private static POSOrderLine fromRecord(final I_C_POS_OrderLine record)
