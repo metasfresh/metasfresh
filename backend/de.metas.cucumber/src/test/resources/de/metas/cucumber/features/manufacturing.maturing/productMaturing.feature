@@ -40,7 +40,7 @@ Feature: Maturing scenarios
 
   @from:cucumber
   @Id:S0382_100
-  @ignore # flaky
+  @flaky
   Scenario: Happy flow, raw good product HU created via inventory, maturing candidate created and processed
     When metasfresh initially has M_Inventory data
       | M_Inventory_ID | MovementDate | DocumentNo   |
