@@ -6,9 +6,13 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyRepository;
@@ -43,6 +47,7 @@ import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
@@ -65,6 +70,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static de.metas.util.Check.assumeNotNull;
@@ -681,5 +687,130 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.filter(invoiceFilter)
 				.create()
 				.iterateAndStream();
+	}
+
+	@Override
+	public Set<InvoiceId> retrieveInvoiceIdsByBPartnerIds(@NonNull final Collection<BPartnerId> bpartnerIds)
+	{
+
+		if (bpartnerIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_C_Invoice.class)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, bpartnerIds)
+				.create()
+				.listIds(InvoiceId::ofRepoId)
+				.stream().collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public Set<InvoiceId> retrieveInvoiceIdsByBPartnerLocationIds(@NonNull final Collection<BPartnerLocationId> bpartnerLocationIds)
+	{
+
+		if (bpartnerLocationIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_C_Invoice.class)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID, bpartnerLocationIds)
+				.create()
+				.listIds(InvoiceId::ofRepoId)
+				.stream().collect(ImmutableSet.toImmutableSet());
+	}
+
+
+	@Override
+	public Set<InvoiceId> retrieveInvoiceIdsByUserIds(@NonNull final Collection<BPartnerContactId> userIds)
+	{
+
+		if (userIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_C_Invoice.class)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_AD_User_ID, userIds)
+				.create()
+				.listIds(InvoiceId::ofRepoId)
+				.stream().collect(ImmutableSet.toImmutableSet());
+	}
+
+
+
+	@Override
+	public Set<InvoiceId> retrieveInvoiceIdsByDocTypeIds(@NonNull final Collection<DocTypeId> docTypeIds)
+	{
+
+		if (docTypeIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_C_Invoice.class)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID, docTypeIds)
+				.create()
+				.listIds(InvoiceId::ofRepoId)
+				.stream().collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public Set<InvoiceId> retrieveInvoiceIdsByWarehouseIds(@NonNull final Collection<WarehouseId> warehouseIds)
+	{
+
+		if (warehouseIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_C_Invoice.class)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_M_Warehouse_ID, warehouseIds)
+				.create()
+				.listIds(InvoiceId::ofRepoId)
+				.stream().collect(ImmutableSet.toImmutableSet());
+	}
+
+
+	@Override
+	public Set<InvoiceId> retrieveInvoiceIdsByCalendarIds(@NonNull final Collection<CalendarId> calendarIds)
+	{
+
+		if (calendarIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_C_Invoice.class)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_Harvesting_Calendar_ID, calendarIds)
+				.create()
+				.listIds(InvoiceId::ofRepoId)
+				.stream().collect(ImmutableSet.toImmutableSet());
+	}
+
+
+
+	@Override
+	public Set<InvoiceId> retrieveInvoiceIdsByYearIds(@NonNull final Collection<YearId> yearIds)
+	{
+
+		if (yearIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_C_Invoice.class)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_Harvesting_Year_ID, yearIds)
+				.create()
+				.listIds(InvoiceId::ofRepoId)
+				.stream().collect(ImmutableSet.toImmutableSet());
 	}
 }

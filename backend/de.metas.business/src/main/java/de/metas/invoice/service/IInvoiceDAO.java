@@ -28,9 +28,14 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.currency.Amount;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
@@ -43,6 +48,7 @@ import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
@@ -57,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public interface IInvoiceDAO extends ISingletonService
@@ -173,6 +180,10 @@ public interface IInvoiceDAO extends ISingletonService
 
 	List<org.compiere.model.I_C_Invoice> getByIdsOutOfTrx(Collection<InvoiceId> invoiceIds);
 
+	Set<InvoiceId> retrieveInvoiceIdsByBPartnerLocationIds(@NonNull Collection<BPartnerLocationId> bpartnerLocationIds);
+
+	Set<InvoiceId> retrieveInvoiceIdsByBPartnerIds(@NonNull Collection<BPartnerId> bpartnerIds);
+
 	Stream<InvoiceId> streamInvoiceIdsByBPartnerId(BPartnerId bpartnerId);
 
 	ImmutableMap<InvoiceId, String> getDocumentNosByInvoiceIds(@NonNull Collection<InvoiceId> invoiceIds);
@@ -196,4 +207,14 @@ public interface IInvoiceDAO extends ISingletonService
 	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
 
 	Stream<org.compiere.model.I_C_Invoice> stream(@NonNull IQueryFilter<org.compiere.model.I_C_Invoice> invoiceFilter);
+
+	Set<InvoiceId> retrieveInvoiceIdsByUserIds(@NonNull Collection<BPartnerContactId> userIds);
+
+	Set<InvoiceId> retrieveInvoiceIdsByDocTypeIds(@NonNull Collection<DocTypeId> docTypeIds);
+
+	Set<InvoiceId> retrieveInvoiceIdsByWarehouseIds(@NonNull Collection<WarehouseId> warehouseIds);
+
+	Set<InvoiceId> retrieveInvoiceIdsByCalendarIds(@NonNull Collection<CalendarId> calendarIds);
+
+	Set<InvoiceId> retrieveInvoiceIdsByYearIds(@NonNull Collection<YearId> yearIds);
 }
