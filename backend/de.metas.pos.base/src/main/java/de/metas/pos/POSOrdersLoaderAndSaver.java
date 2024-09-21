@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.DocTypeId;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.pos.repository.model.I_C_POS_Order;
@@ -262,6 +263,8 @@ class POSOrdersLoaderAndSaver
 			@NonNull final List<I_C_POS_OrderLine> lineRecords,
 			@NonNull final List<I_C_POS_Payment> paymentRecords)
 	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(orderRecord.getC_Currency_ID());
+
 		return POSOrder.builder()
 				.externalId(extractExternalId(orderRecord))
 				.localId(extractPOSOrderId(orderRecord))
@@ -278,9 +281,9 @@ class POSOrdersLoaderAndSaver
 						.countryId(CountryId.ofRepoId(orderRecord.getC_Country_ID()))
 						.build())
 				.isTaxIncluded(orderRecord.isTaxIncluded())
-				.currencyId(CurrencyId.ofRepoId(orderRecord.getC_Currency_ID()))
-				.lines(lineRecords.stream().map(POSOrdersLoaderAndSaver::fromRecord).collect(ImmutableList.toImmutableList()))
-				.payments(paymentRecords.stream().map(POSOrdersLoaderAndSaver::fromRecord).collect(ImmutableList.toImmutableList()))
+				.currencyId(currencyId)
+				.lines(lineRecords.stream().map(lineRecord -> fromRecord(lineRecord, currencyId)).collect(ImmutableList.toImmutableList()))
+				.payments(paymentRecords.stream().map(paymentRecord -> fromRecord(paymentRecord, currencyId)).collect(ImmutableList.toImmutableList()))
 				.posTerminalId(POSTerminalId.ofRepoId(orderRecord.getC_POS_ID()))
 				.build();
 	}
@@ -303,14 +306,14 @@ class POSOrdersLoaderAndSaver
 		orderRecord.setC_Country_ID(from.getShipFrom().getCountryId().getRepoId());
 		orderRecord.setIsTaxIncluded(from.isTaxIncluded());
 		orderRecord.setC_Currency_ID(from.getCurrencyId().getRepoId());
-		orderRecord.setGrandTotal(from.getTotalAmt());
-		orderRecord.setTaxAmt(from.getTaxAmt());
-		orderRecord.setPaidAmt(from.getPaidAmt());
-		orderRecord.setOpenAmt(from.getOpenAmt());
+		orderRecord.setGrandTotal(from.getTotalAmt().toBigDecimal());
+		orderRecord.setTaxAmt(from.getTaxAmt().toBigDecimal());
+		orderRecord.setPaidAmt(from.getPaidAmt().toBigDecimal());
+		orderRecord.setOpenAmt(from.getOpenAmt().toBigDecimal());
 		orderRecord.setC_POS_ID(from.getPosTerminalId().getRepoId());
 	}
 
-	private static POSOrderLine fromRecord(final I_C_POS_OrderLine record)
+	private static POSOrderLine fromRecord(final I_C_POS_OrderLine record, final CurrencyId currencyId)
 	{
 		return POSOrderLine.builder()
 				.externalId(record.getExternalId())
@@ -319,9 +322,9 @@ class POSOrdersLoaderAndSaver
 				.taxCategoryId(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID()))
 				.taxId(TaxId.ofRepoId(record.getC_Tax_ID()))
 				.qty(Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
-				.price(record.getPrice())
-				.amount(record.getAmount())
-				.taxAmt(record.getTaxAmt())
+				.price(Money.of(record.getPrice(), currencyId))
+				.amount(Money.of(record.getAmount(), currencyId))
+				.taxAmt(Money.of(record.getTaxAmt(), currencyId))
 				.build();
 	}
 
@@ -334,17 +337,18 @@ class POSOrdersLoaderAndSaver
 		lineRecord.setC_Tax_ID(line.getTaxId().getRepoId());
 		lineRecord.setQty(line.getQty().toBigDecimal());
 		lineRecord.setC_UOM_ID(line.getQty().getUomId().getRepoId());
-		lineRecord.setPrice(line.getPrice());
-		lineRecord.setAmount(line.getAmount());
-		lineRecord.setTaxAmt(line.getTaxAmt());
+		lineRecord.setPrice(line.getPrice().toBigDecimal());
+		lineRecord.setAmount(line.getAmount().toBigDecimal());
+		lineRecord.setTaxAmt(line.getTaxAmt().toBigDecimal());
 	}
 
-	private static POSPayment fromRecord(final I_C_POS_Payment record)
+	private static POSPayment fromRecord(final I_C_POS_Payment record, final CurrencyId currencyId)
 	{
 		return POSPayment.builder()
 				.externalId(record.getExternalId())
+				.localId(POSPaymentId.ofRepoId(record.getC_POS_Payment_ID()))
 				.paymentMethod(POSPaymentMethod.ofCode(record.getPOSPaymentMethod()))
-				.amount(record.getAmount())
+				.amount(Money.of(record.getAmount(), currencyId))
 				.paymentReceiptId(PaymentId.ofRepoIdOrNull(record.getC_Payment_ID()))
 				.build();
 	}
@@ -353,7 +357,7 @@ class POSOrdersLoaderAndSaver
 	{
 		paymentRecord.setExternalId(payment.getExternalId());
 		paymentRecord.setPOSPaymentMethod(payment.getPaymentMethod().getCode());
-		paymentRecord.setAmount(payment.getAmount());
+		paymentRecord.setAmount(payment.getAmount().toBigDecimal());
 		paymentRecord.setC_Payment_ID(PaymentId.toRepoId(payment.getPaymentReceiptId()));
 	}
 
@@ -419,6 +423,8 @@ class POSOrdersLoaderAndSaver
 				updateRecord(paymentRecord, payment);
 				InterfaceWrapperHelper.save(paymentRecord);
 				paymentRecordsNew.add(paymentRecord);
+
+				payment.setLocalId(POSPaymentId.ofRepoId(paymentRecord.getC_POS_Payment_ID()));
 			}
 
 			InterfaceWrapperHelper.deleteAll(paymentRecordsByExternalId.values());

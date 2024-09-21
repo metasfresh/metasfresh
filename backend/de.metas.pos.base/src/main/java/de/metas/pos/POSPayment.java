@@ -1,24 +1,29 @@
 package de.metas.pos;
 
+import de.metas.money.Money;
 import de.metas.payment.PaymentId;
+import de.metas.util.Check;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
-@Value
+@Data
 @Builder(toBuilder = true)
 public class POSPayment
 {
-	@NonNull String externalId;
-	@NonNull POSPaymentMethod paymentMethod;
-	@NonNull BigDecimal amount;
+	@NonNull private final String externalId;
+	@Nullable private POSPaymentId localId;
 
-	@Nullable @With PaymentId paymentReceiptId;
+	@NonNull private final POSPaymentMethod paymentMethod;
+	@NonNull private final Money amount;
+
+	@Nullable @With private final PaymentId paymentReceiptId;
+
+	public POSPaymentId getLocalIdNotNull() {return Check.assumeNotNull(this.getLocalId(), "Expected POSPayment to be saved: {}", this);}
 
 	public void assertNoPaymentReceipt()
 	{

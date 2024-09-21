@@ -1,6 +1,7 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS extends org.compiere.model.PO implements I_C_POS, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 149053559L;
+	private static final long serialVersionUID = 1447854443L;
 
     /** Standard Constructor */
     public X_C_POS (final Properties ctx, final int C_POS_ID, @Nullable final String trxName)
@@ -44,6 +45,19 @@ public class X_C_POS extends org.compiere.model.PO implements I_C_POS, org.compi
 	public int getAutoLogoutDelay() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AutoLogoutDelay);
+	}
+
+	@Override
+	public void setCashLastBalance (final BigDecimal CashLastBalance)
+	{
+		set_Value (COLUMNNAME_CashLastBalance, CashLastBalance);
+	}
+
+	@Override
+	public BigDecimal getCashLastBalance() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CashLastBalance);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -104,6 +118,21 @@ public class X_C_POS extends org.compiere.model.PO implements I_C_POS, org.compi
 	public int getC_POS_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_POS_ID);
+	}
+
+	@Override
+	public void setC_POS_Journal_ID (final int C_POS_Journal_ID)
+	{
+		if (C_POS_Journal_ID < 1) 
+			set_Value (COLUMNNAME_C_POS_Journal_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_POS_Journal_ID, C_POS_Journal_ID);
+	}
+
+	@Override
+	public int getC_POS_Journal_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_POS_Journal_ID);
 	}
 
 	@Override

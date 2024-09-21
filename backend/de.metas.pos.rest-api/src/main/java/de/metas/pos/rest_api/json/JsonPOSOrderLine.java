@@ -41,11 +41,11 @@ public class JsonPOSOrderLine
 				.productName(line.getProductName())
 				.taxCategoryId(line.getTaxCategoryId())
 				.currencySymbol(currencySymbol)
-				.price(line.getPrice())
+				.price(line.getPrice().toBigDecimal())
 				.qty(line.getQty().toBigDecimal())
 				.uomId(line.getQty().getUomId())
 				.uomSymbol(line.getQty().getUOMSymbol())
-				.amount(line.getAmount())
+				.amount(line.getAmount().toBigDecimal())
 				.build();
 	}
 

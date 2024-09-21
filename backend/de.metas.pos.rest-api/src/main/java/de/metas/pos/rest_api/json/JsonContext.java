@@ -1,5 +1,6 @@
 package de.metas.pos.rest_api.json;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.CurrencyId;
 import lombok.Builder;
@@ -15,5 +16,10 @@ public class JsonContext
 	public String getCurrencySymbol(final CurrencyId currencyId)
 	{
 		return currencyRepository.getById(currencyId).getSymbol().translate(adLanguage);
+	}
+
+	public CurrencyPrecision getCurrencyPrecision(final CurrencyId currencyId)
+	{
+		return currencyRepository.getById(currencyId).getPrecision();
 	}
 }

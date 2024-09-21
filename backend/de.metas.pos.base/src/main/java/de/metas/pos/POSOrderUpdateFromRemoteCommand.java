@@ -2,6 +2,7 @@ package de.metas.pos;
 
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
+import de.metas.money.Money;
 import de.metas.pos.remote.RemotePOSOrder;
 import de.metas.pos.remote.RemotePOSOrderLine;
 import de.metas.pos.remote.RemotePOSPayment;
@@ -92,14 +93,15 @@ class POSOrderUpdateFromRemoteCommand
 			//
 			// Amount, TaxAmt
 			final Quantity qty = extractQty(remoteOrderLine);
-			final BigDecimal price = remoteOrderLine.getPrice();
-			final BigDecimal amount = currencyPrecision.round(qty.toBigDecimal().multiply(price));
-			final BigDecimal amountPrev = existingLine != null ? existingLine.getAmount() : BigDecimal.ZERO;
-			final BigDecimal taxAmt;
+			final Money price = toMoney(remoteOrderLine.getPrice());
+			final Money amount = price.multiply(qty.toBigDecimal()).round(currencyPrecision);
+			final Money amountPrev = existingLine != null ? existingLine.getAmount() : toMoney(BigDecimal.ZERO);
+			final Money taxAmt;
 			if (existingLine == null || amount.compareTo(amountPrev) != 0)
 			{
 				tax = tax != null ? tax : taxDAO.getTaxById(taxId); // load tax if needed
-				taxAmt = tax.calculateTax(amount, order.isTaxIncluded(), currencyPrecision.toInt());
+				BigDecimal taxAmtBD = tax.calculateTax(amount.toBigDecimal(), order.isTaxIncluded(), currencyPrecision.toInt());
+				taxAmt = toMoney(taxAmtBD);
 			}
 			else
 			{
@@ -156,11 +158,16 @@ class POSOrderUpdateFromRemoteCommand
 					: POSPayment.builder();
 
 			final BigDecimal amount = currencyPrecision.round(remotePayment.getAmount());
-			
+
 			return builder.externalId(remotePayment.getUuid())
 					.paymentMethod(remotePayment.getPaymentMethod())
-					.amount(amount)
+					.amount(toMoney(amount))
 					.build();
 		});
+	}
+
+	private Money toMoney(final BigDecimal amount)
+	{
+		return Money.of(amount, order.getCurrencyId());
 	}
 }

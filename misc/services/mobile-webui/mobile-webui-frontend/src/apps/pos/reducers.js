@@ -3,6 +3,10 @@ import {
   ADD_PAYMENT,
   NEW_ORDER,
   ORDERS_LIST_INIT,
+  POS_TERMINAL_CLOSING,
+  POS_TERMINAL_CLOSING_CANCEL,
+  POS_TERMINAL_LOAD_DONE,
+  POS_TERMINAL_LOAD_START,
   REMOVE_ORDER,
   REMOVE_PAYMENT,
   SET_SELECTED_ORDER_LINE,
@@ -11,6 +15,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 const initialState = {
+  terminal: null,
   orders: {
     current_uuid: null,
     byUUID: {},
@@ -19,6 +24,53 @@ const initialState = {
 
 export function posReducer(applicationState = initialState, action) {
   switch (action.type) {
+    case POS_TERMINAL_LOAD_START: {
+      return {
+        ...applicationState,
+        terminal: {
+          ...applicationState?.terminal,
+          isLoading: true,
+        },
+      };
+    }
+    case POS_TERMINAL_LOAD_DONE: {
+      const { terminal } = action.payload;
+
+      // preserve closing flag.
+      // also, closing makes sense only if the journal is already open.
+      const isCashJournalClosing = applicationState?.terminal?.isCashJournalClosing && terminal?.cashJournalOpen;
+
+      return {
+        ...applicationState,
+        terminal: {
+          ...terminal,
+          isCashJournalClosing,
+          isLoading: false,
+          isLoaded: true,
+        },
+      };
+    }
+    case POS_TERMINAL_CLOSING: {
+      const terminal = applicationState?.terminal ?? {};
+      const isCashJournalClosing = !!terminal?.cashJournalOpen; // closing makes sense only if the journal is already open
+
+      return {
+        ...applicationState,
+        terminal: {
+          ...terminal,
+          isCashJournalClosing,
+        },
+      };
+    }
+    case POS_TERMINAL_CLOSING_CANCEL: {
+      return {
+        ...applicationState,
+        terminal: {
+          ...applicationState?.terminal,
+          isCashJournalClosing: false,
+        },
+      };
+    }
     case ORDERS_LIST_INIT: {
       const {
         payload: { ordersArray },
@@ -88,6 +140,16 @@ export function posReducer(applicationState = initialState, action) {
     }
   }
 }
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 //
 //

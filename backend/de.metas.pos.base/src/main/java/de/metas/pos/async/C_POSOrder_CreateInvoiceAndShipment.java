@@ -159,8 +159,8 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 				.qty(posLine.getQty().toBigDecimal())
 				.uomId(posLine.getQty().getUomId())
 				.isManualPrice(true)
-				.price(posLine.getPrice())
-				.currencyId(posOrder.getCurrencyId())
+				.price(posLine.getPrice().toBigDecimal())
+				.currencyId(posLine.getPrice().getCurrencyId())
 				//
 				// TODO optimize the retrieves below
 				.dataSourceId(inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(DATA_SOURCE_INTERNAL_NAME))

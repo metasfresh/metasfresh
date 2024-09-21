@@ -1,5 +1,6 @@
 package de.metas.pos;
 
+import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
@@ -7,8 +8,6 @@ import de.metas.tax.api.TaxId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.math.BigDecimal;
 
 @Value
 public class POSOrderLine
@@ -20,9 +19,9 @@ public class POSOrderLine
 	@NonNull TaxCategoryId taxCategoryId;
 	@NonNull TaxId taxId;
 	@NonNull Quantity qty;
-	@NonNull BigDecimal price;
-	@NonNull BigDecimal amount;
-	@NonNull BigDecimal taxAmt;
+	@NonNull Money price;
+	@NonNull Money amount;
+	@NonNull Money taxAmt;
 
 	@Builder(toBuilder = true)
 	private POSOrderLine(
@@ -32,10 +31,12 @@ public class POSOrderLine
 			@NonNull final TaxCategoryId taxCategoryId,
 			@NonNull final TaxId taxId,
 			@NonNull final Quantity qty,
-			@NonNull final BigDecimal price,
-			@NonNull final BigDecimal amount,
-			@NonNull BigDecimal taxAmt)
+			@NonNull final Money price,
+			@NonNull final Money amount,
+			@NonNull Money taxAmt)
 	{
+		Money.assertSameCurrency(price, amount, taxAmt);
+		
 		this.externalId = externalId;
 		this.productId = productId;
 		this.productName = productName;
@@ -48,7 +49,7 @@ public class POSOrderLine
 		this.taxAmt = taxAmt;
 	}
 
-	public BigDecimal getLineTotalAmt(final boolean isTaxIncluded)
+	public Money getLineTotalAmt(final boolean isTaxIncluded)
 	{
 		return isTaxIncluded ? amount : amount.add(taxAmt);
 	}

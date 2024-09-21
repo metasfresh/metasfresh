@@ -19,9 +19,14 @@ public class POSOrderProcessingServices
 {
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	@NonNull private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	@NonNull private final POSTerminalService posTerminalService;
+	@NonNull private final POSCashJournalService posCashJournalService;
 
 	public void createPayments(@NonNull POSOrder posOrder)
 	{
+		final POSTerminal posTerminal = posTerminalService.getPOSTerminalById(posOrder.getPosTerminalId());
+		final POSCashJournalId cashJournalId = posTerminal.getCashJournalIdNotNull();
+
 		posOrder.updateAllPayments(posPayment -> {
 			if (posPayment.getPaymentReceiptId() != null)
 			{
@@ -33,6 +38,8 @@ public class POSOrderProcessingServices
 				return posPayment.withPaymentReceiptId(paymentReceiptId);
 			}
 		});
+
+		posCashJournalService.changeJournalById(cashJournalId, journal -> journal.addPayments(posOrder));
 	}
 
 	public PaymentId createPaymentReceipt(@NonNull final POSPayment posPayment, @NonNull POSOrder posOrder)
@@ -43,8 +50,8 @@ public class POSOrderProcessingServices
 				.adOrgId(posOrder.getOrgId())
 				.orgBankAccountId(posOrder.getCashbookId())
 				.bpartnerId(posOrder.getShipToCustomerId())
-				.payAmt(posPayment.getAmount())
-				.currencyId(posOrder.getCurrencyId())
+				.payAmt(posPayment.getAmount().toBigDecimal())
+				.currencyId(posPayment.getAmount().getCurrencyId())
 				.tenderType(posPayment.getPaymentMethod().getTenderType())
 				.dateTrx(posOrder.getDate())
 				// TODO: isAutoAllocateAvailableAmt(true) somehow set posOrderId so we know to allocate only to invoices for that POSOrder

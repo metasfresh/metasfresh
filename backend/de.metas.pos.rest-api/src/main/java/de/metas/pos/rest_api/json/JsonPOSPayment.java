@@ -24,7 +24,7 @@ public class JsonPOSPayment
 		return builder()
 				.uuid(payment.getExternalId())
 				.paymentMethod(payment.getPaymentMethod())
-				.amount(payment.getAmount())
+				.amount(payment.getAmount().toBigDecimal())
 				.build();
 	}
 

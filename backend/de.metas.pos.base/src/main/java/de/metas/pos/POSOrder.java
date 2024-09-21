@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemAndListId;
 import de.metas.pricing.PricingSystemId;
@@ -21,7 +22,6 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,10 +48,10 @@ public class POSOrder
 
 	@Getter private final boolean isTaxIncluded;
 	@NonNull @Getter private final CurrencyId currencyId;
-	@NonNull @Getter BigDecimal totalAmt;
-	@NonNull @Getter BigDecimal taxAmt;
-	@NonNull @Getter BigDecimal paidAmt;
-	@NonNull @Getter BigDecimal openAmt;
+	@NonNull @Getter Money totalAmt;
+	@NonNull @Getter Money taxAmt;
+	@NonNull @Getter Money paidAmt;
+	@NonNull @Getter Money openAmt;
 
 	@NonNull private final ArrayList<POSOrderLine> lines;
 	@NonNull private final ArrayList<POSPayment> payments;
@@ -73,7 +73,7 @@ public class POSOrder
 			final boolean isTaxIncluded,
 			@NonNull final CurrencyId currencyId,
 			@Nullable final List<POSOrderLine> lines,
-			@Nullable final List<POSPayment> payments, 
+			@Nullable final List<POSPayment> payments,
 			@NonNull final POSTerminalId posTerminalId)
 	{
 		this.externalId = externalId;
@@ -92,10 +92,11 @@ public class POSOrder
 		this.payments = payments != null ? new ArrayList<>(payments) : new ArrayList<>();
 		this.posTerminalId = posTerminalId;
 
-		this.totalAmt = BigDecimal.ZERO;
-		this.taxAmt = BigDecimal.ZERO;
-		this.paidAmt = BigDecimal.ZERO;
-		this.openAmt = BigDecimal.ZERO;
+		final Money zero = Money.zero(currencyId);
+		this.totalAmt = zero;
+		this.taxAmt = zero;
+		this.paidAmt = zero;
+		this.openAmt = zero;
 		updateTotals();
 	}
 
@@ -109,8 +110,10 @@ public class POSOrder
 
 	private void updateTotals()
 	{
-		BigDecimal orderTotalAmt = BigDecimal.ZERO;
-		BigDecimal orderTaxAmt = BigDecimal.ZERO;
+		final Money zero = Money.zero(currencyId);
+		
+		Money orderTotalAmt = zero;
+		Money orderTaxAmt = zero;
 		for (final POSOrderLine line : lines)
 		{
 			orderTotalAmt = orderTotalAmt.add(line.getLineTotalAmt(isTaxIncluded));
@@ -121,13 +124,13 @@ public class POSOrder
 
 		//
 		// Payments
-		BigDecimal paidAmt = BigDecimal.ZERO;
+		Money paidAmt = zero;
 		for (final POSPayment payment : payments)
 		{
 			paidAmt = paidAmt.add(payment.getAmount());
 		}
 		this.paidAmt = paidAmt;
-		this.openAmt = this.totalAmt.subtract(paidAmt);
+		this.openAmt = this.totalAmt.subtract(this.paidAmt);
 	}
 
 	public ImmutableList<POSOrderLine> getLines() {return ImmutableList.copyOf(lines);}

@@ -3,20 +3,28 @@ package de.metas.pos.rest_api;
 import de.metas.Profiles;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
+import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
 import de.metas.pos.POSOrderStatus;
 import de.metas.pos.POSProductsList;
 import de.metas.pos.POSService;
+import de.metas.pos.POSTerminal;
+import de.metas.pos.POSTerminalCloseJournalRequest;
+import de.metas.pos.POSTerminalOpenJournalRequest;
+import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonContext;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
 import de.metas.pos.rest_api.json.JsonPOSOrdersList;
 import de.metas.pos.rest_api.json.JsonPOSTerminal;
+import de.metas.pos.rest_api.json.JsonPOSTerminalCloseJournalRequest;
+import de.metas.pos.rest_api.json.JsonPOSTerminalOpenJournalRequest;
 import de.metas.pos.rest_api.json.JsonProductsList;
 import de.metas.user.UserId;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,6 +63,43 @@ public class POSRestController
 		final String adLanguage = getADLanguage();
 
 		return JsonPOSTerminal.from(posService.getPOSTerminal(), adLanguage);
+	}
+
+	@PostMapping("/terminal/journal/open")
+	public JsonPOSTerminal openCashJournal(@RequestBody final JsonPOSTerminalOpenJournalRequest request)
+	{
+		final POSTerminal posTerminal = posService.openCashJournal(
+				POSTerminalOpenJournalRequest.builder()
+						.cashierId(getLoggedUserId())
+						.dateTrx(SystemTime.asInstant())
+						.cashBeginningBalance(request.getCashBeginningBalance())
+						.openingNote(request.getOpeningNote())
+						.build()
+		);
+
+		return JsonPOSTerminal.from(posTerminal, getADLanguage());
+	}
+
+	@PostMapping("/terminal/journal/close")
+	public JsonPOSTerminal closeCashJournal(@RequestBody final JsonPOSTerminalCloseJournalRequest request)
+	{
+		final POSTerminal posTerminal = posService.closeCashJournal(
+				POSTerminalCloseJournalRequest.builder()
+						.cashierId(getLoggedUserId())
+						.cashClosingBalance(request.getCashClosingBalance())
+						.closingNote(request.getClosingNote())
+						.build()
+		);
+
+		return JsonPOSTerminal.from(posTerminal, getADLanguage());
+	}
+
+	@GetMapping("/terminal/journal")
+	public JsonCashJournalSummary getCashJournalSummary()
+	{
+		final POSCashJournal cashJournal = posService.getCurrentCashJournal()
+				.orElseThrow(() -> new AdempiereException("No open cash journal found"));
+		return JsonCashJournalSummary.of(cashJournal, newJsonContext());
 	}
 
 	@GetMapping("/products")

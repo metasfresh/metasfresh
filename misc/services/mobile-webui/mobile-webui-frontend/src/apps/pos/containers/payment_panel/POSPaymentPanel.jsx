@@ -6,11 +6,11 @@ import {
   changeOrderStatusToDraft,
   removePayment,
   useCurrentOrder,
+  usePOSTerminal,
 } from '../../actions';
 import { useDispatch } from 'react-redux';
 import './POSPaymentPanel.scss';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
-import { usePOSTerminal } from '../../api/posTerminal';
 import PropTypes from 'prop-types';
 import { getPaymentMethodCaption, getPaymentMethodIcon, PAYMENT_METHODS } from '../../utils/paymentMethods';
 import { round } from '../../../../utils/numbers';

@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
@@ -72,6 +73,27 @@ public interface I_C_POS
 
 	ModelColumn<I_C_POS, Object> COLUMN_AutoLogoutDelay = new ModelColumn<>(I_C_POS.class, "AutoLogoutDelay", null);
 	String COLUMNNAME_AutoLogoutDelay = "AutoLogoutDelay";
+
+	/**
+	 * Set Cash Last Balance.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCashLastBalance (BigDecimal CashLastBalance);
+
+	/**
+	 * Get Cash Last Balance.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCashLastBalance();
+
+	ModelColumn<I_C_POS, Object> COLUMN_CashLastBalance = new ModelColumn<>(I_C_POS.class, "CashLastBalance", null);
+	String COLUMNNAME_CashLastBalance = "CashLastBalance";
 
 	/**
 	 * Set Template B.Partner.
@@ -161,6 +183,27 @@ public interface I_C_POS
 
 	ModelColumn<I_C_POS, Object> COLUMN_C_POS_ID = new ModelColumn<>(I_C_POS.class, "C_POS_ID", null);
 	String COLUMNNAME_C_POS_ID = "C_POS_ID";
+
+	/**
+	 * Set POS Cash Journal.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_POS_Journal_ID (int C_POS_Journal_ID);
+
+	/**
+	 * Get POS Cash Journal.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_POS_Journal_ID();
+
+	ModelColumn<I_C_POS, Object> COLUMN_C_POS_Journal_ID = new ModelColumn<>(I_C_POS.class, "C_POS_Journal_ID", null);
+	String COLUMNNAME_C_POS_Journal_ID = "C_POS_Journal_ID";
 
 	/**
 	 * Get Created.

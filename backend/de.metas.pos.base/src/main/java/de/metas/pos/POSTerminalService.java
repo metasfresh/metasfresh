@@ -8,6 +8,7 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.pricing.PricingSystemAndListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
@@ -31,7 +32,11 @@ public class POSTerminalService
 	@NonNull private final POSTerminalRawRepository posTerminalRawRepository;
 	@NonNull private final CurrencyRepository currencyRepository;
 
-	private final CCache<Integer, POSTerminal> cache = CCache.<Integer, POSTerminal>builder()
+	private final CCache<Integer, POSTerminalId> defaultPOSTerminalId = CCache.<Integer, POSTerminalId>builder()
+			.tableName(I_C_POS.Table_Name)
+			.build();
+
+	private final CCache<POSTerminalId, POSTerminal> cache = CCache.<POSTerminalId, POSTerminal>builder()
 			.tableName(I_C_POS.Table_Name)
 			.additionalTableNameToResetFor(I_M_PriceList.Table_Name)
 			.additionalTableNameToResetFor(I_C_Currency.Table_Name)
@@ -40,13 +45,24 @@ public class POSTerminalService
 	@NonNull
 	public POSTerminal getPOSTerminal()
 	{
-		return cache.getOrLoad(0, this::retrievePOSTerminal);
+		return getPOSTerminalById(getPOSTerminalId());
 	}
 
 	@NonNull
-	private POSTerminal retrievePOSTerminal()
+	public POSTerminal getPOSTerminalById(final POSTerminalId posTerminalId)
 	{
-		final POSTerminalRaw posTerminalRaw = posTerminalRawRepository.getPOSTerminal();
+		return cache.getOrLoad(posTerminalId, this::retrievePOSTerminalById);
+	}
+
+	private POSTerminalId getPOSTerminalId()
+	{
+		return defaultPOSTerminalId.getOrLoad(0, posTerminalRawRepository::retrievePOSTerminalId);
+	}
+
+	@NonNull
+	private POSTerminal retrievePOSTerminalById(@NonNull final POSTerminalId posTerminalId)
+	{
+		final POSTerminalRaw posTerminalRaw = posTerminalRawRepository.retrievePOSTerminalById(posTerminalId);
 		final I_M_PriceList priceList = priceListDAO.getById(posTerminalRaw.getPriceListId());
 		if (priceList == null)
 		{
@@ -66,6 +82,8 @@ public class POSTerminalService
 				.walkInCustomerShipToLocationId(extractWalkInCustomerShipTo(posTerminalRaw))
 				.salesOrderDocTypeId(posTerminalRaw.getSalesOrderDocTypeId())
 				.currency(currency)
+				.cashJournalId(posTerminalRaw.getCashJournalId())
+				.cashLastBalance(Money.of(posTerminalRaw.getCashLastBalance(), currencyId))
 				.build();
 	}
 
@@ -87,5 +105,25 @@ public class POSTerminalService
 						.bpartnerId(posTerminalRaw.getWalkInCustomerId())
 						.build())
 		);
+	}
+
+	private static POSTerminalRaw toRaw(final POSTerminal posTerminal)
+	{
+		return POSTerminalRaw.builder()
+				.id(posTerminal.getId())
+				.priceListId(posTerminal.getPriceListId())
+				.shipFromWarehouseId(posTerminal.getShipFrom().getWarehouseId())
+				.walkInCustomerId(posTerminal.getWalkInCustomerShipToLocationId().getBpartnerId())
+				.salesOrderDocTypeId(posTerminal.getSalesOrderDocTypeId())
+				.cashbookId(posTerminal.getCashbookId())
+				.cashJournalId(posTerminal.getCashJournalId())
+				.cashLastBalance(posTerminal.getCashLastBalance().toBigDecimal())
+				.build();
+	}
+
+	public void save(@NonNull final POSTerminal posTerminal)
+	{
+		final POSTerminalRaw raw = toRaw(posTerminal);
+		posTerminalRawRepository.save(raw);
 	}
 }

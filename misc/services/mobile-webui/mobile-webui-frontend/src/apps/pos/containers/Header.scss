@@ -52,11 +52,22 @@
 
     .center {
       flex-grow: 1;
+      height: 100%;
+      
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: center; // main axis (x)
+      align-items: center; // cross axis (y)
     }
 
     .right {
       flex-grow: 0;
       height: 100%;
+
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: right; // main axis (x)
+      align-items: center; // cross axis (y)
     }
   }
 }

@@ -9,6 +9,9 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
 @Value
 @Builder
 public class POSTerminalRaw
@@ -19,4 +22,7 @@ public class POSTerminalRaw
 	@NonNull BPartnerId walkInCustomerId;
 	@NonNull DocTypeId salesOrderDocTypeId;
 	@NonNull BankAccountId cashbookId;
+
+	@Nullable POSCashJournalId cashJournalId;
+	@NonNull BigDecimal cashLastBalance;
 }
