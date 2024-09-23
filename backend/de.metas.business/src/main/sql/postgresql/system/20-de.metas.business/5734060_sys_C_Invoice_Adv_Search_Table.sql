@@ -576,57 +576,57 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('C_Invoice_Adv_Search','ALTER TABLE public.C_Invoice_Adv_Search ADD COLUMN AD_User_ID NUMERIC(10)')
 ;
 
--- 2024-09-20T13:36:38.247Z
-ALTER TABLE C_Invoice_Adv_Search ADD CONSTRAINT ADUser_CInvoiceAdvSearch FOREIGN KEY (AD_User_ID) REFERENCES public.AD_User DEFERRABLE INITIALLY DEFERRED
-;
+-- -- 2024-09-20T13:36:38.247Z
+-- ALTER TABLE C_Invoice_Adv_Search ADD CONSTRAINT ADUser_CInvoiceAdvSearch FOREIGN KEY (AD_User_ID) REFERENCES public.AD_User DEFERRABLE INITIALLY DEFERRED
+-- ;
 
 -- 2024-09-20T13:36:38.268Z
 /* DDL */ SELECT public.db_alter_table('C_Invoice_Adv_Search','ALTER TABLE public.C_Invoice_Adv_Search ADD COLUMN C_BPartner_Location_ID NUMERIC(10)')
 ;
 
--- 2024-09-20T13:36:38.314Z
-ALTER TABLE C_Invoice_Adv_Search ADD CONSTRAINT CBPartnerLocation_CInvoiceAdvSearch FOREIGN KEY (C_BPartner_Location_ID) REFERENCES public.C_BPartner_Location DEFERRABLE INITIALLY DEFERRED
-;
+-- -- 2024-09-20T13:36:38.314Z
+-- ALTER TABLE C_Invoice_Adv_Search ADD CONSTRAINT CBPartnerLocation_CInvoiceAdvSearch FOREIGN KEY (C_BPartner_Location_ID) REFERENCES public.C_BPartner_Location DEFERRABLE INITIALLY DEFERRED
+-- ;
 
 -- 2024-09-20T13:36:38.335Z
 /* DDL */ SELECT public.db_alter_table('C_Invoice_Adv_Search','ALTER TABLE public.C_Invoice_Adv_Search ADD COLUMN C_Calendar_ID NUMERIC(10)')
 ;
 
--- 2024-09-20T13:36:38.344Z
-ALTER TABLE C_Invoice_Adv_Search ADD CONSTRAINT CCalendar_CInvoiceAdvSearch FOREIGN KEY (C_Calendar_ID) REFERENCES public.C_Calendar DEFERRABLE INITIALLY DEFERRED
-;
+-- -- 2024-09-20T13:36:38.344Z
+-- ALTER TABLE C_Invoice_Adv_Search ADD CONSTRAINT CCalendar_CInvoiceAdvSearch FOREIGN KEY (C_Calendar_ID) REFERENCES public.C_Calendar DEFERRABLE INITIALLY DEFERRED
+-- ;
 
 -- 2024-09-20T13:36:38.363Z
 /* DDL */ SELECT public.db_alter_table('C_Invoice_Adv_Search','ALTER TABLE public.C_Invoice_Adv_Search ADD COLUMN C_DocType_ID NUMERIC(10)')
 ;
 
--- 2024-09-20T13:36:38.370Z
-ALTER TABLE C_Invoice_Adv_Search ADD CONSTRAINT CDocType_CInvoiceAdvSearch FOREIGN KEY (C_DocType_ID) REFERENCES public.C_DocType DEFERRABLE INITIALLY DEFERRED
-;
+-- -- 2024-09-20T13:36:38.370Z
+-- ALTER TABLE C_Invoice_Adv_Search ADD CONSTRAINT CDocType_CInvoiceAdvSearch FOREIGN KEY (C_DocType_ID) REFERENCES public.C_DocType DEFERRABLE INITIALLY DEFERRED
+-- ;
 
 -- 2024-09-20T13:36:38.391Z
 /* DDL */ SELECT public.db_alter_table('C_Invoice_Adv_Search','ALTER TABLE public.C_Invoice_Adv_Search ADD COLUMN C_Invoice_ID NUMERIC(10)')
 ;
 
--- 2024-09-20T13:36:38.399Z
-ALTER TABLE C_Invoice_Adv_Search ADD CONSTRAINT CInvoice_CInvoiceAdvSearch FOREIGN KEY (C_Invoice_ID) REFERENCES public.C_Invoice DEFERRABLE INITIALLY DEFERRED
-;
+-- -- 2024-09-20T13:36:38.399Z
+-- ALTER TABLE C_Invoice_Adv_Search ADD CONSTRAINT CInvoice_CInvoiceAdvSearch FOREIGN KEY (C_Invoice_ID) REFERENCES public.C_Invoice DEFERRABLE INITIALLY DEFERRED
+-- ;
 
 -- 2024-09-20T13:36:38.419Z
 /* DDL */ SELECT public.db_alter_table('C_Invoice_Adv_Search','ALTER TABLE public.C_Invoice_Adv_Search ADD COLUMN C_Year_ID NUMERIC(10)')
 ;
 
--- 2024-09-20T13:36:38.428Z
-ALTER TABLE C_Invoice_Adv_Search ADD CONSTRAINT CYear_CInvoiceAdvSearch FOREIGN KEY (C_Year_ID) REFERENCES public.C_Year DEFERRABLE INITIALLY DEFERRED
-;
+-- -- 2024-09-20T13:36:38.428Z
+-- ALTER TABLE C_Invoice_Adv_Search ADD CONSTRAINT CYear_CInvoiceAdvSearch FOREIGN KEY (C_Year_ID) REFERENCES public.C_Year DEFERRABLE INITIALLY DEFERRED
+-- ;
 
 -- 2024-09-20T13:36:38.447Z
 /* DDL */ SELECT public.db_alter_table('C_Invoice_Adv_Search','ALTER TABLE public.C_Invoice_Adv_Search ADD COLUMN M_Warehouse_ID NUMERIC(10)')
 ;
 
--- 2024-09-20T13:36:38.455Z
-ALTER TABLE C_Invoice_Adv_Search ADD CONSTRAINT MWarehouse_CInvoiceAdvSearch FOREIGN KEY (M_Warehouse_ID) REFERENCES public.M_Warehouse DEFERRABLE INITIALLY DEFERRED
-;
+-- -- 2024-09-20T13:36:38.455Z
+-- ALTER TABLE C_Invoice_Adv_Search ADD CONSTRAINT MWarehouse_CInvoiceAdvSearch FOREIGN KEY (M_Warehouse_ID) REFERENCES public.M_Warehouse DEFERRABLE INITIALLY DEFERRED
+-- ;
 
 
 
@@ -655,3 +655,201 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=589057
 -- 2024-09-20T14:25:17.757Z
 DELETE FROM AD_Column WHERE AD_Column_ID=589057
 ;
+
+SELECT public.db_alter_table('C_Invoice_Adv_Search','ALTER TABLE public.C_Invoice_Adv_Search DROP COLUMN Value')
+;
+
+
+
+
+
+
+
+
+
+drop table c_invoice_adv_search;
+
+
+
+
+
+-- Run mode: SWING_CLIENT
+
+-- Column: C_Invoice_Adv_Search.C_Year_ID
+-- 2024-09-23T10:32:32.701Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:32:32.701','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589105
+;
+
+-- 2024-09-23T10:32:36.010Z
+INSERT INTO t_alter_column values('c_invoice_adv_search','C_Year_ID','NUMERIC(10)',null,null)
+;
+
+-- Column: C_Invoice_Adv_Search.AD_Client_ID
+-- 2024-09-23T10:36:12.811Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:12.811','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589032
+;
+
+-- Column: C_Invoice_Adv_Search.Address1
+-- 2024-09-23T10:36:14.580Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:14.58','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589033
+;
+
+-- Column: C_Invoice_Adv_Search.AD_Org_ID
+-- 2024-09-23T10:36:15.085Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:15.085','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589034
+;
+
+-- Column: C_Invoice_Adv_Search.AD_User_ID
+-- 2024-09-23T10:36:15.918Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:15.918','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589100
+;
+
+-- Column: C_Invoice_Adv_Search.BPartnerValue
+-- 2024-09-23T10:36:16.529Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:16.529','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589120
+;
+
+-- Column: C_Invoice_Adv_Search.BPName
+-- 2024-09-23T10:36:17.050Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:17.05','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589035
+;
+
+-- Column: C_Invoice_Adv_Search.CalendarName
+-- 2024-09-23T10:36:17.591Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:17.591','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589036
+;
+
+-- Column: C_Invoice_Adv_Search.C_BPartner_ID
+-- 2024-09-23T10:36:18.164Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:18.163','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589037
+;
+
+-- Column: C_Invoice_Adv_Search.C_BPartner_Location_ID
+-- 2024-09-23T10:36:18.744Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:18.744','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589101
+;
+
+-- Column: C_Invoice_Adv_Search.C_Calendar_ID
+-- 2024-09-23T10:36:19.400Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:19.4','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589102
+;
+
+-- Column: C_Invoice_Adv_Search.C_DocType_ID
+-- 2024-09-23T10:36:20.065Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:20.065','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589103
+;
+
+-- Column: C_Invoice_Adv_Search.C_Invoice_ID
+-- 2024-09-23T10:36:20.747Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:20.747','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589104
+;
+
+-- Column: C_Invoice_Adv_Search.City
+-- 2024-09-23T10:36:21.296Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:21.296','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589038
+;
+
+-- Column: C_Invoice_Adv_Search.Companyname
+-- 2024-09-23T10:36:21.964Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:21.964','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589039
+;
+
+-- Column: C_Invoice_Adv_Search.Created
+-- 2024-09-23T10:36:22.634Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:22.634','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589040
+;
+
+-- Column: C_Invoice_Adv_Search.CreatedBy
+-- 2024-09-23T10:36:23.684Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:23.684','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589041
+;
+
+-- Column: C_Invoice_Adv_Search.Description
+-- 2024-09-23T10:36:24.387Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:24.387','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589042
+;
+
+-- Column: C_Invoice_Adv_Search.DescriptionBottom
+-- 2024-09-23T10:36:24.957Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:24.957','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589043
+;
+
+-- Column: C_Invoice_Adv_Search.DocTypeName
+-- 2024-09-23T10:36:26.428Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:26.428','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589044
+;
+
+-- Column: C_Invoice_Adv_Search.WarehouseName
+-- 2024-09-23T10:36:27.011Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:27.011','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589058
+;
+
+-- Column: C_Invoice_Adv_Search.UpdatedBy
+-- 2024-09-23T10:36:27.621Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:27.621','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589056
+;
+
+-- Column: C_Invoice_Adv_Search.Updated
+-- 2024-09-23T10:36:28.207Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:28.206','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589055
+;
+
+-- Column: C_Invoice_Adv_Search.Postal
+-- 2024-09-23T10:36:28.836Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:28.836','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589054
+;
+
+-- Column: C_Invoice_Adv_Search.POReference
+-- 2024-09-23T10:36:29.463Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:29.463','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589053
+;
+
+-- Column: C_Invoice_Adv_Search.M_Warehouse_ID
+-- 2024-09-23T10:36:30.223Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:30.223','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589106
+;
+
+-- Column: C_Invoice_Adv_Search.Lastname
+-- 2024-09-23T10:36:31.006Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:31.006','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589052
+;
+
+-- Column: C_Invoice_Adv_Search.IsCompany
+-- 2024-09-23T10:36:31.648Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:31.647','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589051
+;
+
+-- Column: C_Invoice_Adv_Search.IsActive
+-- 2024-09-23T10:36:32.503Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:32.503','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589050
+;
+
+-- Column: C_Invoice_Adv_Search.FiscalYear
+-- 2024-09-23T10:36:33.150Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:33.15','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589049
+;
+
+-- Column: C_Invoice_Adv_Search.Firstname
+-- 2024-09-23T10:36:33.756Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:33.756','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589048
+;
+
+-- Column: C_Invoice_Adv_Search.ExternalId
+-- 2024-09-23T10:36:34.659Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:34.659','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589047
+;
+
+-- Column: C_Invoice_Adv_Search.ES_DocumentId
+-- 2024-09-23T10:36:35.184Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:35.184','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589046
+;
+
+-- Column: C_Invoice_Adv_Search.DocumentNo
+-- 2024-09-23T10:36:38.193Z
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36:38.193','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589045
+;
+
+-- 2024-09-23T10:36:43.913Z
+/* DDL */ CREATE TABLE public.C_Invoice_Adv_Search (AD_Client_ID NUMERIC(10), Address1 VARCHAR(100), AD_Org_ID NUMERIC(10), AD_User_ID NUMERIC(10), BPartnerValue VARCHAR(40), BPName VARCHAR(100), CalendarName VARCHAR(60), C_BPartner_ID NUMERIC(10), C_BPartner_Location_ID NUMERIC(10), C_Calendar_ID NUMERIC(10), C_DocType_ID NUMERIC(10), C_Invoice_ID NUMERIC(10), City VARCHAR(60), Companyname VARCHAR(100), Created TIMESTAMP WITH TIME ZONE, CreatedBy NUMERIC(10), C_Year_ID NUMERIC(10), Description VARCHAR(1024), DescriptionBottom VARCHAR(2048), DocTypeName VARCHAR(60), DocumentNo VARCHAR(30), ES_DocumentId TEXT, ExternalId VARCHAR(255), Firstname VARCHAR(255), FiscalYear VARCHAR(20), IsActive CHAR(1) CHECK (IsActive IN ('Y','N')), IsCompany CHAR(1) CHECK (IsCompany IN ('Y','N')), Lastname VARCHAR(255), M_Warehouse_ID NUMERIC(10), POReference VARCHAR(40), Postal VARCHAR(10), Updated TIMESTAMP WITH TIME ZONE, UpdatedBy NUMERIC(10), WarehouseName VARCHAR(60))
+;
+
