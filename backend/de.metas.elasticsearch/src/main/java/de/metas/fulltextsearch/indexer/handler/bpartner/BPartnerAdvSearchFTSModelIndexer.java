@@ -51,8 +51,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.springframework.stereotype.Component;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -178,13 +176,6 @@ public class BPartnerAdvSearchFTSModelIndexer implements FTSModelIndexer
 				.forEach(bpartnerIds::add);
 
 		return bpartnerIds.build();
-	}
-
-	@Value(staticConstructor = "of")
-	private static class DocumentChange
-	{
-		boolean isRemove;
-		@NonNull String esDocumentId;
 	}
 
 	@Value

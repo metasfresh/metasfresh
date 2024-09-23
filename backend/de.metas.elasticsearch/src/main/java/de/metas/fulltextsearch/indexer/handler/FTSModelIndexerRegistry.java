@@ -45,24 +45,15 @@ public class FTSModelIndexerRegistry
 
 	public FTSModelIndexerRegistry(@NonNull final Optional<List<FTSModelIndexer>> indexers)
 	{
-		// this.indexersBySourceTableName = indexers.orElseGet(ImmutableList::of)
-		// 		.stream()
-		// 		.flatMap(indexer -> indexer.getHandledSourceTableNames()
-		// 				.stream()
-		// 				.map(sourceTableName -> GuavaCollectors.entry(sourceTableName, indexer)))
-		// 		.collect(GuavaCollectors.toImmutableMap());
-
-		indexers.orElseGet(ImmutableList::of).stream()
-						.forEach(indexer -> indexer.getHandledSourceTableNames().stream()
-								.forEach(table -> indexersBySourceTableName.put(table, indexer)));
-
+		for (final FTSModelIndexer indexer : indexers.orElseGet(ImmutableList::of))
+		{
+			for (final TableName table : indexer.getHandledSourceTableNames())
+			{
+				indexersBySourceTableName.put(table, indexer);
+			}
+		}
 
 		logger.info("Indexers: {}", this.indexersBySourceTableName);
-	}
-
-	public Optional<List<FTSModelIndexer>> getBySourceTableName(@NonNull final TableName sourceTableName)
-	{
-		return Optional.ofNullable(indexersBySourceTableName.build().get(sourceTableName));
 	}
 
 	public List<FTSModelIndexer> getBySourceTableNames(@NonNull final Collection<TableName> sourceTableNames)
@@ -76,13 +67,6 @@ public class FTSModelIndexerRegistry
 
 		return indexes.stream().toList();
 
-
-		// return sourceTableNames.stream()
-		// 		.distinct()
-		// 		.map(indexersBySourceTableName::get)
-		// 		.filter(Objects::nonNull)
-		// 		.distinct()
-		// 		.collect(ImmutableList.toImmutableList());
 	}
 
 }
