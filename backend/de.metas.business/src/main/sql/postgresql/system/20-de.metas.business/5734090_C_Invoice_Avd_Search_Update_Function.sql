@@ -6,9 +6,6 @@ DROP FUNCTION IF EXISTS C_Invoice_Adv_Search_Update(
 
 DROP FUNCTION IF EXISTS C_Invoice_Adv_Search_Update()
 ;
-
-
-
 CREATE FUNCTION C_Invoice_Adv_Search_Update(p_c_invoice_ids numeric[])
     RETURNS TABLE
             (
@@ -45,46 +42,46 @@ BEGIN
     --
     -- Insert new rows
     WITH inserted_rows AS (
-    INSERT INTO c_invoice_adv_search (ad_client_id, address1, ad_org_id, bpname, calendarname, c_bpartner_id, city, companyname, created, createdby, description, descriptionbottom, doctypename, documentno, es_documentid, externalid, firstname, fiscalyear, isactive, iscompany, lastname, poreference, postal, updated, updatedby, warehousename, ad_user_id, c_bpartner_location_id, c_calendar_id,
-                                      c_doctype_id, c_invoice_id, c_year_id, m_warehouse_id, bpartnervalue)
-    SELECT v.ad_client_id,
-           v.address1,
-           v. ad_org_id,
-           v.bpname,
-           v.calendarname,
-           v. c_bpartner_id,
-           v. city,
-           v. companyname,
-           v. created,
-           v. createdby,
-           v. description,
-           v. descriptionbottom,
-           v. doctypename,
-           v. documentno,
-           v. es_documentid,
-           v. externalid,
-           v. firstname,
-           v. fiscalyear,
-           v. isactive,
-           v.iscompany,
-           v.lastname,
-           v.poreference,
-           v.postal,
-           v.updated,
-           v.updatedby,
-           v.warehousename,
-           v.ad_user_id,
-           v.c_bpartner_location_id,
-           v.c_calendar_id,
-           v.c_doctype_id,
-           v.c_invoice_id,
-           v.c_year_id,
-           v.m_warehouse_id,
-           v.bpartnervalue
+        INSERT INTO c_invoice_adv_search (ad_client_id, address1, ad_org_id, bpname, calendarname, c_bpartner_id, city, companyname, created, createdby, description, descriptionbottom, doctypename, documentno, es_documentid, externalid, firstname, fiscalyear, isactive, iscompany, lastname, poreference, postal, updated, updatedby, warehousename, ad_user_id, c_bpartner_location_id, c_calendar_id,
+                                          c_doctype_id, c_invoice_id, c_year_id, m_warehouse_id, bpartnervalue)
+            SELECT v.ad_client_id,
+                   v.address1,
+                   v. ad_org_id,
+                   v.bpname,
+                   v.calendarname,
+                   v. c_bpartner_id,
+                   v. city,
+                   v. companyname,
+                   v. created,
+                   v. createdby,
+                   v. description,
+                   v. descriptionbottom,
+                   v. doctypename,
+                   v. documentno,
+                   v. es_documentid,
+                   v. externalid,
+                   v. firstname,
+                   v. fiscalyear,
+                   v. isactive,
+                   v.iscompany,
+                   v.lastname,
+                   v.poreference,
+                   v.postal,
+                   v.updated,
+                   v.updatedby,
+                   v.warehousename,
+                   v.ad_user_id,
+                   v.c_bpartner_location_id,
+                   v.c_calendar_id,
+                   v.c_doctype_id,
+                   v.c_invoice_id,
+                   v.c_year_id,
+                   v.m_warehouse_id,
+                   v.bpartnervalue
 
-    FROM C_Invoice_ADV_Search_v v
-    WHERE (p_C_Invoice_IDs IS NULL OR v.C_Invoice_ID = ANY (p_C_Invoice_IDs))
-        RETURNING c_invoice_adv_search.es_documentid)
+            FROM C_Invoice_ADV_Search_v v
+            WHERE (p_C_Invoice_IDs IS NULL OR v.C_Invoice_ID = ANY (p_C_Invoice_IDs))
+            RETURNING c_invoice_adv_search.es_documentid)
     SELECT ARRAY_AGG(inserted_rows.es_documentid)
     INTO v_inserted_documentIds
     FROM inserted_rows;
