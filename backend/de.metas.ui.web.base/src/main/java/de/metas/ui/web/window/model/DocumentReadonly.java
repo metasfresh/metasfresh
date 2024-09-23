@@ -63,15 +63,8 @@ public class DocumentReadonly
 	ExtendedMemorizingSupplier<ReadOnlyInfo> fieldsReadonly;
 
 	@NonFinal
-	public BooleanWithReason computeFieldReadonly(final IDocumentField documentField)
+	public BooleanWithReason computeFieldReadonly(final String fieldName, final boolean alwaysUpdateable)
 	{
-		final String fieldName = documentField.getFieldName();
-		final boolean alwaysUpdatable = documentField.isAlwaysUpdateable();
-		if(!documentField.isUpdatable() && documentField.getValue() != null)
-		{
-			return BooleanWithReason.trueBecause("Column not updatable and value set");
-		}
-
 		// Case: parent document is not active => fields of this document shall be completely readonly (including the IsActive flag)
 		if (!parentActive)
 		{
@@ -86,7 +79,7 @@ public class DocumentReadonly
 		// Case: this or parent document is processed => fields of this document shall be completely readonly if they were not flagged with AlwaysUpdateable
 		if (processed || processing)
 		{
-			return alwaysUpdatable ? BooleanWithReason.FALSE : BooleanWithReason.TRUE; // readonly if not always updateable
+			return alwaysUpdateable ? BooleanWithReason.FALSE : BooleanWithReason.TRUE; // readonly if not always updateable
 		}
 
 		// Case: this document is not active => fields of this document shall be completely readonly, BUT NOT the IsActive flag.

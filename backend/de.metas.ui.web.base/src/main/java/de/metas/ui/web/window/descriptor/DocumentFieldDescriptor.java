@@ -140,7 +140,6 @@ public final class DocumentFieldDescriptor
 
 	private final ILogicExpression readonlyLogic;
 	private final boolean alwaysUpdateable;
-	private final boolean updatable;
 	private final ILogicExpression displayLogic;
 	private final ILogicExpression mandatoryLogic;
 
@@ -190,7 +189,6 @@ public final class DocumentFieldDescriptor
 		characteristics = Sets.immutableEnumSet(builder.characteristics);
 		readonlyLogic = builder.getReadonlyLogicEffective();
 		alwaysUpdateable = builder.alwaysUpdateable;
-		updatable = builder.updatable;
 		displayLogic = builder.displayLogic;
 		mandatoryLogic = builder.getMandatoryLogicEffective();
 
@@ -346,11 +344,6 @@ public final class DocumentFieldDescriptor
 		return alwaysUpdateable;
 	}
 
-	public boolean isUpdatable()
-	{
-		return updatable;
-	}
-
 	public ILogicExpression getDisplayLogic()
 	{
 		return displayLogic;
@@ -457,7 +450,6 @@ public final class DocumentFieldDescriptor
 		private ILogicExpression _readonlyLogicEffective = null;
 
 		private boolean alwaysUpdateable = false;
-		private boolean updatable = true;
 		private ILogicExpression displayLogic = ConstantLogicExpression.TRUE;
 		private ILogicExpression _mandatoryLogic = ConstantLogicExpression.FALSE;
 		private ILogicExpression _mandatoryLogicEffective = null;
@@ -957,13 +949,6 @@ public final class DocumentFieldDescriptor
 		public boolean isAlwaysUpdateable()
 		{
 			return alwaysUpdateable;
-		}
-
-		public Builder setUpdatable(final boolean updatable)
-		{
-			assertNotBuilt();
-			this.updatable = updatable;
-			return this;
 		}
 
 		public Builder setDisplayLogic(final ILogicExpression displayLogic)

@@ -61,8 +61,6 @@ public interface IDocumentFieldView
 	//@formatter:off
 	LogicExpressionResult getReadonly();
 	default boolean isAlwaysUpdateable() { return getDescriptor().isAlwaysUpdateable(); }
-
-	default boolean isUpdatable() {return getDescriptor().isUpdatable(); }
 	//
 	LogicExpressionResult getMandatory();
 	default boolean isMandatory() { return getMandatory().isTrue(); }

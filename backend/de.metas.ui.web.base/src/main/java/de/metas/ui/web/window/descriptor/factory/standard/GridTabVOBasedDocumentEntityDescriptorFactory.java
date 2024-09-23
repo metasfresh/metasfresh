@@ -525,7 +525,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				//
 				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
-				.setUpdatable(gridFieldVO.isUpdateable())
 				.setMandatoryLogic(extractMandatoryLogic(gridFieldVO))
 				.setDisplayLogic(gridFieldVO.getDisplayLogic())
 				//
