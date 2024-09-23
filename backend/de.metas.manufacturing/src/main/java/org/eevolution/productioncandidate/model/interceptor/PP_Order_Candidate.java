@@ -45,7 +45,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.eevolution.productioncandidate.service.PPOrderCandidatePojoConverter;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 import org.springframework.stereotype.Component;
@@ -70,7 +69,6 @@ public class PP_Order_Candidate
 	private final PPOrderCandidatePojoConverter ppOrderCandidateConverter;
 	private final PostMaterialEventService materialEventService;
 	private final PPOrderCandidateService ppOrderCandidateService;
-	private final PPOrderCandidateDAO ppOrderCandidateDAO;
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void syncLinesAndPostPPOrderCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -150,18 +148,19 @@ public class PP_Order_Candidate
 		}
 	}
 
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_Parent_ID, I_PP_Order_Candidate.COLUMNNAME_SeqNo })
-	public void checkSeqNo(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
-	{
-		if (ppOrderCandidateRecord.getPP_Order_Candidate_Parent_ID() <= 0)
-		{
-			return;
-		}
-		final I_PP_Order_Candidate parentRecord = ppOrderCandidateDAO.getById(PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_Parent_ID()));
-		parentRecord.setSeqNo(ppOrderCandidateRecord.getSeqNo() + 10);
-	}
+	// TODO: remove altogether or replace with  performant impl
+	// @ModelChange(
+	// 		timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+	// 		ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_Parent_ID, I_PP_Order_Candidate.COLUMNNAME_SeqNo })
+	// public void checkSeqNo(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	// {
+	// 	if (ppOrderCandidateRecord.getPP_Order_Candidate_Parent_ID() <= 0)
+	// 	{
+	// 		return;
+	// 	}
+	// 	final I_PP_Order_Candidate parentRecord = ppOrderCandidateDAO.getById(PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_Parent_ID()));
+	// 	parentRecord.setSeqNo(ppOrderCandidateRecord.getSeqNo() + 10);
+	// }
 
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_DELETE })

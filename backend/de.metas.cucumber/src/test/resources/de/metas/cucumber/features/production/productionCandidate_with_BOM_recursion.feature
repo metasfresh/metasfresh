@@ -78,9 +78,9 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
     
     # for 1x product_1_1_Sxxxx_10 we need 20x product_2_1_Sxxxx_10 and 10x product_2_2_Sxxxx_10 and (20*5=) 100x product_3_1_Sxxxx_10
     Then after not more than 60s, PP_Order_Candidates are found
-      | Identifier    | Processed | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed | OPT.SeqNo |
-      | oc_1_Sxxxx_10 | false     | product_1_1_Sxxxx_10 | bom_1_Sxxxx_10    | ppln_1_1_Sxxxx_10      | resource_Sxxxx | 1 PCE      | 1 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         | 20        |
-      | oc_2_Sxxxx_10 | false     | product_2_1_Sxxxx_10 | bom_2_Sxxxx_10    | ppln_2_1_Sxxxx_10      | resource_Sxxxx | 20 PCE     | 20 PCE       | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         | 10        |
+      | Identifier    | Processed | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
+      | oc_1_Sxxxx_10 | false     | product_1_1_Sxxxx_10 | bom_1_Sxxxx_10    | ppln_1_1_Sxxxx_10      | resource_Sxxxx | 1 PCE      | 1 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
+      | oc_2_Sxxxx_10 | false     | product_2_1_Sxxxx_10 | bom_2_Sxxxx_10    | ppln_2_1_Sxxxx_10      | resource_Sxxxx | 20 PCE     | 20 PCE       | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID         | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
       | oc_1_Sxxxx_10         | product_2_1_Sxxxx_10 | 20 PCE     | CO            | boml_2_1_Sxxxx_10     |
@@ -88,7 +88,7 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | oc_2_Sxxxx_10         | product_3_1_Sxxxx_10 | 100 PCE    | CO            | boml_3_1_Sxxxx_10     |
 
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier       | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP  | M_Warehouse_ID |
+      | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP  | M_Warehouse_ID |
       | 01/d_1_1_Sxxxx_10 | DEMAND            | SHIPMENT                  | product_1_1_Sxxxx_10 | 2024-09-22T21:00:00Z | 1   | -1   | WH_Sxxxx       |
       | 02/s_1_1_Sxxxx_10 | SUPPLY            | PRODUCTION                | product_1_1_Sxxxx_10 | 2024-09-22T21:00:00Z | 1   | 0    | WH_Sxxxx       |
       | 03/d_2_1_Sxxxx_10 | DEMAND            | PRODUCTION                | product_2_1_Sxxxx_10 | 2024-09-22T21:00:00Z | 20  | -20  | WH_Sxxxx       |
@@ -107,9 +107,9 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
     And the order identified by o_1_Sxxxx_10 is completed
 
     Then after not more than 60s, PP_Order_Candidates are found
-      | Identifier      | Processed | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed | OPT.SeqNo |
-      | oc_2_1_Sxxxx_10 | false     | product_1_1_Sxxxx_10 | bom_1_Sxxxx_10    | ppln_1_1_Sxxxx_10      | resource_Sxxxx | 2 PCE      | 2 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         | 20        |
-      | oc_2_2_Sxxxx_10 | false     | product_2_1_Sxxxx_10 | bom_2_Sxxxx_10    | ppln_2_1_Sxxxx_10      | resource_Sxxxx | 40 PCE     | 40 PCE       | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         | 10        |
+      | Identifier      | Processed | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
+      | oc_2_1_Sxxxx_10 | false     | product_1_1_Sxxxx_10 | bom_1_Sxxxx_10    | ppln_1_1_Sxxxx_10      | resource_Sxxxx | 2 PCE      | 2 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
+      | oc_2_2_Sxxxx_10 | false     | product_2_1_Sxxxx_10 | bom_2_Sxxxx_10    | ppln_2_1_Sxxxx_10      | resource_Sxxxx | 40 PCE     | 40 PCE       | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID         | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
       | oc_2_1_Sxxxx_10       | product_2_1_Sxxxx_10 | 40 PCE     | CO            | boml_2_1_Sxxxx_10     |
@@ -186,9 +186,9 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
     
     # for 1x product_1_1_Sxxxx_10 we need 20x product_2_1_Sxxxx_10 and 10x product_2_2_Sxxxx_10 and (20*5=) 100x product_3_1_Sxxxx_10
     Then after not more than 60s, PP_Order_Candidates are found
-      | Identifier    | Processed | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed | OPT.SeqNo |
-      | oc_1_Sxxxx_10 | false     | product_1_1_Sxxxx_10 | bom_1_Sxxxx_10    | ppln_1_1_Sxxxx_10      | resource_Sxxxx | 1 PCE      | 0 PCE        | 1 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          | 20        |
-      | oc_2_Sxxxx_10 | false     | product_2_1_Sxxxx_10 | bom_2_Sxxxx_10    | ppln_2_1_Sxxxx_10      | resource_Sxxxx | 20 PCE     | 0 PCE        | 20 PCE       | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          | 10        |
+      | Identifier    | Processed | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
+      | oc_1_Sxxxx_10 | false     | product_1_1_Sxxxx_10 | bom_1_Sxxxx_10    | ppln_1_1_Sxxxx_10      | resource_Sxxxx | 1 PCE      | 0 PCE        | 1 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
+      | oc_2_Sxxxx_10 | false     | product_2_1_Sxxxx_10 | bom_2_Sxxxx_10    | ppln_2_1_Sxxxx_10      | resource_Sxxxx | 20 PCE     | 0 PCE        | 20 PCE       | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID         | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
       | oc_1_Sxxxx_10         | product_2_1_Sxxxx_10 | 20 PCE     | CO            | boml_2_1_Sxxxx_10     |
@@ -196,7 +196,7 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | oc_2_Sxxxx_10         | product_3_1_Sxxxx_10 | 100 PCE    | CO            | boml_3_1_Sxxxx_10     |
 
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier       | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP  | M_Warehouse_ID |
+      | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP  | M_Warehouse_ID |
       | 01/d_1_1_Sxxxx_10 | DEMAND            | SHIPMENT                  | product_1_1_Sxxxx_10 | 2024-09-22T21:00:00Z | 1   | -1   | WH_Sxxxx       |
       | 02/s_1_1_Sxxxx_10 | SUPPLY            | PRODUCTION                | product_1_1_Sxxxx_10 | 2024-09-22T21:00:00Z | 1   | 0    | WH_Sxxxx       |
       | 03/d_2_1_Sxxxx_10 | DEMAND            | PRODUCTION                | product_2_1_Sxxxx_10 | 2024-09-22T21:00:00Z | 20  | -20  | WH_Sxxxx       |
@@ -215,9 +215,9 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
     And the order identified by o_1_Sxxxx_10 is completed
 
     Then after not more than 60s, PP_Order_Candidates are found
-      | Identifier      | Processed | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed | OPT.SeqNo |
-      | oc_2_1_Sxxxx_10 | false     | product_1_1_Sxxxx_10 | bom_1_Sxxxx_10    | ppln_1_1_Sxxxx_10      | resource_Sxxxx | 2 PCE      | 0 PCE        | 2 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          | 20        |
-      | oc_2_2_Sxxxx_10 | false     | product_2_1_Sxxxx_10 | bom_2_Sxxxx_10    | ppln_2_1_Sxxxx_10      | resource_Sxxxx | 40 PCE     | 0 PCE        | 40 PCE       | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          | 10        |
+      | Identifier      | Processed | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
+      | oc_2_1_Sxxxx_10 | false     | product_1_1_Sxxxx_10 | bom_1_Sxxxx_10    | ppln_1_1_Sxxxx_10      | resource_Sxxxx | 2 PCE      | 0 PCE        | 2 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
+      | oc_2_2_Sxxxx_10 | false     | product_2_1_Sxxxx_10 | bom_2_Sxxxx_10    | ppln_2_1_Sxxxx_10      | resource_Sxxxx | 40 PCE     | 0 PCE        | 40 PCE       | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID         | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
       | oc_2_1_Sxxxx_10       | product_2_1_Sxxxx_10 | 40 PCE     | CO            | boml_2_1_Sxxxx_10     |
