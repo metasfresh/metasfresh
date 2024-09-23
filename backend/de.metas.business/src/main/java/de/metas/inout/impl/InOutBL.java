@@ -8,6 +8,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.doctype.CopyDocumentNote;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
@@ -683,10 +684,22 @@ public class InOutBL implements IInOutBL
 
 		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
 		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
-		final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+
 
 		inOut.setDescription(description.translate(adLanguage));
-		inOut.setDescriptionBottom(documentNote.translate(adLanguage));
+
+		final CopyDocumentNote copyDocumentNote = CopyDocumentNote.ofCode(docType.getCopyDocumentNote());
+
+		if (copyDocumentNote.isCopyDocumentNoteFromOrder() && inOut.getC_Order_ID() > 0)
+		{
+			// TODO: copy from order
+		}
+		else
+		{
+			final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+			inOut.setDescriptionBottom(documentNote.translate(adLanguage));
+		}
+
 	}
 
 	private I_C_BPartner getBPartnerOrNull(@NonNull final I_M_InOut inOut)

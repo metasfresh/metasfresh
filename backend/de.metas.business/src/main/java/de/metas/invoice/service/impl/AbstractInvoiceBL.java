@@ -6,6 +6,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.attachments.AttachmentEntryType;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -25,6 +26,7 @@ import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
+import de.metas.doctype.CopyDocumentNote;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -867,17 +869,28 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			invoice.setDescription(defaultDescription);
 		}
 
-		final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+		final CopyDocumentNote copyDocumentNote = CopyDocumentNote.ofCode(docType.getCopyDocumentNote());
 
-		if (!Check.isEmpty(documentNote.toString()))
+		if (copyDocumentNote.isCopyDocumentNoteFromOrder() && invoice.getC_Order_ID() > 0)
 		{
-
-			invoice.setDescriptionBottom(documentNote.translate(adLanguage));
+        	// TODO: copy from order
 		}
 		else
 		{
-			invoice.setDescriptionBottom(defaultDocumentNote);
+
+			final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+
+			if (!Check.isEmpty(documentNote.toString()))
+			{
+
+				invoice.setDescriptionBottom(documentNote.translate(adLanguage));
+			}
+			else
+			{
+				invoice.setDescriptionBottom(defaultDocumentNote);
+			}
 		}
+
 	}
 
 	@Override
