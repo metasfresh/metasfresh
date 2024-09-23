@@ -117,7 +117,7 @@ public class C_Aggregation_StepDef
 		aggregationRecord.setEntityType(entityType);
 
 		final String aggregationUsageLevel = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Aggregation.COLUMNNAME_AggregationUsageLevel);
-		if (Check.isNotBlank(aggregationUsageLevel))
+		if (de.metas.util.Check.isNotBlank(aggregationUsageLevel))
 		{
 			aggregationRecord.setAggregationUsageLevel(aggregationUsageLevel);
 		}
