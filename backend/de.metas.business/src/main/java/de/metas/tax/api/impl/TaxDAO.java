@@ -241,6 +241,12 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@Override
+	public @NonNull Optional<Tax> getByIfPresent(@NonNull final TaxQuery taxQuery)
+	{
+		return Optional.ofNullable(getBy(taxQuery));
+	}
+
+	@Override
 	@Nullable
 	public Tax getBy(@NonNull final TaxQuery taxQuery)
 	{

@@ -59,6 +59,8 @@ public interface ITaxDAO extends ISingletonService
 
 	Percent getRateById(@NonNull TaxId taxId);
 
+	Optional<Tax> getByIfPresent(@NonNull TaxQuery taxQuery);
+
 	/**
 	 * Get tax category by criteria.
 	 * IF a VatCodeId is provided, and that code is associated with a {@code C_Tax} whose category is marked as IsManualTax, then that tax is used regardless of other query parameters.

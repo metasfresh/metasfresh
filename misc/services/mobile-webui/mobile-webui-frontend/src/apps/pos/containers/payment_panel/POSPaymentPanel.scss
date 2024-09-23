@@ -1,0 +1,148 @@
+.pos-payment-panel {
+  display: flex;
+  flex-flow: column nowrap;
+  padding-top: 5%;
+  background-color: #f0f0f0;
+
+  .payment-summary {
+    flex-grow: 0;
+    padding-left: 10%;
+    padding-right: 10%;
+
+    .payment-summary-line {
+      display: flex;
+      flex-flow: row nowrap;
+
+      .payment-summary-label {
+        flex-grow: 1;
+      }
+
+      .payment-summary-value {
+        flex-grow: 0;
+        font-weight: bold;
+      }
+
+      .payment-summary-actions {
+        flex-grow: 0;
+        font-weight: bold;
+        font-size: 1em;
+        min-width: 4rem;
+        max-width: 4rem;
+        text-align: center;
+      }
+    }
+
+    .payment-summary-line.totalAmt {
+      font-size: 3rem !important;
+    }
+  }
+
+
+  .payment-lines-container {
+    flex-grow: 1;
+    padding-left: 10%;
+    padding-right: 10%;
+
+    .payment-line {
+      display: flex;
+      flex-flow: row nowrap;
+
+      .payment-line-label {
+        flex-grow: 1;
+      }
+
+      .payment-line-value {
+        flex-grow: 0;
+        font-weight: bold;
+      }
+
+      .payment-line-actions {
+        flex-grow: 0;
+        min-width: 4rem;
+        max-width: 4rem;
+        padding-left: 5px;
+
+        .payment-line-action-item {
+          font-weight: bold;
+          font-size: 1em;
+          width: 4rem;
+          text-align: center;
+        }
+
+        .payment-line-action-item:active {
+          background-color: whitesmoke;
+          border-radius: 2rem;
+        }
+      }
+    }
+  }
+
+
+  .payment-methods-container {
+    flex-grow: 0;
+    padding: 2em;
+
+    display: flex;
+    column-gap: 10px;
+    row-gap: 10px;
+    justify-content: center; // main axis (x)
+    align-items: center; // cross axis (y)
+
+    .payment-method {
+      background-color: white;
+      border-radius: 10px;
+      display: flex;
+      flex-flow: column nowrap;
+      width: 8em;
+      height: 8em;
+      align-items: center; // main axis (x)
+      justify-content: center; // cross axis (y)
+      cursor: pointer;
+
+      .payment-method-icon {
+        font-size: 3em;
+      }
+
+      .payment-method-caption {
+        text-align: center;
+      }
+    }
+
+    .payment-method.is-disabled {
+      background-color: lightgrey;
+      color: gray;
+    }
+  }
+
+  .payment-bottom {
+    flex-grow: 0;
+
+    display: flex;
+    column-gap: 10px;
+    row-gap: 10px;
+    flex-flow: row nowrap;
+    justify-content: center; // main axis (x)
+    align-items: center; // cross axis (y)
+
+    button {
+      border: 0;
+      flex-grow: 1;
+      font-size: 4rem;
+      font-weight: bold;
+      padding: 10px;
+    }
+
+    .back {
+      background-color: white;
+    }
+
+    .validate {
+      background-color: #74b727;
+      color: white;
+    }
+    .validate:disabled {
+      background-color: rgba(116, 183, 39, 0.24);
+      color: gray;
+    }
+  }
+}

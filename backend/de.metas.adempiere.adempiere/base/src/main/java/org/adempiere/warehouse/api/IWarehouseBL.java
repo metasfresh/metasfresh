@@ -70,7 +70,7 @@ public interface IWarehouseBL extends ISingletonService
 	@Nullable
 	BPartnerContactId getBPartnerContactId(@NonNull WarehouseId warehouseId);
 
-	@Nullable
+	@NonNull
 	CountryId getCountryId(WarehouseId warehouseId);
 
 	@NonNull

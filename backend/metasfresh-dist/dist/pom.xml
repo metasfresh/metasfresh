@@ -554,6 +554,15 @@
             <type>zip</type>
         </dependency>
 
+        <dependency>
+            <groupId>de.metas.pos</groupId>
+            <artifactId>de.metas.pos.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
+
         <!-- Elasticsearch -->
         <dependency>
             <groupId>de.metas.elasticsearch</groupId>
