@@ -1,11 +1,19 @@
-select * from C_Invoice_Adv_Search_v
+DROP VIEW IF EXISTS C_Invoice_Adv_Search_v
 ;
 
 CREATE OR REPLACE VIEW C_Invoice_Adv_Search_v AS
-SELECT i.documentno,
-       i.poreference,
+SELECT i.c_invoice_id,
        bp.c_bpartner_id,
-       bp.value,
+       bpl.c_bpartner_location_id,
+       COALESCE(u.ad_user_id, -1)                                                                              AS AD_User_ID,
+       COALESCE(dt.c_doctype_id, -1)                                                                           AS C_DocType_ID,
+       COALESCE(wh.m_warehouse_id, -1)                                                                         AS M_Warehouse_ID,
+       COALESCE(cal.c_calendar_id, -1)                                                                         AS C_Calendar_ID,
+       COALESCE(year.c_year_id, -1)                                                                            AS C_Year_ID,
+
+       i.documentno,
+       i.poreference,
+       bp.value                                                                                                AS BPartnerValue,
        (SELECT ExternalReference
         FROM S_ExternalReference
         WHERE Type = 'BPartner'
@@ -38,7 +46,8 @@ SELECT i.documentno,
            || '-' || bp.c_bpartner_id
            || '-' || bpl.c_bpartner_location_id
            || '-' || COALESCE(u.ad_user_id::varchar, 'X')
-           || '-' || dt.c_doctype_id || COALESCE(wh.m_warehouse_id::varchar, 'X')
+           || '-' || COALESCE(dt.c_doctype_id::varchar, 'X')
+           || '-' || COALESCE(wh.m_warehouse_id::varchar, 'X')
            || '-' || COALESCE(cal.c_calendar_id::varchar, 'X')
            || '-' || COALESCE(year.c_year_id::varchar, 'X')                                                    AS es_documentid
 FROM C_Invoice i

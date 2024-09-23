@@ -46,7 +46,8 @@ SELECT i.c_invoice_id,
            || '-' || bp.c_bpartner_id
            || '-' || bpl.c_bpartner_location_id
            || '-' || COALESCE(u.ad_user_id::varchar, 'X')
-           || '-' || dt.c_doctype_id || COALESCE(wh.m_warehouse_id::varchar, 'X')
+           || '-' || COALESCE(dt.c_doctype_id::varchar, 'X')
+           || '-' || COALESCE(wh.m_warehouse_id::varchar, 'X')
            || '-' || COALESCE(cal.c_calendar_id::varchar, 'X')
            || '-' || COALESCE(year.c_year_id::varchar, 'X')                                                    AS es_documentid
 FROM C_Invoice i
