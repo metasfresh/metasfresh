@@ -195,6 +195,9 @@
         <module>de.metas.picking.rest-api</module>
         <module>de.metas.distribution.rest-api</module>
 
+        <module>de.metas.pos.base</module>
+        <module>de.metas.pos.rest-api</module>
+
         <module>metasfresh-webui-api</module>
         <module>metasfresh-dist</module>
         <!-- <module>extensionsupport</module> -->

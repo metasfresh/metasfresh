@@ -35,7 +35,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 public interface IWarehouseBL extends ISingletonService
@@ -61,7 +60,7 @@ public interface IWarehouseBL extends ISingletonService
 	 */
 	LocatorId getOrCreateDefaultLocatorId(WarehouseId warehouse);
 
-	@Nullable
+	@NonNull
 	CountryId getCountryId(WarehouseId warehouseId);
 
 	@NonNull

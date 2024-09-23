@@ -86,7 +86,7 @@ public class AutoProcessingOLCandService
 
 		if (olCandIds.isEmpty())
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("Returning! No OlCandIds selection found for PInstanceId: {}", request.getPInstanceId());
+			Loggables.withLogger(logger, Level.INFO).addLog("Returning! No OlCandIds selection found for PInstanceId: {}. Maybe you created them in another transaction that's not yet committed?", request.getPInstanceId());
 			return;
 		}
 
