@@ -321,7 +321,7 @@ class POSOrdersLoaderAndSaver
 				.productName(record.getProductName())
 				.taxCategoryId(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID()))
 				.taxId(TaxId.ofRepoId(record.getC_Tax_ID()))
-				.qty(Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.qty(Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.price(Money.of(record.getPrice(), currencyId))
 				.amount(Money.of(record.getAmount(), currencyId))
 				.taxAmt(Money.of(record.getTaxAmt(), currencyId))

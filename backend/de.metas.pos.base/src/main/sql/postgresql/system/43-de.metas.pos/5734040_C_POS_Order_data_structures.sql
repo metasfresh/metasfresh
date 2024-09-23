@@ -9,7 +9,10 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2024-09-20T13:16:35.689Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556365,TO_TIMESTAMP('2024-09-20 16:16:35','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_POS_Order',1,'Y','N','Y','Y','C_POS_Order','N',1000000,TO_TIMESTAMP('2024-09-20 16:16:35','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,
+                         StartNo,Updated,UpdatedBy) 
+VALUES (0,0,556365,TO_TIMESTAMP('2024-09-20 16:16:35','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_POS_Order',1,'Y','N','Y','Y','C_POS_Order',
+        1000000,TO_TIMESTAMP('2024-09-20 16:16:35','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2024-09-20T13:16:35.700Z
@@ -520,7 +523,10 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2024-09-20T13:31:12.608Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556367,TO_TIMESTAMP('2024-09-20 16:31:12','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_POS_OrderLine',1,'Y','N','Y','Y','C_POS_OrderLine','N',1000000,TO_TIMESTAMP('2024-09-20 16:31:12','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,
+                         StartNo,Updated,UpdatedBy) 
+VALUES (0,0,556367,TO_TIMESTAMP('2024-09-20 16:31:12','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_POS_OrderLine',1,'Y','N','Y','Y','C_POS_OrderLine',
+        1000000,TO_TIMESTAMP('2024-09-20 16:31:12','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2024-09-20T13:31:12.614Z
@@ -825,7 +831,10 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2024-09-20T13:37:35.682Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556368,TO_TIMESTAMP('2024-09-20 16:37:35','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_POS_Payment',1,'Y','N','Y','Y','C_POS_Payment','N',1000000,TO_TIMESTAMP('2024-09-20 16:37:35','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,
+                         StartNo,Updated,UpdatedBy) 
+VALUES (0,0,556368,TO_TIMESTAMP('2024-09-20 16:37:35','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_POS_Payment',1,'Y','N','Y','Y','C_POS_Payment',
+        1000000,TO_TIMESTAMP('2024-09-20 16:37:35','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2024-09-20T13:37:35.688Z

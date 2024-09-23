@@ -31,6 +31,12 @@ UPDATE AD_Table SET AD_Window_ID=NULL,Updated=TO_TIMESTAMP('2024-09-13 17:59:50'
 DELETE FROM AD_Element_Link WHERE AD_Window_ID=540213
 ;
 
+-- POS Profile -> POS Profile -> C_POS_Profile_Included_Tab
+update ad_field set included_tab_id=null where ad_field_id=554073;
+
+delete from ad_field where ad_tab_id=540584;
+delete from ad_tab where ad_window_id=540213;
+
 -- 2024-09-13T15:00:19.890Z
 DELETE FROM  AD_Window_Trl WHERE AD_Window_ID=540213
 ;

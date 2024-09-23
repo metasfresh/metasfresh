@@ -14,8 +14,6 @@ import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandRepository;
-import de.metas.ordercandidate.api.OLCandValidationResult;
-import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderId;
 import de.metas.pos.POSOrderLine;
@@ -46,7 +44,6 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 	@NonNull private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	@NonNull private final POSOrdersRepository posOrdersRepository = SpringContextHolder.instance.getBean(POSOrdersRepository.class);
 	@NonNull private final OLCandRepository olCandRepo = SpringContextHolder.instance.getBean(OLCandRepository.class);
-	@NonNull private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
 	@NonNull private final ProcessOLCandsWorkpackageEnqueuer processOLCandsWorkpackageEnqueuer = SpringContextHolder.instance.getBean(ProcessOLCandsWorkpackageEnqueuer.class);
 	@NonNull private final AsyncBatchService asyncBatchService = SpringContextHolder.instance.getBean(AsyncBatchService.class);
 
@@ -61,7 +58,6 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 		Check.assumeNotEmpty(olCands, "No OLCands created for {}", posOrder);
 
 		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ProcessOLCands);
-		validateAndSetAsyncBatch(olCands, asyncBatchId);
 
 		asyncBatchService.executeBatch(
 				() -> {
@@ -108,23 +104,6 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 	private static ImmutableSet<Integer> extractOLCandIds(final List<OLCand> olCands)
 	{
 		return olCands.stream().map(OLCand::getId).collect(ImmutableSet.toImmutableSet());
-	}
-
-	private void validateAndSetAsyncBatch(final List<OLCand> olCands, final AsyncBatchId asyncBatchId)
-	{
-		final List<OLCandValidationResult> clearingResults = olCandValidatorService.clearOLCandidates(
-				olCands.stream().map(OLCand::unbox).collect(ImmutableList.toImmutableList()),
-				asyncBatchId
-		);
-		clearingResults.forEach(clearingResult -> {
-			if (!clearingResult.isOk())
-			{
-				throw new AdempiereException("All OLCands shall be valid but " + clearingResult.getOlCandId() + " is not")
-						.appendParametersToMessage()
-						.setParameter("clearingResult", clearingResult)
-						.setParameter("olCands", olCands);
-			}
-		});
 	}
 
 	private List<OLCand> createOLCands(@NonNull final POSOrder posOrder)

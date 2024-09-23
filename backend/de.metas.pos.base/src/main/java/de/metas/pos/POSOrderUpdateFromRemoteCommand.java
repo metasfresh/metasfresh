@@ -100,7 +100,7 @@ class POSOrderUpdateFromRemoteCommand
 			if (existingLine == null || amount.compareTo(amountPrev) != 0)
 			{
 				tax = tax != null ? tax : taxDAO.getTaxById(taxId); // load tax if needed
-				BigDecimal taxAmtBD = tax.calculateTax(amount.toBigDecimal(), order.isTaxIncluded(), currencyPrecision.toInt());
+				BigDecimal taxAmtBD = tax.calculateTax(amount.toBigDecimal(), order.isTaxIncluded(), currencyPrecision.toInt()).getTaxAmount();
 				taxAmt = toMoney(taxAmtBD);
 			}
 			else
@@ -127,7 +127,7 @@ class POSOrderUpdateFromRemoteCommand
 
 	private Quantity extractQty(@NonNull final RemotePOSOrderLine remoteOrderLine)
 	{
-		return Quantitys.create(remoteOrderLine.getQty(), remoteOrderLine.getUomId());
+		return Quantitys.of(remoteOrderLine.getQty(), remoteOrderLine.getUomId());
 	}
 
 	private Tax findTax(final POSOrder order, final TaxCategoryId taxCategoryId)
