@@ -23,51 +23,66 @@
 package de.metas.fulltextsearch.indexer.handler;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.logging.LogManager;
-import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.TableName;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 public class FTSModelIndexerRegistry
 {
 	private static final Logger logger = LogManager.getLogger(FTSModelIndexerRegistry.class);
 
-	private final ImmutableMap<TableName, FTSModelIndexer> indexersBySourceTableName;
+	private final ImmutableListMultimap.Builder<TableName, FTSModelIndexer> indexersBySourceTableName = ImmutableListMultimap.builder();
 
 	public FTSModelIndexerRegistry(@NonNull final Optional<List<FTSModelIndexer>> indexers)
 	{
-		this.indexersBySourceTableName = indexers.orElseGet(ImmutableList::of)
-				.stream()
-				.flatMap(indexer -> indexer.getHandledSourceTableNames()
-						.stream()
-						.map(sourceTableName -> GuavaCollectors.entry(sourceTableName, indexer)))
-				.collect(GuavaCollectors.toImmutableMap());
+		// this.indexersBySourceTableName = indexers.orElseGet(ImmutableList::of)
+		// 		.stream()
+		// 		.flatMap(indexer -> indexer.getHandledSourceTableNames()
+		// 				.stream()
+		// 				.map(sourceTableName -> GuavaCollectors.entry(sourceTableName, indexer)))
+		// 		.collect(GuavaCollectors.toImmutableMap());
+
+		indexers.orElseGet(ImmutableList::of).stream()
+						.forEach(indexer -> indexer.getHandledSourceTableNames().stream()
+								.forEach(table -> indexersBySourceTableName.put(table, indexer)));
+
 
 		logger.info("Indexers: {}", this.indexersBySourceTableName);
 	}
 
-	public Optional<FTSModelIndexer> getBySourceTableName(@NonNull final TableName sourceTableName)
+	public Optional<List<FTSModelIndexer>> getBySourceTableName(@NonNull final TableName sourceTableName)
 	{
-		return Optional.ofNullable(indexersBySourceTableName.get(sourceTableName));
+		return Optional.ofNullable(indexersBySourceTableName.build().get(sourceTableName));
 	}
 
 	public List<FTSModelIndexer> getBySourceTableNames(@NonNull final Collection<TableName> sourceTableNames)
 	{
-		return sourceTableNames.stream()
-				.distinct()
-				.map(indexersBySourceTableName::get)
-				.filter(Objects::nonNull)
-				.distinct()
-				.collect(ImmutableList.toImmutableList());
+		final Set<FTSModelIndexer> indexes = new HashSet<>();
+
+		for(final TableName tableName : sourceTableNames)
+		{
+			indexes.addAll(indexersBySourceTableName.build().get(tableName));
+		}
+
+		return indexes.stream().toList();
+
+
+		// return sourceTableNames.stream()
+		// 		.distinct()
+		// 		.map(indexersBySourceTableName::get)
+		// 		.filter(Objects::nonNull)
+		// 		.distinct()
+		// 		.collect(ImmutableList.toImmutableList());
 	}
 
 }
