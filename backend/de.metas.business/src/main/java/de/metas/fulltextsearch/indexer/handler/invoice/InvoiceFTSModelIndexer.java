@@ -152,15 +152,6 @@ public class InvoiceFTSModelIndexer implements FTSModelIndexer
 		return changes.build();
 	}
 
-	private InvoiceFTSModelIndexer.DocumentChange retrieveDocumentChange(final ResultSet rs) throws SQLException
-	{
-		final String operation = rs.getString("operation");
-		final boolean isRemove = "D".equals(operation);
-		final String esDocumentId = rs.getString("es_documentid");
-
-		return InvoiceFTSModelIndexer.DocumentChange.of(isRemove, esDocumentId);
-	}
-
 	private ImmutableSet<InvoiceId> extractAffectedInvoiceIds(@NonNull final List<ModelToIndex> requests)
 	{
 		final ImmutableSet.Builder<InvoiceId> invoiceRepoIds = ImmutableSet.builder();

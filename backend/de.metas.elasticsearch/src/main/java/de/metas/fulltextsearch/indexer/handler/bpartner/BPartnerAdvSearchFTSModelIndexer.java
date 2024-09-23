@@ -138,15 +138,6 @@ public class BPartnerAdvSearchFTSModelIndexer implements FTSModelIndexer
 		return changes.build();
 	}
 
-	private DocumentChange retrieveDocumentChange(final ResultSet rs) throws SQLException
-	{
-		final String operation = rs.getString("operation");
-		final boolean isRemove = "D".equals(operation);
-		final String esDocumentId = rs.getString("es_documentid");
-
-		return DocumentChange.of(isRemove, esDocumentId);
-	}
-
 	private ImmutableSet<BPartnerId> extractAffectedBPartnerIds(@NonNull final List<ModelToIndex> requests)
 	{
 		final ImmutableSet.Builder<BPartnerId> bpartnerIds = ImmutableSet.builder();
