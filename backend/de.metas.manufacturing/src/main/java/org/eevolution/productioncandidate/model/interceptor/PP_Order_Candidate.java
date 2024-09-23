@@ -155,7 +155,7 @@ public class PP_Order_Candidate
 			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_Parent_ID, I_PP_Order_Candidate.COLUMNNAME_SeqNo })
 	public void checkSeqNo(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
-		if (!ppOrderCandidateRecord.getPP_Order_Candidate_Parent_ID() <= 0)
+		if (ppOrderCandidateRecord.getPP_Order_Candidate_Parent_ID() <= 0)
 		{
 			return;
 		}
