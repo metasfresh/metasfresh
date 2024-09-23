@@ -84,3 +84,11 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=730941
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,730941,0,544794,547108,625809,'F',TO_TIMESTAMP('2024-09-23 09:55:28','YYYY-MM-DD HH24:MI:SS'),100,'Wenn dieser Produktionskandidat automatisch erstellt wurde, um eine Komponente für einen anderen Produktionskandidaten herzustellen, dann enthält diese Feld eine Referenz auf den anderen Produktionskandidaten.','Y','N','N','Y','N','N','N',0,'PP_Order_Candidate_Parent_ID',10,0,0,TO_TIMESTAMP('2024-09-23 09:55:28','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- 2024-09-23T12:26:57.841Z
+/* DDL */ SELECT public.db_alter_table('PP_Order_Candidate','ALTER TABLE public.PP_Order_Candidate ADD COLUMN PP_Order_Candidate_Parent_ID NUMERIC(10)')
+;
+
+-- 2024-09-23T12:26:58.313Z
+ALTER TABLE PP_Order_Candidate ADD CONSTRAINT PPOrderCandidateParent_PPOrderCandidate FOREIGN KEY (PP_Order_Candidate_Parent_ID) REFERENCES public.PP_Order_Candidate DEFERRABLE INITIALLY DEFERRED
+;
+
