@@ -1307,3 +1307,7 @@ UPDATE ES_FTS_Config_SourceModel SET Parent_Column_ID=NULL,Updated=TO_TIMESTAMP(
 
 
 
+-- 2024-09-23T18:12:00.925Z
+UPDATE ES_FTS_Config_SourceModel SET Parent_Column_ID=NULL,Updated=TO_TIMESTAMP('2024-09-23 21:12:00.925','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE ES_FTS_Config_SourceModel_ID=540010
+;
+
