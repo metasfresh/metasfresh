@@ -974,7 +974,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
 
-			if (!Check.isEmpty(documentNote.toString()))
+			if (!TranslatableStrings.isEmpty(documentNote))
 			{
 
 				invoice.setDescriptionBottom(documentNote.translate(adLanguage));
