@@ -232,3 +232,19 @@ UPDATE C_DocType SET CopyDocumentNote='CD' WHERE CopyDocumentNote IS NULL
 INSERT INTO t_alter_column values('c_doctype','CopyDocumentNote',null,'NOT NULL',null)
 ;
 
+-- Field: Belegart -> Belegart -> Copy description to document
+-- Column: C_DocType.IsCopyDescriptionToDocument
+-- Field: Belegart(135,D) -> Belegart(167,D) -> Copy description to document
+-- Column: C_DocType.IsCopyDescriptionToDocument
+-- 2024-09-24T07:37:15.293Z
+UPDATE AD_Field SET DisplayLogic='@DocBaseType@=SOO | @DocBaseType@=POO | @DocBaseType@=ARI | @DocBaseType@=ARC | @DocBaseType@=API | @DocBaseType@=ARC | @DocBaseType@=MMS',Updated=TO_TIMESTAMP('2024-09-24 10:37:15.293','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=561403
+;
+
+-- Field: Belegart -> Belegart -> Copy description to document
+-- Column: C_DocType.IsCopyDescriptionToDocument
+-- Field: Belegart(135,D) -> Belegart(167,D) -> Copy description to document
+-- Column: C_DocType.IsCopyDescriptionToDocument
+-- 2024-09-24T07:37:52.340Z
+UPDATE AD_Field SET DisplayLogic='@DocBaseType@=SOO | @DocBaseType@=POO | @DocBaseType@=ARI | @DocBaseType@=ARC | @DocBaseType@=API | @DocBaseType@=ARC | @DocBaseType@=MMS | @DocBaseType@=MMR',Updated=TO_TIMESTAMP('2024-09-24 10:37:52.34','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=561403
+;
+
