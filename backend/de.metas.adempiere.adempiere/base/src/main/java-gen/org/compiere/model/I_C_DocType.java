@@ -213,7 +213,7 @@ public interface I_C_DocType
 	 * Set Copy document note .
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setCopyDocumentNote (@Nullable java.lang.String CopyDocumentNote);
@@ -222,7 +222,7 @@ public interface I_C_DocType
 	 * Get Copy document note .
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	@Nullable java.lang.String getCopyDocumentNote();

@@ -213,3 +213,22 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_Field SET DisplayLogic='@IsCopyDescriptionToDocument@=''Y''',Updated=TO_TIMESTAMP('2024-09-23 18:50:55.382','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=731501
 ;
 
+
+-- Column: C_DocType.CopyDocumentNote
+-- Column: C_DocType.CopyDocumentNote
+-- 2024-09-24T07:32:28.525Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2024-09-24 10:32:28.524','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589158
+;
+
+-- 2024-09-24T07:32:32.944Z
+INSERT INTO t_alter_column values('c_doctype','CopyDocumentNote','VARCHAR(2)',null,'CD')
+;
+
+-- 2024-09-24T07:32:32.983Z
+UPDATE C_DocType SET CopyDocumentNote='CD' WHERE CopyDocumentNote IS NULL
+;
+
+-- 2024-09-24T07:32:33.010Z
+INSERT INTO t_alter_column values('c_doctype','CopyDocumentNote',null,'NOT NULL',null)
+;
+
