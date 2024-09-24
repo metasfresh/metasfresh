@@ -16,7 +16,6 @@ CREATE FUNCTION C_Invoice_Adv_Search_Update(p_c_invoice_ids numeric[])
 AS
 $BODY$
 DECLARE
-    v_transactionId        text;
     v_deleted_documentIds  varchar[];
     v_inserted_documentIds varchar[];
 BEGIN
@@ -24,9 +23,6 @@ BEGIN
     IF (p_C_Invoice_IDs IS NULL OR CARDINALITY(p_C_Invoice_IDs) <= 0) THEN
         RAISE EXCEPTION 'At least one C_Invoice_ID shall be specified';
     END IF;
-
-    v_transactionId = gen_random_uuid()::text;
-    RAISE NOTICE 'Transaction ID: %', v_transactionId;
 
     --
     -- Delete old rows
