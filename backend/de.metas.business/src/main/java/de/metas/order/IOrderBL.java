@@ -272,4 +272,6 @@ public interface IOrderBL extends ISingletonService
 	String getDocumentNoById(OrderId orderId);
 
 	String getLocationEmail(OrderId ofRepoId);
+
+	String getDescripttionBottomById(@NonNull OrderId orderId);
 }

@@ -8,6 +8,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.doctype.CopyDocumentNote;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
@@ -19,7 +20,9 @@ import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -113,6 +116,7 @@ public class InOutBL implements IInOutBL
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	private final IRequestDAO requestsRepo = Services.get(IRequestDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -683,10 +687,23 @@ public class InOutBL implements IInOutBL
 
 		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
 		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
-		final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+
 
 		inOut.setDescription(description.translate(adLanguage));
-		inOut.setDescriptionBottom(documentNote.translate(adLanguage));
+
+		final CopyDocumentNote copyDocumentNote = CopyDocumentNote.ofCode(docType.getCopyDocumentNote());
+
+		if (copyDocumentNote.isCopyDocumentNoteFromOrder() && inOut.getC_Order_ID() > 0)
+		{
+			final String descriptionBottom = orderBL.getDescripttionBottomById(OrderId.ofRepoId(inOut.getC_Order_ID()));
+			inOut.setDescriptionBottom(descriptionBottom);
+		}
+		else
+		{
+			final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+			inOut.setDescriptionBottom(documentNote.translate(adLanguage));
+		}
+
 	}
 
 	private I_C_BPartner getBPartnerOrNull(@NonNull final I_M_InOut inOut)
