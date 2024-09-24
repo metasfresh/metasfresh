@@ -117,6 +117,8 @@ public final class Document
 	private static final ReasonSupplier REASON_Value_Refreshing = () -> "direct set on Document (refresh)";
 	private static final ReasonSupplier REASON_Value_ParentLinkUpdateOnSave = () -> "parent link update on save";
 
+	private static final String IsSOTrx_NAME = "IsSOTrx";
+
 	//
 	// Descriptors & paths
 	private final DocumentEntityDescriptor entityDescriptor;
@@ -205,6 +207,8 @@ public final class Document
 
 		changesCollector = builder.getChangesCollector();
 
+		boolean hasNonBooleanIsSOTrx = false; // Used to make sure yes/no refList readonlyLogic doesn't default to 'N' if null
+
 		//
 		// Create document fields
 		{
@@ -220,6 +224,11 @@ public final class Document
 				{
 					Check.assumeNull(parentLinkField, "Only one parent link field shall exist but we found: {}, {}", parentLinkField, field); // shall no happen at this level
 					parentLinkField = field;
+				}
+
+				if(fieldName.equals(IsSOTrx_NAME) && !fieldDescriptor.isBooleanWidgetType())
+				{
+					hasNonBooleanIsSOTrx = true;
 				}
 			}
 			fieldsByName = fieldsBuilder.build();
@@ -257,9 +266,9 @@ public final class Document
 			if (_parentDocument == null)
 			{
 				final Optional<SOTrx> soTrx = entityDescriptor.getSOTrx();
-				if (soTrx.isPresent())
+				if (soTrx.isPresent() && !hasNonBooleanIsSOTrx)
 				{
-					setDynAttributeNoCheck("IsSOTrx", soTrx.get().isSales()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
+					setDynAttributeNoCheck(IsSOTrx_NAME, soTrx.get().isSales()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
 				}
 				setDynAttributeNoCheck("IsApproved", false); // cover the case for FieldName=IsApproved, DefaultValue=@IsApproved@
 			}

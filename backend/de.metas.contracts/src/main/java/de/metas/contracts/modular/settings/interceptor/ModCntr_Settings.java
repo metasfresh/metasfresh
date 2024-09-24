@@ -27,10 +27,11 @@ import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
+import de.metas.lang.SOTrx;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -77,17 +78,11 @@ public class ModCntr_Settings
 			ifUIAction = true)
 	public void upsertInformativeLogsModule(@NonNull final I_ModCntr_Settings record)
 	{
-		final ProductId rawProductId = ProductId.ofRepoIdOrNull(record.getM_Raw_Product_ID());
-
-		if (rawProductId == null)
-		{
-			// nothing to do
-			return;
-		}
-
+		final ProductId rawProductId = ProductId.ofRepoId(record.getM_Raw_Product_ID());
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
+		final SOTrx soTrx = SOTrx.ofYesNoStringNotNull(record.getIsSOTrx());
 
-		modularContractSettingsService.upsertInformativeLogsModule(modularContractSettingsId, rawProductId);
+		modularContractSettingsService.upsertInformativeLogsModule(modularContractSettingsId, rawProductId, soTrx);
 
 	}
 
@@ -97,13 +92,14 @@ public class ModCntr_Settings
 			ifUIAction = true)
 	public void upsertDefinitiveInvoiceModule(@NonNull final I_ModCntr_Settings record)
 	{
-		final ProductId rawProductId = ProductId.ofRepoIdOrNull(record.getM_Raw_Product_ID());
-
-		if (rawProductId == null)
+		final SOTrx soTrx = SOTrx.ofYesNoStringNotNull(record.getIsSOTrx());
+		if(!soTrx.isPurchase())
 		{
-			// nothing to do
 			return;
 		}
+
+		final ProductId rawProductId = ProductId.ofRepoId(record.getM_Raw_Product_ID());
+
 		final ProductId processedProductId = ProductId.ofRepoIdOrNull(record.getM_Processed_Product_ID());
 
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());

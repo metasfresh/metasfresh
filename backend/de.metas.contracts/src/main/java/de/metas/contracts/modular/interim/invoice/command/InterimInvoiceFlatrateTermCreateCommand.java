@@ -162,6 +162,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		flatrateTermRecord.setC_Currency_ID(modularContract.getC_Currency_ID());
 		flatrateTermRecord.setC_Harvesting_Calendar_ID(yearAndCalendarId.calendarId().getRepoId());
 		flatrateTermRecord.setHarvesting_Year_ID(yearAndCalendarId.yearId().getRepoId());
+		flatrateTermRecord.setIsSOTrx(modularContract.isSOTrx());
 
 		flatrateBL.save(flatrateTermRecord);
 		flatrateBL.complete(flatrateTermRecord);

@@ -39,6 +39,11 @@ public enum SOTrx
 	 * pls call {@link #ofBooleanNotNull(Boolean)} if you know that the parameter is not null,
 	 * or pls call {@link #ofNullableBoolean(Boolean)} if you know the parameter might be null (so the return value).
 	 */
+
+	private static final String ISSOTRX_Yes = "Y";
+	/** No = N */
+	private static final String ISSOTRX_No = "N";
+
 	@Nullable
 	public static SOTrx ofBoolean(@Nullable final Boolean isSOTrx)
 	{
@@ -107,5 +112,31 @@ public enum SOTrx
 					.setParameter("SOTrx", soTrx)
 					.setParameter("Known values", values());
 		}
+	}
+
+	@NonNull
+	public static SOTrx ofYesNoStringNotNull(@NonNull final String soTrx)
+	{
+		if(soTrx.equals(ISSOTRX_Yes))
+		{
+			return SALES;
+		}
+		else if(soTrx.equals(ISSOTRX_No))
+		{
+			return PURCHASE;
+		}
+		else
+		{
+			throw new AdempiereException("Invalid SOTrx!")
+					.appendParametersToMessage()
+					.setParameter("SOTrx", soTrx)
+					.setParameter("Known values", ISSOTRX_Yes + "/" + ISSOTRX_No);
+		}
+	}
+
+	@NonNull
+	public String toYesNoString()
+	{
+		return isSales() ? ISSOTRX_Yes : ISSOTRX_No;
 	}
 }

@@ -227,7 +227,7 @@ public class ModularContractSettingsRepository
 				.processedProductId(ProductId.ofRepoIdOrNull(settingsRecord.getM_Processed_Product_ID()))
 				.coProductId(ProductId.ofRepoIdOrNull(settingsRecord.getM_Co_Product_ID()))
 				.name(settingsRecord.getName())
-				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()))
+				.soTrx(SOTrx.ofYesNoStringNotNull(settingsRecord.getIsSOTrx()))
 				.additionalInterestDays(settingsRecord.getAddInterestDays())
 				.interestPercent(Percent.of(settingsRecord.getInterestRate()))
 				.interimPricePercent(Percent.of(settingsRecord.getInterimPricePercent()))
@@ -257,7 +257,7 @@ public class ModularContractSettingsRepository
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, yearAndCalendarId.calendarId())
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearAndCalendarId.yearId())
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, query.getRawProductId())
-				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, query.getSoTrx().toYesNoString())
 				.anyMatch();
 	}
 
@@ -268,7 +268,7 @@ public class ModularContractSettingsRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, yearAndCalendarId.calendarId())
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearAndCalendarId.yearId())
-				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, query.getSoTrx().toYesNoString());
 
 		if(query.getRawProductId() != null)
 		{
@@ -645,11 +645,11 @@ public class ModularContractSettingsRepository
 	}
 
 	@Nullable
-	I_ModCntr_Module retrieveInformativeLogModuleRecordOrNull(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	I_ModCntr_Module retrieveInformativeLogModuleRecordOrNull(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ModularContractTypeId modularContractTypeId)
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_Module.class)
 				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, modularContractSettingsId)
-				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID)
+				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, modularContractTypeId)
 				.create()
 				.firstOnly();
 	}

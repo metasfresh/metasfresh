@@ -1402,6 +1402,8 @@ public class FlatrateBL implements IFlatrateBL
 			nextTerm.setC_Order_Term_ID(orderAndLineTermId.getOrderRepoId());
 		}
 
+		nextTerm.setIsSOTrx(currentTerm.isSOTrx());
+
 		updateEndDate(nextTransition, nextTerm);
 		updateNoticeDate(nextTransition, nextTerm);
 
@@ -2330,6 +2332,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		newTerm.setC_OrderLine_Term_ID(orderLine.getC_OrderLine_ID());
 		newTerm.setC_Order_Term_ID(orderLine.getC_Order_ID());
+		newTerm.setIsSOTrx(order.isSOTrx());
 
 		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID());
 		Check.assume(conditionsId != null, "C_Flatrate_Conditions_ID must be set!");
@@ -2520,7 +2523,7 @@ public class FlatrateBL implements IFlatrateBL
 		if (modularContractSettingsRepository.isSettingsExist(ModularContractSettingsQuery.builder()
 				.yearAndCalendarId(yearAndCalendarId)
 				.rawProductId(productId)
-				.soTrx(SOTrx.ofBooleanNotNull(settings.isSOTrx()))
+				.soTrx(SOTrx.ofYesNoStringNotNull(settings.getIsSOTrx()))
 				.build()))
 		{
 			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);
