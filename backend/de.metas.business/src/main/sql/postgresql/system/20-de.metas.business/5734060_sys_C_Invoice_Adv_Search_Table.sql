@@ -10,7 +10,9 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2024-09-20T13:22:41.340Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556366,TO_TIMESTAMP('2024-09-20 16:22:41.238','YYYY-MM-DD HH24:MI:SS.US'),100,1000000,50000,'Table C_Invoice_Adv_Search',1,'Y','N','Y','Y','C_Invoice_Adv_Search','N',1000000,TO_TIMESTAMP('2024-09-20 16:22:41.238','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy)
+VALUES (0,0,556366,TO_TIMESTAMP('2024-09-20 16:22:41.238','YYYY-MM-DD HH24:MI:SS.US'),100,1000000,
+        50000,'Table C_Invoice_Adv_Search',1,'Y','N','Y','Y','C_Invoice_Adv_Search',1000000,TO_TIMESTAMP('2024-09-20 16:22:41.238','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2024-09-20T13:22:41.355Z
