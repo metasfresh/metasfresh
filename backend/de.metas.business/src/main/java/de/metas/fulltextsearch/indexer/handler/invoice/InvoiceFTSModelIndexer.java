@@ -204,41 +204,42 @@ public class InvoiceFTSModelIndexer implements FTSModelIndexer
 			}
 		}
 
-		final InvoiceMultiQuery.InvoiceMultiQueryBuilder invoiceMultiQueryBuilder = InvoiceMultiQuery.builder();
+		final Set<InvoiceQuery> invoiceQueries = new HashSet<>();
+
 		if (!invoiceIds.isEmpty())
 		{
-			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().invoiceIds(invoiceIds).build());
+			invoiceQueries.add(InvoiceQuery.builder().invoiceIds(invoiceIds).build());
 		}
 		if (!bPartnerIds.isEmpty())
 		{
-			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().bpartnerIds(bPartnerIds).build());
+			invoiceQueries.add(InvoiceQuery.builder().bpartnerIds(bPartnerIds).build());
 		}
 		if (!bpartnerLocationRepoIds.isEmpty())
 		{
-			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().bpartnerLocationRepoIds(bpartnerLocationRepoIds).build());
+			invoiceQueries.add(InvoiceQuery.builder().bpartnerLocationRepoIds(bpartnerLocationRepoIds).build());
 		}
 		if (!bpartnerContactRepoIds.isEmpty())
 		{
-			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().bpartnerContactRepoIds(bpartnerContactRepoIds).build());
+			invoiceQueries.add(InvoiceQuery.builder().bpartnerContactRepoIds(bpartnerContactRepoIds).build());
 		}
 		if (!warehouseIds.isEmpty())
 		{
-			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().warehouseIds(warehouseIds).build());
+			invoiceQueries.add(InvoiceQuery.builder().warehouseIds(warehouseIds).build());
 		}
 		if (!docTypeIds.isEmpty())
 		{
-			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().docTypeIds(docTypeIds).build());
+			invoiceQueries.add(InvoiceQuery.builder().docTypeIds(docTypeIds).build());
 		}
 		if (!calendarIds.isEmpty())
 		{
-			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().calendarIds(calendarIds).build());
+			invoiceQueries.add(InvoiceQuery.builder().calendarIds(calendarIds).build());
 		}
 		if (!yearIds.isEmpty())
 		{
-			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().yearIds(yearIds).build());
+			invoiceQueries.add(InvoiceQuery.builder().yearIds(yearIds).build());
 		}
 
-		return invoiceDAO.retrieveInvoiceIds(invoiceMultiQueryBuilder.build());
+		return invoiceDAO.retrieveInvoiceIds(InvoiceMultiQuery.builder().queries(invoiceQueries).build());
 
 	}
 
