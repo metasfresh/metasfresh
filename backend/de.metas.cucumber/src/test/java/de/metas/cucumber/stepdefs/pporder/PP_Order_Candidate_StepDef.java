@@ -28,7 +28,6 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
-import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -406,20 +405,6 @@ public class PP_Order_Candidate_StepDef
 				.ifPresent(huId -> softly.assertThat(actual.getIssue_HU_ID()).as("Issue_HU_ID").isEqualTo(huId.getRepoId()));
 
 		softly.assertAll();
-	}
-
-	@NonNull
-	private ItemProvider.ProviderResult<I_PP_Order_Candidate> locatePPOrderCandidate(@NonNull final IQuery<I_PP_Order_Candidate> query)
-	{
-		final I_PP_Order_Candidate candidate = query.firstOnly(I_PP_Order_Candidate.class);
-		if (candidate != null)
-		{
-			return ItemProvider.ProviderResult.resultWasFound(candidate);
-		}
-		else
-		{
-			return ItemProvider.ProviderResult.resultWasNotFound("See query used: " + query);
-		}
 	}
 
 	private IQuery<I_PP_Order_Candidate> toSqlQuery(@NonNull final DataTableRow row)
