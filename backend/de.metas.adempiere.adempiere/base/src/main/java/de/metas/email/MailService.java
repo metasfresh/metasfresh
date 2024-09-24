@@ -44,12 +44,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -60,10 +60,9 @@ import lombok.NonNull;
 public class MailService
 {
 	private static final Logger logger = LogManager.getLogger(MailService.class);
+	private static final String SYSCONFIG_DebugMailTo = "org.adempiere.user.api.IUserBL.DebugMailTo";
 	private final MailboxRepository mailboxRepo;
 	private final MailTemplateRepository mailTemplatesRepo;
-
-	private static final String SYSCONFIG_DebugMailTo = "org.adempiere.user.api.IUserBL.DebugMailTo";
 
 	public MailService(
 			@NonNull final MailboxRepository mailboxRepo,
@@ -71,6 +70,32 @@ public class MailService
 	{
 		this.mailboxRepo = mailboxRepo;
 		this.mailTemplatesRepo = mailTemplatesRepo;
+	}
+
+	@NonNull
+	private static Mailbox createClientMailbox(@NonNull final ClientEMailConfig client)
+	{
+		final String smtpHost = client.getSmtpHost();
+		if (Check.isEmpty(smtpHost, true))
+		{
+			final String messageString = StringUtils.formatMessage(
+					"Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost; "
+							+ "AD_MailConfig search parameters: AD_Client_ID={}",
+					client);
+
+			throw new MailboxNotFoundException(TranslatableStrings.constant(messageString));
+		}
+
+		return Mailbox.builder()
+				.smtpHost(smtpHost)
+				.smtpPort(client.getSmtpPort())
+				.startTLS(client.isStartTLS())
+				.email(client.getEmail())
+				.username(client.getUsername())
+				.password(client.getPassword())
+				.smtpAuthorization(client.isSmtpAuthorization())
+				.sendEmailsFromServer(client.isSendEmailsFromServer())
+				.build();
 	}
 
 	public Mailbox findMailBox(
@@ -103,31 +128,25 @@ public class MailService
 				.withSendEmailsFromServer(tenantEmailConfig.isSendEmailsFromServer());
 	}
 
-	@NonNull
-	private static Mailbox createClientMailbox(@NonNull final ClientEMailConfig client)
+	public EMail createEMail(
+			@NonNull final ClientEMailConfig clientEmailConfig,
+			@Nullable final EMailCustomType mailCustomType,
+			@Nullable final UserEMailConfig userEmailConfig,
+			@Nullable final EMailAddress to,
+			@Nullable final EMailAddress cc,
+			@Nullable final String subject,
+			@Nullable final String message,
+			final boolean html)
 	{
-		final String smtpHost = client.getSmtpHost();
-		if (Check.isEmpty(smtpHost, true))
-		{
-			final String messageString = StringUtils.formatMessage(
-					"Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost; "
-							+ "AD_MailConfig search parameters: AD_Client_ID={}",
-					client);
-
-			throw new MailboxNotFoundException(TranslatableStrings.constant(messageString));
-		}
-
-		return Mailbox.builder()
-				.smtpHost(smtpHost)
-				.smtpPort(client.getSmtpPort())
-				.startTLS(client.isStartTLS())
-				.email(client.getEmail())
-				.username(client.getUsername())
-				.password(client.getPassword())
-				.smtpAuthorization(client.isSmtpAuthorization())
-				.sendEmailsFromServer(client.isSendEmailsFromServer())
-				.build();
+		final Mailbox mailbox = findMailBox(clientEmailConfig,
+											ProcessExecutor.getCurrentOrgId(),
+											ProcessExecutor.getCurrentProcessIdOrNull(),
+											(DocBaseAndSubType)null,
+											mailCustomType)
+				.mergeFrom(userEmailConfig);
+		return createEMail(mailbox, to, cc, subject, message, html);
 	}
+
 
 	public EMail createEMail(
 			@NonNull final ClientEMailConfig clientEmailConfig,
@@ -138,18 +157,26 @@ public class MailService
 			@Nullable final String message,
 			final boolean html)
 	{
-		final Mailbox mailbox = findMailBox(clientEmailConfig,
-				ProcessExecutor.getCurrentOrgId(),
-				ProcessExecutor.getCurrentProcessIdOrNull(),
-				(DocBaseAndSubType)null,
-				mailCustomType)
-						.mergeFrom(userEmailConfig);
-		return createEMail(mailbox, to, subject, message, html);
+
+		return createEMail(clientEmailConfig, mailCustomType, userEmailConfig, to, null, subject, message, html);
+	}
+
+
+
+		public EMail createEMail(
+			@NonNull final Mailbox mailbox,
+			@NonNull final EMailAddress to,
+			@Nullable final String subject,
+			@Nullable final String message,
+			final boolean html)
+	{
+		return createEMail(mailbox, to, null, subject, message, html);
 	}
 
 	public EMail createEMail(
 			@NonNull final Mailbox mailbox,
 			@NonNull final EMailAddress to,
+			@Nullable final EMailAddress cc,
 			@Nullable final String subject,
 			@Nullable final String message,
 			final boolean html)
@@ -162,7 +189,7 @@ public class MailService
 			throw new AdempiereException("Mailbox incomplete: " + mailbox);
 		}
 
-		final EMail email = new EMail(mailbox, to, subject, message, html);
+		final EMail email = new EMail(mailbox, to, cc, subject, message, html);
 		email.setDebugMailToAddress(getDebugMailToAddressOrNull());
 		return email;
 	}

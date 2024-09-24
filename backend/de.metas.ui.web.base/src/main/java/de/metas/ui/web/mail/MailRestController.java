@@ -58,6 +58,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -172,7 +174,13 @@ public class MailRestController
 		final Integer toUserId = attributes.getAD_User_ID();
 		final LookupValue to = mailRepo.getToByUserId(toUserId);
 
-		final String emailId = mailRepo.createNewEmail(adUserId, from, to, contextDocumentPath).getEmailId();
+		final Integer ccUserId = attributes.getCC_User_ID();
+		final LookupValue cc = mailRepo.getCCByUserId(ccUserId);
+
+		final List<LookupValue> lookupValues = ImmutableList.of(to, cc);
+		final LookupValuesList emailsTo = LookupValuesList.fromCollection(lookupValues);
+
+		final String emailId = mailRepo.createNewEmail(adUserId, from, emailsTo, contextDocumentPath).getEmailId();
 
 		if (contextDocumentPath != null)
 		{
@@ -237,6 +245,7 @@ public class MailRestController
 			throw new FillMandatoryException("To");
 		}
 		final EMailAddress to = toList.get(0);
+		final EMailAddress cc = toList.size()>1 ? toList.get(1) : null;
 		final String subject = webuiEmail.getSubject();
 		final String message = webuiEmail.getMessage();
 		final boolean html = false;
@@ -245,9 +254,11 @@ public class MailRestController
 				mailCustomType,
 				userEmailConfig,
 				to,
+				cc,
 				subject,
 				message,
 				html);
+
 		toList.stream().skip(1).forEach(email::addTo);
 
 		webuiEmail.getAttachments()

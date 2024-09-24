@@ -64,6 +64,7 @@ public class EMailConfigTest extends JavaProcess
 	public static final String PARA_CustomType = I_AD_MailConfig.COLUMNNAME_CustomType;
 	public static final String PARA_From_User_ID = "From_User_ID";
 	public static final String PARA_EMail_To = "EMail_To";
+	public static final String PARA_EMail_CC = "EMail_CC";
 	public static final String PARA_Subject = "Subject";
 	public static final String PARA_Message = "Message";
 	public static final String PARA_IsHtml = "IsHtml";
@@ -74,6 +75,7 @@ public class EMailConfigTest extends JavaProcess
 	private EMailCustomType p_CustomType;
 	private UserId p_From_User_ID;
 	private EMailAddress p_EMail_To;
+	private EMailAddress p_EMail_CC;
 	private String p_Subject;
 	private String p_Message;
 	private boolean p_IsHtml;
@@ -111,6 +113,10 @@ public class EMailConfigTest extends JavaProcess
 			else if (name.equals(PARA_EMail_To))
 			{
 				p_EMail_To = EMailAddress.ofString(para.getParameterAsString());
+			}
+			else if (name.equals(PARA_EMail_CC))
+			{
+				p_EMail_CC = EMailAddress.ofString(para.getParameterAsString());
 			}
 			else if (name.equals(PARA_Subject))
 			{
@@ -157,7 +163,7 @@ public class EMailConfigTest extends JavaProcess
 				.mergeFrom(userEmailConfig);
 		addLog("Using configuration: " + mailbox);
 
-		final EMail email = mailService.createEMail(mailbox, p_EMail_To, p_Subject, p_Message, p_IsHtml);
+		final EMail email = mailService.createEMail(mailbox, p_EMail_To, p_EMail_CC, p_Subject, p_Message, p_IsHtml);
 		addLog("EMail: " + email);
 
 		final EMailSentStatus emailSentStatus = email.send();

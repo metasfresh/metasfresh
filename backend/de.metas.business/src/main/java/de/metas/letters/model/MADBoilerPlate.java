@@ -747,7 +747,8 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		attributesBuilder.setWindowNo(sourceDocument != null ? sourceDocument.getWindowNo() : Env.WINDOW_MAIN);
 		attributesBuilder.setSourceDocument(sourceDocument);
 
-		final I_AD_User salesRep = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		final IUserDAO userDAO = Services.get(IUserDAO.class);
+		final I_AD_User salesRep = userDAO.retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		if (salesRep != null)
 		{
 			attributesBuilder.setSalesRep(salesRep);
@@ -759,14 +760,24 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		final int AD_User_ID = sourceDocument != null ? sourceDocument.getFieldValueAsInt("AD_User_ID", -1) : -1;
 		String email = null;
 		//
+		final IUserBL userBL = Services.get(IUserBL.class);
 		if (AD_User_ID > 0)
 		{
-			user = Services.get(IUserDAO.class).retrieveUserOrNull(ctx, AD_User_ID);
+			user = userDAO.retrieveUserOrNull(ctx, AD_User_ID);
 			attributesBuilder.setUser(user);
-			if (Services.get(IUserBL.class).isEMailValid(user))
+			if (userBL.isEMailValid(user))
 			{
 				email = user.getEMail();
 				attributesBuilder.setEmail(email);
+			}
+
+			if(user.getCC_User_ID() > 0)
+			{
+				final I_AD_User ccUser = userDAO.retrieveUserOrNull(ctx, user.getCC_User_ID());
+
+				attributesBuilder.setCCUser(ccUser);
+				final String ccEmail = ccUser.getEMail();
+				attributesBuilder.setCCEmail(ccEmail);
 			}
 			C_BPartner_ID = user.getC_BPartner_ID();
 			C_BPartner_Location_ID = user.getC_BPartner_Location_ID();
@@ -786,10 +797,22 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				if (contact != null)
 				{
 					attributesBuilder.setUser(contact);
-					if (Services.get(IUserBL.class).isEMailValid(contact))
+					if (userBL.isEMailValid(contact))
 					{
 						email = contact.getEMail();
 						attributesBuilder.setEmail(email);
+					}
+
+						final I_AD_User ccUser = userDAO.retrieveUserOrNull(ctx, contact.getCC_User_ID());
+
+					if(ccUser != null)
+					{
+						attributesBuilder.setCCUser(ccUser);
+						if(userBL.isEMailValid(ccUser))
+						{
+							final String ccEmail = ccUser.getEMail();
+							attributesBuilder.setCCEmail(ccEmail);
+						}
 					}
 				}
 			}
@@ -934,14 +957,18 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			return new Builder(ImmutableMap.of());
 		}
 
+
 		public static final BoilerPlateContext EMPTY = new BoilerPlateContext(ImmutableMap.of());
 
 		private static final String VAR_WindowNo = "WindowNo";
 		private static final String VAR_SalesRep = "SalesRep";
 		private static final String VAR_SalesRep_ID = "SalesRep_ID";
 		private static final String VAR_EMail = "EMail";
+		private static final String VAR_CC_EMail = "CC_EMail";
 		private static final String VAR_AD_User_ID = "AD_User_ID";
 		private static final String VAR_AD_User = "AD_User";
+		private static final String VAR_CC_User_ID = "CC_UserID";
+		private static final String VAR_CC_User = "CC_User";
 		private static final String VAR_C_BPartner_ID = "C_BPartner_ID";
 		private static final String VAR_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 		private static final String VAR_AD_Org_ID = "AD_Org_ID";
@@ -1020,6 +1047,13 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			return (Integer)get(VAR_AD_User_ID);
 		}
+
+		@Nullable
+		public Integer getCC_User_ID()
+		{
+			return (Integer)get(VAR_CC_User_ID);
+		}
+
 
 		@Nullable
 		public Integer getAD_User_ID(final Integer defaultValue)
@@ -1142,9 +1176,21 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				return this;
 			}
 
+			public void setCCUser(final I_AD_User ccUser)
+			{
+				setAttribute(VAR_CC_User, ccUser);
+				setAttribute(VAR_CC_User_ID, ccUser != null ? ccUser.getAD_User_ID() : null);
+			}
+
 			public Builder setEmail(final String email)
 			{
 				setAttribute(VAR_EMail, email);
+				return this;
+			}
+
+			public Builder setCCEmail(final String ccEmail)
+			{
+				setAttribute(VAR_CC_EMail, ccEmail);
 				return this;
 			}
 

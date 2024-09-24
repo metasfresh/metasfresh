@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1217883274L;
+	private static final long serialVersionUID = 1319080802L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -121,6 +121,30 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public int getAD_User_InCharge_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_InCharge_ID);
+	}
+
+	/** 
+	 * Alberta_Gender AD_Reference_ID=541317
+	 * Reference name: Gender_List
+	 */
+	public static final int ALBERTA_GENDER_AD_Reference_ID=541317;
+	/** Unbekannt = 0 */
+	public static final String ALBERTA_GENDER_Unbekannt = "0";
+	/** Weiblich = 1 */
+	public static final String ALBERTA_GENDER_Weiblich = "1";
+	/** Männlich = 2 */
+	public static final String ALBERTA_GENDER_Maennlich = "2";
+	/** Divers = 3 */
+	public static final String ALBERTA_GENDER_Divers = "3";
+	@Override
+	public void setAlberta_Gender (final @Nullable java.lang.String Alberta_Gender)
+	{
+		throw new IllegalArgumentException ("Alberta_Gender is virtual column");	}
+
+	@Override
+	public java.lang.String getAlberta_Gender() 
+	{
+		return get_ValueAsString(COLUMNNAME_Alberta_Gender);
 	}
 
 	/** 
@@ -252,6 +276,21 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+	public void setCC_User_ID (final int CC_User_ID)
+	{
+		if (CC_User_ID < 1) 
+			set_Value (COLUMNNAME_CC_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_CC_User_ID, CC_User_ID);
+	}
+
+	@Override
+	public int getCC_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_CC_User_ID);
+	}
+
+	@Override
 	public void setC_Greeting_ID (final int C_Greeting_ID)
 	{
 		if (C_Greeting_ID < 1) 
@@ -291,33 +330,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public int getC_Job_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Job_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Title getC_Title()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
-	}
-
-	@Override
-	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
-	}
-
-	@Override
-	public void setC_Title_ID (final int C_Title_ID)
-	{
-		if (C_Title_ID < 1) 
-			set_Value (COLUMNNAME_C_Title_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
-	}
-
-	@Override
-	public int getC_Title_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
 	}
 
 	@Override
@@ -403,6 +415,33 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getContactLimitationReason() 
 	{
 		return get_ValueAsString(COLUMNNAME_ContactLimitationReason);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Title getC_Title()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
+	}
+
+	@Override
+	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
+	}
+
+	@Override
+	public void setC_Title_ID (final int C_Title_ID)
+	{
+		if (C_Title_ID < 1) 
+			set_Value (COLUMNNAME_C_Title_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
+	}
+
+	@Override
+	public int getC_Title_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
 	}
 
 	@Override
@@ -570,30 +609,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return get_ValueAsString(COLUMNNAME_Fresh_xmas_Gift);
 	}
 
-	/** 
-	 * Gender AD_Reference_ID=541317
-	 * Reference name: Gender_List
-	 */
-	public static final int GENDER_AD_Reference_ID=541317;
-	/** Unbekannt = 0 */
-	public static final String GENDER_Unbekannt = "0";
-	/** Weiblich = 1 */
-	public static final String GENDER_Weiblich = "1";
-	/** Männlich = 2 */
-	public static final String GENDER_Maennlich = "2";
-	/** Divers = 3 */
-	public static final String GENDER_Divers = "3";
-	@Override
-	public void setGender (final @Nullable java.lang.String Gender)
-	{
-		throw new IllegalArgumentException ("Gender is virtual column");	}
-
-	@Override
-	public java.lang.String getGender() 
-	{
-		return get_ValueAsString(COLUMNNAME_Gender);
-	}
-
 	@Override
 	public void setIncluded_Tab_ID (final @Nullable java.lang.String Included_Tab_ID)
 	{
@@ -651,6 +666,17 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isBillToContact_Default() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBillToContact_Default);
+	}
+
+	@Override
+	public void setIsCustomUserRestriction (final boolean IsCustomUserRestriction)
+	{
+		throw new IllegalArgumentException ("IsCustomUserRestriction is virtual column");	}
+
+	@Override
+	public boolean isCustomUserRestriction() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCustomUserRestriction);
 	}
 
 	@Override

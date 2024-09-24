@@ -131,6 +131,7 @@ public final class EMail implements Serializable
 	EMail(
 			@NonNull final Mailbox mailbox,
 			@Nullable final EMailAddress to,
+			@Nullable final EMailAddress cc,
 			@Nullable final String subject,
 			@Nullable final String message,
 			final boolean html)
@@ -139,6 +140,7 @@ public final class EMail implements Serializable
 
 		addTo(to);
 
+		addCc(cc);
 		if (Check.isEmpty(subject, true))
 		{
 			setSubject(".");	// pass validation

@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
@@ -83,16 +84,16 @@ public class WebuiMailRepository
 	public WebuiEmail createNewEmail(
 			@NonNull final UserId ownerUserId,
 			final LookupValue from,
-			final LookupValue to,
+			final LookupValuesList to,
 			final DocumentPath contextDocumentPath)
 	{
 		final String emailId = String.valueOf(nextEmailId.getAndIncrement());
-		final LookupValuesList toList = LookupValuesList.fromNullable(to);
+
 		final WebuiEmail email = WebuiEmail.builder()
 				.emailId(emailId)
 				.ownerUserId(ownerUserId)
 				.from(from)
-				.to(toList)
+				.to(to)
 				.contextDocumentPath(contextDocumentPath)
 				.build();
 
@@ -146,6 +147,11 @@ public class WebuiMailRepository
 	public LookupValue getToByUserId(final Integer adUserId)
 	{
 		return emailToLookup.findById(adUserId);
+	}
+
+	public  LookupValue getCCByUserId(final Integer ccUserId)
+	{
+		return emailToLookup.findById(ccUserId);
 	}
 
 	@ToString
