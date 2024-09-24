@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,28 +22,31 @@
 
 package de.metas.invoice;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.standard.CalendarId;
-import de.metas.calendar.standard.YearId;
-import de.metas.document.DocTypeId;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.engine.DocStatus;
+import de.metas.organization.OrgId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
-import org.adempiere.warehouse.WarehouseId;
 
-import java.util.Set;
+import javax.annotation.Nullable;
+import java.util.Collection;
 
+/**
+ * A query which expects only one invoice result.
+ *
+ * @see InvoiceQuery
+ * @see InvoiceMultiQuery
+ */
 @Value
-@Builder
-public class InvoiceQuery
+@Builder(toBuilder = true)
+public class SingleInvoiceQuery
 {
-	@NonNull @Singular Set<InvoiceId> invoiceIds;
-	@NonNull @Singular Set<BPartnerId> bpartnerIds;
-	@NonNull @Singular Set<Integer> bpartnerLocationRepoIds;
-	@NonNull @Singular Set<Integer> bpartnerContactRepoIds;
-	@NonNull @Singular Set<DocTypeId> docTypeIds;
-	@NonNull @Singular Set<WarehouseId> warehouseIds;
-	@NonNull @Singular Set<CalendarId> calendarIds;
-	@NonNull @Singular Set<YearId> yearIds;
+	@Nullable Integer invoiceId;
+	@Nullable ExternalId externalId;
+	@NonNull OrgId orgId;
+	@Nullable String documentNo;
+	@Nullable DocBaseAndSubType docType;
+	@Nullable Collection<DocStatus> docStatuses;
 }
