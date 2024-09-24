@@ -37,6 +37,7 @@ import de.metas.fulltextsearch.config.FTSConfig;
 import de.metas.fulltextsearch.indexer.handler.FTSModelIndexer;
 import de.metas.fulltextsearch.indexer.queue.ModelToIndex;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.acct.InvoiceSearchQuery;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -152,7 +153,7 @@ public class InvoiceFTSModelIndexer implements FTSModelIndexer
 
 	private ImmutableSet<InvoiceId> extractAffectedInvoiceIds(@NonNull final List<ModelToIndex> requests)
 	{
-		final ImmutableSet.Builder<InvoiceId> invoiceRepoIds = ImmutableSet.builder();
+		final HashSet<InvoiceId> invoiceRepoIds = new HashSet<>();
 		final HashSet<BPartnerId> bpartnerRepoIds = new HashSet<>();
 		final HashSet<Integer> bpartnerLocationRepoIds = new HashSet<>();
 		final HashSet<Integer> bpartnerContactRepoIds = new HashSet<>();
@@ -203,27 +204,21 @@ public class InvoiceFTSModelIndexer implements FTSModelIndexer
 				yearRepoIds.add(YearId.ofRepoId(sourceModelRef.getRecord_ID()));
 			}
 		}
-		invoiceDAO.retrieveInvoiceIdsByBPartnerIds(bpartnerRepoIds)
-				.forEach(invoiceRepoIds::add);
 
-		invoiceDAO.retrieveInvoiceIdsByBPartnerLocationIds(partnerDAO.getBPartnerLocationIdsByRepoIds(bpartnerLocationRepoIds))
-				.forEach(invoiceRepoIds::add);
+		final InvoiceSearchQuery query = InvoiceSearchQuery.builder()
+				.invoiceRepoIds(invoiceRepoIds)
+				.bpartnerRepoIds(bpartnerRepoIds)
+				.bpartnerLocationRepoIds(bpartnerLocationRepoIds)
+				.bpartnerContactRepoIds(bpartnerContactRepoIds)
+				.docTypeRepoIds(docTypeRepoIds)
+				.warehouseRepoIds(warehouseRepoIds)
+				.calendarRepoIds(calendarRepoIds)
+				.yearRepoIds(yearRepoIds)
+				.build();
 
-		invoiceDAO.retrieveInvoiceIdsByUserIds(partnerDAO.getContactIdsByRepoIds(bpartnerContactRepoIds))
-				.forEach(invoiceRepoIds::add);
+		return invoiceDAO.retrieveInvoiceIdForSearchQuery(query);
 
-		invoiceDAO.retrieveInvoiceIdsByDocTypeIds(docTypeRepoIds)
-				.forEach(invoiceRepoIds::add);
-		invoiceDAO.retrieveInvoiceIdsByWarehouseIds(warehouseRepoIds)
-				.forEach(invoiceRepoIds::add);
 
-		invoiceDAO.retrieveInvoiceIdsByCalendarIds(calendarRepoIds)
-				.forEach(invoiceRepoIds::add);
-
-		invoiceDAO.retrieveInvoiceIdsByYearIds(yearRepoIds)
-				.forEach(invoiceRepoIds::add);
-
-		return invoiceRepoIds.build();
 	}
 
 	@Value
