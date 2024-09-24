@@ -853,3 +853,26 @@ UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2024-09-23 13:36
 /* DDL */ CREATE TABLE public.C_Invoice_Adv_Search (AD_Client_ID NUMERIC(10), Address1 VARCHAR(100), AD_Org_ID NUMERIC(10), AD_User_ID NUMERIC(10), BPartnerValue VARCHAR(40), BPName VARCHAR(100), CalendarName VARCHAR(60), C_BPartner_ID NUMERIC(10), C_BPartner_Location_ID NUMERIC(10), C_Calendar_ID NUMERIC(10), C_DocType_ID NUMERIC(10), C_Invoice_ID NUMERIC(10), City VARCHAR(60), Companyname VARCHAR(100), Created TIMESTAMP WITH TIME ZONE, CreatedBy NUMERIC(10), C_Year_ID NUMERIC(10), Description VARCHAR(1024), DescriptionBottom VARCHAR(2048), DocTypeName VARCHAR(60), DocumentNo VARCHAR(30), ES_DocumentId TEXT, ExternalId VARCHAR(255), Firstname VARCHAR(255), FiscalYear VARCHAR(20), IsActive CHAR(1) CHECK (IsActive IN ('Y','N')), IsCompany CHAR(1) CHECK (IsCompany IN ('Y','N')), Lastname VARCHAR(255), M_Warehouse_ID NUMERIC(10), POReference VARCHAR(40), Postal VARCHAR(10), Updated TIMESTAMP WITH TIME ZONE, UpdatedBy NUMERIC(10), WarehouseName VARCHAR(60))
 ;
 
+
+
+create index c_invoice_adv_search_c_bpartner_id_index
+    on public.c_invoice_adv_search (c_bpartner_id);
+
+create index c_invoice_adv_search_ad_user_id__index
+    on public.c_invoice_adv_search (ad_user_id );
+
+create index c_invoice_adv_search_c_bpartner_location_id_index
+    on public.c_invoice_adv_search (c_bpartner_location_id);
+
+create index c_invoice_adv_search_c_calendar_id_index
+    on public.c_invoice_adv_search (c_calendar_id);
+
+create index c_invoice_adv_search_c_doctype_id_index
+    on public.c_invoice_adv_search (c_doctype_id);
+
+create index c_invoice_adv_search_c_year_id_index
+    on public.c_invoice_adv_search (c_year_id);
+
+create index c_invoice_adv_search_m_warehouse_id_index
+    on public.c_invoice_adv_search (m_warehouse_id);
+
