@@ -34,7 +34,7 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
-import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.acct.InvoiceSearchQuery;
 import de.metas.order.OrderId;
@@ -184,7 +184,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
 
-	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
+	Optional<InvoiceId> retrieveIdByInvoiceQuery(SingleInvoiceQuery query);
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
 

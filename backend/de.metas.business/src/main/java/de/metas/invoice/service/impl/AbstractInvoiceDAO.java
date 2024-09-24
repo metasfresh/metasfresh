@@ -21,9 +21,9 @@ import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
-import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.InvoiceMultiQuery;
+import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.UnpaidInvoiceQuery;
-import de.metas.invoice.acct.InvoiceSearchQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.Money;
@@ -493,7 +493,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@NonNull
-	public Optional<InvoiceId> retrieveIdByInvoiceQuery(@NonNull final InvoiceQuery query)
+	public Optional<InvoiceId> retrieveIdByInvoiceQuery(@NonNull final SingleInvoiceQuery query)
 	{
 		if (query.getInvoiceId() != null)
 		{
@@ -547,7 +547,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@NonNull
-	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final InvoiceQuery query)
+	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final SingleInvoiceQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null docId; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
@@ -575,7 +575,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@NonNull
-	private Optional<InvoiceId> getInvoiceIdByExternalId(@NonNull final InvoiceQuery query)
+	private Optional<InvoiceId> getInvoiceIdByExternalId(@NonNull final SingleInvoiceQuery query)
 	{
 		final ExternalId externalId = assumeNotNull(query.getExternalId(), "Param query needs to have a non-null externalId; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
@@ -684,8 +684,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.iterateAndStream();
 	}
 
-	@Override
-	public ImmutableSet<InvoiceId> retrieveInvoiceIdForSearchQuery(@NonNull final InvoiceSearchQuery query)
+	public ImmutableSet<InvoiceId> retrieveInvoiceIds(@NonNull final InvoiceMultiQuery query)
 	{
 		final IQueryBuilder<I_C_Invoice> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice.class)
@@ -726,5 +725,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 		return queryBuilder.create().listIds(InvoiceId::ofRepoId);
 	}
+
+	public IQuery<InvoiceId> retrieveInvoiceIds(@NonNull final InvoiceMultiQuery query)
+
 
 }

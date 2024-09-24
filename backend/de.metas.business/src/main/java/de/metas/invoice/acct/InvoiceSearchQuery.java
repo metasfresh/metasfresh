@@ -38,7 +38,6 @@ import java.util.HashSet;
 @Builder
 public class InvoiceSearchQuery
 {
-
 	@NonNull HashSet<InvoiceId> invoiceRepoIds;
 	@NonNull HashSet<BPartnerId> bpartnerRepoIds;
 	@NonNull HashSet<Integer> bpartnerLocationRepoIds;

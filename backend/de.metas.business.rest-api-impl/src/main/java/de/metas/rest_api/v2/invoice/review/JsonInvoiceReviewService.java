@@ -25,7 +25,7 @@ package de.metas.rest_api.v2.invoice.review;
 import de.metas.RestUtils;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.review.InvoiceReviewCreateUpdateRequest;
 import de.metas.invoice.review.InvoiceReviewId;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -61,7 +61,7 @@ public class JsonInvoiceReviewService
 	public Optional<JsonCreateInvoiceReviewResponse> upsert(@NonNull final JsonInvoiceReviewUpsertItem jsonInvoiceReviewUpsertItem)
 	{
 		final OrgId orgId = getOrgId(jsonInvoiceReviewUpsertItem.getOrgCode());
-		final InvoiceQuery invoiceQuery = createInvoiceQueryOrNull(jsonInvoiceReviewUpsertItem, orgId);
+		final SingleInvoiceQuery invoiceQuery = createInvoiceQueryOrNull(jsonInvoiceReviewUpsertItem, orgId);
 		if (invoiceQuery == null)
 		{
 			return Optional.empty();
@@ -89,9 +89,9 @@ public class JsonInvoiceReviewService
 	}
 
 	@Nullable
-	private static InvoiceQuery createInvoiceQueryOrNull(@NonNull final JsonInvoiceReviewUpsertItem jsonInvoiceReviewUpsertItem, @NonNull final OrgId orgId)
+	private static SingleInvoiceQuery createInvoiceQueryOrNull(@NonNull final JsonInvoiceReviewUpsertItem jsonInvoiceReviewUpsertItem, @NonNull final OrgId orgId)
 	{
-		final InvoiceQuery.InvoiceQueryBuilder invoiceQueryBuilder = InvoiceQuery.builder()
+		final SingleInvoiceQuery.InvoiceQueryBuilder invoiceQueryBuilder = SingleInvoiceQuery.builder()
 				.orgId(orgId);
 
 		if (jsonInvoiceReviewUpsertItem.getInvoiceId() != null)

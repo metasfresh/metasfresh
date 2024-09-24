@@ -34,29 +34,13 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 
 @Value
-public class InvoiceQuery
+@Builder(toBuilder = true)
+public class SingleInvoiceQuery
 {
-	Integer invoiceId;
-	ExternalId externalId;
-	OrgId orgId;
-	String documentNo;
-	DocBaseAndSubType docType;
-	Collection<DocStatus> docStatuses;
-
-
-	@Builder(toBuilder = true)
-	public InvoiceQuery(@Nullable final Integer invoiceId,
-			@Nullable final ExternalId externalId,
-			@NonNull final OrgId orgId,
-			@Nullable final String documentNo,
-			@Nullable final DocBaseAndSubType docType,
-			@Nullable final Collection<DocStatus> docStatuses)
-	{
-		this.invoiceId = invoiceId;
-		this.externalId = externalId;
-		this.orgId = orgId;
-		this.documentNo = documentNo;
-		this.docType = docType;
-		this.docStatuses = docStatuses;
-	}
+	@Nullable Integer invoiceId;
+	@Nullable ExternalId externalId;
+	@NonNull OrgId orgId;
+	@Nullable String documentNo;
+	@Nullable DocBaseAndSubType docType;
+	@Nullable Collection<DocStatus> docStatuses;
 }
