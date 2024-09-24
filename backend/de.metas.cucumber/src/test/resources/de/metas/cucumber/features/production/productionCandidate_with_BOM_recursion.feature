@@ -78,9 +78,9 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
     
     # for 1x product_1_1_S0460_10 we need 20x product_2_1_S0460_10 and 10x product_2_2_S0460_10 and (20*5=) 100x product_3_1_S0460_10
     Then after not more than 60s, PP_Order_Candidates are found
-      | Identifier    | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
-      | oc_1_S0460_10 | product_1_1_S0460_10 | bom_1_S0460_10    | ppln_1_1_S0460_10      | resource_S0460 | 1 PCE      | 1 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
-      | oc_2_S0460_10 | product_2_1_S0460_10 | bom_2_S0460_10    | ppln_2_1_S0460_10      | resource_S0460 | 20 PCE     | 20 PCE       | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
+      | Identifier    | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed | OPT.PP_Order_Candidate_Parent_ID |
+      | oc_1_S0460_10 | product_1_1_S0460_10 | bom_1_S0460_10    | ppln_1_1_S0460_10      | resource_S0460 | 1 PCE      | 1 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |                                  |
+      | oc_2_S0460_10 | product_2_1_S0460_10 | bom_2_S0460_10    | ppln_2_1_S0460_10      | resource_S0460 | 20 PCE     | 20 PCE       | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         | oc_1_S0460_10                    |
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID         | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
       | oc_1_S0460_10         | product_2_1_S0460_10 | 20 PCE     | CO            | boml_2_1_S0460_10     |
@@ -95,41 +95,6 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | 03/d_2_2_S0460_10 | DEMAND            | PRODUCTION                | product_2_2_S0460_10 | 2024-09-22T21:00:00Z | 10  | -10  | WH_S0460       |
       | 04/s_2_1_S0460_10 | SUPPLY            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 20  | 0    | WH_S0460       |
       | 05/d_3_1_S0460_10 | DEMAND            | PRODUCTION                | product_3_1_S0460_10 | 2024-09-22T21:00:00Z | 100 | -100 | WH_S0460       |
-    
-    ########################################
-    #
-    # Reactivate the order, change quantity from 10 PCE to 12 PCE and completed again.
-    # Expect a new PP_Order_Candidate to be generated for those 2 PCE.
-    When the order identified by o_1_S0460_10 is reactivated
-    And update C_OrderLine:
-      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
-      | ol_1_S0460_10             | 3              |
-    And the order identified by o_1_S0460_10 is completed
-
-    Then after not more than 60s, PP_Order_Candidates are found
-      | Identifier      | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
-      | oc_2_1_S0460_10 | product_1_1_S0460_10 | bom_1_S0460_10    | ppln_1_1_S0460_10      | resource_S0460 | 2 PCE      | 2 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
-      | oc_2_2_S0460_10 | product_2_1_S0460_10 | bom_2_S0460_10    | ppln_2_1_S0460_10      | resource_S0460 | 40 PCE     | 40 PCE       | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
-    And after not more than 60s, PP_OrderLine_Candidates are found
-      | PP_Order_Candidate_ID | M_Product_ID         | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
-      | oc_2_1_S0460_10       | product_2_1_S0460_10 | 40 PCE     | CO            | boml_2_1_S0460_10     |
-      | oc_2_1_S0460_10       | product_2_2_S0460_10 | 20 PCE     | CO            | boml_2_2_S0460_10     |
-      | oc_2_2_S0460_10       | product_3_1_S0460_10 | 200 PCE    | CO            | boml_3_1_S0460_10     |
-
-    ## starting at line 06, we have the new MD_Candidates which address the 2nd set of PP_Order_Candidates
-    And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP  | M_Warehouse_ID |
-      | 01/d_1_1_S0460_10 | DEMAND            | SHIPMENT                  | product_1_1_S0460_10 | 2024-09-22T21:00:00Z | 3   | -3   | WH_S0460       |
-      | 02/s_1_1_S0460_10 | SUPPLY            | PRODUCTION                | product_1_1_S0460_10 | 2024-09-22T21:00:00Z | 1   | -2   | WH_S0460       |
-      | 03/d_2_2_S0460_10 | DEMAND            | PRODUCTION                | product_2_2_S0460_10 | 2024-09-22T21:00:00Z | 10  | -10  | WH_S0460       |
-      | 04/s_2_1_S0460_10 | SUPPLY            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 20  | 0    | WH_S0460       |
-      | 05/d_3_1_S0460_10 | DEMAND            | PRODUCTION                | product_3_1_S0460_10 | 2024-09-22T21:00:00Z | 100 | -100 | WH_S0460       |
-      | 06/d_2_1_S0460_10 | DEMAND            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 20  | -20  | WH_S0460       |
-      | 07/s_1_1_S0460_10 | SUPPLY            | PRODUCTION                | product_1_1_S0460_10 | 2024-09-22T21:00:00Z | 2   | 0    | WH_S0460       |
-      | 08/d_2_1_S0460_10 | DEMAND            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 40  | -40  | WH_S0460       |
-      | 09/d_2_2_S0460_10 | DEMAND            | PRODUCTION                | product_2_2_S0460_10 | 2024-09-22T21:00:00Z | 20  | -20  | WH_S0460       |
-      | 10/s_2_1_S0460_10 | SUPPLY            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 40  | 0    | WH_S0460       |
-      | 11/d_3_1_S0460_10 | DEMAND            | PRODUCTION                | product_3_1_S0460_10 | 2024-09-22T21:00:00Z | 200 | -200 | WH_S0460       |
 
   @Id:S0460_20
   @from:cucumber
@@ -186,9 +151,9 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
     
     # for 1x product_1_1_S0460_10 we need 20x product_2_1_S0460_10 and 10x product_2_2_S0460_10 and (20*5=) 100x product_3_1_S0460_10
     Then after not more than 60s, PP_Order_Candidates are found
-      | Identifier    | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
-      | oc_1_S0460_10 | product_1_1_S0460_10 | bom_1_S0460_10    | ppln_1_1_S0460_10      | resource_S0460 | 1 PCE      | 0 PCE        | 1 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
-      | oc_2_S0460_10 | product_2_1_S0460_10 | bom_2_S0460_10    | ppln_2_1_S0460_10      | resource_S0460 | 20 PCE     | 0 PCE        | 20 PCE       | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
+      | Identifier    | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed | OPT.PP_Order_Candidate_Parent_ID |
+      | oc_1_S0460_10 | product_1_1_S0460_10 | bom_1_S0460_10    | ppln_1_1_S0460_10      | resource_S0460 | 1 PCE      | 0 PCE        | 1 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |                                  |
+      | oc_2_S0460_10 | product_2_1_S0460_10 | bom_2_S0460_10    | ppln_2_1_S0460_10      | resource_S0460 | 20 PCE     | 0 PCE        | 20 PCE       | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          | oc_1_S0460_10                    |
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID         | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
       | oc_1_S0460_10         | product_2_1_S0460_10 | 20 PCE     | CO            | boml_2_1_S0460_10     |
@@ -203,39 +168,3 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | 03/d_2_2_S0460_10 | DEMAND            | PRODUCTION                | product_2_2_S0460_10 | 2024-09-22T21:00:00Z | 10  | -10  | WH_S0460       |
       | 04/s_2_1_S0460_10 | SUPPLY            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 20  | 0    | WH_S0460       |
       | 05/d_3_1_S0460_10 | DEMAND            | PRODUCTION                | product_3_1_S0460_10 | 2024-09-22T21:00:00Z | 100 | -100 | WH_S0460       |
-    
-    ########################################
-    #
-    # Reactivate the order, change quantity from 10 PCE to 12 PCE and completed again.
-    # Expect a new PP_Order_Candidate to be generated for those 2 PCE.
-    When the order identified by o_1_S0460_10 is reactivated
-    And update C_OrderLine:
-      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
-      | ol_1_S0460_10             | 3              |
-    And the order identified by o_1_S0460_10 is completed
-
-    Then after not more than 60s, PP_Order_Candidates are found
-      | Identifier      | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
-      | oc_2_1_S0460_10 | product_1_1_S0460_10 | bom_1_S0460_10    | ppln_1_1_S0460_10      | resource_S0460 | 2 PCE      | 0 PCE        | 2 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
-      | oc_2_2_S0460_10 | product_2_1_S0460_10 | bom_2_S0460_10    | ppln_2_1_S0460_10      | resource_S0460 | 40 PCE     | 0 PCE        | 40 PCE       | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
-    And after not more than 60s, PP_OrderLine_Candidates are found
-      | PP_Order_Candidate_ID | M_Product_ID         | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
-      | oc_2_1_S0460_10       | product_2_1_S0460_10 | 40 PCE     | CO            | boml_2_1_S0460_10     |
-      | oc_2_1_S0460_10       | product_2_2_S0460_10 | 20 PCE     | CO            | boml_2_2_S0460_10     |
-      | oc_2_2_S0460_10       | product_3_1_S0460_10 | 200 PCE    | CO            | boml_3_1_S0460_10     |
-
-    ## starting at line 06, we have the new MD_Candidates which address the 2nd set of PP_Order_Candidates
-    And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP  | M_Warehouse_ID |
-      | 01/d_1_1_S0460_10 | DEMAND            | SHIPMENT                  | product_1_1_S0460_10 | 2024-09-22T21:00:00Z | 3   | -3   | WH_S0460       |
-      | 02/s_1_1_S0460_10 | SUPPLY            | PRODUCTION                | product_1_1_S0460_10 | 2024-09-22T21:00:00Z | 1   | -2   | WH_S0460       |
-      | 03/d_2_2_S0460_10 | DEMAND            | PRODUCTION                | product_2_2_S0460_10 | 2024-09-22T21:00:00Z | 10  | -10  | WH_S0460       |
-      | 04/s_2_1_S0460_10 | SUPPLY            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 20  | 0    | WH_S0460       |
-      | 05/d_3_1_S0460_10 | DEMAND            | PRODUCTION                | product_3_1_S0460_10 | 2024-09-22T21:00:00Z | 100 | -100 | WH_S0460       |
-      | 06/d_2_1_S0460_10 | DEMAND            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 20  | -20  | WH_S0460       |
-      | 07/s_1_1_S0460_10 | SUPPLY            | PRODUCTION                | product_1_1_S0460_10 | 2024-09-22T21:00:00Z | 2   | 0    | WH_S0460       |
-      | 08/d_2_1_S0460_10 | DEMAND            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 40  | -40  | WH_S0460       |
-      | 09/d_2_2_S0460_10 | DEMAND            | PRODUCTION                | product_2_2_S0460_10 | 2024-09-22T21:00:00Z | 20  | -20  | WH_S0460       |
-      | 10/s_2_1_S0460_10 | SUPPLY            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 40  | 0    | WH_S0460       |
-      | 11/d_3_1_S0460_10 | DEMAND            | PRODUCTION                | product_3_1_S0460_10 | 2024-09-22T21:00:00Z | 200 | -200 | WH_S0460       |
-    

@@ -404,6 +404,10 @@ public class PP_Order_Candidate_StepDef
 				.map(huTable::getId)
 				.ifPresent(huId -> softly.assertThat(actual.getIssue_HU_ID()).as("Issue_HU_ID").isEqualTo(huId.getRepoId()));
 
+		row.getAsOptionalIdentifier(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_Parent_ID)
+				.map(ppOrderCandidateTable::getId)
+				.ifPresent(ppOrderCandidateId -> softly.assertThat(actual.getPP_Order_Candidate_Parent_ID()).as("PP_Order_Candidate_Parent_ID").isEqualTo(ppOrderCandidateId.getRepoId()));
+		
 		softly.assertAll();
 	}
 

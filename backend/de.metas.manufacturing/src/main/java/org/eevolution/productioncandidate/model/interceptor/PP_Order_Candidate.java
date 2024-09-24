@@ -148,20 +148,6 @@ public class PP_Order_Candidate
 		}
 	}
 
-	// TODO: remove altogether or replace with  performant impl
-	// @ModelChange(
-	// 		timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-	// 		ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_Parent_ID, I_PP_Order_Candidate.COLUMNNAME_SeqNo })
-	// public void checkSeqNo(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
-	// {
-	// 	if (ppOrderCandidateRecord.getPP_Order_Candidate_Parent_ID() <= 0)
-	// 	{
-	// 		return;
-	// 	}
-	// 	final I_PP_Order_Candidate parentRecord = ppOrderCandidateDAO.getById(PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_Parent_ID()));
-	// 	parentRecord.setSeqNo(ppOrderCandidateRecord.getSeqNo() + 10);
-	// }
-
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void onDelete(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)

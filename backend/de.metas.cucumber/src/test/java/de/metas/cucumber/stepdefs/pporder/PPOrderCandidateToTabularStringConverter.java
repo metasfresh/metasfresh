@@ -30,16 +30,11 @@ import java.util.List;
 @Builder
 class PPOrderCandidateToTabularStringConverter
 {
-	@NonNull
-	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
-	@NonNull
-	private final M_Product_StepDefData productTable;
-	@NonNull
-	private final PP_Product_BOM_StepDefData productBOMTable;
-	@NonNull
-	private final PP_Product_Planning_StepDefData productPlanningTable;
-	@NonNull
-	private final S_Resource_StepDefData resourceTable;
+	@NonNull private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final PP_Product_BOM_StepDefData productBOMTable;
+	@NonNull private final PP_Product_Planning_StepDefData productPlanningTable;
+	@NonNull private final S_Resource_StepDefData resourceTable;
 
 	public String toTabularString(@NonNull final List<I_PP_Order_Candidate> list)
 	{
@@ -75,7 +70,7 @@ class PPOrderCandidateToTabularStringConverter
 		row.put("DateStartSchedule", candidate.getDateStartSchedule().toInstant());
 		row.put("PP_Product_Planning_ID", toCell(ProductPlanningId.ofRepoIdOrNull(candidate.getPP_Product_Planning_ID()), productPlanningTable));
 		row.put("IsClosed", toBooleanCell(candidate.isClosed()));
-		row.put("Processed", toBooleanCell(candidate.isClosed()));
+		row.put("Processed", toBooleanCell(candidate.isProcessed()));
 		return row;
 	}
 
