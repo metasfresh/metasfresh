@@ -27,46 +27,46 @@ import com.google.common.collect.ImmutableListMultimap;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.TableName;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Component
 public class FTSModelIndexerRegistry
 {
 	private static final Logger logger = LogManager.getLogger(FTSModelIndexerRegistry.class);
 
-	private final ImmutableListMultimap.Builder<TableName, FTSModelIndexer> indexersBySourceTableName = ImmutableListMultimap.builder();
+	private final ImmutableListMultimap<TableName, FTSModelIndexer> indexersBySourceTableName;
 
 	public FTSModelIndexerRegistry(@NonNull final Optional<List<FTSModelIndexer>> indexers)
 	{
+		this.indexersBySourceTableName = indexBySourceTableName(indexers);
+		logger.info("Indexers: {}", this.indexersBySourceTableName);
+	}
+
+	@NotNull
+	private static ImmutableListMultimap<TableName, FTSModelIndexer> indexBySourceTableName(final @NotNull Optional<List<FTSModelIndexer>> indexers)
+	{
+		final ImmutableListMultimap.Builder<TableName, FTSModelIndexer> builder = ImmutableListMultimap.builder();
 		for (final FTSModelIndexer indexer : indexers.orElseGet(ImmutableList::of))
 		{
 			for (final TableName table : indexer.getHandledSourceTableNames())
 			{
-				indexersBySourceTableName.put(table, indexer);
+				builder.put(table, indexer);
 			}
 		}
-
-		logger.info("Indexers: {}", this.indexersBySourceTableName);
+		return builder.build();
 	}
 
 	public List<FTSModelIndexer> getBySourceTableNames(@NonNull final Collection<TableName> sourceTableNames)
 	{
-		final Set<FTSModelIndexer> indexes = new HashSet<>();
-
-		for(final TableName tableName : sourceTableNames)
-		{
-			indexes.addAll(indexersBySourceTableName.build().get(tableName));
-		}
-
-		return indexes.stream().toList();
-
+		return sourceTableNames.stream()
+				.flatMap(sourceTableName -> indexersBySourceTableName.get(sourceTableName).stream())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 }
