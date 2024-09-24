@@ -203,7 +203,20 @@ const addNewOrderAndSetCurrent = (orders) => {
 
 const addOrderLineToCurrentOrder = (
   orders,
-  { order_uuid, productId, productName, taxCategoryId, currencySymbol, price, qty, uomId, uomSymbol }
+  {
+    order_uuid,
+    productId,
+    productName,
+    taxCategoryId,
+    currencySymbol,
+    price,
+    qty,
+    uomId,
+    uomSymbol,
+    catchWeightUomId,
+    catchWeightUomSymbol,
+    catchWeight,
+  }
 ) => {
   const newOrderLine = {
     uuid: uuidv4(),
@@ -215,6 +228,9 @@ const addOrderLineToCurrentOrder = (
     qty,
     uomId,
     uomSymbol,
+    catchWeightUomId,
+    catchWeightUomSymbol,
+    catchWeight,
   };
   return changeOrder({
     orders,

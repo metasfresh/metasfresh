@@ -7,6 +7,9 @@ import de.metas.currency.Amount;
 import de.metas.currency.Currency;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
+import de.metas.pos.POSProduct.UomIdAndSymbol;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -19,19 +22,24 @@ import de.metas.util.InSetPredicate;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
+import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 class POSProductsLoader
 {
 	// services
+	@NonNull private static final Logger logger = LogManager.getLogger(POSProductsLoader.class);
 	@NonNull private final IPriceListDAO priceListDAO;
 	@NonNull private final IProductBL productBL;
 	@NonNull private final IUOMDAO uomDAO;
@@ -73,7 +81,8 @@ class POSProductsLoader
 		loadProductsById(extractProductIds(productPrices));
 
 		return productPrices.stream()
-				.map(this::toPOSProduct)
+				.map(this::toPOSProductNoFail)
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 	}
@@ -105,18 +114,48 @@ class POSProductsLoader
 		return productsById.computeIfAbsent(productId, productBL::getByIdInTrx);
 	}
 
+	@Nullable
+	private POSProduct toPOSProductNoFail(@NonNull final I_M_ProductPrice productPrice)
+	{
+		try
+		{
+			return toPOSProduct(productPrice);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed converting {} to POSProduct. Skipped.", productPrice, ex);
+			return null;
+		}
+	}
+
 	private POSProduct toPOSProduct(@NonNull final I_M_ProductPrice productPrice)
 	{
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
-		final UomId uomId = UomId.ofRepoId(productPrice.getC_UOM_ID());
+
+		final UomId uomId;
+		final UomId catchWeightUomId;
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofCode(productPrice.getInvoicableQtyBasedOn());
+		switch (invoicableQtyBasedOn)
+		{
+			case NominalWeight:
+				uomId = UomId.ofRepoId(productPrice.getC_UOM_ID());
+				catchWeightUomId = null;
+				break;
+			case CatchWeight:
+				uomId = getProductUomId(productId);
+				catchWeightUomId = UomId.ofRepoId(productPrice.getC_UOM_ID());
+				break;
+			default:
+				throw new AdempiereException("Unknown invoicableQtyBasedOn: " + invoicableQtyBasedOn);
+		}
 
 		return POSProduct.builder()
 				.id(productId)
 				.name(getProductName(productId))
 				.price(extractPrice(productPrice))
 				.currencySymbol(currency.getSymbol())
-				.uomId(uomId)
-				.uomSymbol(getUOMSymbol(uomId))
+				.uom(toUomIdAndSymbol(uomId))
+				.catchWeightUom(catchWeightUomId != null ? toUomIdAndSymbol(catchWeightUomId) : null)
 				.taxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()))
 				.build();
 	}
@@ -128,6 +167,12 @@ class POSProductsLoader
 		return trls.getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName());
 	}
 
+	private UomId getProductUomId(final ProductId productId)
+	{
+		final I_M_Product product = getProductById(productId);
+		return UomId.ofRepoId(product.getC_UOM_ID());
+	}
+
 	private Amount extractPrice(final I_M_ProductPrice productPrice)
 	{
 		return Amount.of(productPrice.getPriceStd(), currency.getCurrencyCode());
@@ -137,6 +182,11 @@ class POSProductsLoader
 	{
 		final I_C_UOM uom = uomDAO.getById(uomId);
 		return StringUtils.trimBlankToOptional(uom.getUOMSymbol()).orElseGet(uom::getName);
+	}
+
+	private UomIdAndSymbol toUomIdAndSymbol(final UomId uomId)
+	{
+		return UomIdAndSymbol.of(uomId, getUOMSymbol(uomId));
 	}
 
 }

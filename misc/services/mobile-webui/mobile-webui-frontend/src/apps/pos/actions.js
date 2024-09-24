@@ -154,6 +154,9 @@ export const useCurrentOrder = () => {
           qty: 1,
           uomId: product.uomId,
           uomSymbol: product.uomSymbol,
+          catchWeightUomId: product.catchWeightUomId,
+          catchWeightUomSymbol: product.catchWeightUomSymbol,
+          catchWeight: product.catchWeight,
         })
       );
       dispatch(() => setProcessing(false));
@@ -270,6 +273,9 @@ export const addOrderLine = ({
   qty,
   uomId,
   uomSymbol,
+  catchWeightUomId,
+  catchWeightUomSymbol,
+  catchWeight,
 }) => {
   return (dispatch) => {
     dispatch(
@@ -283,6 +289,9 @@ export const addOrderLine = ({
         qty,
         uomId,
         uomSymbol,
+        catchWeightUomId,
+        catchWeightUomSymbol,
+        catchWeight,
       })
     );
     dispatch(syncOrderToBackend({ order_uuid }));
@@ -299,10 +308,26 @@ const addOrderLineAction = ({
   qty,
   uomId,
   uomSymbol,
+  catchWeightUomId,
+  catchWeightUomSymbol,
+  catchWeight,
 }) => {
   return {
     type: ADD_ORDER_LINE,
-    payload: { order_uuid, productId, productName, taxCategoryId, currencySymbol, price, qty, uomId, uomSymbol },
+    payload: {
+      order_uuid,
+      productId,
+      productName,
+      taxCategoryId,
+      currencySymbol,
+      price,
+      qty,
+      uomId,
+      uomSymbol,
+      catchWeightUomId,
+      catchWeightUomSymbol,
+      catchWeight,
+    },
   };
 };
 

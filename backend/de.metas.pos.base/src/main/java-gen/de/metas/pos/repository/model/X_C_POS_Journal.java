@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS_Journal extends org.compiere.model.PO implements I_C_POS_Journal, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1030679631L;
+	private static final long serialVersionUID = 1503705358L;
 
     /** Standard Constructor */
     public X_C_POS_Journal (final Properties ctx, final int C_POS_Journal_ID, @Nullable final String trxName)
@@ -140,6 +140,18 @@ public class X_C_POS_Journal extends org.compiere.model.PO implements I_C_POS_Jo
 	public java.sql.Timestamp getDateTrx() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateTrx);
+	}
+
+	@Override
+	public void setDocumentNo (final java.lang.String DocumentNo)
+	{
+		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
+	}
+
+	@Override
+	public java.lang.String getDocumentNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
 
 	@Override

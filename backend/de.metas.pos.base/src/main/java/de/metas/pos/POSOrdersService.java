@@ -57,7 +57,6 @@ public class POSOrdersService
 
 	private void updateOrderFromRemote(final POSOrder order, final @NonNull RemotePOSOrder remoteOrder)
 	{
-
 		POSOrderUpdateFromRemoteCommand.builder()
 				.taxDAO(taxDAO)
 				.order(order)

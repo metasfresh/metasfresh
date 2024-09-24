@@ -12,16 +12,21 @@ const Products = () => {
   const currentOrder = useCurrentOrder();
   const queryStringRef = useRef();
   const products = useProducts({
-    onBarcodeResult: (product) => currentOrder.addOrderLine(product),
+    onBarcodeResult: (product) => addOrderLine(product),
   });
   const [isBarcodeScannerDisplayed, setBarcodeScannerDisplayed] = useState(false);
+  const [productToAdd, setProductToAdd] = useState(null);
 
   const order_uuid = !currentOrder.isLoading ? currentOrder.uuid : null;
   const isEnabled = !!order_uuid && !currentOrder.isProcessing;
 
+  const isDisplayGetWeightModal = isWeightRequiredButNotSet(productToAdd);
+
   useEffect(() => {
-    queryStringRef?.current?.focus();
-  });
+    if (!isDisplayGetWeightModal) {
+      queryStringRef?.current?.focus();
+    }
+  }, [isDisplayGetWeightModal]);
 
   const handleQueryStringFocus = () => {
     queryStringRef?.current?.select();
@@ -40,18 +45,40 @@ const Products = () => {
     products.setQueryString(e.target.value);
   };
 
-  const onButtonClick = (product) => {
-    if (!isEnabled) return;
-    currentOrder.addOrderLine(product);
-  };
-
   const onBarcodeScanned = ({ scannedBarcode }) => {
     if (!isEnabled) return;
     products.setQueryString(scannedBarcode);
   };
 
+  const onButtonClick = (product) => {
+    if (!isEnabled) return;
+    addOrderLine(product);
+  };
+
+  const addOrderLine = (product) => {
+    setProductToAdd({ ...product });
+  };
+  const setProductToAddWeight = ({ catchWeight }) => {
+    setProductToAdd((productToAdd) => ({ ...productToAdd, catchWeight }));
+  };
+  useEffect(() => {
+    if (!productToAdd) return;
+    const isValid = !isWeightRequiredButNotSet(productToAdd);
+    if (!isValid) return;
+
+    currentOrder.addOrderLine(productToAdd);
+    setProductToAdd(null);
+  }, [productToAdd]);
+
   return (
     <div className="products-container">
+      {isDisplayGetWeightModal && (
+        <GetCatchWeightModal
+          catchWeightUomSymbol={productToAdd?.catchWeightUomSymbol}
+          onOk={setProductToAddWeight}
+          onCancel={() => setProductToAdd(null)}
+        />
+      )}
       <div className="search-container">
         <div className="search-line">
           <input
@@ -77,7 +104,7 @@ const Products = () => {
             name={product.name}
             price={product.price}
             currencySymbol={product.currencySymbol}
-            uomSymbol={product.uomSymbol}
+            uomSymbol={extractProductPriceUom(product)}
             disabled={!isEnabled}
             onClick={() => onButtonClick(product)}
           />
@@ -86,6 +113,14 @@ const Products = () => {
       </div>
     </div>
   );
+};
+
+const isWeightRequiredButNotSet = (product) => {
+  return product && product.catchWeightUomId != null && !product.catchWeight;
+};
+
+const extractProductPriceUom = (product) => {
+  return product.catchWeightUomSymbol ? product.catchWeightUomSymbol : product.uomSymbol;
 };
 
 //
@@ -138,6 +173,49 @@ const BarcodeReader = ({ onBarcodeScanned }) => {
 };
 BarcodeReader.propTypes = {
   onBarcodeScanned: PropTypes.func.isRequired,
+};
+
+//
+//
+//
+//
+//
+
+const GetCatchWeightModal = ({ catchWeightUomSymbol, onOk, onCancel }) => {
+  const weightRef = useRef();
+
+  useEffect(() => {
+    weightRef?.current?.focus();
+  }, [weightRef.current]);
+
+  return (
+    <div className="modal is-active">
+      <div className="modal-background"></div>
+      <div className="modal-card">
+        <header className="modal-card-head">
+          <p className="modal-card-title">Weight ({catchWeightUomSymbol})</p>
+          <button className="delete" aria-label="close" onClick={onCancel}></button>
+        </header>
+        <section className="modal-card-body">
+          <div className="control">
+            <input ref={weightRef} className="input is-large" type="text" placeholder="Catch weight" />
+          </div>
+        </section>
+        <footer className="modal-card-foot">
+          <div className="buttons">
+            <button
+              className="button is-success"
+              onClick={() => {
+                onOk({ catchWeight: weightRef.current.value });
+              }}
+            >
+              OK
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
 };
 
 //

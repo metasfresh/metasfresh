@@ -37,8 +37,10 @@ const CurrentOrder = () => {
             productName={line.productName}
             qty={line.qty}
             uom={line.uomSymbol}
-            currencySymbol={line.currencySymbol}
+            catchWeight={line.catchWeight}
+            catchWeightUom={line.catchWeightUomSymbol}
             price={line.price}
+            currencySymbol={line.currencySymbol}
             amount={line.amount}
             pricePrecision={pricePrecision}
             currencyPrecision={currencyPrecision}
@@ -73,6 +75,8 @@ const OrderLine = ({
   /*uuid,*/ productName,
   qty,
   uom,
+  catchWeight,
+  catchWeightUom,
   currencySymbol,
   price,
   amount,
@@ -87,9 +91,14 @@ const OrderLine = ({
       ? formatAmountToHumanReadableStr({ amount: amount, currency: currencySymbol, precision: currencyPrecision })
       : '';
   const qtyStr = formatQtyToHumanReadableStr({ qty, uom });
+  const catchWeightStr =
+    catchWeightUom != null ? formatQtyToHumanReadableStr({ qty: catchWeight, uom: catchWeightUom }) : null;
+  const priceUom = catchWeightUom ? catchWeightUom : uom;
   const priceStr =
-    formatAmountToHumanReadableStr({ amount: price, currency: currencySymbol, precision: pricePrecision }) + '/' + uom;
-  const description = `${qtyStr} at ${priceStr}`;
+    formatAmountToHumanReadableStr({ amount: price, currency: currencySymbol, precision: pricePrecision }) +
+    '/' +
+    priceUom;
+  const description = `${qtyStr}${catchWeightStr ? ', ' + catchWeightStr : ''} at ${priceStr}`;
 
   useEffect(() => {
     if (selected && elementRef?.current?.scrollIntoView) {
