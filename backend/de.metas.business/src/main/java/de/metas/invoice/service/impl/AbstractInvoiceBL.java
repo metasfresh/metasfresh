@@ -40,6 +40,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -863,7 +864,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
 		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
 
-		if (!Check.isEmpty(description.toString()))
+		if (!TranslatableStrings.isEmpty(description))
 		{
 			invoice.setDescription(description.translate(adLanguage));
 		}

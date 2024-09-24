@@ -695,7 +695,7 @@ public class InOutBL implements IInOutBL
 
 		if (copyDocumentNote.isCopyDocumentNoteFromOrder() && inOut.getC_Order_ID() > 0)
 		{
-			final String descriptionBottom = orderBL.getDescripttionBottomById(OrderId.ofRepoId(inOut.getC_Invoice_ID()));
+			final String descriptionBottom = orderBL.getDescripttionBottomById(OrderId.ofRepoId(inOut.getC_Order_ID()));
 			inOut.setDescriptionBottom(descriptionBottom);
 		}
 		else

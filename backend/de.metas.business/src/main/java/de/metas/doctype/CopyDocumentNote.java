@@ -22,16 +22,13 @@
 
 package de.metas.doctype;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_DocType;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 
 public enum CopyDocumentNote implements ReferenceListAwareEnum
 {
@@ -49,20 +46,15 @@ public enum CopyDocumentNote implements ReferenceListAwareEnum
 	@Nullable
 	public static CopyDocumentNote ofNullableCode(@Nullable final String code)
 	{
-		return code != null ? ofCode(code) : null;
+		return index.ofNullableCode(code);
 	}
 
 	public static CopyDocumentNote ofCode(@NonNull final String code)
 	{
-		final CopyDocumentNote type = typesByCode.get(code);
-		if (type == null)
-		{
-			throw new AdempiereException("No " + CopyDocumentNote.class + " found for code: " + code);
-		}
-		return type;
+		return index.ofCode(code);
 	}
 
-	private static final ImmutableMap<String, CopyDocumentNote> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), CopyDocumentNote::getCode);
+	private static final ReferenceListAwareEnums.ValuesIndex<CopyDocumentNote> index = ReferenceListAwareEnums.index(values());
 
 	public boolean isCopyDocumentNoteFromOrder()
 	{
