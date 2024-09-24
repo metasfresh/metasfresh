@@ -364,6 +364,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.pos</groupId>
+			<artifactId>de.metas.pos.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>

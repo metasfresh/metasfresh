@@ -1,0 +1,45 @@
+.pos-screen {
+  .pos-order-panel {
+    .products-container {
+      width: 100%;
+      background-color: #f0f0f0;
+
+      .products {
+        padding: 10px;
+        flex-grow: 1;
+
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        column-gap: 3px;
+        row-gap: 3px;
+
+
+        .product-button {
+          outline: none;
+          border: 0;
+          border-radius: 4px;
+          background-color: #ffffff;
+          font-size: 1.5rem;
+          max-height: 200px;
+          cursor: pointer;
+
+          .name {
+            padding: 4px;
+          }
+
+          .price {
+            padding: 4px;
+          }
+        }
+
+        .product-button:focus {
+          outline: none;
+        }
+
+        .product-button:active {
+          background-color: #e6e6e6;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+.pos-journal-closing-panel {
+  
+  .payment-summary{
+    font-size: 2rem;
+    border-bottom: 1px solid #d8dadd;
+    margin-bottom: 20px;
+    
+    td {
+      vertical-align: middle;
+    }
+    
+    .amt {
+      width: 20%;
+      max-width: 20%;
+      text-align: right;
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+    .amt.is-red {
+      color: red;
+    }
+
+    .line-level1 {
+      td {
+        padding-top: 20px;
+      }
+    }
+    
+    .line-level2 {
+      font-size: 1.5rem;
+      
+      .description-col {
+        border-left: 1px solid gray;
+        padding-left: 20px;
+      }
+    }
+  }
+}

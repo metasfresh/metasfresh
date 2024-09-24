@@ -1065,52 +1065,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			approveIt();
 		}
 
-		// POS supports multiple payments
-		boolean fromPOS = false;
-		if (getC_Order_ID() > 0)
-		{
-			fromPOS = getC_Order().getC_POS_ID() > 0;
-		}
-
-		// Create Cash
-		final PaymentRule paymentRule = PaymentRule.ofCode(getPaymentRule());
-		if (paymentRule.isCash() &&
-				!fromPOS &&
-				!Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
-		{
-			// Modifications for POSterita
-			//
-			// MCash cash = MCash.get (getCtx(), getAD_Org_ID(),
-			// getDateInvoiced(), getC_Currency_ID(), get_TrxName());
-
-			MCash cash;
-
-			final int posId = Env.getContextAsInt(getCtx(), Env.POS_ID);
-
-			if (posId != 0)
-			{
-				final MPOS pos = new MPOS(getCtx(), posId, get_TrxName());
-				final int cashBookId = pos.getC_CashBook_ID();
-				cash = MCash.get(getCtx(), cashBookId, getDateInvoiced(), get_TrxName());
-			}
-			else
-			{
-				cash = MCash.get(getCtx(), getAD_Org_ID(),
-								 getDateInvoiced(), getC_Currency_ID(), get_TrxName());
-			}
-
-			// End Posterita Modifications
-
-			if (cash == null || cash.get_ID() <= 0)
-			{
-				throw new AdempiereException("@NoCashBook@");
-			}
-			final MCashLine cl = new MCashLine(cash);
-			cl.setInvoice(this);
-			cl.saveEx(get_TrxName());
-			setC_CashLine_ID(cl.getC_CashLine_ID());
-		}    // CashBook
-
 		// Update Order & Match
 		final MInvoiceLine[] lines = getLines(false);
 		for (final MInvoiceLine line : lines)
