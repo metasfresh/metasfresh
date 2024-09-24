@@ -68,6 +68,7 @@ class ModularContractSettingsRepositoryTest
 		settingsRecord.setM_Raw_Product_ID(30);
 		settingsRecord.setM_PricingSystem_ID(40);
 		settingsRecord.setStorageCostStartDate(Timestamp.valueOf("2024-04-24 07:15:00"));
+		settingsRecord.setIsSOTrx("Y");
 		saveRecord(settingsRecord);
 
 		final I_ModCntr_Type typeRecord = newInstance(I_ModCntr_Type.class);
