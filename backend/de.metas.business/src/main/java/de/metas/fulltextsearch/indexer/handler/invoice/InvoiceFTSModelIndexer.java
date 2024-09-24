@@ -92,7 +92,7 @@ public class InvoiceFTSModelIndexer implements FTSModelIndexer
 	public List<ESDocumentToIndexChunk> createDocumentsToIndex(final List<ModelToIndex> requests, final FTSConfig config)
 	{
 		final Set<InvoiceId> invoiceIds = extractAffectedInvoiceIds(requests);
-		final InvoiceFTSModelIndexer.ChangedDocumentIds changedDocumentIds = updateSearchTable(invoiceIds);
+		final ChangedDocumentIds changedDocumentIds = updateSearchTable(invoiceIds);
 
 		final ESDocumentToIndexChunk.ESDocumentToIndexChunkBuilder result = ESDocumentToIndexChunk.builder();
 
@@ -120,11 +120,11 @@ public class InvoiceFTSModelIndexer implements FTSModelIndexer
 		return ImmutableList.of(result.build());
 	}
 
-	private InvoiceFTSModelIndexer.ChangedDocumentIds updateSearchTable(@NonNull final Set<InvoiceId> invoiceIds)
+	private ChangedDocumentIds updateSearchTable(@NonNull final Set<InvoiceId> invoiceIds)
 	{
 		if (invoiceIds.isEmpty())
 		{
-			return InvoiceFTSModelIndexer.ChangedDocumentIds.EMPTY;
+			return ChangedDocumentIds.EMPTY;
 		}
 
 		final String sql = "SELECT * from C_Invoice_Adv_Search_Update(p_C_Invoice_IDs := ARRAY["
@@ -132,7 +132,7 @@ public class InvoiceFTSModelIndexer implements FTSModelIndexer
 				+ "])";
 		final ArrayList<Object> sqlParams = new ArrayList<>(invoiceIds);
 
-		final InvoiceFTSModelIndexer.ChangedDocumentIds.ChangedDocumentIdsBuilder changes = InvoiceFTSModelIndexer.ChangedDocumentIds.builder();
+		final ChangedDocumentIds.ChangedDocumentIdsBuilder changes = ChangedDocumentIds.builder();
 
 		DB.forEachRow(sql, sqlParams, rs -> {
 			final String esDocumentId = rs.getString("es_documentid");
@@ -152,14 +152,14 @@ public class InvoiceFTSModelIndexer implements FTSModelIndexer
 
 	private ImmutableSet<InvoiceId> extractAffectedInvoiceIds(@NonNull final List<ModelToIndex> requests)
 	{
-		final HashSet<InvoiceId> invoiceRepoIds = new HashSet<>();
-		final HashSet<BPartnerId> bpartnerRepoIds = new HashSet<>();
+		final HashSet<InvoiceId> invoiceIds = new HashSet<>();
+		final HashSet<BPartnerId> bPartnerIds = new HashSet<>();
 		final HashSet<Integer> bpartnerLocationRepoIds = new HashSet<>();
 		final HashSet<Integer> bpartnerContactRepoIds = new HashSet<>();
-		final HashSet<DocTypeId> docTypeRepoIds = new HashSet<>();
-		final HashSet<WarehouseId> warehouseRepoIds = new HashSet<>();
-		final HashSet<CalendarId> calendarRepoIds = new HashSet<>();
-		final HashSet<YearId> yearRepoIds = new HashSet<>();
+		final HashSet<DocTypeId> docTypeIds = new HashSet<>();
+		final HashSet<WarehouseId> warehouseIds = new HashSet<>();
+		final HashSet<CalendarId> calendarIds = new HashSet<>();
+		final HashSet<YearId> yearIds = new HashSet<>();
 
 		for (final ModelToIndex request : requests)
 		{
@@ -172,11 +172,11 @@ public class InvoiceFTSModelIndexer implements FTSModelIndexer
 			final String sourceTableName = sourceModelRef.getTableName();
 			if (I_C_Invoice.Table_Name.equals(sourceTableName))
 			{
-				invoiceRepoIds.add(InvoiceId.ofRepoId(sourceModelRef.getRecord_ID()));
+				invoiceIds.add(InvoiceId.ofRepoId(sourceModelRef.getRecord_ID()));
 			}
 			else if (I_C_BPartner.Table_Name.equals(sourceTableName))
 			{
-				bpartnerRepoIds.add(BPartnerId.ofRepoId(sourceModelRef.getRecord_ID()));
+				bPartnerIds.add(BPartnerId.ofRepoId(sourceModelRef.getRecord_ID()));
 			}
 			else if (I_C_BPartner_Location.Table_Name.equals(sourceTableName))
 			{
@@ -188,37 +188,57 @@ public class InvoiceFTSModelIndexer implements FTSModelIndexer
 			}
 			else if (I_C_DocType.Table_Name.equals(sourceTableName))
 			{
-				docTypeRepoIds.add(DocTypeId.ofRepoId(sourceModelRef.getRecord_ID()));
+				docTypeIds.add(DocTypeId.ofRepoId(sourceModelRef.getRecord_ID()));
 			}
 			else if (I_M_Warehouse.Table_Name.equals(sourceTableName))
 			{
-				warehouseRepoIds.add(WarehouseId.ofRepoId(sourceModelRef.getRecord_ID()));
+				warehouseIds.add(WarehouseId.ofRepoId(sourceModelRef.getRecord_ID()));
 			}
 			else if (I_C_Calendar.Table_Name.equals(sourceTableName))
 			{
-				calendarRepoIds.add(CalendarId.ofRepoId(sourceModelRef.getRecord_ID()));
+				calendarIds.add(CalendarId.ofRepoId(sourceModelRef.getRecord_ID()));
 			}
 			else if (I_C_Year.Table_Name.equals(sourceTableName))
 			{
-				yearRepoIds.add(YearId.ofRepoId(sourceModelRef.getRecord_ID()));
+				yearIds.add(YearId.ofRepoId(sourceModelRef.getRecord_ID()));
 			}
 		}
 
-		final InvoiceQuery query = InvoiceQuery.builder()
-				.invoiceIds(invoiceRepoIds)
-				.bpartnerIds(bpartnerRepoIds)
-				.bpartnerLocationIds(bpartnerLocationRepoIds)
-				.bpartnerContactIds(bpartnerContactRepoIds)
-				.docTypeIds(docTypeRepoIds)
-				.warehouseIds(warehouseRepoIds)
-				.calendarIds(calendarRepoIds)
-				.yearIds(yearRepoIds)
-				.build();
+		final InvoiceMultiQuery.InvoiceMultiQueryBuilder invoiceMultiQueryBuilder = InvoiceMultiQuery.builder();
+		if (!invoiceIds.isEmpty())
+		{
+			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().invoiceIds(invoiceIds).build());
+		}
+		if (!bPartnerIds.isEmpty())
+		{
+			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().bpartnerIds(bPartnerIds).build());
+		}
+		if (!bpartnerLocationRepoIds.isEmpty())
+		{
+			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().bpartnerLocationRepoIds(bpartnerLocationRepoIds).build());
+		}
+		if (!bpartnerContactRepoIds.isEmpty())
+		{
+			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().bpartnerContactRepoIds(bpartnerContactRepoIds).build());
+		}
+		if (!warehouseIds.isEmpty())
+		{
+			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().warehouseIds(warehouseIds).build());
+		}
+		if (!docTypeIds.isEmpty())
+		{
+			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().docTypeIds(docTypeIds).build());
+		}
+		if (!calendarIds.isEmpty())
+		{
+			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().calendarIds(calendarIds).build());
+		}
+		if (!yearIds.isEmpty())
+		{
+			invoiceMultiQueryBuilder.query(InvoiceQuery.builder().yearIds(yearIds).build());
+		}
 
-		InvoiceMultiQuery.of(....)
-
-		return invoiceDAO.retrieveInvoiceIdForSearchQuery(query);
-
+		return invoiceDAO.retrieveInvoiceIds(invoiceMultiQueryBuilder.build());
 
 	}
 
@@ -226,7 +246,7 @@ public class InvoiceFTSModelIndexer implements FTSModelIndexer
 	@Builder
 	private static class ChangedDocumentIds
 	{
-		public static final InvoiceFTSModelIndexer.ChangedDocumentIds EMPTY = builder().build();
+		public static final ChangedDocumentIds EMPTY = builder().build();
 
 		@NonNull
 		@Singular
