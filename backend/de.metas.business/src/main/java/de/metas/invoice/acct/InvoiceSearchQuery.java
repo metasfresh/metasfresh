@@ -28,10 +28,10 @@ import de.metas.calendar.standard.YearId;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
-import javax.annotation.Nullable;
 import java.util.HashSet;
 
 @Value
@@ -39,12 +39,12 @@ import java.util.HashSet;
 public class InvoiceSearchQuery
 {
 
-	@Nullable HashSet<InvoiceId> invoiceRepoIds;
-	@Nullable HashSet<BPartnerId> bpartnerRepoIds;
-	@Nullable HashSet<Integer> bpartnerLocationRepoIds;
-	@Nullable HashSet<Integer> bpartnerContactRepoIds;
-	@Nullable HashSet<DocTypeId> docTypeRepoIds;
-	@Nullable HashSet<WarehouseId> warehouseRepoIds;
-	@Nullable HashSet<CalendarId> calendarRepoIds;
-	@Nullable HashSet<YearId> yearRepoIds;
+	@NonNull HashSet<InvoiceId> invoiceRepoIds;
+	@NonNull HashSet<BPartnerId> bpartnerRepoIds;
+	@NonNull HashSet<Integer> bpartnerLocationRepoIds;
+	@NonNull HashSet<Integer> bpartnerContactRepoIds;
+	@NonNull HashSet<DocTypeId> docTypeRepoIds;
+	@NonNull HashSet<WarehouseId> warehouseRepoIds;
+	@NonNull HashSet<CalendarId> calendarRepoIds;
+	@NonNull HashSet<YearId> yearRepoIds;
 }

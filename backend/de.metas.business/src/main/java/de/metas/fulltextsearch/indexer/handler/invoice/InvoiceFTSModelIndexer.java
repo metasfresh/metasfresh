@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
 import de.metas.document.DocTypeId;
@@ -71,7 +70,6 @@ import java.util.stream.Collectors;
 public class InvoiceFTSModelIndexer implements FTSModelIndexer
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
