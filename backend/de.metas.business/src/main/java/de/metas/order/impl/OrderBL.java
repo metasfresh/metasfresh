@@ -1448,4 +1448,10 @@ public class OrderBL implements IOrderBL
 	{
 		return orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 	}
+
+	@Override
+	public String getDescripttionBottomById(@NonNull final OrderId orderId)
+	{
+		return getById(orderId).getDescriptionBottom();
+	}
 }

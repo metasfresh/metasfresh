@@ -42,6 +42,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
@@ -631,7 +632,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	{
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.adOrgId(orgId.getRepoId())
-				.docBaseType(DocBaseType.BillOfMaterialVersion)
+				.docBaseType(X_C_DocType.DOCBASETYPE_BOMFormula)
 				.adClientId(Env.getAD_Client_ID())
 				.build();
 

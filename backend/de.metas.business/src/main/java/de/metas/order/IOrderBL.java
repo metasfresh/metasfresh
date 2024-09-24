@@ -375,4 +375,6 @@ public interface IOrderBL extends ISingletonService
 	<T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(I_C_Order order, Class<T> clazz);
 
 	List<de.metas.interfaces.I_C_OrderLine> retrieveOrderLines(I_C_Order order);
+
+	String getDescripttionBottomById(@NonNull OrderId orderId);
 }
