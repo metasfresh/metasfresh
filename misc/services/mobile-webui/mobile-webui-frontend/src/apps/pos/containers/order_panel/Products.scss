@@ -8,18 +8,23 @@
         background-color: white;
         padding: 10px;
         margin: 10px;
-        
+
         display: flex;
-        flex-flow: row nowrap;
-        font-size: 1.5rem;
-        
-        input {
-          flex-grow: 1;
+        flex-flow: column nowrap;
+
+        .search-line {
+          display: flex;
+          flex-flow: row nowrap;
           font-size: 1.5rem;
-        }
-        
-        .button {
-          border: 0;
+
+          input {
+            flex-grow: 1;
+            font-size: 1.5rem;
+          }
+
+          .button {
+            border: 0;
+          }
         }
       }
 
