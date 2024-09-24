@@ -36,6 +36,8 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.InvoiceTax;
+import de.metas.invoice.InvoiceMultiQuery;
+import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -196,7 +198,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
 
-	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
+	Optional<InvoiceId> retrieveIdByInvoiceQuery(SingleInvoiceQuery query);
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
 
@@ -212,4 +214,6 @@ public interface IInvoiceDAO extends ISingletonService
 	I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine);
 
 	Stream<org.compiere.model.I_C_Invoice> stream(@NonNull IQueryFilter<org.compiere.model.I_C_Invoice> invoiceFilter);
+
+	ImmutableSet<InvoiceId> retrieveInvoiceIds(@NonNull InvoiceMultiQuery multiQuery);
 }

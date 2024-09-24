@@ -35,7 +35,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
@@ -257,7 +257,7 @@ public class JsonPaymentService
 	@NonNull
 	private Optional<InvoiceId> retrieveInvoice(final IdentifierString invoiceIdentifier, final OrgId orgId, final DocBaseAndSubType docType)
 	{
-		final InvoiceQuery invoiceQuery = createInvoiceQuery(invoiceIdentifier)
+		final SingleInvoiceQuery invoiceQuery = createInvoiceQuery(invoiceIdentifier)
 				.docType(docType)
 				.orgId(orgId)
 				.docStatuses(DocStatus.completedOrClosedStatuses())
@@ -265,20 +265,20 @@ public class JsonPaymentService
 		return invoiceDAO.retrieveIdByInvoiceQuery(invoiceQuery);
 	}
 
-	private static InvoiceQuery.InvoiceQueryBuilder createInvoiceQuery(@NonNull final IdentifierString identifierString)
+	private static SingleInvoiceQuery.SingleInvoiceQueryBuilder createInvoiceQuery(@NonNull final IdentifierString identifierString)
 	{
 		final IdentifierString.Type type = identifierString.getType();
 		if (IdentifierString.Type.METASFRESH_ID.equals(type))
 		{
-			return InvoiceQuery.builder().invoiceId(MetasfreshId.toValue(identifierString.asMetasfreshId()));
+			return SingleInvoiceQuery.builder().invoiceId(MetasfreshId.toValue(identifierString.asMetasfreshId()));
 		}
 		else if (IdentifierString.Type.EXTERNAL_ID.equals(type))
 		{
-			return InvoiceQuery.builder().externalId(identifierString.asExternalId());
+			return SingleInvoiceQuery.builder().externalId(identifierString.asExternalId());
 		}
 		else if (IdentifierString.Type.DOC.equals(type))
 		{
-			return InvoiceQuery.builder().documentNo(identifierString.asDoc());
+			return SingleInvoiceQuery.builder().documentNo(identifierString.asDoc());
 		}
 		else
 		{
