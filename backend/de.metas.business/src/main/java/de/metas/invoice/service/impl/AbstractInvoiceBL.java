@@ -966,7 +966,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		if (copyDocumentNote.isCopyDocumentNoteFromOrder() && invoice.getC_Order_ID() > 0)
 		{
-        	final String descriptionBottom = orderBL.getDescripttionBottomById(OrderId.ofRepoId(invoice.getC_Invoice_ID()));
+        	final String descriptionBottom = orderBL.getDescripttionBottomById(OrderId.ofRepoId(invoice.getC_Order_ID()));
 			invoice.setDescriptionBottom(descriptionBottom);
 		}
 		else
