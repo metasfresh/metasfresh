@@ -36,7 +36,8 @@ import de.metas.fulltextsearch.config.FTSConfig;
 import de.metas.fulltextsearch.indexer.handler.FTSModelIndexer;
 import de.metas.fulltextsearch.indexer.queue.ModelToIndex;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.acct.InvoiceSearchQuery;
+import de.metas.invoice.InvoiceMultiQuery;
+import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -203,16 +204,18 @@ public class InvoiceFTSModelIndexer implements FTSModelIndexer
 			}
 		}
 
-		final InvoiceSearchQuery query = InvoiceSearchQuery.builder()
-				.invoiceRepoIds(invoiceRepoIds)
-				.bpartnerRepoIds(bpartnerRepoIds)
-				.bpartnerLocationRepoIds(bpartnerLocationRepoIds)
-				.bpartnerContactRepoIds(bpartnerContactRepoIds)
-				.docTypeRepoIds(docTypeRepoIds)
-				.warehouseRepoIds(warehouseRepoIds)
-				.calendarRepoIds(calendarRepoIds)
-				.yearRepoIds(yearRepoIds)
+		final InvoiceQuery query = InvoiceQuery.builder()
+				.invoiceIds(invoiceRepoIds)
+				.bpartnerIds(bpartnerRepoIds)
+				.bpartnerLocationIds(bpartnerLocationRepoIds)
+				.bpartnerContactIds(bpartnerContactRepoIds)
+				.docTypeIds(docTypeRepoIds)
+				.warehouseIds(warehouseRepoIds)
+				.calendarIds(calendarRepoIds)
+				.yearIds(yearRepoIds)
 				.build();
+
+		InvoiceMultiQuery.of(....)
 
 		return invoiceDAO.retrieveInvoiceIdForSearchQuery(query);
 

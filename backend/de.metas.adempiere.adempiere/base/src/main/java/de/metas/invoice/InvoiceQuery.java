@@ -20,30 +20,30 @@
  * #L%
  */
 
-package de.metas.invoice.acct;
+package de.metas.invoice;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
 import de.metas.document.DocTypeId;
-import de.metas.invoice.InvoiceId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
-import java.util.HashSet;
+import java.util.Set;
 
 @Value
 @Builder
-public class InvoiceSearchQuery
+public class InvoiceQuery
 {
-	@NonNull HashSet<InvoiceId> invoiceRepoIds;
-	@NonNull HashSet<BPartnerId> bpartnerRepoIds;
-	@NonNull HashSet<Integer> bpartnerLocationRepoIds;
-	@NonNull HashSet<Integer> bpartnerContactRepoIds;
-	@NonNull HashSet<DocTypeId> docTypeRepoIds;
-	@NonNull HashSet<WarehouseId> warehouseRepoIds;
-	@NonNull HashSet<CalendarId> calendarRepoIds;
-	@NonNull HashSet<YearId> yearRepoIds;
+	@NonNull @Singular Set<InvoiceId> invoiceIds;
+	@NonNull @Singular Set<BPartnerId> bpartnerIds;
+	@NonNull @Singular Set<Integer> bpartnerLocationRepoIds;
+	@NonNull @Singular Set<Integer> bpartnerContactRepoIds;
+	@NonNull @Singular Set<DocTypeId> docTypeIds;
+	@NonNull @Singular Set<WarehouseId> warehouseIds;
+	@NonNull @Singular Set<CalendarId> calendarIds;
+	@NonNull @Singular Set<YearId> yearIds;
 }

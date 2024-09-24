@@ -33,6 +33,12 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.Collection;
 
+/**
+ * A query which expects only one invoice result.
+ *
+ * @see InvoiceQuery
+ * @see InvoiceMultiQuery
+ */
 @Value
 @Builder(toBuilder = true)
 public class SingleInvoiceQuery
