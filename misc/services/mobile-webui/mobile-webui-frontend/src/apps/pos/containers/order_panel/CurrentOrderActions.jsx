@@ -9,11 +9,11 @@ import { useDispatch } from 'react-redux';
 
 const CurrentOrderActions = () => {
   const dispatch = useDispatch();
-  const { isCurrentOrderLoading, currentOrder } = useCurrentOrder();
+  const currentOrder = useCurrentOrder();
 
-  const isNewOrderAllowed = !isCurrentOrderLoading && (!currentOrder || currentOrder?.lines?.length > 0);
-  const isVoidAllowed = !isCurrentOrderLoading && currentOrder && currentOrder.lines?.length > 0;
-  const isPayAllowed = !isCurrentOrderLoading && currentOrder && currentOrder.lines?.length > 0;
+  const isNewOrderAllowed = !currentOrder.isLoading && currentOrder.lines?.length > 0;
+  const isVoidAllowed = !currentOrder.isLoading && currentOrder.lines?.length > 0;
+  const isPayAllowed = !currentOrder.isLoading && currentOrder.lines?.length > 0;
 
   const onNewOrderClick = () => {
     dispatch(addNewOrderAction());

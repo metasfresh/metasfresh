@@ -4,8 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
+import de.metas.currency.Currency;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
@@ -13,6 +15,7 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.util.InSetPredicate;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -26,27 +29,58 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-@Builder
 class POSProductsLoader
 {
+	// services
 	@NonNull private final IPriceListDAO priceListDAO;
 	@NonNull private final IProductBL productBL;
 	@NonNull private final IUOMDAO uomDAO;
-	@NonNull final POSTerminal posTerminal;
+
+	// params
+	@NonNull private final PriceListId priceListId;
+	@NonNull private final Currency currency;
 
 	private final HashMap<ProductId, I_M_Product> productsById = new HashMap<>();
 
-	public POSProductsList load(@NonNull final Instant evalDate)
+	@Builder
+	private POSProductsLoader(
+			@NonNull final IPriceListDAO priceListDAO,
+			@NonNull final IProductBL productBL,
+			@NonNull final IUOMDAO uomDAO,
+			@NonNull final PriceListId priceListId,
+			@NonNull final Currency currency)
 	{
-		final PriceListVersionId priceListVersionId = priceListDAO.retrievePriceListVersionId(posTerminal.getPriceListId(), evalDate.atZone(SystemTime.zoneId()));
+		this.priceListDAO = priceListDAO;
+		this.productBL = productBL;
+		this.uomDAO = uomDAO;
+		this.priceListId = priceListId;
+		this.currency = currency;
+	}
 
-		final List<I_M_ProductPrice> productPrices = priceListDAO.retrieveProductPrices(priceListVersionId).collect(ImmutableList.toImmutableList());
+	public List<POSProduct> load(@NonNull final Instant evalDate, @NonNull final InSetPredicate<ProductId> productIds)
+	{
+		if (productIds.isNone())
+		{
+			return ImmutableList.of();
+		}
+
+		final PriceListVersionId priceListVersionId = priceListDAO.retrievePriceListVersionId(priceListId, evalDate.atZone(SystemTime.zoneId()));
+
+		final List<I_M_ProductPrice> productPrices = priceListDAO.retrieveProductPrices(priceListVersionId)
+				.filter(productPrice -> isProductPriceMatching(productPrice, productIds))
+				.collect(ImmutableList.toImmutableList());
+
 		loadProductsById(extractProductIds(productPrices));
 
 		return productPrices.stream()
 				.map(this::toPOSProduct)
-				.collect(POSProductsList.collect());
+				.collect(ImmutableList.toImmutableList());
 
+	}
+
+	private static boolean isProductPriceMatching(final I_M_ProductPrice productPrice, final @NonNull InSetPredicate<ProductId> productIds)
+	{
+		return productIds.test(ProductId.ofRepoId(productPrice.getM_Product_ID()));
 	}
 
 	private static ImmutableSet<ProductId> extractProductIds(final List<I_M_ProductPrice> productPrices)
@@ -80,7 +114,7 @@ class POSProductsLoader
 				.id(productId)
 				.name(getProductName(productId))
 				.price(extractPrice(productPrice))
-				.currencySymbol(posTerminal.getCurrency().getSymbol())
+				.currencySymbol(currency.getSymbol())
 				.uomId(uomId)
 				.uomSymbol(getUOMSymbol(uomId))
 				.taxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()))
@@ -96,7 +130,7 @@ class POSProductsLoader
 
 	private Amount extractPrice(final I_M_ProductPrice productPrice)
 	{
-		return Amount.of(productPrice.getPriceStd(), posTerminal.getCurrency().getCurrencyCode());
+		return Amount.of(productPrice.getPriceStd(), currency.getCurrencyCode());
 	}
 
 	private String getUOMSymbol(final UomId uomId)

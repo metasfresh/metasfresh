@@ -9,6 +9,7 @@ import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Product;
@@ -117,6 +118,11 @@ public interface IProductDAO extends ISingletonService
 	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
 
 	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
+
+	Set<ProductId> getProductIdsMatchingQueryString(
+			@NonNull String queryString,
+			@NonNull ClientId clientId,
+			@NonNull QueryLimit limit);
 
 	@Value
 	class ProductQuery

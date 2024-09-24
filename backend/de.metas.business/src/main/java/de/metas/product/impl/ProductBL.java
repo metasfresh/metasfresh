@@ -30,6 +30,7 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -552,4 +553,20 @@ public final class ProductBL implements IProductBL
 	{
 		return productsRepo.getByIdsInTrx(productIds);
 	}
+
+	@Override
+	public Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId)
+	{
+		return productsRepo.getProductIdByBarcode(barcode, clientId);
+	}
+
+	@Override
+	public Set<ProductId> getProductIdsMatchingQueryString(
+			@NonNull final String queryString,
+			@NonNull final ClientId clientId,
+			@NonNull QueryLimit limit)
+	{
+		return productsRepo.getProductIdsMatchingQueryString(queryString, clientId, limit);
+	}
+
 }

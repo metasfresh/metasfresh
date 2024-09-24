@@ -18,9 +18,9 @@ import { round } from '../../../../utils/numbers';
 const POSPaymentPanel = () => {
   const dispatch = useDispatch();
   const posTerminal = usePOSTerminal();
-  const { currentOrder } = useCurrentOrder();
+  const currentOrder = useCurrentOrder();
 
-  const order_uuid = currentOrder?.uuid;
+  const order_uuid = currentOrder.uuid;
 
   const currencyPrecision = posTerminal?.currencyPrecision ?? 2;
   const currency = currentOrder?.currencySymbol;

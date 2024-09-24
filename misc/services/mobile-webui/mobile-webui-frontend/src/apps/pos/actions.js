@@ -127,14 +127,38 @@ export const useCurrentOrderOrNew = () => {
 };
 
 export const useCurrentOrder = () => {
+  const dispatch = useDispatch();
+  const [isProcessing, setProcessing] = useState(false);
   const { isOpenOrdersLoading } = useOpenOrders();
   const currentOrder = useSelector(getCurrentOrderFromState);
 
-  if (isOpenOrdersLoading) {
-    return { isCurrentOrderLoading: true, currentOrder };
-  }
-
-  return { isCurrentOrderLoading: false, currentOrder };
+  const isLoading = isOpenOrdersLoading;
+  return {
+    ...(currentOrder ?? {}),
+    isLoading,
+    isProcessing,
+    addOrderLine: (product) => {
+      if (isProcessing) {
+        console.log('Skip adding order line because order is currently processing', { product, currentOrder });
+        return;
+      }
+      setProcessing(true);
+      dispatch(
+        addOrderLine({
+          order_uuid: currentOrder?.uuid,
+          productId: product.id,
+          productName: product.name,
+          taxCategoryId: product.taxCategoryId,
+          currencySymbol: product.currencySymbol,
+          price: product.price,
+          qty: 1,
+          uomId: product.uomId,
+          uomSymbol: product.uomSymbol,
+        })
+      );
+      dispatch(() => setProcessing(false));
+    },
+  };
 };
 
 const getCurrentOrderFromState = (globalState) => {

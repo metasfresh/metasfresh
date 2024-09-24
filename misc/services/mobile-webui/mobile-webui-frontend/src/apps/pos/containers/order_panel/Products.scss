@@ -4,6 +4,25 @@
       width: 100%;
       background-color: #f0f0f0;
 
+      .search-container {
+        background-color: white;
+        padding: 10px;
+        margin: 10px;
+        
+        display: flex;
+        flex-flow: row nowrap;
+        font-size: 1.5rem;
+        
+        input {
+          flex-grow: 1;
+          font-size: 1.5rem;
+        }
+        
+        .button {
+          border: 0;
+        }
+      }
+
       .products {
         padding: 10px;
         flex-grow: 1;
