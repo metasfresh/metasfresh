@@ -46,6 +46,7 @@ import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.TableName;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -201,6 +202,10 @@ public class InvoiceFTSModelIndexer implements FTSModelIndexer
 			else if (I_C_Year.Table_Name.equals(sourceTableName))
 			{
 				yearIds.add(YearId.ofRepoId(sourceModelRef.getRecord_ID()));
+			}
+			else
+			{
+				throw new AdempiereException("Source table not supported: " + sourceTableName );
 			}
 		}
 
