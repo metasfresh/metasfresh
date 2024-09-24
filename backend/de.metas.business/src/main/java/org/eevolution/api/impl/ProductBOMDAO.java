@@ -11,8 +11,6 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IssuingToleranceSpec;
@@ -631,7 +629,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	{
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.adOrgId(orgId.getRepoId())
-				.docBaseType(DocBaseType.BillOfMaterialVersion)
+				.docBaseType(X_C_DocType.DOCBASETYPE_BOMFormula)
 				.adClientId(Env.getAD_Client_ID())
 				.build();
 

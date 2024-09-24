@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_DocType
  *  @author metasfresh (generated) 
@@ -285,6 +284,27 @@ public interface I_C_DocType
 
 	ModelColumn<I_C_DocType, Object> COLUMN_CompletedNotification_BoilerPlate_ID = new ModelColumn<>(I_C_DocType.class, "CompletedNotification_BoilerPlate_ID", null);
 	String COLUMNNAME_CompletedNotification_BoilerPlate_ID = "CompletedNotification_BoilerPlate_ID";
+
+	/**
+	 * Set Copy document note .
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCopyDocumentNote (@Nullable java.lang.String CopyDocumentNote);
+
+	/**
+	 * Get Copy document note .
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCopyDocumentNote();
+
+	ModelColumn<I_C_DocType, Object> COLUMN_CopyDocumentNote = new ModelColumn<>(I_C_DocType.class, "CopyDocumentNote", null);
+	String COLUMNNAME_CopyDocumentNote = "CopyDocumentNote";
 
 	/**
 	 * Get Created.
