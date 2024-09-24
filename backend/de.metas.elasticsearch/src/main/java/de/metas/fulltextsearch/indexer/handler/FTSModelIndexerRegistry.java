@@ -24,6 +24,7 @@ package de.metas.fulltextsearch.indexer.handler;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.TableName;
@@ -62,11 +63,11 @@ public class FTSModelIndexerRegistry
 		return builder.build();
 	}
 
-	public List<FTSModelIndexer> getBySourceTableNames(@NonNull final Collection<TableName> sourceTableNames)
+	public ImmutableSet<FTSModelIndexer> getBySourceTableNames(@NonNull final Collection<TableName> sourceTableNames)
 	{
 		return sourceTableNames.stream()
 				.flatMap(sourceTableName -> indexersBySourceTableName.get(sourceTableName).stream())
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 }
