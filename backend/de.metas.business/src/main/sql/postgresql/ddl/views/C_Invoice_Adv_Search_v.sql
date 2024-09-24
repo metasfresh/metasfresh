@@ -5,11 +5,12 @@ CREATE OR REPLACE VIEW C_Invoice_Adv_Search_v AS
 SELECT i.c_invoice_id,
        bp.c_bpartner_id,
        bpl.c_bpartner_location_id,
-       u.ad_user_id,
-       dt.c_doctype_id,
-       wh.m_warehouse_id,
-       cal.c_calendar_id,
-       year.c_year_id,
+
+       COALESCE(u.ad_user_id, -1)                                                                              AS AD_User_ID,
+       COALESCE(dt.c_doctype_id, -1)                                                                           AS C_DocType_ID,
+       COALESCE(wh.m_warehouse_id, -1)                                                                         AS M_Warehouse_ID,
+       COALESCE(cal.c_calendar_id, -1)                                                                         AS C_Calendar_ID,
+       COALESCE(year.c_year_id, -1)                                                                            AS C_Year_ID,
 
        i.documentno,
        i.poreference,
