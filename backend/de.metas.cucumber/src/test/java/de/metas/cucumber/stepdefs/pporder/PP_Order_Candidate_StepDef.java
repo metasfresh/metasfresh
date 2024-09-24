@@ -103,8 +103,7 @@ import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.eevolution.model.I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID;
 
@@ -113,25 +112,43 @@ public class PP_Order_Candidate_StepDef
 {
 	private final static Logger logger = LogManager.getLogger(PP_Order_Candidate_StepDef.class);
 
-	@NonNull private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer = SpringContextHolder.instance.getBean(PPOrderCandidateEnqueuer.class);
-	@NonNull private final PPOrderCandidateService ppOrderCandidateService = SpringContextHolder.instance.getBean(PPOrderCandidateService.class);
-	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull
+	private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer = SpringContextHolder.instance.getBean(PPOrderCandidateEnqueuer.class);
+	@NonNull
+	private final PPOrderCandidateService ppOrderCandidateService = SpringContextHolder.instance.getBean(PPOrderCandidateService.class);
+	@NonNull
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	@NonNull private final M_Product_StepDefData productTable;
-	@NonNull private final PP_Product_BOM_StepDefData productBOMTable;
-	@NonNull private final PP_Product_Planning_StepDefData productPlanningTable;
-	@NonNull private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
-	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	@NonNull private final M_Warehouse_StepDefData warehouseTable;
-	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
-	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
-	@NonNull private final C_OrderLine_StepDefData orderLineTable;
-	@NonNull private final M_Maturing_Configuration_StepDefData maturingConfigTable;
-	@NonNull private final M_Maturing_Configuration_Line_StepDefData maturingConfigLineTable;
-	@NonNull private final M_HU_StepDefData huTable;
-	@NonNull private final S_Resource_StepDefData resourceTable;
+	@NonNull
+	private final M_Product_StepDefData productTable;
+	@NonNull
+	private final PP_Product_BOM_StepDefData productBOMTable;
+	@NonNull
+	private final PP_Product_Planning_StepDefData productPlanningTable;
+	@NonNull
+	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
+	@NonNull
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	@NonNull
+	private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull
+	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	@NonNull
+	private final IdentifierIds_StepDefData identifierIdsTable;
+	@NonNull
+	private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull
+	private final M_Maturing_Configuration_StepDefData maturingConfigTable;
+	@NonNull
+	private final M_Maturing_Configuration_Line_StepDefData maturingConfigLineTable;
+	@NonNull
+	private final M_HU_StepDefData huTable;
+	@NonNull
+	private final S_Resource_StepDefData resourceTable;
 
 	private static final AdMessageKey MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyEnteredLowerThanQtyProcessed");
 	private static final AdMessageKey MSG_QTY_TO_PROCESS_GREATER_THAN_QTY_LEFT = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyToProcessGreaterThanQtyLeftToBeProcessed");
@@ -246,7 +263,7 @@ public class PP_Order_Candidate_StepDef
 		assertThat(orderLineId).isNotNull();
 
 		final Supplier<Optional<I_PP_Order_Candidate>> ppOrderCandSupplier = () -> Optional.ofNullable(getQueryByOrderLineId(orderLineId)
-				.first());
+																											   .first());
 
 		final I_PP_Order_Candidate ppOrderCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, ppOrderCandSupplier);
 
@@ -405,7 +422,7 @@ public class PP_Order_Candidate_StepDef
 		}
 	}
 
-	private IQuery<I_PP_Order_Candidate> toSqlQuery(final DataTableRow row)
+	private IQuery<I_PP_Order_Candidate> toSqlQuery(@NonNull final DataTableRow row)
 	{
 		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier().orElse(null);
 		if (identifier != null && ppOrderCandidateTable.isPresent(identifier))
@@ -423,30 +440,11 @@ public class PP_Order_Candidate_StepDef
 		final StepDefDataIdentifier resourceIdentifier = row.getAsIdentifier(I_S_Resource.COLUMNNAME_S_Resource_ID);
 		final ResourceId resourceId = resourceTable.getIdOptional(resourceIdentifier).orElseGet(() -> resourceIdentifier.getAsId(ResourceId.class));
 
-		// final Quantity qtyEntered = row.getAsQuantity(I_PP_Order_Candidate.COLUMNNAME_QtyEntered, I_C_UOM.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
-		// final Quantity qtyToProcess = row.getAsQuantity(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, I_C_UOM.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
-		// final Quantity qtyProcessed = row.getAsQuantity(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed, I_C_UOM.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
-		// final UomId uomId = Quantity.getCommonUomIdOfAll(qtyEntered, qtyToProcess, qtyProcessed);
-
-		final Instant datePromised = row.getAsInstant(I_PP_Order_Candidate.COLUMNNAME_DatePromised);
-		final Instant dateStartSchedule = row.getAsInstant(I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule);
-		// final boolean isProcessed = row.getAsBoolean(I_PP_Order_Candidate.COLUMNNAME_Processed);
-		// final boolean isClosed = row.getAsBoolean(I_PP_Order_Candidate.COLUMNNAME_IsClosed);
-
 		final IQueryBuilder<I_PP_Order_Candidate> builder = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, productId)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_BOM_ID, bomId)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanningId)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_S_Resource_ID, resourceId)
-				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyEntered, qtyEntered.toBigDecimal())
-				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, qtyToProcess.toBigDecimal())
-				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed, qtyProcessed.toBigDecimal())
-				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_C_UOM_ID, uomId)
-				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_DatePromised, datePromised)
-				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule, dateStartSchedule)
-				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Processed, isProcessed)
-				// .addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsClosed, isClosed)
-				;
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_S_Resource_ID, resourceId);
 
 		row.getAsOptionalBoolean(I_PP_Order_Candidate.COLUMNNAME_IsMaturing)
 				.ifPresent(isMaturing -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsMaturing, isMaturing));
@@ -458,10 +456,6 @@ public class PP_Order_Candidate_StepDef
 		row.getAsOptionalIdentifier(I_PP_Order_Candidate.COLUMNNAME_M_Maturing_Configuration_Line_ID)
 				.map(maturingConfigLineTable::get)
 				.ifPresent(maturingConfigLine -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Maturing_Configuration_Line_ID, maturingConfigLine.getM_Maturing_Configuration_Line_ID()));
-
-		// row.getAsOptionalIdentifier(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID)
-		// 		.map(huTable::get)
-		// 		.ifPresent(hu -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID, hu.getM_HU_ID()));
 
 		return builder.create();
 	}
@@ -489,8 +483,8 @@ public class PP_Order_Candidate_StepDef
 			final String qtyProcessedColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed).translate(adLanguage);
 
 			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED,
-					qtyEnteredColumnTrl,
-					qtyProcessedColumnTrl);
+																			 qtyEnteredColumnTrl,
+																			 qtyProcessedColumnTrl);
 
 			assertThat(adempiereException.getMessage()).contains(message.translate(adLanguage));
 		}
@@ -628,7 +622,7 @@ public class PP_Order_Candidate_StepDef
 	private OrderLineId getOrderLineIdByIdentifier(@NonNull final String orderLineIdentifier)
 	{
 		return OrderLineId.ofRepoIdOrNull(identifierIdsTable.getOptional(orderLineIdentifier)
-				.orElseGet(() -> orderLineTable.get(orderLineIdentifier).getC_OrderLine_ID()));
+												  .orElseGet(() -> orderLineTable.get(orderLineIdentifier).getC_OrderLine_ID()));
 	}
 
 	@And("after not more than {int}s, no PP_Order_Candidates are found for Issue_HU_ID: {string}")
@@ -673,6 +667,8 @@ public class PP_Order_Candidate_StepDef
 				.ppOrderCandidateTable(ppOrderCandidateTable)
 				.productTable(productTable)
 				.productPlanningTable(productPlanningTable)
+				.resourceTable(resourceTable)
+				.productBOMTable(productBOMTable)
 				.build();
 	}
 }
