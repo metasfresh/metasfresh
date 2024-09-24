@@ -59,6 +59,7 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -184,6 +185,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private static final AdMessageKey MSG_InvoiceMayNotBePaid = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotBePaid");
 
 	private static final AdMessageKey MSG_InvoiceMayNotHaveOpenAmtZero = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotHaveOpenAmtZero");
+
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Override
 	public org.compiere.model.I_C_Invoice getById(@NonNull final InvoiceId invoiceId)
@@ -873,7 +876,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		if (copyDocumentNote.isCopyDocumentNoteFromOrder() && invoice.getC_Order_ID() > 0)
 		{
-        	// TODO: copy from order
+        	final String descriptionBottom = orderBL.getDescripttionBottomById(OrderId.ofRepoId(invoice.getC_Invoice_ID()));
+			invoice.setDescriptionBottom(descriptionBottom);
 		}
 		else
 		{

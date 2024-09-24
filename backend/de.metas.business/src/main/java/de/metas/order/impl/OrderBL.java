@@ -1223,4 +1223,10 @@ public class OrderBL implements IOrderBL
 	{
 		return getById(orderId).getDocumentNo();
 	}
+
+	@Override
+	public String getDescripttionBottomById(@NonNull final OrderId orderId)
+	{
+		return getById(orderId).getDescriptionBottom();
+	}
 }

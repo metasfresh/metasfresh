@@ -20,7 +20,9 @@ import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -114,6 +116,7 @@ public class InOutBL implements IInOutBL
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	private final IRequestDAO requestsRepo = Services.get(IRequestDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -692,7 +695,8 @@ public class InOutBL implements IInOutBL
 
 		if (copyDocumentNote.isCopyDocumentNoteFromOrder() && inOut.getC_Order_ID() > 0)
 		{
-			// TODO: copy from order
+			final String descriptionBottom = orderBL.getDescripttionBottomById(OrderId.ofRepoId(inOut.getC_Invoice_ID()));
+			inOut.setDescriptionBottom(descriptionBottom);
 		}
 		else
 		{
