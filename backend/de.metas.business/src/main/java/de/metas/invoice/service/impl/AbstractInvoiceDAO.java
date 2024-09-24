@@ -21,7 +21,9 @@ import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceMultiQuery;
 import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -492,7 +494,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@NonNull
-	public Optional<InvoiceId> retrieveIdByInvoiceQuery(@NonNull final InvoiceQuery query)
+	public Optional<InvoiceId> retrieveIdByInvoiceQuery(@NonNull final SingleInvoiceQuery query)
 	{
 		if (query.getInvoiceId() != null)
 		{
@@ -546,7 +548,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@NonNull
-	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final InvoiceQuery query)
+	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final SingleInvoiceQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null docId; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
@@ -574,7 +576,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@NonNull
-	private Optional<InvoiceId> getInvoiceIdByExternalId(@NonNull final InvoiceQuery query)
+	private Optional<InvoiceId> getInvoiceIdByExternalId(@NonNull final SingleInvoiceQuery query)
 	{
 		final ExternalId externalId = assumeNotNull(query.getExternalId(), "Param query needs to have a non-null externalId; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
@@ -682,4 +684,67 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.create()
 				.iterateAndStream();
 	}
+
+	@Override
+	public ImmutableSet<InvoiceId> retrieveInvoiceIds(@NonNull final InvoiceMultiQuery multiQuery)
+	{
+		return toSqlQuery(multiQuery).listIds(InvoiceId::ofRepoId);
+	}
+
+	public IQuery<I_C_Invoice> toSqlQuery(@NonNull final InvoiceMultiQuery multiQuery)
+	{
+		final IQueryBuilder<I_C_Invoice> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter();
+
+		final ICompositeQueryFilter<I_C_Invoice> filters = queryBuilder.addCompositeQueryFilter().setJoinOr();
+		
+		for (final InvoiceQuery query : multiQuery.getQueries())
+		{
+			IQueryFilter<I_C_Invoice> sqlQueryFilter = toSqlQueryFilter(query);
+			filters.addFilter(sqlQueryFilter);
+		}
+
+		return queryBuilder.create();
+	}
+
+	public IQueryFilter<I_C_Invoice> toSqlQueryFilter(@NonNull final InvoiceQuery query)
+	{
+		final ICompositeQueryFilter<I_C_Invoice> queryFilter = queryBL.createCompositeQueryFilter(I_C_Invoice.class);
+
+		if (!query.getInvoiceIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, query.getInvoiceIds());
+		}
+		if (!query.getBpartnerIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, query.getBpartnerIds());
+		}
+		if (!query.getBpartnerLocationRepoIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID, query.getBpartnerLocationRepoIds());
+		}
+		if (!query.getBpartnerContactRepoIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_AD_User_ID, query.getBpartnerContactRepoIds());
+		}
+		if (!query.getWarehouseIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_M_Warehouse_ID, query.getWarehouseIds());
+		}
+		if (!query.getDocTypeIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID, query.getDocTypeIds());
+		}
+		if (!query.getCalendarIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_Harvesting_Calendar_ID, query.getCalendarIds());
+		}
+		if (!query.getYearIds().isEmpty())
+		{
+			queryFilter.addInArrayFilter(I_C_Invoice.COLUMNNAME_Harvesting_Year_ID, query.getYearIds());
+		}
+
+		return queryFilter;
+	}
+
 }
