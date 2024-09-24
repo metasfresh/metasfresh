@@ -91,7 +91,7 @@ public class JsonInvoiceReviewService
 	@Nullable
 	private static SingleInvoiceQuery createInvoiceQueryOrNull(@NonNull final JsonInvoiceReviewUpsertItem jsonInvoiceReviewUpsertItem, @NonNull final OrgId orgId)
 	{
-		final SingleInvoiceQuery.InvoiceQueryBuilder invoiceQueryBuilder = SingleInvoiceQuery.builder()
+		final SingleInvoiceQuery.SingleInvoiceQueryBuilder invoiceQueryBuilder = SingleInvoiceQuery.builder()
 				.orgId(orgId);
 
 		if (jsonInvoiceReviewUpsertItem.getInvoiceId() != null)

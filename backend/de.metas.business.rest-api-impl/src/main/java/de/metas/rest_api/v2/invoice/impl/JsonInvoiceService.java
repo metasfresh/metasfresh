@@ -876,7 +876,7 @@ public class JsonInvoiceService
 		@NonNull
 		private SingleInvoiceQuery createInvoiceQuery(@NonNull final JsonPaymentAllocationLine.InvoiceIdentifier invoiceIdentifier)
 		{
-			final SingleInvoiceQuery.InvoiceQueryBuilder invoiceQueryBuilder = SingleInvoiceQuery.builder()
+			final SingleInvoiceQuery.SingleInvoiceQueryBuilder invoiceQueryBuilder = SingleInvoiceQuery.builder()
 					.orgId(orgId)
 					.docType(getDocType(invoiceIdentifier))
 					.docStatuses(DocStatus.completedOrClosedStatuses());

@@ -265,7 +265,7 @@ public class JsonPaymentService
 		return invoiceDAO.retrieveIdByInvoiceQuery(invoiceQuery);
 	}
 
-	private static SingleInvoiceQuery.InvoiceQueryBuilder createInvoiceQuery(@NonNull final IdentifierString identifierString)
+	private static SingleInvoiceQuery.SingleInvoiceQueryBuilder createInvoiceQuery(@NonNull final IdentifierString identifierString)
 	{
 		final IdentifierString.Type type = identifierString.getType();
 		if (IdentifierString.Type.METASFRESH_ID.equals(type))
