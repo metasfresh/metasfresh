@@ -248,3 +248,7 @@ UPDATE AD_Field SET DisplayLogic='@DocBaseType@=SOO | @DocBaseType@=POO | @DocBa
 UPDATE AD_Field SET DisplayLogic='@DocBaseType@=SOO | @DocBaseType@=POO | @DocBaseType@=ARI | @DocBaseType@=ARC | @DocBaseType@=API | @DocBaseType@=ARC | @DocBaseType@=MMS | @DocBaseType@=MMR',Updated=TO_TIMESTAMP('2024-09-24 10:37:52.34','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=561403
 ;
 
+
+UPDATE ad_ref_list SET name = 'Dokument aus Bestellung kopieren' WHERE ad_ref_list_id = 543726;
+
+UPDATE ad_ref_list SET name = 'Dokumentnotiz in Dokument kopieren' WHERE ad_ref_list_id = 543725;
