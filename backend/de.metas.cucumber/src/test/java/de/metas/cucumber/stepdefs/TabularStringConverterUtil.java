@@ -30,16 +30,18 @@ import de.metas.util.text.tabular.Cell;
 import de.metas.util.text.tabular.Row;
 import de.metas.util.text.tabular.Table;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
-@UtilityClass
-public class TabularStringConverterUtil
+public final class TabularStringConverterUtil
 {
-	public Table toTableFromRows(@NonNull final List<Row> rows)
+	private TabularStringConverterUtil()
+	{ // with lombok's @UtilityClass annotation, i had a weird compile-error over at RESTUtil. F knowns why
+	}
+
+	public static Table toTableFromRows(@NonNull final List<Row> rows)
 	{
 		final Table table = new Table();
 		table.addRows(rows);
@@ -48,7 +50,7 @@ public class TabularStringConverterUtil
 		return table;
 	}
 
-	public <T extends RepoIdAware> Cell toCell(
+	public static <T extends RepoIdAware> Cell toCell(
 			@Nullable final T id,
 			@NonNull final StepDefDataGetIdAware<T, ?> lookupTable)
 	{
@@ -63,7 +65,7 @@ public class TabularStringConverterUtil
 		return Cell.ofNullable(value);
 	}
 
-	public Cell toQtyCell(final BigDecimal valueBD, final int uomRepoId)
+	public static Cell toQtyCell(final BigDecimal valueBD, final int uomRepoId)
 	{
 		if (uomRepoId <= 0)
 		{
@@ -74,10 +76,10 @@ public class TabularStringConverterUtil
 		return Cell.ofNullable(qty);
 	}
 
-	public Cell toBooleanCell(@Nullable final Boolean valueBoolean)
+	public static Cell toBooleanCell(@Nullable final Boolean valueBoolean)
 	{
 		return Cell.ofNullable(valueBoolean);
 	}
-	
+
 }
 
