@@ -32,6 +32,10 @@ public enum SOTrx
 {
 	SALES, PURCHASE;
 
+	private static final String ISSOTRX_Yes = "Y";
+
+	private static final String ISSOTRX_No = "N";
+
 	/**
 	 * For backward compatibility we are accepting null parameter, so we are calling {@link #ofNullableBoolean(Boolean)}.
 	 * <p>
@@ -39,11 +43,6 @@ public enum SOTrx
 	 * pls call {@link #ofBooleanNotNull(Boolean)} if you know that the parameter is not null,
 	 * or pls call {@link #ofNullableBoolean(Boolean)} if you know the parameter might be null (so the return value).
 	 */
-
-	private static final String ISSOTRX_Yes = "Y";
-	/** No = N */
-	private static final String ISSOTRX_No = "N";
-
 	@Nullable
 	public static SOTrx ofBoolean(@Nullable final Boolean isSOTrx)
 	{
@@ -115,7 +114,7 @@ public enum SOTrx
 	}
 
 	@NonNull
-	public static SOTrx ofYesNoStringNotNull(@NonNull final String soTrx)
+	public static SOTrx ofYesNoString(@NonNull final String soTrx)
 	{
 		if(soTrx.equals(ISSOTRX_Yes))
 		{

@@ -80,7 +80,7 @@ public class ModCntr_Settings
 	{
 		final ProductId rawProductId = ProductId.ofRepoId(record.getM_Raw_Product_ID());
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
-		final SOTrx soTrx = SOTrx.ofYesNoStringNotNull(record.getIsSOTrx());
+		final SOTrx soTrx = SOTrx.ofYesNoString(record.getIsSOTrx());
 
 		modularContractSettingsService.upsertInformativeLogsModule(modularContractSettingsId, rawProductId, soTrx);
 
@@ -92,7 +92,7 @@ public class ModCntr_Settings
 			ifUIAction = true)
 	public void upsertDefinitiveInvoiceModule(@NonNull final I_ModCntr_Settings record)
 	{
-		final SOTrx soTrx = SOTrx.ofYesNoStringNotNull(record.getIsSOTrx());
+		final SOTrx soTrx = SOTrx.ofYesNoString(record.getIsSOTrx());
 		if(!soTrx.isPurchase())
 		{
 			return;

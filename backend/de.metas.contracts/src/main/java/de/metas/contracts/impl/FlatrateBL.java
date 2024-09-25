@@ -2523,7 +2523,7 @@ public class FlatrateBL implements IFlatrateBL
 		if (modularContractSettingsRepository.isSettingsExist(ModularContractSettingsQuery.builder()
 				.yearAndCalendarId(yearAndCalendarId)
 				.rawProductId(productId)
-				.soTrx(SOTrx.ofYesNoStringNotNull(settings.getIsSOTrx()))
+				.soTrx(SOTrx.ofYesNoString(settings.getIsSOTrx()))
 				.build()))
 		{
 			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);

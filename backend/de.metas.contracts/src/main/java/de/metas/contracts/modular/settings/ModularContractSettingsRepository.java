@@ -227,7 +227,7 @@ public class ModularContractSettingsRepository
 				.processedProductId(ProductId.ofRepoIdOrNull(settingsRecord.getM_Processed_Product_ID()))
 				.coProductId(ProductId.ofRepoIdOrNull(settingsRecord.getM_Co_Product_ID()))
 				.name(settingsRecord.getName())
-				.soTrx(SOTrx.ofYesNoStringNotNull(settingsRecord.getIsSOTrx()))
+				.soTrx(SOTrx.ofYesNoString(settingsRecord.getIsSOTrx()))
 				.additionalInterestDays(settingsRecord.getAddInterestDays())
 				.interestPercent(Percent.of(settingsRecord.getInterestRate()))
 				.interimPricePercent(Percent.of(settingsRecord.getInterimPricePercent()))
