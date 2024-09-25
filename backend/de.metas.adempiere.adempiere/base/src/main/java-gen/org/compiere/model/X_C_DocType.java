@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1624788426L;
+	private static final long serialVersionUID = 84182168L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -152,24 +152,24 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	}
 
 	/** 
-	 * CopyDocumentNote AD_Reference_ID=541893
+	 * CopyDescriptionAndDocumentNote AD_Reference_ID=541893
 	 * Reference name: CopyDocumentNote
 	 */
-	public static final int COPYDOCUMENTNOTE_AD_Reference_ID=541893;
-	/** Copy document note to document = CD */
-	public static final String COPYDOCUMENTNOTE_CopyDocumentNoteToDocument = "CD";
-	/** Copy document note from Order = CO */
-	public static final String COPYDOCUMENTNOTE_CopyDocumentNoteFromOrder = "CO";
+	public static final int COPYDESCRIPTIONANDDOCUMENTNOTE_AD_Reference_ID=541893;
+	/** CopyDescriptionAndDocumentNote = CD */
+	public static final String COPYDESCRIPTIONANDDOCUMENTNOTE_CopyDescriptionAndDocumentNote = "CD";
+	/** CopyDescriptionAndDocumentNotefromOrder = CO */
+	public static final String COPYDESCRIPTIONANDDOCUMENTNOTE_CopyDescriptionAndDocumentNotefromOrder = "CO";
 	@Override
-	public void setCopyDocumentNote (final @Nullable java.lang.String CopyDocumentNote)
+	public void setCopyDescriptionAndDocumentNote (final @Nullable java.lang.String CopyDescriptionAndDocumentNote)
 	{
-		set_Value (COLUMNNAME_CopyDocumentNote, CopyDocumentNote);
+		set_Value (COLUMNNAME_CopyDescriptionAndDocumentNote, CopyDescriptionAndDocumentNote);
 	}
 
 	@Override
-	public java.lang.String getCopyDocumentNote() 
+	public java.lang.String getCopyDescriptionAndDocumentNote() 
 	{
-		return get_ValueAsString(COLUMNNAME_CopyDocumentNote);
+		return get_ValueAsString(COLUMNNAME_CopyDescriptionAndDocumentNote);
 	}
 
 	@Override
@@ -540,18 +540,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public boolean isHasProforma() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_HasProforma);
-	}
-
-	@Override
-	public void setIsCopyDescriptionToDocument (final boolean IsCopyDescriptionToDocument)
-	{
-		set_Value (COLUMNNAME_IsCopyDescriptionToDocument, IsCopyDescriptionToDocument);
-	}
-
-	@Override
-	public boolean isCopyDescriptionToDocument() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsCopyDescriptionToDocument);
 	}
 
 	@Override

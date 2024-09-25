@@ -1225,7 +1225,13 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public String getDescripttionBottomById(@NonNull final OrderId orderId)
+	public String getDescriptionBottomById(@NonNull final OrderId orderId)
+	{
+		return getById(orderId).getDescriptionBottom();
+	}
+
+	@Override
+	public String getDescriptionById(@NonNull final OrderId orderId)
 	{
 		return getById(orderId).getDescriptionBottom();
 	}
