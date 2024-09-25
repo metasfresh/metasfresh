@@ -9,49 +9,36 @@ import './Products.scss';
 
 const Products = () => {
   const currentOrder = useCurrentOrder();
+  const newOrderLineDispatcher = useNewOrderLineDispatcher({ currentOrder });
   const products = useProducts({
-    onBarcodeResult: (product) => addOrderLine(product),
+    onBarcodeResult: (product) => newOrderLineDispatcher.initialize(product),
   });
-  const [productToAdd, setProductToAdd] = useState(null);
 
   const order_uuid = !currentOrder.isLoading ? currentOrder.uuid : null;
   const isEnabled = !!order_uuid && !currentOrder.isProcessing;
-  const isDisplayGetWeightModal = isWeightRequiredButNotSet(productToAdd);
-
-  useEffect(() => {
-    if (!productToAdd) return;
-    const isValid = !isWeightRequiredButNotSet(productToAdd);
-    if (!isValid) return;
-
-    currentOrder.addOrderLine(productToAdd);
-    setProductToAdd(null);
-  }, [productToAdd]);
 
   const onProductButtonClick = (product) => {
     if (!isEnabled) return;
-    addOrderLine(product);
+    newOrderLineDispatcher.initialize(product);
   };
 
-  const addOrderLine = (product) => {
-    setProductToAdd({ ...product });
-  };
   const setProductToAddWeight = ({ catchWeight }) => {
-    setProductToAdd((productToAdd) => ({ ...productToAdd, catchWeight }));
+    newOrderLineDispatcher.setCatchWeight(catchWeight);
   };
 
   return (
     <div className="products-container">
-      {isDisplayGetWeightModal && (
+      {newOrderLineDispatcher.isCatchWeightRequiredButNotSet && (
         <GetCatchWeightModal
-          catchWeightUomSymbol={productToAdd?.catchWeightUomSymbol}
+          catchWeightUomSymbol={newOrderLineDispatcher.catchWeightUomSymbol}
           onOk={setProductToAddWeight}
-          onCancel={() => setProductToAdd(null)}
+          onCancel={() => newOrderLineDispatcher.clear()}
         />
       )}
       <ProductSearchBar
         queryString={products.queryString}
         onQueryStringChanged={products.setQueryString}
-        isEnabled={isEnabled && !isDisplayGetWeightModal}
+        isEnabled={isEnabled && !newOrderLineDispatcher.isCatchWeightRequiredButNotSet}
       />
       <div className="products">
         {products.list.map((product) => (
@@ -71,12 +58,33 @@ const Products = () => {
   );
 };
 
-const isWeightRequiredButNotSet = (product) => {
-  return product && product.catchWeightUomId != null && !product.catchWeight;
-};
-
 const extractProductPriceUom = (product) => {
   return product.catchWeightUomSymbol ? product.catchWeightUomSymbol : product.uomSymbol;
+};
+
+const useNewOrderLineDispatcher = ({ currentOrder }) => {
+  const [orderLineToAdd, setOrderLineToAdd] = useState(null);
+
+  const isCatchWeightRequiredButNotSet =
+    orderLineToAdd && orderLineToAdd.catchWeightUomId != null && !orderLineToAdd.catchWeight;
+
+  useEffect(() => {
+    if (!orderLineToAdd) return;
+
+    const isValid = !isCatchWeightRequiredButNotSet;
+    if (!isValid) return;
+
+    currentOrder.addOrderLine(orderLineToAdd);
+    setOrderLineToAdd(null);
+  }, [orderLineToAdd]);
+
+  return {
+    clear: () => setOrderLineToAdd(null),
+    initialize: (product) => setOrderLineToAdd({ ...product }),
+    isCatchWeightRequiredButNotSet,
+    catchWeightUomSymbol: orderLineToAdd?.catchWeightUomSymbol,
+    setCatchWeight: (catchWeight) => setOrderLineToAdd((productToAdd) => ({ ...productToAdd, catchWeight })),
+  };
 };
 
 export default Products;
