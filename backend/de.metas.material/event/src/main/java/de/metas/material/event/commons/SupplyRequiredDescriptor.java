@@ -186,6 +186,11 @@ public class SupplyRequiredDescriptor
 		return ppOrderRef != null ? ppOrderRef.getPpOrderId() : null;
 	}
 
+	public int getPpOrderCandidateId()
+	{
+		return ppOrderRef != null ? ppOrderRef.getPpOrderCandidateId() : -1;
+	}
+	
 	@JsonIgnore
 	public int getPpOrderLineCandidateId()
 	{

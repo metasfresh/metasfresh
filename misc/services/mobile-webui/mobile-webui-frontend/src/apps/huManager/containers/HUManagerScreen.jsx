@@ -7,12 +7,7 @@ import { trl } from '../../../utils/translations';
 import * as api from '../api';
 import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
-import {
-  huManagerBulkActionsLocation,
-  huManagerDisposeLocation,
-  huManagerHuLabelsLocation,
-  huManagerMoveLocation,
-} from '../routes';
+import { huManagerBulkActionsLocation, huManagerDisposeLocation, huManagerHuLabelsLocation, huManagerMoveLocation, } from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
@@ -107,9 +102,6 @@ const HUManagerScreen = () => {
 
   const isExistingHU = !!handlingUnitInfo?.id;
 
-  // NOTE: keep in sync with de.metas.handlingunits.movement.MoveHUCommand.getMoveToCUConsumer
-  const isAllowMove = isExistingHU && isCU(handlingUnitInfo);
-
   const isAllowQtyChange =
     isSingleStorage && //
     (isExistingHU || !!currentLocatorQRCode?.locatorId); // either we have an huId or we scanned the locator where the new HU will be created
@@ -151,9 +143,7 @@ const HUManagerScreen = () => {
           {isExistingHU && (
             <ButtonWithIndicator caption={trl('huManager.action.dispose.buttonCaption')} onClick={onDisposeClick} />
           )}
-          {isAllowMove && (
-            <ButtonWithIndicator caption={trl('huManager.action.move.buttonCaption')} onClick={onMoveClick} />
-          )}
+          <ButtonWithIndicator caption={trl('huManager.action.move.buttonCaption')} onClick={onMoveClick} />
           {isExistingHU && (
             <ButtonWithIndicator
               caption={trl('huManager.action.setClearance.buttonCaption')}
@@ -240,14 +230,6 @@ const computeSingleStorageQtyAndUOM = (handlingUnitInfo) => {
     qty,
     uom: handlingUnitInfo.products[0].uom,
   };
-};
-
-const isCU = (handlingUnitInfo) => {
-  return getHUUnitType(handlingUnitInfo) === 'CU';
-};
-
-const getHUUnitType = (handlingUnitInfo) => {
-  return handlingUnitInfo?.jsonHUType;
 };
 
 const getBestBeforeDate = (handlingUnitInfo) => {

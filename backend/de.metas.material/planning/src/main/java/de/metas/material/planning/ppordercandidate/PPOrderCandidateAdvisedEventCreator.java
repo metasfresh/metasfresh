@@ -117,7 +117,11 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		boolean firstRequest = true;
 		for (final MaterialRequest request : partialRequests)
 		{
-			final PPOrderCandidate ppOrderCandidate = ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(request);
+			final int parentPPOrderCandidateId = supplyRequiredDescriptor.getPpOrderCandidateId();
+
+			// this is the PPOrderCandidate which we advise the system to create! 
+			final PPOrderCandidate ppOrderCandidate = ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(request)
+					.withParentPPOrderCandidateId(parentPPOrderCandidateId);
 
 			final PPOrderCandidateAdvisedEventBuilder eventBuilder = PPOrderCandidateAdvisedEvent.builder()
 					.supplyRequiredDescriptor(supplyRequiredDescriptorToUse)
@@ -141,7 +145,7 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 
 		return result.build();
 	}
-
+	
 	@Nullable
 	private static Quantity extractMaxQuantityPerOrder(@NonNull final ProductPlanning productPlanning)
 	{

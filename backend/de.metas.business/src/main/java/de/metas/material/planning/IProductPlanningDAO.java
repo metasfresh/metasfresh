@@ -66,7 +66,7 @@ public interface IProductPlanningDAO extends ISingletonService
 		}
 	}
 
-	ProductPlanning getById(ProductPlanningId id);
+	ProductPlanning getById(@NonNull ProductPlanningId id);
 
 	void deleteById(@NonNull ProductPlanningId id);
 

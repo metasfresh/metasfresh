@@ -491,7 +491,7 @@ public class ImportHelper implements IImportHelper
 		try
 		{
 			//
-			// Getting the Object for the replicate
+			// Getting the Object for the replicate (empty or with what column-values could be loaded from DB)
 			final POReplicationTrxLineDraft draft = getObjectFromFormat(result,
 					expFormat,
 					rootElement, rootElement.getNodeName(),

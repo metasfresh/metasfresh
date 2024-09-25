@@ -42,16 +42,19 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_AttributeSet_ID;
 import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_Product_Category_ID;
 
 @RequiredArgsConstructor
 public class M_Product_Category_StepDef
 {
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
-	@NonNull private final M_AttributeSet_StepDefData attributeSetTable;
+	@NonNull
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull
+	private final M_Product_Category_StepDefData productCategoryTable;
+	@NonNull
+	private final M_AttributeSet_StepDefData attributeSetTable;
 
 	@And("load M_Product_Category:")
 	public void load_M_Product_Category(@NonNull final DataTable dataTable)
@@ -68,7 +71,7 @@ public class M_Product_Category_StepDef
 							.addOnlyActiveRecordsFilter()
 							.create()
 							.firstOnlyNotNull(I_M_Product_Category.class);
-
+					assertThat(productCategory).as("Unable to load active M_ProductCategory with name=%s and value=%s", name, value).isNotNull();
 					productCategoryTable.putOrReplace(row.getAsIdentifier(), productCategory);
 				});
 	}
@@ -81,7 +84,7 @@ public class M_Product_Category_StepDef
 				.forEach(row -> {
 					final StepDefDataIdentifier identifier = row.getAsIdentifier();
 					final I_M_Product_Category productCategory = identifier.lookupIn(productCategoryTable);
-					assertThat(productCategory).isNotNull();
+					assertThat(productCategory).as("Unable to load active M_ProductCategory with identifier=%s", identifier).isNotNull();
 
 					row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSet_ID)
 							.map(attributeSetTable::getId)
