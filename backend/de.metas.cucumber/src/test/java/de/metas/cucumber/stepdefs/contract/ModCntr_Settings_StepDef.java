@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.lang.SOTrx;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -82,7 +83,7 @@ public class ModCntr_Settings_StepDef
 		final String yearIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_C_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_Year yearRecord = yearTable.get(yearIdentifier);
 
-		final Boolean isSoTrx = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_IsSOTrx, false);
+		final SOTrx soTrx = SOTrx.ofBooleanNotNull(DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_IsSOTrx, false));
 
 		final Timestamp storageDate = CoalesceUtil.coalesceNotNull(DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_StorageCostStartDate),
 				FIXED_STORAGE_DATE);
@@ -92,7 +93,7 @@ public class ModCntr_Settings_StepDef
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, rawProduct.getM_Product_ID())
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, yearRecord.getC_Calendar_ID())
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearRecord.getC_Year_ID())
-						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, isSoTrx)
+						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, soTrx.toYesNoString())
 						.create()
 						.firstOnlyOrNull(I_ModCntr_Settings.class),
 				() -> InterfaceWrapperHelper.newInstance(I_ModCntr_Settings.class));
@@ -111,7 +112,7 @@ public class ModCntr_Settings_StepDef
 		}
 		modCntrSettingsRecord.setC_Calendar_ID(yearRecord.getC_Calendar_ID());
 		modCntrSettingsRecord.setC_Year_ID(yearRecord.getC_Year_ID());
-		modCntrSettingsRecord.setIsSOTrx(isSoTrx);
+		modCntrSettingsRecord.setIsSOTrx(soTrx.toYesNoString());
 		modCntrSettingsRecord.setStorageCostStartDate(storageDate);
 
 		final BigDecimal interestRate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_InterestRate);

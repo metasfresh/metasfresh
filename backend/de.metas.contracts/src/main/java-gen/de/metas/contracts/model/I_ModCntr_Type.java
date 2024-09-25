@@ -1,7 +1,6 @@
 package de.metas.contracts.model;
 
 import org.adempiere.model.ModelColumn;
-import org.compiere.model.I_C_AcctSchema_Element;
 
 import javax.annotation.Nullable;
 
@@ -31,27 +30,6 @@ public interface I_ModCntr_Type
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set ColumnName.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setColumnName (java.lang.String ColumnName);
-
-	/**
-	 * Get ColumnName.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getColumnName();
-
-	ModelColumn<I_ModCntr_Type, Object> COLUMN_ColumnName = new ModelColumn<>(I_ModCntr_Type.class, "ColumnName", null);
-	String COLUMNNAME_ColumnName = "ColumnName";
-
-	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -72,6 +50,29 @@ public interface I_ModCntr_Type
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set DB Column Name.
+	 * Name of the column in the database
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setColumnName (@Nullable java.lang.String ColumnName);
+
+	/**
+	 * Get DB Column Name.
+	 * Name of the column in the database
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getColumnName();
+
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_ColumnName = new ModelColumn<>(I_ModCntr_Type.class, "ColumnName", null);
+	String COLUMNNAME_ColumnName = "ColumnName";
 
 	/**
 	 * Get Created.
@@ -141,6 +142,29 @@ public interface I_ModCntr_Type
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_IsActive = new ModelColumn<>(I_ModCntr_Type.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSOTrx (boolean IsSOTrx);
+
+	/**
+	 * Get Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSOTrx();
+
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_ModCntr_Type.class, "IsSOTrx", null);
+	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
 	 * Set Computing Method.
