@@ -102,10 +102,18 @@
 
         .pay-action {
           flex-grow: 1;
+          height: 100% !important;
+          
+          display: flex;
+          flex-flow: column nowrap;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
 
           background-color: #74b727;
           color: white;
           font-weight: bold;
+          font-size: 2rem;
 
         }
       }

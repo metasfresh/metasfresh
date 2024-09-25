@@ -31,15 +31,16 @@ const CurrentOrderActions = () => {
   return (
     <div className="current-order-actions">
       <div className="other-actions-container">
-        <button onClick={onNewOrderClick} disabled={!isNewOrderAllowed}>
+        <button className="button" onClick={onNewOrderClick} disabled={!isNewOrderAllowed}>
           New
         </button>
-        <button onClick={onVoidCurrentOrderClick} disabled={!isVoidAllowed}>
+        <button className="button" onClick={onVoidCurrentOrderClick} disabled={!isVoidAllowed}>
           Void
         </button>
       </div>
-      <button className="pay-action" onClick={onPayClick} disabled={!isPayAllowed}>
-        &gt; Pay
+      <button className="button is-large pay-action" onClick={onPayClick} disabled={!isPayAllowed}>
+        <i className="fas fa-regular fa-money-bill-1"></i>
+        <span>Pay</span>
       </button>
     </div>
   );

@@ -101,15 +101,21 @@ const POSPaymentPanel = () => {
         ))}
       </div>
       <div className="payment-bottom">
-        <button className="back" onClick={onBackClick}>
-          &lt; Back
+        <button className="button is-large back" onClick={onBackClick}>
+          <span className="icon is-medium">
+            <i className="fa-solid fa-chevron-left" />
+          </span>
+          <span>Back</span>
         </button>
         <button
-          className={cx('validate', { 'is-disabled': !isAllowValidate })}
+          className={cx('button is-large validate', { 'is-disabled': !isAllowValidate })}
           disabled={!isAllowValidate}
           onClick={onValidateClick}
         >
-          &gt; Validate
+          <span className="icon is-medium">
+            <i className="fa-solid fa-chevron-right" />
+          </span>
+          <span>Validate</span>
         </button>
       </div>
     </div>
