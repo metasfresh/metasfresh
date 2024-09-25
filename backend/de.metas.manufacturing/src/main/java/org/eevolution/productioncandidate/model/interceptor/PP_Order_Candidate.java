@@ -110,7 +110,7 @@ public class PP_Order_Candidate
 	{
 		final Optional<Instant> recomputedDatePromised = ppOrderCandidateService.recalculateDatePromised(ppOrderCandidateRecord);
 
-		if (!recomputedDatePromised.isPresent())
+		if (recomputedDatePromised.isEmpty())
 		{
 			return;
 		}

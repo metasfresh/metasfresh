@@ -116,7 +116,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : Integer.parseInt(string);
 		}
 		catch (final NumberFormatException e)
@@ -420,7 +419,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : new BigDecimal(string);
 		}
 		catch (final NumberFormatException e)
@@ -549,7 +547,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : Double.parseDouble(string);
 		}
 		catch (final NumberFormatException e)

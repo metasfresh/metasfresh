@@ -56,7 +56,7 @@ public final class StepDefDataIdentifier
 	}
 
 	@NonNull
-	public static StepDefDataIdentifier ofString(@NonNull String value)
+	public static StepDefDataIdentifier ofString(@NonNull final String value)
 	{
 		final String valueNorm = StringUtils.trimBlankToNull(value);
 		if (valueNorm == null)
@@ -74,13 +74,13 @@ public final class StepDefDataIdentifier
 	}
 
 	@Nullable
-	public static StepDefDataIdentifier ofNullableString(@Nullable String value)
+	public static StepDefDataIdentifier ofNullableString(@Nullable final String value)
 	{
 		final String valueNorm = StringUtils.trimBlankToNull(value);
 		return valueNorm != null ? ofString(valueNorm) : null;
 	}
 
-	public static List<StepDefDataIdentifier> ofCommaSeparatedString(@Nullable String value)
+	public static List<StepDefDataIdentifier> ofCommaSeparatedString(@Nullable final String value)
 	{
 		final StepDefDataIdentifier identifier = ofNullableString(value);
 		return identifier == null ? ImmutableList.of() : identifier.toCommaSeparatedList();
@@ -91,7 +91,7 @@ public final class StepDefDataIdentifier
 		return ofString(PREFIX_Unnamed + nextUnnamedIdentifierId.getAndIncrement());
 	}
 
-	public static boolean equals(@Nullable StepDefDataIdentifier id1, @Nullable StepDefDataIdentifier id2) {return Objects.equals(id1, id2);}
+	public static boolean equals(@Nullable final StepDefDataIdentifier id1, @Nullable final StepDefDataIdentifier id2) {return Objects.equals(id1, id2);}
 
 	@Override
 	public String toString() {return getAsString();}
@@ -121,6 +121,7 @@ public final class StepDefDataIdentifier
 		return table.get(this);
 	}
 
+	@Nullable
 	public <ID extends RepoIdAware> ID lookupIdIn(@NonNull final StepDefDataGetIdAware<ID, ?> table)
 	{
 		if (isNullPlaceholder())
@@ -130,7 +131,8 @@ public final class StepDefDataIdentifier
 		return table.getId(this);
 	}
 
-	public <T> T lookupOrLoadById(@NonNull final StepDefData<T> table, @NonNull IntFunction<T> loader)
+	@Nullable
+	public <T> T lookupOrLoadById(@NonNull final StepDefData<T> table, @NonNull final IntFunction<T> loader)
 	{
 		if (isNullPlaceholder())
 		{
@@ -140,9 +142,9 @@ public final class StepDefDataIdentifier
 				.orElseGet(() -> loader.apply(getAsInt()));
 	}
 
-	public <T> void put(@NonNull final StepDefData<T> table, @NonNull T record) {table.put(this, record);}
+	public <T> void put(@NonNull final StepDefData<T> table, @NonNull final T record) {table.put(this, record);}
 
-	public <T> void putOrReplace(@NonNull final StepDefData<T> table, @NonNull T record) {table.putOrReplace(this, record);}
+	public <T> void putOrReplace(@NonNull final StepDefData<T> table, @NonNull final T record) {table.putOrReplace(this, record);}
 
 	@NonNull
 	public List<StepDefDataIdentifier> toCommaSeparatedList()
