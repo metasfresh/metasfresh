@@ -7,7 +7,12 @@ import { trl } from '../../../utils/translations';
 import * as api from '../api';
 import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
-import { huManagerBulkActionsLocation, huManagerDisposeLocation, huManagerHuLabelsLocation, huManagerMoveLocation, } from '../routes';
+import { 
+  huManagerBulkActionsLocation,
+  huManagerDisposeLocation,
+  huManagerHuLabelsLocation,
+  huManagerMoveLocation,
+} from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
