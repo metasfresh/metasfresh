@@ -7,11 +7,14 @@ import { getJournalSummary } from '../../api/posJournal';
 import { PAYMENT_METHOD_CASH } from '../../utils/paymentMethods';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import PropTypes from 'prop-types';
+import useEscapeKey from '../../../../hooks/useEscapeKey';
 
 const POSCashJournalClosingPanel = () => {
   const posTerminal = usePOSTerminal();
   const [cashClosingBalance, setCashClosingBalance] = useState(0);
   const [closingNote, setClosingNote] = useState('');
+
+  useEscapeKey(() => onCancelClick());
 
   const onCloseClick = () => {
     posTerminal.closeJournal({ cashClosingBalance, closingNote });
@@ -41,8 +44,12 @@ const POSCashJournalClosingPanel = () => {
           </div>
         </div>
         <div className="pos-input-panel-bottom">
-          <button onClick={onCloseClick}>Close</button>
-          <button onClick={onCancelClick}>Cancel</button>
+          <button className="button is-large" onClick={onCloseClick}>
+            Close
+          </button>
+          <button className="button is-large" onClick={onCancelClick}>
+            Cancel
+          </button>
         </div>
       </div>
     </div>
