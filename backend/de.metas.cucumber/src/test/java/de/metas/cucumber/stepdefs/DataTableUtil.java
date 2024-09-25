@@ -29,6 +29,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -495,6 +496,7 @@ public class DataTableUtil
 	}
 
 	@Nullable
+	@Contract("_, _, !null -> !null")
 	public static Boolean extractBooleanForColumnNameOr(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName,

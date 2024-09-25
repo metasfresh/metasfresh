@@ -1,7 +1,8 @@
 package de.metas.contracts.model;
 
-import java.math.BigDecimal;
 import org.adempiere.model.ModelColumn;
+
+import java.math.BigDecimal;
 
 /** Generated Interface for ModCntr_Settings
  *  @author metasfresh (generated) 
@@ -221,21 +222,21 @@ public interface I_ModCntr_Settings
 	 * Set Sales Transaction.
 	 * This is a Sales Transaction
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsSOTrx (boolean IsSOTrx);
+	void setIsSOTrx (java.lang.String IsSOTrx);
 
 	/**
 	 * Get Sales Transaction.
 	 * This is a Sales Transaction
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isSOTrx();
+	java.lang.String getIsSOTrx();
 
 	ModelColumn<I_ModCntr_Settings, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_ModCntr_Settings.class, "IsSOTrx", null);
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";

@@ -34,6 +34,7 @@ import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -130,14 +131,14 @@ public class ModularContractSettingsService
 		return contractType.isMatching(computingMethodType);
 	}
 
-	private void createInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	private void createInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ModularContractTypeId modularContractTypeId)
 	{
 		modularContractSettingsRepository.createModule(
 				ModuleConfigCreateRequest.builder()
 						.modularContractSettingsId(modularContractSettingsId)
 						.seqNo(SeqNo.ofInt(0))
 						.name("Informative Logs") // NOTE en/de trl is the same
-						.modularContractType(modularContractSettingsRepository.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID))
+						.modularContractType(modularContractSettingsRepository.getContractTypeById(modularContractTypeId))
 						.invoicingGroup(InvoicingGroupType.SERVICES)
 						.productId(getById(modularContractSettingsId).getRawProductId())
 						.processed(true)
@@ -175,12 +176,18 @@ public class ModularContractSettingsService
 						.build()
 		);
 	}
-	public void upsertInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ProductId rawProductId)
+	public void upsertInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ProductId rawProductId, @NonNull final SOTrx soTrx)
 	{
-		final I_ModCntr_Module existingModuleConfig = modularContractSettingsRepository.retrieveInformativeLogModuleRecordOrNull(modularContractSettingsId);
+		final ModularContractTypeId modularContractTypeIdToUse = soTrx.isPurchase() ? ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID : ModularContract_Constants.CONTRACT_MODULE_TYPE_SALES_INFORMATIVE_LOGS_ID;
+		final I_ModCntr_Module existingModuleConfig = modularContractSettingsRepository.retrieveInformativeLogModuleRecordOrNull(modularContractSettingsId, modularContractTypeIdToUse);
+
 		if (existingModuleConfig == null)
 		{
-			createInformativeLogsModule(modularContractSettingsId);
+			//TODO remove after sales informative logs implementation
+			if(soTrx.isPurchase())
+			{
+				createInformativeLogsModule(modularContractSettingsId, modularContractTypeIdToUse);
+			}
 		}
 		else if (!ProductId.ofRepoId(existingModuleConfig.getM_Product_ID()).equals(rawProductId))
 		{
