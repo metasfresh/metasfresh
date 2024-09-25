@@ -79,6 +79,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
+import static de.metas.ui.web.window.WindowConstants.FIELDNAME_IsSOTrx;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -116,8 +118,6 @@ public final class Document
 	private static final ReasonSupplier REASON_Value_NewDocument = () -> "new document";
 	private static final ReasonSupplier REASON_Value_Refreshing = () -> "direct set on Document (refresh)";
 	private static final ReasonSupplier REASON_Value_ParentLinkUpdateOnSave = () -> "parent link update on save";
-
-	private static final String IsSOTrx_NAME = "IsSOTrx";
 
 	//
 	// Descriptors & paths
@@ -226,7 +226,7 @@ public final class Document
 					parentLinkField = field;
 				}
 
-				if(fieldName.equals(IsSOTrx_NAME) && !fieldDescriptor.isBooleanWidgetType())
+				if(fieldName.equals(FIELDNAME_IsSOTrx) && !fieldDescriptor.isBooleanWidgetType())
 				{
 					hasNonBooleanIsSOTrx = true;
 				}
@@ -268,7 +268,7 @@ public final class Document
 				final Optional<SOTrx> soTrx = entityDescriptor.getSOTrx();
 				if (soTrx.isPresent() && !hasNonBooleanIsSOTrx)
 				{
-					setDynAttributeNoCheck(IsSOTrx_NAME, soTrx.get().isSales()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
+					setDynAttributeNoCheck(FIELDNAME_IsSOTrx, soTrx.get().isSales()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
 				}
 				setDynAttributeNoCheck("IsApproved", false); // cover the case for FieldName=IsApproved, DefaultValue=@IsApproved@
 			}
