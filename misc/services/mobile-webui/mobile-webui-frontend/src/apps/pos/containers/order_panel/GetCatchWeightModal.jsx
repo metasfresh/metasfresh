@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
+import useEscapeKey from '../../../../hooks/useEscapeKey';
 
 const GetCatchWeightModal = ({ catchWeightUomSymbol, onOk, onCancel }) => {
   const weightRef = useRef();
@@ -7,6 +8,8 @@ const GetCatchWeightModal = ({ catchWeightUomSymbol, onOk, onCancel }) => {
   useEffect(() => {
     weightRef?.current?.focus();
   }, [weightRef.current]);
+
+  useEscapeKey(onCancel);
 
   return (
     <div className="modal is-active">
