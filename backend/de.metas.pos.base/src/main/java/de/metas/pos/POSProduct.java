@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class POSProduct
@@ -17,11 +19,19 @@ public class POSProduct
 	@NonNull ITranslatableString name;
 	@NonNull Amount price;
 	@NonNull ITranslatableString currencySymbol;
-	@NonNull UomId uomId;
-	@NonNull String uomSymbol;
+	@NonNull UomIdAndSymbol uom;
+	@Nullable UomIdAndSymbol catchWeightUom;
+
 	@NonNull TaxCategoryId taxCategoryId;
 
 	public String getName(@NonNull final String adLanguage) {return name.translate(adLanguage);}
 
 	public String getCurrencySymbol(@NonNull final String adLanguage) {return currencySymbol.translate(adLanguage);}
+
+	@Value(staticConstructor = "of")
+	public static class UomIdAndSymbol
+	{
+		@NonNull UomId uomId;
+		@NonNull String uomSymbol;
+	}
 }

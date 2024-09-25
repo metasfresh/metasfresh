@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
@@ -23,4 +24,7 @@ public class RemotePOSOrderLine
 
 	@NonNull BigDecimal qty;
 	@NonNull UomId uomId;
+
+	@Nullable BigDecimal catchWeight;
+	@Nullable UomId catchWeightUomId;
 }

@@ -233,6 +233,29 @@ public interface I_C_POS_Journal
 	String COLUMNNAME_DateTrx = "DateTrx";
 
 	/**
+	 * Set Document No.
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDocumentNo (java.lang.String DocumentNo);
+
+	/**
+	 * Get Document No.
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDocumentNo();
+
+	ModelColumn<I_C_POS_Journal, Object> COLUMN_DocumentNo = new ModelColumn<>(I_C_POS_Journal.class, "DocumentNo", null);
+	String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 public class POSOrderLine
 {
@@ -19,6 +21,7 @@ public class POSOrderLine
 	@NonNull TaxCategoryId taxCategoryId;
 	@NonNull TaxId taxId;
 	@NonNull Quantity qty;
+	@Nullable Quantity catchWeight;
 	@NonNull Money price;
 	@NonNull Money amount;
 	@NonNull Money taxAmt;
@@ -30,7 +33,8 @@ public class POSOrderLine
 			@NonNull final String productName,
 			@NonNull final TaxCategoryId taxCategoryId,
 			@NonNull final TaxId taxId,
-			@NonNull final Quantity qty,
+			@NonNull final Quantity qty, 
+			@Nullable final Quantity catchWeight,
 			@NonNull final Money price,
 			@NonNull final Money amount,
 			@NonNull Money taxAmt)
@@ -43,6 +47,7 @@ public class POSOrderLine
 		this.taxCategoryId = taxCategoryId;
 		this.taxId = taxId;
 		this.qty = qty;
+		this.catchWeight = catchWeight;
 		this.price = price;
 		this.amount = amount;
 

@@ -10,6 +10,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -80,9 +81,10 @@ public class POSService
 				: Optional.empty();
 	}
 
-	public POSProductsList getProducts(@NonNull final Instant evalDate)
+	public POSProductsList getProducts(@NonNull final Instant evalDate, @Nullable final String queryString)
 	{
-		return productsService.getProducts(evalDate);
+		final POSTerminalId posTerminalId = posTerminalService.getPOSTerminalId();
+		return productsService.getProducts(posTerminalId, evalDate, queryString);
 	}
 
 	public List<POSOrder> getOpenOrders(@NonNull final UserId userId)

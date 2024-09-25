@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
@@ -103,12 +104,12 @@ public class POSRestController
 	}
 
 	@GetMapping("/products")
-	public JsonProductsList getProducts()
+	public JsonProductsList getProducts(@RequestParam(value = "query", required = false) final String queryParam)
 	{
 		final Instant date = SystemTime.asInstant();
 		final String adLanguage = getADLanguage();
 
-		final POSProductsList products = posService.getProducts(date);
+		final POSProductsList products = posService.getProducts(date, queryParam);
 		return JsonProductsList.from(products, adLanguage);
 	}
 
