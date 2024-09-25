@@ -1,56 +1,33 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useProducts } from '../../api/products';
 import ProductButton from './ProductButton';
 import Spinner from '../../../../components/Spinner';
 import { useCurrentOrder } from '../../actions';
+import ProductSearchBar from './ProductSearchBar';
+import GetCatchWeightModal from './GetCatchWeightModal';
 import './Products.scss';
-import { BarcodeFormat, BrowserMultiFormatReader } from '@zxing/browser';
-import DecodeHintType from '@zxing/library/cjs/core/DecodeHintType';
-import PropTypes from 'prop-types';
 
 const Products = () => {
   const currentOrder = useCurrentOrder();
-  const queryStringRef = useRef();
   const products = useProducts({
     onBarcodeResult: (product) => addOrderLine(product),
   });
-  const [isBarcodeScannerDisplayed, setBarcodeScannerDisplayed] = useState(false);
   const [productToAdd, setProductToAdd] = useState(null);
 
   const order_uuid = !currentOrder.isLoading ? currentOrder.uuid : null;
   const isEnabled = !!order_uuid && !currentOrder.isProcessing;
-
   const isDisplayGetWeightModal = isWeightRequiredButNotSet(productToAdd);
 
   useEffect(() => {
-    if (!isDisplayGetWeightModal) {
-      queryStringRef?.current?.focus();
-    }
-  }, [isDisplayGetWeightModal]);
+    if (!productToAdd) return;
+    const isValid = !isWeightRequiredButNotSet(productToAdd);
+    if (!isValid) return;
 
-  const handleQueryStringFocus = () => {
-    queryStringRef?.current?.select();
-  };
+    currentOrder.addOrderLine(productToAdd);
+    setProductToAdd(null);
+  }, [productToAdd]);
 
-  const handleQueryStringBlur = () => {
-    // NOTE: timeout shall be small enough to make sure we are not losing the focus,
-    // but big enough to allow things like button press to take the focus and accomplish the action
-    setTimeout(() => {
-      queryStringRef?.current?.focus();
-    }, 1000);
-  };
-
-  const onQueryStringChanged = (e) => {
-    if (!isEnabled) return;
-    products.setQueryString(e.target.value);
-  };
-
-  const onBarcodeScanned = ({ scannedBarcode }) => {
-    if (!isEnabled) return;
-    products.setQueryString(scannedBarcode);
-  };
-
-  const onButtonClick = (product) => {
+  const onProductButtonClick = (product) => {
     if (!isEnabled) return;
     addOrderLine(product);
   };
@@ -61,14 +38,6 @@ const Products = () => {
   const setProductToAddWeight = ({ catchWeight }) => {
     setProductToAdd((productToAdd) => ({ ...productToAdd, catchWeight }));
   };
-  useEffect(() => {
-    if (!productToAdd) return;
-    const isValid = !isWeightRequiredButNotSet(productToAdd);
-    if (!isValid) return;
-
-    currentOrder.addOrderLine(productToAdd);
-    setProductToAdd(null);
-  }, [productToAdd]);
 
   return (
     <div className="products-container">
@@ -79,24 +48,11 @@ const Products = () => {
           onCancel={() => setProductToAdd(null)}
         />
       )}
-      <div className="search-container">
-        <div className="search-line">
-          <input
-            ref={queryStringRef}
-            type="text"
-            value={products.queryString}
-            placeholder="search products..."
-            disabled={!isEnabled}
-            onFocus={handleQueryStringFocus}
-            onBlur={handleQueryStringBlur}
-            onChange={onQueryStringChanged}
-          />
-          <div className="button" onClick={() => setBarcodeScannerDisplayed(!isBarcodeScannerDisplayed)}>
-            <i className="fa-solid fa-barcode"></i>
-          </div>
-        </div>
-        {isBarcodeScannerDisplayed && <BarcodeReader onBarcodeScanned={onBarcodeScanned} />}
-      </div>
+      <ProductSearchBar
+        queryString={products.queryString}
+        onQueryStringChanged={products.setQueryString}
+        isEnabled={isEnabled && !isDisplayGetWeightModal}
+      />
       <div className="products">
         {products.list.map((product) => (
           <ProductButton
@@ -106,7 +62,7 @@ const Products = () => {
             currencySymbol={product.currencySymbol}
             uomSymbol={extractProductPriceUom(product)}
             disabled={!isEnabled}
-            onClick={() => onButtonClick(product)}
+            onClick={() => onProductButtonClick(product)}
           />
         ))}
         {products.isLoading && <Spinner />}
@@ -122,106 +78,5 @@ const isWeightRequiredButNotSet = (product) => {
 const extractProductPriceUom = (product) => {
   return product.catchWeightUomSymbol ? product.catchWeightUomSymbol : product.uomSymbol;
 };
-
-//
-//
-//
-//
-//
-
-const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
-  BarcodeFormat.QR_CODE,
-  BarcodeFormat.CODE_128,
-  BarcodeFormat.ITF,
-]);
-
-const READER_OPTIONS = {
-  delayBetweenScanSuccess: 2000,
-  delayBetweenScanAttempts: 600,
-};
-
-const BarcodeReader = ({ onBarcodeScanned }) => {
-  const videoRef = useRef();
-  const mountedRef = useRef(true);
-
-  useEffect(() => {
-    mountedRef.current = true;
-
-    const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
-    codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
-      if (mountedRef.current === false) {
-        controls.stop();
-      } else if (typeof result !== 'undefined') {
-        fireBarcodeScanned({ scannedBarcode: result.text });
-      }
-    });
-
-    return function cleanup() {
-      mountedRef.current = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
-  });
-
-  const fireBarcodeScanned = ({ scannedBarcode }) => {
-    onBarcodeScanned({ scannedBarcode });
-  };
-
-  return <video key="video" ref={videoRef} width="100%" height="100%" />;
-};
-BarcodeReader.propTypes = {
-  onBarcodeScanned: PropTypes.func.isRequired,
-};
-
-//
-//
-//
-//
-//
-
-const GetCatchWeightModal = ({ catchWeightUomSymbol, onOk, onCancel }) => {
-  const weightRef = useRef();
-
-  useEffect(() => {
-    weightRef?.current?.focus();
-  }, [weightRef.current]);
-
-  return (
-    <div className="modal is-active">
-      <div className="modal-background"></div>
-      <div className="modal-card">
-        <header className="modal-card-head">
-          <p className="modal-card-title">Weight ({catchWeightUomSymbol})</p>
-          <button className="delete" aria-label="close" onClick={onCancel}></button>
-        </header>
-        <section className="modal-card-body">
-          <div className="control">
-            <input ref={weightRef} className="input is-large" type="text" placeholder="Catch weight" />
-          </div>
-        </section>
-        <footer className="modal-card-foot">
-          <div className="buttons">
-            <button
-              className="button is-success"
-              onClick={() => {
-                onOk({ catchWeight: weightRef.current.value });
-              }}
-            >
-              OK
-            </button>
-          </div>
-        </footer>
-      </div>
-    </div>
-  );
-};
-
-//
-//
-//
-//
-//
 
 export default Products;

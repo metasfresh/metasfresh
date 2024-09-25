@@ -279,8 +279,6 @@ const removeOrderByUUID = ({ orders, order_uuid }) => {
 
   const current_uuid = byUUID[orders.current_uuid] ? orders.current_uuid : Object.keys(byUUID).find(() => true);
 
-  console.log('removeOrderByUUID', { new: { byUUID, current_uuid }, old: orders });
-
   return { ...orders, current_uuid, byUUID };
 };
 
