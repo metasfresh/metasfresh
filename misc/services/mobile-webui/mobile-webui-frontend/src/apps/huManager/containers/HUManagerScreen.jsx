@@ -7,7 +7,7 @@ import { trl } from '../../../utils/translations';
 import * as api from '../api';
 import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
-import { 
+import {
   huManagerBulkActionsLocation,
   huManagerDisposeLocation,
   huManagerHuLabelsLocation,
