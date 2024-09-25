@@ -9,10 +9,10 @@ import POSCashJournalClosingPanel from './cash_journal/POSCashJournalClosingPane
 
 const POSScreen = () => {
   const posTerminal = usePOSTerminal({ refresh: true });
-  const { currentOrder } = useCurrentOrder();
+  const currentOrder = useCurrentOrder();
 
   const journalStatus = getCashJouralStatus(posTerminal);
-  const orderStatus = journalStatus === 'open' ? currentOrder?.status ?? 'DR' : '--';
+  const orderStatus = journalStatus === 'open' ? currentOrder.status ?? 'DR' : '--';
 
   return (
     <div className="pos-screen">

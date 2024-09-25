@@ -158,6 +158,7 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 				.productId(posLine.getProductId())
 				.qty(posLine.getQty().toBigDecimal())
 				.uomId(posLine.getQty().getUomId())
+				// TODO: implement catch weight support
 				.isManualPrice(true)
 				.price(posLine.getPrice().toBigDecimal())
 				.currencyId(posLine.getPrice().getCurrencyId())

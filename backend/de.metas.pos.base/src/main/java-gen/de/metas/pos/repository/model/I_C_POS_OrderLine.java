@@ -1,6 +1,7 @@
 package de.metas.pos.repository.model;
 
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_POS_OrderLine
@@ -72,6 +73,49 @@ public interface I_C_POS_OrderLine
 
 	ModelColumn<I_C_POS_OrderLine, Object> COLUMN_Amount = new ModelColumn<>(I_C_POS_OrderLine.class, "Amount", null);
 	String COLUMNNAME_Amount = "Amount";
+
+	/**
+	 * Set Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCatch_UOM_ID (int Catch_UOM_ID);
+
+	/**
+	 * Get Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCatch_UOM_ID();
+
+	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
+
+	/**
+	 * Set Catch Weight.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCatchWeight (@Nullable BigDecimal CatchWeight);
+
+	/**
+	 * Get Catch Weight.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCatchWeight();
+
+	ModelColumn<I_C_POS_OrderLine, Object> COLUMN_CatchWeight = new ModelColumn<>(I_C_POS_OrderLine.class, "CatchWeight", null);
+	String COLUMNNAME_CatchWeight = "CatchWeight";
 
 	/**
 	 * Set POS Order.

@@ -16,6 +16,7 @@ import de.metas.pos.repository.model.I_C_POS_OrderLine;
 import de.metas.pos.repository.model.I_C_POS_Payment;
 import de.metas.pricing.PricingSystemAndListId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
@@ -30,6 +31,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -322,10 +324,18 @@ class POSOrdersLoaderAndSaver
 				.taxCategoryId(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID()))
 				.taxId(TaxId.ofRepoId(record.getC_Tax_ID()))
 				.qty(Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.catchWeight(extractCatchWeight(record))
 				.price(Money.of(record.getPrice(), currencyId))
 				.amount(Money.of(record.getAmount(), currencyId))
 				.taxAmt(Money.of(record.getTaxAmt(), currencyId))
 				.build();
+	}
+
+	@Nullable
+	private static Quantity extractCatchWeight(final I_C_POS_OrderLine record)
+	{
+		final UomId catchWeightUomId = UomId.ofRepoIdOrNull(record.getCatch_UOM_ID());
+		return catchWeightUomId != null ? Quantitys.create(record.getCatchWeight(), catchWeightUomId) : null;
 	}
 
 	private static void updateRecord(@NonNull final I_C_POS_OrderLine lineRecord, @NonNull final POSOrderLine line)
@@ -337,6 +347,8 @@ class POSOrdersLoaderAndSaver
 		lineRecord.setC_Tax_ID(line.getTaxId().getRepoId());
 		lineRecord.setQty(line.getQty().toBigDecimal());
 		lineRecord.setC_UOM_ID(line.getQty().getUomId().getRepoId());
+		lineRecord.setCatch_UOM_ID(line.getCatchWeight() != null ? line.getCatchWeight().getUomId().getRepoId() : -1);
+		lineRecord.setCatchWeight(line.getCatchWeight() != null ? line.getCatchWeight().toBigDecimal() : null);
 		lineRecord.setPrice(line.getPrice().toBigDecimal());
 		lineRecord.setAmount(line.getAmount().toBigDecimal());
 		lineRecord.setTaxAmt(line.getTaxAmt().toBigDecimal());

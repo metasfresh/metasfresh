@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS_OrderLine extends org.compiere.model.PO implements I_C_POS_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -599244712L;
+	private static final long serialVersionUID = 1421246348L;
 
     /** Standard Constructor */
     public X_C_POS_OrderLine (final Properties ctx, final int C_POS_OrderLine_ID, @Nullable final String trxName)
@@ -45,6 +45,34 @@ public class X_C_POS_OrderLine extends org.compiere.model.PO implements I_C_POS_
 	public BigDecimal getAmount() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Amount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCatch_UOM_ID (final int Catch_UOM_ID)
+	{
+		if (Catch_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
+	}
+
+	@Override
+	public int getCatch_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
+	}
+
+	@Override
+	public void setCatchWeight (final @Nullable BigDecimal CatchWeight)
+	{
+		set_Value (COLUMNNAME_CatchWeight, CatchWeight);
+	}
+
+	@Override
+	public BigDecimal getCatchWeight() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CatchWeight);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

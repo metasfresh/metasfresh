@@ -54,7 +54,7 @@ public class POSTerminalService
 		return cache.getOrLoad(posTerminalId, this::retrievePOSTerminalById);
 	}
 
-	private POSTerminalId getPOSTerminalId()
+	public POSTerminalId getPOSTerminalId()
 	{
 		return defaultPOSTerminalId.getOrLoad(0, posTerminalRawRepository::retrievePOSTerminalId);
 	}
