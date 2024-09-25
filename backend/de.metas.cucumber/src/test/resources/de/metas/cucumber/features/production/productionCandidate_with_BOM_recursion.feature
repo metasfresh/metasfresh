@@ -1,7 +1,7 @@
 @from:cucumber
 @ghActions:run_on_executor6
 Feature: Production dispo scenarios with BOMs whose components have their own BOMs in turn.
-  
+
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
@@ -91,9 +91,9 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | 01/d_1_1_S0460_10 | DEMAND            | SHIPMENT                  | product_1_1_S0460_10 | 2024-09-22T21:00:00Z | 1   | -1   | WH_S0460       |
       | 02/s_1_1_S0460_10 | SUPPLY            | PRODUCTION                | product_1_1_S0460_10 | 2024-09-22T21:00:00Z | 1   | 0    | WH_S0460       |
       | 03/d_2_1_S0460_10 | DEMAND            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 20  | -20  | WH_S0460       |
-      | 03/d_2_2_S0460_10 | DEMAND            | PRODUCTION                | product_2_2_S0460_10 | 2024-09-22T21:00:00Z | 10  | -10  | WH_S0460       |
-      | 04/s_2_1_S0460_10 | SUPPLY            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 20  | 0    | WH_S0460       |
-      | 05/d_3_1_S0460_10 | DEMAND            | PRODUCTION                | product_3_1_S0460_10 | 2024-09-22T21:00:00Z | 100 | -100 | WH_S0460       |
+      | 04/d_2_2_S0460_10 | DEMAND            | PRODUCTION                | product_2_2_S0460_10 | 2024-09-22T21:00:00Z | 10  | -10  | WH_S0460       |
+      | 05/s_2_1_S0460_10 | SUPPLY            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 20  | 0    | WH_S0460       |
+      | 06/d_3_1_S0460_10 | DEMAND            | PRODUCTION                | product_3_1_S0460_10 | 2024-09-22T21:00:00Z | 100 | -100 | WH_S0460       |
 
   @Id:S0460_20
   @from:cucumber
@@ -155,15 +155,22 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | oc_2_S0460_20 | product_2_1_S0460_20 | bom_2_S0460_20    | ppln_2_1_S0460_20      | resource_S0460 | 20 PCE     | 0 PCE        | 20 PCE       | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          | oc_1_S0460_20                    |
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID         | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
-      | oc_1_S0460_20         | product_2_1_S0460_20 | 20 PCE     | CO            | boml_2_1_S0460_20     |
-      | oc_1_S0460_20         | product_2_2_S0460_20 | 10 PCE     | CO            | boml_2_2_S0460_20     |
-      | oc_2_S0460_20         | product_3_1_S0460_20 | 100 PCE    | CO            | boml_3_1_S0460_20     |
+      | oc_1_S0460_20         | product_2_1_S0460_20 | 0 PCE      | CO            | boml_2_1_S0460_20     |
+      | oc_1_S0460_20         | product_2_2_S0460_20 | 0 PCE      | CO            | boml_2_2_S0460_20     |
+      | oc_2_S0460_20         | product_3_1_S0460_20 | 0 PCE      | CO            | boml_3_1_S0460_20     |
 
+    # the first 1 MD_Candidates belonss the original demand. the next 5 belong to the PP_Order_Candidates; the last 5 MD_Candidates belong to the PP_Orders
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP  | M_Warehouse_ID |
       | 01/d_1_1_S0460_20 | DEMAND            | SHIPMENT                  | product_1_1_S0460_20 | 2024-09-22T21:00:00Z | 1   | -1   | WH_S0460       |
-      | 02/s_1_1_S0460_20 | SUPPLY            | PRODUCTION                | product_1_1_S0460_20 | 2024-09-22T21:00:00Z | 1   | 0    | WH_S0460       |
-      | 03/d_2_1_S0460_20 | DEMAND            | PRODUCTION                | product_2_1_S0460_20 | 2024-09-22T21:00:00Z | 20  | -20  | WH_S0460       |
-      | 03/d_2_2_S0460_20 | DEMAND            | PRODUCTION                | product_2_2_S0460_20 | 2024-09-22T21:00:00Z | 10  | -10  | WH_S0460       |
-      | 04/s_2_1_S0460_20 | SUPPLY            | PRODUCTION                | product_2_1_S0460_20 | 2024-09-22T21:00:00Z | 20  | 0    | WH_S0460       |
-      | 05/d_3_1_S0460_20 | DEMAND            | PRODUCTION                | product_3_1_S0460_20 | 2024-09-22T21:00:00Z | 100 | -100 | WH_S0460       |
+      | 02/s_1_1_S0460_20 | SUPPLY            | PRODUCTION                | product_1_1_S0460_20 | 2024-09-22T21:00:00Z | 0   | -1   | WH_S0460       |
+      | 03/d_2_1_S0460_20 | DEMAND            | PRODUCTION                | product_2_1_S0460_20 | 2024-09-22T21:00:00Z | 0   | 0    | WH_S0460       |
+      | 04/d_2_2_S0460_20 | DEMAND            | PRODUCTION                | product_2_2_S0460_20 | 2024-09-22T21:00:00Z | 0   | 0    | WH_S0460       |
+      | 05/s_2_1_S0460_20 | SUPPLY            | PRODUCTION                | product_2_1_S0460_20 | 2024-09-22T21:00:00Z | 0   | 0    | WH_S0460       |
+      | 06/d_3_1_S0460_20 | DEMAND            | PRODUCTION                | product_3_1_S0460_20 | 2024-09-22T21:00:00Z | 0   | 0    | WH_S0460       |
+      | 07/s_1_1_S0460_20 | SUPPLY            | PRODUCTION                | product_1_1_S0460_20 | 2024-09-22T21:00:00Z | 1   | 0    | WH_S0460       |
+      | 08/d_2_1_S0460_20 | DEMAND            | PRODUCTION                | product_2_1_S0460_20 | 2024-09-22T21:00:00Z | 20  | -20  | WH_S0460       |
+      | 09/d_2_2_S0460_20 | DEMAND            | PRODUCTION                | product_2_2_S0460_20 | 2024-09-22T21:00:00Z | 10  | -10  | WH_S0460       |
+      | 10/s_2_1_S0460_20 | SUPPLY            | PRODUCTION                | product_2_1_S0460_20 | 2024-09-22T21:00:00Z | 20  | 0    | WH_S0460       |
+      | 11/d_3_1_S0460_20 | DEMAND            | PRODUCTION                | product_3_1_S0460_20 | 2024-09-22T21:00:00Z | 100 | -100 | WH_S0460       |
+    

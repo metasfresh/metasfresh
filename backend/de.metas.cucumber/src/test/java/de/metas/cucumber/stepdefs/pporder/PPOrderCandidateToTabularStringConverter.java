@@ -2,19 +2,12 @@ package de.metas.cucumber.stepdefs.pporder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
-import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
-import de.metas.util.lang.RepoIdAware;
-import de.metas.util.text.tabular.Cell;
 import de.metas.util.text.tabular.Row;
 import de.metas.util.text.tabular.Table;
 import lombok.Builder;
@@ -23,9 +16,12 @@ import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.List;
+
+import static de.metas.cucumber.stepdefs.TabularStringConverterUtil.toBooleanCell;
+import static de.metas.cucumber.stepdefs.TabularStringConverterUtil.toCell;
+import static de.metas.cucumber.stepdefs.TabularStringConverterUtil.toQtyCell;
+import static de.metas.cucumber.stepdefs.TabularStringConverterUtil.toTableFromRows;
 
 @Builder
 class PPOrderCandidateToTabularStringConverter
@@ -47,15 +43,6 @@ class PPOrderCandidateToTabularStringConverter
 		return toTableFromRows(rows);
 	}
 
-	private static Table toTableFromRows(@NonNull final List<Row> rows)
-	{
-		final Table table = new Table();
-		table.addRows(rows);
-		table.removeColumnsWithBlankValues();
-		table.updateHeaderFromRows();
-		return table;
-	}
-
 	private Row toRow(@NonNull final I_PP_Order_Candidate candidate)
 	{
 		final Row row = new Row();
@@ -72,36 +59,5 @@ class PPOrderCandidateToTabularStringConverter
 		row.put("IsClosed", toBooleanCell(candidate.isClosed()));
 		row.put("Processed", toBooleanCell(candidate.isProcessed()));
 		return row;
-	}
-
-	private static <T extends RepoIdAware> Cell toCell(
-			@Nullable final T id,
-			@NonNull final StepDefDataGetIdAware<T, ?> lookupTable)
-	{
-		if (id == null)
-		{
-			return Cell.NULL;
-		}
-
-		final String value = lookupTable.getFirstIdentifierById(id)
-				.map(StepDefDataIdentifier::getAsString)
-				.orElseGet(() -> String.valueOf(id.getRepoId()));
-		return Cell.ofNullable(value);
-	}
-
-	private Cell toQtyCell(final BigDecimal valueBD, final int uomRepoId)
-	{
-		if (uomRepoId <= 0)
-		{
-			return Cell.ofNullable(valueBD);
-		}
-
-		final Quantity qty = Quantitys.create(valueBD, UomId.ofRepoId(uomRepoId));
-		return Cell.ofNullable(qty);
-	}
-
-	private Object toBooleanCell(@Nullable final Boolean valueBoolean)
-	{
-		return Cell.ofNullable(valueBoolean);
 	}
 }
