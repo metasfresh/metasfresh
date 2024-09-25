@@ -412,6 +412,11 @@ public final class DocumentFieldDescriptor
 		return defaultFilterInfo;
 	}
 
+	public boolean isBooleanWidgetType()
+	{
+		return widgetType.isBoolean();
+	}
+
 	/**
 	 * Builder
 	 */
