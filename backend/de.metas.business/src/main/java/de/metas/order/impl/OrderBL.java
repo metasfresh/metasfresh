@@ -36,6 +36,7 @@ import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.doctype.CopyDescriptionAndDocumentNote;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
@@ -447,7 +448,11 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		if (!docType.isCopyDescriptionToDocument())
+
+		@Nullable
+		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+
+		if (copyDescriptionAndDocumentNote == null)
 		{
 			return;
 		}
@@ -1225,7 +1230,13 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public String getDescripttionBottomById(@NonNull final OrderId orderId)
+	public String getDescriptionBottomById(@NonNull final OrderId orderId)
+	{
+		return getById(orderId).getDescriptionBottom();
+	}
+
+	@Override
+	public String getDescriptionById(@NonNull final OrderId orderId)
 	{
 		return getById(orderId).getDescriptionBottom();
 	}

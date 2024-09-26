@@ -6,7 +6,6 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.attachments.AttachmentEntryType;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -26,7 +25,7 @@ import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
-import de.metas.doctype.CopyDocumentNote;
+import de.metas.doctype.CopyDescriptionAndDocumentNote;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -846,7 +845,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		if (!docType.isCopyDescriptionToDocument())
+		@Nullable
+		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+
+		if (copyDescriptionAndDocumentNote == null)
 		{
 			return;
 		}
@@ -864,25 +866,26 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
 		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
 
-		if (!TranslatableStrings.isEmpty(description))
+		if (copyDescriptionAndDocumentNote.isCopyDescriptionAndDocumentNoteFromOrder() && invoice.getC_Order_ID() > 0)
 		{
-			invoice.setDescription(description.translate(adLanguage));
+			final String orderDescription = orderBL.getDescriptionById(OrderId.ofRepoId(invoice.getC_Order_ID()));
+			final String orderDescriptionBottom = orderBL.getDescriptionBottomById(OrderId.ofRepoId(invoice.getC_Order_ID()));
+			invoice.setDescription(orderDescription);
+			invoice.setDescriptionBottom(orderDescriptionBottom);
 		}
 		else
 		{
-			invoice.setDescription(defaultDescription);
-		}
+			// // description
+			if (!TranslatableStrings.isEmpty(description))
+			{
+				invoice.setDescription(description.translate(adLanguage));
+			}
+			else
+			{
+				invoice.setDescription(defaultDescription);
+			}
 
-		final CopyDocumentNote copyDocumentNote = CopyDocumentNote.ofCode(docType.getCopyDocumentNote());
-
-		if (copyDocumentNote.isCopyDocumentNoteFromOrder() && invoice.getC_Order_ID() > 0)
-		{
-        	final String descriptionBottom = orderBL.getDescripttionBottomById(OrderId.ofRepoId(invoice.getC_Order_ID()));
-			invoice.setDescriptionBottom(descriptionBottom);
-		}
-		else
-		{
-
+			// description bottom
 			final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
 
 			if (!TranslatableStrings.isEmpty(documentNote))
@@ -895,7 +898,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				invoice.setDescriptionBottom(defaultDocumentNote);
 			}
 		}
-
 	}
 
 	@Override

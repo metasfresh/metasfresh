@@ -8,7 +8,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.doctype.CopyDocumentNote;
+import de.metas.doctype.CopyDescriptionAndDocumentNote;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
@@ -674,7 +674,10 @@ public class InOutBL implements IInOutBL
 			return;
 		}
 
-		if (!docType.isCopyDescriptionToDocument())
+		@Nullable
+		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+
+		if (copyDescriptionAndDocumentNote == null)
 		{
 			return;
 		}
@@ -685,23 +688,23 @@ public class InOutBL implements IInOutBL
 				bPartner == null ? null : bPartner.getAD_Language(),
 				Env.getAD_Language());
 
-		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
-		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
-
-
-		inOut.setDescription(description.translate(adLanguage));
-
-		final CopyDocumentNote copyDocumentNote = CopyDocumentNote.ofCode(docType.getCopyDocumentNote());
-
-		if (copyDocumentNote.isCopyDocumentNoteFromOrder() && inOut.getC_Order_ID() > 0)
+		if (copyDescriptionAndDocumentNote.isCopyDescriptionAndDocumentNoteFromOrder() && inOut.getC_Order_ID() > 0)
 		{
-			final String descriptionBottom = orderBL.getDescripttionBottomById(OrderId.ofRepoId(inOut.getC_Order_ID()));
-			inOut.setDescriptionBottom(descriptionBottom);
+			final String orderDescription = orderBL.getDescriptionById(OrderId.ofRepoId(inOut.getC_Order_ID()));
+			final String orderDescriptionBottom = orderBL.getDescriptionBottomById(OrderId.ofRepoId(inOut.getC_Order_ID()));
+			inOut.setDescription(orderDescription);
+			inOut.setDescriptionBottom(orderDescriptionBottom);
 		}
 		else
 		{
+			final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
+
+			final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
+			inOut.setDescription(description.translate(adLanguage));
+
 			final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
 			inOut.setDescriptionBottom(documentNote.translate(adLanguage));
+
 		}
 
 	}

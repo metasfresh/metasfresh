@@ -1,12 +1,12 @@
-DROP FUNCTION if exists report.taxnote(p_c_invoice_id numeric);
+DROP FUNCTION if exists report.taxnote(p_c_invoice_id numeric, p_ad_language Character Varying);
 
-CREATE OR REPLACE FUNCTION report.taxnote(IN p_c_invoice_id numeric) returns text
+CREATE OR REPLACE FUNCTION report.taxnote(p_c_invoice_id numeric, p_ad_language Character Varying (6) default 'de_DE') returns text
 AS
 $BODY$
 DECLARE
     taxnotetext text;
 BEGIN
-    select String_agg(distinct report.textsnippet(t.ad_boilerplate_id), ''||E'\n')
+    select String_agg(distinct report.textsnippet(t.ad_boilerplate_id, p_ad_language), ''||E'\n')
     into taxnotetext
     from c_invoiceline il
              join C_Tax t on il.c_tax_id = t.c_tax_id
