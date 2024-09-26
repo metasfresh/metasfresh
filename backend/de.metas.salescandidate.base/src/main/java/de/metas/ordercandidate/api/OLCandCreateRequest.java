@@ -7,6 +7,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
+import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -104,7 +105,8 @@ public class OLCandCreateRequest
 
 	BPartnerId salesRepId;
 
-	PaymentRule paymentRule;
+	@Nullable InvoiceRule invoiceRule;
+	@Nullable PaymentRule paymentRule;
 
 	PaymentTermId paymentTermId;
 	OrderLineGroup orderLineGroup;
@@ -166,6 +168,7 @@ public class OLCandCreateRequest
 			@Nullable final WarehouseId warehouseDestId,
 			@Nullable final ShipperId shipperId,
 			@Nullable final BPartnerId salesRepId,
+			@Nullable final InvoiceRule invoiceRule,
 			@Nullable final PaymentRule paymentRule,
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final OrderLineGroup orderLineGroup,
@@ -229,6 +232,7 @@ public class OLCandCreateRequest
 		this.warehouseId = warehouseId;
 		this.warehouseDestId = warehouseDestId;
 
+		this.invoiceRule = invoiceRule;
 		this.paymentRule = paymentRule;
 
 		this.paymentTermId = paymentTermId;

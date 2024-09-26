@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.ordercandidate.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_OLCand
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1656813470L;
+	private static final long serialVersionUID = 1695628158L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -125,7 +125,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
-	/**
+	/** 
 	 * ApplySalesRepFrom AD_Reference_ID=541416
 	 * Reference name: SalesRepFrom
 	 */
@@ -143,7 +143,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public java.lang.String getApplySalesRepFrom()
+	public java.lang.String getApplySalesRepFrom() 
 	{
 		return get_ValueAsString(COLUMNNAME_ApplySalesRepFrom);
 	}
@@ -235,14 +235,14 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
 	{
-		if (C_Async_Batch_ID < 1)
+		if (C_Async_Batch_ID < 1) 
 			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
 	}
 
 	@Override
-	public int getC_Async_Batch_ID()
+	public int getC_Async_Batch_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
 	}
@@ -1149,6 +1149,35 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return get_ValueAsString(COLUMNNAME_InvoicableQtyBasedOn);
 	}
 
+	/** 
+	 * InvoiceRule AD_Reference_ID=150
+	 * Reference name: C_Order InvoiceRule
+	 */
+	public static final int INVOICERULE_AD_Reference_ID=150;
+	/** AfterOrderDelivered = O */
+	public static final String INVOICERULE_AfterOrderDelivered = "O";
+	/** AfterDelivery = D */
+	public static final String INVOICERULE_AfterDelivery = "D";
+	/** CustomerScheduleAfterDelivery = S */
+	public static final String INVOICERULE_CustomerScheduleAfterDelivery = "S";
+	/** Immediate = I */
+	public static final String INVOICERULE_Immediate = "I";
+	/** OrderCompletelyDelivered = C */
+	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
+	/** After Pick = P */
+	public static final String INVOICERULE_AfterPick = "P";
+	@Override
+	public void setInvoiceRule (final @Nullable java.lang.String InvoiceRule)
+	{
+		set_Value (COLUMNNAME_InvoiceRule, InvoiceRule);
+	}
+
+	@Override
+	public java.lang.String getInvoiceRule() 
+	{
+		return get_ValueAsString(COLUMNNAME_InvoiceRule);
+	}
+
 	@Override
 	public void setIsError (final boolean IsError)
 	{
@@ -1228,7 +1257,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public boolean isManualQtyItemCapacity()
+	public boolean isManualQtyItemCapacity() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManualQtyItemCapacity);
 	}
@@ -1516,6 +1545,12 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public static final String PAYMENTRULE_Mixed = "M";
 	/** PayPal = L */
 	public static final String PAYMENTRULE_PayPal = "L";
+	/** PayPal Extern = V */
+	public static final String PAYMENTRULE_PayPalExtern = "V";
+	/** Kreditkarte Extern = U */
+	public static final String PAYMENTRULE_KreditkarteExtern = "U";
+	/** Sofortüberweisung = R */
+	public static final String PAYMENTRULE_Sofortueberweisung = "R";
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{
@@ -1680,6 +1715,19 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public void setQtyEntered_Override (final @Nullable BigDecimal QtyEntered_Override)
+	{
+		set_Value (COLUMNNAME_QtyEntered_Override, QtyEntered_Override);
+	}
+
+	@Override
+	public BigDecimal getQtyEntered_Override() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered_Override);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyItemCapacity (final @Nullable BigDecimal QtyItemCapacity)
 	{
 		set_Value (COLUMNNAME_QtyItemCapacity, QtyItemCapacity);
@@ -1712,7 +1760,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public BigDecimal getQtyShipped()
+	public BigDecimal getQtyShipped() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyShipped);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1731,18 +1779,5 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getRecord_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
-	}
-
-	@Override
-	public void setQtyEntered_Override (final @Nullable BigDecimal QtyEntered_Override)
-	{
-		set_Value (COLUMNNAME_QtyEntered_Override, QtyEntered_Override);
-	}
-
-	@Override
-	public BigDecimal getQtyEntered_Override()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered_Override);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

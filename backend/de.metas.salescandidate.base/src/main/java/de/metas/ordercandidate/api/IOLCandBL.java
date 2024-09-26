@@ -72,9 +72,9 @@ public interface IOLCandBL extends ISingletonService
 	 * </ul>
 	 *
 	 * @param olCand                  the order line candidate for which we compute the priceActual
-	 * @param qtyOverride             if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getQtyEntered()} and {@link I_C_OLCand#getQtyEntered_Override()} 
+	 * @param qtyOverride             if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getQtyEntered()} and {@link I_C_OLCand#getQtyEntered_Override()}
 	 * @param pricingSystemIdOverride if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getM_PricingSystem_ID()}
-	 * @param date to be used in retrieving the actual price
+	 * @param date                    to be used in retrieving the actual price
 	 */
 	IPricingResult computePriceActual(I_C_OLCand olCand, @Nullable BigDecimal qtyOverride, PricingSystemId pricingSystemIdOverride, LocalDate date);
 
@@ -86,7 +86,7 @@ public interface IOLCandBL extends ISingletonService
 
 	FreightCostRule getFreightCostRule(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
 
-	InvoiceRule getInvoiceRule(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
+	InvoiceRule getInvoiceRule(final I_C_OLCand olCandRecord, BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
 
 	PaymentRule getPaymentRule(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults, I_C_OLCand olCandRecord);
 
