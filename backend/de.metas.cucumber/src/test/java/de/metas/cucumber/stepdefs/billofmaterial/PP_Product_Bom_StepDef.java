@@ -30,6 +30,9 @@ import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -37,6 +40,7 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
@@ -73,6 +77,8 @@ public class PP_Product_Bom_StepDef
 	private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
 	private final PP_Product_BOMLine_StepDefData productBOMLineTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public PP_Product_Bom_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -113,9 +119,10 @@ public class PP_Product_Bom_StepDef
 
 	private void createPP_Product_BOMLine(@NonNull final DataTableRow row)
 	{
-		final I_PP_Product_BOM bom = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID).lookupIn(productBOMTable);
+		final I_PP_Product_BOM bom = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID).lookupNotNullIn(productBOMTable);
 		final ProductBOMId bomId = ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID());
-		final I_M_Product productRecord = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupIn(productTable);
+
+		final I_M_Product productRecord = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
 
 		final I_PP_Product_BOMLine bomLine = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
@@ -127,7 +134,17 @@ public class PP_Product_Bom_StepDef
 
 		bomLine.setPP_Product_BOM_ID(bomId.getRepoId());
 		bomLine.setM_Product_ID(productRecord.getM_Product_ID());
-		bomLine.setC_UOM_ID(productRecord.getC_UOM_ID());
+
+		final Optional<String> x12de355Code = row.getAsOptionalString(I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		if (x12de355Code.isPresent())
+		{
+			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code.get()));
+			bomLine.setC_UOM_ID(uomId.getRepoId());
+		}
+		else
+		{
+			bomLine.setC_UOM_ID(productRecord.getC_UOM_ID());
+		}
 
 		final BOMComponentType componentType = row.getAsOptionalEnum(I_PP_Product_BOMLine.COLUMNNAME_ComponentType, BOMComponentType.class).orElse(BOMComponentType.Component);
 		bomLine.setComponentType(componentType.getCode());
@@ -162,11 +179,11 @@ public class PP_Product_Bom_StepDef
 	{
 		final I_PP_Product_BOMVersions bomVersions = createBOMVersions(row);
 
-		final I_M_Product productRecord = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_M_Product_ID).lookupIn(productTable);
+		final I_M_Product productRecord = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
 
 		final LocalDateTime validFrom = row.getAsOptionalLocalDate(I_PP_Product_BOM.COLUMNNAME_ValidFrom).orElse(DEFAULT_ValidFrom).atStartOfDay();
 
-		BOMType bomType = row.getAsOptionalEnum(I_PP_Product_BOM.COLUMNNAME_BOMType, BOMType.class).orElse(BOMType.CurrentActive);
+		final BOMType bomType = row.getAsOptionalEnum(I_PP_Product_BOM.COLUMNNAME_BOMType, BOMType.class).orElse(BOMType.CurrentActive);
 
 		final I_PP_Product_BOM productBOMRecord = getExistingBOM(ProductId.ofRepoId(productRecord.getM_Product_ID()), bomType)
 				.orElseGet(() -> newInstance(I_PP_Product_BOM.class));
@@ -254,7 +271,7 @@ public class PP_Product_Bom_StepDef
 			return existingBOMVersions;
 		}
 
-		final I_M_Product productRecord = row.getAsIdentifier(I_PP_Product_BOMVersions.COLUMNNAME_M_Product_ID).lookupIn(productTable);
+		final I_M_Product productRecord = row.getAsIdentifier(I_PP_Product_BOMVersions.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
 
 		final I_PP_Product_BOMVersions bomVersionsRecord = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_PP_Product_BOMVersions.class)
