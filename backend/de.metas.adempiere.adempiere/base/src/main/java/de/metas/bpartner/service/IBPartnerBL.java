@@ -208,7 +208,6 @@ public interface IBPartnerBL extends ISingletonService
 		 * If specified, then only matching contacts are considered
 		 */
 		@Default
-		@NonNull
 		Predicate<User> filter = user -> true;
 
 		/**
@@ -218,6 +217,9 @@ public interface IBPartnerBL extends ISingletonService
 		@Default
 		@NonNull
 		Comparator<User> comparator = Comparator.comparing(User::getName);
+
+		@Default
+		boolean onlyMailEnabled = false;
 
 		boolean onlyActive;
 

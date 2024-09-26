@@ -19,6 +19,7 @@ import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.StringUtils;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
@@ -221,6 +222,11 @@ public class BPartnerBL implements IBPartnerBL
 		for (final I_AD_User contactRecord : contactRecords)
 		{
 			if (onlyActiveContacts && !contactRecord.isActive())
+			{
+				continue;
+			}
+
+			if (request.isOnlyMailEnabled() && StringUtils.toBoolean(contactRecord.getIsInvoiceEmailEnabled(), true))
 			{
 				continue;
 			}
