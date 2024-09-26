@@ -116,7 +116,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : Integer.parseInt(string);
 		}
 		catch (final NumberFormatException e)
@@ -420,7 +419,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : new BigDecimal(string);
 		}
 		catch (final NumberFormatException e)
@@ -495,6 +493,7 @@ public class DataTableUtil
 		return extractBooleanForColumnNameOr(dataTableRow.asMap(), columnName, defaultValue);
 	}
 
+	@Contract("_, _, !null -> !null")
 	@Nullable
 	@Contract("_, _, !null -> !null")
 	public static Boolean extractBooleanForColumnNameOr(
@@ -549,7 +548,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : Double.parseDouble(string);
 		}
 		catch (final NumberFormatException e)

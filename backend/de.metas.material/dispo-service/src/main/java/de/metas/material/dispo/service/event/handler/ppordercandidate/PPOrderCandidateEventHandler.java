@@ -102,7 +102,8 @@ abstract class PPOrderCandidateEventHandler
 			@Nullable final MaterialDispoGroupId groupId,
 			@NonNull final Candidate headerCandidate)
 	{
-		final List<PPOrderLineCandidate> ppOrderLineCandidates = event.getPpOrderCandidate().getLines();
+		final PPOrderCandidate ppOrderCandidate = event.getPpOrderCandidate();
+		final List<PPOrderLineCandidate> ppOrderLineCandidates = ppOrderCandidate.getLines();
 		final boolean simulated = headerCandidate.isSimulated();
 
 		for (final PPOrderLineCandidate ppOrderLineCandidate : ppOrderLineCandidates)
@@ -111,17 +112,17 @@ abstract class PPOrderCandidateEventHandler
 
 			final Candidate.CandidateBuilder candidateBuilder = existingLineCandidate != null
 					? existingLineCandidate.toBuilder()
-					: Candidate.builderForClientAndOrgId(event.getPpOrderCandidate().getPpOrderData().getClientAndOrgId());
+					: Candidate.builderForClientAndOrgId(ppOrderCandidate.getPpOrderData().getClientAndOrgId());
 
 			final DemandDetail headerDemandDetail = headerCandidate.getDemandDetail();
-			final ProductionDetail lineCandidateProductionDetail = createProductionDetailForPPOrderLineCandidate(ppOrderLineCandidate, event.getPpOrderCandidate());
+			final ProductionDetail lineCandidateProductionDetail = createProductionDetailForPPOrderLineCandidate(ppOrderLineCandidate, ppOrderCandidate);
 
-			final MaterialDescriptor materialDescriptor = createMaterialDescriptorForPPOrderLineCandidate(ppOrderLineCandidate, event.getPpOrderCandidate());
+			final MaterialDescriptor materialDescriptor = createMaterialDescriptorForPPOrderLineCandidate(ppOrderLineCandidate, ppOrderCandidate);
 
 			candidateBuilder
 					.type(CandidateType.DEMAND)
 					.businessCase(CandidateBusinessCase.PRODUCTION)
-					.seqNo(headerCandidate.getSeqNo() + 1)
+					.seqNo(headerCandidate.getSeqNo() + 1) // not related to the ppOrderCandidate's SeqNo!
 					.businessCaseDetail(lineCandidateProductionDetail)
 					.materialDescriptor(materialDescriptor)
 					.simulated(simulated)
@@ -143,7 +144,6 @@ abstract class PPOrderCandidateEventHandler
 	protected final Candidate deleteHeaderCandidate(
 			@NonNull final CandidatesQuery preExistingSupplyQuery)
 	{
-
 		final Candidate existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingSupplyQuery);
 
 		if (existingCandidateOrNull != null)

@@ -852,7 +852,7 @@ public class StepComXMLDesadvBean
 			@Nullable final String isSubsequentDeliveryPlanned,
 			@NonNull final BigDecimal diff)
 	{
-		DiscrepencyCode discrepancyCode;
+		final DiscrepencyCode discrepancyCode;
 		if (diff.signum() > 0)
 		{
 			discrepancyCode = DiscrepencyCode.OVSH; // = Over-shipped
