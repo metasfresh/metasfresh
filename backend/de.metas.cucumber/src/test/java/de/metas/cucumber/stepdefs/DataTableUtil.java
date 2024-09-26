@@ -495,7 +495,6 @@ public class DataTableUtil
 
 	@Contract("_, _, !null -> !null")
 	@Nullable
-	@Contract("_, _, !null -> !null")
 	public static Boolean extractBooleanForColumnNameOr(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName,
