@@ -1700,8 +1700,9 @@ public class MOrder extends X_C_Order implements IDocument
 		}    // Shipment
 
 		// Create SO Invoice - Always invoice complete Order
-		if (X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType)
-				|| X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType))
+		if (X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType)
+				//|| X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType)
+		)
 		{
 			final MInvoice invoice = createInvoice(dt, shipment, realTimePOS ? null : getDateOrdered());
 			if (invoice == null)
