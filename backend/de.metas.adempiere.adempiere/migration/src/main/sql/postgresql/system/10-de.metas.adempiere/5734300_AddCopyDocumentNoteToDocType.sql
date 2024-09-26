@@ -155,12 +155,12 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-09-23 18:
 
 -- Reference Item: CopyDocumentNote -> CO_Copy document note from Order
 -- 2024-09-23T15:44:42.091Z
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Dokument aus Bestellung kopieren',Updated=TO_TIMESTAMP('2024-09-23 18:44:42.091','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543726
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Dokumentnotiz aus Bestellung kopieren',Updated=TO_TIMESTAMP('2024-09-23 18:44:42.091','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543726
 ;
 
 -- Reference Item: CopyDocumentNote -> CO_Copy document note from Order
 -- 2024-09-23T15:44:45.787Z
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Dokument aus Bestellung kopieren',Updated=TO_TIMESTAMP('2024-09-23 18:44:45.787','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543726
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Dokumentnotiz aus Bestellung kopieren',Updated=TO_TIMESTAMP('2024-09-23 18:44:45.787','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543726
 ;
 
 -- Column: C_DocType.CopyDocumentNote
@@ -249,6 +249,6 @@ UPDATE AD_Field SET DisplayLogic='@DocBaseType@=SOO | @DocBaseType@=POO | @DocBa
 ;
 
 
-UPDATE ad_ref_list SET name = 'Dokument aus Bestellung kopieren' WHERE ad_ref_list_id = 543726;
+UPDATE ad_ref_list SET name = 'Dokumentnotiz aus Bestellung kopieren' WHERE ad_ref_list_id = 543726;
 
 UPDATE ad_ref_list SET name = 'Dokumentnotiz in Dokument kopieren' WHERE ad_ref_list_id = 543725;

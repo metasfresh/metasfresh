@@ -30,34 +30,34 @@ import org.compiere.model.X_C_DocType;
 
 import javax.annotation.Nullable;
 
-public enum CopyDocumentNote implements ReferenceListAwareEnum
+public enum CopyDescriptionAndDocumentNote implements ReferenceListAwareEnum
 {
-	CopuDocumentNote(X_C_DocType.COPYDOCUMENTNOTE_CopyDocumentNoteToDocument),
-	CopyDocumentNoteFromOrder(X_C_DocType.COPYDOCUMENTNOTE_CopyDocumentNoteFromOrder);
+	CopyDescAndDocumentNote(X_C_DocType.COPYDESCRIPTIONANDDOCUMENTNOTE_CopyDescriptionAndDocumentNote),
+	CopyDescAndDocumentNoteFromOrder(X_C_DocType.COPYDESCRIPTIONANDDOCUMENTNOTE_CopyDescriptionAndDocumentNotefromOrder);
 
 	@Getter
 	private final String code;
 
-	CopyDocumentNote(@NonNull final String code)
+	CopyDescriptionAndDocumentNote(@NonNull final String code)
 	{
 		this.code = code;
 	}
 
 	@Nullable
-	public static CopyDocumentNote ofNullableCode(@Nullable final String code)
+	public static CopyDescriptionAndDocumentNote ofNullableCode(@Nullable final String code)
 	{
 		return index.ofNullableCode(code);
 	}
 
-	public static CopyDocumentNote ofCode(@NonNull final String code)
+	public static CopyDescriptionAndDocumentNote ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
 	}
 
-	private static final ReferenceListAwareEnums.ValuesIndex<CopyDocumentNote> index = ReferenceListAwareEnums.index(values());
+	private static final ReferenceListAwareEnums.ValuesIndex<CopyDescriptionAndDocumentNote> index = ReferenceListAwareEnums.index(values());
 
-	public boolean isCopyDocumentNoteFromOrder()
+	public boolean isCopyDescriptionAndDocumentNoteFromOrder()
 	{
-		return this == CopyDocumentNoteFromOrder;
+		return this == CopyDescAndDocumentNoteFromOrder;
 	}
 }

@@ -53,8 +53,8 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
-import de.metas.doctype.CopyDocumentNote;
 import de.metas.currency.ICurrencyBL;
+import de.metas.doctype.CopyDescriptionAndDocumentNote;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -935,7 +935,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		if (!docType.isCopyDescriptionToDocument())
+		@Nullable
+		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+
+		if (copyDescriptionAndDocumentNote == null)
 		{
 			return;
 		}
@@ -953,25 +956,26 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
 		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
 
-		if (!TranslatableStrings.isEmpty(description))
+		if (copyDescriptionAndDocumentNote.isCopyDescriptionAndDocumentNoteFromOrder() && invoice.getC_Order_ID() > 0)
 		{
-			invoice.setDescription(description.translate(adLanguage));
+			final String orderDescription = orderBL.getDescriptionById(OrderId.ofRepoId(invoice.getC_Order_ID()));
+			final String orderDescriptionBottom = orderBL.getDescriptionBottomById(OrderId.ofRepoId(invoice.getC_Order_ID()));
+			invoice.setDescription(orderDescription);
+			invoice.setDescriptionBottom(orderDescriptionBottom);
 		}
 		else
 		{
-			invoice.setDescription(defaultDescription);
-		}
+			// // description
+			if (!TranslatableStrings.isEmpty(description))
+			{
+				invoice.setDescription(description.translate(adLanguage));
+			}
+			else
+			{
+				invoice.setDescription(defaultDescription);
+			}
 
-		final CopyDocumentNote copyDocumentNote = CopyDocumentNote.ofCode(docType.getCopyDocumentNote());
-
-		if (copyDocumentNote.isCopyDocumentNoteFromOrder() && invoice.getC_Order_ID() > 0)
-		{
-        	final String descriptionBottom = orderBL.getDescripttionBottomById(OrderId.ofRepoId(invoice.getC_Order_ID()));
-			invoice.setDescriptionBottom(descriptionBottom);
-		}
-		else
-		{
-
+			// description bottom
 			final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
 
 			if (!TranslatableStrings.isEmpty(documentNote))
@@ -984,7 +988,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				invoice.setDescriptionBottom(defaultDocumentNote);
 			}
 		}
-
 	}
 
 	@Override
