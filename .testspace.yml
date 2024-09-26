@@ -3,6 +3,7 @@
 # See https://help.testspace.com/dashboard/project#configuration
 # Please keep in sync with the branch list in .mergify.yml
 release:
+  - onboarding_test20240926_uat
   - onboardingtest2_uat
   - onboardingtest_uat
   - onboarding_test3_uat

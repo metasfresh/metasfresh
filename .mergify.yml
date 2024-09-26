@@ -17,6 +17,7 @@ pull_request_rules:
           - or: &PROJECT_BRANCHES_UAT # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
               # Please keep in sync with the branches at .testspace.yml
               # UAT BRANCH. COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=onboarding_test20240926_uat
               - base=onboardingtest2_uat
               - base=onboardingtest_uat
               - base=onboarding_test3_uat
