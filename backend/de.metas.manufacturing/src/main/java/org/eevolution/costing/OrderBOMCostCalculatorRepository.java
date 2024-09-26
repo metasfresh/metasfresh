@@ -171,7 +171,7 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 		}
 
 		final Percent coProductCostDistributionPercent = componentType.isCoProduct()
-				? orderBOMBL.getCoProductCostDistributionPercent(orderBOMLineRecord)
+				? orderBOMBL.getCoProductCostDistributionPercent(orderBOMLineRecord, mainProductQty)
 				: null;
 
 		return BOMLine.builder()
