@@ -1238,6 +1238,6 @@ public class OrderBL implements IOrderBL
 	@Override
 	public String getDescriptionById(@NonNull final OrderId orderId)
 	{
-		return getById(orderId).getDescriptionBottom();
+		return getById(orderId).getDescription();
 	}
 }
