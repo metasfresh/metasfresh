@@ -155,10 +155,6 @@ UPDATE AD_Ref_List_Trl SET Name='Beschreibung und Dokumentnotiz aus der Bestellu
 UPDATE AD_Ref_List_Trl SET Name='Beschreibung und Dokumentnotiz aus der Bestellung kopieren',Updated=TO_TIMESTAMP('2024-09-25 18:02:53.444','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543726
 ;
 
-ALTER TABLE c_doctype
-    DROP COLUMN CopyDocumentNote
-;
-
 
 
 -- Reference: CopyDocumentNote
@@ -176,14 +172,6 @@ UPDATE AD_Ref_List SET ValueName='CopyDescriptionAndDocumentNotefromOrder',Updat
 ;
 
 
-select backup_table('c_doctype');
-update c_doctype set CopyDescriptionAndDocumentNote=null where  iscopydescriptiontodocument='N';
-update c_doctype set CopyDescriptionAndDocumentNote='CD' where  iscopydescriptiontodocument='Y';
-
-
-ALTER TABLE c_doctype
-    DROP COLUMN iscopydescriptiontodocument
-;
 
 -- UI Element: Belegart -> Belegart.Copy description to document_IsCopyDescriptionToDocument_Copy description to document
 -- Column: C_DocType.IsCopyDescriptionToDocument
