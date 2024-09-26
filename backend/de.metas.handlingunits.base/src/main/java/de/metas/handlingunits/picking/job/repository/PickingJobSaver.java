@@ -58,6 +58,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.lang.UIDStringUtil;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -69,6 +70,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 public class PickingJobSaver
 {
@@ -267,17 +269,29 @@ public class PickingJobSaver
 			@NonNull final PickingJobStepId pickingStepId,
 			@Nullable final PickingJobPickFromAlternativeId alternativeId)
 	{
-		final HashMap<HuId, I_M_Picking_Job_Step_PickedHU> existingRecordsByPickedHUId = pickedHUs.get(pickingStepId)
+		final BiFunction<HuId, String, String> huIdAndQrCode2StringKey = (huId, qrCode) -> {
+			if (Check.isBlank(qrCode))
+			{
+				return huId.getRepoId() + "_" + UIDStringUtil.createRandomUUID();
+			}
+			return huId.getRepoId() + "_" + qrCode;
+		};
+
+		final HashMap<String, I_M_Picking_Job_Step_PickedHU> existingRecordsByPickedHUId = pickedHUs.get(pickingStepId)
 				.stream()
 				.filter(record -> PickingJobPickFromAlternativeId.equals(extractAlternativeId(record), alternativeId))
-				.collect(GuavaCollectors.toHashMapByKey(record -> HuId.ofRepoId(record.getPicked_HU_ID())));
+				.collect(GuavaCollectors.toHashMapByKey(record -> huIdAndQrCode2StringKey.apply(HuId.ofRepoId(record.getPicked_HU_ID()),
+																								record.getPicked_RenderedQRCode())));
 
 		if (pickedTo != null)
 		{
 			for (final PickingJobStepPickedToHU pickedHU : pickedTo.getActualPickedHUs())
 			{
 				final HUInfo actualPickedHU = pickedHU.getActualPickedHU();
-				I_M_Picking_Job_Step_PickedHU record = existingRecordsByPickedHUId.remove(actualPickedHU.getId());
+				final String huIdAndQrCodeKey = huIdAndQrCode2StringKey.apply(
+						actualPickedHU.getId(),
+						actualPickedHU.getQrCode().toGlobalQRCodeString());
+				I_M_Picking_Job_Step_PickedHU record = existingRecordsByPickedHUId.remove(huIdAndQrCodeKey);
 				if (record == null)
 				{
 					record = InterfaceWrapperHelper.newInstance(I_M_Picking_Job_Step_PickedHU.class);
