@@ -226,7 +226,7 @@ public class BPartnerBL implements IBPartnerBL
 				continue;
 			}
 
-			if (request.isOnlyMailEnabled() && StringUtils.toBoolean(contactRecord.getIsInvoiceEmailEnabled(), true))
+			if (request.isOnlyMailEnabled() && StringUtils.toBoolean(contactRecord.getIsInvoiceEmailEnabled(), false))
 			{
 				continue;
 			}
