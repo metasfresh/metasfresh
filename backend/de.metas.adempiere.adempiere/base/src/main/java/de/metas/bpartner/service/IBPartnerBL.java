@@ -208,6 +208,7 @@ public interface IBPartnerBL extends ISingletonService
 		 * If specified, then only matching contacts are considered
 		 */
 		@Default
+		@NonNull
 		Predicate<User> filter = user -> true;
 
 		/**
