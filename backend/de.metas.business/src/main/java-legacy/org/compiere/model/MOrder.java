@@ -1678,7 +1678,8 @@ public class MOrder extends X_C_Order implements IDocument
 		MInOut shipment = null;
 		if (X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType)        // (W)illCall(I)nvoice
 				|| X_C_DocType.DOCSUBTYPE_WarehouseOrder.equals(docSubType)    // (W)illCall(P)ickup
-				|| X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType))            // (W)alkIn(R)eceipt
+				//|| X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType)            // (W)alkIn(R)eceipt
+		)
 		{
 			if (!DeliveryRule.FORCE.getCode().equals(getDeliveryRule()))
 			{
@@ -1878,7 +1879,8 @@ public class MOrder extends X_C_Order implements IDocument
 		// If we have a Shipment - use that as a base
 		if (shipment != null)
 		{
-			if (!INVOICERULE_AfterDelivery.equals(getInvoiceRule()))
+			if (!INVOICERULE_AfterDelivery.equals(getInvoiceRule())
+					&& !X_C_DocType.DOCSUBTYPE_POSOrder.equals(dt.getDocSubType()))
 			{
 				setInvoiceRule(INVOICERULE_AfterDelivery);
 			}
