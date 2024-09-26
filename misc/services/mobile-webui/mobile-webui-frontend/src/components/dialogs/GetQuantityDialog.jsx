@@ -50,7 +50,7 @@ const GetQuantityDialog = ({
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
     promptQuestion: '',
-    onConfirmedAction: () => undefined,
+    isCloseTarget: false,
   });
 
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
@@ -116,7 +116,7 @@ const GetQuantityDialog = ({
       if (confirmationPrompt) {
         setConfirmationDialogProps({
           promptQuestion: confirmationPrompt,
-          onConfirmedAction: () => onDialogYes({ isCloseTarget, actionIsConfirmed: true }),
+          isCloseTarget: isCloseTarget,
         });
         return;
       }
@@ -250,11 +250,11 @@ const GetQuantityDialog = ({
     );
   };
 
-  if (confirmationDialogProps !== undefined && confirmationDialogProps.promptQuestion) {
+  if (confirmationDialogProps.promptQuestion) {
     return (
       <YesNoDialog
         promptQuestion={confirmationDialogProps.promptQuestion}
-        onYes={() => confirmationDialogProps.onConfirmedAction()}
+        onYes={() => onDialogYes({ isCloseTarget: confirmationDialogProps.isCloseTarget, actionIsConfirmed: true })}
         onNo={() => setConfirmationDialogProps(undefined)}
       />
     );

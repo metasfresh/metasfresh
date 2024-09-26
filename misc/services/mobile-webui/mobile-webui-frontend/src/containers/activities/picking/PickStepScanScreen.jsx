@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
@@ -31,12 +31,15 @@ const PickStepScanScreen = () => {
       shallowEqual
     );
 
-  const getConfirmationPromptForQty = (qtyInput) => {
-    if (qtyRemainingToPick !== undefined && toNumberOrZero(qtyInput) > qtyRemainingToPick) {
-      return trl('activities.picking.overPickConfirmationPrompt');
-    }
-    return undefined;
-  };
+  const getConfirmationPromptForQty = useCallback(
+    (qtyInput) => {
+      if (qtyRemainingToPick !== undefined && toNumberOrZero(qtyInput) > qtyRemainingToPick) {
+        return trl('activities.picking.overPickConfirmationPrompt');
+      }
+      return undefined;
+    },
+    [qtyRemainingToPick]
+  );
 
   const dispatch = useDispatch();
   useEffect(() => {

@@ -91,13 +91,15 @@ const PickLineScanScreen = () => {
 
   const onResult = usePostQtyPicked({ wfProcessId, activityId, lineId, expectedProductNo: productNo, onClose });
 
-  const getConfirmationPromptForQty = (qtyInput) => {
-    if (qtyToPickRemaining !== undefined && toNumberOrZero(qtyInput) > qtyToPickRemaining) {
-      return trl('activities.picking.overPickConfirmationPrompt');
-    }
-
-    return undefined;
-  };
+  const getConfirmationPromptForQty = useCallback(
+    (qtyInput) => {
+      if (qtyToPickRemaining !== undefined && toNumberOrZero(qtyInput) > qtyToPickRemaining) {
+        return trl('activities.picking.overPickConfirmationPrompt');
+      }
+      return undefined;
+    },
+    [qtyToPickRemaining]
+  );
 
   return (
     <ScanHUAndGetQtyComponent
