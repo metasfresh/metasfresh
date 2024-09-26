@@ -25,7 +25,6 @@ package de.metas.contracts.modular.interest;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.interest.run.InterestRunId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
-import de.metas.currency.CurrencyPrecision;
 import de.metas.lock.api.LockOwner;
 import de.metas.money.Money;
 import lombok.Builder;
@@ -40,7 +39,6 @@ public class InterestComputationRequest
 	@NonNull InvoicingGroupId invoicingGroupId;
 	@NonNull Money interestToDistribute;
 	@NonNull LockOwner lockOwner;
-	@NonNull CurrencyPrecision interestCurrencyPrecision;
 	@NonNull ComputingMethodType computingMethodType;
 	@NonNull BonusAndInterestTimeInterval bonusAndInterestTimeInterval;
 }

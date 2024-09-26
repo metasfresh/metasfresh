@@ -52,6 +52,7 @@ public final class CurrencyPrecision
 
 	public static final CurrencyPrecision ZERO = new CurrencyPrecision(0);
 	public static final CurrencyPrecision TWO = new CurrencyPrecision(2);
+	public static final CurrencyPrecision TEN = new CurrencyPrecision(10);
 
 	private static final CurrencyPrecision[] CACHED_VALUES = new CurrencyPrecision[] {
 			ZERO,
@@ -64,7 +65,7 @@ public final class CurrencyPrecision
 			new CurrencyPrecision(7),
 			new CurrencyPrecision(8),
 			new CurrencyPrecision(9),
-			new CurrencyPrecision(10),
+			TEN,
 			new CurrencyPrecision(11),
 			new CurrencyPrecision(12),
 	};

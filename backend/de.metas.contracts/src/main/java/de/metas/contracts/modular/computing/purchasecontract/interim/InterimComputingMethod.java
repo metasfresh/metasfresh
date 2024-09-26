@@ -34,6 +34,8 @@ import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
+import de.metas.contracts.modular.log.ModularContractLogEntry;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -47,8 +49,11 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -74,6 +79,7 @@ public class InterimComputingMethod extends AbstractComputingMethodHandler
 
 	@NonNull private final ComputingMethodService computingMethodService;
 	@NonNull private final ModularContractProvider contractProvider;
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
@@ -142,17 +148,34 @@ public class InterimComputingMethod extends AbstractComputingMethodHandler
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
 		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
 
-		final Money money = logs.getAmount().orElseGet(() -> Money.zero(request.getCurrencyId()));
+		// TODO: Check if the numbers are OK or we should rather divide the amount by the qty
+		// final Money amount = logs.getAmount().orElseGet(() -> Money.zero(request.getCurrencyId()));
+		final Quantity qtySumInStockUOM = logs.isEmpty() ? Quantitys.zero(stockUOMId): computingMethodService.getQtySumInStockUOM(logs);
+
+		final ProductPrice productPrice;
+
+		if (logs.isEmpty())
+		{
+			productPrice = ProductPrice.builder()
+					.productId(request.getProductId())
+					.uomId(stockUOMId)
+					.money(Money.zero(request.getCurrencyId()))
+					.build();
+		}
+		else
+		{
+			final ModularContractLogEntry modularContractLogEntry = logs.getFirstEntry();
+			final ProductPrice priceActual = Check.assumeNotNull(modularContractLogEntry.getPriceActual(), "productPrice shouldn't be null");
+			final CurrencyPrecision pricePrecision = flatrateBL.getPricePrecisionForModularContract(request.getFlatrateTermId());
+			productPrice = priceActual.convertToUom(stockUOMId, pricePrecision, uomConversionBL);
+
+		}
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
 				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
-				.price(ProductPrice.builder()
-							   .productId(request.getProductId())
-							   .money(money.negate())
-							   .uomId(stockUOMId)
-							   .build())
-				.qty(money.isZero() ? Quantitys.zero(stockUOMId) : Quantitys.one(stockUOMId))
+				.price(productPrice)
+				.qty(qtySumInStockUOM.negate())
 				.build();
 	}
 }
