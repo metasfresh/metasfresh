@@ -425,7 +425,7 @@ public class InfoPAttribute extends CDialog
 				sb.append("=");
 			else
 				sb.append(">");
-			sb.append(DB.TO_DATE(ts,true));
+			sb.append(DB.TO_DATE(ts, DisplayType.Date));
 		}
 		
 		//	Instance Editors
