@@ -31,7 +31,9 @@ import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -41,9 +43,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -236,4 +235,11 @@ public interface IProductBL extends ISingletonService
 	 * @return true if product is used in orders, invoices or shipments
 	 */
     boolean isProductUsed(@NonNull ProductId productId);
+
+	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
+
+	Set<ProductId> getProductIdsMatchingQueryString(
+			@NonNull String queryString,
+			@NonNull ClientId clientId,
+			@NonNull QueryLimit limit);
 }

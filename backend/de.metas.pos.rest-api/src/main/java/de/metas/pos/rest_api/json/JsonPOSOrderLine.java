@@ -31,6 +31,10 @@ public class JsonPOSOrderLine
 	@NonNull UomId uomId;
 	@NonNull String uomSymbol;
 
+	@Nullable BigDecimal catchWeight;
+	@Nullable UomId catchWeightUomId;
+	@Nullable String catchWeightUomSymbol;
+
 	@Nullable BigDecimal amount;
 
 	public static JsonPOSOrderLine of(@NonNull final POSOrderLine line, @NonNull final String currencySymbol)
@@ -45,6 +49,9 @@ public class JsonPOSOrderLine
 				.qty(line.getQty().toBigDecimal())
 				.uomId(line.getQty().getUomId())
 				.uomSymbol(line.getQty().getUOMSymbol())
+				.catchWeight(line.getCatchWeight() != null ? line.getCatchWeight().toBigDecimal() : null)
+				.catchWeightUomId(line.getCatchWeight() != null ? line.getCatchWeight().getUomId() : null)
+				.catchWeightUomSymbol(line.getCatchWeight() != null ? line.getCatchWeight().getUOMSymbol() : null)
 				.amount(line.getAmount().toBigDecimal())
 				.build();
 	}
@@ -59,6 +66,8 @@ public class JsonPOSOrderLine
 				.price(price)
 				.qty(qty)
 				.uomId(uomId)
+				.catchWeight(catchWeight)
+				.catchWeightUomId(catchWeightUomId)
 				.build();
 	}
 

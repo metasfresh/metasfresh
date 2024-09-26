@@ -203,7 +203,20 @@ const addNewOrderAndSetCurrent = (orders) => {
 
 const addOrderLineToCurrentOrder = (
   orders,
-  { order_uuid, productId, productName, taxCategoryId, currencySymbol, price, qty, uomId, uomSymbol }
+  {
+    order_uuid,
+    productId,
+    productName,
+    taxCategoryId,
+    currencySymbol,
+    price,
+    qty,
+    uomId,
+    uomSymbol,
+    catchWeightUomId,
+    catchWeightUomSymbol,
+    catchWeight,
+  }
 ) => {
   const newOrderLine = {
     uuid: uuidv4(),
@@ -215,6 +228,9 @@ const addOrderLineToCurrentOrder = (
     qty,
     uomId,
     uomSymbol,
+    catchWeightUomId,
+    catchWeightUomSymbol,
+    catchWeight,
   };
   return changeOrder({
     orders,
@@ -262,8 +278,6 @@ const removeOrderByUUID = ({ orders, order_uuid }) => {
   delete byUUID[order_uuid];
 
   const current_uuid = byUUID[orders.current_uuid] ? orders.current_uuid : Object.keys(byUUID).find(() => true);
-
-  console.log('removeOrderByUUID', { new: { byUUID, current_uuid }, old: orders });
 
   return { ...orders, current_uuid, byUUID };
 };

@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -93,8 +94,10 @@ class POSOrderUpdateFromRemoteCommand
 			//
 			// Amount, TaxAmt
 			final Quantity qty = extractQty(remoteOrderLine);
+			final Quantity catchWeight = extractCatchWeight(remoteOrderLine);
+			final Quantity qtyInPriceUom = catchWeight != null ? catchWeight : qty;
 			final Money price = toMoney(remoteOrderLine.getPrice());
-			final Money amount = price.multiply(qty.toBigDecimal()).round(currencyPrecision);
+			final Money amount = price.multiply(qtyInPriceUom.toBigDecimal()).round(currencyPrecision);
 			final Money amountPrev = existingLine != null ? existingLine.getAmount() : toMoney(BigDecimal.ZERO);
 			final Money taxAmt;
 			if (existingLine == null || amount.compareTo(amountPrev) != 0)
@@ -118,6 +121,7 @@ class POSOrderUpdateFromRemoteCommand
 					.taxCategoryId(taxCategoryId)
 					.taxId(taxId)
 					.qty(qty)
+					.catchWeight(catchWeight)
 					.price(price)
 					.amount(amount)
 					.taxAmt(taxAmt)
@@ -128,6 +132,14 @@ class POSOrderUpdateFromRemoteCommand
 	private Quantity extractQty(@NonNull final RemotePOSOrderLine remoteOrderLine)
 	{
 		return Quantitys.of(remoteOrderLine.getQty(), remoteOrderLine.getUomId());
+	}
+
+	@Nullable
+	private Quantity extractCatchWeight(final @NonNull RemotePOSOrderLine remoteOrderLine)
+	{
+		return remoteOrderLine.getCatchWeight() != null && remoteOrderLine.getCatchWeightUomId() != null
+				? Quantitys.of(remoteOrderLine.getCatchWeight(), remoteOrderLine.getCatchWeightUomId())
+				: null;
 	}
 
 	private Tax findTax(final POSOrder order, final TaxCategoryId taxCategoryId)

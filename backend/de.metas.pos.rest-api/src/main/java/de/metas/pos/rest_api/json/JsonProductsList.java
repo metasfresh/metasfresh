@@ -16,6 +16,7 @@ import java.util.List;
 public class JsonProductsList
 {
 	@NonNull List<JsonProduct> list;
+	boolean isBarcodeMatched;
 
 	public static JsonProductsList from(@NonNull final POSProductsList list, @NonNull final String adLanguage)
 	{
@@ -24,6 +25,7 @@ public class JsonProductsList
 						.map(product -> JsonProduct.from(product, adLanguage))
 						.sorted(Comparator.comparing(JsonProduct::getName))
 						.collect(ImmutableList.toImmutableList()))
+				.isBarcodeMatched(list.isBarcodeMatched())
 				.build();
 	}
 }

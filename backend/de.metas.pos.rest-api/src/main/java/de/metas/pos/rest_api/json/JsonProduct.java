@@ -9,6 +9,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
@@ -22,6 +23,8 @@ public class JsonProduct
 	@NonNull String currencySymbol;
 	@NonNull UomId uomId;
 	@NonNull String uomSymbol;
+	@Nullable UomId catchWeightUomId;
+	@Nullable String catchWeightUomSymbol;
 	@NonNull TaxCategoryId taxCategoryId;
 
 	public static JsonProduct from(@NonNull final POSProduct product, @NonNull final String adLanguage)
@@ -31,8 +34,10 @@ public class JsonProduct
 				.name(product.getName(adLanguage))
 				.price(product.getPrice().toBigDecimal())
 				.currencySymbol(product.getCurrencySymbol(adLanguage))
-				.uomId(product.getUomId())
-				.uomSymbol(product.getUomSymbol())
+				.uomId(product.getUom().getUomId())
+				.uomSymbol(product.getUom().getUomSymbol())
+				.catchWeightUomId(product.getCatchWeightUom() != null ? product.getCatchWeightUom().getUomId() : null)
+				.catchWeightUomSymbol(product.getCatchWeightUom() != null ? product.getCatchWeightUom().getUomSymbol() : null)
 				.taxCategoryId(product.getTaxCategoryId())
 				.build();
 	}

@@ -125,9 +125,8 @@
     align-items: center; // cross axis (y)
 
     button {
-      border: 0;
       flex-grow: 1;
-      font-size: 4rem;
+      font-size: 2rem;
       font-weight: bold;
       padding: 10px;
     }
@@ -139,10 +138,6 @@
     .validate {
       background-color: #74b727;
       color: white;
-    }
-    .validate:disabled {
-      background-color: rgba(116, 183, 39, 0.24);
-      color: gray;
     }
   }
 }
