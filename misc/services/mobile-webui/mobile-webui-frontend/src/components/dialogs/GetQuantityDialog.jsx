@@ -15,6 +15,7 @@ import BarcodeScannerComponent from '../BarcodeScannerComponent';
 import { parseQRCodeString } from '../../utils/qrCode/hu';
 import { toastErrorFromObj } from '../../utils/toast';
 import { doFinally } from '../../utils';
+import YesNoDialog from './YesNoDialog';
 
 const GetQuantityDialog = ({
   readOnly: readOnlyParam = false,
@@ -42,10 +43,15 @@ const GetQuantityDialog = ({
   isShowCloseTargetButton = false,
   //
   validateQtyEntered,
+  getConfirmationPromptForQty,
   onQtyChange,
   onCloseDialog,
 }) => {
   const [isProcessing, setProcessing] = useState(false);
+  const [confirmationDialogProps, setConfirmationDialogProps] = useState({
+    promptQuestion: '',
+    onConfirmedAction: () => undefined,
+  });
 
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
@@ -93,7 +99,7 @@ const GetQuantityDialog = ({
   const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
   const readOnly = readOnlyParam || isProcessing;
 
-  const onDialogYes = ({ isCloseTarget }) => {
+  const onDialogYes = ({ isCloseTarget, actionIsConfirmed = false }) => {
     if (isProcessing) return;
 
     if (allValid) {
@@ -102,6 +108,17 @@ const GetQuantityDialog = ({
       let qtyEnteredAndValidated = inputQtyEnteredAndValidated;
       if (!!qtyAlreadyOnScale && typeof inputQtyEnteredAndValidated === 'number') {
         qtyEnteredAndValidated = Math.max(inputQtyEnteredAndValidated - qtyAlreadyOnScale, 0);
+      }
+
+      const confirmationPrompt =
+        !actionIsConfirmed && getConfirmationPromptForQty && getConfirmationPromptForQty(qtyEnteredAndValidated);
+
+      if (confirmationPrompt) {
+        setConfirmationDialogProps({
+          promptQuestion: confirmationPrompt,
+          onConfirmedAction: () => onDialogYes({ isCloseTarget, actionIsConfirmed: true }),
+        });
+        return;
       }
 
       setProcessing(true);
@@ -232,6 +249,16 @@ const GetQuantityDialog = ({
       </>
     );
   };
+
+  if (confirmationDialogProps !== undefined && confirmationDialogProps.promptQuestion) {
+    return (
+      <YesNoDialog
+        promptQuestion={confirmationDialogProps.promptQuestion}
+        onYes={() => confirmationDialogProps.onConfirmedAction()}
+        onNo={() => setConfirmationDialogProps(undefined)}
+      />
+    );
+  }
 
   return (
     <div>
@@ -451,6 +478,7 @@ GetQuantityDialog.propTypes = {
 
   // Callbacks
   validateQtyEntered: PropTypes.func,
+  getConfirmationPromptForQty: PropTypes.func,
   onQtyChange: PropTypes.func.isRequired,
   onCloseDialog: PropTypes.func,
 };

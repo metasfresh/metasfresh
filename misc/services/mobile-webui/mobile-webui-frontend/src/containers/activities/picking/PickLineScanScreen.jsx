@@ -42,6 +42,7 @@ import { useHeaderUpdate } from './PickLineScreen';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 import { useCurrentPickTarget } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
+import { toNumberOrZero } from '../../../utils/numberUtils';
 
 export const NEXT_PickingJob = 'pickingJob';
 export const NEXT_NextPickingLine = 'nextPickingLine';
@@ -69,6 +70,7 @@ const PickLineScanScreen = () => {
     uom,
     qtyRejectedReasons,
     catchWeightUom,
+    isShowPromptWhenOverPicking,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   const pickTarget = useCurrentPickTarget({ wfProcessId, activityId });
@@ -88,6 +90,14 @@ const PickLineScanScreen = () => {
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
 
   const onResult = usePostQtyPicked({ wfProcessId, activityId, lineId, expectedProductNo: productNo, onClose });
+
+  const getConfirmationPromptForQty = (qtyInput) => {
+    if (qtyToPickRemaining !== undefined && toNumberOrZero(qtyInput) > qtyToPickRemaining) {
+      return trl('activities.picking.overPickConfirmationPrompt');
+    }
+
+    return undefined;
+  };
 
   return (
     <ScanHUAndGetQtyComponent
@@ -109,6 +119,7 @@ const PickLineScanScreen = () => {
       resolveScannedBarcode={resolveScannedBarcode}
       onResult={onResult}
       onClose={onClose}
+      getConfirmationPromptForQty={isShowPromptWhenOverPicking ? getConfirmationPromptForQty : undefined}
     />
   );
 };
@@ -132,6 +143,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     uom: line.uom,
     qtyRejectedReasons,
     catchWeightUom: line.catchWeightUOM,
+    isShowPromptWhenOverPicking: activity?.dataStored?.isShowPromptWhenOverPicking,
   };
 };
 

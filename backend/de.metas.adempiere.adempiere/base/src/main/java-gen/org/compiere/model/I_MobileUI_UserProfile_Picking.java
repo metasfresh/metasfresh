@@ -276,6 +276,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsPickingWithNewLU = "IsPickingWithNewLU";
 
 	/**
+	 * Set Ask User when Over Picking.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShowConfirmationPromptWhenOverPick (boolean IsShowConfirmationPromptWhenOverPick);
+
+	/**
+	 * Get Ask User when Over Picking.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShowConfirmationPromptWhenOverPick();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowConfirmationPromptWhenOverPick = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowConfirmationPromptWhenOverPick", null);
+	String COLUMNNAME_IsShowConfirmationPromptWhenOverPick = "IsShowConfirmationPromptWhenOverPick";
+
+	/**
 	 * Set Mobile UI Picking Profile.
 	 *
 	 * <br>Type: ID
