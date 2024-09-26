@@ -107,9 +107,6 @@ const HUManagerScreen = () => {
 
   const isExistingHU = !!handlingUnitInfo?.id;
 
-  // NOTE: keep in sync with de.metas.handlingunits.movement.MoveHUCommand.getMoveToCUConsumer
-  const isAllowMove = isExistingHU && isCU(handlingUnitInfo);
-
   const isAllowQtyChange =
     isSingleStorage && //
     (isExistingHU || !!currentLocatorQRCode?.locatorId); // either we have an huId or we scanned the locator where the new HU will be created
@@ -151,9 +148,7 @@ const HUManagerScreen = () => {
           {isExistingHU && (
             <ButtonWithIndicator caption={trl('huManager.action.dispose.buttonCaption')} onClick={onDisposeClick} />
           )}
-          {isAllowMove && (
-            <ButtonWithIndicator caption={trl('huManager.action.move.buttonCaption')} onClick={onMoveClick} />
-          )}
+          <ButtonWithIndicator caption={trl('huManager.action.move.buttonCaption')} onClick={onMoveClick} />
           {isExistingHU && (
             <ButtonWithIndicator
               caption={trl('huManager.action.setClearance.buttonCaption')}
@@ -240,14 +235,6 @@ const computeSingleStorageQtyAndUOM = (handlingUnitInfo) => {
     qty,
     uom: handlingUnitInfo.products[0].uom,
   };
-};
-
-const isCU = (handlingUnitInfo) => {
-  return getHUUnitType(handlingUnitInfo) === 'CU';
-};
-
-const getHUUnitType = (handlingUnitInfo) => {
-  return handlingUnitInfo?.jsonHUType;
 };
 
 const getBestBeforeDate = (handlingUnitInfo) => {
