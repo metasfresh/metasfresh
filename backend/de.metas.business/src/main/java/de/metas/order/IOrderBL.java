@@ -376,5 +376,7 @@ public interface IOrderBL extends ISingletonService
 
 	List<de.metas.interfaces.I_C_OrderLine> retrieveOrderLines(I_C_Order order);
 
-	String getDescripttionBottomById(@NonNull OrderId orderId);
+	String getDescriptionBottomById(@NonNull OrderId orderId);
+
+	String getDescriptionById(@NonNull OrderId orderId);
 }
