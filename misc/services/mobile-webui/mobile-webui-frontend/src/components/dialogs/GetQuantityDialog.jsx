@@ -250,7 +250,7 @@ const GetQuantityDialog = ({
     );
   };
 
-  if (confirmationDialogProps.promptQuestion) {
+  if (confirmationDialogProps?.promptQuestion) {
     return (
       <YesNoDialog
         promptQuestion={confirmationDialogProps.promptQuestion}
