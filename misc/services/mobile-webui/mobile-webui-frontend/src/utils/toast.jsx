@@ -37,6 +37,7 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
     autoClose: 1000 * 60 * 5,
     position: 'bottom-center',
     transition: Bounce,
+    bodyStyle: { overflow: 'auto' },
   });
 };
 
