@@ -168,7 +168,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 																  + ". Available HU alternatives are: " + pickingJobHUAlternatives));
 	}
 
-	private void loadRecordsFromDB(final Set<PickingJobId> pickingJobIds)
+	protected void loadRecordsFromDB(final Set<PickingJobId> pickingJobIds)
 	{
 		if (pickingJobIds.isEmpty())
 		{
