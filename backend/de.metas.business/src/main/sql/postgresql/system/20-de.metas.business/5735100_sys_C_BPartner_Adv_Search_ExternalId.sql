@@ -28,10 +28,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(543939)
 ;
 
--- 2024-09-27T07:54:19.278Z
-INSERT INTO t_alter_column values('c_bpartner_adv_search','ExternalId','VARCHAR(255)',null,null)
-;
-
 -- 2024-09-27T07:58:24.661Z
 /* DDL */ SELECT public.db_alter_table('C_BPartner_Adv_Search','ALTER TABLE public.C_BPartner_Adv_Search ADD COLUMN ExternalId VARCHAR(255)')
 ;
