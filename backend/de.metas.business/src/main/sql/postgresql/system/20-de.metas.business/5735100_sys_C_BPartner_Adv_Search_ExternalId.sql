@@ -6,7 +6,7 @@
 -- Extra precaution
 
 
-create table backup.C_Bpartner_Adv_Search_Columns_27092024 AS SELECT * FROM ad_table WHERE ad_table_ID = 541761;
+create table backup.C_Bpartner_Adv_Search_Columns_27092024 AS SELECT * FROM AD_COLUMN WHERE ad_table_ID = 541761;
 
 
 -- DROP  clumn in case it exists on a private repo
