@@ -346,6 +346,8 @@ public class PickingJobSaver
 
 		record.setDocStatus(from.getDocStatus().getCode());
 		record.setProcessed(from.getDocStatus().isProcessed());
+		record.setIsReadyToReview(from.isReadyToReview());
+		record.setIsApproved(from.isApproved());
 	}
 
 	private static void updateRecord(
