@@ -220,7 +220,7 @@ public interface IBPartnerBL extends ISingletonService
 		Comparator<User> comparator = Comparator.comparing(User::getName);
 
 		@Default
-		boolean onlyMailEnabled = false;
+		boolean onlyIfInvoiceEmailEnabled = false;
 
 		boolean onlyActive;
 

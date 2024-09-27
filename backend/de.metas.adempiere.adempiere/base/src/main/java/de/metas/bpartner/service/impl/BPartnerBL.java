@@ -229,7 +229,7 @@ public class BPartnerBL implements IBPartnerBL
 			final boolean isInvoiceEmailEnabled = Optional.ofNullable(contactRecord.getIsInvoiceEmailEnabled())
 					.map(StringUtils::toBoolean)
 					.orElse(false);
-			if (request.isOnlyMailEnabled() && !isInvoiceEmailEnabled)
+			if (request.isOnlyIfInvoiceEmailEnabled() && !isInvoiceEmailEnabled)
 			{
 				continue;
 			}

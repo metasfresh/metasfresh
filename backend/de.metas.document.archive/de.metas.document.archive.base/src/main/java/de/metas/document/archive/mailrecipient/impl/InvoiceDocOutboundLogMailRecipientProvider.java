@@ -118,7 +118,7 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 						.bpartnerId(bpartnerId)
 						.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, invoiceRecord.getC_BPartner_Location_ID()))
 						.contactType(ContactType.BILL_TO_DEFAULT)
-						.onlyMailEnabled(true)
+						.onlyIfInvoiceEmailEnabled(true)
 						.build());
 
 		if (billContact != null)
