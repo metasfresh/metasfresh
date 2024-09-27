@@ -58,6 +58,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -169,10 +170,27 @@ public class MailRestController
 		final DocumentPath contextDocumentPath = JSONDocumentPath.toDocumentPathOrNull(request.getDocumentPath());
 
 		final BoilerPlateContext attributes = documentCollection.createBoilerPlateContext(contextDocumentPath);
-		final Integer toUserId = attributes.getAD_User_ID();
-		final LookupValue to = toUserId != null ? mailRepo.getToByUserId(toUserId) : null;
 
-		final String emailId = mailRepo.createNewEmail(adUserId, from, to, contextDocumentPath).getEmailId();
+		final List<LookupValue> lookupValues = new ArrayList<>();
+		final Integer toUserId = attributes.getAD_User_ID();
+		final LookupValue to = mailRepo.getToByUserId(toUserId);
+		if( to != null)
+		{
+			lookupValues.add(to);
+		}
+
+		final Integer ccUserId = attributes.getCC_User_ID();
+		if(ccUserId > 0) // avoid user System
+		{
+			final LookupValue cc = mailRepo.getToByUserId(ccUserId);
+			if (cc != null)
+			{
+				lookupValues.add(cc);
+			}
+		}
+		final LookupValuesList emailsTo = LookupValuesList.fromCollection(lookupValues);
+
+		final String emailId = mailRepo.createNewEmail(adUserId, from, emailsTo, contextDocumentPath).getEmailId();
 
 		if (contextDocumentPath != null)
 		{
