@@ -148,11 +148,6 @@ public class WebuiMailRepository
 		return emailToLookup.findById(adUserId);
 	}
 
-	public  LookupValue getCCByUserId(final Integer ccUserId)
-	{
-		return emailToLookup.findById(ccUserId);
-	}
-
 	@ToString
 	private static final class WebuiEmailEntry
 	{

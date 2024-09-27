@@ -173,7 +173,7 @@ public class MailRestController
 		final LookupValue to = mailRepo.getToByUserId(toUserId);
 
 		final Integer ccUserId = attributes.getCC_User_ID();
-		final LookupValue cc = mailRepo.getCCByUserId(ccUserId);
+		final LookupValue cc = mailRepo.getToByUserId(ccUserId);
 
 		final List<LookupValue> lookupValues = ImmutableList.of(to, cc);
 		final LookupValuesList emailsTo = LookupValuesList.fromCollection(lookupValues);
