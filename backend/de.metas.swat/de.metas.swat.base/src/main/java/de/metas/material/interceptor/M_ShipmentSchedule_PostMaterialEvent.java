@@ -195,15 +195,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 	@NonNull
 	private MaterialDescriptor createMaterialDescriptor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final BigDecimal orderedQuantity;
-		if (shipmentSchedule.isProcessed())
-		{ // if the schedule is processed, then for the purpose of material-dispo, we assume that nothing besides what was already really delivered is ordered
-			orderedQuantity = getActualDeliveredQty(shipmentSchedule);
-		}
-		else
-		{
-			orderedQuantity = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
-		}
+		final BigDecimal orderedQuantity = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
 
 		final ZonedDateTime preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(shipmentSchedule);
