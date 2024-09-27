@@ -243,7 +243,6 @@ public class MailRestController
 			throw new FillMandatoryException("To");
 		}
 		final EMailAddress to = toList.get(0);
-		final EMailAddress cc = toList.size()>1 ? toList.get(1) : null;
 		final String subject = webuiEmail.getSubject();
 		final String message = webuiEmail.getMessage();
 		final boolean html = false;
@@ -252,7 +251,6 @@ public class MailRestController
 				mailCustomType,
 				userEmailConfig,
 				to,
-				cc,
 				subject,
 				message,
 				html);

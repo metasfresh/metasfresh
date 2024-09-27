@@ -102,11 +102,10 @@ public class EMailJsonTest
 				.userToColumnName("userToColumnName")
 				.build();
 		final EMailAddress to = EMailAddress.ofString("to@email.com");
-		final EMailAddress cc = EMailAddress.ofString("cc@email.com");
 		final String subject = "test email subject";
 		final String message = "dummy text message";
 		final boolean html = false;
-		final EMail email = new EMail(mailbox, to, cc, subject, message, html);
+		final EMail email = new EMail(mailbox, to, subject, message, html);
 		email.addTo(EMailAddress.ofString("to2@email.com"));
 		email.addCc(EMailAddress.ofString("cc1@email.com"));
 		email.addCc(EMailAddress.ofString("cc2@email.com"));
