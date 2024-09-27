@@ -12,6 +12,7 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderId;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
@@ -31,6 +32,7 @@ import de.metas.process.PInstanceId;
 import de.metas.salesorder.candidate.ProcessOLCandsRequest;
 import de.metas.salesorder.candidate.ProcessOLCandsWorkpackageEnqueuer;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -67,10 +69,19 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, @Nullable final String localTrxName)
 	{
 		final POSOrder posOrder = getPOSOrder();
+		if (posOrder.getSalesOrderId() != null)
+		{
+			Loggables.addLog("Sales order already generated. Doing nothing");
+			return Result.SUCCESS;
+		}
+
 		final List<OLCand> olCands = createOLCands(posOrder);
 		Check.assumeNotEmpty(olCands, "No OLCands created for {}", posOrder);
 
-		processOLCands(olCands);
+		final OrderId salesOrderId = processOLCands(olCands);
+		
+		posOrder.setSalesOrderId(salesOrderId);
+		posOrdersRepository.save(posOrder);
 
 		return Result.SUCCESS;
 	}
@@ -104,7 +115,7 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 	private OLCandCreateRequest toOLCandCreateRequest(final POSOrderLine posLine, final POSOrder posOrder)
 	{
 		final BPartnerInfo bpartner = BPartnerInfo.ofLocationAndContact(posOrder.getShipToCustomerAndLocationId(), null);
-		
+
 		final BigDecimal manualQtyInPriceUOM = posLine.getCatchWeight() != null
 				? posLine.getCatchWeight().toBigDecimal()
 				: posLine.getQty().toBigDecimal();
@@ -166,7 +177,7 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 	//
 	//
 
-	public void processOLCands(@NonNull List<OLCand> olCands)
+	public OrderId processOLCands(@NonNull List<OLCand> olCands)
 	{
 		Check.assumeNotEmpty(olCands, "No Order Candidates");
 
@@ -195,6 +206,20 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 					return () -> 1; // we always enqueue one workpackage
 				},
 				processOLCandsAsyncBatchId);
+
+		final Set<OrderId> salesOrderIds = olCandRepo.getOrderIdsByOLCandIds(extractOLCandIds(olCands));
+		if (salesOrderIds.isEmpty())
+		{
+			throw new AdempiereException("No sales orders were generated for " + olCands);
+		}
+		else
+		{
+			if (salesOrderIds.size() > 1)
+			{
+				Loggables.addLog("More than one sales orders were generated. Returning the first one.");
+			}
+			return salesOrderIds.iterator().next();
+		}
 	}
 
 	private void clearOLCandidates(@NonNull List<OLCand> olCands, @Nullable final AsyncBatchId asyncBatchId)
