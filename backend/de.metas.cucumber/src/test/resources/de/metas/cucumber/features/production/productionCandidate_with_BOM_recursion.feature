@@ -26,11 +26,16 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
   resulting in a second set of manufacturing candidates to supply the additional demand.
 
     Given metasfresh contains M_Products:
-      | Identifier           | M_Product_Category_ID   |
-      | product_1_1_S0460_10 | standard_category_S0460 |
-      | product_2_1_S0460_10 | standard_category_S0460 |
-      | product_2_2_S0460_10 | standard_category_S0460 |
-      | product_3_1_S0460_10 | standard_category_S0460 |
+      | Identifier           | M_Product_Category_ID   | C_UOM_ID.X12DE355 |
+      | product_1_1_S0460_10 | standard_category_S0460 | PCE               |
+      | product_2_1_S0460_10 | standard_category_S0460 | PCE               |
+      | product_2_2_S0460_10 | standard_category_S0460 | PCE               |
+      | product_3_1_S0460_10 | standard_category_S0460 | PCE               |
+    And metasfresh contains C_UOM_Conversions
+      | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
+      | product_1_1_S0460_10    | PCE                    | KGM                  | 4            |
+      | product_2_1_S0460_10    | PCE                    | KGM                  | 6            |
+
     And metasfresh contains M_PricingSystems
       | Identifier    |
       | ps_1_S0460_10 |
@@ -53,18 +58,17 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | bom_1_S0460_10 | product_1_1_S0460_10    | 2024-09-01 | bomVersions_1_S0460_10               |
       | bom_2_S0460_10 | product_2_1_S0460_10    | 2024-09-01 | bomVersions_2_S0460_10               |
     And metasfresh contains PP_Product_BOMLines
-      | Identifier        | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
-      | boml_2_1_S0460_10 | bom_1_S0460_10               | product_2_1_S0460_10    | 2024-09-01 | 20       |
-      | boml_2_2_S0460_10 | bom_1_S0460_10               | product_2_2_S0460_10    | 2024-09-01 | 10       |
-      | boml_3_1_S0460_10 | bom_2_S0460_10               | product_3_1_S0460_10    | 2024-09-01 | 5        |
+      | Identifier        | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch | OPT.IsQtyPercentage | C_UOM_ID.X12DE355 |
+      | boml_2_1_S0460_10 | bom_1_S0460_10               | product_2_1_S0460_10    | 2024-09-01 | 140      | true                | KGM               |
+      | boml_2_2_S0460_10 | bom_1_S0460_10               | product_2_2_S0460_10    | 2024-09-01 | 2        | false               | PCE               |
+      | boml_3_1_S0460_10 | bom_2_S0460_10               | product_3_1_S0460_10    | 2024-09-01 | 3        | false               | PCE               |
     And the PP_Product_BOM identified by bom_1_S0460_10 is completed
     And the PP_Product_BOM identified by bom_2_S0460_10 is completed
 
     ## Since IsCreatePlan, we expect IsDocComplete to be ignored
-    ## We expect the intermediate-PP_Order_Candidate of ppln_2_1_S0460_10 to get SeqNo=10, but the finished-product PP_Order_Candidate of ppln_1_1_S0460_10 shall get SeqNo=20!
     And metasfresh contains PP_Product_Plannings
       | Identifier        | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | OPT.IsCreatePlan | OPT.IsDocComplete | OPT.S_Resource_ID.Identifier | OPT.SeqNo |
-      | ppln_1_1_S0460_10 | product_1_1_S0460_10    | bomVersions_1_S0460_10                   | false            | true              | resource_S0460               | 10        |
+      | ppln_1_1_S0460_10 | product_1_1_S0460_10    | bomVersions_1_S0460_10                   | false            | true              | resource_S0460               | 20        |
       | ppln_2_1_S0460_10 | product_2_1_S0460_10    | bomVersions_2_S0460_10                   | false            | true              | resource_S0460               | 10        |
 
     And metasfresh contains C_Orders:
@@ -72,28 +76,30 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | o_1_S0460_10 | true    | customer_S0460_10 | 2024-09-20  | 2024-09-22T21:00:00Z | WH_S0460       |
     And metasfresh contains C_OrderLines:
       | Identifier    | C_Order_ID   | M_Product_ID         | QtyEntered |
-      | ol_1_S0460_10 | o_1_S0460_10 | product_1_1_S0460_10 | 1          |
+      | ol_1_S0460_10 | o_1_S0460_10 | product_1_1_S0460_10 | 11         |
     When the order identified by o_1_S0460_10 is completed
     
-    # for 1x product_1_1_S0460_10 we need 20x product_2_1_S0460_10 and 10x product_2_2_S0460_10 and (20*5=) 100x product_3_1_S0460_10
+    # oc_1_S0460_10: we need 11PCE of the final product => 44KGM. 140% of 44KGM is 61.6KGM or the 
+    # oc_2_S0460_10: 61.6KGM of the semi-product is actually 10.2666667 PCE, which is rounded up to 11PCE (because UOM-precision=0), so we have 11PCE also in the 2nd PP_Order_Candidate!
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier    | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed | OPT.PP_Order_Candidate_Parent_ID |
-      | oc_1_S0460_10 | product_1_1_S0460_10 | bom_1_S0460_10    | ppln_1_1_S0460_10      | resource_S0460 | 1 PCE      | 1 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |                                  |
-      | oc_2_S0460_10 | product_2_1_S0460_10 | bom_2_S0460_10    | ppln_2_1_S0460_10      | resource_S0460 | 20 PCE     | 20 PCE       | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         | oc_1_S0460_10                    |
+      | oc_1_S0460_10 | product_1_1_S0460_10 | bom_1_S0460_10    | ppln_1_1_S0460_10      | resource_S0460 | 11 PCE     | 11 PCE       | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |                                  |
+      | oc_2_S0460_10 | product_2_1_S0460_10 | bom_2_S0460_10    | ppln_2_1_S0460_10      | resource_S0460 | 11 PCE     | 11 PCE       | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         | oc_1_S0460_10                    |
+    # oc_2_S0460_10: we want to produce 11PCE of the semi-product, which times 3 is 33
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID         | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
-      | oc_1_S0460_10         | product_2_1_S0460_10 | 20 PCE     | CO            | boml_2_1_S0460_10     |
-      | oc_1_S0460_10         | product_2_2_S0460_10 | 10 PCE     | CO            | boml_2_2_S0460_10     |
-      | oc_2_S0460_10         | product_3_1_S0460_10 | 100 PCE    | CO            | boml_3_1_S0460_10     |
+      | oc_1_S0460_10         | product_2_1_S0460_10 | 61.6 KGM   | CO            | boml_2_1_S0460_10     |
+      | oc_1_S0460_10         | product_2_2_S0460_10 | 22 PCE     | CO            | boml_2_2_S0460_10     |
+      | oc_2_S0460_10         | product_3_1_S0460_10 | 33 PCE     | CO            | boml_3_1_S0460_10     |
 
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP  | M_Warehouse_ID |
-      | 01/d_1_1_S0460_10 | DEMAND            | SHIPMENT                  | product_1_1_S0460_10 | 2024-09-22T21:00:00Z | 1   | -1   | WH_S0460       |
-      | 02/s_1_1_S0460_10 | SUPPLY            | PRODUCTION                | product_1_1_S0460_10 | 2024-09-22T21:00:00Z | 1   | 0    | WH_S0460       |
-      | 03/d_2_1_S0460_10 | DEMAND            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 20  | -20  | WH_S0460       |
-      | 04/d_2_2_S0460_10 | DEMAND            | PRODUCTION                | product_2_2_S0460_10 | 2024-09-22T21:00:00Z | 10  | -10  | WH_S0460       |
-      | 05/s_2_1_S0460_10 | SUPPLY            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 20  | 0    | WH_S0460       |
-      | 06/d_3_1_S0460_10 | DEMAND            | PRODUCTION                | product_3_1_S0460_10 | 2024-09-22T21:00:00Z | 100 | -100 | WH_S0460       |
+      | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | 01/d_1_1_S0460_10 | DEMAND            | SHIPMENT                  | product_1_1_S0460_10 | 2024-09-22T21:00:00Z | 11  | -11 | WH_S0460       |
+      | 02/s_1_1_S0460_10 | SUPPLY            | PRODUCTION                | product_1_1_S0460_10 | 2024-09-22T21:00:00Z | 11  | 0   | WH_S0460       |
+      | 03/d_2_1_S0460_10 | DEMAND            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 11  | -11 | WH_S0460       |
+      | 04/d_2_2_S0460_10 | DEMAND            | PRODUCTION                | product_2_2_S0460_10 | 2024-09-22T21:00:00Z | 22  | -22 | WH_S0460       |
+      | 05/s_2_1_S0460_10 | SUPPLY            | PRODUCTION                | product_2_1_S0460_10 | 2024-09-22T21:00:00Z | 11  | 0   | WH_S0460       |
+      | 06/d_3_1_S0460_10 | DEMAND            | PRODUCTION                | product_3_1_S0460_10 | 2024-09-22T21:00:00Z | 33  | -33 | WH_S0460       |
 
   @Id:S0460_20
   @from:cucumber
@@ -134,10 +140,9 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
     And the PP_Product_BOM identified by bom_1_S0460_20 is completed
     And the PP_Product_BOM identified by bom_2_S0460_20 is completed
 
-    ## We expect the intermediate-PP_Order_Candidate of ppln_2_1_S0460_20 to get SeqNo=10, but the finished-product PP_Order_Candidate of ppln_1_1_S0460_20 shall get SeqNo=20!
     And metasfresh contains PP_Product_Plannings
       | Identifier        | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | OPT.IsCreatePlan | OPT.IsDocComplete | OPT.S_Resource_ID.Identifier | OPT.SeqNo |
-      | ppln_1_1_S0460_20 | product_1_1_S0460_20    | bomVersions_1_S0460_20                   | true             | true              | resource_S0460               | 10        |
+      | ppln_1_1_S0460_20 | product_1_1_S0460_20    | bomVersions_1_S0460_20                   | true             | true              | resource_S0460               | 20        |
       | ppln_2_1_S0460_20 | product_2_1_S0460_20    | bomVersions_2_S0460_20                   | true             | true              | resource_S0460               | 10        |
 
     And metasfresh contains C_Orders:
