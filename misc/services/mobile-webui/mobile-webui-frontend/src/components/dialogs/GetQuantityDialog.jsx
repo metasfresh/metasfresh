@@ -116,16 +116,15 @@ const GetQuantityDialog = ({
     },
     [onQtyChange]
   );
-  
-  const actualValidateQtyEntered = useCallback(
-      (qty, uom) => {
-        if (!allowTempQtyStorage) {
-          return validateQtyEntered(qty, uom);
-        }
 
-        return validateQtyEntered(qty + tempQtyStorage.qty, uom);
-      },
-      [tempQtyStorage]
+  const actualValidateQtyEntered = useCallback(
+    (qty, uom) => {
+      if (!allowTempQtyStorage) {
+        return validateQtyEntered(qty, uom);
+      }
+      return validateQtyEntered(qty + tempQtyStorage.qty, uom);
+    },
+    [tempQtyStorage]
   );
   
   const onDialogYes = async ({ isCloseTarget }) => {
