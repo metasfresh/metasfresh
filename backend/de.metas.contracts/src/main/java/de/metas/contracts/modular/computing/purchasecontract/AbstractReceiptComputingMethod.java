@@ -20,11 +20,15 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing;
+package de.metas.contracts.modular.computing.purchasecontract;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodService;
+import de.metas.contracts.modular.computing.ComputingRequest;
+import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -46,7 +50,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-public abstract class AbstractRawComputingMethod extends AbstractComputingMethodHandler
+public abstract class AbstractReceiptComputingMethod extends AbstractComputingMethodHandler
 {
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
