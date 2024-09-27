@@ -40,6 +40,7 @@ import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -103,6 +104,11 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 	private OLCandCreateRequest toOLCandCreateRequest(final POSOrderLine posLine, final POSOrder posOrder)
 	{
 		final BPartnerInfo bpartner = BPartnerInfo.ofLocationAndContact(posOrder.getShipToCustomerAndLocationId(), null);
+		
+		final BigDecimal manualQtyInPriceUOM = posLine.getCatchWeight() != null
+				? posLine.getCatchWeight().toBigDecimal()
+				: posLine.getQty().toBigDecimal();
+
 		return OLCandCreateRequest.builder()
 				.docTypeOrderId(posOrder.getSalesOrderDocTypeId())
 				.dateOrdered(TimeUtil.asLocalDate(posOrder.getDate()))
@@ -119,9 +125,11 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 				.bpartner(bpartner)
 				//
 				.productId(posLine.getProductId())
-				.qty(posLine.getQty().toBigDecimal())
 				.uomId(posLine.getQty().getUomId())
-				// TODO: implement catch weight support
+				.qty(posLine.getQty().toBigDecimal())
+				.manualQtyInPriceUOM(manualQtyInPriceUOM)
+				.qtyShipped(posLine.getQty().toBigDecimal())
+				.qtyShippedCatchWeight(posLine.getCatchWeight())
 				.isManualPrice(true)
 				.price(posLine.getPrice().toBigDecimal())
 				.currencyId(posLine.getPrice().getCurrencyId())
@@ -181,7 +189,7 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 									.pInstanceId(createOLCandsSelection(olCands))
 									.ship(true)
 									.invoice(true)
-									//.closeOrder(true)
+									.closeOrder(true)
 									.build(),
 							processOLCandsAsyncBatchId);
 					return () -> 1; // we always enqueue one workpackage
