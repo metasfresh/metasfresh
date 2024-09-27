@@ -50,7 +50,7 @@ const GetQuantityDialog = ({
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
     promptQuestion: '',
-    isCloseTarget: false,
+    onQtyChangePayload: undefined,
   });
 
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
@@ -99,7 +99,23 @@ const GetQuantityDialog = ({
   const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
   const readOnly = readOnlyParam || isProcessing;
 
-  const onDialogYes = ({ isCloseTarget, actionIsConfirmed = false }) => {
+  const getConfirmationPrompt = useCallback(
+    async (qtyInput) => {
+      return getConfirmationPromptForQty && (await getConfirmationPromptForQty(qtyInput));
+    },
+    [getConfirmationPromptForQty]
+  );
+
+  const fireOnQtyChange = useCallback(
+    (payload) => {
+      setProcessing(true);
+      const promise = onQtyChange(payload)?.catch?.((error) => toastErrorFromObj(error));
+      doFinally(promise, () => setProcessing(false));
+    },
+    [onQtyChange]
+  );
+
+  const onDialogYes = async ({ isCloseTarget }) => {
     if (isProcessing) return;
 
     if (allValid) {
@@ -110,19 +126,7 @@ const GetQuantityDialog = ({
         qtyEnteredAndValidated = Math.max(inputQtyEnteredAndValidated - qtyAlreadyOnScale, 0);
       }
 
-      const confirmationPrompt =
-        !actionIsConfirmed && getConfirmationPromptForQty && getConfirmationPromptForQty(qtyEnteredAndValidated);
-
-      if (confirmationPrompt) {
-        setConfirmationDialogProps({
-          promptQuestion: confirmationPrompt,
-          isCloseTarget: isCloseTarget,
-        });
-        return;
-      }
-
-      setProcessing(true);
-      const promise = onQtyChange({
+      const onQtyChangePayload = {
         qtyEnteredAndValidated: qtyEnteredAndValidated,
         qtyRejected,
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
@@ -131,14 +135,23 @@ const GetQuantityDialog = ({
         bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
         lotNo: isShowLotNo ? lotNo : null,
         isCloseTarget: !!isCloseTarget,
-      })?.catch?.((error) => toastErrorFromObj(error));
+      };
 
-      doFinally(promise, () => setProcessing(false));
+      const confirmationPrompt = await getConfirmationPrompt(qtyEnteredAndValidated);
+      if (confirmationPrompt) {
+        setConfirmationDialogProps({
+          promptQuestion: confirmationPrompt,
+          onQtyChangePayload,
+        });
+        return;
+      }
+
+      fireOnQtyChange(onQtyChangePayload);
     }
   };
 
   const readQtyFromQrCode = useCallback(
-    (result) => {
+    async (result) => {
       const qrCode = parseQRCodeString(result.scannedBarcode);
       if (!qrCode.weightNet || !qrCode.weightNetUOM) {
         throw { messageKey: 'activities.picking.qrcode.missingQty' };
@@ -147,8 +160,7 @@ const GetQuantityDialog = ({
         throw { messageKey: 'activities.picking.qrcode.differentUOM' };
       }
 
-      // console.log('readQtyFromQrCode', { qrCode, result, catchWeightUom });
-      return onQtyChange({
+      const onQtyChangePayload = {
         qtyEnteredAndValidated: 1,
         catchWeight: qrCode.weightNet,
         catchWeightUom: catchWeightUom,
@@ -156,7 +168,20 @@ const GetQuantityDialog = ({
         lotNo: qrCode.lotNo,
         productNo: qrCode.productNo,
         isDone: false,
-      });
+      };
+
+      const confirmationPrompt = await getConfirmationPrompt(1);
+
+      if (confirmationPrompt) {
+        setConfirmationDialogProps({
+          promptQuestion: confirmationPrompt,
+          onQtyChangePayload,
+        });
+        return;
+      }
+
+      // console.log('readQtyFromQrCode', { qrCode, result, catchWeightUom });
+      fireOnQtyChange(onQtyChangePayload);
     },
     [catchWeightUom, onQtyChange]
   );
@@ -250,11 +275,14 @@ const GetQuantityDialog = ({
     );
   };
 
-  if (confirmationDialogProps?.promptQuestion) {
+  if (confirmationDialogProps?.promptQuestion && confirmationDialogProps.onQtyChangePayload) {
     return (
       <YesNoDialog
         promptQuestion={confirmationDialogProps.promptQuestion}
-        onYes={() => onDialogYes({ isCloseTarget: confirmationDialogProps.isCloseTarget, actionIsConfirmed: true })}
+        onYes={() => {
+          fireOnQtyChange(confirmationDialogProps.onQtyChangePayload);
+          setConfirmationDialogProps(undefined);
+        }}
         onNo={() => setConfirmationDialogProps(undefined)}
       />
     );
