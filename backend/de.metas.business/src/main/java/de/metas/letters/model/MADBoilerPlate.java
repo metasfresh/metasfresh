@@ -741,13 +741,15 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	 */
 	public static BoilerPlateContext createEditorContext(final SourceDocument sourceDocument)
 	{
+		final IUserDAO userDAO = Services.get(IUserDAO.class);
+		final IUserBL userBL = Services.get(IUserBL.class);
+
 		final Properties ctx = Env.getCtx();
 
 		final BoilerPlateContext.Builder attributesBuilder = BoilerPlateContext.builder();
 		attributesBuilder.setWindowNo(sourceDocument != null ? sourceDocument.getWindowNo() : Env.WINDOW_MAIN);
 		attributesBuilder.setSourceDocument(sourceDocument);
 
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
 		final I_AD_User salesRep = userDAO.retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		if (salesRep != null)
 		{
@@ -760,7 +762,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		final int AD_User_ID = sourceDocument != null ? sourceDocument.getFieldValueAsInt("AD_User_ID", -1) : -1;
 		String email = null;
 		//
-		final IUserBL userBL = Services.get(IUserBL.class);
 		if (AD_User_ID > 0)
 		{
 			user = userDAO.retrieveUserOrNull(ctx, AD_User_ID);
@@ -956,7 +957,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			return new Builder(ImmutableMap.of());
 		}
-
 
 		public static final BoilerPlateContext EMPTY = new BoilerPlateContext(ImmutableMap.of());
 

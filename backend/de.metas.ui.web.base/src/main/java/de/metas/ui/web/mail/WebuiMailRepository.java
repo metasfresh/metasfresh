@@ -83,7 +83,7 @@ public class WebuiMailRepository
 	public WebuiEmail createNewEmail(
 			@NonNull final UserId ownerUserId,
 			final LookupValue from,
-			final LookupValuesList to,
+			final LookupValuesList toList,
 			final DocumentPath contextDocumentPath)
 	{
 		final String emailId = String.valueOf(nextEmailId.getAndIncrement());
@@ -92,7 +92,7 @@ public class WebuiMailRepository
 				.emailId(emailId)
 				.ownerUserId(ownerUserId)
 				.from(from)
-				.to(to)
+				.to(toList)
 				.contextDocumentPath(contextDocumentPath)
 				.build();
 

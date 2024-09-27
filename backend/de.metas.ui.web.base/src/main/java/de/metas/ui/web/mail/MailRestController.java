@@ -254,7 +254,6 @@ public class MailRestController
 				subject,
 				message,
 				html);
-
 		toList.stream().skip(1).forEach(email::addTo);
 
 		webuiEmail.getAttachments()
