@@ -97,7 +97,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 	{
 		if (pickingJobs.get(pickingJobId) == null)
 		{
-			loadRecords(ImmutableSet.of(pickingJobId));
+			loadRecordsFromDB(ImmutableSet.of(pickingJobId));
 		}
 
 		return loadJob(pickingJobs.get(pickingJobId));
@@ -168,14 +168,14 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 																  + ". Available HU alternatives are: " + pickingJobHUAlternatives));
 	}
 
-	private void loadRecords(final Set<PickingJobId> pickingJobIds)
+	private void loadRecordsFromDB(final Set<PickingJobId> pickingJobIds)
 	{
 		if (pickingJobIds.isEmpty())
 		{
 			return;
 		}
 
-		loadRecordsFromDB(pickingJobIds);
+		super.loadRecordsFromDB(pickingJobIds);
 
 		final Collection<I_M_Picking_Job> records = pickingJobs.values();
 
