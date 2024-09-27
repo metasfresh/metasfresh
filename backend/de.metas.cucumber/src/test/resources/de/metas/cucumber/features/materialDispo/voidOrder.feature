@@ -16,7 +16,7 @@ Feature: material dispo reacts to order docactions
       | WH_S0461       |
 
   # Currently doesn't work. To fix it, I assume that the shipment-schedule would have to be closed (M_ShipmentSchedule.IsClosed) when the order is voided
-  @Ignore
+  @ignore
   @Id:S0461_10
   @from:cucumber
   Scenario:  If a sales-order is voided, its shipment-schedule's MD_Canddiate's qty is set to zero
