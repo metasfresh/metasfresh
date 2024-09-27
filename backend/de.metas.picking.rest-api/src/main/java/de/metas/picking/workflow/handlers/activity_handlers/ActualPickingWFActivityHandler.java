@@ -88,6 +88,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 						.valueObj("isPickWithNewLU", pickingJobRestService.isPickWithNewLU())
 						.valueObj("isAllowSkippingRejectedReason", pickingJobRestService.isAllowSkippingRejectedReasons())
 						.valueObj("isAllowNewTU", pickingJobRestService.isAllowNewTU())
+						.valueObj("isShowPromptWhenOverPicking", pickingJobRestService.isShowPromptWhenOverPicking())
 						.build())
 				.build();
 	}

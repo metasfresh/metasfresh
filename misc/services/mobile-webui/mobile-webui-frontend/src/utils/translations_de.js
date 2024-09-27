@@ -121,6 +121,7 @@ const translations = {
         Current: 'Current',
         CloseTarget: 'Close',
       },
+      overPickConfirmationPrompt: 'Möchten Sie wirklich mehr kommissionieren als beauftragt wurde?',
     },
     distribution: {
       DistributionLine: 'Bereitstellung Zeile',

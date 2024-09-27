@@ -48,7 +48,8 @@ public final class StepDefDataIdentifier
 	private static final String PREFIX_Unnamed = "unnamed-";
 	private static final AtomicInteger nextUnnamedIdentifierId = new AtomicInteger(1);
 
-	@NonNull private final String value;
+	@NonNull
+	private final String value;
 
 	private StepDefDataIdentifier(@NonNull final String value)
 	{
@@ -91,16 +92,31 @@ public final class StepDefDataIdentifier
 		return ofString(PREFIX_Unnamed + nextUnnamedIdentifierId.getAndIncrement());
 	}
 
-	public static boolean equals(@Nullable final StepDefDataIdentifier id1, @Nullable final StepDefDataIdentifier id2) {return Objects.equals(id1, id2);}
+	public static boolean equals(@Nullable final StepDefDataIdentifier id1, @Nullable final StepDefDataIdentifier id2)
+	{
+		return Objects.equals(id1, id2);
+	}
 
 	@Override
-	public String toString() {return getAsString();}
+	public String toString()
+	{
+		return getAsString();
+	}
 
-	public boolean isNullPlaceholder() {return this.equals(NULL);}
+	public boolean isNullPlaceholder()
+	{
+		return this.equals(NULL);
+	}
 
-	public String getAsString() {return value;}
+	public String getAsString()
+	{
+		return value;
+	}
 
-	public <T extends RepoIdAware> T getAsId(@NonNull final Class<T> idType) {return RepoIdAwares.ofObject(value, idType);}
+	public <T extends RepoIdAware> T getAsId(@NonNull final Class<T> idType)
+	{
+		return RepoIdAwares.ofObject(value, idType);
+	}
 
 	public int getAsInt()
 	{
@@ -109,6 +125,17 @@ public final class StepDefDataIdentifier
 			return -1;
 		}
 		return NumberUtils.asInt(value);
+	}
+
+	@NonNull
+	public <T> T lookupNotNullIn(@NonNull final StepDefData<T> table)
+	{
+		final T result = lookupIn(table);
+		if (result == null)
+		{
+			throw new AdempiereException("Missing result for Identifier=" + this);
+		}
+		return result;
 	}
 
 	@Nullable
@@ -142,9 +169,15 @@ public final class StepDefDataIdentifier
 				.orElseGet(() -> loader.apply(getAsInt()));
 	}
 
-	public <T> void put(@NonNull final StepDefData<T> table, @NonNull final T record) {table.put(this, record);}
+	public <T> void put(@NonNull final StepDefData<T> table, @NonNull final T record)
+	{
+		table.put(this, record);
+	}
 
-	public <T> void putOrReplace(@NonNull final StepDefData<T> table, @NonNull final T record) {table.putOrReplace(this, record);}
+	public <T> void putOrReplace(@NonNull final StepDefData<T> table, @NonNull final T record)
+	{
+		table.putOrReplace(this, record);
+	}
 
 	@NonNull
 	public List<StepDefDataIdentifier> toCommaSeparatedList()

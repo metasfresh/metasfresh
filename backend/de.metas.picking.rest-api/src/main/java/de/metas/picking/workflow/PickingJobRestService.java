@@ -196,4 +196,9 @@ public class PickingJobRestService
 	{
 		return mobileUIPickingUserProfileRepository.getProfile().isAllowNewTU();
 	}
+
+	public boolean isShowPromptWhenOverPicking()
+	{
+		return mobileUIPickingUserProfileRepository.getProfile().isShowConfirmationPromptWhenOverPick();
+	}
 }

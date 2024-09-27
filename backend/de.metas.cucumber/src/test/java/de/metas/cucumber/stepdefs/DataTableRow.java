@@ -141,7 +141,7 @@ public class DataTableRow
 			return Optional.empty(); // column is missing
 		}
 
-		String value = map.get(columnNameEffective);
+		final String value = map.get(columnNameEffective);
 		return Optional.ofNullable(value);
 	}
 
@@ -175,7 +175,7 @@ public class DataTableRow
 
 	public ValueAndName suggestValueAndName()
 	{
-		ValueAndName valueAndName = getOptionalValueAndName().orElse(null);
+		final ValueAndName valueAndName = getOptionalValueAndName().orElse(null);
 		if (valueAndName != null)
 		{
 			return valueAndName;
@@ -192,8 +192,8 @@ public class DataTableRow
 
 	public ExplainedOptional<ValueAndName> getOptionalValueAndName()
 	{
-		String name = getAsOptionalName("Name").orElse(null);
-		String value = getAsOptionalName("Value").orElse(null);
+		final String name = getAsOptionalName("Name").orElse(null);
+		final String value = getAsOptionalName("Value").orElse(null);
 		if (name == null)
 		{
 			if (value == null)
@@ -303,13 +303,13 @@ public class DataTableRow
 		return getAsOptionalString(columnName).map(valueStr -> parseBigDecimal(valueStr, columnName));
 	}
 
-	private BigDecimal parseBigDecimal(@Nullable String valueStr, @NonNull String columnInfo)
+	private BigDecimal parseBigDecimal(@Nullable final String valueStr, @NonNull final String columnInfo)
 	{
 		try
 		{
 			return NumberUtils.asBigDecimal(valueStr);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex)
 					.appendParametersToMessage()
@@ -330,7 +330,7 @@ public class DataTableRow
 				.orElseGet(OptionalInt::empty);
 	}
 
-	private static OptionalInt parseOptionalInt(@Nullable final String valueStr, String columnInfo)
+	private static OptionalInt parseOptionalInt(@Nullable final String valueStr, final String columnInfo)
 	{
 		final String valueStrNorm = StringUtils.trimBlankToNull(valueStr);
 		if (valueStrNorm == null)
@@ -342,7 +342,7 @@ public class DataTableRow
 		return OptionalInt.of(valueInt);
 	}
 
-	private static int parseInt(@Nullable final String valueStr, String columnInfo)
+	private static int parseInt(@Nullable final String valueStr, final String columnInfo)
 	{
 		final String valueStrNorm = StringUtils.trimBlankToNull(valueStr);
 		if (valueStrNorm == null)
@@ -462,7 +462,7 @@ public class DataTableRow
 		{
 			return LocalDate.parse(valueStr);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Column `" + columnInfo + "` has invalid LocalDate `" + valueStr + "`");
 		}
@@ -515,7 +515,7 @@ public class DataTableRow
 				return toInstant(LocalDate.parse(valueStr).atStartOfDay());
 			}
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Column `" + columnInfo + "` has invalid Instant `" + valueStr + "`");
 		}
@@ -542,25 +542,25 @@ public class DataTableRow
 		{
 			return LocalDateTime.parse(valueStr);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Column `" + columnInfo + "` has invalid LocalDateTime `" + valueStr + "`");
 		}
 	}
 
-	public <T extends ReferenceListAwareEnum> Optional<T> getAsOptionalEnum(@NonNull final String columnName, @NonNull Class<T> type)
+	public <T extends ReferenceListAwareEnum> Optional<T> getAsOptionalEnum(@NonNull final String columnName, @NonNull final Class<T> type)
 	{
 		try
 		{
 			return getAsOptionalString(columnName).map(valueStr -> ReferenceListAwareEnums.ofNullableCode(valueStr, type));
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Invalid `" + type.getSimpleName() + "` of column `" + columnName + "`", ex);
 		}
 	}
 
-	public <T extends ReferenceListAwareEnum> T getAsEnum(@NonNull final String columnName, @NonNull Class<T> type)
+	public <T extends ReferenceListAwareEnum> T getAsEnum(@NonNull final String columnName, @NonNull final Class<T> type)
 	{
 		return getAsOptionalEnum(columnName, type)
 				.orElseThrow(() -> new AdempiereException("Missing/invalid `" + type.getSimpleName() + "` of column `" + columnName + "`"));
