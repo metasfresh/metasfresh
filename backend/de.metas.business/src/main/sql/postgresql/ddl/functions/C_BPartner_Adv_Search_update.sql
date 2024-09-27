@@ -43,7 +43,8 @@ BEGIN
     --
     -- Insert new rows
     WITH inserted_rows AS (
-        INSERT INTO c_bpartner_adv_search (ad_client_id, ad_org_id, address1, c_bp_contact_id, c_bpartner_id, c_bpartner_location_id, city, created, createdby, es_documentid, firstname, isactive, iscompany, lastname, name, companyname, postal, updated, updatedby, value, externalid)
+        INSERT INTO c_bpartner_adv_search (ad_client_id, ad_org_id, address1, c_bp_contact_id, c_bpartner_id, c_bpartner_location_id, city, created,
+                                           createdby, es_documentid, firstname, isactive, iscompany, lastname, name, companyname, postal, updated, updatedby, value, externalid)
             SELECT v.ad_client_id,
                    v.ad_org_id,
                    v.address1,
