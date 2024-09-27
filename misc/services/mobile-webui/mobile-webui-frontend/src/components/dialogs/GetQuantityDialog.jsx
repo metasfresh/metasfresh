@@ -126,7 +126,7 @@ const GetQuantityDialog = ({
     },
     [tempQtyStorage]
   );
-  
+
   const onDialogYes = async ({ isCloseTarget }) => {
     if (isProcessing) return;
 
