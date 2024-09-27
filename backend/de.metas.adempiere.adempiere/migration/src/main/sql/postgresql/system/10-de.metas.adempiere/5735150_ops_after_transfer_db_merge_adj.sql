@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.migration-sql
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -92,9 +92,9 @@ $BODY$
 COMMENT ON FUNCTION ops.after_transfer_db(p_source_instance text, p_target_instance text, p_target_webui_url text,
     p_target_metasfresh_pw text, p_target_has_reports_service boolean, p_scramble_db boolean) IS
     'Example - WILL SCRAMBLE YOU DB: select ops.after_transfer_db(p_source_instance := ''instancesprod'', p_target_instance := ''instancesdev'', p_target_webui_url := ''https://instancesdev.metasfresh.com'', p_target_metasfresh_pw := ''secret'', p_target_has_reports_service := TRUE, p_scramble_db := TRUE)
-    
+
 Note about scrambling: this function invokes ops.scramble_metasfresh if all three conditions are met:
-- the parameter p_scramble_db is TRUE    
+- the parameter p_scramble_db is TRUE
 - the parameter p_source_instance ends with "prod"
 - the parameter p_target_instance does not end with "prod"
 '
