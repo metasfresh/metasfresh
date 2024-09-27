@@ -15,6 +15,7 @@ import { toastError, toastErrorFromObj } from '../../utils/toast';
 import BarcodeScannerComponent from '../BarcodeScannerComponent';
 import { parseQRCodeString } from '../../utils/qrCode/hu';
 import { doFinally } from '../../utils';
+import YesNoDialog from './YesNoDialog';
 
 const GetQuantityDialog = ({
   readOnly: readOnlyParam = false,
@@ -42,10 +43,15 @@ const GetQuantityDialog = ({
   isShowCloseTargetButton = false,
   //
   validateQtyEntered,
+  getConfirmationPromptForQty,
   onQtyChange,
   onCloseDialog,
 }) => {
   const [isProcessing, setProcessing] = useState(false);
+  const [confirmationDialogProps, setConfirmationDialogProps] = useState({
+    promptQuestion: '',
+    onQtyChangePayload: undefined,
+  });
 
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
@@ -95,18 +101,34 @@ const GetQuantityDialog = ({
   const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
   const readOnly = readOnlyParam || isProcessing;
 
-  const actualValidateQtyEntered = useCallback(
-    (qty, uom) => {
-      if (!allowTempQtyStorage) {
-        return validateQtyEntered(qty, uom);
-      }
-
-      return validateQtyEntered(qty + tempQtyStorage.qty, uom);
+  const getConfirmationPrompt = useCallback(
+    async (qtyInput) => {
+      return getConfirmationPromptForQty && (await getConfirmationPromptForQty(qtyInput));
     },
-    [tempQtyStorage]
+    [getConfirmationPromptForQty]
   );
 
-  const onDialogYes = ({ isCloseTarget }) => {
+  const fireOnQtyChange = useCallback(
+    (payload) => {
+      setProcessing(true);
+      const promise = onQtyChange(payload)?.catch?.((error) => toastErrorFromObj(error));
+      doFinally(promise, () => setProcessing(false));
+    },
+    [onQtyChange]
+  );
+  
+  const actualValidateQtyEntered = useCallback(
+      (qty, uom) => {
+        if (!allowTempQtyStorage) {
+          return validateQtyEntered(qty, uom);
+        }
+
+        return validateQtyEntered(qty + tempQtyStorage.qty, uom);
+      },
+      [tempQtyStorage]
+  );
+  
+  const onDialogYes = async ({ isCloseTarget }) => {
     if (isProcessing) return;
 
     if (allValid) {
@@ -119,8 +141,7 @@ const GetQuantityDialog = ({
         qtyEnteredAndValidated = Math.max(qtyToIssue - qtyAlreadyOnScale, 0);
       }
 
-      setProcessing(true);
-      const promise = onQtyChange({
+      const onQtyChangePayload = {
         qtyEnteredAndValidated: qtyEnteredAndValidated,
         qtyRejected,
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
@@ -129,9 +150,18 @@ const GetQuantityDialog = ({
         bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
         lotNo: isShowLotNo ? lotNo : null,
         isCloseTarget: !!isCloseTarget,
-      })?.catch?.((error) => toastErrorFromObj(error));
+      };
 
-      doFinally(promise, () => setProcessing(false));
+      const confirmationPrompt = await getConfirmationPrompt(qtyEnteredAndValidated);
+      if (confirmationPrompt) {
+        setConfirmationDialogProps({
+          promptQuestion: confirmationPrompt,
+          onQtyChangePayload,
+        });
+        return;
+      }
+
+      fireOnQtyChange(onQtyChangePayload);
     }
   };
 
@@ -158,7 +188,7 @@ const GetQuantityDialog = ({
   };
 
   const readQtyFromQrCode = useCallback(
-    (result) => {
+    async (result) => {
       const qrCode = parseQRCodeString(result.scannedBarcode);
       if (!qrCode.weightNet || !qrCode.weightNetUOM) {
         throw { messageKey: 'activities.picking.qrcode.missingQty' };
@@ -167,8 +197,7 @@ const GetQuantityDialog = ({
         throw { messageKey: 'activities.picking.qrcode.differentUOM' };
       }
 
-      // console.log('readQtyFromQrCode', { qrCode, result, catchWeightUom });
-      return onQtyChange({
+      const onQtyChangePayload = {
         qtyEnteredAndValidated: 1,
         catchWeight: qrCode.weightNet,
         catchWeightUom: catchWeightUom,
@@ -176,7 +205,20 @@ const GetQuantityDialog = ({
         lotNo: qrCode.lotNo,
         productNo: qrCode.productNo,
         isDone: false,
-      });
+      };
+
+      const confirmationPrompt = await getConfirmationPrompt(1);
+
+      if (confirmationPrompt) {
+        setConfirmationDialogProps({
+          promptQuestion: confirmationPrompt,
+          onQtyChangePayload,
+        });
+        return;
+      }
+
+      // console.log('readQtyFromQrCode', { qrCode, result, catchWeightUom });
+      fireOnQtyChange(onQtyChangePayload);
     },
     [catchWeightUom, onQtyChange]
   );
@@ -269,6 +311,19 @@ const GetQuantityDialog = ({
       </>
     );
   };
+
+  if (confirmationDialogProps?.promptQuestion && confirmationDialogProps.onQtyChangePayload) {
+    return (
+      <YesNoDialog
+        promptQuestion={confirmationDialogProps.promptQuestion}
+        onYes={() => {
+          fireOnQtyChange(confirmationDialogProps.onQtyChangePayload);
+          setConfirmationDialogProps(undefined);
+        }}
+        onNo={() => setConfirmationDialogProps(undefined)}
+      />
+    );
+  }
 
   return (
     <div>
@@ -506,6 +561,7 @@ GetQuantityDialog.propTypes = {
 
   // Callbacks
   validateQtyEntered: PropTypes.func,
+  getConfirmationPromptForQty: PropTypes.func,
   onQtyChange: PropTypes.func.isRequired,
   onCloseDialog: PropTypes.func,
 };
