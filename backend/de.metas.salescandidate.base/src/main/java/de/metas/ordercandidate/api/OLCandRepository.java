@@ -223,6 +223,11 @@ public class OLCandRepository
 			olCandPO.setPriceEntered(request.getPrice());
 			olCandPO.setC_Currency_ID(request.getCurrencyId().getRepoId());
 		}
+		
+		if(request.getManualQtyInPriceUOM() != null)
+		{
+			olCandPO.setManualQtyInPriceUOM(request.getManualQtyInPriceUOM());
+		}
 
 		if (request.getDiscount() != null)
 		{
@@ -317,6 +322,11 @@ public class OLCandRepository
 		if (request.getQtyShipped() != null)
 		{
 			olCandWithIssuesInterface.setQtyShipped(request.getQtyShipped());
+		}
+		if(request.getQtyShippedCatchWeight() != null)
+		{
+			olCandWithIssuesInterface.setQtyShipped_CatchWeight(request.getQtyShippedCatchWeight().toBigDecimal());
+			olCandWithIssuesInterface.setQtyShipped_CatchWeight_UOM_ID(request.getQtyShippedCatchWeight().getUomId().getRepoId());
 		}
 
 		olCandPO.setApplySalesRepFrom(request.getAssignSalesRepRule().getCode());

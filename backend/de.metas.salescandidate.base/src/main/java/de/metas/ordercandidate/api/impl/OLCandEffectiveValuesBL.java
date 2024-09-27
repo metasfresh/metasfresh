@@ -17,6 +17,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -42,6 +44,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 {
 	private final transient IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
@@ -173,7 +176,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		final BigDecimal result = olCandRecord.isManualQtyItemCapacity()
 				? olCandRecord.getQtyItemCapacity()
 				: olCandRecord.getQtyItemCapacityInternal();
-		
+
 		return Quantitys.create(result, ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
 	}
 
@@ -437,5 +440,39 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(olCand.getHandOver_Partner_Override_ID(), olCand.getHandOver_Location_Override_ID(), olCand.getHandOver_Location_Override_Value_ID()),
 				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(olCand.getHandOver_Partner_ID(), olCand.getHandOver_Location_ID(), olCand.getHandOver_Location_Value_ID()),
 				() -> getLocationAndCaptureEffectiveId(olCand, Type.SHIP_TO));
+	}
+
+	@Override
+	public Optional<StockQtyAndUOMQty> getQtyShipped(final I_C_OLCand olCand)
+	{
+		if (InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyShipped))
+		{
+			return Optional.empty();
+		}
+
+		final Quantity qtyShipped = Quantity.of(olCand.getQtyShipped(), getC_UOM_Effective(olCand));
+		final ProductId productId = ProductId.ofRepoId(olCand.getM_Product_ID());
+		final Quantity qtyShippedProductUOM = uomConversionBL.convertToProductUOM(qtyShipped, productId);
+
+		final StockQtyAndUOMQty.StockQtyAndUOMQtyBuilder builder = StockQtyAndUOMQty.builder()
+				.productId(productId)
+				.stockQty(qtyShippedProductUOM);
+
+		final UomId catchWeightUomId = UomId.ofRepoIdOrNull(olCand.getQtyShipped_CatchWeight_UOM_ID());
+		if (catchWeightUomId != null)
+		{
+			final Quantity catchWeight = Quantity.of(olCand.getQtyShipped_CatchWeight(), uomDAO.getById(catchWeightUomId));
+			builder.uomQty(catchWeight);
+		}
+
+		return Optional.of(builder.build());
+	}
+
+	@Override
+	public Optional<BigDecimal> getManualQtyInPriceUOM(final @NonNull I_C_OLCand record)
+	{
+		return !InterfaceWrapperHelper.isNull(record, I_C_OLCand.COLUMNNAME_ManualQtyInPriceUOM)
+				? Optional.of(record.getManualQtyInPriceUOM())
+				: Optional.empty();
 	}
 }

@@ -22,14 +22,14 @@ import static de.metas.util.Check.assumeNotNull;
 @ToString(doNotUseGetters = true)
 public class StockQtyAndUOMQty
 {
-	ProductId productId;
+	@NonNull ProductId productId;
 
-	Quantity stockQty;
+	@NonNull Quantity stockQty;
 
 	/**
-	 * Quantity in a "parallel" UOM. Note that often there is no fix UOM conversion rule between this quantity and {@link #getStockingQty()}.
+	 * Quantity in a "parallel" UOM. Note that often there is no fix UOM conversion rule between this quantity and {@link #stockQty}.
 	 */
-	Quantity uomQty;
+	@Nullable Quantity uomQty;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
@@ -53,6 +53,12 @@ public class StockQtyAndUOMQty
 	public boolean isUOMQtySet()
 	{
 		return uomQty != null;
+	}
+
+	@JsonIgnore
+	public boolean isDifferentUOMQty()
+	{
+		return uomQty != null && !uomQty.equals(stockQty);
 	}
 
 	@JsonIgnore
@@ -212,7 +218,7 @@ public class StockQtyAndUOMQty
 					{
 						return BigDecimal.ZERO;
 					}
-					
+
 					final UOMPrecision uomPrecision = UOMPrecision.ofInt(uomQuantity.getUOM().getStdPrecision());
 
 					return uomQuantity.toBigDecimal().setScale(uomPrecision.toInt(), uomPrecision.getRoundingMode())
