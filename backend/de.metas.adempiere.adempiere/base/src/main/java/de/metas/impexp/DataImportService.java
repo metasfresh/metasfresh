@@ -1,16 +1,6 @@
 package de.metas.impexp;
 
-import java.util.Optional;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.base.Stopwatch;
-
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.AdMessageKey;
@@ -29,6 +19,14 @@ import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -55,7 +53,7 @@ import lombok.NonNull;
 @Service
 public class DataImportService
 {
-	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.of("org.adempiere.impexp.async.RecordsImported", Type.REMOTE);
+	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.of("org.adempiere.impexp.async.RecordsImported", Type.DISTRIBUTED);
 
 	private static final Logger logger = LogManager.getLogger(DataImportService.class);
 	private final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);

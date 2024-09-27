@@ -192,7 +192,8 @@ public class MaterialEventObserver
 				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(ClientAndOrgId.ofClientAndOrg(Env.getClientId(), OrgId.ANY), traceId))
 				.build();
 
+		// make sure the message gets out *after* the processing results were committed to DB
 		SpringContextHolder.instance.getBean(PostMaterialEventService.class)
-				.postEventAsync(allEventsProcessedEvent);
+				.enqueueEventAfterNextCommit(allEventsProcessedEvent);
 	}
 }

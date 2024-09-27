@@ -91,7 +91,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 			return;
 		}
 
-		postMaterialEventService.postEventAfterNextCommit(event);
+		postMaterialEventService.enqueueEventAfterNextCommit(event);
 	}
 
 	@VisibleForTesting

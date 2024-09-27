@@ -1,8 +1,10 @@
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
+import de.metas.product.model.I_M_Product_PlanningSchema;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for PP_Product_Planning
  *  @author metasfresh (generated) 
@@ -851,4 +853,25 @@ public interface I_PP_Product_Planning
 
 	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Yield = new ModelColumn<>(I_PP_Product_Planning.class, "Yield", null);
 	String COLUMNNAME_Yield = "Yield";
+
+	/**
+	 * Set Manufacturing aggregation schema.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Manufacturing_Aggregation_ID (int C_Manufacturing_Aggregation_ID);
+
+	/**
+	 * Get Manufacturing aggregation schema.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Manufacturing_Aggregation_ID();
+
+	ModelColumn<I_M_Product_PlanningSchema, Object> COLUMN_C_Manufacturing_Aggregation_ID = new ModelColumn<>(I_M_Product_PlanningSchema.class, "C_Manufacturing_Aggregation_ID", null);
+	String COLUMNNAME_C_Manufacturing_Aggregation_ID = "C_Manufacturing_Aggregation_ID";
 }

@@ -24,8 +24,8 @@ package de.metas.picking.workflow;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
 import de.metas.organization.IOrgDAO;
-import de.metas.picking.config.MobileUIPickingUserProfile;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

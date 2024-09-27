@@ -33,8 +33,9 @@ import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
 import de.metas.material.event.pporder.PPOrderRef;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.IProductBL;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -85,13 +86,14 @@ public class DDOrderCandidateAdvisedHandler
 	{
 		if (!isAccepted(event))
 		{
+			deleteUnspecificSupplyCandidate(event);
 			return;
 		}
 
 		final DDOrderCandidateAdvisedEvent eventEffective = updateEvent(event);
 		final CandidatesGroup group = createAndProcessCandidates(eventEffective);
 
-		materialEventService.postEventAsync(toDDOrderCandidateRequestedEvent(group, eventEffective));
+		materialEventService.enqueueEventAfterNextCommit(toDDOrderCandidateRequestedEvent(group, eventEffective));
 	}
 
 	private boolean isAccepted(final DDOrderCandidateAdvisedEvent event)
@@ -103,6 +105,25 @@ public class DDOrderCandidateAdvisedHandler
 						.demandDetail(DemandDetail.forSupplyRequiredDescriptor(event.getSupplyRequiredDescriptorNotNull()))
 						.build()
 		);
+	}
+
+	private void deleteUnspecificSupplyCandidate(@NonNull final DDOrderCandidateAdvisedEvent event)
+	{
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
+		if (supplyRequiredDescriptor == null)
+		{
+			return;
+		}
+		final CandidateId supplyCandidateId = CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId());
+		if (supplyCandidateId == null)
+		{
+			return;
+		}
+
+		final Candidate supplyCandidate = candidateRepositoryRetrieval.retrieveById(supplyCandidateId);
+
+		candidateChangeHandler.onCandidateDelete(supplyCandidate);
+		Loggables.addLog("Deleted {}", supplyCandidate);
 	}
 
 	@Override
@@ -211,6 +232,7 @@ public class DDOrderCandidateAdvisedHandler
 		final Candidate demandCandidate = group.getSingleDemandCandidate();
 
 		final DistributionDetail supplyDistributionDetail = DistributionDetail.cast(supplyCandidate.getBusinessCaseDetail());
+		final OrderAndLineId salesOrderLineId = demandCandidate.getSalesOrderLineId();
 
 		return DDOrderCandidateData.builder()
 				.clientAndOrgId(supplyCandidate.getClientAndOrgId())
@@ -223,7 +245,8 @@ public class DDOrderCandidateAdvisedHandler
 				.shipperId(supplyDistributionDetail.getShipperId())
 				//
 				.customerId(BPartnerId.toRepoId(supplyCandidate.getCustomerId()))
-				.salesOrderLineId(OrderLineId.toRepoId(demandCandidate.getSalesOrderLineId()))
+				.salesOrderId(OrderAndLineId.toOrderRepoId(salesOrderLineId))
+				.salesOrderLineId(OrderAndLineId.toOrderLineRepoId(salesOrderLineId))
 				.forwardPPOrderRef(getPpOrderRef(supplyCandidate))
 				//
 				.productDescriptor(supplyCandidate.getMaterialDescriptor())

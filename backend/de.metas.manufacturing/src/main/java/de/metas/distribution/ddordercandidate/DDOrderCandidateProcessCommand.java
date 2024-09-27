@@ -1,6 +1,7 @@
 package de.metas.distribution.ddordercandidate;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
@@ -26,7 +27,8 @@ import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -163,7 +165,7 @@ class DDOrderCandidateProcessCommand
 
 			if (headerRecord == null)
 			{
-				headerRecord = createHeaderRecord(headerAggregate.getKey());
+				headerRecord = createHeaderRecord(headerAggregate.getKey(), headerAggregate.getSalesOrderId());
 			}
 
 			createLine(lineAggregate, headerRecord);
@@ -180,7 +182,9 @@ class DDOrderCandidateProcessCommand
 		documentBL.processEx(headerRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
-	private I_DD_Order createHeaderRecord(final HeaderAggregationKey key)
+	private I_DD_Order createHeaderRecord(
+			@NonNull final HeaderAggregationKey key,
+			@Nullable final OrderId salesOrderId)
 	{
 		final ProductPlanning productPlanning = productPlanningDAO.getById(key.getProductPlanningId());
 
@@ -229,6 +233,8 @@ class DDOrderCandidateProcessCommand
 			record.setForward_PP_Order_BOMLine_ID(PPOrderBOMLineId.toRepoId(forwardPPOrderRef.getPpOrderBOMLineId()));
 		}
 
+		record.setC_Order_ID(OrderId.toRepoId(salesOrderId));
+
 		ddOrderLowLevelService.save(record);
 		ddOrderHeaderRecords.put(DDOrderId.ofRepoId(record.getDD_Order_ID()), record);
 
@@ -255,12 +261,12 @@ class DDOrderCandidateProcessCommand
 		lineRecord.setAD_Org_ID(header.getAD_Org_ID());
 		lineRecord.setDD_Order_ID(header.getDD_Order_ID());
 
-		final OrderLineId salesOrderLineId = key.getSalesOrderLineId();
-		lineRecord.setC_OrderLineSO_ID(OrderLineId.toRepoId(salesOrderLineId));
+		final OrderAndLineId salesOrderAndLineId = key.getSalesOrderLineId();
+		lineRecord.setC_OrderLineSO_ID(OrderAndLineId.toOrderLineRepoId(salesOrderAndLineId));
 		//lineRecord.setC_BPartner_ID(ddOrderLine.getBPartnerId());
-		if (salesOrderLineId != null)
+		if (salesOrderAndLineId != null)
 		{
-			final BPartnerId bpartnerId = orderLineBL.getBPartnerId(salesOrderLineId).orElse(null);
+			final BPartnerId bpartnerId = orderLineBL.getBPartnerId(salesOrderAndLineId).orElse(null);
 			lineRecord.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		}
 
@@ -319,7 +325,7 @@ class DDOrderCandidateProcessCommand
 	private void fireDDOrderCreatedEvent(@NonNull final DDOrderId ddOrderId, @Nullable final String traceId)
 	{
 		@NonNull final DDOrder ddOrder = getCreatedDDOrder(ddOrderId);
-		materialEventService.postEventAfterNextCommit(DDOrderCreatedEvent.of(ddOrder, traceId));
+		materialEventService.enqueueEventAfterNextCommit(DDOrderCreatedEvent.of(ddOrder, traceId));
 	}
 
 	private DDOrder getCreatedDDOrder(final DDOrderId ddOrderId)
@@ -403,6 +409,16 @@ class DDOrderCandidateProcessCommand
 		}
 
 		public Collection<LineAggregate> getLines() {return lineAggregates.values();}
+
+		public OrderId getSalesOrderId()
+		{
+			final ImmutableSet<OrderId> orderIds = lineAggregates.keySet()
+					.stream()
+					.map(LineAggregationKey::getSalesOrderId)
+					.collect(ImmutableSet.toImmutableSet());
+
+			return orderIds.size() == 1 ? orderIds.iterator().next() : null;
+		}
 	}
 
 	//
@@ -420,7 +436,7 @@ class DDOrderCandidateProcessCommand
 		@NonNull AttributeSetInstanceId attributeSetInstanceId;
 		@NonNull UomId uomId;
 		@Nullable DistributionNetworkAndLineId distributionNetworkAndLineId;
-		@Nullable OrderLineId salesOrderLineId;
+		@Nullable OrderAndLineId salesOrderLineId;
 		boolean isAllowPush;
 		boolean isKeepTargetPlant;
 
@@ -437,6 +453,8 @@ class DDOrderCandidateProcessCommand
 					.isKeepTargetPlant(candidate.isKeepTargetPlant())
 					.build();
 		}
+
+		public OrderId getSalesOrderId() {return salesOrderLineId != null ? salesOrderLineId.getOrderId() : null;}
 	}
 
 	//
