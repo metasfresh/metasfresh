@@ -949,7 +949,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				attributesBuilder.setEmail(user.getEMail());
 			}
 			final Properties ctx = Env.getCtx();
-			final I_AD_User ccUser = userDAO.retrieveUserOrNull(ctx, user);
+			final I_AD_User ccUser = userDAO.retrieveUserOrNull(ctx, user.getAD_User_ID());
 
 			if(ccUser != null)
 			{
