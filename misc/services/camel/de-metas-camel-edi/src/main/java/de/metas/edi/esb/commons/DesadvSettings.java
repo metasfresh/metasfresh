@@ -25,10 +25,13 @@ package de.metas.edi.esb.commons;
 import java.util.Arrays;
 import java.util.List;
 
+import de.metas.common.util.Check;
 import org.apache.camel.CamelContext;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -36,11 +39,20 @@ public class DesadvSettings
 {
 	private static final String ANY_MEASUREMENTUNIT = "<ANY>";
 
+	/**
+	 * @param recipientGLN if null, we assume {@link ClearingCenter#ecosio}.
+	 */
+	@NonNull
 	public static DesadvSettings forReceiverGLN(
 			@NonNull final CamelContext context,
-			@NonNull final String recipientGLN)
+			@Nullable final String recipientGLN)
 	{
 		final String clearingCenterProperty = "edi.recipientGLN." + recipientGLN + ".clearingCenter";
+		if(Check.isBlank(recipientGLN))
+		{
+			return DesadvSettings.builder().clearingCenter(ClearingCenter.ecosio).build();
+		}
+
 		final ClearingCenter clearingCenter = ClearingCenter.valueOf(Util.resolveProperty(context, clearingCenterProperty, "ecosio"));
 
 		final DesadvSettingsBuilder settings = DesadvSettings
