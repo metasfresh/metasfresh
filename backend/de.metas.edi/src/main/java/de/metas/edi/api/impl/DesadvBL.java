@@ -83,6 +83,7 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -104,6 +105,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import static de.metas.adempiere.Constants.SYS_CONFIG_MATCH_USING_ORDER_ID;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.Check.isNotBlank;
@@ -146,6 +148,7 @@ public class DesadvBL implements IDesadvBL
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final HURepository huRepository;
 	private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
@@ -344,14 +347,8 @@ public class DesadvBL implements IDesadvBL
 
 	private I_EDI_Desadv retrieveOrCreateDesadv(@NonNull final I_C_Order order)
 	{
-		I_EDI_Desadv desadv = desadvDAO.retrieveMatchingDesadvOrNull(
-				EDIDesadvQuery.builder()
-						.poReference(order.getPOReference())
-						.bPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-						.ctxAware(InterfaceWrapperHelper.getContextAware(order))
-						.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
-						.build()
-		);
+		final EDIDesadvQuery ediDesadvQuery = buildEDIDesadvQuery(order);
+		I_EDI_Desadv desadv = desadvDAO.retrieveMatchingDesadvOrNull(ediDesadvQuery);
 
 		if (desadv == null)
 		{
@@ -1338,6 +1335,26 @@ public class DesadvBL implements IDesadvBL
 		return desadvInOutLine;
 	}
 
+	@NonNull
+	private EDIDesadvQuery buildEDIDesadvQuery(@NonNull final I_C_Order order)
+	{
+		final EDIDesadvQuery.EDIDesadvQueryBuilder ediDesadvQueryBuilder = EDIDesadvQuery.builder()
+				.poReference(order.getPOReference())
+				.bPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+				.ctxAware(InterfaceWrapperHelper.getContextAware(order));
+
+		final boolean isMatchUsingOrderId = sysConfigBL.getBooleanValue(SYS_CONFIG_MATCH_USING_ORDER_ID,
+																		false,
+																		order.getAD_Client_ID());
+		if (isMatchUsingOrderId)
+		{
+			ediDesadvQueryBuilder.orderId(OrderId.ofRepoId(order.getC_Order_ID()));
+		}
+
+		return ediDesadvQueryBuilder
+				.build();
+	}
+	
 	private static void setExternalBPartnerInfo(@NonNull final I_EDI_DesadvLine newDesadvLine, @NonNull final I_C_OrderLine orderLineRecord)
 	{
 		newDesadvLine.setExternalSeqNo(orderLineRecord.getExternalSeqNo());

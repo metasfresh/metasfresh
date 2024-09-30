@@ -40,6 +40,7 @@ import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
 import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -47,10 +48,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -66,7 +65,6 @@ public class DesadvDAO implements IDesadvDAO
 	private static final String SYS_CONFIG_DefaultMinimumPercentage = "de.metas.esb.edi.DefaultMinimumPercentage";
 	private static final String SYS_CONFIG_DefaultMinimumPercentage_DEFAULT = "50";
 	private static final String SYS_CONFIG_MATCH_USING_BPARTNER_ID = "de.metas.edi.desadv.MatchUsingC_BPartner_ID";
-	private static final String SYS_CONFIG_MATCH_USING_ORDER_ID = "de.metas.edi.desadv.MatchUsingC_Order_ID";
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -85,11 +83,12 @@ public class DesadvDAO implements IDesadvDAO
 			queryBuilder.addEqualsFilter(I_EDI_Desadv.COLUMNNAME_C_BPartner_ID, query.getBPartnerRepoId());
 		}
 
-		if (isMatchUsingOrderId(query.getCtxAware()) && query.getOrderId() != null)
+		final OrderId orderId = query.getOrderId();
+		if (orderId != null)
 		{
 			final IQuery<I_C_Order> orderQuery = queryBL.createQueryBuilder(I_C_Order.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, query.getOrderId().getRepoId())
+					.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderId.getRepoId())
 					.create();
 
 			queryBuilder.addInSubQueryFilter(I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID, I_C_Order.COLUMNNAME_EDI_Desadv_ID, orderQuery);
@@ -129,11 +128,6 @@ public class DesadvDAO implements IDesadvDAO
 		return sysConfigBL.getBooleanValue(SYS_CONFIG_MATCH_USING_BPARTNER_ID, false);
 	}
 
-	private boolean isMatchUsingOrderId(@NonNull final IContextAware ctxAware)
-	{
-		return sysConfigBL.getBooleanValue(SYS_CONFIG_MATCH_USING_ORDER_ID, false, Env.getAD_Client_ID(ctxAware.getCtx()));
-	}
-	
 	@Override
 	public List<I_EDI_DesadvLine> retrieveAllDesadvLines(final I_EDI_Desadv desadv)
 	{
