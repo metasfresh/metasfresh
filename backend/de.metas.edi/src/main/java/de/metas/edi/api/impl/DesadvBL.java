@@ -13,6 +13,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.edi.api.DesadvInOutLine;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.EDIDesadvLinePackId;
+import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
@@ -50,6 +51,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -343,9 +345,14 @@ public class DesadvBL implements IDesadvBL
 	private I_EDI_Desadv retrieveOrCreateDesadv(@NonNull final I_C_Order order)
 	{
 		I_EDI_Desadv desadv = desadvDAO.retrieveMatchingDesadvOrNull(
-				order.getPOReference(),
-				BPartnerId.ofRepoId(order.getC_BPartner_ID()),
-				InterfaceWrapperHelper.getContextAware(order));
+				EDIDesadvQuery.builder()
+						.poReference(order.getPOReference())
+						.bPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+						.ctxAware(InterfaceWrapperHelper.getContextAware(order))
+						.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
+						.build()
+		);
+
 		if (desadv == null)
 		{
 			desadv = InterfaceWrapperHelper.newInstance(I_EDI_Desadv.class, order);
@@ -395,7 +402,11 @@ public class DesadvBL implements IDesadvBL
 		}
 		else if (!Check.isEmpty(inOut.getPOReference(), true))
 		{
-			desadv = desadvDAO.retrieveMatchingDesadvOrNull(inOut.getPOReference(), BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), InterfaceWrapperHelper.getContextAware(inOut));
+			desadv = desadvDAO.retrieveMatchingDesadvOrNull(EDIDesadvQuery.builder()
+																	.poReference(inOut.getPOReference())
+																	.bPartnerId(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()))
+																	.ctxAware(InterfaceWrapperHelper.getContextAware(inOut))
+																	.build());
 		}
 		else
 		{

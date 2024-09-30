@@ -167,6 +167,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	private static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedAfterSeconds";
 	private static final String SYSCONFIG_CAN_BE_REEXPORTED_IF_QTYTODELIVER_IS_INCREASED = "de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedIfQtyToDeliverIsIncreased";
+	private static final String SYS_CONFIG_MATCH_USING_ORDER_ID = "de.metas.edi.desadv.MatchUsingC_Order_ID";
 
 	private static final ModelDynAttributeAccessor<I_M_ShipmentSchedule, Boolean> DYNATTR_DoNotInvalidatedOnChange = new ModelDynAttributeAccessor<>("NotInvalidatedOnchange", Boolean.class);
 
@@ -252,6 +253,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public boolean isSchedAllowsConsolidate(final I_M_ShipmentSchedule sched)
 	{
+		if (isMatchUsingOrderId())
+		{
+			return false;
+		}
+
 		// task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
@@ -967,5 +973,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		shipmentSchedule.setC_Async_Batch_ID(asyncBatchId.getRepoId());
 
 		shipmentSchedulePA.save(shipmentSchedule);
+	}
+
+	private boolean isMatchUsingOrderId()
+	{
+		return sysConfigBL.getBooleanValue(SYS_CONFIG_MATCH_USING_ORDER_ID, false);
 	}
 }
