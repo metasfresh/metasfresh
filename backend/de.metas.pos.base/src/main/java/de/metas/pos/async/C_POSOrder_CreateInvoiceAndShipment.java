@@ -17,9 +17,6 @@ import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.api.OLCandRepository;
-import de.metas.ordercandidate.api.OLCandValidationResult;
-import de.metas.ordercandidate.api.OLCandValidatorService;
-import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.payment.PaymentRule;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderId;
@@ -42,9 +39,7 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ProcessOLCands;
 
 public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAdapter
@@ -161,13 +156,6 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 	{
 		Check.assumeNotEmpty(olCands, "No Order Candidates");
 
-		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_OLCand_Processing);
-
-		// clear the olCands and at the same time assign them to asyncBatchId
-		// the asyncBatchId will be used *not* by ProcessOLCandsWorkpackageProcessor,
-		// but by the WP-processors that it enqueues its packages for, to create actual the actual orders, shipments and invoices
-		clearOLCandidates(olCands, asyncBatchId);
-
 		//
 		// To the actual order/shipment/invoice creation:
 		// start another async-batch - just to wait for
@@ -186,27 +174,6 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 					return () -> 1; // we always enqueue one workpackage
 				},
 				processOLCandsAsyncBatchId);
-	}
-
-	private void clearOLCandidates(@NonNull List<OLCand> olCands, @Nullable final AsyncBatchId asyncBatchId)
-	{
-		Check.assumeNotEmpty(olCands, "No Order Candidates");
-
-		final List<I_C_OLCand> olCandRecords = unbox(olCands);
-		final List<OLCandValidationResult> olCandValidationResults = olCandValidatorService.clearOLCandidates(olCandRecords, asyncBatchId);
-
-		olCandValidationResults.forEach(olCandValidationResult -> {
-			if (!olCandValidationResult.isOk())
-			{
-				throw new AdempiereException("Invalid Order Candidate")
-						.setParameter("olCandValidationResult", olCandValidationResult);
-			}
-		});
-	}
-
-	private static List<I_C_OLCand> unbox(final List<OLCand> olCands)
-	{
-		return olCands.stream().map(OLCand::unbox).collect(Collectors.toList());
 	}
 
 	private static PInstanceId createOLCandsSelection(final List<OLCand> olCands)

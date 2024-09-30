@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1695628158L;
+	private static final long serialVersionUID = 834430199L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -995,6 +995,21 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public void setEXP_ReplicationTrx_ID (final int EXP_ReplicationTrx_ID)
+	{
+		if (EXP_ReplicationTrx_ID < 1) 
+			set_Value (COLUMNNAME_EXP_ReplicationTrx_ID, null);
+		else 
+			set_Value (COLUMNNAME_EXP_ReplicationTrx_ID, EXP_ReplicationTrx_ID);
+	}
+
+	@Override
+	public int getEXP_ReplicationTrx_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_EXP_ReplicationTrx_ID);
+	}
+
+	@Override
 	public void setExternalHeaderId (final @Nullable java.lang.String ExternalHeaderId)
 	{
 		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
@@ -1314,6 +1329,18 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public boolean isGroupingError() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsGroupingError);
+	}
+
+	@Override
+	public void setIsImportedWithIssues (final boolean IsImportedWithIssues)
+	{
+		set_Value (COLUMNNAME_IsImportedWithIssues, IsImportedWithIssues);
+	}
+
+	@Override
+	public boolean isImportedWithIssues() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsImportedWithIssues);
 	}
 
 	@Override
@@ -1929,18 +1956,5 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public java.lang.String getReplicationTrxErrorMsg() 
 	{
 		return get_ValueAsString(COLUMNNAME_ReplicationTrxErrorMsg);
-	}
-
-	@Override
-	public void setQtyEntered_Override (final @Nullable BigDecimal QtyEntered_Override)
-	{
-		set_Value (COLUMNNAME_QtyEntered_Override, QtyEntered_Override);
-	}
-
-	@Override
-	public BigDecimal getQtyEntered_Override()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered_Override);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

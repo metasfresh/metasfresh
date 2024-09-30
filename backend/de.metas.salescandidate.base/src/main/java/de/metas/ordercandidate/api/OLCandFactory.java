@@ -87,7 +87,7 @@ public final class OLCandFactory
         final DeliveryRule deliveryRule = olCandBL.getDeliveryRule(olCandRecord, params, orderDefaults);
         final DeliveryViaRule deliveryViaRule = olCandBL.getDeliveryViaRule(olCandRecord, params, orderDefaults);
         final FreightCostRule freightCostRule = olCandBL.getFreightCostRule(params, orderDefaults);
-        final InvoiceRule invoiceRule = olCandBL.getInvoiceRule(params, orderDefaults);
+        final InvoiceRule invoiceRule = olCandBL.getInvoiceRule(olCandRecord, params, orderDefaults);
         final PaymentRule paymentRule = olCandBL.getPaymentRule(params, orderDefaults, olCandRecord);
         final PaymentTermId paymentTermId = olCandBL.getPaymentTermId(params, orderDefaults, olCandRecord);
         final PricingSystemId pricingSystemId = olCandBL.getPricingSystemId(olCandRecord, params, orderDefaults);
