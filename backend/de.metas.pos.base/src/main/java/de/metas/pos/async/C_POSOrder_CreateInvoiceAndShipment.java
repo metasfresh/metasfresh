@@ -2,6 +2,8 @@ package de.metas.pos.async;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.allocation.api.IAllocationBL;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -9,6 +11,7 @@ import de.metas.async.service.AsyncBatchService;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
@@ -21,7 +24,9 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandValidationResult;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.payment.PaymentId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderId;
 import de.metas.pos.POSOrderLine;
@@ -36,8 +41,10 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Payment;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
@@ -56,11 +63,15 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 
 	@NonNull private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	@NonNull private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	@NonNull private final POSOrdersRepository posOrdersRepository = SpringContextHolder.instance.getBean(POSOrdersRepository.class);
 	@NonNull private final OLCandRepository olCandRepo = SpringContextHolder.instance.getBean(OLCandRepository.class);
 	@NonNull private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
 	@NonNull private final ProcessOLCandsWorkpackageEnqueuer processOLCandsWorkpackageEnqueuer = SpringContextHolder.instance.getBean(ProcessOLCandsWorkpackageEnqueuer.class);
 	@NonNull private final AsyncBatchService asyncBatchService = SpringContextHolder.instance.getBean(AsyncBatchService.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
 	public boolean isRunInTransaction() {return false;}
@@ -79,8 +90,10 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 		Check.assumeNotEmpty(olCands, "No OLCands created for {}", posOrder);
 
 		final OrderId salesOrderId = processOLCands(olCands);
-		
 		posOrder.setSalesOrderId(salesOrderId);
+
+		allocatePayments(posOrder);
+
 		posOrdersRepository.save(posOrder);
 
 		return Result.SUCCESS;
@@ -252,5 +265,42 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 	private static ImmutableSet<OLCandId> extractOLCandIds(final List<OLCand> olCands)
 	{
 		return olCands.stream().map(olCand -> OLCandId.ofRepoId(olCand.getId())).collect(ImmutableSet.toImmutableSet());
+	}
+
+	private void allocatePayments(final POSOrder posOrder)
+	{
+		trxManager.runInThreadInheritedTrx(() -> allocatePaymentsInTrx(posOrder));
+	}
+
+	private void allocatePaymentsInTrx(final POSOrder posOrder)
+	{
+		final OrderId salesOrderId = posOrder.getSalesOrderId();
+		if (salesOrderId == null)
+		{
+			throw new AdempiereException("No sales order generated for " + posOrder);
+		}
+
+		final List<I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(salesOrderId));
+		if (invoices.isEmpty())
+		{
+			throw new AdempiereException("No invoices were generated for " + posOrder);
+		}
+		else if (invoices.size() > 1)
+		{
+			throw new AdempiereException("More than one invoice was generated for " + posOrder);
+		}
+		final I_C_Invoice invoice = invoices.get(0);
+
+		final Set<PaymentId> paymentReceiptIds = posOrder.getPaymentReceiptIds();
+		if (paymentReceiptIds.isEmpty())
+		{
+			throw new AdempiereException("No payment receipts were generated for " + posOrder);
+		}
+
+		final List<I_C_Payment> paymentReceipts = paymentBL.getByIds(paymentReceiptIds);
+		for (final I_C_Payment paymentReceipt : paymentReceipts)
+		{
+			allocationBL.autoAllocateSpecificPayment(invoice, paymentReceipt, true);
+		}
 	}
 }
