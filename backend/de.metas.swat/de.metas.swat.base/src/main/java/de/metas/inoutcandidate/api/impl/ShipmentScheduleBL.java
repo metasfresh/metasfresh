@@ -24,6 +24,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
@@ -102,7 +103,6 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static de.metas.adempiere.Constants.SYS_CONFIG_MATCH_USING_ORDER_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -182,6 +182,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
+	@NonNull
+	private final ShipmentScheduleAllowConsolidatePredicateComposite shipmentScheduleAllowConsolidatePredicateComposite = SpringContextHolder.instance
+			.getBean(ShipmentScheduleAllowConsolidatePredicateComposite.class);
+
 	@Override
 	public boolean allMissingSchedsWillBeCreatedLater()
 	{
@@ -253,7 +257,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public boolean isSchedAllowsConsolidate(final I_M_ShipmentSchedule sched)
 	{
-		if (isMatchUsingOrderId())
+		if (!shipmentScheduleAllowConsolidatePredicateComposite.isSchedAllowsConsolidate(sched))
 		{
 			return false;
 		}
@@ -973,10 +977,5 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		shipmentSchedule.setC_Async_Batch_ID(asyncBatchId.getRepoId());
 
 		shipmentSchedulePA.save(shipmentSchedule);
-	}
-
-	private boolean isMatchUsingOrderId()
-	{
-		return sysConfigBL.getBooleanValue(SYS_CONFIG_MATCH_USING_ORDER_ID, false);
 	}
 }

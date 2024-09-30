@@ -36,16 +36,17 @@ import javax.annotation.Nullable;
 public class EDIDesadvQuery
 {
 	@NonNull String poReference;
-	@NonNull BPartnerId bPartnerId;
 	@NonNull IContextAware ctxAware;
+	@Nullable
+	BPartnerId bPartnerId;
 	@Nullable
 	OrderId orderId;
 
 	@Builder
 	public EDIDesadvQuery(
 			@NonNull final String poReference,
-			@NonNull final BPartnerId bPartnerId,
 			@NonNull final IContextAware ctxAware,
+			@Nullable final BPartnerId bPartnerId,
 			@Nullable final OrderId orderId)
 	{
 		Check.assumeNotEmpty(poReference, "Param 'poReference' is not emtpy; ctxAware={}", ctxAware);
@@ -54,10 +55,5 @@ public class EDIDesadvQuery
 		this.bPartnerId = bPartnerId;
 		this.ctxAware = ctxAware;
 		this.orderId = orderId;
-	}
-
-	public int getBPartnerRepoId()
-	{
-		return bPartnerId.getRepoId();
 	}
 }

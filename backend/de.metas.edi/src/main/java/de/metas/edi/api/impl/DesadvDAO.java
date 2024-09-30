@@ -64,7 +64,6 @@ public class DesadvDAO implements IDesadvDAO
 	 */
 	private static final String SYS_CONFIG_DefaultMinimumPercentage = "de.metas.esb.edi.DefaultMinimumPercentage";
 	private static final String SYS_CONFIG_DefaultMinimumPercentage_DEFAULT = "50";
-	private static final String SYS_CONFIG_MATCH_USING_BPARTNER_ID = "de.metas.edi.desadv.MatchUsingC_BPartner_ID";
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -78,9 +77,10 @@ public class DesadvDAO implements IDesadvDAO
 				.addEqualsFilter(I_EDI_Desadv.COLUMN_Processed, false)
 				.addEqualsFilter(I_EDI_Desadv.COLUMN_Processing, false);
 
-		if (isMatchUsingBPartnerId())
+		final BPartnerId bPartnerId = query.getBPartnerId();
+		if (bPartnerId != null)
 		{
-			queryBuilder.addEqualsFilter(I_EDI_Desadv.COLUMNNAME_C_BPartner_ID, query.getBPartnerRepoId());
+			queryBuilder.addEqualsFilter(I_EDI_Desadv.COLUMNNAME_C_BPartner_ID, bPartnerId);
 		}
 
 		final OrderId orderId = query.getOrderId();
@@ -88,7 +88,7 @@ public class DesadvDAO implements IDesadvDAO
 		{
 			final IQuery<I_C_Order> orderQuery = queryBL.createQueryBuilder(I_C_Order.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderId.getRepoId())
+					.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderId)
 					.create();
 
 			queryBuilder.addInSubQueryFilter(I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID, I_C_Order.COLUMNNAME_EDI_Desadv_ID, orderQuery);
@@ -121,11 +121,6 @@ public class DesadvDAO implements IDesadvDAO
 				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_Line, line);
 
 		return query.create().firstOnly(I_EDI_DesadvLine.class);
-	}
-
-	private boolean isMatchUsingBPartnerId()
-	{
-		return sysConfigBL.getBooleanValue(SYS_CONFIG_MATCH_USING_BPARTNER_ID, false);
 	}
 
 	@Override
@@ -347,7 +342,6 @@ public class DesadvDAO implements IDesadvDAO
 	{
 		InterfaceWrapperHelper.save(ediDesadvLine);
 	}
-
 
 	@Override
 	public BPartnerId retrieveBPartnerFromEdiDesadvPackId(final int desadvLinePackID)
