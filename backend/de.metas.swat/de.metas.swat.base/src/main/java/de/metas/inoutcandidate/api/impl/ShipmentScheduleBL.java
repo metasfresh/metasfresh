@@ -182,10 +182,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
-	@NonNull
-	private final ShipmentScheduleAllowConsolidatePredicateComposite shipmentScheduleAllowConsolidatePredicateComposite = SpringContextHolder.instance
-			.getBean(ShipmentScheduleAllowConsolidatePredicateComposite.class);
-
 	@Override
 	public boolean allMissingSchedsWillBeCreatedLater()
 	{
@@ -257,6 +253,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public boolean isSchedAllowsConsolidate(final I_M_ShipmentSchedule sched)
 	{
+		final ShipmentScheduleAllowConsolidatePredicateComposite shipmentScheduleAllowConsolidatePredicateComposite = SpringContextHolder.instance
+				.getBean(ShipmentScheduleAllowConsolidatePredicateComposite.class);
 		if (!shipmentScheduleAllowConsolidatePredicateComposite.isSchedAllowsConsolidate(sched))
 		{
 			return false;
