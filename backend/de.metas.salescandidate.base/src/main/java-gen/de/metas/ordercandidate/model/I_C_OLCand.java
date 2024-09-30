@@ -1837,6 +1837,27 @@ public interface I_C_OLCand
 	String COLUMNNAME_Line = "Line";
 
 	/**
+	 * Set Manual Qty in Price UOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManualQtyInPriceUOM (@Nullable BigDecimal ManualQtyInPriceUOM);
+
+	/**
+	 * Get Manual Qty in Price UOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getManualQtyInPriceUOM();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_ManualQtyInPriceUOM = new ModelColumn<>(I_C_OLCand.class, "ManualQtyInPriceUOM", null);
+	String COLUMNNAME_ManualQtyInPriceUOM = "ManualQtyInPriceUOM";
+
+	/**
 	 * Set Attribute Set.
 	 * Product Attribute Set
 	 *
@@ -2529,6 +2550,47 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_QtyShipped = new ModelColumn<>(I_C_OLCand.class, "QtyShipped", null);
 	String COLUMNNAME_QtyShipped = "QtyShipped";
+
+	/**
+	 * Set Shipped Weight.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyShipped_CatchWeight (@Nullable BigDecimal QtyShipped_CatchWeight);
+
+	/**
+	 * Get Shipped Weight.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyShipped_CatchWeight();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_QtyShipped_CatchWeight = new ModelColumn<>(I_C_OLCand.class, "QtyShipped_CatchWeight", null);
+	String COLUMNNAME_QtyShipped_CatchWeight = "QtyShipped_CatchWeight";
+
+	/**
+	 * Set Shipped Weight UOM.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyShipped_CatchWeight_UOM_ID (int QtyShipped_CatchWeight_UOM_ID);
+
+	/**
+	 * Get Shipped Weight UOM.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getQtyShipped_CatchWeight_UOM_ID();
+
+	String COLUMNNAME_QtyShipped_CatchWeight_UOM_ID = "QtyShipped_CatchWeight_UOM_ID";
 
 	/**
 	 * Set Record ID.

@@ -1,16 +1,6 @@
 package de.metas.quantity;
 
-import java.math.BigDecimal;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty.StockQtyAndUOMQtyBuilder;
@@ -23,6 +13,13 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Util.ArrayKey;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Objects;
 
 /*
  * #%L
@@ -77,9 +74,19 @@ public class StockQtyAndUOMQtys
 		return create(qtyInStockUOM, productId, qtyInUOM, uomId);
 	}
 
+	public StockQtyAndUOMQty ofQtyInStockUOM(
+			@NonNull final Quantity qtyInStockUOM,
+			@NonNull final ProductId productId)
+	{
+		return validate(StockQtyAndUOMQty.builder()
+				.productId(productId)
+				.stockQty(qtyInStockUOM)
+				.build());
+	}
+
 	/**
 	 * @param qtyInUOM may be {@code null} only if {@code uomId} is {@code null}.
-	 * @param uomId may be {@code null} in which case the result will contain no {@code uomQty}.
+	 * @param uomId    may be {@code null} in which case the result will contain no {@code uomQty}.
 	 */
 	public StockQtyAndUOMQty create(
 			@NonNull final BigDecimal qtyInStockUOM,
@@ -172,7 +179,7 @@ public class StockQtyAndUOMQtys
 
 	/**
 	 * @param stockQtyInAnyUom converted to the product's stock UOM is needed
-	 * @param uomQty added to the new {@link StockQtyAndUOMQty} as-is. May be {@code null}.
+	 * @param uomQty           added to the new {@link StockQtyAndUOMQty} as-is. May be {@code null}.
 	 */
 	public StockQtyAndUOMQty createConvert(
 			@NonNull final Quantity stockQtyInAnyUom,
@@ -189,7 +196,9 @@ public class StockQtyAndUOMQtys
 						.build());
 	}
 
-	/** @return the sum of the given quantities; See {@link Quantitys#add(UOMConversionContext, Quantity, Quantity)} for the result's uomQty's UOM. */
+	/**
+	 * @return the sum of the given quantities; See {@link Quantitys#add(UOMConversionContext, Quantity, Quantity)} for the result's uomQty's UOM.
+	 */
 	public StockQtyAndUOMQty add(
 			@NonNull final StockQtyAndUOMQty firstAugent,
 			@NonNull final StockQtyAndUOMQty secondAugent)

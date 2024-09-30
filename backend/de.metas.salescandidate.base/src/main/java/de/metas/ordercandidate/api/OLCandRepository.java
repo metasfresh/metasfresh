@@ -13,6 +13,7 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.location.LocationId;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
@@ -38,6 +39,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -69,6 +71,7 @@ public class OLCandRepository
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 
 	public OLCandSource getForProcessor(@NonNull final OLCandProcessorDescriptor processor)
 	{
@@ -224,6 +227,11 @@ public class OLCandRepository
 			olCandPO.setC_Currency_ID(request.getCurrencyId().getRepoId());
 		}
 
+		if (request.getManualQtyInPriceUOM() != null)
+		{
+			olCandPO.setManualQtyInPriceUOM(request.getManualQtyInPriceUOM());
+		}
+
 		if (request.getDiscount() != null)
 		{
 			olCandPO.setIsManualDiscount(true);
@@ -318,6 +326,11 @@ public class OLCandRepository
 		{
 			olCandWithIssuesInterface.setQtyShipped(request.getQtyShipped());
 		}
+		if (request.getQtyShippedCatchWeight() != null)
+		{
+			olCandWithIssuesInterface.setQtyShipped_CatchWeight(request.getQtyShippedCatchWeight().toBigDecimal());
+			olCandWithIssuesInterface.setQtyShipped_CatchWeight_UOM_ID(request.getQtyShippedCatchWeight().getUomId().getRepoId());
+		}
 
 		olCandPO.setApplySalesRepFrom(request.getAssignSalesRepRule().getCode());
 		olCandPO.setC_BPartner_SalesRep_Internal_ID(BPartnerId.toRepoId(request.getSalesRepInternalId()));
@@ -369,4 +382,11 @@ public class OLCandRepository
 
 		return queryBuilder;
 	}
+
+	@NonNull
+	public Set<OrderId> getOrderIdsByOLCandIds(@NonNull final Set<OLCandId> olCandIds)
+	{
+		return olCandDAO.getOrderIdsByOLCandIds(olCandIds);
+	}
+
 }

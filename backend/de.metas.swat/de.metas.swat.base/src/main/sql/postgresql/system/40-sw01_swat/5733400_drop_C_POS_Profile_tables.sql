@@ -25,6 +25,8 @@ UPDATE AD_Table SET AD_Window_ID=NULL,Updated=TO_TIMESTAMP('2024-09-13 17:59:46'
 UPDATE AD_Table SET AD_Window_ID=NULL,Updated=TO_TIMESTAMP('2024-09-13 17:59:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540577
 ;
 
+delete from ad_field where included_tab_id=540584;
+
 -- Window: POS Profile, InternalName=540213 (Todo: Set Internal Name for UI testing)
 -- Window: POS Profile, InternalName=540213 (Todo: Set Internal Name for UI testing)
 -- 2024-09-13T15:00:19.874Z

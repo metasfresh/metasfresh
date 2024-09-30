@@ -462,9 +462,15 @@ class OLCandOrderFactory
 
 	private void addOLCand0(@NonNull final OLCand candidate)
 	{
+		final boolean isNewOrderLine;
 		if (currentOrderLine == null)
 		{
 			currentOrderLine = newOrderLine(candidate);
+			isNewOrderLine = true;
+		}
+		else
+		{
+			isNewOrderLine = false;
 		}
 
 		setExternalBPartnerInfo(currentOrderLine, candidate);
@@ -486,6 +492,25 @@ class OLCandOrderFactory
 
 			final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(currentOrderLine).toBigDecimal();
 			currentOrderLine.setQtyOrdered(qtyOrdered);
+		}
+
+		// Quantity in price UOM
+		{
+			final boolean isManualQtyInPriceUOM = candidate.getManualQtyInPriceUOM() != null;
+
+			if (isNewOrderLine)
+			{
+				currentOrderLine.setIsManualQtyInPriceUOM(isManualQtyInPriceUOM);
+			}
+			else if (currentOrderLine.isManualQtyInPriceUOM() != isManualQtyInPriceUOM)
+			{
+				throw new AdempiereException("Aggregating with different IsManualQtyInPriceUOM is not allowed");
+			}
+			
+			if (isManualQtyInPriceUOM)
+			{
+				currentOrderLine.setQtyEnteredInPriceUOM(currentOrderLine.getQtyEnteredInPriceUOM().add(candidate.getManualQtyInPriceUOM()));
+			}
 		}
 
 		//

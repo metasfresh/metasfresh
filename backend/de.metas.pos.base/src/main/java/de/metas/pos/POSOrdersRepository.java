@@ -62,4 +62,9 @@ public class POSOrdersRepository
 		return trxManager.callInThreadInheritedTrx(() -> newLoaderAndSaver().createOrUpdateByExternalId(externalId, factory, updater));
 	}
 
+	public void save(@NonNull final POSOrder order)
+	{
+		newLoaderAndSaver().save(order);
+	}
+
 }

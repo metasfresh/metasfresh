@@ -14,6 +14,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
@@ -55,7 +56,9 @@ public class OLCandCreateRequest
 
 	String externalHeaderId;
 
-	/** Mandatory; an Identifier of an existing AD_InputDataSource record. */
+	/**
+	 * Mandatory; an Identifier of an existing AD_InputDataSource record.
+	 */
 	InputDataSourceId dataSourceId;
 
 	/**
@@ -91,6 +94,7 @@ public class OLCandCreateRequest
 	String productDescription;
 	BigDecimal qty;
 	UomId uomId;
+	@Nullable BigDecimal manualQtyInPriceUOM;
 	int huPIItemProductId;
 
 	PricingSystemId pricingSystemId;
@@ -125,6 +129,7 @@ public class OLCandCreateRequest
 	AsyncBatchId asyncBatchId;
 
 	BigDecimal qtyShipped;
+	@Nullable Quantity qtyShippedCatchWeight;
 
 	BigDecimal qtyItemCapacity;
 
@@ -135,7 +140,7 @@ public class OLCandCreateRequest
 	String bpartnerName;
 	String email;
 	String phone;
-	
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
@@ -159,6 +164,7 @@ public class OLCandCreateRequest
 			final String productDescription,
 			@NonNull final BigDecimal qty,
 			@NonNull final UomId uomId,
+			@Nullable final BigDecimal manualQtyInPriceUOM,
 			final int huPIItemProductId,
 			@Nullable final PricingSystemId pricingSystemId,
 			final BigDecimal price,
@@ -182,6 +188,7 @@ public class OLCandCreateRequest
 			@Nullable final String importWarningMessage,
 			@Nullable final AsyncBatchId asyncBatchId,
 			@Nullable final BigDecimal qtyShipped,
+			@Nullable final Quantity qtyShippedCatchWeight,
 			@Nullable final BigDecimal qtyItemCapacity,
 			@Nullable final AssignSalesRepRule assignSalesRepRule,
 			@Nullable final BPartnerId salesRepInternalId,
@@ -220,6 +227,7 @@ public class OLCandCreateRequest
 		this.productDescription = productDescription;
 		this.qty = qty;
 		this.uomId = uomId;
+		this.manualQtyInPriceUOM = manualQtyInPriceUOM;
 		this.huPIItemProductId = huPIItemProductId;
 		this.pricingSystemId = pricingSystemId;
 		this.price = price;
@@ -246,6 +254,7 @@ public class OLCandCreateRequest
 		this.importWarningMessage = importWarningMessage;
 		this.asyncBatchId = asyncBatchId;
 		this.qtyShipped = qtyShipped;
+		this.qtyShippedCatchWeight = qtyShippedCatchWeight;
 		this.qtyItemCapacity = qtyItemCapacity;
 
 		this.assignSalesRepRule = CoalesceUtil.coalesceNotNull(assignSalesRepRule, AssignSalesRepRule.CandidateFirst);
