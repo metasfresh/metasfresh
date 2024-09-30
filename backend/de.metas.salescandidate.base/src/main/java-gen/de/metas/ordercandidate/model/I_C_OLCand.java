@@ -1,9 +1,8 @@
 package de.metas.ordercandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_OLCand
  *  @author metasfresh (generated) 
@@ -1729,6 +1728,29 @@ public interface I_C_OLCand
 	String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
 
 	/**
+	 * Set Invoice Rule.
+	 * Frequency and method of invoicing
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceRule (@Nullable java.lang.String InvoiceRule);
+
+	/**
+	 * Get Invoice Rule.
+	 * Frequency and method of invoicing
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoiceRule();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_InvoiceRule = new ModelColumn<>(I_C_OLCand.class, "InvoiceRule", null);
+	String COLUMNNAME_InvoiceRule = "InvoiceRule";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -2602,6 +2624,27 @@ public interface I_C_OLCand
 	String COLUMNNAME_QtyEntered = "QtyEntered";
 
 	/**
+	 * Set Qty Override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyEntered_Override (@Nullable BigDecimal QtyEntered_Override);
+
+	/**
+	 * Get Qty Override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyEntered_Override();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_QtyEntered_Override = new ModelColumn<>(I_C_OLCand.class, "QtyEntered_Override", null);
+	String COLUMNNAME_QtyEntered_Override = "QtyEntered_Override";
+
+	/**
 	 * Set Packaging capacity.
 	 * Capacity in the respective product's unit of measuerement
 	 *
@@ -2738,25 +2781,4 @@ public interface I_C_OLCand
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Qty Override.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQtyEntered_Override (@Nullable BigDecimal QtyEntered_Override);
-
-	/**
-	 * Get Qty Override.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyEntered_Override();
-
-	ModelColumn<I_C_OLCand, Object> COLUMN_QtyEntered_Override = new ModelColumn<>(I_C_OLCand.class, "QtyEntered_Override", null);
-	String COLUMNNAME_QtyEntered_Override = "QtyEntered_Override";
 }

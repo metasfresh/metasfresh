@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.ordercandidate.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_OLCand
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 7381565L;
+	private static final long serialVersionUID = 1695628158L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -1239,6 +1239,35 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return get_ValueAsString(COLUMNNAME_InvoicableQtyBasedOn);
 	}
 
+	/** 
+	 * InvoiceRule AD_Reference_ID=150
+	 * Reference name: C_Order InvoiceRule
+	 */
+	public static final int INVOICERULE_AD_Reference_ID=150;
+	/** AfterOrderDelivered = O */
+	public static final String INVOICERULE_AfterOrderDelivered = "O";
+	/** AfterDelivery = D */
+	public static final String INVOICERULE_AfterDelivery = "D";
+	/** CustomerScheduleAfterDelivery = S */
+	public static final String INVOICERULE_CustomerScheduleAfterDelivery = "S";
+	/** Immediate = I */
+	public static final String INVOICERULE_Immediate = "I";
+	/** OrderCompletelyDelivered = C */
+	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
+	/** After Pick = P */
+	public static final String INVOICERULE_AfterPick = "P";
+	@Override
+	public void setInvoiceRule (final @Nullable java.lang.String InvoiceRule)
+	{
+		set_Value (COLUMNNAME_InvoiceRule, InvoiceRule);
+	}
+
+	@Override
+	public java.lang.String getInvoiceRule() 
+	{
+		return get_ValueAsString(COLUMNNAME_InvoiceRule);
+	}
+
 	@Override
 	public void setIsError (final boolean IsError)
 	{
@@ -1318,7 +1347,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public boolean isManualQtyItemCapacity()
+	public boolean isManualQtyItemCapacity() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManualQtyItemCapacity);
 	}
@@ -1821,6 +1850,19 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public BigDecimal getQtyEntered() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyEntered_Override (final @Nullable BigDecimal QtyEntered_Override)
+	{
+		set_Value (COLUMNNAME_QtyEntered_Override, QtyEntered_Override);
+	}
+
+	@Override
+	public BigDecimal getQtyEntered_Override() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered_Override);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
