@@ -180,7 +180,7 @@ public class MailRestController
 		}
 
 		final Integer ccUserId = attributes.getCC_User_ID();
-		if(ccUserId > 0) // avoid user System
+		if(ccUserId != null && ccUserId > 0) // avoid user System
 		{
 			final LookupValue cc = mailRepo.getToByUserId(ccUserId);
 			if (cc != null)
