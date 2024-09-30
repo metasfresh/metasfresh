@@ -27,6 +27,7 @@ import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.order.OrderAndLineId;
 import de.metas.shippingnotification.ShippingNotificationLineId;
 import de.metas.shippingnotification.ShippingNotificationService;
@@ -55,6 +56,12 @@ public class ShippingNotificationForSalesModularContractHandler extends Abstract
 	public boolean applies(final @NonNull TableRecordReference recordRef, final @NonNull LogEntryContractType logEntryContractType)
 	{
 		return recordRef.getTableName().equals(I_M_Shipping_NotificationLine.Table_Name);
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
+		return settings.getSoTrx().isSales();
 	}
 
 	@Override

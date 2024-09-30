@@ -28,6 +28,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -80,6 +81,12 @@ public class ShipmentLineForSOModularContractHandler extends AbstractComputingMe
 			return inOutRecord.isSOTrx();
 		}
 		return false;
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
+		return settings.getSoTrx().isSales();
 	}
 
 	@Override

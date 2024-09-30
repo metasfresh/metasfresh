@@ -25,16 +25,17 @@ package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice.
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.ComputingMethodService;
-import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
 import de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice.AbstractDefinitiveInvoiceComputingMethod;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DefinitiveInvoiceForRawProductComputingMethod extends AbstractDefinitiveInvoiceComputingMethod
 {
 
-	public DefinitiveInvoiceForRawProductComputingMethod(@NonNull final ManufacturingFacadeService manufacturingFacadeService,
+	public DefinitiveInvoiceForRawProductComputingMethod(
 			@NonNull final ModularContractProvider contractProvider,
 			@NonNull final ComputingMethodService computingMethodService)
 	{
@@ -45,6 +46,12 @@ public class DefinitiveInvoiceForRawProductComputingMethod extends AbstractDefin
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return ComputingMethodType.DefinitiveInvoiceRawProduct;
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
+		return settings.getSoTrx().isPurchase();
 	}
 
 }

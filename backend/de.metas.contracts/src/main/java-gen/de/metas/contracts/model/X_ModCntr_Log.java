@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 649973142L;
+	private static final long serialVersionUID = -270141697L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -460,6 +460,18 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
+	public void setPhysicalClearanceDate (final @Nullable java.sql.Timestamp PhysicalClearanceDate)
+	{
+		set_Value (COLUMNNAME_PhysicalClearanceDate, PhysicalClearanceDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getPhysicalClearanceDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PhysicalClearanceDate);
+	}
+
+	@Override
 	public org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Cost_Collector_ID, org.eevolution.model.I_PP_Cost_Collector.class);
@@ -600,7 +612,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public BigDecimal getUserElementNumber1()
+	public BigDecimal getUserElementNumber1() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber1);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -613,7 +625,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public BigDecimal getUserElementNumber2()
+	public BigDecimal getUserElementNumber2() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber2);
 		return bd != null ? bd : BigDecimal.ZERO;

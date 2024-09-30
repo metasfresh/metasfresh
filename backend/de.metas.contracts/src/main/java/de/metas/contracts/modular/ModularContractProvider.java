@@ -252,6 +252,21 @@ public class ModularContractProvider
 		return streamModularPurchaseContractBySalesOrderWithProductId(orderId, ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()));
 	}
 
+	@NonNull
+	public Stream<FlatrateTermId> streamModularSalesContractsForShipmentLine(@NonNull final InOutLineId inOutLineId)
+	{
+		final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(inOutLineId);
+		final I_M_InOut inOutRecord = inOutDAO.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
+		final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
+		if (!inOutRecord.isSOTrx() || inOutLineRecord.getMovementQty().signum() < 0 || orderId == null)
+		{
+			return Stream.empty();
+		}
+
+
+		return streamModularPurchaseContractBySalesOrderWithProductId(orderId, ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()));
+	}
+
 	private @NonNull Stream<FlatrateTermId> streamModularPurchaseContractBySalesOrderWithProductId(final OrderId orderId, final ProductId productId)
 	{
 		final I_C_Order order = orderBL.getById(orderId);

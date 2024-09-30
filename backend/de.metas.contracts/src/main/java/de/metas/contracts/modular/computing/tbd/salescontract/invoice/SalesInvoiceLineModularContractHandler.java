@@ -32,6 +32,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -111,6 +112,12 @@ public class SalesInvoiceLineModularContractHandler extends AbstractComputingMet
 			return flatrateBL.isModularContractInProgress(modularFlatrateTermQuery);
 		}
 		return false;
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
+		return settings.getSoTrx().isSales();
 	}
 
 	@Override

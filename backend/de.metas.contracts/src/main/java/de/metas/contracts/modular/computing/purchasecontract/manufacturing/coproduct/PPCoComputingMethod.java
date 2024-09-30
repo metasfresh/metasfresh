@@ -83,7 +83,8 @@ public class PPCoComputingMethod extends AbstractComputingMethodHandler
 		{
 			final ManufacturingOrder manufacturingOrder = manufacturingFacadeService.getManufacturingOrder(manufacturingCoReceipt.getManufacturingOrderId());
 			return ProductId.equals(manufacturingOrder.getProcessedProductId(), settings.getProcessedProductId())
-					&& ProductId.equals(manufacturingCoReceipt.getCoProductId(), settings.getCoProductId());
+					&& ProductId.equals(manufacturingCoReceipt.getCoProductId(), settings.getCoProductId())
+					&& settings.getSoTrx().isPurchase();
 		}
 		return false;
 	}

@@ -26,6 +26,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryLineId;
 import de.metas.util.Services;
@@ -62,6 +63,12 @@ public class InventoryLineModularContractHandler extends AbstractComputingMethod
 			final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(InventoryLineId.ofRepoId(recordRef.getRecord_ID()));
 			return FlatrateTermId.ofRepoIdOrNull(inventoryLine.getModular_Flatrate_Term_ID()) != null;
 		}
+		return false;
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
 		return false;
 	}
 

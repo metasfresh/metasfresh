@@ -85,7 +85,7 @@ public abstract class AbstractReceiptComputingMethod extends AbstractComputingMe
 	{
 		final I_M_InOutLine receiptLine = getReceiptLine(recordRef);
 		final ProductId receivedProductId = ProductId.ofRepoId(receiptLine.getM_Product_ID());
-		return ProductId.equals(receivedProductId, settings.getRawProductId());
+		return ProductId.equals(receivedProductId, settings.getRawProductId()) && settings.getSoTrx().isPurchase();
 	}
 	
 	@Override

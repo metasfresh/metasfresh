@@ -28,6 +28,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
@@ -68,6 +69,12 @@ public class SalesOrderLineProFormaModularContractHandler extends AbstractComput
 			return SOTrx.ofBoolean(orderRecord.isSOTrx()).isSales() && orderBL.isProFormaSO(orderRecord);
 		}
 		return false;
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
+		return settings.getSoTrx().isSales();
 	}
 
 	@Override

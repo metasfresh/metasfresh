@@ -234,6 +234,7 @@ public class ModularContractSettingsRepository
 				.storageCostStartDate(LocalDateAndOrgId.ofTimestamp(settingsRecord.getStorageCostStartDate(),
 						OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
 						orgDAO::getTimeZone))
+				.freeStorageCostDays(settingsRecord.getFreeStorageCostDays())
 				.moduleConfigs(moduleRecords.stream()
 						.map(moduleRecord -> fromRecord(moduleRecord, contractTypes))
 						.collect(ImmutableList.toImmutableList()))

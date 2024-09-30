@@ -112,6 +112,9 @@ public class ModularContractLogEntry
 	LocalDateAndOrgId transactionDate;
 
 	@Nullable
+	LocalDateAndOrgId physicalClearanceDate;
+
+	@Nullable
 	Integer storageDays;
 
 	@Nullable
@@ -155,6 +158,7 @@ public class ModularContractLogEntry
 			@Nullable final Quantity quantity,
 			@Nullable final Money amount,
 			@NonNull final LocalDateAndOrgId transactionDate,
+			@Nullable final LocalDateAndOrgId physicalClearanceDate,
 			@Nullable final Integer storageDays,
 			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final YearId year,
@@ -196,6 +200,7 @@ public class ModularContractLogEntry
 		this.quantity = quantity;
 		this.amount = amount;
 		this.transactionDate = transactionDate;
+		this.physicalClearanceDate = physicalClearanceDate;
 		this.storageDays = storageDays;
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.year = year;

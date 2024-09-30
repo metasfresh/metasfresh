@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.storagecost;
+package de.metas.contracts.modular.computing.salescontract.storagecost;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.ProductPriceWithFlags;
@@ -45,7 +45,7 @@ class ShipmentLineLog extends AbstractShipmentLogHandler
 	public ShipmentLineLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final StorageCostComputingMethod computingMethod)
+			@NonNull final SalesStorageCostComputingMethod computingMethod)
 	{
 		super(modularContractService, modCntrInvoicingGroupRepository, computingMethod);
 	}
@@ -56,9 +56,10 @@ class ShipmentLineLog extends AbstractShipmentLogHandler
 			final @NonNull LocalDateAndOrgId transactionDate,
 			final @Nullable LocalDateAndOrgId physicalClearanceDate)
 	{
-		final LocalDateAndOrgId storageDate = createLogRequest.getModularContractSettings().getStorageCostStartDate();
-		final int daysBetween = (int)LocalDateAndOrgId.daysBetween(storageDate, transactionDate);
-		return Math.max(daysBetween, 0);
+		Check.assumeNotNull(physicalClearanceDate, "Physical Clearance Date shouldn't be null ()");
+		final int daysBetween = (int)LocalDateAndOrgId.daysBetween(physicalClearanceDate, transactionDate);
+		final int daysFree = createLogRequest.getModularContractSettings().getFreeStorageCostDays();
+		return Math.max(daysBetween - daysFree, 0);
 	}
 
 	@NonNull
@@ -75,7 +76,7 @@ class ShipmentLineLog extends AbstractShipmentLogHandler
 	@Override
 	public SOTrx getSOTrx()
 	{
-		return SOTrx.PURCHASE;
+		return SOTrx.SALES;
 	}
 
 	@Override

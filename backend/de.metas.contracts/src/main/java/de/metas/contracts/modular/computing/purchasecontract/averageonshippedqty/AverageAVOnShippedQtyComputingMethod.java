@@ -103,7 +103,7 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMetho
 		final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId));
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 
-		return ProductId.equals(productId, settings.getProcessedProductId()) || ProductId.equals(productId, settings.getRawProductId());
+		return ProductId.equals(productId, settings.getProcessedProductId()) || ProductId.equals(productId, settings.getRawProductId()) && settings.getSoTrx().isPurchase();
 	}
 
 	@Override
