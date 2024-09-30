@@ -209,8 +209,17 @@ public class OLCandBL implements IOLCandBL
 
 	@Nullable
 	@Override
-	public InvoiceRule getInvoiceRule(@Nullable final BPartnerOrderParams bPartnerOrderParams, @Nullable final OLCandOrderDefaults orderDefaults)
+	public InvoiceRule getInvoiceRule(
+			@NonNull final I_C_OLCand olCandRecord,
+			@Nullable final BPartnerOrderParams bPartnerOrderParams,
+			@Nullable final OLCandOrderDefaults orderDefaults)
 	{
+		final InvoiceRule olCandInvoiceRule = InvoiceRule.ofNullableCode(olCandRecord.getInvoiceRule());
+		if (olCandInvoiceRule != null)
+		{
+			return olCandInvoiceRule;
+		}
+		
 		if (bPartnerOrderParams != null && bPartnerOrderParams.getInvoiceRule().isPresent())
 		{
 			return bPartnerOrderParams.getInvoiceRule().get();
@@ -225,7 +234,7 @@ public class OLCandBL implements IOLCandBL
 	@Nullable
 	@Override
 	public PaymentRule getPaymentRule(@Nullable final BPartnerOrderParams bPartnerOrderParams,
-			@Nullable final OLCandOrderDefaults orderDefaults,
+									  @Nullable final OLCandOrderDefaults orderDefaults,
 			@Nullable final I_C_OLCand orderCandidateRecord)
 	{
 		final PaymentRule orderCandidatePaymentRule = orderCandidateRecord == null ? null
@@ -236,14 +245,14 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getPaymentRule();
 
 		return coalesce(orderCandidatePaymentRule,
-						bpartnerOrderParamsPaymentRule,
-						orderDefaultsPaymentRule);
+				bpartnerOrderParamsPaymentRule,
+				orderDefaultsPaymentRule);
 	}
 
 	@Nullable
 	@Override
 	public PaymentTermId getPaymentTermId(@Nullable final BPartnerOrderParams bPartnerOrderParams,
-			@Nullable final OLCandOrderDefaults orderDefaults,
+										  @Nullable final OLCandOrderDefaults orderDefaults,
 			@Nullable final I_C_OLCand orderCandidateRecord)
 	{
 		final PaymentTermId orderCandidatePaymenTermId = orderCandidateRecord == null ? null
@@ -256,8 +265,8 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getPaymentTermId();
 
 		return coalesce(orderCandidatePaymenTermId,
-						bpartnerOrderParamsPaymentTermId,
-						orderDefaultsPaymentTermId);
+				bpartnerOrderParamsPaymentTermId,
+				orderDefaultsPaymentTermId);
 	}
 
 	@Nullable
@@ -276,8 +285,8 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getShipperId();
 
 		return coalesce(orderCandiateShipperId,
-						bpartnerOrderParamsShipperId,
-						orderDefaultsShipperId);
+				bpartnerOrderParamsShipperId,
+				orderDefaultsShipperId);
 	}
 
 	@Nullable
@@ -292,7 +301,7 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getDocTypeTargetId();
 
 		return coalesce(orderDocTypeId,
-						orderDefaultsDocTypeId);
+				orderDefaultsDocTypeId);
 	}
 
 	@Nullable
@@ -408,8 +417,8 @@ public class OLCandBL implements IOLCandBL
 		if (currencyId == null)
 		{
 			throw new AdempiereException("@NotFound@ @C_Currency@"
-												 + "\n Pricing context: " + pricingCtx
-												 + "\n Pricing result: " + pricingResult);
+					+ "\n Pricing context: " + pricingCtx
+					+ "\n Pricing result: " + pricingResult);
 		}
 
 		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, pricingResult.getPrecision().toInt());

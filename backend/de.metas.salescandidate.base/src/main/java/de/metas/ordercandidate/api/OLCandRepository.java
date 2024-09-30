@@ -13,6 +13,7 @@ import de.metas.document.DocTypeId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.location.LocationId;
+import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
 import de.metas.order.compensationGroup.GroupCompensationOrderBy;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -118,7 +119,7 @@ public class OLCandRepository
 		// if email and phone are blank, they might be set from the location a few lines down the road.
 		olCandPO.setEMail(request.getEmail());
 		olCandPO.setPhone(request.getPhone());
-		
+
 		// set the "normal" (buyer) bpartner's data
 		{
 			final BPartnerInfo bpartner = request.getBpartner();
@@ -191,8 +192,8 @@ public class OLCandRepository
 		olCandPO.setDateCandidate(CoalesceUtil.coalesceNotNull(TimeUtil.asTimestamp(request.getDateCandidate()), SystemTime.asDayTimestamp()));
 		olCandPO.setDateOrdered(TimeUtil.asTimestamp(request.getDateOrdered()));
 		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()
-															  .atTime(LocalTime.MAX)
-															  .atZone(timeZone)));
+				.atTime(LocalTime.MAX)
+				.atZone(timeZone)));
 
 		olCandPO.setPresetDateInvoiced(TimeUtil.asTimestamp(request.getPresetDateInvoiced()));
 		olCandPO.setC_DocTypeInvoice_ID(DocTypeId.toRepoId(request.getDocTypeInvoiceId()));
@@ -261,6 +262,12 @@ public class OLCandRepository
 		if (salesRepId != null && !salesRepId.equals(BPartnerId.ofRepoId(olCandPO.getC_BPartner_ID())))
 		{
 			olCandPO.setC_BPartner_SalesRep_ID(salesRepId.getRepoId());
+		}
+
+		final InvoiceRule invoiceRule = request.getInvoiceRule();
+		if (invoiceRule != null)
+		{
+			olCandPO.setInvoiceRule(invoiceRule.getCode());
 		}
 
 		final PaymentRule paymentRule = request.getPaymentRule();

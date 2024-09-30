@@ -4,20 +4,26 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IEnqueueResult;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
+import de.metas.order.InvoiceRule;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
+import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.payment.PaymentRule;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderId;
 import de.metas.pos.POSOrderLine;
 import de.metas.pos.POSOrdersRepository;
+import de.metas.pos.POSPayment;
+import de.metas.pos.POSPaymentMethod;
 import de.metas.process.PInstanceId;
 import de.metas.salesorder.candidate.ProcessOLCandsRequest;
 import de.metas.salesorder.candidate.ProcessOLCandsWorkpackageEnqueuer;
@@ -57,24 +63,7 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 		final List<OLCand> olCands = createOLCands(posOrder);
 		Check.assumeNotEmpty(olCands, "No OLCands created for {}", posOrder);
 
-		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ProcessOLCands);
-
-		asyncBatchService.executeBatch(
-				() -> {
-					processOLCandsWorkpackageEnqueuer.enqueue(
-							ProcessOLCandsRequest.builder()
-									.pInstanceId(createOLCandsSelection(olCands))
-									.ship(true)
-									.invoice(true)
-									.closeOrder(true)
-									.build(),
-							asyncBatchId
-					);
-
-					return IEnqueueResult.ONE_WORKPACKAGE_ENQUEUED;
-				},
-				asyncBatchId
-		);
+		processOLCands(olCands);
 
 		return Result.SUCCESS;
 	}
@@ -93,17 +82,6 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 
 		final POSOrderId posOrderId = POSOrderId.ofRepoId(posOrderRepoIds.iterator().next());
 		return posOrdersRepository.getById(posOrderId);
-	}
-
-	private static PInstanceId createOLCandsSelection(final List<OLCand> olCands)
-	{
-		final ImmutableSet<Integer> olCandIds = extractOLCandIds(olCands);
-		return DB.createT_Selection(olCandIds, ITrx.TRXNAME_None);
-	}
-
-	private static ImmutableSet<Integer> extractOLCandIds(final List<OLCand> olCands)
-	{
-		return olCands.stream().map(OLCand::getId).collect(ImmutableSet.toImmutableSet());
 	}
 
 	private List<OLCand> createOLCands(@NonNull final POSOrder posOrder)
@@ -142,6 +120,11 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 				.price(posLine.getPrice().toBigDecimal())
 				.currencyId(posLine.getPrice().getCurrencyId())
 				//
+				.deliveryRule(DeliveryRule.FORCE.getCode())
+				.deliveryViaRule(DeliveryViaRule.Pickup.getCode())
+				.invoiceRule(InvoiceRule.Immediate)
+				.paymentRule(getPaymentRule(posOrder))
+				//
 				// TODO optimize the retrieves below
 				.dataSourceId(inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(DATA_SOURCE_INTERNAL_NAME))
 				.dataDestId(inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME))
@@ -149,4 +132,58 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 				.build();
 	}
 
+	private static PaymentRule getPaymentRule(final POSOrder posOrder)
+	{
+		final ImmutableSet<POSPaymentMethod> paymentMethods = posOrder.getPayments().stream().map(POSPayment::getPaymentMethod).collect(ImmutableSet.toImmutableSet());
+		if (paymentMethods.size() == 1)
+		{
+			return paymentMethods.iterator().next().getPaymentRule();
+		}
+		else
+		{
+			// NOTE: because we don't have a thing like "mix payments" we go with OnCredit here.
+			return PaymentRule.OnCredit;
+		}
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	public void processOLCands(@NonNull List<OLCand> olCands)
+	{
+		Check.assumeNotEmpty(olCands, "No Order Candidates");
+
+		//
+		// To the actual order/shipment/invoice creation:
+		// start another async-batch - just to wait for
+		// ProcessOLCandsWorkpackageProcessor to finish doing the work and enqueing sub-processors.
+		final AsyncBatchId processOLCandsAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ProcessOLCands);
+		asyncBatchService.executeBatch(
+				() -> {
+					processOLCandsWorkpackageEnqueuer.enqueue(
+							ProcessOLCandsRequest.builder()
+									.pInstanceId(createOLCandsSelection(olCands))
+									.ship(true)
+									.invoice(true)
+									//.closeOrder(true)
+									.build(),
+							processOLCandsAsyncBatchId);
+					return () -> 1; // we always enqueue one workpackage
+				},
+				processOLCandsAsyncBatchId);
+	}
+
+	private static PInstanceId createOLCandsSelection(final List<OLCand> olCands)
+	{
+		final ImmutableSet<OLCandId> olCandIds = extractOLCandIds(olCands);
+		return DB.createT_Selection(olCandIds, ITrx.TRXNAME_None);
+	}
+
+	private static ImmutableSet<OLCandId> extractOLCandIds(final List<OLCand> olCands)
+	{
+		return olCands.stream().map(olCand -> OLCandId.ofRepoId(olCand.getId())).collect(ImmutableSet.toImmutableSet());
+	}
 }
