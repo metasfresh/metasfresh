@@ -684,6 +684,7 @@ public class JsonShipmentService
 				.shipmentScheduleBL(shipmentScheduleBL)
 				.scheduleEffectiveBL(scheduleEffectiveBL)
 				.shipperDAO(shipperDAO)
+				.productDAO(productDAO)
 				.build();
 	}
 
