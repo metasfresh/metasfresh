@@ -137,4 +137,10 @@ public class SupplyRequiredDescriptor
 
 	@JsonIgnore
 	public AttributesKey getStorageAttributesKey() {return getMaterialDescriptor().getStorageAttributesKey();}
+
+	public int getPpOrderCandidateId()
+	{
+		final PPOrderRef ppOrderRef = getPpOrderRef();
+		return ppOrderRef == null ? 0 : ppOrderRef.getPpOrderCandidateId();
+	}
 }
