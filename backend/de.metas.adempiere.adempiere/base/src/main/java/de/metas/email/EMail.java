@@ -369,6 +369,8 @@ public final class EMail implements Serializable
 		if (mailbox.isStartTLS())
 		{
 			props.put("mail.smtp.starttls.enable", "true");
+			props.put("smtp.starttls.required", "true");
+			props.put("mail.smtp.ssl.protocols", "TLSv1.2");
 		}
 		if (auth != null)
 		{
