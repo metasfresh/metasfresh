@@ -45,6 +45,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -63,12 +64,7 @@ public class SalesStorageCostComputingMethod extends AbstractComputingMethodHand
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
-
-	@Override
-	public @NonNull ComputingMethodType getComputingMethodType()
-	{
-		return ComputingMethodType.SalesStorageCost;
-	}
+	@NonNull @Getter ComputingMethodType computingMethodType = ComputingMethodType.SalesStorageCost;
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)

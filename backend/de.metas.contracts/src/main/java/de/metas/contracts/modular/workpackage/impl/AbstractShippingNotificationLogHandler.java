@@ -171,7 +171,7 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 						.build());
 	}
 
-	public abstract SOTrx getSOTrx();
+	protected abstract SOTrx getSOTrx();
 
 	private record NotificationAndLineWrapper(
 			@NonNull I_M_Shipping_Notification notification,
@@ -185,11 +185,6 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 		public ProductId getProductId()
 		{
 			return ProductId.ofRepoId(notificationLine.getM_Product_ID());
-		}
-
-		public BPartnerId getBPartnerId()
-		{
-			return BPartnerId.ofRepoId(notification.getC_BPartner_ID());
 		}
 
 		public TableRecordReference getLineReference()

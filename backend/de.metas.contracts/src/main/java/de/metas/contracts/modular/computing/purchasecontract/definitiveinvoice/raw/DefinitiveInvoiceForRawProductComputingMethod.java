@@ -34,7 +34,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class DefinitiveInvoiceForRawProductComputingMethod extends AbstractDefinitiveInvoiceComputingMethod
 {
-
 	public DefinitiveInvoiceForRawProductComputingMethod(
 			@NonNull final ModularContractProvider contractProvider,
 			@NonNull final ComputingMethodService computingMethodService)

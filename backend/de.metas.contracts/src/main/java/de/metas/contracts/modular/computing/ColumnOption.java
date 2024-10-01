@@ -20,22 +20,19 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty;
+package de.metas.contracts.modular.computing;
 
-import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.settings.ModularContractModuleId;
-import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.RequiredArgsConstructor;
+import org.compiere.model.I_M_InOutLine;
 
-import java.math.BigDecimal;
-
-@Value
-@Builder
-public class ContractSpecificScalePriceRequest
+@RequiredArgsConstructor
+@Getter
+public enum ColumnOption
 {
-	@NonNull ModularContractModuleId modularContractModuleId;
-	@NonNull FlatrateTermId flatrateTermId;
-	@NonNull ColumnOption column;
-	@NonNull BigDecimal value;
+	UserElementNumber1(I_M_InOutLine.COLUMNNAME_UserElementNumber1),
+	UserElementNumber2(I_M_InOutLine.COLUMNNAME_UserElementNumber2);
+
+	@NonNull private final String columnName;
 }

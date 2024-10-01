@@ -222,5 +222,5 @@ public abstract class AbstractShipmentLogHandler extends AbstractModularContract
 				.build());
 	}
 
-	public abstract SOTrx getSOTrx();
+	protected abstract SOTrx getSOTrx();
 }

@@ -40,7 +40,7 @@ import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty.ColumnOption;
+import de.metas.contracts.modular.computing.ColumnOption;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -48,6 +48,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import de.metas.util.lang.SeqNo;
@@ -371,7 +372,8 @@ public class ModularContractSettingsRepository
 				.entrySet()
 				.stream()
 				.filter(entry -> entry.getValue().getSettingsId() != null)
-				.forEach(entry -> termId2SettingsIdBuilder.put(entry.getKey().getContractId(), entry.getValue().getSettingsId()));
+				.forEach(entry -> termId2SettingsIdBuilder.put(Check.assumeNotNull(entry.getKey().getContractId(), "ContractId shouldn't be null"),
+															   entry.getValue().getSettingsId()));
 		final ImmutableMap<FlatrateTermId, ModularContractSettingsId> termId2SettingsId = termId2SettingsIdBuilder.build();
 
 		final ImmutableMap<ModularContractSettingsId, ModularContractSettings> id2Settings = id2ModularContractSettings

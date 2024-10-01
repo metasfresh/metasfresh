@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.contracts
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,19 +20,22 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty;
+package de.metas.contracts.modular.computing;
 
-import lombok.Getter;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
+import lombok.Builder;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import org.compiere.model.I_M_InOutLine;
+import lombok.Value;
 
-@RequiredArgsConstructor
-@Getter
-public enum ColumnOption
+import java.math.BigDecimal;
+
+@Value
+@Builder
+public class ContractSpecificScalePriceRequest
 {
-	UserElementNumber1(I_M_InOutLine.COLUMNNAME_UserElementNumber1),
-	UserElementNumber2(I_M_InOutLine.COLUMNNAME_UserElementNumber2);
-
-	@NonNull private final String columnName;
+	@NonNull ModularContractModuleId modularContractModuleId;
+	@NonNull FlatrateTermId flatrateTermId;
+	@NonNull ColumnOption column;
+	@NonNull BigDecimal value;
 }

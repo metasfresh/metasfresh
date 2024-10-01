@@ -79,7 +79,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	SvProcessed("SvProcessed"),
 	SalesStorageCost("Sales_StorageCost"),
 	Sales("Sales"),
-	SalesAV("SalesAV");
+	SalesAV("SalesAV"),
+	SalesAverageAddedValueOnShippedQuantity("SalesAverageAVOnShippedQty");
 
 	public static final ImmutableList<ComputingMethodType> INTERIM_INVOICE_SPECIFIC_METHODS = ImmutableList.of(INTERIM_CONTRACT);
 

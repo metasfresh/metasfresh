@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty;
+package de.metas.contracts.modular.computing.salescontract.averageonshippedqty;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
@@ -41,14 +41,14 @@ import org.springframework.stereotype.Component;
 import java.util.stream.Stream;
 
 @Component
-public class AverageAVOnShippedQtyComputingMethod extends AbstractAverageAVOnShippedQtyComputingMethod
+public class SalesAverageAVOnShippedQtyComputingMethod extends AbstractAverageAVOnShippedQtyComputingMethod
 {
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull @Getter ComputingMethodType computingMethodType = ComputingMethodType.SalesAverageAddedValueOnShippedQuantity;
 
-	public AverageAVOnShippedQtyComputingMethod(
+	public SalesAverageAVOnShippedQtyComputingMethod(
 			@NonNull final ComputingMethodService computingMethodService,
 			@NonNull final ModularContractProvider contractProvider
 	)
@@ -61,7 +61,7 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractAverageAVOnShi
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
 		return recordRef.getIdIfTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId)
-				.map(contractProvider::streamModularPurchaseContractsForShipmentLine)
+				.map(contractProvider::streamModularSalesContractsForShipmentLine)
 				.orElseGet(Stream::empty);
 	}
 
@@ -71,6 +71,6 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractAverageAVOnShi
 		final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId));
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 
-		return ProductId.equals(productId, settings.getProcessedProductId()) || ProductId.equals(productId, settings.getRawProductId()) && settings.getSoTrx().isPurchase();
+		return ProductId.equals(productId, settings.getRawProductId()) && settings.getSoTrx().isSales();
 	}
 }

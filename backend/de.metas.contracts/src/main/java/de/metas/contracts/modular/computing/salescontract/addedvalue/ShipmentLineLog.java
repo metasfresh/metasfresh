@@ -42,7 +42,7 @@ public class ShipmentLineLog extends AbstractShipmentLogHandler
 		super(modularContractService, modCntrInvoicingGroupRepository, computingMethod);
 	}
 
-	public SOTrx getSOTrx()
+	protected SOTrx getSOTrx()
 	{
 		return SOTrx.SALES;
 	}

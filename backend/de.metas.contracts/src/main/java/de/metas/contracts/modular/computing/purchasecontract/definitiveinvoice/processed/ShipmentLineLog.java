@@ -21,7 +21,7 @@ public class ShipmentLineLog extends AbstractShipmentLogHandler
 	}
 
 	@Override
-	public SOTrx getSOTrx()
+	protected SOTrx getSOTrx()
 	{
 		return SOTrx.PURCHASE;
 	}

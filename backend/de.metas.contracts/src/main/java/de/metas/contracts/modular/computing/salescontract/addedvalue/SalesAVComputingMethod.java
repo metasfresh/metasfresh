@@ -32,7 +32,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class SalesAVComputingMethod extends AbstractShipmentComputingMethod
 {
-
 	public SalesAVComputingMethod(
 			@NonNull final ModularContractProvider contractProvider,
 			@NonNull final ComputingMethodService computingMethodService)

@@ -20,11 +20,12 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.salescontract.sales;
+package de.metas.contracts.modular.computing.salescontract.averageonshippedqty;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.workpackage.impl.AbstractShipmentLogHandler;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
+import de.metas.contracts.modular.workpackage.impl.AbstractUserElementNumberShipmentLineLog;
 import de.metas.lang.SOTrx;
 import lombok.Getter;
 import lombok.NonNull;
@@ -32,16 +33,20 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Getter
-public class ShipmentLineLog extends AbstractShipmentLogHandler
+public class UserElementNumberShipmentLineLog extends AbstractUserElementNumberShipmentLineLog
 {
-	public ShipmentLineLog(
+	@NonNull final SalesAverageAVOnShippedQtyComputingMethod computingMethod;
+	public UserElementNumberShipmentLineLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final SalesComputingMethod computingMethod)
+			@NonNull final ModularContractSettingsRepository modularContractSettingsRepository,
+			@NonNull final SalesAverageAVOnShippedQtyComputingMethod computingMethod)
 	{
-		super(modularContractService, modCntrInvoicingGroupRepository, computingMethod);
+		super(modularContractService, modCntrInvoicingGroupRepository, modularContractSettingsRepository);
+		this.computingMethod = computingMethod;
 	}
 
+	@Override
 	protected SOTrx getSOTrx()
 	{
 		return SOTrx.SALES;
