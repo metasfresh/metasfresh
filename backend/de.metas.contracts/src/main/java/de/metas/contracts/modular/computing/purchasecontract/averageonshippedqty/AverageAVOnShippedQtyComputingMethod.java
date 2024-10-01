@@ -46,7 +46,7 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractAverageAVOnShi
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	@NonNull private final ModularContractProvider contractProvider;
-	@NonNull @Getter ComputingMethodType computingMethodType = ComputingMethodType.SalesAverageAddedValueOnShippedQuantity;
+	@NonNull @Getter ComputingMethodType computingMethodType = ComputingMethodType.AverageAddedValueOnShippedQuantity;
 
 	public AverageAVOnShippedQtyComputingMethod(
 			@NonNull final ComputingMethodService computingMethodService,
