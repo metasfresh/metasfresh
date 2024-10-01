@@ -35,6 +35,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.report.ReportResultData;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 
 import java.util.Collection;
 import java.util.List;
@@ -103,4 +104,6 @@ public interface IDesadvBL extends ISingletonService
 	void updateQtyOrdered_OverrideFromShipSchedAndSave(@NonNull I_M_ShipmentSchedule schedule);
 
 	void propagateEDIStatus(@NonNull I_EDI_Desadv desadv);
+	
+	boolean isMatchUsingOrderId(@NonNull ClientId clientId);
 }
