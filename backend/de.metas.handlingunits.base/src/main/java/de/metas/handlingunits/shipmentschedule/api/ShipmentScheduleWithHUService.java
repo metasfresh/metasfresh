@@ -111,6 +111,8 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.shippingnotification.ShippingNotificationRepository;
+import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -195,7 +197,7 @@ public class ShipmentScheduleWithHUService
 						ADReferenceService.newMocked()),
 				new PickingConfigRepositoryV2(),
 				new InventoryService(new InventoryRepository(), new SourceHUsService()),
-				new ModularContractProvider()
+				new ModularContractProvider(new ShippingNotificationService(new ShippingNotificationRepository()))
 		);
 	}
 
