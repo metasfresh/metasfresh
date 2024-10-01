@@ -80,13 +80,16 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	SalesStorageCost("Sales_StorageCost"),
 	Sales("Sales"),
 	SalesAV("SalesAV"),
-	SalesAverageAddedValueOnShippedQuantity("SalesAverageAVOnShippedQty");
+	SalesAverageAddedValueOnShippedQuantity("SalesAverageAVOnShippedQty"),
+	SalesInformativeLogs("SalesInformativeLogs");
 
 	public static final ImmutableList<ComputingMethodType> INTERIM_INVOICE_SPECIFIC_METHODS = ImmutableList.of(INTERIM_CONTRACT);
 
-	public static final ImmutableList<ComputingMethodType> DEFINITIVE_INVOICE_SPECIFIC_METHODS = ImmutableList.of(DefinitiveInvoiceRawProduct,
+	public static final ImmutableList<ComputingMethodType> DEFINITIVE_INVOICE_SPECIFIC_METHODS = ImmutableList.of(
+			DefinitiveInvoiceRawProduct,
 			DefinitiveInvoiceProcessedProduct);
-	public static final ImmutableList<ComputingMethodType> FINAL_INVOICE_SPECIFIC_METHODS = ImmutableList.of(INTERIM_CONTRACT,
+	public static final ImmutableList<ComputingMethodType> FINAL_INVOICE_SPECIFIC_METHODS = ImmutableList.of(
+			INTERIM_CONTRACT,
 			Receipt,
 			SalesOnRawProduct,
 			SalesOnProcessedProduct,
@@ -103,8 +106,18 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 			SvCo,
 			SvProcessed);
 
+	public static final ImmutableList<ComputingMethodType> SALES_FINAL_INVOICE_SPECIFIC_METHODS = ImmutableList.of(
+			SalesStorageCost,
+			Sales,
+			SalesAV,
+			SalesAverageAddedValueOnShippedQuantity,
+			SalesInformativeLogs
+	);
+
 	public static final ImmutableList<ComputingMethodType> INTEREST_SPECIFIC_METHODS = ImmutableList.of(AddValueOnInterim,
-			SubtractValueOnInterim);
+			SubtractValueOnInterim
+	);
+
 	//If not all interim amt has been covered by shipping notifications, it is possible that some unprocessed logs exist for the AddValueOnInterim/SubtractValueOnInterim
 	public static final ImmutableList<ComputingMethodType> FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS = ImmutableList.of(INTERIM_CONTRACT,
 			Receipt,
@@ -119,13 +132,15 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 			AverageAddedValueOnShippedQuantity,
 			AvCo,
 			SvCo,
-			SvProcessed);
+			SvProcessed
+	);
 
 	private static final ImmutableSet<ComputingMethodType> SUBTRACTED_VALUE_METHODS = ImmutableSet.of(
 			SubtractValueOnRawProduct,
 			SubtractValueOnInterim,
 			SvCo,
-			SvProcessed);
+			SvProcessed
+	);
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ComputingMethodType> index = ReferenceListAwareEnums.index(values());
 

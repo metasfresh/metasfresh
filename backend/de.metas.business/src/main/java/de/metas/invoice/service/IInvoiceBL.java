@@ -386,6 +386,8 @@ public interface IInvoiceBL extends ISingletonService {
 
 	boolean isDefinitiveInvoiceOrDefinitiveCreditMemo(final I_C_Invoice invoiceRecord);
 
+    boolean isSalesFinalInvoiceOrFinalCreditMemo(final I_C_Invoice invoiceRecord);
+
 	/**
 	 * Decide if the given invoice is an Adjustment Charge
 	 */

@@ -30,13 +30,15 @@ import org.compiere.model.X_C_DocType;
 
 import static de.metas.contracts.modular.ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS;
 import static de.metas.contracts.modular.ComputingMethodType.FINAL_INVOICE_SPECIFIC_METHODS;
+import static de.metas.contracts.modular.ComputingMethodType.SALES_FINAL_INVOICE_SPECIFIC_METHODS;
 
 @Getter
 @RequiredArgsConstructor
 public enum ModCntrInvoiceType
 {
 	Final(X_C_DocType.DOCSUBTYPE_FinalInvoice, X_C_DocType.DOCSUBTYPE_FinalCreditMemo, FINAL_INVOICE_SPECIFIC_METHODS),
-	Definitive(X_C_DocType.DOCSUBTYPE_DefinitiveInvoice, X_C_DocType.DOCSUBTYPE_DefinitiveCreditMemo, DEFINITIVE_INVOICE_SPECIFIC_METHODS);
+	Definitive(X_C_DocType.DOCSUBTYPE_DefinitiveInvoice, X_C_DocType.DOCSUBTYPE_DefinitiveCreditMemo, DEFINITIVE_INVOICE_SPECIFIC_METHODS),
+	SalesFinal(X_C_DocType.DOCSUBTYPE_FinalInvoice, X_C_DocType.DOCSUBTYPE_FinalCreditMemo, SALES_FINAL_INVOICE_SPECIFIC_METHODS);
 
 	@NonNull final String positiveAmtDocSubType;
 	@NonNull final String negativAmtDocSubType;

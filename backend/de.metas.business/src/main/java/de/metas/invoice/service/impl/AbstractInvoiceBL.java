@@ -250,9 +250,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				throw new AdempiereException(
 						MSG_InvoiceMayNotBePaid,
-						new Object[] {
-								invoice.getDocumentNo()
-						});
+                        invoice.getDocumentNo());
 			}
 
 			//
@@ -265,9 +263,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				throw new AdempiereException(
 						MSG_InvoiceMayNotHaveOpenAmtZero,
-						new Object[] {
-								invoice.getDocumentNo()
-						});
+                        invoice.getDocumentNo());
 			}
 
 		}
@@ -1603,6 +1599,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
 		return docTypeId != null && docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId);
+	}
+
+	@Override
+	public final boolean isSalesFinalInvoiceOrFinalCreditMemo(final org.compiere.model.I_C_Invoice invoiceRecord)
+	{
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
+		return docTypeId != null && docTypeBL.isSalesFinalInvoiceOrFinalCreditMemo(docTypeId);
 	}
 
 	@Override
