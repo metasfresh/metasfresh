@@ -28,27 +28,15 @@
  *********************************************************************/
 package org.adempiere.server.rpl.api.impl;
 
-import static org.adempiere.server.rpl.api.impl.ReplicationHelper.setReplicationCtx;
-
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-import javax.xml.bind.DatatypeConverter;
-import javax.xml.xpath.XPathExpressionException;
-
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.logging.LogManager;
+import de.metas.monitoring.api.IMeter;
+import de.metas.monitoring.api.IMonitoringBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
@@ -110,15 +98,25 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import de.metas.adempiere.service.IColumnBL;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.logging.LogManager;
-import de.metas.monitoring.api.IMeter;
-import de.metas.monitoring.api.IMonitoringBL;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import javax.xml.bind.DatatypeConverter;
+import javax.xml.xpath.XPathExpressionException;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
+import static org.adempiere.server.rpl.api.impl.ReplicationHelper.setReplicationCtx;
 
 /**
  * Default XML importer
@@ -493,7 +491,7 @@ public class ImportHelper implements IImportHelper
 		try
 		{
 			//
-			// Getting the Object for the replicate
+			// Getting the Object for the replicate (empty or with what column-values could be loaded from DB)
 			final POReplicationTrxLineDraft draft = getObjectFromFormat(result,
 					expFormat,
 					rootElement, rootElement.getNodeName(),

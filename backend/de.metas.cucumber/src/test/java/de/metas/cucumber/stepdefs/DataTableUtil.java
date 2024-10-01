@@ -420,6 +420,7 @@ public class DataTableUtil
 		return extractBooleanForColumnNameOr(dataTableRow.asMap(), columnName, defaultValue);
 	}
 
+	@Contract("_, _, !null -> !null")
 	@Nullable
 	public static Boolean extractBooleanForColumnNameOr(
 			@NonNull final Map<String, String> dataTableRow,
