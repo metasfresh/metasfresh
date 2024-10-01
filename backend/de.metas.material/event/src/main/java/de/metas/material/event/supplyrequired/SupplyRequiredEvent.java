@@ -40,7 +40,7 @@ public class SupplyRequiredEvent implements MaterialEvent
 
 	@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor;
 
-	public static SupplyRequiredEvent of(@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor)
+	public static SupplyRequiredEvent of(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		return SupplyRequiredEvent.builder().supplyRequiredDescriptor(supplyRequiredDescriptor).build();
 	}

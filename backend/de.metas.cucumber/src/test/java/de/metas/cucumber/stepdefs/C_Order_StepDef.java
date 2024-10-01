@@ -87,7 +87,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
@@ -316,7 +316,7 @@ public class C_Order_StepDef
 				});
 	}
 
-	@And("^the order identified by (.*) is (reactivated|completed)$")
+	@And("^the order identified by (.*) is (reactivated|completed|closed|voided|reversed)$")
 	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
@@ -332,6 +332,18 @@ public class C_Order_StepDef
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 				logger.info("Order {} was completed", order);
+				break;
+			case closed:
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				break;
+			case voided:
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				break;
+			case reversed:
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 				break;
 			default:
 				throw new AdempiereException("Unhandled C_Order action")
@@ -435,7 +447,7 @@ public class C_Order_StepDef
 
 	@Then("a PurchaseOrder with externalId {string} is created after not more than {int} seconds and has values")
 	public void verifyOrder(final String externalId, final int timeoutSec,
-							@NonNull final DataTable dataTable) throws InterruptedException
+			@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final Map<String, String> dataTableRow = dataTable.asMaps().get(0);
 
@@ -659,7 +671,7 @@ public class C_Order_StepDef
 
 	@Then("the following group compensation order lines were created for externalHeaderId: {string}")
 	public void verifyOrderLines(final String externalHeaderId,
-								 @NonNull final DataTable dataTable)
+			@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)

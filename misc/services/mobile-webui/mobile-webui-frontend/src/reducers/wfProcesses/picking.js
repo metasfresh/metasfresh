@@ -179,6 +179,7 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
   draftActivityDataStored.isAllowNewTU = fromActivity.componentProps.isAllowNewTU;
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
   draftActivityDataStored.isAllowSkippingRejectedReason = fromActivity.componentProps.isAllowSkippingRejectedReason;
+  draftActivityDataStored.isShowPromptWhenOverPicking = fromActivity.componentProps.isShowPromptWhenOverPicking;
 
   //
   // Copy lines
