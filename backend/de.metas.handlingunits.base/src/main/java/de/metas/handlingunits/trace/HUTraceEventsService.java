@@ -727,7 +727,6 @@ public class HUTraceEventsService
 			else
 			{
 				builder.topLevelHuId(huId);
-				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, huRecord);
 			}
 
 			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
