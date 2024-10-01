@@ -20,8 +20,9 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.informative;
+package de.metas.contracts.modular.computing.salescontract.informative;
 
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -40,6 +41,9 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.shippingnotification.ShippingNotificationLineId;
+import de.metas.shippingnotification.ShippingNotificationRepository;
+import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -55,15 +59,15 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class InformativeLogComputingMethod extends AbstractComputingMethodHandler
+public class SalesInformativeLogComputingMethod extends AbstractComputingMethodHandler
 {
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final ModularContractProvider contractProvider;
-
-	@NonNull @Getter private final ComputingMethodType computingMethodType = ComputingMethodType.InformativeLogs;
+	@NonNull private final ShippingNotificationRepository shippingNotificationRepository;
+	@NonNull @Getter private final ComputingMethodType computingMethodType = ComputingMethodType.SalesInformativeLogs;
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, final @NonNull LogEntryContractType contractType)
@@ -78,7 +82,7 @@ public class InformativeLogComputingMethod extends AbstractComputingMethodHandle
 			case I_C_OrderLine.Table_Name ->
 			{
 				final I_C_Order orderRecord = orderBL.getById(orderLineBL.getOrderIdByOrderLineId(OrderLineId.ofRepoId(recordRef.getRecord_ID())));
-				return SOTrx.ofBoolean(orderRecord.isSOTrx()).isPurchase();
+				return SOTrx.ofBoolean(orderRecord.isSOTrx()).isSales();
 			}
 			case I_C_Flatrate_Term.Table_Name ->
 			{
@@ -95,14 +99,22 @@ public class InformativeLogComputingMethod extends AbstractComputingMethodHandle
 				}
 
 				final OrderId orderId = orderLineBL.getOrderIdByOrderLineId(orderLineId);
-				return SOTrx.ofBoolean(orderBL.getById(orderId).isSOTrx()).isPurchase();
+				return SOTrx.ofBoolean(orderBL.getById(orderId).isSOTrx()).isSales();
 			}
 			case I_C_InvoiceLine.Table_Name ->
 			{
 				final I_C_Invoice invoiceRecord = invoiceBL.getByLineId(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
 				final SOTrx soTrx = SOTrx.ofBoolean(invoiceRecord.isSOTrx());
 
-				return soTrx.isPurchase() && ( invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord) || invoiceBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(invoiceRecord));
+				return soTrx.isSales() && invoiceBL.isSalesFinalInvoiceOrFinalCreditMemo(invoiceRecord);
+			}
+			case I_M_Shipping_NotificationLine.Table_Name ->
+			{
+				final I_M_Shipping_NotificationLine line = shippingNotificationRepository.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
+				final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(line.getC_Order_ID()));
+				final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(salesOrder.getHarvesting_Year_ID(), salesOrder.getC_Harvesting_Calendar_ID());
+
+				return yearAndCalendarId != null;
 			}
 			default -> {return false;}
 		}
@@ -111,7 +123,7 @@ public class InformativeLogComputingMethod extends AbstractComputingMethodHandle
 	@Override
 	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
 	{
-		return settings.getSoTrx().isPurchase();
+		return settings.getSoTrx().isSales();
 	}
 
 	@Override
@@ -119,9 +131,10 @@ public class InformativeLogComputingMethod extends AbstractComputingMethodHandle
 	{
 		return switch (recordRef.getTableName())
 		{
-			case I_C_OrderLine.Table_Name -> contractProvider.streamModularPurchaseContractsForPurchaseOrderLine(OrderLineId.ofRepoId(recordRef.getRecord_ID()));
+			case I_C_OrderLine.Table_Name -> contractProvider.streamSalesContractsForSalesOrderLine(OrderLineId.ofRepoId(recordRef.getRecord_ID()));
 			case I_C_Flatrate_Term.Table_Name -> Stream.of(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
-			case I_C_InvoiceLine.Table_Name -> contractProvider.streamModularPurchaseContractsForInvoiceLine(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
+			case I_C_InvoiceLine.Table_Name -> contractProvider.streamModularSalesContractsForInvoiceLine(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
+			case I_M_Shipping_NotificationLine.Table_Name -> contractProvider.streamSalesContractsForShippingNotificationLine(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
 			default -> Stream.empty();
 		};
 	}

@@ -1,4 +1,4 @@
-package de.metas.contracts.modular.computing.purchasecontract.informative;/*
+/*
  * #%L
  * de.metas.contracts
  * %%
@@ -20,28 +20,39 @@ package de.metas.contracts.modular.computing.purchasecontract.informative;/*
  * #L%
  */
 
+package de.metas.contracts.modular.computing.salescontract.informative;
+
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.log.LogEntryDocumentType;
-import de.metas.contracts.modular.workpackage.impl.AbstractOrderLineLog;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler;
+import de.metas.lang.SOTrx;
+import de.metas.shippingnotification.ShippingNotificationService;
 import lombok.Getter;
 import lombok.NonNull;
-import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
-@Getter
 @Component
-class PurchaseOrderLineLog extends AbstractOrderLineLog
+@Getter
+class ShipmentNotificationLineLog extends AbstractShippingNotificationLogHandler
 {
-	@NonNull private final InformativeLogComputingMethod computingMethod;
-	@NonNull private final String supportedTableName = I_C_OrderLine.Table_Name;
-	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PURCHASE_ORDER;
+	@NonNull
+	private final SalesInformativeLogComputingMethod computingMethod;
 
-	public PurchaseOrderLineLog(@NonNull final ModularContractService modularContractService,
-			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			final @NonNull InformativeLogComputingMethod computingMethod)
+	public ShipmentNotificationLineLog(
+			@NonNull final ShippingNotificationService notificationService,
+			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			@NonNull final ModularContractLogDAO contractLogDAO,
+			@NonNull final ModularContractService modularContractService,
+			@NonNull final SalesInformativeLogComputingMethod computingMethod)
 	{
-		super(modularContractService, modCntrInvoicingGroupRepository);
+		super(notificationService, modCntrInvoicingGroupRepository, contractLogDAO, modularContractService);
 		this.computingMethod = computingMethod;
+	}
+
+	@Override
+	protected SOTrx getSOTrx()
+	{
+		return SOTrx.SALES;
 	}
 }

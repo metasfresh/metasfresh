@@ -111,7 +111,7 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 
 		final String description = msgBL.getMsg(MSG_ON_COMPLETE_DESCRIPTION, ImmutableList.of(String.valueOf(productId.getRepoId()), quantity.toString()));
 
-		final LocalDateAndOrgId transactionDate = wrapper.getTransactionDate(orgDAO::getTimeZone);
+		final LocalDateAndOrgId physiscalClearanceDate = wrapper.getTransactionDate(orgDAO::getTimeZone);
 
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(createLogRequest.getModularContractSettings().getRawProductId(), yearAndCalendarId)
@@ -135,7 +135,8 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 				.soTrx(getSOTrx())
 				.processed(false)
 				.quantity(quantity)
-				.transactionDate(transactionDate)
+				.transactionDate(physiscalClearanceDate)
+				.physicalClearanceDate(physiscalClearanceDate)
 				.year(wrapper.getHarvestingYearId())
 				.description(description)
 				.modularContractTypeId(createLogRequest.getTypeId())

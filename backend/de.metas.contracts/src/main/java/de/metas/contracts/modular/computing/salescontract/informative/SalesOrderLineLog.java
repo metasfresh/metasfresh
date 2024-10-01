@@ -1,4 +1,4 @@
-package de.metas.contracts.modular.computing.purchasecontract.informative;/*
+package de.metas.contracts.modular.computing.salescontract.informative;/*
  * #%L
  * de.metas.contracts
  * %%
@@ -31,15 +31,16 @@ import org.springframework.stereotype.Component;
 
 @Getter
 @Component
-class PurchaseOrderLineLog extends AbstractOrderLineLog
+class SalesOrderLineLog extends AbstractOrderLineLog
 {
-	@NonNull private final InformativeLogComputingMethod computingMethod;
+	@NonNull private final SalesInformativeLogComputingMethod computingMethod;
 	@NonNull private final String supportedTableName = I_C_OrderLine.Table_Name;
-	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PURCHASE_ORDER;
+	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SALES_ORDER;
 
-	public PurchaseOrderLineLog(@NonNull final ModularContractService modularContractService,
-			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			final @NonNull InformativeLogComputingMethod computingMethod)
+	public SalesOrderLineLog(
+			@NonNull final ModularContractService modularContractService,
+			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			@NonNull final SalesInformativeLogComputingMethod computingMethod)
 	{
 		super(modularContractService, modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;

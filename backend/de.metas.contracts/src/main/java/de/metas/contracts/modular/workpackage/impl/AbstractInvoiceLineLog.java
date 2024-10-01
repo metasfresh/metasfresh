@@ -64,12 +64,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
-import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-@Component
-public abstract class AbstractModularPurchaseInvoiceLineLog extends AbstractModularContractLogHandler
+public abstract class AbstractInvoiceLineLog extends AbstractModularContractLogHandler
 {
 	@NonNull protected final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
@@ -82,7 +80,7 @@ public abstract class AbstractModularPurchaseInvoiceLineLog extends AbstractModu
 
 	@Getter @NonNull private final String supportedTableName = I_C_InvoiceLine.Table_Name;
 
-	public AbstractModularPurchaseInvoiceLineLog(
+	public AbstractInvoiceLineLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModularContractLogDAO contractLogDAO,
 			@NonNull final ModularContractLogService modularContractLogService,
@@ -139,7 +137,6 @@ public abstract class AbstractModularPurchaseInvoiceLineLog extends AbstractModu
 				OrgId.ofRepoId(invoiceLineRecord.getAD_Org_ID()),
 				orgDAO::getTimeZone);
 
-		final ProductId rawProductId = createLogRequest.getModularContractSettings().getRawProductId();
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
@@ -157,7 +154,7 @@ public abstract class AbstractModularPurchaseInvoiceLineLog extends AbstractModu
 						.productName(CoalesceUtil.firstNotBlank(invoiceLineRecord.getProductName(), productName))
 						.documentType(getLogEntryDocumentType())
 						.contractType(getLogEntryContractType())
-						.soTrx(SOTrx.PURCHASE)
+						.soTrx(SOTrx.ofBoolean(invoiceRecord.isSOTrx()))
 						.isBillable(false)
 						.processed(false)
 						.quantity(qtyEntered)

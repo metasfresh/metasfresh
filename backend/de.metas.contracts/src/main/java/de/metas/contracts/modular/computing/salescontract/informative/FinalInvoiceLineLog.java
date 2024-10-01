@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.informative;
+package de.metas.contracts.modular.computing.salescontract.informative;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -40,7 +40,7 @@ import org.springframework.stereotype.Component;
 @Getter
 public class FinalInvoiceLineLog extends AbstractInvoiceLineLog
 {
-	@NonNull private final InformativeLogComputingMethod computingMethod;
+	@NonNull private final SalesInformativeLogComputingMethod computingMethod;
 	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.FINAL_INVOICE;
 
 	public FinalInvoiceLineLog(
@@ -48,7 +48,7 @@ public class FinalInvoiceLineLog extends AbstractInvoiceLineLog
 			@NonNull final ModularContractLogDAO contractLogDAO,
 			@NonNull final ModularContractLogService modularContractLogService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final InformativeLogComputingMethod computingMethod)
+			@NonNull final SalesInformativeLogComputingMethod computingMethod)
 	{
 		super(modularContractService, contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
@@ -66,6 +66,6 @@ public class FinalInvoiceLineLog extends AbstractInvoiceLineLog
 		final I_C_Invoice invoiceRecord = invoiceBL.getByLineId(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
 		final SOTrx soTrx = SOTrx.ofBoolean(invoiceRecord.isSOTrx());
 
-		return soTrx.isPurchase() && invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord);
+		return soTrx.isSales() && invoiceBL.isSalesFinalInvoiceOrFinalCreditMemo(invoiceRecord);
 	}
 }

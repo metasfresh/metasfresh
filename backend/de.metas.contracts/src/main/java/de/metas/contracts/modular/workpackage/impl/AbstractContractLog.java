@@ -62,7 +62,7 @@ import org.compiere.model.I_M_Warehouse;
 
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
 
-public abstract class AbstractPurchaseContractHandler extends AbstractModularContractLogHandler
+public abstract class AbstractContractLog extends AbstractModularContractLogHandler
 {
 	protected final static AdMessageKey MSG_ON_INTERIM_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimContractCompleteLogDescription");
 	protected final static AdMessageKey MSG_ON_MODULAR_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.modularContractCompleteLogDescription");
@@ -78,7 +78,7 @@ public abstract class AbstractPurchaseContractHandler extends AbstractModularCon
 
 	@NonNull @Getter private final String supportedTableName = I_C_Flatrate_Term.Table_Name;
 
-	public AbstractPurchaseContractHandler(@NonNull final ModularContractService modularContractService,
+	public AbstractContractLog(@NonNull final ModularContractService modularContractService,
 			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository)
 	{
 		super(modularContractService);
