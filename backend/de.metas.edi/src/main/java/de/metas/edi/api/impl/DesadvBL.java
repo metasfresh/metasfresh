@@ -14,7 +14,6 @@ import de.metas.common.util.SimpleSequence;
 import de.metas.edi.api.DesadvInOutLine;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
-import de.metas.edi.api.EDIDesadvLinePackId;
 import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvBL;

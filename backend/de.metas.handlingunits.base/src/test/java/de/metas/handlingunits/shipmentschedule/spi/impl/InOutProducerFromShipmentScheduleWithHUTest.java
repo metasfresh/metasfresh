@@ -77,7 +77,7 @@ import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShipping
 import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.TODAY;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -306,7 +306,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
 			schedule.setDeliveryDate(TimeUtil.asTimestamp(deliveryDate));
 			InterfaceWrapperHelper.save(schedule);
-			
+
 			return shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
 					schedule,
 					StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("100"), productId),
@@ -497,12 +497,12 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		{
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 			docTypeDAO.createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
-					.ctx(Env.getCtx())
-					.name(docBaseAndSubType.toString())
-					.docBaseType(docBaseAndSubType.getDocBaseType())
-					.docSubType(docBaseAndSubType.getDocSubType())
-					.glCategoryId(GLCategoryId.ofRepoId(123))
-					.build());
+											 .ctx(Env.getCtx())
+											 .name(docBaseAndSubType.toString())
+											 .docBaseType(docBaseAndSubType.getDocBaseType())
+											 .docSubType(docBaseAndSubType.getDocSubType())
+											 .glCategoryId(GLCategoryId.ofRepoId(123))
+											 .build());
 		}
 
 		private OrderId order()
