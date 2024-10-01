@@ -24,6 +24,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
@@ -257,6 +258,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public boolean isSchedAllowsConsolidate(final I_M_ShipmentSchedule sched)
 	{
+		final ShipmentScheduleAllowConsolidatePredicateComposite shipmentScheduleAllowConsolidatePredicateComposite = SpringContextHolder.instance
+				.getBean(ShipmentScheduleAllowConsolidatePredicateComposite.class);
+		if (!shipmentScheduleAllowConsolidatePredicateComposite.isSchedAllowsConsolidate(sched))
+		{
+			return false;
+		}
+
 		// task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 

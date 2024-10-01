@@ -27,6 +27,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUSupport
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
 import de.metas.inoutcandidate.api.impl.DefaultInOutGenerateResult;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
@@ -431,6 +432,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 			Services.registerService(IShipmentScheduleInvalidateBL.class, new ShipmentScheduleInvalidateBL(new PickingBOMService()));
 			Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.newInstanceWithoutExtensions());
+			SpringContextHolder.registerJUnitBean(new ShipmentScheduleAllowConsolidatePredicateComposite(ImmutableList.of()));
 
 			trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 
