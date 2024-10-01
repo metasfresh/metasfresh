@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.ContractSpecificPriceRequest;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
@@ -84,7 +83,6 @@ public abstract class AbstractShipmentLogHandler extends AbstractModularContract
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-	@NonNull private final ModularContractService modularContractService;
 
 	@Getter @NonNull private final String supportedTableName = I_M_InOutLine.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPMENT;
@@ -96,7 +94,6 @@ public abstract class AbstractShipmentLogHandler extends AbstractModularContract
 	{
 		super(modularContractService);
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
-		this.modularContractService = modularContractService;
 		this.computingMethod = computingMethod;
 	}
 
@@ -134,10 +131,7 @@ public abstract class AbstractShipmentLogHandler extends AbstractModularContract
 		final LocalDateAndOrgId transactionDate = extractTransactionDate(inOutRecord);
 		final LocalDateAndOrgId physicalClearanceDate = extractPhysicalClearanceDate(orderBL.getById(OrderId.ofRepoId(inOutRecord.getC_Order_ID())));
 
-		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(ContractSpecificPriceRequest.builder()
-				.modularContractModuleId(createLogRequest.getModularContractModuleId())
-				.flatrateTermId(createLogRequest.getContractId())
-				.build());
+		final ProductPrice contractSpecificPrice = getContractSpecificPriceWithFlags(createLogRequest).toProductPrice();
 
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)

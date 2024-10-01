@@ -71,13 +71,15 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	SubtractValueOnRawProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SubtractValueOnRawProduct),
 	ReductionCalibration(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ReductionCalibration),
 	StorageCost(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_StorageCost),
-	SalesStorageCost("Sales_StorageCost"),
 	AverageAddedValueOnShippedQuantity(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_AverageAddedValueOnShippedQuantity),
 	AddValueOnInterim(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_AddValueOnInterim),
 	SubtractValueOnInterim(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SubtractValueOnInterim),
 	AvCo("AvCo"),	// Methods not needed in this increment
 	SvCo("SvCo"),
-	SvProcessed("SvProcessed");
+	SvProcessed("SvProcessed"),
+	SalesStorageCost("Sales_StorageCost"),
+	Sales("Sales"),
+	SalesAV("SalesAV");
 
 	public static final ImmutableList<ComputingMethodType> INTERIM_INVOICE_SPECIFIC_METHODS = ImmutableList.of(INTERIM_CONTRACT);
 
