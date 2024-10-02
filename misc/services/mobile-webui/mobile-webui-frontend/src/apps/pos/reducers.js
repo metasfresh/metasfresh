@@ -216,6 +216,7 @@ const addOrderLineToCurrentOrder = (
     catchWeightUomId,
     catchWeightUomSymbol,
     catchWeight,
+    ...otherOrderLineFields
   }
 ) => {
   const newOrderLine = {
@@ -231,6 +232,7 @@ const addOrderLineToCurrentOrder = (
     catchWeightUomId,
     catchWeightUomSymbol,
     catchWeight,
+    ...otherOrderLineFields,
   };
   return changeOrder({
     orders,

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS_OrderLine extends org.compiere.model.PO implements I_C_POS_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1421246348L;
+	private static final long serialVersionUID = -1341561492L;
 
     /** Standard Constructor */
     public X_C_POS_OrderLine (final Properties ctx, final int C_POS_OrderLine_ID, @Nullable final String trxName)
@@ -226,6 +226,18 @@ public class X_C_POS_OrderLine extends org.compiere.model.PO implements I_C_POS_
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setScannedBarcode (final @Nullable java.lang.String ScannedBarcode)
+	{
+		set_Value (COLUMNNAME_ScannedBarcode, ScannedBarcode);
+	}
+
+	@Override
+	public java.lang.String getScannedBarcode() 
+	{
+		return get_ValueAsString(COLUMNNAME_ScannedBarcode);
 	}
 
 	@Override

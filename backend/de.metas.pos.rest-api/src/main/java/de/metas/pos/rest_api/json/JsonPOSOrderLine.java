@@ -22,6 +22,7 @@ public class JsonPOSOrderLine
 
 	@NonNull ProductId productId;
 	@NonNull String productName;
+	@Nullable String scannedBarcode;
 	@NonNull TaxCategoryId taxCategoryId;
 
 	@Nullable String currencySymbol;
@@ -43,6 +44,7 @@ public class JsonPOSOrderLine
 				.uuid(line.getExternalId())
 				.productId(line.getProductId())
 				.productName(line.getProductName())
+				.scannedBarcode(line.getScannedBarcode())
 				.taxCategoryId(line.getTaxCategoryId())
 				.currencySymbol(currencySymbol)
 				.price(line.getPrice().toBigDecimal())
@@ -62,6 +64,7 @@ public class JsonPOSOrderLine
 				.uuid(uuid)
 				.productId(productId)
 				.productName(productName)
+				.scannedBarcode(scannedBarcode)
 				.taxCategoryId(taxCategoryId)
 				.price(price)
 				.qty(qty)
