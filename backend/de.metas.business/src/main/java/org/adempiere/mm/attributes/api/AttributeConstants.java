@@ -64,6 +64,14 @@ public class AttributeConstants
 	public static final AttributeCode ATTR_RepackNumber = AttributeCode.ofString(ATTR_RepackNumber_String);
 
 	public static final AttributeCode RouterPassword = AttributeCode.ofString("RouterPassword");
+	public static final AttributeCode RouterPassword1 = AttributeCode.ofString("RouterPassword1");
+	public static final AttributeCode RouterPassword2 = AttributeCode.ofString("RouterPassword2");
+	public static final AttributeCode RouterPassword3 = AttributeCode.ofString("RouterPassword3");
+	public static final AttributeCode RouterPassword4 = AttributeCode.ofString("RouterPassword4");
+	public static final AttributeCode RouterPassword5 = AttributeCode.ofString("RouterPassword5");
+	public static final AttributeCode RouterPassword6 = AttributeCode.ofString("RouterPassword6");
+	public static final AttributeCode RouterPassword7 = AttributeCode.ofString("RouterPassword7");
+	public static final AttributeCode RouterPassword8 = AttributeCode.ofString("RouterPassword8");
 	public static final AttributeCode RouterMAC1 = AttributeCode.ofString("RouterMAC1");
 	public static final AttributeCode RouterMAC2 = AttributeCode.ofString("RouterMAC2");
 	public static final AttributeCode RouterMAC3 = AttributeCode.ofString("RouterMAC3");
