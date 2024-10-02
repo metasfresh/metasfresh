@@ -100,23 +100,15 @@ public class HUTraceEventsService
 			I_M_MovementLine.Table_Name,
 			I_PP_Cost_Collector.Table_Name,
 			I_M_ShipmentSchedule_QtyPicked.Table_Name);
-
+	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient HUTraceRepository huTraceRepository;
 	private final transient HUAccessService huAccessService;
-
 	private final transient InventoryRepository inventoryRepository;
-
 	private final transient IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
-
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-
 	private final IHUAttributesBL huAttributeService = Services.get(IHUAttributesBL.class);
-
-	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-	final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
-	final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
 	public HUTraceEventsService(
 			@NonNull final HUTraceRepository huTraceRepository,
@@ -225,6 +217,7 @@ public class HUTraceEventsService
 			for (final InventoryLineHU inventoryLineHU : inventoryLineHUs)
 			{
 				final HuId huId = inventoryLineHU.getHuId();
+
 				final I_M_HU huRecord = handlingUnitsBL.getById(huId);
 
 				final HuId topLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(huRecord));
@@ -727,14 +720,19 @@ public class HUTraceEventsService
 			else
 			{
 				builder.topLevelHuId(huId);
+			}
+			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
+			if (vhus.isEmpty())
+			{
 				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, huRecord);
 			}
-
-			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
-
-			for (final I_M_HU vhu : vhus)
+			else
 			{
-				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, vhu);
+
+				for (final I_M_HU vhu : vhus)
+				{
+					createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, vhu);
+				}
 			}
 		}
 	}
