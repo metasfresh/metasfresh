@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipmentSchedule
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -477510759L;
+	private static final long serialVersionUID = 803046177L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
@@ -805,6 +805,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DOCSUBTYPE_Provision = "PRV";
 	/** ProFormaSO = PF */
 	public static final String DOCSUBTYPE_ProFormaSO = "PF";
+	/** Final Invoice = FI */
+	public static final String DOCSUBTYPE_FinalInvoice = "FI";
+	/** Final Credit Memo = FCM */
+	public static final String DOCSUBTYPE_FinalCreditMemo = "FCM";
+	/** Definitive Invoice = DS */
+	public static final String DOCSUBTYPE_DefinitiveInvoice = "DS";
+	/** DefinitiveCreditMemo = DCM */
+	public static final String DOCSUBTYPE_DefinitiveCreditMemo = "DCM";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
@@ -927,6 +935,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public boolean isEdiDesadvRecipient() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEdiDesadvRecipient);
+	}
+
+	@Override
+	public void setIsShipmentNotificationRequired (final boolean IsShipmentNotificationRequired)
+	{
+		set_Value (COLUMNNAME_IsShipmentNotificationRequired, IsShipmentNotificationRequired);
+	}
+
+	@Override
+	public boolean isShipmentNotificationRequired() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShipmentNotificationRequired);
 	}
 
 	@Override
