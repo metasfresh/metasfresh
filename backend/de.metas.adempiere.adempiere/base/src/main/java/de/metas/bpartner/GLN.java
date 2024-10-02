@@ -1,18 +1,17 @@
 package de.metas.bpartner;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -39,11 +38,13 @@ import lombok.Value;
 /**
  * Global Location Number.
  *
- * @see https://en.wikipedia.org/wiki/Global_Location_Number
+ * @see <a href="https://en.wikipedia.org/wiki/Global_Location_Number">GLN</a>
  */
 @Value
 public class GLN
 {
+	public static final int LENGTH = 13;
+
 	@JsonCreator
 	public static GLN ofString(@NonNull final String code)
 	{
@@ -52,15 +53,20 @@ public class GLN
 
 	public static GLN ofNullableString(@Nullable final String code)
 	{
-		return !Check.isEmpty(code, true) ? ofString(code) : null;
+		final String codeNorm = StringUtils.trimBlankToNull(code);
+		return codeNorm != null ? ofString(code) : null;
 	}
 
-	private final String code;
+	@NonNull String code;
 
 	private GLN(@NonNull final String code)
 	{
-		this.code = code.trim();
-		Check.assumeNotEmpty(this.code, "code is not empty");
+		final String codeNorm = StringUtils.trimBlankToNull(code);
+		if (codeNorm == null)
+		{
+			throw new AdempiereException("GLN code cannot be blank");
+		}
+		this.code = codeNorm;
 	}
 
 	@Override
