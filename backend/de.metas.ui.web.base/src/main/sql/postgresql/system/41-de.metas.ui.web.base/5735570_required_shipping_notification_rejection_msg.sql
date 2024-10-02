@@ -19,7 +19,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-10-02 16:3
 
 -- Value: de.metas.ui.web.split_shipment.SplitShipmentView_Launcher.ShippingNotificationRequired
 -- 2024-10-02T14:33:36.101Z
-UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Shipment Notification required',Updated=TO_TIMESTAMP('2024-10-02 16:33:36.101','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545443
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Shipping Notification required',Updated=TO_TIMESTAMP('2024-10-02 16:33:36.101','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545443
 ;
 
 -- Value: de.metas.ui.web.shipmentschedule.process.M_ShipmentSchedule_EnqueueSelection.ShippingNotificationRequired
