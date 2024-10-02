@@ -183,11 +183,7 @@ public class ModularContractSettingsService
 
 		if (existingModuleConfig == null)
 		{
-			//TODO remove after sales informative logs implementation
-			if(soTrx.isPurchase())
-			{
-				createInformativeLogsModule(modularContractSettingsId, modularContractTypeIdToUse);
-			}
+			createInformativeLogsModule(modularContractSettingsId, modularContractTypeIdToUse);
 		}
 		else if (!ProductId.ofRepoId(existingModuleConfig.getM_Product_ID()).equals(rawProductId))
 		{

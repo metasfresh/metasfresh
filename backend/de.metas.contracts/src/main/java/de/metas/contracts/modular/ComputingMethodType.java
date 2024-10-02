@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.model.X_ModCntr_Type;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -83,12 +82,12 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	SalesAverageAddedValueOnShippedQuantity("SalesAverageAVOnShippedQty"),
 	SalesInformativeLogs("SalesInformativeLogs");
 
-	public static final ImmutableList<ComputingMethodType> INTERIM_INVOICE_SPECIFIC_METHODS = ImmutableList.of(INTERIM_CONTRACT);
+	public static final ImmutableSet<ComputingMethodType> INTERIM_INVOICE_SPECIFIC_METHODS = ImmutableSet.of(INTERIM_CONTRACT);
 
-	public static final ImmutableList<ComputingMethodType> DEFINITIVE_INVOICE_SPECIFIC_METHODS = ImmutableList.of(
+	public static final ImmutableSet<ComputingMethodType> DEFINITIVE_INVOICE_SPECIFIC_METHODS = ImmutableSet.of(
 			DefinitiveInvoiceRawProduct,
 			DefinitiveInvoiceProcessedProduct);
-	public static final ImmutableList<ComputingMethodType> FINAL_INVOICE_SPECIFIC_METHODS = ImmutableList.of(
+	public static final ImmutableSet<ComputingMethodType> FINAL_INVOICE_SPECIFIC_METHODS = ImmutableSet.of(
 			INTERIM_CONTRACT,
 			Receipt,
 			SalesOnRawProduct,
@@ -106,7 +105,7 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 			SvCo,
 			SvProcessed);
 
-	public static final ImmutableList<ComputingMethodType> SALES_FINAL_INVOICE_SPECIFIC_METHODS = ImmutableList.of(
+	public static final ImmutableSet<ComputingMethodType> SALES_FINAL_INVOICE_SPECIFIC_METHODS = ImmutableSet.of(
 			SalesStorageCost,
 			Sales,
 			SalesAV,
@@ -114,12 +113,12 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 			SalesInformativeLogs
 	);
 
-	public static final ImmutableList<ComputingMethodType> INTEREST_SPECIFIC_METHODS = ImmutableList.of(AddValueOnInterim,
+	public static final ImmutableSet<ComputingMethodType> INTEREST_SPECIFIC_METHODS = ImmutableSet.of(AddValueOnInterim,
 			SubtractValueOnInterim
 	);
 
 	//If not all interim amt has been covered by shipping notifications, it is possible that some unprocessed logs exist for the AddValueOnInterim/SubtractValueOnInterim
-	public static final ImmutableList<ComputingMethodType> FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS = ImmutableList.of(INTERIM_CONTRACT,
+	public static final ImmutableSet<ComputingMethodType> FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS = ImmutableSet.of(INTERIM_CONTRACT,
 			Receipt,
 			SalesOnRawProduct,
 			SalesOnProcessedProduct,
@@ -141,6 +140,20 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 			SvCo,
 			SvProcessed
 	);
+
+	public static final ImmutableSet<ComputingMethodType> INITIAL_PRICE_FROM_CONTRACT_METHODS = ImmutableSet.of(
+			Receipt,
+			SalesOnRawProduct,
+			DefinitiveInvoiceRawProduct,
+			INTERIM_CONTRACT,
+			Sales
+	);
+
+	public static final ImmutableSet<ComputingMethodType> SCALE_PRICE_METHODS = ImmutableSet.of(
+			AverageAddedValueOnShippedQuantity,
+			SalesAverageAddedValueOnShippedQuantity
+	);
+
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ComputingMethodType> index = ReferenceListAwareEnums.index(values());
 

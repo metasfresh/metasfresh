@@ -22,7 +22,7 @@
 
 package de.metas.contracts.modular;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -42,5 +42,5 @@ public enum ModCntrInvoiceType
 
 	@NonNull final String positiveAmtDocSubType;
 	@NonNull final String negativAmtDocSubType;
-	@NonNull final ImmutableList<ComputingMethodType> computingMethodTypes;
+	@NonNull final ImmutableSet<ComputingMethodType> computingMethodTypes;
 }
