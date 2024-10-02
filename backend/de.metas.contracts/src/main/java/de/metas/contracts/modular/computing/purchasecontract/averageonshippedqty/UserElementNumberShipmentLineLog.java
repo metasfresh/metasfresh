@@ -51,6 +51,6 @@ public class UserElementNumberShipmentLineLog extends AbstractUserElementNumberS
 	@Override
 	protected SOTrx getSOTrx()
 	{
-		return SOTrx.SALES;
+		return SOTrx.PURCHASE;
 	}
 }

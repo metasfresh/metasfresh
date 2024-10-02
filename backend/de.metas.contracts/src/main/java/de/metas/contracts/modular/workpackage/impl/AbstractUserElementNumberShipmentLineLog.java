@@ -156,7 +156,7 @@ public abstract class AbstractUserElementNumberShipmentLineLog extends AbstractM
 				.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
 				.documentType(getLogEntryDocumentType())
 				.contractType(getLogEntryContractType())
-				.soTrx(SOTrx.PURCHASE)
+				.soTrx(getSOTrx())
 				.processed(false)
 				.isBillable(true)
 				.quantity(quantity)
