@@ -76,6 +76,7 @@ public class GLN
 		return getCode();
 	}
 
+	@NonNull
 	@JsonValue
 	public String getCode()
 	{
