@@ -225,6 +225,10 @@ public class HUTraceEventsService
 			for (final InventoryLineHU inventoryLineHU : inventoryLineHUs)
 			{
 				final HuId huId = inventoryLineHU.getHuId();
+				if(huId == null)
+				{
+					continue;
+				}
 				final I_M_HU huRecord = handlingUnitsBL.getById(huId);
 
 				final HuId topLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(huRecord));
