@@ -165,7 +165,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 			@NonNull final I_C_Invoice_Candidate icRecord,
 			@NonNull final I_C_Flatrate_Term term)
 	{
-		icRecord.setIsSOTrx(SOTrx.PURCHASE.toBoolean());
+		icRecord.setIsSOTrx(term.isSOTrx());
 
 		icRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate);
 		icRecord.setInvoicableQtyBasedOn(X_C_Invoice_Candidate.INVOICABLEQTYBASEDON_Nominal);

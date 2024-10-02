@@ -38,7 +38,6 @@ import de.metas.inout.InOutLineId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -78,7 +77,7 @@ public class SalesStorageCostComputingMethod extends AbstractComputingMethodHand
 			{
 				return false;
 			}
-			return !inOutRecord.isSOTrx();
+			return inOutRecord.isSOTrx();
 		}
 		return false;
 	}
@@ -86,10 +85,7 @@ public class SalesStorageCostComputingMethod extends AbstractComputingMethodHand
 	@Override
 	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
 	{
-		final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId));
-		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
-
-		return ProductId.equals(productId, settings.getRawProductId()) && settings.getSoTrx().isSales();
+		return settings.getSoTrx().isSales();
 	}
 
 	@Override

@@ -27,17 +27,21 @@ import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepo
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler;
 import de.metas.lang.SOTrx;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductPrice;
 import de.metas.shippingnotification.ShippingNotificationService;
+import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-@Getter
 class ShipmentNotificationLineLog extends AbstractShippingNotificationLogHandler
 {
-	@NonNull
-	private final SalesInformativeLogComputingMethod computingMethod;
+	@NonNull @Getter private final SalesInformativeLogComputingMethod computingMethod;
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
 
 	public ShipmentNotificationLineLog(
 			@NonNull final ShippingNotificationService notificationService,
@@ -54,5 +58,17 @@ class ShipmentNotificationLineLog extends AbstractShippingNotificationLogHandler
 	protected SOTrx getSOTrx()
 	{
 		return SOTrx.SALES;
+	}
+
+	@Override
+	protected ProductPrice getProductPrice(@NonNull final CreateLogRequest createLogRequest, @NonNull final OrderLineId orderLineId)
+	{
+		return orderLineBL.getPriceActual(orderLineId);
+	}
+
+	@Override
+	protected boolean isBillable()
+	{
+		return false;
 	}
 }

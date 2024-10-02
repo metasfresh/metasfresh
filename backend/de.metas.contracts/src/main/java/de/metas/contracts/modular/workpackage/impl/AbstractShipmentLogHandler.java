@@ -158,6 +158,7 @@ public abstract class AbstractShipmentLogHandler extends AbstractModularContract
 				.storageDays(storageDays)
 				.amount(computeAmount(contractSpecificPrice, quantity, storageDays, uomConversionBL))
 				.transactionDate(transactionDate)
+				.physicalClearanceDate(physicalClearanceDate)
 				.priceActual(contractSpecificPrice)
 				.year(yearAndCalendarId.yearId())
 				.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs()))
@@ -185,7 +186,7 @@ public abstract class AbstractShipmentLogHandler extends AbstractModularContract
 	}
 
 	@Nullable
-	public Integer computeStorageDays(@NonNull final CreateLogRequest createLogRequest,
+	protected Integer computeStorageDays(@NonNull final CreateLogRequest createLogRequest,
 			final @NonNull LocalDateAndOrgId transactionDate,
 			final @Nullable LocalDateAndOrgId physicalClearanceDate)
 	{
@@ -193,7 +194,7 @@ public abstract class AbstractShipmentLogHandler extends AbstractModularContract
 	}
 
 	@NonNull
-	public Money computeAmount(final @NotNull ProductPrice contractSpecificPrice,
+	protected Money computeAmount(final @NotNull ProductPrice contractSpecificPrice,
 			final @NonNull Quantity quantity,
 			final @Nullable Integer storageDays,
 			final @NonNull QuantityUOMConverter uomConverter)

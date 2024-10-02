@@ -90,8 +90,7 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 			SalesStorageCost,
 			Sales,
 			SalesAV,
-			SalesAverageAddedValueOnShippedQuantity,
-			SalesInformativeLogs
+			SalesAverageAddedValueOnShippedQuantity
 	);
 
 	public static final ImmutableSet<ComputingMethodType> INTEREST_SPECIFIC_METHODS = ImmutableSet.of(AddValueOnInterim,

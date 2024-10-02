@@ -23,24 +23,17 @@
 package de.metas.contracts.modular.computing.purchasecontract.storagecost;
 
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.ProductPriceWithFlags;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.log.ModularContractLogEntry;
-import de.metas.contracts.modular.workpackage.impl.AbstractShipmentLogHandler;
+import de.metas.contracts.modular.workpackage.impl.AbstractStorageCostLogHandler;
 import de.metas.lang.SOTrx;
-import de.metas.money.Money;
 import de.metas.organization.LocalDateAndOrgId;
-import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.QuantityUOMConverter;
-import de.metas.util.Check;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
-class ShipmentLineLog extends AbstractShipmentLogHandler
+class ShipmentLineLog extends AbstractStorageCostLogHandler
 {
 	public ShipmentLineLog(
 			@NonNull final ModularContractService modularContractService,
@@ -51,7 +44,7 @@ class ShipmentLineLog extends AbstractShipmentLogHandler
 	}
 
 	@Override
-	public Integer computeStorageDays(
+	protected Integer computeStorageDays(
 			final @NotNull CreateLogRequest createLogRequest,
 			final @NonNull LocalDateAndOrgId transactionDate,
 			final @Nullable LocalDateAndOrgId physicalClearanceDate)
@@ -61,35 +54,9 @@ class ShipmentLineLog extends AbstractShipmentLogHandler
 		return Math.max(daysBetween, 0);
 	}
 
-	@NonNull
-	public Money computeAmount(
-			final @NotNull ProductPrice contractSpecificPrice,
-			final @NonNull Quantity quantity,
-			final @Nullable Integer storageDays,
-			final @NonNull QuantityUOMConverter uomConverter)
-	{
-		Check.assumeNotNull(storageDays, "StorageDays shouldn't be null");
-		return contractSpecificPrice.computeAmount(quantity.multiply(storageDays), uomConverter);
-	}
-
 	@Override
 	protected SOTrx getSOTrx()
 	{
 		return SOTrx.PURCHASE;
-	}
-
-	@Override
-	public @NonNull ModularContractLogEntry calculateAmountWithNewPrice(
-			final @NonNull ModularContractLogEntry logEntry,
-			final @NonNull ProductPriceWithFlags newPrice,
-			final @NonNull QuantityUOMConverter uomConverter)
-	{
-		final Quantity qty = Check.assumeNotNull(logEntry.getQuantity(), "Quantity shouldn't be null");
-		final int storageDays = Check.assumeNotNull(logEntry.getStorageDays(), "StorageDays shouldn't be null");
-		final ProductPrice price = newPrice.toProductPrice();
-		return logEntry.toBuilder()
-				.priceActual(price)
-				.amount(computeAmount(price, qty, storageDays, uomConverter))
-				.build();
 	}
 }
