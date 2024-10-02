@@ -217,6 +217,10 @@ public class HUTraceEventsService
 			for (final InventoryLineHU inventoryLineHU : inventoryLineHUs)
 			{
 				final HuId huId = inventoryLineHU.getHuId();
+				if(huId == null)
+				{
+					continue;
+				}
 
 				final I_M_HU huRecord = handlingUnitsBL.getById(huId);
 
@@ -394,7 +398,7 @@ public class HUTraceEventsService
 	/**
 	 * Iterate the given {@link I_M_HU_Trx_Line}s and add events for those lines that
 	 * <ul>
-	 * <li>have a {@link IHandlingUnitsBL#isPhysicalHU(String) physical} {@code M_HU_ID}.<br>
+	 * <li>have a {@link IHUStatusBL#isPhysicalHU(I_M_HU) physical} {@code M_HU_ID}.<br>
 	 * We don't care about planned HUs and we assume that destroyed or shipped HUs won't be altered anymore.
 	 * <li>have a partner ({@code Parent_HU_Trx_Line_ID > 0}) which also has a a M_HU_ID
 	 * <li>have {@code Quantity > 0}
@@ -435,8 +439,6 @@ public class HUTraceEventsService
 		final Map<Boolean, List<HUTraceEvent>> result = new HashMap<>();
 		result.put(true, new ArrayList<>());
 		result.put(false, new ArrayList<>());
-
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 		// iterate the lines and create an every per vhuId and sourceVhuId
 		for (final I_M_HU_Trx_Line trxLine : trxLinesToUse)
@@ -567,7 +569,6 @@ public class HUTraceEventsService
 			@NonNull final I_M_HU hu,
 			@Nullable final I_M_HU_Item parentHUItemOld)
 	{
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		if (!huStatusBL.isPhysicalHU(hu))
 		{
 			logger.info("Param hu has status={}; nothing to do; hu={}", hu.getHUStatus(), hu);
