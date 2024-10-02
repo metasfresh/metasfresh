@@ -24,6 +24,7 @@ package de.metas.manufacturing.generatedcomponents;
 
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -45,7 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PasswordGeneratorTest
 {
 	@Nested
-	class GetPasswordTest
+	class generatePassword
 	{
 		private final PasswordGenerator generator = new PasswordGenerator();
 
@@ -120,7 +121,7 @@ class PasswordGeneratorTest
 			AdempiereTestHelper.get().init();
 
 			{
-				mkAttribute(AttributeConstants.RouterPassword);
+				PasswordGenerator.supportedAttributes.forEach(this::mkAttribute);
 				mkAttribute(AttributeConstants.RouterMAC1);
 				mkAttribute(AttributeConstants.RouterMAC2);
 				mkAttribute(AttributeConstants.RouterMAC3);
@@ -145,13 +146,18 @@ class PasswordGeneratorTest
 				InterfaceWrapperHelper.save(generatorPo);
 				passwordGeneratorId = generatorPo.getPP_ComponentGenerator_ID();
 			}
+
+			mkPasswordParams(14, true, true, true, true, "-", 4);
+		}
+
+		private boolean isNotBlank(final Object obj)
+		{
+			return obj != null && Check.isNotBlank(obj.toString());
 		}
 
 		@Test
 		void noPasswordExists()
 		{
-			mkPasswordParams(14, true, true, true, true, "-", 4);
-
 			final ImmutableAttributeSet actualPasswords = generatorService.generate(
 					GeneratedComponentRequest.builder()
 							.targetHUAttributes(ImmutableAttributeSet.builder().attributeValue(AttributeConstants.RouterPassword, null).build())
@@ -162,13 +168,12 @@ class PasswordGeneratorTest
 							.build());
 
 			assertThat(actualPasswords.getAttributes()).hasSize(1);
+			assertThat(actualPasswords.getValue(AttributeConstants.RouterPassword)).matches(this::isNotBlank);
 		}
 
 		@Test
 		void passwordExists()
 		{
-			mkPasswordParams(14, true, true, true, true, "-", 4);
-
 			final ImmutableAttributeSet actualPasswords = generatorService.generate(
 					GeneratedComponentRequest.builder()
 							.targetHUAttributes(ImmutableAttributeSet.builder().attributeValue(AttributeConstants.RouterPassword, "1234").build())
@@ -178,7 +183,27 @@ class PasswordGeneratorTest
 							.clientId(ClientId.METASFRESH)
 							.build());
 
-			assertThat(actualPasswords.getAttributes()).hasSize(0);
+			assertThat(actualPasswords.getAttributes()).isEmpty();
+		}
+
+		@Test
+		void twoPasswords()
+		{
+			final ImmutableAttributeSet actualPasswords = generatorService.generate(
+					GeneratedComponentRequest.builder()
+							.targetHUAttributes(ImmutableAttributeSet.builder()
+									.attributeValue(AttributeConstants.RouterPassword1, null)
+									.attributeValue(AttributeConstants.RouterPassword2, null)
+									.build())
+							.bomLineAttributes(ImmutableAttributeSet.EMPTY)
+							.productId(passwordProductId)
+							.qty(2)
+							.clientId(ClientId.METASFRESH)
+							.build());
+
+			assertThat(actualPasswords.getAttributes()).hasSize(2);
+			assertThat(actualPasswords.getValue(AttributeConstants.RouterPassword1)).matches(this::isNotBlank);
+			assertThat(actualPasswords.getValue(AttributeConstants.RouterPassword2)).matches(this::isNotBlank);
 		}
 
 		@SuppressWarnings({ "ConstantConditions", "SameParameterValue" })
