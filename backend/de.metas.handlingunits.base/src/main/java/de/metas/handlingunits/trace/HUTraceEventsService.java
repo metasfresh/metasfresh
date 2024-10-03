@@ -720,18 +720,17 @@ public class HUTraceEventsService
 				builder.topLevelHuId(huId);
 			}
 
-			if(handlingUnitsBL.isVirtual(huRecord))
+			if (!handlingUnitsBL.isVirtual(huRecord))
 			{
 				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, huRecord);
 			}
-			else
+
+			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
+			for (final I_M_HU vhu : vhus)
 			{
-				final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
-				for (final I_M_HU vhu : vhus)
-				{
-					createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, vhu);
-				}
+				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, vhu);
 			}
+
 		}
 	}
 
