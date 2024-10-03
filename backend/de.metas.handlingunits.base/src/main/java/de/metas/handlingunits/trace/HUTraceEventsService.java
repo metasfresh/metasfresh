@@ -217,10 +217,7 @@ public class HUTraceEventsService
 			for (final InventoryLineHU inventoryLineHU : inventoryLineHUs)
 			{
 				final HuId huId = inventoryLineHU.getHuId();
-				if(huId == null)
-				{
-					continue;
-				}
+				Check.assumeNotNull(huId, "huId not null");
 
 				final I_M_HU huRecord = handlingUnitsBL.getById(huId);
 
@@ -722,14 +719,14 @@ public class HUTraceEventsService
 			{
 				builder.topLevelHuId(huId);
 			}
-			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
-			if (vhus.isEmpty())
+
+			if(handlingUnitsBL.isVirtual(huRecord))
 			{
 				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, huRecord);
 			}
 			else
 			{
-
+				final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
 				for (final I_M_HU vhu : vhus)
 				{
 					createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, vhu);
