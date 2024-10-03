@@ -100,7 +100,6 @@ public class HUTraceEventsService
 			I_M_MovementLine.Table_Name,
 			I_PP_Cost_Collector.Table_Name,
 			I_M_ShipmentSchedule_QtyPicked.Table_Name);
-
 	private final transient HUTraceRepository huTraceRepository;
 	private final transient HUAccessService huAccessService;
 
@@ -225,6 +224,8 @@ public class HUTraceEventsService
 			for (final InventoryLineHU inventoryLineHU : inventoryLineHUs)
 			{
 				final HuId huId = inventoryLineHU.getHuId();
+				Check.assumeNotNull(huId, "huId not null");
+
 				final I_M_HU huRecord = handlingUnitsBL.getById(huId);
 
 				final HuId topLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(huRecord));
@@ -400,7 +401,7 @@ public class HUTraceEventsService
 	/**
 	 * Iterate the given {@link I_M_HU_Trx_Line}s and add events for those lines that
 	 * <ul>
-	 * <li>have a {@link de.metas.handlingunits.impl.HUStatusBL#isPhysicalHU(I_M_HU)} (String) physical} {@code M_HU_ID}.<br>
+	 * <li>have a {@link IHUStatusBL#isPhysicalHU(I_M_HU) physical} {@code M_HU_ID}.<br>
 	 * We don't care about planned HUs and we assume that destroyed or shipped HUs won't be altered anymore.
 	 * <li>have a partner ({@code Parent_HU_Trx_Line_ID > 0}) which also has a M_HU_ID
 	 * <li>have {@code Quantity > 0}
@@ -441,8 +442,6 @@ public class HUTraceEventsService
 		final Map<Boolean, List<HUTraceEvent>> result = new HashMap<>();
 		result.put(true, new ArrayList<>());
 		result.put(false, new ArrayList<>());
-
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 		// iterate the lines and create an every per vhuId and sourceVhuId
 		for (final I_M_HU_Trx_Line trxLine : trxLinesToUse)
@@ -485,7 +484,7 @@ public class HUTraceEventsService
 					if (!huStatusBL.isPhysicalHU(sourceVhu))
 					{
 						logger.debug("sourceVhu of the current trxLine's sourceTrxLine (Parent_HU_Trx_Line) has status={}; nothing to do with that sourceVhu; sourceVhu={}; sourceTrxLine={}; trxLine={}",
-									sourceVhu.getHUStatus(), sourceVhu, sourceTrxLine, trxLine);
+									 sourceVhu.getHUStatus(), sourceVhu, sourceTrxLine, trxLine);
 						continue;
 					}
 
@@ -494,7 +493,7 @@ public class HUTraceEventsService
 					if (sourceVhu.getM_HU_ID() == vhu.getM_HU_ID())
 					{
 						logger.debug("sourceVhu of the current trxLine's sourceTrxLine (Parent_HU_Trx_Line) is the same as vhu of the current trxLine itself; nothing to do with that sourceVhu; vhu/sourceVhu={}; sourceTrxLine={}; trxLine={}",
-									sourceVhu, sourceTrxLine, trxLine);
+									 sourceVhu, sourceTrxLine, trxLine);
 						continue; // the source-HU might be the same if e.g. only the status was changed
 					}
 
@@ -572,7 +571,6 @@ public class HUTraceEventsService
 			@NonNull final I_M_HU hu,
 			@Nullable final I_M_HU_Item parentHUItemOld)
 	{
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		if (!huStatusBL.isPhysicalHU(hu))
 		{
 			logger.debug("Param hu has status={}; nothing to do; hu={}", hu.getHUStatus(), hu);
@@ -725,14 +723,24 @@ public class HUTraceEventsService
 			else
 			{
 				builder.topLevelHuId(huId);
-				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, huRecord);
 			}
 
-			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
-
-			for (final I_M_HU vhu : vhus)
+			if (handlingUnitsBL.isVirtual(huRecord))
 			{
-				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, vhu);
+				// create trace for CU
+				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, huRecord);
+			}
+			else
+			{
+				// create trace for TU
+				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, huRecord);
+
+				// create traces for the CUs that belong to the TU
+				final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
+				for (final I_M_HU vhu : vhus)
+				{
+					createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, vhu);
+				}
 			}
 		}
 	}
