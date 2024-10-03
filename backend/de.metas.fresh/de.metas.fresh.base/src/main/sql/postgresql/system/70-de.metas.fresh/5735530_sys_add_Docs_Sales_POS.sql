@@ -23,7 +23,6 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_POS(p_r
                 totaltax           numeric,
                 taxrate            numeric,
                 cursymbol          varchar,
-                paymentrule        varchar,
                 ad_org_id          numeric
 
             )
