@@ -574,6 +574,27 @@ public interface I_C_POS_Order
 	String COLUMNNAME_PaidAmt = "PaidAmt";
 
 	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_C_POS_Order, Object> COLUMN_Processed = new ModelColumn<>(I_C_POS_Order.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
+
+	/**
 	 * Set Status.
 	 *
 	 * <br>Type: List
