@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_orgblock" pageWidth="75" pageHeight="200" columnWidth="75" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/generics/report" uuid="7a1b6560-d1ef-4d70-acd9-642f0804e306">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_orgblock" pageWidth="75" pageHeight="90" orientation="Landscape" columnWidth="75" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/generics/report" uuid="7a1b6560-d1ef-4d70-acd9-642f0804e306">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
@@ -8,6 +8,15 @@
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -77,9 +86,9 @@ FROM
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="59" splitType="Stretch">
+		<band height="41" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="9" y="6" width="56" height="6" isPrintWhenDetailOverflows="true" uuid="903c615b-0df3-48f6-a53c-378163b65354">
+				<reportElement x="9" y="2" width="56" height="6" isPrintWhenDetailOverflows="true" uuid="903c615b-0df3-48f6-a53c-378163b65354">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -89,7 +98,7 @@ FROM
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="FixRelativeToBottom" x="9" y="17" width="56" height="6" uuid="7d8abee6-84b8-4712-ba3c-ef9a77496656">
+				<reportElement x="9" y="11" width="56" height="6" uuid="7d8abee6-84b8-4712-ba3c-ef9a77496656">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Center">
@@ -98,7 +107,7 @@ FROM
 				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="FixRelativeToBottom" x="9" y="35" width="56" height="6" uuid="319b7af8-430e-46dd-a1ce-44c5246be060">
+				<reportElement positionType="Float" x="9" y="25" width="56" height="6" uuid="319b7af8-430e-46dd-a1ce-44c5246be060">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Center">
@@ -107,7 +116,7 @@ FROM
 				<textFieldExpression><![CDATA[$F{url}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="FixRelativeToBottom" x="9" y="46" width="56" height="6" uuid="e426bca5-349b-4df1-ac31-daf1f58c80ab">
+				<reportElement positionType="Float" x="9" y="32" width="56" height="6" uuid="e426bca5-349b-4df1-ac31-daf1f58c80ab">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<printWhenExpression><![CDATA[$F{vataxid} ==null
 ?new Boolean(false)
@@ -119,7 +128,7 @@ FROM
 				<textFieldExpression><![CDATA[$F{vataxid}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="FixRelativeToBottom" x="9" y="26" width="56" height="6" uuid="bcb7e19b-1f1a-4360-8e18-71da75b1c626">
+				<reportElement positionType="Float" x="9" y="18" width="56" height="6" uuid="bcb7e19b-1f1a-4360-8e18-71da75b1c626">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Center" markup="none">
