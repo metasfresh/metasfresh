@@ -116,7 +116,7 @@ FROM
 				<textElement textAlignment="Center">
 					<font fontName="Arial" size="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{vataxid} + " " + $F{vataxid}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{vataxid}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="FixRelativeToBottom" x="9" y="26" width="56" height="6" uuid="bcb7e19b-1f1a-4360-8e18-71da75b1c626">
