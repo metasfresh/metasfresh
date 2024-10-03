@@ -1,15 +1,21 @@
 package de.metas.payment.sumup.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.payment.sumup.SumUpCardReaderExternalId;
 import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpLogRequest;
+import de.metas.payment.sumup.client.json.CardReaderCheckoutRequest;
+import de.metas.payment.sumup.client.json.CardReaderCheckoutResponse;
+import de.metas.payment.sumup.client.json.ClientTransactionId;
 import de.metas.payment.sumup.client.json.GetReadersResponse;
+import de.metas.payment.sumup.client.json.GetTransactionResponse;
 import de.metas.payment.sumup.client.json.PairReaderRequest;
 import de.metas.payment.sumup.client.json.PairReaderResponse;
 import de.metas.payment.sumup.repository.SumUpLogRepository;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -31,6 +37,7 @@ public class SumUpClient
 
 	@NonNull private final IErrorManager errorManager;
 	@NonNull private final SumUpLogRepository logRepository;
+	@NonNull private final ObjectMapper jsonObjectMapper;
 
 	@NonNull private final SumUpConfigId configId;
 	@NonNull private final String apiKey;
@@ -42,12 +49,16 @@ public class SumUpClient
 	private SumUpClient(
 			@NonNull final IErrorManager errorManager,
 			@NonNull final SumUpLogRepository logRepository,
+			@NonNull final ObjectMapper jsonObjectMapper,
+			//
 			@NonNull final SumUpConfigId configId,
 			@NonNull final String apiKey,
 			@NonNull final String merchantCode)
 	{
 		this.errorManager = errorManager;
 		this.logRepository = logRepository;
+		this.jsonObjectMapper = jsonObjectMapper;
+
 		this.configId = configId;
 		this.apiKey = apiKey;
 		this.merchantCode = merchantCode;
@@ -80,7 +91,7 @@ public class SumUpClient
 			@NonNull final String uri,
 			@NonNull final HttpMethod method,
 			@Nullable final Object requestBody,
-			@NonNull final Class<T> responseType)
+			@Nullable final Class<T> responseType)
 	{
 		final SumUpLogRequest.SumUpLogRequestBuilder log = newLogRequest()
 				.method(method)
@@ -91,13 +102,20 @@ public class SumUpClient
 		{
 			final HttpEntity<?> request = new HttpEntity<>(requestBody, newHttpHeaders());
 
-			final ResponseEntity<T> responseEntity = restTemplate.exchange(uri, method, request, responseType);
-			final T body = responseEntity.getBody();
+			final ResponseEntity<String> responseEntity = restTemplate.exchange(uri, method, request, String.class);
+			final String bodyJson = responseEntity.getBody();
 
 			log.responseCode(responseEntity.getStatusCode());
-			log.responseBody(body);
+			log.responseBody(StringUtils.trimBlankToNull(bodyJson));
 
-			return body;
+			if (responseType != null && !responseType.equals(Void.class))
+			{
+				return jsonObjectMapper.readValue(bodyJson, responseType);
+			}
+			else
+			{
+				return null;
+			}
 		}
 		catch (Exception ex)
 		{
@@ -146,6 +164,31 @@ public class SumUpClient
 				.pathSegment("merchants", merchantCode, "readers", id.getAsString())
 				.toUriString();
 
-		httpCall(uri, HttpMethod.DELETE, null, Object.class);
+		httpCall(uri, HttpMethod.DELETE, null, null);
+	}
+
+	/**
+	 * @implSpec <a href="https://developer.sumup.com/api/readers/create-reader-checkout">spec</a>
+	 */
+	public CardReaderCheckoutResponse cardReaderCheckout(@NonNull final SumUpCardReaderExternalId id, @NonNull final CardReaderCheckoutRequest request)
+	{
+		final String uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+				.pathSegment("merchants", merchantCode, "readers", id.getAsString(), "checkout")
+				.toUriString();
+
+		return httpCall(uri, HttpMethod.POST, request, CardReaderCheckoutResponse.class);
+	}
+
+	/**
+	 * @implSpec <a href="https://developer.sumup.com/api/transactions/get">spec</a>
+	 */
+	public GetTransactionResponse getTransactionById(@NonNull final ClientTransactionId id)
+	{
+		final String uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+				.pathSegment("me", "transactions")
+				.queryParam("client_transaction_id", id.getAsString())
+				.toUriString();
+
+		return httpCall(uri, HttpMethod.GET, null, GetTransactionResponse.class);
 	}
 }
