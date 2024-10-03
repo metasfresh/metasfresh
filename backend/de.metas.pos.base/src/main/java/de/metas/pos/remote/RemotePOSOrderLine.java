@@ -18,6 +18,7 @@ public class RemotePOSOrderLine
 
 	@NonNull ProductId productId;
 	@NonNull String productName;
+	@Nullable String scannedBarcode;
 	@NonNull TaxCategoryId taxCategoryId;
 
 	@NonNull BigDecimal price;

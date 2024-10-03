@@ -324,6 +324,7 @@ class POSOrdersLoaderAndSaver
 				.externalId(record.getExternalId())
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.productName(record.getProductName())
+				.scannedBarcode(record.getScannedBarcode())
 				.taxCategoryId(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID()))
 				.taxId(TaxId.ofRepoId(record.getC_Tax_ID()))
 				.qty(Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
@@ -346,6 +347,7 @@ class POSOrdersLoaderAndSaver
 		lineRecord.setExternalId(line.getExternalId());
 		lineRecord.setM_Product_ID(line.getProductId().getRepoId());
 		lineRecord.setProductName(line.getProductName());
+		lineRecord.setScannedBarcode(line.getScannedBarcode());
 		lineRecord.setC_TaxCategory_ID(line.getTaxCategoryId().getRepoId());
 		lineRecord.setC_Tax_ID(line.getTaxId().getRepoId());
 		lineRecord.setQty(line.getQty().toBigDecimal());

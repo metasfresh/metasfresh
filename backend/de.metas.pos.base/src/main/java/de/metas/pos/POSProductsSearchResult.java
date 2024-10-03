@@ -11,14 +11,14 @@ import java.util.stream.Stream;
 
 @EqualsAndHashCode
 @ToString
-public class POSProductsList
+public class POSProductsSearchResult
 {
-	public static final POSProductsList EMPTY = new POSProductsList(ImmutableList.of(), false);
+	public static final POSProductsSearchResult EMPTY = new POSProductsSearchResult(ImmutableList.of(), false);
 
 	@NonNull private final ImmutableList<POSProduct> products;
 	@Getter private final boolean isBarcodeMatched;
 
-	private POSProductsList(
+	private POSProductsSearchResult(
 			@NonNull final ImmutableList<POSProduct> products,
 			final boolean isBarcodeMatched)
 	{
@@ -26,16 +26,16 @@ public class POSProductsList
 		this.isBarcodeMatched = isBarcodeMatched;
 	}
 
-	public static POSProductsList ofList(@NonNull final List<POSProduct> products)
+	public static POSProductsSearchResult ofList(@NonNull final List<POSProduct> products)
 	{
 		return !products.isEmpty()
-				? new POSProductsList(ImmutableList.copyOf(products), false)
+				? new POSProductsSearchResult(ImmutableList.copyOf(products), false)
 				: EMPTY;
 	}
 
-	public static POSProductsList ofBarcodeMatchedProduct(@NonNull final POSProduct product)
+	public static POSProductsSearchResult ofBarcodeMatchedProduct(@NonNull final POSProduct product)
 	{
-		return new POSProductsList(ImmutableList.of(product), true);
+		return new POSProductsSearchResult(ImmutableList.of(product), true);
 	}
 
 	public Stream<POSProduct> stream() {return products.stream();}

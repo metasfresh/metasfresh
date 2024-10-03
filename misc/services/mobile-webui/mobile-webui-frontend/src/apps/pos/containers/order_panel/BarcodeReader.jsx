@@ -4,6 +4,7 @@ import DecodeHintType from '@zxing/library/cjs/core/DecodeHintType';
 import PropTypes from 'prop-types';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
+  BarcodeFormat.AZTEC,
   BarcodeFormat.QR_CODE,
   BarcodeFormat.CODE_128,
   BarcodeFormat.ITF,
