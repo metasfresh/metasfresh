@@ -331,7 +331,7 @@
 	 {
 		 if (docTypeBL.isFinalInvoiceOrFinalCreditMemo(docTypeId))
 		 {
-			 return ComputingMethodType.FINAL_INVOICE_SPECIFIC_METHODS;
+			 return ComputingMethodType.PURCHASE_FINAL_INVOICE_SPECIFIC_METHODS;
 		 }
 		 if (docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId))
 		 {

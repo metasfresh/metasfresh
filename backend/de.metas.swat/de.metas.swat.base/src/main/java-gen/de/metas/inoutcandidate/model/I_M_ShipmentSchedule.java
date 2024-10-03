@@ -1147,7 +1147,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsShipmentNotificationRequired (boolean IsShipmentNotificationRequired);
+	void setIsShippingNotificationRequired (boolean IsShippingNotificationRequired);
 
 	/**
 	 * Get Shipment Notification required.
@@ -1156,10 +1156,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isShipmentNotificationRequired();
+	boolean isShippingNotificationRequired();
 
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsShipmentNotificationRequired = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsShipmentNotificationRequired", null);
-	String COLUMNNAME_IsShipmentNotificationRequired = "IsShipmentNotificationRequired";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsShippingNotificationRequired = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsShippingNotificationRequired", null);
+	String COLUMNNAME_IsShippingNotificationRequired = "IsShippingNotificationRequired";
 
 	/**
 	 * Set Recompute.

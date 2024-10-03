@@ -938,15 +938,15 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public void setIsShipmentNotificationRequired (final boolean IsShipmentNotificationRequired)
+	public void setIsShippingNotificationRequired (final boolean IsShippingNotificationRequired)
 	{
-		set_Value (COLUMNNAME_IsShipmentNotificationRequired, IsShipmentNotificationRequired);
+		set_Value (COLUMNNAME_IsShippingNotificationRequired, IsShippingNotificationRequired);
 	}
 
 	@Override
-	public boolean isShipmentNotificationRequired() 
+	public boolean isShippingNotificationRequired() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsShipmentNotificationRequired);
+		return get_ValueAsBoolean(COLUMNNAME_IsShippingNotificationRequired);
 	}
 
 	@Override

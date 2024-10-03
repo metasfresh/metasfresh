@@ -40,7 +40,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.SpringContextHolder;
 import org.jetbrains.annotations.NotNull;
 
-import static de.metas.contracts.modular.ComputingMethodType.FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS;
+import static de.metas.contracts.modular.ComputingMethodType.PURCHASE_FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS;
 import static de.metas.contracts.modular.ModCntrInvoiceType.Definitive;
 import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES;
 import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.DONT;
@@ -61,7 +61,7 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 		}
 		final boolean finalInvoiceBillableLogsExist = modularContractLogDAO.anyMatch(ModularContractLogQuery.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
-				.computingMethodTypes(FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS)
+				.computingMethodTypes(PURCHASE_FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS)
 				.processed(false)
 				.billable(true)
 				.build());

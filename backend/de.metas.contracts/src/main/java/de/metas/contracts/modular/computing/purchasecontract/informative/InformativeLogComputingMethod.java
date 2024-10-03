@@ -63,7 +63,7 @@ public class InformativeLogComputingMethod extends AbstractComputingMethodHandle
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final ModularContractProvider contractProvider;
 
-	@NonNull @Getter private final ComputingMethodType computingMethodType = ComputingMethodType.InformativeLogs;
+	@NonNull @Getter private final ComputingMethodType computingMethodType = ComputingMethodType.PurchaseInformativeLogs;
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, final @NonNull LogEntryContractType contractType)

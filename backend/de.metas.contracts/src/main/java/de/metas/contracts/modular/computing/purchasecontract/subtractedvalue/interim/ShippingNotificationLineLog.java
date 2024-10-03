@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.addedvalue.interim;
+package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.interim;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -34,17 +34,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Getter
-class ShipmentNotificationLineLog extends AbstractShippingNotificationLogHandler
+class ShippingNotificationLineLog extends AbstractShippingNotificationLogHandler
 {
 	@NonNull
-	private final AVInterimComputingMethod computingMethod;
+	private final SVInterimComputingMethod computingMethod;
 
-	public ShipmentNotificationLineLog(
+	public ShippingNotificationLineLog(
 			@NonNull final ShippingNotificationService notificationService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final ModularContractLogDAO contractLogDAO,
 			@NonNull final ModularContractService modularContractService,
-			@NonNull final AVInterimComputingMethod computingMethod)
+			@NonNull final SVInterimComputingMethod computingMethod)
 	{
 		super(notificationService, modCntrInvoicingGroupRepository, contractLogDAO, modularContractService);
 		this.computingMethod = computingMethod;

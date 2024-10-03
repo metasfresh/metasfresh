@@ -139,7 +139,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 		final List<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedules = shipmentScheduleBL.getByFilter(context.getQueryFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class));
 		final boolean isRequiredShipmentNotificationMissing = shipmentSchedules
 				.stream()
-				.anyMatch(sched -> sched.isShipmentNotificationRequired()
+				.anyMatch(sched -> sched.isShippingNotificationRequired()
 						&& sched.getPhysicalClearanceDate() == null
 						&& isEligible(sched));
 

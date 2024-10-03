@@ -197,7 +197,7 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 					.subQuery(modules)
 					.end();
 
-			if (modularContractSettingsService.isMatchingComputingMethodType(p_ModCntr_Type_ID, ComputingMethodType.AverageAddedValueOnShippedQuantity))
+			if (modularContractSettingsService.isMatchingComputingMethodType(p_ModCntr_Type_ID, ComputingMethodType.PurchaseAverageAddedValueOnShippedQuantity))
 			{
 				queryBuilder.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_MinValue, p_MinValue_Old)
 						.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_IsScalePrice, true);

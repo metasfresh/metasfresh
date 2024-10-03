@@ -57,6 +57,6 @@ public class M_ShipmentSchedule
 			return;
 		}
 
-		shipmentSchedule.setIsShipmentNotificationRequired(flatrateBL.isModularContract(conditionsId));
+		shipmentSchedule.setIsShippingNotificationRequired(flatrateBL.isModularContract(conditionsId));
 	}
 }

@@ -39,7 +39,7 @@ public class SplitShipmentView_Launcher extends JavaProcess implements IProcessP
 			return ProcessPreconditionsResolution.reject(PRECONDITION_MSG_ONLY_OPEN_STATUS);
 		}
 
-		if(shipmentScheduleRecord.isShipmentNotificationRequired() && shipmentScheduleRecord.getPhysicalClearanceDate() == null)
+		if(shipmentScheduleRecord.isShippingNotificationRequired() && shipmentScheduleRecord.getPhysicalClearanceDate() == null)
 		{
 			return ProcessPreconditionsResolution.reject(PRECONDITION_MSG_SHIPPING_NOTIFICATION_REQUIRED);
 		}

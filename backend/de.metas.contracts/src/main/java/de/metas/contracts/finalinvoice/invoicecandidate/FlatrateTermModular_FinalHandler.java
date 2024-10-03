@@ -431,7 +431,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 
 	protected @NonNull ModCntrInvoiceType getModCntrInvoiceType(final boolean isSOTrx)
 	{
-		return isSOTrx ? ModCntrInvoiceType.SalesFinal : ModCntrInvoiceType.Final;
+		return isSOTrx ? ModCntrInvoiceType.SalesFinal : ModCntrInvoiceType.PurchaseFinal;
 	}
 
 	@Value

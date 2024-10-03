@@ -40,7 +40,7 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 
 	INTERIM_CONTRACT(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_Interim_Contract),
 	Receipt(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_Receipt),
-	InformativeLogs(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_InformativeLogs),
+	PurchaseInformativeLogs(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_InformativeLogs),
 	DefinitiveInvoiceRawProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceRawProduct),
 	DefinitiveInvoiceProcessedProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceProcessedProduct),
 	SalesOnRawProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SalesOnRawProduct),
@@ -50,8 +50,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	AddValueOnProcessedProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_AddValueOnProcessedProduct),
 	SubtractValueOnRawProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SubtractValueOnRawProduct),
 	ReductionCalibration(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ReductionCalibration),
-	StorageCost(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_StorageCost),
-	AverageAddedValueOnShippedQuantity(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_AverageAddedValueOnShippedQuantity),
+	PurchaseStorageCost(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_StorageCost),
+	PurchaseAverageAddedValueOnShippedQuantity(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_AverageAddedValueOnShippedQuantity),
 	AddValueOnInterim(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_AddValueOnInterim),
 	SubtractValueOnInterim(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SubtractValueOnInterim),
 	SalesStorageCost(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SalesStorageCost),
@@ -68,7 +68,7 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	public static final ImmutableSet<ComputingMethodType> DEFINITIVE_INVOICE_SPECIFIC_METHODS = ImmutableSet.of(
 			DefinitiveInvoiceRawProduct,
 			DefinitiveInvoiceProcessedProduct);
-	public static final ImmutableSet<ComputingMethodType> FINAL_INVOICE_SPECIFIC_METHODS = ImmutableSet.of(
+	public static final ImmutableSet<ComputingMethodType> PURCHASE_FINAL_INVOICE_SPECIFIC_METHODS = ImmutableSet.of(
 			INTERIM_CONTRACT,
 			Receipt,
 			SalesOnRawProduct,
@@ -78,8 +78,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 			AddValueOnProcessedProduct,
 			SubtractValueOnRawProduct,
 			ReductionCalibration,
-			StorageCost,
-			AverageAddedValueOnShippedQuantity,
+			PurchaseStorageCost,
+			PurchaseAverageAddedValueOnShippedQuantity,
 			AddValueOnInterim,
 			SubtractValueOnInterim,
 			AvCo,
@@ -98,7 +98,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	);
 
 	//If not all interim amt has been covered by shipping notifications, it is possible that some unprocessed logs exist for the AddValueOnInterim/SubtractValueOnInterim
-	public static final ImmutableSet<ComputingMethodType> FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS = ImmutableSet.of(INTERIM_CONTRACT,
+	public static final ImmutableSet<ComputingMethodType> PURCHASE_FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS = ImmutableSet.of(
+			INTERIM_CONTRACT,
 			Receipt,
 			SalesOnRawProduct,
 			SalesOnProcessedProduct,
@@ -107,8 +108,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 			AddValueOnProcessedProduct,
 			SubtractValueOnRawProduct,
 			ReductionCalibration,
-			StorageCost,
-			AverageAddedValueOnShippedQuantity,
+			PurchaseStorageCost,
+			PurchaseAverageAddedValueOnShippedQuantity,
 			AvCo,
 			SvCo,
 			SvProcessed
@@ -130,7 +131,7 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	);
 
 	public static final ImmutableSet<ComputingMethodType> SCALE_PRICE_METHODS = ImmutableSet.of(
-			AverageAddedValueOnShippedQuantity,
+			PurchaseAverageAddedValueOnShippedQuantity,
 			SalesAverageAddedValueOnShippedQuantity
 	);
 

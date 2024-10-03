@@ -67,7 +67,7 @@ public class StorageCostComputingMethod extends AbstractComputingMethodHandler
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return ComputingMethodType.StorageCost;
+		return ComputingMethodType.PurchaseStorageCost;
 	}
 
 	@Override
