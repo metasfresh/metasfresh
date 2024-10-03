@@ -720,17 +720,23 @@ public class HUTraceEventsService
 				builder.topLevelHuId(huId);
 			}
 
-			if (!handlingUnitsBL.isVirtual(huRecord))
+			if (handlingUnitsBL.isVirtual(huRecord))
 			{
+				// create trace for CU
 				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, huRecord);
 			}
-
-			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
-			for (final I_M_HU vhu : vhus)
+			else
 			{
-				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, vhu);
-			}
+				// create trace for TU
+				createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, huRecord);
 
+				// create traces for the CUs that belong to the TU
+				final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
+				for (final I_M_HU vhu : vhus)
+				{
+					createTraceForPOIssueOrReceiptHU(builder, ppCostCollector, vhu);
+				}
+			}
 		}
 	}
 
