@@ -100,9 +100,9 @@ public class HUTraceEventsService
 			I_M_MovementLine.Table_Name,
 			I_PP_Cost_Collector.Table_Name,
 			I_M_ShipmentSchedule_QtyPicked.Table_Name);
-	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-	final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient HUTraceRepository huTraceRepository;
 	private final transient HUAccessService huAccessService;
 	private final transient InventoryRepository inventoryRepository;
