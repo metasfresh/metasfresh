@@ -105,11 +105,11 @@
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
 	</field>
 	<title>
-		<band height="86" splitType="Stretch">
+		<band height="60" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="0" y="33" width="79" height="50" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c">
+				<reportElement key="subreport-8" x="0" y="22" width="79" height="37" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -125,7 +125,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock_small.jasper"]]></subreportExpression>
 			</subreport>
 			<image scaleImage="RetainShape" hAlign="Right">
-				<reportElement key="image-1" x="25" y="2" width="30" height="28" uuid="78711b33-7dd2-437d-91b6-c335ccb95ad1"/>
+				<reportElement key="image-1" x="25" y="3" width="26" height="16" uuid="78711b33-7dd2-437d-91b6-c335ccb95ad1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
