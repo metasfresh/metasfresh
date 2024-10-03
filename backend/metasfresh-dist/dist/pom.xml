@@ -415,7 +415,7 @@
 
         <dependency>
             <groupId>de.metas.payment.sumup</groupId>
-            <artifactId>de.metas.payment.sump</artifactId>
+            <artifactId>de.metas.payment.sumup</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
