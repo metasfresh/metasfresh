@@ -105,12 +105,12 @@
 	<summary>
 		<band height="9">
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="44" y="1" width="30" height="3" forecolor="#000000" uuid="b3595148-ec70-4fd1-b080-beb03b3be2c8">
+				<reportElement key="textField-16" x="44" y="1" width="30" height="5" forecolor="#000000" uuid="b3595148-ec70-4fd1-b080-beb03b3be2c8">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font fontName="Arial" size="10" isBold="false"/>
+					<font fontName="Arial" size="3" isBold="false"/>
 					<paragraph rightIndent="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{TotalPaid} + " "+$F{cursymbol}]]></textFieldExpression>
