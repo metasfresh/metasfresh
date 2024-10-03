@@ -1,13 +1,15 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_POS(p_record_id numeric, p_ad_language Character Varying(6))
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_POS(p_record_id   numeric,
+                                                                          p_ad_language Character Varying(6))
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_POS(p_record_id numeric, p_ad_language Character Varying(6))
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_POS(p_record_id   numeric,
+                                                                             p_ad_language Character Varying(6))
 
     RETURNS TABLE
             (
                 c_pos_orderline_id numeric(10, 0),
                 documentno         character varying,
-                datetrx            timestamp,
+                datetrx            timestamp with time zone,
                 cashier            character varying,
                 Qty                numeric,
                 p_value            character varying,
@@ -30,7 +32,7 @@ $$
 SELECT posl.c_pos_orderline_id,
        documentno,
        datetrx,
-       cashier.name              as cashier,
+       cashier.name              AS cashier,
        qty,
        p.value                   AS p_value,
        COALESCE(pt.Name, p.name) AS product,
@@ -39,21 +41,21 @@ SELECT posl.c_pos_orderline_id,
        posl.taxamt,
        grandtotal,
        paidamt,
-       (paidamt - grandtotal)    as returnamount,
-       pos.taxamt                as totaltax,
-       t.rate                    as taxrate,
+       (paidamt - grandtotal)    AS returnamount,
+       pos.taxamt                AS totaltax,
+       t.rate                    AS taxrate,
        c.cursymbol,
-       null                      as paymentrule,
+       NULL::varchar             AS paymentrule,
        pos.ad_org_id
 
 FROM C_POS_Order pos
-         INNER JOIN c_pos_orderline posl on pos.c_pos_order_id = posl.c_pos_order_id
+         INNER JOIN c_pos_orderline posl ON pos.c_pos_order_id = posl.c_pos_order_id
          INNER JOIN M_Product p ON posl.M_Product_ID = p.M_Product_ID
          LEFT OUTER JOIN M_Product_Trl pt ON posl.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_ad_language
          LEFT OUTER JOIN C_Tax t ON posl.C_Tax_ID = t.C_Tax_ID
          INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
          INNER JOIN C_Currency c ON pos.C_Currency_ID = c.C_Currency_ID
-         INNER JOIN AD_User cashier on pos.cashier_id = cashier.ad_user_id
+         INNER JOIN AD_User cashier ON pos.cashier_id = cashier.ad_user_id
 
 WHERE pos.C_POS_Order_ID = p_record_id
 ORDER BY posl.c_pos_orderline_id
