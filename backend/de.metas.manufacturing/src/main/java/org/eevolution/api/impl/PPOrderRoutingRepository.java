@@ -11,6 +11,7 @@ import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
+import de.metas.material.planning.pporder.PPOrderTargetPlanningStatus;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
@@ -281,6 +282,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.milestone(record.isMilestone())
 				.alwaysAvailableToUser(PPAlwaysAvailableToUser.ofNullableCode(record.getPP_AlwaysAvailableToUser()))
 				.userInstructions(UserInstructions.ofNullableString(record.getPP_UserInstructions()))
+				.targetPlanningStatus(PPOrderTargetPlanningStatus.ofNullableCode(record.getTargetPlanningStatus()))
 				//
 				.resourceId(resourceId)
 				//
@@ -640,6 +642,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setIsMilestone(from.isMilestone());
 		record.setPP_AlwaysAvailableToUser(from.getAlwaysAvailableToUser().getCode());
 		record.setPP_UserInstructions(from.getUserInstructions() != null ? from.getUserInstructions().getAsString() : null);
+		record.setTargetPlanningStatus(from.getTargetPlanningStatus() != null ? from.getTargetPlanningStatus().getCode() : null);
 
 		record.setS_Resource_ID(from.getResourceId().getRepoId());
 

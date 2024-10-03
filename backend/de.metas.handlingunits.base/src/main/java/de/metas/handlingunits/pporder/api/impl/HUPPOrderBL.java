@@ -2,6 +2,7 @@ package de.metas.handlingunits.pporder.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -27,10 +28,12 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
@@ -45,7 +48,6 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -72,6 +74,26 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	public List<I_PP_Order> getByIds(@NonNull final Set<PPOrderId> ppOrderIds)
 	{
 		return ppOrderDAO.getByIds(ppOrderIds, I_PP_Order.class);
+	}
+
+	@Override
+	public List<I_PP_Order> list(@NonNull final ManufacturingOrderQuery query)
+	{
+		return ppOrderDAO.streamManufacturingOrders(query)
+				.map(ppOrder -> InterfaceWrapperHelper.create(ppOrder, I_PP_Order.class))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public ImmutableSet<PPOrderId> getManufacturingOrderIds(@NonNull final ManufacturingOrderQuery query)
+	{
+		return ppOrderDAO.getManufacturingOrderIds(query);
+	}
+
+	@Override
+	public boolean anyMatch(@NonNull final ManufacturingOrderQuery query)
+	{
+		return ppOrderDAO.anyMatch(query);
 	}
 
 	@Override
@@ -167,19 +189,42 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	}
 
 	@Override
-	public void processPlanning(@NonNull final PPOrderPlanningStatus targetPlanningStatus, @NonNull final PPOrderId ppOrderId)
+	public void processPlanning(@NonNull final PPOrderId ppOrderId, @NonNull final PPOrderPlanningStatus targetPlanningStatus)
+	{
+		trxManager.runInThreadInheritedTrx(() -> {
+			final I_PP_Order ppOrder = getById(ppOrderId);
+			processPlanning(ppOrder, targetPlanningStatus, false);
+		});
+	}
+
+	@Override
+	public void processPlanning(@NonNull final Set<PPOrderId> ppOrderIds, @NonNull final PPOrderPlanningStatus targetPlanningStatus)
+	{
+		if (ppOrderIds.isEmpty())
+		{
+			return;
+		}
+
+		for (final I_PP_Order ppOrder : getByIds(ppOrderIds))
+		{
+			processPlanning(ppOrder, targetPlanningStatus, false);
+		}
+	}
+
+	@Override
+	public void processPlanning(@NonNull final I_PP_Order ppOrder, @NonNull final PPOrderPlanningStatus targetPlanningStatus, boolean doNotCloseOrder)
 	{
 		trxManager.assertThreadInheritedTrxExists();
 
-		final I_PP_Order ppOrder = getById(ppOrderId);
 		final PPOrderPlanningStatus planningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
-		if (Objects.equals(planningStatus, targetPlanningStatus))
+		if (PPOrderPlanningStatus.equals(planningStatus, targetPlanningStatus))
 		{
-			throw new IllegalStateException("Already " + targetPlanningStatus);
+			//throw new AdempiereException("Already " + targetPlanningStatus);
+			return; // already processed
 		}
 		if (!canChangePlanningStatus(planningStatus, targetPlanningStatus))
 		{
-			throw new IllegalStateException("Cannot change planning status from " + planningStatus + " to " + targetPlanningStatus);
+			throw new AdempiereException("Cannot change planning status from " + planningStatus + " to " + targetPlanningStatus);
 		}
 
 		if (PPOrderPlanningStatus.PLANNING.equals(targetPlanningStatus))
@@ -193,18 +238,24 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		else if (PPOrderPlanningStatus.COMPLETE.equals(targetPlanningStatus))
 		{
 			HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
-					.setCandidatesToProcessByPPOrderId(ppOrderId)
+					.setCandidatesToProcessByPPOrderId(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
 					.process();
+
+			if (!doNotCloseOrder)
+			{
+				ppOrderBL.closeOrder(ppOrder);
+				InterfaceWrapperHelper.refresh(ppOrder);
+			}
 		}
 		else
 		{
-			throw new IllegalArgumentException("Unknown target planning status: " + targetPlanningStatus);
+			throw new AdempiereException("Unknown target planning status: " + targetPlanningStatus);
 		}
 
 		//
 		// Update ppOrder's planning status
 		ppOrder.setPlanningStatus(targetPlanningStatus.getCode());
-		InterfaceWrapperHelper.save(ppOrder);
+		ppOrderDAO.save(ppOrder);
 	}
 
 	@Override
@@ -217,6 +268,11 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	public void addAssignedHandlingUnits(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine, @NonNull final Collection<I_M_HU> hus)
 	{
 		huAssignmentBL.addAssignedHandlingUnits(ppOrderBOMLine, hus);
+	}
+
+	private static ImmutableSet<TableRecordReference> toRecordRefs(final Set<PPOrderId> ppOrderIds)
+	{
+		return ppOrderIds.stream().map(PPOrderId::toRecordRef).collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override

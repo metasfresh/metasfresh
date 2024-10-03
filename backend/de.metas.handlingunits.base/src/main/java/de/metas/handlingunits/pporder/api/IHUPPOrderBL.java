@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pporder.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.allocation.IAllocationSource;
@@ -23,13 +24,18 @@ import java.util.stream.Stream;
  * Provides specific business logic for interconnection between manufacturing order and handling units module.
  *
  * @author tsa
- *
  */
 public interface IHUPPOrderBL extends ISingletonService
 {
 	I_PP_Order getById(PPOrderId ppOrderId);
 
 	List<I_PP_Order> getByIds(@NonNull Set<PPOrderId> ppOrderIds);
+
+	List<I_PP_Order> list(@NonNull ManufacturingOrderQuery query);
+
+	ImmutableSet<PPOrderId> getManufacturingOrderIds(@NonNull ManufacturingOrderQuery query);
+
+	boolean anyMatch(@NonNull ManufacturingOrderQuery query);
 
 	/**
 	 * Create a {@link IDocumentLUTUConfigurationManager} for HUs that can be received for the given {@code ppOrder}.<br>
@@ -66,9 +72,14 @@ public interface IHUPPOrderBL extends ISingletonService
 	 */
 	IHUQueryBuilder createHUsAvailableToIssueQuery(I_PP_Order_BOMLine ppOrderBomLine);
 
-	void processPlanning(PPOrderPlanningStatus targetPlanningStatus, PPOrderId ppOrderId);
+	void processPlanning(PPOrderId ppOrderId, PPOrderPlanningStatus targetPlanningStatus);
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	boolean canChangePlanningStatus(PPOrderPlanningStatus fromPlanningStatus, PPOrderPlanningStatus toPlanningStatus);
+
+	void processPlanning(@NonNull Set<PPOrderId> ppOrderIds, @NonNull PPOrderPlanningStatus targetPlanningStatus);
+
+	void processPlanning(@NonNull I_PP_Order ppOrder, @NonNull PPOrderPlanningStatus targetPlanningStatus, boolean doNotCloseOrder);
 
 	void addAssignedHandlingUnits(I_PP_Order ppOrder, Collection<I_M_HU> hus);
 
