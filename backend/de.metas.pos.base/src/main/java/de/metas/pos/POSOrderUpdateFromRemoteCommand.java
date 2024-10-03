@@ -118,6 +118,7 @@ class POSOrderUpdateFromRemoteCommand
 			return builder.externalId(remoteOrderLine.getUuid())
 					.productId(remoteOrderLine.getProductId())
 					.productName(remoteOrderLine.getProductName())
+					.scannedBarcode(remoteOrderLine.getScannedBarcode())
 					.taxCategoryId(taxCategoryId)
 					.taxId(taxId)
 					.qty(qty)

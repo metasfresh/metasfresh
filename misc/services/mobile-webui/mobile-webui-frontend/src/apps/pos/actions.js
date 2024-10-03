@@ -137,26 +137,17 @@ export const useCurrentOrder = () => {
     ...(currentOrder ?? {}),
     isLoading,
     isProcessing,
-    addOrderLine: (product) => {
+    addOrderLine: (orderLine) => {
       if (isProcessing) {
-        console.log('Skip adding order line because order is currently processing', { product, currentOrder });
+        console.log('Skip adding order line because order is currently processing', { orderLine, currentOrder });
         return;
       }
       setProcessing(true);
       dispatch(
         addOrderLine({
-          order_uuid: currentOrder?.uuid,
-          productId: product.id,
-          productName: product.name,
-          taxCategoryId: product.taxCategoryId,
-          currencySymbol: product.currencySymbol,
-          price: product.price,
           qty: 1,
-          uomId: product.uomId,
-          uomSymbol: product.uomSymbol,
-          catchWeightUomId: product.catchWeightUomId,
-          catchWeightUomSymbol: product.catchWeightUomSymbol,
-          catchWeight: product.catchWeight,
+          ...orderLine,
+          order_uuid: currentOrder?.uuid,
         })
       );
       dispatch(() => setProcessing(false));
@@ -276,6 +267,7 @@ export const addOrderLine = ({
   catchWeightUomId,
   catchWeightUomSymbol,
   catchWeight,
+  ...otherOrderLineFields
 }) => {
   return (dispatch) => {
     dispatch(
@@ -292,6 +284,7 @@ export const addOrderLine = ({
         catchWeightUomId,
         catchWeightUomSymbol,
         catchWeight,
+        ...otherOrderLineFields,
       })
     );
     dispatch(syncOrderToBackend({ order_uuid }));
@@ -311,6 +304,7 @@ const addOrderLineAction = ({
   catchWeightUomId,
   catchWeightUomSymbol,
   catchWeight,
+  ...otherOrderLineFields
 }) => {
   return {
     type: ADD_ORDER_LINE,
@@ -327,6 +321,7 @@ const addOrderLineAction = ({
       catchWeightUomId,
       catchWeightUomSymbol,
       catchWeight,
+      ...otherOrderLineFields,
     },
   };
 };

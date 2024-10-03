@@ -390,6 +390,27 @@ public interface I_C_POS_OrderLine
 	String COLUMNNAME_Qty = "Qty";
 
 	/**
+	 * Set Scanned Barcode.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setScannedBarcode (@Nullable java.lang.String ScannedBarcode);
+
+	/**
+	 * Get Scanned Barcode.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getScannedBarcode();
+
+	ModelColumn<I_C_POS_OrderLine, Object> COLUMN_ScannedBarcode = new ModelColumn<>(I_C_POS_OrderLine.class, "ScannedBarcode", null);
+	String COLUMNNAME_ScannedBarcode = "ScannedBarcode";
+
+	/**
 	 * Set Tax Amount.
 	 * Tax Amount for Credit Card transaction
 	 *
