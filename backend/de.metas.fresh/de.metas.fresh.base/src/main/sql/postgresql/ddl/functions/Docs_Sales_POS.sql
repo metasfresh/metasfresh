@@ -45,7 +45,6 @@ SELECT posl.c_pos_orderline_id,
        pos.taxamt                AS totaltax,
        t.rate                    AS taxrate,
        c.cursymbol,
-       NULL::varchar             AS paymentrule,
        pos.ad_org_id
 
 FROM C_POS_Order pos
@@ -56,7 +55,6 @@ FROM C_POS_Order pos
          INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
          INNER JOIN C_Currency c ON pos.C_Currency_ID = c.C_Currency_ID
          INNER JOIN AD_User cashier ON pos.cashier_id = cashier.ad_user_id
-
 WHERE pos.C_POS_Order_ID = p_record_id
 ORDER BY posl.c_pos_orderline_id
 
