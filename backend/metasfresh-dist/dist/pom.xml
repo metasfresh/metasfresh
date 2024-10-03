@@ -414,6 +414,14 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.payment.sumup</groupId>
+            <artifactId>de.metas.payment.sump</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
             <artifactId>de.metas.printing.base</artifactId>
             <groupId>de.metas.printing</groupId>
             <version>${metasfresh.version}</version>
