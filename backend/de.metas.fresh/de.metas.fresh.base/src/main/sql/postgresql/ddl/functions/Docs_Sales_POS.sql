@@ -21,7 +21,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_POS(p_r
                 totaltax           numeric,
                 taxrate            numeric,
                 cursymbol          varchar,
-                paymentrule        varchar
+                paymentrule        varchar,
+                ad_org_id          numeric
 
             )
 AS
@@ -42,7 +43,8 @@ SELECT posl.c_pos_orderline_id,
        pos.taxamt                as totaltax,
        t.rate                    as taxrate,
        c.cursymbol,
-       null                      as paymentrule
+       null                      as paymentrule,
+       pos.ad_org_id
 
 FROM C_POS_Order pos
          INNER JOIN c_pos_orderline posl on pos.c_pos_order_id = posl.c_pos_order_id
