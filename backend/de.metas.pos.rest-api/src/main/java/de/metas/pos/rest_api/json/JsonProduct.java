@@ -25,6 +25,7 @@ public class JsonProduct
 	@NonNull String uomSymbol;
 	@Nullable UomId catchWeightUomId;
 	@Nullable String catchWeightUomSymbol;
+	@Nullable BigDecimal catchWeight;
 	@NonNull TaxCategoryId taxCategoryId;
 
 	public static JsonProduct from(@NonNull final POSProduct product, @NonNull final String adLanguage)
@@ -38,6 +39,7 @@ public class JsonProduct
 				.uomSymbol(product.getUom().getUomSymbol())
 				.catchWeightUomId(product.getCatchWeightUom() != null ? product.getCatchWeightUom().getUomId() : null)
 				.catchWeightUomSymbol(product.getCatchWeightUom() != null ? product.getCatchWeightUom().getUomSymbol() : null)
+				.catchWeight(product.getCatchWeight())
 				.taxCategoryId(product.getTaxCategoryId())
 				.build();
 	}

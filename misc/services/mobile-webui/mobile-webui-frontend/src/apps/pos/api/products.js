@@ -25,7 +25,10 @@ export const useProducts = ({ onBarcodeResult }) => {
       .then((productsNew) => {
         if (onBarcodeResult && productsNew.barcodeMatched && productsNew.list?.length === 1) {
           const product = productsNew.list[0];
-          onBarcodeResult(product);
+          onBarcodeResult({
+            ...product,
+            scannedBarcode: queryStringToSearch,
+          });
           setQueryString('');
         } else {
           setProducts(productsNew);

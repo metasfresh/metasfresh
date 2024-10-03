@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS_Order extends org.compiere.model.PO implements I_C_POS_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 891337770L;
+	private static final long serialVersionUID = 1391493372L;
 
     /** Standard Constructor */
     public X_C_POS_Order (final Properties ctx, final int C_POS_Order_ID, @Nullable final String trxName)
@@ -177,6 +177,33 @@ public class X_C_POS_Order extends org.compiere.model.PO implements I_C_POS_Orde
 	public int getC_DocTypeOrder_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeOrder_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	@Override
+	public void setC_Order_ID (final int C_Order_ID)
+	{
+		if (C_Order_ID < 1) 
+			set_Value (COLUMNNAME_C_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Order_ID, C_Order_ID);
+	}
+
+	@Override
+	public int getC_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
 	}
 
 	@Override

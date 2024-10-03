@@ -80,10 +80,17 @@ const useNewOrderLineDispatcher = ({ currentOrder }) => {
 
   return {
     clear: () => setOrderLineToAdd(null),
-    initialize: (product) => setOrderLineToAdd({ ...product }),
+    initialize: (product) => {
+      const { id: productId, name: productName, ...otherProductFields } = product;
+      setOrderLineToAdd({
+        productId,
+        productName,
+        ...otherProductFields,
+      });
+    },
     isCatchWeightRequiredButNotSet,
     catchWeightUomSymbol: orderLineToAdd?.catchWeightUomSymbol,
-    setCatchWeight: (catchWeight) => setOrderLineToAdd((productToAdd) => ({ ...productToAdd, catchWeight })),
+    setCatchWeight: (catchWeight) => setOrderLineToAdd((orderLine) => ({ ...orderLine, catchWeight })),
   };
 };
 

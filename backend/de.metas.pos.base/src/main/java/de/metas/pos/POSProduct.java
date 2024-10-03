@@ -8,8 +8,10 @@ import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Value
 @Builder
@@ -21,6 +23,7 @@ public class POSProduct
 	@NonNull ITranslatableString currencySymbol;
 	@NonNull UomIdAndSymbol uom;
 	@Nullable UomIdAndSymbol catchWeightUom;
+	@Nullable @With BigDecimal catchWeight;
 
 	@NonNull TaxCategoryId taxCategoryId;
 

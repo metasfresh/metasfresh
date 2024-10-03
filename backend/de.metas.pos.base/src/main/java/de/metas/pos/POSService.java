@@ -81,7 +81,7 @@ public class POSService
 				: Optional.empty();
 	}
 
-	public POSProductsList getProducts(@NonNull final Instant evalDate, @Nullable final String queryString)
+	public POSProductsSearchResult getProducts(@NonNull final Instant evalDate, @Nullable final String queryString)
 	{
 		final POSTerminalId posTerminalId = posTerminalService.getPOSTerminalId();
 		return productsService.getProducts(posTerminalId, evalDate, queryString);

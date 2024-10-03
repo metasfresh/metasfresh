@@ -126,6 +126,7 @@ public final class OLCand implements IProductPriceAware
 
 	@Getter
 	private final Quantity qty;
+	@Nullable @Getter private final BigDecimal manualQtyInPriceUOM;
 
 	@Getter
 	@Nullable
@@ -232,6 +233,8 @@ public final class OLCand implements IProductPriceAware
 		this.qty = Quantitys.of(
 				this.olCandEffectiveValuesBL.getEffectiveQtyEntered(olCandRecord),
 				this.olCandEffectiveValuesBL.getEffectiveUomId(olCandRecord));
+
+		this.manualQtyInPriceUOM = olCandEffectiveValuesBL.getManualQtyInPriceUOM(olCandRecord).orElse(null);
 
 		this.qtyItemCapacityEff = qtyItemCapacityEff;
 
