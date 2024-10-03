@@ -375,7 +375,7 @@
 		</band>
 	</detail>
 	<summary>
-		<band height="75">
+		<band height="66">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-8" x="20" y="43" width="54" height="22" uuid="93b88471-cc0e-41a1-ab9e-2e4ba6ac3f04">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -413,7 +413,7 @@
 				<textFieldExpression><![CDATA[$F{grandtotal}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="9" y="34" width="46" height="6" forecolor="#000000" uuid="1f28a6eb-80b6-492e-97b2-5e5134922b71">
+				<reportElement key="textField-16" x="9" y="36" width="46" height="6" forecolor="#000000" uuid="1f28a6eb-80b6-492e-97b2-5e5134922b71">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -422,7 +422,7 @@
 				<textFieldExpression><![CDATA[$R{return}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="55" y="34" width="19" height="6" forecolor="#000000" uuid="8db20181-63c3-4944-bb8e-61bb59b1629f">
+				<reportElement key="textField-16" x="55" y="36" width="19" height="6" forecolor="#000000" uuid="8db20181-63c3-4944-bb8e-61bb59b1629f">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
