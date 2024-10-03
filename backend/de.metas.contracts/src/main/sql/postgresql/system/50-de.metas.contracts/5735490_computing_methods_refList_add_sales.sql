@@ -21,7 +21,7 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-10-02 10:
 
 -- Reference Item: Computing Methods -> SalesInformativeLogs_SalesInformativeLogs
 -- 2024-10-02T08:37:17.790Z
-UPDATE AD_Ref_List_Trl SET Description='This computing method type generates informative logs about completed sales order lines, the creation of the modular contracts, final invoice lines and shipment notifications. No Invoice Candidate is created for them.', IsTranslated='Y', Name='Sales - Informative Logs',Updated=TO_TIMESTAMP('2024-10-02 10:37:17.79','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543729
+UPDATE AD_Ref_List_Trl SET Description='This computing method type generates informative logs about completed sales order lines, the creation of the modular contracts, final invoice lines and shipping notifications. No Invoice Candidate is created for them.', IsTranslated='Y', Name='Sales - Informative Logs',Updated=TO_TIMESTAMP('2024-10-02 10:37:17.79','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543729
 ;
 
 -- Reference: Computing Methods

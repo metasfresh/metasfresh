@@ -1141,7 +1141,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
 
 	/**
-	 * Set Shipment Notification required.
+	 * Set Shipping Notification required.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1150,7 +1150,7 @@ public interface I_M_ShipmentSchedule
 	void setIsShippingNotificationRequired (boolean IsShippingNotificationRequired);
 
 	/**
-	 * Get Shipment Notification required.
+	 * Get Shipping Notification required.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
