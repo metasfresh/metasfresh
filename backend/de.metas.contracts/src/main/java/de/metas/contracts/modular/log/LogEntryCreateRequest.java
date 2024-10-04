@@ -100,6 +100,9 @@ public class LogEntryCreateRequest
 	LocalDateAndOrgId transactionDate;
 
 	@Nullable
+	LocalDateAndOrgId physicalClearanceDate;
+
+	@Nullable
 	Integer storageDays;
 
 	@Nullable
@@ -150,6 +153,7 @@ public class LogEntryCreateRequest
 				.quantity(entry.getQuantity())
 				.amount(entry.getAmount())
 				.transactionDate(entry.getTransactionDate())
+				.physicalClearanceDate(entry.getPhysicalClearanceDate())
 				.storageDays(entry.getStorageDays())
 				.invoiceCandidateId(entry.getInvoiceCandidateId())
 				.year(entry.getYear())
@@ -181,6 +185,7 @@ public class LogEntryCreateRequest
 			@Nullable final Quantity quantity,
 			@Nullable final Money amount,
 			@NonNull final LocalDateAndOrgId transactionDate,
+			@Nullable final LocalDateAndOrgId physicalClearanceDate,
 			@Nullable final Integer storageDays,
 			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final YearId year,
@@ -190,8 +195,8 @@ public class LogEntryCreateRequest
 			@Nullable final ProductPrice priceActual,
 			@Nullable final InvoicingGroupId invoicingGroupId,
 			@Nullable final Boolean isBillable,
-			@Nullable BigDecimal userElementNumber1,
-			@Nullable BigDecimal userElementNumber2)
+			@Nullable final BigDecimal userElementNumber1,
+			@Nullable final BigDecimal userElementNumber2)
 	{
 		if (amount != null && priceActual != null)
 		{
@@ -220,6 +225,7 @@ public class LogEntryCreateRequest
 		this.quantity = quantity;
 		this.amount = amount;
 		this.transactionDate = transactionDate;
+		this.physicalClearanceDate = physicalClearanceDate;
 		this.storageDays = storageDays;
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.year = year;

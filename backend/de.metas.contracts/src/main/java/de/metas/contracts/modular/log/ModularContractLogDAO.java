@@ -121,6 +121,12 @@ public class ModularContractLogDAO
 		log.setIsBillable(request.isBillable());
 		log.setDateTrx(request.getTransactionDate().toTimestamp(orgDAO::getTimeZone));
 
+		final LocalDateAndOrgId physicalClearanceDate = request.getPhysicalClearanceDate();
+		if (physicalClearanceDate != null)
+		{
+			log.setPhysicalClearanceDate(physicalClearanceDate.toTimestamp(orgDAO::getTimeZone));
+		}
+
 		final InvoiceCandidateId invoiceCandidateId = request.getInvoiceCandidateId();
 		if (invoiceCandidateId != null)
 		{
@@ -205,6 +211,7 @@ public class ModularContractLogDAO
 				.quantity(Quantity.ofNullable(record.getQty(), uomDAO.getById(record.getC_UOM_ID())))
 				.amount(Money.ofOrNull(record.getAmount(), CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID())))
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
+				.physicalClearanceDate(LocalDateAndOrgId.ofNullableTimestamp(record.getPhysicalClearanceDate(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
 				.storageDays(record.getStorageDays() >= 0 ? record.getStorageDays() : null)
 				.userElementNumber1(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_ModCntr_Log.COLUMNNAME_UserElementNumber1))
 				.userElementNumber2(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_ModCntr_Log.COLUMNNAME_UserElementNumber2))

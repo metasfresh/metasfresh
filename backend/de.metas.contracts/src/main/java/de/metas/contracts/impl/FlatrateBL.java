@@ -1881,10 +1881,11 @@ public class FlatrateBL implements IFlatrateBL
 		final String typeConditions = term.getType_Conditions();
 
 		// These contract types do not match "other" ICs such as ICs that trigger a commission, or IC that belong to a vendor's empty package (pallette/TU).
-		// Therefore they can overlap without causing us any problems.
+		// Therefore, they can overlap without causing us any problems.
 		final boolean allowedToOverlapWithOtherTerms = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(typeConditions)
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Procurement.equals(typeConditions)
-				|| X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder.equals(typeConditions);
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder.equals(typeConditions)
+				|| (X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract.equals(typeConditions) && term.isSOTrx());
 		return allowedToOverlapWithOtherTerms;
 	}
 

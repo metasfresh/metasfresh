@@ -49,7 +49,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_PriceList_Version;
 import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
@@ -64,6 +63,8 @@ import java.util.Set;
 public interface IOrderBL extends ISingletonService
 {
 	I_C_Order getById(OrderId orderId);
+
+	I_C_OrderLine getOrderLineById(OrderLineId orderLineId);
 
 	/**
 	 * Sets price list if there is a price list for the given location and pricing system.
