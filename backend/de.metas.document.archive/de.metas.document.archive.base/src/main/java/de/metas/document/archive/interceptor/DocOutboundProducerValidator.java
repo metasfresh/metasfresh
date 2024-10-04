@@ -1,13 +1,5 @@
 package de.metas.document.archive.interceptor;
 
-import org.adempiere.service.IClientDAO;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_C_Doc_Outbound_Config;
-import org.compiere.model.MClient;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
-
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.spi.impl.AbstractDocOutboundProducer;
@@ -18,6 +10,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_C_Doc_Outbound_Config;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
