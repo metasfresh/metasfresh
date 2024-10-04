@@ -84,6 +84,9 @@ public class Amount implements Comparable<Amount>
 		this.currencyCode = currencyCode;
 	}
 
+	@Override
+	public String toString() {return value + " " + currencyCode;}
+
 	public BigDecimal getAsBigDecimal()
 	{
 		return toBigDecimal();
