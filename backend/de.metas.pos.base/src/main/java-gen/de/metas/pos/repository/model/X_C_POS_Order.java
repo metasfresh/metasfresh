@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS_Order extends org.compiere.model.PO implements I_C_POS_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1391493372L;
+	private static final long serialVersionUID = -2111737812L;
 
     /** Standard Constructor */
     public X_C_POS_Order (final Properties ctx, final int C_POS_Order_ID, @Nullable final String trxName)
@@ -378,6 +378,18 @@ public class X_C_POS_Order extends org.compiere.model.PO implements I_C_POS_Orde
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PaidAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setProcessed (final boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
 	/** 

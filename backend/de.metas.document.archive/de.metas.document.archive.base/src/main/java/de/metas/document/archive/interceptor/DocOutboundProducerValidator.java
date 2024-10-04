@@ -1,13 +1,5 @@
 package de.metas.document.archive.interceptor;
 
-import org.adempiere.service.IClientDAO;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_C_Doc_Outbound_Config;
-import org.compiere.model.MClient;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
-
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.spi.impl.AbstractDocOutboundProducer;
@@ -16,12 +8,18 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_C_Doc_Outbound_Config;
+import org.compiere.model.MClient;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
 
 /**
  * Intercepter which listens to a a table specified in {@link I_C_Doc_Outbound_Config} and enqueues the documents to {@link DocOutboundWorkpackageProcessor}.
  *
  * @author tsa
- *
  */
 /* package */class DocOutboundProducerValidator extends AbstractDocOutboundProducer implements ModelValidator
 {
@@ -100,7 +98,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public String modelChange(PO po, int type) throws Exception
+	public String modelChange(PO po, int type)
 	{
 		if (type == TYPE_AFTER_NEW || type == TYPE_AFTER_CHANGE)
 		{
@@ -152,13 +150,15 @@ import lombok.NonNull;
 	}
 
 	/**
-	 *
-	 * @param po
-	 * @param changeType
 	 * @return true if the given PO was just processed
 	 */
 	private boolean isJustProcessed(final PO po, final int changeType)
 	{
+		if (!po.isActive())
+		{
+			return false;
+		}
+
 		final boolean isNew = changeType == ModelValidator.TYPE_BEFORE_NEW || changeType == ModelValidator.TYPE_AFTER_NEW;
 		final int idxProcessed = po.get_ColumnIndex(DocOutboundProducerValidator.COLUMNNAME_Processed);
 		final boolean processedColumnAvailable = idxProcessed > 0;
