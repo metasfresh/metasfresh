@@ -1007,4 +1007,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			shipmentSchedulePA.save(shipmentSchedule);
 		});
 	}
+
+	@NonNull
+	@Override
+	public List<I_M_ShipmentSchedule> getByFilter(final IQueryFilter<I_M_ShipmentSchedule> filter)
+	{
+		return shipmentSchedulePA.getByFilter(filter);
+	}
 }

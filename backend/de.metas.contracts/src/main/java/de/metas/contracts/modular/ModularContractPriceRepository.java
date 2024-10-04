@@ -26,7 +26,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Specific_Price;
 import de.metas.contracts.model.I_ModCntr_Type;
-import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty.ContractSpecificScalePriceRequest;
+import de.metas.contracts.modular.computing.ContractSpecificScalePriceRequest;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -42,6 +42,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -137,6 +138,7 @@ public class ModularContractPriceRepository
 				.create();
 	}
 
+	@Nullable
 	public ModCntrSpecificPrice retrieveScalePriceForProductAndContract(@NonNull final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest)
 	{
 		return retrieveOptionalScalePriceForProductAndContract(contractSpecificScalePriceRequest)

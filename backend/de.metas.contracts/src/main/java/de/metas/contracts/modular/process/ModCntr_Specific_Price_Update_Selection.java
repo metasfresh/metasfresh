@@ -28,7 +28,6 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Specific_Price;
-import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModCntrSpecificPrice;
 import de.metas.contracts.modular.ModCntrSpecificPriceId;
 import de.metas.contracts.modular.ModularContractPriceService;
@@ -60,6 +59,8 @@ import org.compiere.model.IQuery;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Set;
+
+import static de.metas.contracts.modular.ComputingMethodType.SCALE_PRICE_METHODS;
 
 public class ModCntr_Specific_Price_Update_Selection extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
@@ -106,13 +107,6 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 			return ProcessPreconditionsResolution.rejectWithInternalReason(DIFFERENT_CURRENCIES_MESSAGE);
 		}
 
-		final int notModularContractCnt = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.filter(context.getQueryFilter(I_C_Flatrate_Term.class))
-				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
-				.create()
-				.count();
-
 		if (countNonModularContractTypes(context) > 0)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason(DIFFERENT_CONTRACTS_MESSAGE);
@@ -147,7 +141,7 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 
 	private void updatePrice(final ModCntrSpecificPriceId contractPriceId)
 	{
-		ModCntrSpecificPrice newContractPrice;
+		final ModCntrSpecificPrice newContractPrice;
 
 		if (p_asNewPrice)
 		{
@@ -197,7 +191,7 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 					.subQuery(modules)
 					.end();
 
-			if (modularContractSettingsService.isMatchingComputingMethodType(p_ModCntr_Type_ID, ComputingMethodType.AverageAddedValueOnShippedQuantity))
+			if (modularContractSettingsService.isMatchingAnyComputingMethodType(p_ModCntr_Type_ID, SCALE_PRICE_METHODS))
 			{
 				queryBuilder.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_MinValue, p_MinValue_Old)
 						.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_IsScalePrice, true);

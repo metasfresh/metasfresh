@@ -1,7 +1,6 @@
 package de.metas.contracts.model;
 
 import org.adempiere.model.ModelColumn;
-import org.compiere.model.I_M_InOutLine;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -592,6 +591,27 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set Physical Clearance Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPhysicalClearanceDate (@Nullable java.sql.Timestamp PhysicalClearanceDate);
+
+	/**
+	 * Get Physical Clearance Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getPhysicalClearanceDate();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_PhysicalClearanceDate = new ModelColumn<>(I_ModCntr_Log.class, "PhysicalClearanceDate", null);
+	String COLUMNNAME_PhysicalClearanceDate = "PhysicalClearanceDate";
+
+	/**
 	 * Set Manufacturing Cost Collector.
 	 *
 	 * <br>Type: Search
@@ -814,7 +834,7 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set UserElementNumber1.
+	 * Set HL.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -823,7 +843,7 @@ public interface I_ModCntr_Log
 	void setUserElementNumber1 (@Nullable BigDecimal UserElementNumber1);
 
 	/**
-	 * Get UserElementNumber1.
+	 * Get HL.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -831,11 +851,11 @@ public interface I_ModCntr_Log
 	 */
 	BigDecimal getUserElementNumber1();
 
-	ModelColumn<org.compiere.model.I_M_InOutLine, Object> COLUMN_UserElementNumber1 = new ModelColumn<>(org.compiere.model.I_M_InOutLine.class, "UserElementNumber1", null);
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_UserElementNumber1 = new ModelColumn<>(I_ModCntr_Log.class, "UserElementNumber1", null);
 	String COLUMNNAME_UserElementNumber1 = "UserElementNumber1";
 
 	/**
-	 * Set UserElementNumber2.
+	 * Set Protein.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -844,7 +864,7 @@ public interface I_ModCntr_Log
 	void setUserElementNumber2 (@Nullable BigDecimal UserElementNumber2);
 
 	/**
-	 * Get UserElementNumber2.
+	 * Get Protein.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -852,7 +872,6 @@ public interface I_ModCntr_Log
 	 */
 	BigDecimal getUserElementNumber2();
 
-	ModelColumn<org.compiere.model.I_M_InOutLine, Object> COLUMN_UserElementNumber2 = new ModelColumn<>(I_M_InOutLine.class, "UserElementNumber2", null);
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_UserElementNumber2 = new ModelColumn<>(I_ModCntr_Log.class, "UserElementNumber2", null);
 	String COLUMNNAME_UserElementNumber2 = "UserElementNumber2";
-
 }

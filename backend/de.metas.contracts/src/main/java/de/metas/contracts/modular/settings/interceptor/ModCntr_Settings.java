@@ -112,7 +112,7 @@ public class ModCntr_Settings
 			ifColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID })
 	public void updateModulesRawProductsIfNeeded(@NonNull final I_ModCntr_Settings record)
 	{
-		final ImmutableList<ComputingMethodType> rawComputingMethods = ImmutableList.of(ComputingMethodType.Receipt, ComputingMethodType.SalesOnRawProduct);
+		final ImmutableList<ComputingMethodType> rawComputingMethods = ImmutableList.of(ComputingMethodType.Receipt, ComputingMethodType.SalesOnRawProduct, ComputingMethodType.Sales);
 		updateModulesProducts(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()), rawComputingMethods, ProductId.ofRepoId(record.getM_Raw_Product_ID()));
 	}
 

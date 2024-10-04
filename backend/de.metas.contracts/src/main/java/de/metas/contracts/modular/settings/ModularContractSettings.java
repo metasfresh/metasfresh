@@ -68,6 +68,7 @@ public class ModularContractSettings
 	@NonNull SOTrx soTrx;
 
 	@NonNull LocalDateAndOrgId storageCostStartDate;
+	int freeStorageCostDays;
 	int additionalInterestDays;
 	@Builder.Default @Getter
 	@NonNull Percent interestPercent = Percent.ZERO;

@@ -54,6 +54,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -211,4 +212,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	ShippingNotificationFromShipmentScheduleProducer newShippingNotificationProducer();
 
 	void setPhysicalClearanceDate(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable Instant physicalClearanceDate);
+
+	@NonNull List<I_M_ShipmentSchedule> getByFilter(IQueryFilter<I_M_ShipmentSchedule> filter);
 }

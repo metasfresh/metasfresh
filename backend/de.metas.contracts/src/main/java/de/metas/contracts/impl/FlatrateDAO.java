@@ -1356,7 +1356,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	private IQuery<I_C_Flatrate_Term> getContractsReadyForDefinitiveInvoice(final @NonNull IQueryFilter<I_C_Flatrate_Term> filter)
 	{
 		final IQuery<I_C_Flatrate_Term> unprocessedFinalInvoiceSpecificLogsExist = queryBL.createQueryBuilder(I_ModCntr_Type.class)
-				.addInArrayFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, ComputingMethodType.FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS)
+				.addInArrayFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, ComputingMethodType.PURCHASE_FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS)
 				.andCollectChildren(I_ModCntr_Module.COLUMN_ModCntr_Type_ID)
 				.andCollectChildren(I_ModCntr_Log.COLUMN_ModCntr_Module_ID)
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_IsBillable, true)

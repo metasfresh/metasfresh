@@ -99,7 +99,6 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
@@ -834,6 +833,12 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
+	public ProductPrice getPriceActual(@NonNull final OrderLineId orderLineId)
+	{
+		return getPriceActual(getOrderLineById(orderLineId));
+	}
+
+	@Override
 	public ProductPrice getPriceActual(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
@@ -1029,7 +1034,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updateIsOnConsignmentNoSave(@NonNull I_C_OrderLine orderLine)
+	public void updateIsOnConsignmentNoSave(@NonNull final I_C_OrderLine orderLine)
 	{
 		final boolean isOnConsignment = computeIsOnConsignmentFromASI(orderLine);
 		orderLine.setIsOnConsignment(isOnConsignment);

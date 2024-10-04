@@ -67,25 +67,24 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
-import static de.metas.contracts.modular.ComputingMethodType.DefinitiveInvoiceRawProduct;
-import static de.metas.contracts.modular.ComputingMethodType.INTERIM_CONTRACT;
-import static de.metas.contracts.modular.ComputingMethodType.Receipt;
-import static de.metas.contracts.modular.ComputingMethodType.SalesOnRawProduct;
+import static de.metas.contracts.modular.ComputingMethodType.INITIAL_PRICE_FROM_CONTRACT_METHODS;
+import static de.metas.contracts.modular.ComputingMethodType.SCALE_PRICE_METHODS;
 
 @Service
 @RequiredArgsConstructor
 public class ModularContractPriceService
 {
-	public static final AdMessageKey MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE = AdMessageKey.of("MSG_ModularContractPrice_NoScalePrice");
-	private final ModularContractPriceRepository modularContractPriceRepository;
-	private final ModularContractComputingMethodHandlerRegistry modularContractComputingMethodHandlerRegistry;
-	private final ModularContractSettingsRepository modularContractSettingsRepository;
-	private final ProductScalePriceService productScalePriceService;
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	private static final AdMessageKey MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE = AdMessageKey.of("MSG_ModularContractPrice_NoScalePrice");
+
+	@NonNull private final ModularContractPriceRepository modularContractPriceRepository;
+	@NonNull private final ModularContractComputingMethodHandlerRegistry modularContractComputingMethodHandlerRegistry;
+	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
+	@NonNull private final ProductScalePriceService productScalePriceService;
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
 	public ModCntrSpecificPrice getById(@NonNull final ModCntrSpecificPriceId id)
 	{
@@ -172,11 +171,6 @@ public class ModularContractPriceService
 	{
 		final IPricingResult pricingResult = pricingBL.calculatePrice(modCntrSpecificPricesCreateRequest.getPricingContextTemplate());
 
-		final ImmutableList<ComputingMethodType> initialRawPriceComputingMethods = ImmutableList.of(Receipt,
-																									SalesOnRawProduct,
-																									DefinitiveInvoiceRawProduct,
-																									INTERIM_CONTRACT);
-
 		final I_C_Flatrate_Term flatrateTermRecord = modCntrSpecificPricesCreateRequest.getFlatrateTermRecord();
 		final ModuleConfig moduleConfig = modCntrSpecificPricesCreateRequest.getModuleConfig();
 		final ProductId productId = modCntrSpecificPricesCreateRequest.getProductId();
@@ -190,7 +184,7 @@ public class ModularContractPriceService
 				.productId(productId)
 				.seqNo(moduleConfig.getSeqNo());
 
-		if (moduleConfig.isMatching(ComputingMethodType.AverageAddedValueOnShippedQuantity))
+		if (moduleConfig.isMatchingAnyOf(SCALE_PRICE_METHODS))
 		{
 			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(pricingResult.getPriceListVersionId(), productId);
 			if (productPrice == null)
@@ -227,7 +221,7 @@ public class ModularContractPriceService
 				modularContractPriceRepository.saveAll(specificPrices);
 			}
 		}
-		else if (moduleConfig.isMatchingAnyOf(initialRawPriceComputingMethods))
+		else if (moduleConfig.isMatchingAnyOf(INITIAL_PRICE_FROM_CONTRACT_METHODS))
 		{
 			final Money priceFromContract = Money.of(flatrateTermRecord.getPriceActual(), CurrencyId.ofRepoId((flatrateTermRecord.getC_Currency_ID())));
 
