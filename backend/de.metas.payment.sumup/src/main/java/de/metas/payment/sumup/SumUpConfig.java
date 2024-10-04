@@ -20,7 +20,7 @@ public class SumUpConfig
 	@NonNull @Getter private final SumUpConfigId id;
 	@Getter private final boolean isActive;
 	@NonNull @Getter private final String apiKey;
-	@NonNull @Getter private final String merchantCode;
+	@NonNull @Getter private final SumUpMerchantCode merchantCode;
 	@Nullable @Getter private final SumUpCardReaderExternalId defaultCardReaderExternalId;
 	@NonNull @Getter private final List<SumUpCardReader> cardReaders;
 	@NonNull private final ImmutableMap<SumUpCardReaderExternalId, SumUpCardReader> cardReadersByExternalId;
@@ -29,7 +29,7 @@ public class SumUpConfig
 	private SumUpConfig(
 			final @NonNull SumUpConfigId id, final boolean isActive,
 			@NonNull final String apiKey,
-			@NonNull final String merchantCode,
+			@NonNull final SumUpMerchantCode merchantCode,
 			@NonNull final List<SumUpCardReader> cardReaders,
 			@Nullable final SumUpCardReaderExternalId defaultCardReaderExternalId)
 	{

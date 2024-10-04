@@ -12,7 +12,7 @@ import lombok.extern.jackson.Jacksonized;
 @Value
 @Builder
 @Jacksonized
-public class PairReaderRequest
+public class JsonPairReaderRequest
 {
 	@JsonProperty("name")
 	@NonNull String name;

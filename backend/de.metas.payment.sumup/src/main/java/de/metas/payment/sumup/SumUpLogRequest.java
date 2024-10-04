@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 public class SumUpLogRequest
 {
 	@NonNull SumUpConfigId configId;
-	@NonNull String merchantCode;
+	@NonNull SumUpMerchantCode merchantCode;
 
 	@NonNull HttpMethod method;
 	@NonNull String requestURI;

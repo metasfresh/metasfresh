@@ -1,4 +1,4 @@
-package de.metas.payment.sumup.client.json;
+package de.metas.payment.sumup;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,23 +10,26 @@ import org.adempiere.exceptions.AdempiereException;
 
 @EqualsAndHashCode
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-public class ClientTransactionId
+public class SumUpMerchantCode
 {
-	private final String value;
+	@NonNull private final String value;
 
-	private ClientTransactionId(@NonNull final String value)
+	private SumUpMerchantCode(@NonNull final String value)
 	{
 		final String valueNorm = StringUtils.trimBlankToNull(value);
 		if (valueNorm == null)
 		{
-			throw new AdempiereException("Invalid id: " + value);
+			throw new AdempiereException("Invalid merchant code: " + value);
 		}
 		this.value = valueNorm;
 	}
 
 	@JsonCreator
 	@NonNull
-	public static ClientTransactionId ofString(@NonNull final String value) {return new ClientTransactionId(value);}
+	public static SumUpMerchantCode ofString(@NonNull final String value)
+	{
+		return new SumUpMerchantCode(value);
+	}
 
 	@Override
 	@Deprecated

@@ -7,12 +7,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class PairReaderRequestTest
+class JsonPairReaderRequestTest
 {
 	@Test
 	void testSerialize() throws JsonProcessingException
 	{
-		final PairReaderRequest request = PairReaderRequest.builder()
+		final JsonPairReaderRequest request = JsonPairReaderRequest.builder()
 				.name("card reader 1")
 				.pairing_code("24TXYYJUZ")
 				.build();

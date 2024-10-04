@@ -10,26 +10,23 @@ import org.adempiere.exceptions.AdempiereException;
 
 @EqualsAndHashCode
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-public class SumUpCardReaderExternalId
+public class SumUpClientTransactionId
 {
-	@NonNull private final String value;
+	private final String value;
 
-	private SumUpCardReaderExternalId(@NonNull final String value)
+	private SumUpClientTransactionId(@NonNull final String value)
 	{
 		final String valueNorm = StringUtils.trimBlankToNull(value);
 		if (valueNorm == null)
 		{
-			throw new AdempiereException("Invalid card reader id: " + value);
+			throw new AdempiereException("Invalid id: " + value);
 		}
 		this.value = valueNorm;
 	}
 
 	@JsonCreator
 	@NonNull
-	public static SumUpCardReaderExternalId ofString(@NonNull final String value)
-	{
-		return new SumUpCardReaderExternalId(value);
-	}
+	public static SumUpClientTransactionId ofString(@NonNull final String value) {return new SumUpClientTransactionId(value);}
 
 	@Override
 	@Deprecated

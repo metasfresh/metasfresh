@@ -27,7 +27,7 @@ public class SumUpLogRepository
 		{
 			final I_SUMUP_API_Log record = InterfaceWrapperHelper.newInstanceOutOfTrx(I_SUMUP_API_Log.class);
 			record.setSUMUP_Config_ID(request.getConfigId().getRepoId());
-			record.setSUMUP_merchant_code(request.getMerchantCode());
+			record.setSUMUP_merchant_code(request.getMerchantCode().getAsString());
 
 			record.setMethod(request.getMethod().name());
 			record.setRequestURI(request.getRequestURI());

@@ -1,31 +1,32 @@
 package de.metas.payment.sumup.client.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.payment.sumup.SumUpCardReaderExternalId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
+
+/**
+ * @see <a href="https://developer.sumup.com/api/readers/create-reader">spec</a>
+ */
 @Value
 @Builder
 @Jacksonized
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CardReaderCheckoutResponse
+public class JsonGetReadersResponse
 {
-	@NonNull Data data;
-
-	//
-	//
-	//
+	List<Item> items;
 
 	@Value
 	@Builder
 	@Jacksonized
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	public static class Data
+	public static class Item
 	{
-		@JsonProperty("client_transaction_id")
-		@NonNull ClientTransactionId client_transaction_id;
+		SumUpCardReaderExternalId id;
+		String name;
+		//...
 	}
 }

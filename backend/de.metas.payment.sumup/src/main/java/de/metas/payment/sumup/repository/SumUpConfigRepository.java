@@ -10,6 +10,7 @@ import de.metas.payment.sumup.SumUpCardReader;
 import de.metas.payment.sumup.SumUpCardReaderExternalId;
 import de.metas.payment.sumup.SumUpConfig;
 import de.metas.payment.sumup.SumUpConfigId;
+import de.metas.payment.sumup.SumUpMerchantCode;
 import de.metas.payment.sumup.repository.model.I_SUMUP_CardReader;
 import de.metas.payment.sumup.repository.model.I_SUMUP_Config;
 import de.metas.util.GuavaCollectors;
@@ -197,7 +198,7 @@ public class SumUpConfigRepository
 				.id(extractConfigId(configRecord))
 				.isActive(configRecord.isActive())
 				.apiKey(configRecord.getApiKey())
-				.merchantCode(configRecord.getSUMUP_merchant_code())
+				.merchantCode(SumUpMerchantCode.ofString(configRecord.getSUMUP_merchant_code()))
 				.defaultCardReaderExternalId(defaultCardReaderExternalId)
 				.cardReaders(ImmutableList.copyOf(cardReaders))
 				.build();
@@ -207,7 +208,7 @@ public class SumUpConfigRepository
 	{
 		record.setIsActive(from.isActive());
 		record.setApiKey(from.getApiKey());
-		record.setSUMUP_merchant_code(from.getMerchantCode());
+		record.setSUMUP_merchant_code(from.getMerchantCode().getAsString());
 	}
 
 	private static SumUpCardReader fromRecord(final I_SUMUP_CardReader record)
