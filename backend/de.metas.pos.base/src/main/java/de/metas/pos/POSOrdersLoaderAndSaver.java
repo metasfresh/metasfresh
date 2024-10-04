@@ -296,6 +296,8 @@ class POSOrdersLoaderAndSaver
 	{
 		orderRecord.setExternalId(from.getExternalId().getAsString());
 		orderRecord.setStatus(from.getStatus().getCode());
+		orderRecord.setProcessed(from.getStatus().isProcessed());
+		orderRecord.setIsActive(from.getStatus().isActive());
 		orderRecord.setC_DocTypeOrder_ID(from.getSalesOrderDocTypeId().getRepoId());
 		orderRecord.setM_PricingSystem_ID(from.getPricingSystemAndListId().getPricingSystemId().getRepoId());
 		orderRecord.setM_PriceList_ID(from.getPricingSystemAndListId().getPriceListId().getRepoId());
