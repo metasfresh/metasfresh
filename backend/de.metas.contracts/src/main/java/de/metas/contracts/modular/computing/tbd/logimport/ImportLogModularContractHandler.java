@@ -31,6 +31,7 @@ import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -65,6 +66,12 @@ public class ImportLogModularContractHandler extends AbstractComputingMethodHand
 							YearId.ofRepoIdOrNull(importLogRecord.getHarvesting_Year_ID()) != null &&
 							FlatrateTermId.ofRepoIdOrNull(importLogRecord.getC_Flatrate_Term_ID()) != null;
 		}
+		return false;
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
 		return false;
 	}
 

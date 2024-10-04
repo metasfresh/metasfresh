@@ -47,10 +47,7 @@ public interface IComputingMethodHandler
 
 	boolean applies(@NonNull final TableRecordReference recordRef, @NonNull final LogEntryContractType contractType);
 
-	default boolean isApplicableForSettings(@NonNull final TableRecordReference recordRef, @NonNull final ModularContractSettings settings)
-	{
-		return true;
-	}
+	boolean isApplicableForSettings(@NonNull final TableRecordReference recordRef, @NonNull final ModularContractSettings settings);
 
 	/**
 	 * The handler's implementation will need to somehow extract the corresponding contract(s):

@@ -12,6 +12,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -1889,6 +1890,7 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null -> !null")
 	public static Instant asInstant(@Nullable final Timestamp timestamp)
 	{
 		return timestamp != null ? timestamp.toInstant() : null;

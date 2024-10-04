@@ -43,6 +43,9 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.shippingnotification.ShippingNotificationLineId;
+import de.metas.shippingnotification.ShippingNotificationService;
+import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -88,6 +91,23 @@ public class ModularContractProvider
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	@NonNull private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+
+	@NonNull private final ShippingNotificationService shippingNotificationService;
+
+	@NonNull
+	public Stream<FlatrateTermId> streamSalesContractsForShippingNotificationLine(@NonNull final ShippingNotificationLineId shippingNotificationLineId)
+	{
+		final I_M_Shipping_NotificationLine notificationLine = shippingNotificationService.getLineRecordByLineId(shippingNotificationLineId);
+		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(notificationLine.getC_Order_ID(), notificationLine.getC_OrderLine_ID());
+		return streamSalesContractsForSalesOrderLine(orderAndLineId);
+	}
+
+	@NonNull
+	public Stream<FlatrateTermId> streamSalesContractsForSalesOrderLine(@NonNull final OrderLineId orderLineId)
+	{
+		final I_C_OrderLine orderLine = orderBL.getOrderLineById(orderLineId);
+		return streamSalesContractsForSalesOrderLine(OrderAndLineId.of(OrderId.ofRepoId(orderLine.getC_Order_ID()), orderLineId));
+	}
 
 	@NonNull
 	public Stream<FlatrateTermId> streamSalesContractsForSalesOrderLine(@NonNull final OrderAndLineId orderAndLineId)
@@ -182,24 +202,7 @@ public class ModularContractProvider
 	@NonNull
 	public Stream<FlatrateTermId> streamModularPurchaseContractsForInvoiceLine(@NonNull final InvoiceLineId invoiceLineId)
 	{
-		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(invoiceLineId);
-		final FlatrateTermId flatrateTermId;
-		if (invoiceLineRecord.getC_Flatrate_Term_ID() > 0)
-		{
-			flatrateTermId = FlatrateTermId.ofRepoId(invoiceLineRecord.getC_Flatrate_Term_ID());
-		}
-		else
-		{
-			final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForIl(invoiceLineRecord);
-
-			if (invoiceCandidates.isEmpty())
-			{
-				return Stream.empty();
-			}
-
-			flatrateTermId = CollectionUtils.extractSingleElement(invoiceCandidates, this::extractFlatrateTermId).orElse(null);
-
-		}
+		final FlatrateTermId flatrateTermId = extractFlatrateTermId(invoiceLineId);
 
 		if (flatrateTermId == null)
 		{
@@ -219,6 +222,35 @@ public class ModularContractProvider
 		{
 			return Stream.empty();
 		}
+	}
+
+	@NonNull
+	public Stream<FlatrateTermId> streamModularSalesContractsForInvoiceLine(@NonNull final InvoiceLineId invoiceLineId)
+	{
+		return Stream.ofNullable(extractFlatrateTermId(invoiceLineId));
+	}
+
+	@Nullable
+	private FlatrateTermId extractFlatrateTermId(@NonNull final InvoiceLineId invoiceLineId)
+	{
+		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(invoiceLineId);
+		final FlatrateTermId flatrateTermId;
+		if (invoiceLineRecord.getC_Flatrate_Term_ID() > 0)
+		{
+			flatrateTermId = FlatrateTermId.ofRepoId(invoiceLineRecord.getC_Flatrate_Term_ID());
+		}
+		else
+		{
+			final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForIl(invoiceLineRecord);
+
+			if (invoiceCandidates.isEmpty())
+			{
+				return null;
+			}
+
+			flatrateTermId = CollectionUtils.extractSingleElement(invoiceCandidates, this::extractFlatrateTermId).orElse(null);
+		}
+		return flatrateTermId;
 	}
 
 	private Optional<FlatrateTermId> extractFlatrateTermId(@NonNull final I_C_Invoice_Candidate ic)
@@ -250,6 +282,20 @@ public class ModularContractProvider
 
 
 		return streamModularPurchaseContractBySalesOrderWithProductId(orderId, ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()));
+	}
+
+	@NonNull
+	public Stream<FlatrateTermId> streamModularSalesContractsForShipmentLine(@NonNull final InOutLineId inOutLineId)
+	{
+		final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(inOutLineId);
+		final I_M_InOut inOutRecord = inOutDAO.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLineRecord.getC_OrderLine_ID());
+		if (!inOutRecord.isSOTrx() || inOutLineRecord.getMovementQty().signum() < 0 || orderLineId == null)
+		{
+			return Stream.empty();
+		}
+
+		return streamSalesContractsForSalesOrderLine(orderLineId);
 	}
 
 	private @NonNull Stream<FlatrateTermId> streamModularPurchaseContractBySalesOrderWithProductId(final OrderId orderId, final ProductId productId)

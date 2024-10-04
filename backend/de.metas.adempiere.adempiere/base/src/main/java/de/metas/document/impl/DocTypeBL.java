@@ -249,6 +249,28 @@ public class DocTypeBL implements IDocTypeBL
 	}
 
 	@Override
+	public boolean isSalesFinalInvoiceOrFinalCreditMemo(@NonNull final DocTypeId docTypeId)
+	{
+		return isSalesFinalInvoice(docTypeId) || isSalesFinalCreditMemo(docTypeId);
+	}
+
+	private boolean isSalesFinalInvoice(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+
+		return X_C_DocType.DOCSUBTYPE_FinalInvoice.equals(dt.getDocSubType())
+				&& X_C_DocType.DOCBASETYPE_ARInvoice.equals(dt.getDocBaseType());
+	}
+
+	private boolean isSalesFinalCreditMemo(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+
+		return X_C_DocType.DOCSUBTYPE_FinalCreditMemo.equals(dt.getDocSubType())
+				&& X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(dt.getDocBaseType());
+	}
+
+	@Override
 	public void save(@NonNull final I_C_DocType dt)
 	{
 		docTypesRepo.save(dt);

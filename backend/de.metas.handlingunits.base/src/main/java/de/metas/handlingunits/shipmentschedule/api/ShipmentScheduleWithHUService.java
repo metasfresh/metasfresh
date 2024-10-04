@@ -119,6 +119,8 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.shippingnotification.ShippingNotificationRepository;
+import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -206,8 +208,8 @@ public class ShipmentScheduleWithHUService
 				new QRCodeConfigurationService(new QRCodeConfigurationRepository())
 		);
 
-		final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository = new MobileUIPickingUserProfileRepository(); 
-		
+		final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository = new MobileUIPickingUserProfileRepository();
+
 		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
 				pickingJobSlotService,
 				bpartnerBL,
@@ -236,7 +238,7 @@ public class ShipmentScheduleWithHUService
 				pickingCandidateServiceTest,
 				new PickingConfigRepositoryV2(),
 				inventoryServiceTest,
-				new ModularContractProvider()
+				new ModularContractProvider(new ShippingNotificationService(new ShippingNotificationRepository()))
 		);
 	}
 
