@@ -380,6 +380,15 @@ UPDATE AD_Process_Para SET AD_Val_Rule_ID=540666,Updated=TO_TIMESTAMP('2023-11-2
 UPDATE AD_Process_Para SET DefaultValue='@$C_AcctSchema_ID@',Updated=TO_TIMESTAMP('2023-11-28 15:54:57.639','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542757
 ;
 
+-- Process: RV_AccountSheet_Report(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- 2024-10-04T09:47:26.526Z
+UPDATE AD_Process_Trl SET Description='Custmer Receivables/Vendor Liability Accounting transactions export', IsTranslated='Y', Name='Accounting transactions export',Updated=TO_TIMESTAMP('2024-10-04 10:47:26.526','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585341
+;
+
+-- 2024-10-04T09:49:58.445Z
+UPDATE AD_Menu_Trl SET Description='Custmer Receivables/Vendor Liability Accounting transactions export', Name='Accounting transactions export',Updated=TO_TIMESTAMP('2024-10-04 10:49:58.286','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Menu_ID=542131
+;
+
 --
 select role_access_update();
 
