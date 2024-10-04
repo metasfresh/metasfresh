@@ -49,6 +49,7 @@ pull_request_rules:
               - base=yoyo_uat
           - or: &PROJECT_BRANCHES_HOTFIX
               - base=hard_encoded_hotfix
+              - base=inner_silence_hotfix
               - base=intensive_care_hotfix
               - base=mad_orange_hotfix
               - base=massive_entropy_hotfix
