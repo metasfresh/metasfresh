@@ -256,7 +256,7 @@ public class DocTypeBL implements IDocTypeBL
 
 	private boolean isSalesFinalInvoice(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 
 		return X_C_DocType.DOCSUBTYPE_FinalInvoice.equals(dt.getDocSubType())
 				&& X_C_DocType.DOCBASETYPE_ARInvoice.equals(dt.getDocBaseType());
@@ -264,7 +264,7 @@ public class DocTypeBL implements IDocTypeBL
 
 	private boolean isSalesFinalCreditMemo(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 
 		return X_C_DocType.DOCSUBTYPE_FinalCreditMemo.equals(dt.getDocSubType())
 				&& X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(dt.getDocBaseType());
