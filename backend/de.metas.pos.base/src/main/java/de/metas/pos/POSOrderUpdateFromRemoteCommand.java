@@ -168,7 +168,7 @@ class POSOrderUpdateFromRemoteCommand
 		order.createOrUpdatePayment(remotePayment.getUuid(), existingPayment -> {
 			final POSPayment.POSPaymentBuilder builder = existingPayment != null
 					? existingPayment.toBuilder()
-					: POSPayment.builder();
+					: POSPayment.builder().paymentProcessingStatus(POSPaymentProcessingStatus.NEW);
 
 			final BigDecimal amount = currencyPrecision.round(remotePayment.getAmount());
 

@@ -1,0 +1,69 @@
+package de.metas.pos.payment_gateway.sumup;
+
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.payment.sumup.SumUpCardReaderCheckoutRequest;
+import de.metas.payment.sumup.SumUpConfig;
+import de.metas.payment.sumup.SumUpConfigId;
+import de.metas.payment.sumup.SumUpService;
+import de.metas.payment.sumup.SumUpTransaction;
+import de.metas.pos.POSTerminalPaymentProcessorConfig;
+import de.metas.pos.payment_gateway.POSPaymentProcessRequest;
+import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
+import de.metas.pos.payment_gateway.POSPaymentProcessor;
+import de.metas.pos.payment_gateway.POSPaymentProcessorType;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class SumUpPaymentProcessor implements POSPaymentProcessor
+{
+	@NonNull IErrorManager errorManager = Services.get(IErrorManager.class);
+	@NonNull private final SumUpService sumUpService;
+
+	@Override
+	public POSPaymentProcessorType getType() {return POSPaymentProcessorType.SumUp;}
+
+	@Override
+	public POSPaymentProcessResponse process(@NonNull final POSPaymentProcessRequest request)
+	{
+		try
+		{
+			final POSTerminalPaymentProcessorConfig paymentProcessorConfig = request.getPaymentProcessorConfig();
+			Check.assumeEquals(paymentProcessorConfig.getType(), POSPaymentProcessorType.SumUp, "payment processor type is SumUp: {}", paymentProcessorConfig);
+			final SumUpConfigId sumUpConfigId = Check.assumeNotNull(paymentProcessorConfig.getSumUpConfigId(), "sumUpConfigId is set for {}", paymentProcessorConfig);
+
+			final SumUpConfig sumUpConfig = sumUpService.getConfig(sumUpConfigId);
+
+			final SumUpTransaction sumUpTrx = sumUpService.cardReaderCheckout(SumUpCardReaderCheckoutRequest.builder()
+					.configId(sumUpConfigId)
+					.cardReaderId(sumUpConfig.getDefaultCardReaderExternalIdNotNull())
+					.amount(request.getAmount())
+					.callbackUrl(null) // TODO
+					.posOrderId(request.getPosOrderId().getRepoId())
+					.posPaymentId(request.getPosPaymentId().getRepoId())
+					.build());
+
+			return POSPaymentProcessResponse.builder()
+					.status(SumUpUtils.toResponseStatus(sumUpTrx.getStatus()))
+					.build();
+		}
+		catch (final Exception ex)
+		{
+			return errorResponse(ex);
+		}
+	}
+
+	private POSPaymentProcessResponse errorResponse(final Exception ex)
+	{
+		final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
+		final AdIssueId errorId = errorManager.createIssue(metasfreshException);
+		return POSPaymentProcessResponse.error(AdempiereException.extractMessage(metasfreshException), errorId);
+	}
+
+}

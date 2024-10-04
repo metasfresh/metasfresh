@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS extends org.compiere.model.PO implements I_C_POS, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1447854443L;
+	private static final long serialVersionUID = -1839838638L;
 
     /** Standard Constructor */
     public X_C_POS (final Properties ctx, final int C_POS_ID, @Nullable final String trxName)
@@ -201,6 +201,25 @@ public class X_C_POS extends org.compiere.model.PO implements I_C_POS, org.compi
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
+	/** 
+	 * POSPaymentProcessor AD_Reference_ID=541896
+	 * Reference name: POSPaymentProcessor
+	 */
+	public static final int POSPAYMENTPROCESSOR_AD_Reference_ID=541896;
+	/** SumUp = sumup */
+	public static final String POSPAYMENTPROCESSOR_SumUp = "sumup";
+	@Override
+	public void setPOSPaymentProcessor (final @Nullable java.lang.String POSPaymentProcessor)
+	{
+		set_Value (COLUMNNAME_POSPaymentProcessor, POSPaymentProcessor);
+	}
+
+	@Override
+	public java.lang.String getPOSPaymentProcessor() 
+	{
+		return get_ValueAsString(COLUMNNAME_POSPaymentProcessor);
+	}
+
 	@Override
 	public void setPrinterName (final @Nullable java.lang.String PrinterName)
 	{
@@ -211,5 +230,20 @@ public class X_C_POS extends org.compiere.model.PO implements I_C_POS, org.compi
 	public java.lang.String getPrinterName() 
 	{
 		return get_ValueAsString(COLUMNNAME_PrinterName);
+	}
+
+	@Override
+	public void setSUMUP_Config_ID (final int SUMUP_Config_ID)
+	{
+		if (SUMUP_Config_ID < 1) 
+			set_Value (COLUMNNAME_SUMUP_Config_ID, null);
+		else 
+			set_Value (COLUMNNAME_SUMUP_Config_ID, SUMUP_Config_ID);
+	}
+
+	@Override
+	public int getSUMUP_Config_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SUMUP_Config_ID);
 	}
 }

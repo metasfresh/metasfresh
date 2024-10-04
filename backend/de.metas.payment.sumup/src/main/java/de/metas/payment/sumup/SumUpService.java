@@ -1,8 +1,10 @@
 package de.metas.payment.sumup;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.MoneyService;
+import de.metas.payment.sumup.SumUpTransaction.SumUpTransactionBuilder;
 import de.metas.payment.sumup.client.SumUpClient;
 import de.metas.payment.sumup.client.json.JsonGetReadersResponse;
 import de.metas.payment.sumup.client.json.JsonGetTransactionResponse;
@@ -11,9 +13,9 @@ import de.metas.payment.sumup.client.json.JsonReaderCheckoutRequest;
 import de.metas.payment.sumup.client.json.JsonReaderCheckoutResponse;
 import de.metas.payment.sumup.repository.SumUpConfigRepository;
 import de.metas.payment.sumup.repository.SumUpTransactionRepository;
+import de.metas.payment.sumup.repository.UpdateByPendingStatusResult;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.Mutable;
 import org.springframework.stereotype.Service;
 
@@ -24,24 +26,39 @@ import java.util.HashMap;
 import java.util.Set;
 
 @Service
-@RequiredArgsConstructor
 public class SumUpService
 {
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final SumUpClientFactory clientFactory;
 	@NonNull private final SumUpConfigRepository configRepository;
 	@NonNull private final SumUpTransactionRepository trxRepository;
-	@NonNull private final SumUpTransactionListenersRegistry listeners;
+
+	public SumUpService(
+			@NonNull final MoneyService moneyService,
+			@NonNull final SumUpClientFactory clientFactory,
+			@NonNull final SumUpConfigRepository configRepository,
+			@NonNull final SumUpTransactionRepository trxRepository)
+	{
+		this.moneyService = moneyService;
+		this.clientFactory = clientFactory;
+		this.configRepository = configRepository;
+		this.trxRepository = trxRepository;
+	}
+
+	public SumUpConfig getConfig(@NonNull SumUpConfigId configId)
+	{
+		return configRepository.getById(configId);
+	}
 
 	public void updateCardReadersFromRemote(@NonNull SumUpConfigId configId)
 	{
 		configRepository.updateById(configId, config -> {
 			final JsonGetReadersResponse remoteCardReaders = clientFactory.newClient(config).getCardReaders();
-			return updateFromRemote(config, remoteCardReaders);
+			return updateTransactionFromRemote(config, remoteCardReaders);
 		});
 	}
 
-	private static SumUpConfig updateFromRemote(final SumUpConfig config, final JsonGetReadersResponse remoteResponse)
+	private static SumUpConfig updateTransactionFromRemote(final SumUpConfig config, final JsonGetReadersResponse remoteResponse)
 	{
 		final HashMap<SumUpCardReaderExternalId, SumUpCardReader> cardReadersByExternalId = config.getCardReaders()
 				.stream()
@@ -50,7 +67,7 @@ public class SumUpService
 		final ArrayList<SumUpCardReader> newCardReaders = new ArrayList<>();
 		for (JsonGetReadersResponse.Item remoteCardReader : remoteResponse.getItems())
 		{
-			SumUpCardReader cardReader = updateFromRemote(cardReadersByExternalId.get(remoteCardReader.getId()), remoteCardReader);
+			SumUpCardReader cardReader = updateTransactionFromRemote(cardReadersByExternalId.get(remoteCardReader.getId()), remoteCardReader);
 			newCardReaders.add(cardReader);
 		}
 
@@ -59,7 +76,7 @@ public class SumUpService
 				.build();
 	}
 
-	private static SumUpCardReader updateFromRemote(@Nullable final SumUpCardReader cardReader, @NonNull final JsonGetReadersResponse.Item remote)
+	private static SumUpCardReader updateTransactionFromRemote(@Nullable final SumUpCardReader cardReader, @NonNull final JsonGetReadersResponse.Item remote)
 	{
 		final SumUpCardReader.SumUpCardReaderBuilder builder = cardReader != null
 				? cardReader.toBuilder()
@@ -81,7 +98,7 @@ public class SumUpService
 					.build());
 
 			final JsonGetReadersResponse remoteCardReaders = client.getCardReaders();
-			return updateFromRemote(config, remoteCardReaders);
+			return updateTransactionFromRemote(config, remoteCardReaders);
 		});
 	}
 
@@ -97,7 +114,7 @@ public class SumUpService
 			ids.forEach(client::deleteCardReader);
 
 			final JsonGetReadersResponse remoteCardReaders = client.getCardReaders();
-			return updateFromRemote(config, remoteCardReaders);
+			return updateTransactionFromRemote(config, remoteCardReaders);
 		});
 	}
 
@@ -119,18 +136,63 @@ public class SumUpService
 						.build()
 		);
 
-		final JsonGetTransactionResponse jsonTrx = client.getTransactionById(checkoutResponse.getData().getClient_transaction_id());
-		final SumUpTransaction trx = toSumUpTransaction(jsonTrx, configId);
+		final SumUpTransaction trx = toSumUpTransaction(checkoutResponse, request, config);
 		trxRepository.saveNew(trx);
-		listeners.fireNewTransaction(trx);
 
 		return trx;
 	}
 
-	private static SumUpTransaction toSumUpTransaction(@NonNull final JsonGetTransactionResponse remote, @NonNull SumUpConfigId configId)
+	private static SumUpTransaction toSumUpTransaction(
+			@NonNull final JsonReaderCheckoutResponse checkoutResponse,
+			@NonNull SumUpCardReaderCheckoutRequest request,
+			@NonNull final SumUpConfig config)
 	{
+		final SumUpClientTransactionId clientTransactionId = checkoutResponse.getData().getClient_transaction_id();
+
 		return SumUpTransaction.builder()
-				.configId(configId)
+				.configId(config.getId())
+				.externalId("UNKNOWN-" + clientTransactionId)
+				.clientTransactionId(clientTransactionId)
+				.merchantCode(config.getMerchantCode())
+				.timestamp(SystemTime.asInstant())
+				.status(SumUpTransactionStatus.PENDING)
+				.amount(request.getAmount())
+				.json(null)
+				.posOrderId(request.getPosOrderId())
+				.posPaymentId(request.getPosPaymentId())
+				.build();
+	}
+
+	public void updateTransactionFromRemote(@NonNull final SumUpClientTransactionId id)
+	{
+		final Mutable<SumUpTransaction> trxBeforeChangeRef = new Mutable<>();
+
+		trxRepository.updateById(id, trxBeforeChange -> {
+			trxBeforeChangeRef.setValue(trxBeforeChange);
+			return updateTransactionFromRemote(trxBeforeChange);
+		});
+	}
+
+	private SumUpTransaction updateTransactionFromRemote(final SumUpTransaction trx)
+	{
+		final SumUpConfigId configId = trx.getConfigId();
+		final SumUpConfig config = configRepository.getById(configId);
+		final SumUpClient client = clientFactory.newClient(config);
+		final JsonGetTransactionResponse remoteTrx = client.getTransactionById(trx.getClientTransactionId());
+
+		return updateTransactionFromRemote(trx, remoteTrx);
+	}
+
+	private static SumUpTransaction updateTransactionFromRemote(@NonNull SumUpTransaction trx, @NonNull final JsonGetTransactionResponse remote)
+	{
+		final SumUpTransactionBuilder trxBuilder = trx.toBuilder();
+		updateTransactionFromRemote(trxBuilder, remote);
+		return trxBuilder.build();
+	}
+
+	private static void updateTransactionFromRemote(@NonNull SumUpTransactionBuilder trxBuilder, @NonNull final JsonGetTransactionResponse remote)
+	{
+		trxBuilder
 				.externalId(remote.getId())
 				.clientTransactionId(remote.getClient_transaction_id())
 				.merchantCode(remote.getMerchant_code())
@@ -138,27 +200,12 @@ public class SumUpService
 				.status(SumUpTransactionStatus.ofString(remote.getStatus()))
 				.amount(Amount.of(remote.getAmount(), remote.getCurrency()))
 				.json(remote.getJson())
-				.posOrderId(-1) // TODO
-				.posPaymentId(-1) // TODO
-				.build();
+		;
 	}
 
-	public SumUpTransaction updateTransactionFromRemote(@NonNull final SumUpClientTransactionId id)
+	public UpdateByPendingStatusResult updateAllPendingTransactions()
 	{
-		final Mutable<SumUpTransaction> trxBeforeChangeRef = new Mutable<>();
-
-		final SumUpTransaction trx = trxRepository.updateById(id, trxBeforeChange -> {
-			trxBeforeChangeRef.setValue(trxBeforeChange);
-			final SumUpConfigId configId = trxBeforeChange.getConfigId();
-			final SumUpConfig config = configRepository.getById(configId);
-			final SumUpClient client = clientFactory.newClient(config);
-			final JsonGetTransactionResponse remoteTrx = client.getTransactionById(trxBeforeChange.getClientTransactionId());
-			return toSumUpTransaction(remoteTrx, configId);
-		});
-
-		listeners.fireStatusChangedIfNeeded(trx, trxBeforeChangeRef.getValueNotNull());
-
-		return trx;
+		return trxRepository.updateByPendingStatus(this::updateTransactionFromRemote);
 	}
 
 }

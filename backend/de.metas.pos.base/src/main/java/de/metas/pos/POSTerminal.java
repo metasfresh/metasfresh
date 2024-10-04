@@ -27,6 +27,7 @@ public class POSTerminal
 	@NonNull private final POSTerminalId id;
 
 	@NonNull private final BankAccountId cashbookId;
+	@Nullable private final POSTerminalPaymentProcessorConfig paymentProcessorConfig;
 
 	@NonNull private final PricingSystemAndListId pricingSystemAndListId;
 	@NonNull private final CurrencyPrecision pricePrecision;
@@ -47,6 +48,7 @@ public class POSTerminal
 	private POSTerminal(
 			@NonNull final POSTerminalId id,
 			@NonNull final BankAccountId cashbookId,
+			@Nullable final POSTerminalPaymentProcessorConfig paymentProcessorConfig,
 			@NonNull final PricingSystemAndListId pricingSystemAndListId,
 			@NonNull final CurrencyPrecision pricePrecision,
 			final boolean isTaxIncluded,
@@ -64,6 +66,7 @@ public class POSTerminal
 
 		this.id = id;
 		this.cashbookId = cashbookId;
+		this.paymentProcessorConfig = paymentProcessorConfig;
 		this.pricingSystemAndListId = pricingSystemAndListId;
 		this.pricePrecision = pricePrecision;
 		this.isTaxIncluded = isTaxIncluded;
@@ -73,6 +76,15 @@ public class POSTerminal
 		this.currency = currency;
 		this.cashJournalId = cashJournalId;
 		this.cashLastBalance = cashLastBalance != null ? cashLastBalance : Money.zero(currency.getId());
+	}
+
+	public POSTerminalPaymentProcessorConfig getPaymentProcessorConfigNotNull()
+	{
+		if (paymentProcessorConfig == null)
+		{
+			throw new AdempiereException("No payment processor configured");
+		}
+		return paymentProcessorConfig;
 	}
 
 	public OrgId getOrgId() {return getShipFrom().getOrgId();}

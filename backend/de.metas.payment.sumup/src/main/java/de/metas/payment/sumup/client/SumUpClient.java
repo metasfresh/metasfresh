@@ -10,12 +10,12 @@ import de.metas.payment.sumup.SumUpClientTransactionId;
 import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpLogRequest;
 import de.metas.payment.sumup.SumUpMerchantCode;
-import de.metas.payment.sumup.client.json.JsonReaderCheckoutRequest;
-import de.metas.payment.sumup.client.json.JsonReaderCheckoutResponse;
 import de.metas.payment.sumup.client.json.JsonGetReadersResponse;
 import de.metas.payment.sumup.client.json.JsonGetTransactionResponse;
 import de.metas.payment.sumup.client.json.JsonPairReaderRequest;
 import de.metas.payment.sumup.client.json.JsonPairReaderResponse;
+import de.metas.payment.sumup.client.json.JsonReaderCheckoutRequest;
+import de.metas.payment.sumup.client.json.JsonReaderCheckoutResponse;
 import de.metas.payment.sumup.repository.SumUpLogRepository;
 import de.metas.util.StringUtils;
 import lombok.Builder;
@@ -110,7 +110,12 @@ public class SumUpClient
 			log.responseCode(responseEntity.getStatusCode());
 			log.responseBody(StringUtils.trimBlankToNull(bodyJson));
 
-			if (responseType != null && !responseType.equals(Void.class))
+			if (responseType != null && responseType.equals(String.class))
+			{
+				//noinspection unchecked
+				return (T)bodyJson;
+			}
+			else if (responseType != null && !responseType.equals(Void.class))
 			{
 				return jsonObjectMapper.readValue(bodyJson, responseType);
 			}

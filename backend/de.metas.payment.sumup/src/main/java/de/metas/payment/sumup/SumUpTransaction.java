@@ -4,12 +4,14 @@ import de.metas.currency.Amount;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
+@Jacksonized
 public class SumUpTransaction
 {
 	@NonNull SumUpConfigId configId;

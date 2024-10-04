@@ -45,6 +45,11 @@
             <version>10.0.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>de.metas.payment.sumup</groupId>
+            <artifactId>de.metas.payment.sumup</artifactId>
+            <version>10.0.0</version>
+        </dependency>
 
         <!--
             Lombok

@@ -21,6 +21,7 @@ public class POSPayment
 	@NonNull private final POSPaymentMethod paymentMethod;
 	@NonNull private final Money amount;
 
+	@NonNull @With private final POSPaymentProcessingStatus paymentProcessingStatus;
 	@Nullable @With private final PaymentId paymentReceiptId;
 
 	public POSPaymentId getLocalIdNotNull() {return Check.assumeNotNull(this.getLocalId(), "Expected POSPayment to be saved: {}", this);}

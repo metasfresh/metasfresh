@@ -147,33 +147,35 @@ public class POSOrder
 	public ImmutableList<POSPayment> getPayments() {return ImmutableList.copyOf(payments);}
 
 	public void changeStatusTo(
-			@NonNull final POSOrderStatus nextStatus,
+			@NonNull final POSOrderStatus targetStatus,
 			@NonNull final POSOrderProcessingServices services)
 	{
-		if (POSOrderStatus.equals(this.status, nextStatus))
+		if (POSOrderStatus.equals(this.status, targetStatus))
 		{
 			return;
 		}
 
-		this.status.assertCanTransitionTo(nextStatus);
+		this.status.assertCanTransitionTo(targetStatus);
 
-		switch (nextStatus)
+		POSOrderStatus newStatus;
+		switch (targetStatus)
 		{
 			case Drafted:
 			case Voided:
 			case WaitingPayment:
+				newStatus = targetStatus;
 				break;
 			case Completed:
-				changeStatusTo_Complete(services);
+				newStatus = changeStatusTo_Complete(services);
 				break;
 			default:
-				throw new AdempiereException("Unknown next status " + nextStatus);
+				throw new AdempiereException("Unknown next status " + targetStatus);
 		}
 
-		this.status = nextStatus;
+		this.status = newStatus;
 	}
 
-	private void changeStatusTo_Complete(@NonNull final POSOrderProcessingServices services)
+	private POSOrderStatus changeStatusTo_Complete(@NonNull final POSOrderProcessingServices services)
 	{
 		// TODO implement:
 		// * create payments & process synchronous (to make sure we got the money from card)
@@ -182,11 +184,18 @@ public class POSOrder
 		if (lines.isEmpty())
 		{
 			throw AdempiereException.noLines();
-		}
-		assertPaid();
 
-		services.createPayments(this);
+		}
+
+		assertPaid();
+		services.processPOSPayments(this);
+		if (!isPaymentsProcessedSuccessfully())
+		{
+			return POSOrderStatus.WaitingPayment;
+		}
+
 		services.scheduleCreateSalesOrderInvoiceAndShipment(getLocalIdNotNull());
+		return POSOrderStatus.Completed;
 	}
 
 	public void assertPaid()
@@ -195,6 +204,11 @@ public class POSOrder
 		{
 			throw new AdempiereException("POS Order shall be paid");
 		}
+	}
+
+	public boolean isPaymentsProcessedSuccessfully()
+	{
+		return payments.stream().allMatch(payment -> payment.getPaymentProcessingStatus().isSuccessful());
 	}
 
 	public void createOrUpdateLine(@NonNull final String externalId, @NonNull final UnaryOperator<POSOrderLine> updater)
@@ -264,12 +278,23 @@ public class POSOrder
 	public void createOrUpdatePayment(@NonNull final String externalId, @NonNull final UnaryOperator<POSPayment> updater)
 	{
 		final int paymentIdx = getPaymentIndexByExternalId(externalId);
-		final POSPayment payment = paymentIdx >= 0 ? payments.get(paymentIdx) : null;
+		updatePaymentByIndex(paymentIdx, updater);
+	}
+
+	public void updatePaymentById(@NonNull POSPaymentId posPaymentId, @NonNull final UnaryOperator<POSPayment> updater)
+	{
+		final int paymentIdx = getPaymentIndexById(posPaymentId);
+		updatePaymentByIndex(paymentIdx, updater);
+	}
+
+	private void updatePaymentByIndex(final int paymentIndex, @NonNull final UnaryOperator<POSPayment> updater)
+	{
+		final POSPayment payment = paymentIndex >= 0 ? payments.get(paymentIndex) : null;
 		final POSPayment paymentChanged = updater.apply(payment);
 
-		if (paymentIdx >= 0)
+		if (paymentIndex >= 0)
 		{
-			payments.set(paymentIdx, paymentChanged);
+			payments.set(paymentIndex, paymentChanged);
 		}
 		else
 		{
@@ -277,6 +302,19 @@ public class POSOrder
 		}
 
 		updateTotals();
+	}
+
+	private int getPaymentIndexById(final @NonNull POSPaymentId posPaymentId)
+	{
+		for (int i = 0; i < payments.size(); i++)
+		{
+			if (POSPaymentId.equals(payments.get(i).getLocalId(), posPaymentId))
+			{
+				return i;
+			}
+		}
+
+		throw new AdempiereException("No payment found for " + posPaymentId + " in " + payments);
 	}
 
 	private int getPaymentIndexByExternalId(final @NonNull String externalId)

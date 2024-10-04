@@ -36,6 +36,17 @@ public class POSOrdersService
 		});
 	}
 
+	public void updatePaymentStatusAndTryCompleteOrder(
+			@NonNull final POSOrderId posOrderId,
+			@NonNull final POSPaymentId posPaymentId,
+			@NonNull final POSPaymentProcessingStatus paymentProcessingStatus)
+	{
+		ordersRepository.updateById(posOrderId, order -> {
+			order.updatePaymentById(posPaymentId, payment -> payment.withPaymentProcessingStatus(paymentProcessingStatus));
+			order.changeStatusTo(POSOrderStatus.Completed, possOrderProcessingServices);
+		});
+	}
+
 	private void assertCanEdit(@NonNull final POSOrder order, @NonNull final UserId userId)
 	{
 		if (!UserId.equals(order.getCashierId(), userId))

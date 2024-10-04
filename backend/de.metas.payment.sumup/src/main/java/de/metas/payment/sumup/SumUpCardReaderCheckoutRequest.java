@@ -17,4 +17,7 @@ public class SumUpCardReaderCheckoutRequest
 	@NonNull Amount amount;
 	@Nullable String description;
 	@Nullable String callbackUrl;
+	
+	int posOrderId;
+	int posPaymentId;
 }

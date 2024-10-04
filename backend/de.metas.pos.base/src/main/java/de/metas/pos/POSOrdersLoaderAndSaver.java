@@ -89,6 +89,15 @@ class POSOrdersLoaderAndSaver
 		return order;
 	}
 
+	public POSOrder updateById(@NonNull final POSOrderId id, @NonNull final Consumer<POSOrder> updater)
+	{
+		final I_C_POS_Order orderRecord = getOrderRecordById(id);
+		final POSOrder order = fromRecord(orderRecord);
+		updater.accept(order);
+		save(order);
+		return order;
+	}
+
 	private void addToCacheAndWarmUp(@NonNull Collection<I_C_POS_Order> orderRecords)
 	{
 		if (orderRecords.isEmpty())
@@ -368,6 +377,7 @@ class POSOrdersLoaderAndSaver
 				.localId(POSPaymentId.ofRepoId(record.getC_POS_Payment_ID()))
 				.paymentMethod(POSPaymentMethod.ofCode(record.getPOSPaymentMethod()))
 				.amount(Money.of(record.getAmount(), currencyId))
+				.paymentProcessingStatus(POSPaymentProcessingStatus.ofCode(record.getPOSPaymentProcessingStatus()))
 				.paymentReceiptId(PaymentId.ofRepoIdOrNull(record.getC_Payment_ID()))
 				.build();
 	}
@@ -377,6 +387,7 @@ class POSOrdersLoaderAndSaver
 		paymentRecord.setExternalId(payment.getExternalId());
 		paymentRecord.setPOSPaymentMethod(payment.getPaymentMethod().getCode());
 		paymentRecord.setAmount(payment.getAmount().toBigDecimal());
+		paymentRecord.setPOSPaymentProcessingStatus(payment.getPaymentProcessingStatus().getCode());
 		paymentRecord.setC_Payment_ID(PaymentId.toRepoId(payment.getPaymentReceiptId()));
 	}
 

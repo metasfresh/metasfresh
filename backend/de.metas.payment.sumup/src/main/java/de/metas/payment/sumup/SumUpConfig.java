@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -68,6 +69,16 @@ public class SumUpConfig
 			}
 		}
 
+		return defaultCardReaderExternalId;
+	}
+
+	@NonNull
+	public SumUpCardReaderExternalId getDefaultCardReaderExternalIdNotNull()
+	{
+		if (defaultCardReaderExternalId == null)
+		{
+			throw new AdempiereException("No default card reader was configured for " + this);
+		}
 		return defaultCardReaderExternalId;
 	}
 
