@@ -54,7 +54,6 @@ public class POSOrderProcessingServices
 				.currencyId(posPayment.getAmount().getCurrencyId())
 				.tenderType(posPayment.getPaymentMethod().getTenderType())
 				.dateTrx(posOrder.getDate())
-				// TODO: isAutoAllocateAvailableAmt(true) somehow set posOrderId so we know to allocate only to invoices for that POSOrder
 				.createAndProcess();
 
 		// TODO: add the payment to bank statement

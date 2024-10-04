@@ -5,6 +5,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -18,6 +19,7 @@ public class POSOrderLine
 
 	@NonNull ProductId productId;
 	@NonNull String productName;
+	@Nullable String scannedBarcode;
 	@NonNull TaxCategoryId taxCategoryId;
 	@NonNull TaxId taxId;
 	@NonNull Quantity qty;
@@ -31,19 +33,21 @@ public class POSOrderLine
 			@NonNull final String externalId,
 			@NonNull final ProductId productId,
 			@NonNull final String productName,
+			@Nullable final String scannedBarcode,
 			@NonNull final TaxCategoryId taxCategoryId,
 			@NonNull final TaxId taxId,
-			@NonNull final Quantity qty, 
+			@NonNull final Quantity qty,
 			@Nullable final Quantity catchWeight,
 			@NonNull final Money price,
 			@NonNull final Money amount,
 			@NonNull Money taxAmt)
 	{
 		Money.assertSameCurrency(price, amount, taxAmt);
-		
+
 		this.externalId = externalId;
 		this.productId = productId;
 		this.productName = productName;
+		this.scannedBarcode = StringUtils.trimBlankToNull(scannedBarcode);
 		this.taxCategoryId = taxCategoryId;
 		this.taxId = taxId;
 		this.qty = qty;

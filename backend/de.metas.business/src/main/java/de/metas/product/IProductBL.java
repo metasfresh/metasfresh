@@ -24,6 +24,7 @@ package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
@@ -237,6 +238,8 @@ public interface IProductBL extends ISingletonService
     boolean isProductUsed(@NonNull ProductId productId);
 
 	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
+
+	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
 	Set<ProductId> getProductIdsMatchingQueryString(
 			@NonNull String queryString,

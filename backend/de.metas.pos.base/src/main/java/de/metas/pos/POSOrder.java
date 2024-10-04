@@ -1,13 +1,16 @@
 package de.metas.pos;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.pricing.PricingSystemAndListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.user.UserId;
@@ -28,6 +31,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 @EqualsAndHashCode
@@ -58,6 +63,8 @@ public class POSOrder
 
 	@NonNull @Getter private final POSTerminalId posTerminalId;
 
+	@Nullable @Getter @Setter private OrderId salesOrderId;
+
 	@Builder
 	private POSOrder(
 			@NonNull final POSOrderExternalId externalId,
@@ -74,7 +81,8 @@ public class POSOrder
 			@NonNull final CurrencyId currencyId,
 			@Nullable final List<POSOrderLine> lines,
 			@Nullable final List<POSPayment> payments,
-			@NonNull final POSTerminalId posTerminalId)
+			@NonNull final POSTerminalId posTerminalId,
+			@Nullable final OrderId salesOrderId)
 	{
 		this.externalId = externalId;
 		this.localId = localId;
@@ -91,6 +99,7 @@ public class POSOrder
 		this.lines = lines != null ? new ArrayList<>(lines) : new ArrayList<>();
 		this.payments = payments != null ? new ArrayList<>(payments) : new ArrayList<>();
 		this.posTerminalId = posTerminalId;
+		this.salesOrderId = salesOrderId;
 
 		final Money zero = Money.zero(currencyId);
 		this.totalAmt = zero;
@@ -111,7 +120,7 @@ public class POSOrder
 	private void updateTotals()
 	{
 		final Money zero = Money.zero(currencyId);
-		
+
 		Money orderTotalAmt = zero;
 		Money orderTaxAmt = zero;
 		for (final POSOrderLine line : lines)
@@ -170,8 +179,12 @@ public class POSOrder
 		// * create payments & process synchronous (to make sure we got the money from card)
 		// * async create sales order, invoice, shipment and allocate the payments to that invoice 
 		// throw new UnsupportedOperationException("not implemented");
-
+		if (lines.isEmpty())
+		{
+			throw AdempiereException.noLines();
+		}
 		assertPaid();
+
 		services.createPayments(this);
 		services.scheduleCreateSalesOrderInvoiceAndShipment(getLocalIdNotNull());
 	}
@@ -293,5 +306,13 @@ public class POSOrder
 		}
 
 		updateTotals();
+	}
+
+	public Set<PaymentId> getPaymentReceiptIds()
+	{
+		return payments.stream()
+				.map(POSPayment::getPaymentReceiptId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

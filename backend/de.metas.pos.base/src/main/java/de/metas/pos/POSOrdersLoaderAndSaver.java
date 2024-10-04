@@ -9,6 +9,7 @@ import de.metas.document.DocTypeId;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.pos.repository.model.I_C_POS_Order;
@@ -287,6 +288,7 @@ class POSOrdersLoaderAndSaver
 				.lines(lineRecords.stream().map(lineRecord -> fromRecord(lineRecord, currencyId)).collect(ImmutableList.toImmutableList()))
 				.payments(paymentRecords.stream().map(paymentRecord -> fromRecord(paymentRecord, currencyId)).collect(ImmutableList.toImmutableList()))
 				.posTerminalId(POSTerminalId.ofRepoId(orderRecord.getC_POS_ID()))
+				.salesOrderId(OrderId.ofRepoIdOrNull(orderRecord.getC_Order_ID()))
 				.build();
 	}
 
@@ -313,6 +315,7 @@ class POSOrdersLoaderAndSaver
 		orderRecord.setPaidAmt(from.getPaidAmt().toBigDecimal());
 		orderRecord.setOpenAmt(from.getOpenAmt().toBigDecimal());
 		orderRecord.setC_POS_ID(from.getPosTerminalId().getRepoId());
+		orderRecord.setC_Order_ID(OrderId.toRepoId(from.getSalesOrderId()));
 	}
 
 	private static POSOrderLine fromRecord(final I_C_POS_OrderLine record, final CurrencyId currencyId)
@@ -321,6 +324,7 @@ class POSOrdersLoaderAndSaver
 				.externalId(record.getExternalId())
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.productName(record.getProductName())
+				.scannedBarcode(record.getScannedBarcode())
 				.taxCategoryId(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID()))
 				.taxId(TaxId.ofRepoId(record.getC_Tax_ID()))
 				.qty(Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
@@ -343,6 +347,7 @@ class POSOrdersLoaderAndSaver
 		lineRecord.setExternalId(line.getExternalId());
 		lineRecord.setM_Product_ID(line.getProductId().getRepoId());
 		lineRecord.setProductName(line.getProductName());
+		lineRecord.setScannedBarcode(line.getScannedBarcode());
 		lineRecord.setC_TaxCategory_ID(line.getTaxCategoryId().getRepoId());
 		lineRecord.setC_Tax_ID(line.getTaxId().getRepoId());
 		lineRecord.setQty(line.getQty().toBigDecimal());

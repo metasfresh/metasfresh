@@ -68,6 +68,16 @@ public class StockQtyAndUOMQtys
 		return create(qtyInStockUOM, productId, qtyInUOM, uomId);
 	}
 
+	public StockQtyAndUOMQty ofQtyInStockUOM(
+			@NonNull final Quantity qtyInStockUOM,
+			@NonNull final ProductId productId)
+	{
+		return validate(StockQtyAndUOMQty.builder()
+				.productId(productId)
+				.stockQty(qtyInStockUOM)
+				.build());
+	}
+
 	/**
 	 * @param qtyInUOM may be {@code null} only if {@code uomId} is {@code null}.
 	 * @param uomId    may be {@code null} in which case the result will contain no {@code uomQty}.
