@@ -50,11 +50,14 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
 
 public abstract class AbstractOrderLineLog extends AbstractModularContractLogHandler
 {
@@ -135,12 +138,7 @@ public abstract class AbstractOrderLineLog extends AbstractModularContractLogHan
 	@Override
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		return ExplainedOptional.of(LogEntryReverseRequest.builder()
-				.referencedModel(createLogRequest.getRecordRef())
-				.flatrateTermId(createLogRequest.getContractId())
-				.description(null)
-				.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-				.contractModuleId(createLogRequest.getModularContractModuleId())
-				.build());
+		// also see de.metas.contracts.modular.computing.ComputingMethodService#validateAction
+		throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 	}
 }
