@@ -19,6 +19,7 @@ public class POSPaymentProcessResponse
 	public static POSPaymentProcessResponse error(final String errorMessage, final AdIssueId errorId)
 	{
 		return builder()
+				.status(POSPaymentProcessingStatus.FAILED)
 				.errorMessage(errorMessage)
 				.errorId(errorId)
 				.build();

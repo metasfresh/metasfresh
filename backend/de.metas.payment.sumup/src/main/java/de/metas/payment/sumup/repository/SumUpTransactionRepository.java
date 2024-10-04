@@ -3,6 +3,7 @@ package de.metas.payment.sumup.repository;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.sumup.SumUpClientTransactionId;
 import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpEventsDispatcher;
@@ -10,6 +11,7 @@ import de.metas.payment.sumup.SumUpMerchantCode;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -92,6 +94,8 @@ public class SumUpTransactionRepository
 
 	private static void updateRecord(final I_SUMUP_Transaction record, final @NonNull SumUpTransaction from)
 	{
+		Check.assumeEquals(record.getAD_Client_ID(), from.getClientAndOrgId().getClientId().getRepoId(), "AD_Client_ID");
+		record.setAD_Org_ID(from.getClientAndOrgId().getOrgId().getRepoId());
 		record.setSUMUP_Config_ID(from.getConfigId().getRepoId());
 		record.setExternalId(from.getExternalId());
 		record.setSUMUP_ClientTransactionId(from.getClientTransactionId().getAsString());
@@ -108,6 +112,7 @@ public class SumUpTransactionRepository
 	private static SumUpTransaction fromRecord(final I_SUMUP_Transaction record)
 	{
 		return SumUpTransaction.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.configId(SumUpConfigId.ofRepoId(record.getSUMUP_Config_ID()))
 				.externalId(record.getExternalId())
 				.clientTransactionId(SumUpClientTransactionId.ofString(record.getSUMUP_ClientTransactionId()))

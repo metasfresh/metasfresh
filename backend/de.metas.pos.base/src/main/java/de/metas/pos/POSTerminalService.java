@@ -93,7 +93,7 @@ public class POSTerminalService
 		final WarehouseId shipFromWarehouseId = posTerminalRaw.getShipFromWarehouseId();
 		return POSShipFrom.builder()
 				.warehouseId(shipFromWarehouseId)
-				.orgId(warehouseBL.getWarehouseOrgId(shipFromWarehouseId))
+				.clientAndOrgId(warehouseBL.getWarehouseClientAndOrgId(shipFromWarehouseId))
 				.countryId(warehouseBL.getCountryId(shipFromWarehouseId))
 				.build();
 	}

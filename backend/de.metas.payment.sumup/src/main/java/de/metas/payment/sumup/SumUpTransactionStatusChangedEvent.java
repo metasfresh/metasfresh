@@ -1,5 +1,6 @@
 package de.metas.payment.sumup;
 
+import de.metas.organization.ClientAndOrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -14,6 +15,7 @@ public class SumUpTransactionStatusChangedEvent
 {
 	@NonNull SumUpClientTransactionId clientTransactionId;
 	@NonNull SumUpConfigId configId;
+	@NonNull ClientAndOrgId clientAndOrgId;
 	int posOrderId;
 	int posPaymentId;
 
@@ -37,6 +39,7 @@ public class SumUpTransactionStatusChangedEvent
 		return builder()
 				.clientTransactionId(trx.getClientTransactionId())
 				.configId(trx.getConfigId())
+				.clientAndOrgId(trx.getClientAndOrgId())
 				.posOrderId(trx.getPosOrderId())
 				.posPaymentId(trx.getPosPaymentId())
 				.statusNew(trx.getStatus());

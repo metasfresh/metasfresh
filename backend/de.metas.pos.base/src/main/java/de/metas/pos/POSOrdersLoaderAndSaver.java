@@ -10,7 +10,7 @@ import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentId;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.pos.repository.model.I_C_POS_OrderLine;
@@ -23,6 +23,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -289,7 +290,7 @@ class POSOrdersLoaderAndSaver
 				.shipToCustomerAndLocationId(BPartnerLocationAndCaptureId.ofRepoId(orderRecord.getC_BPartner_ID(), orderRecord.getC_BPartner_Location_ID(), orderRecord.getC_BPartner_Location_Value_ID()))
 				.shipFrom(POSShipFrom.builder()
 						.warehouseId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()))
-						.orgId(OrgId.ofRepoId(orderRecord.getAD_Org_ID()))
+						.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(orderRecord.getAD_Client_ID(), orderRecord.getAD_Org_ID()))
 						.countryId(CountryId.ofRepoId(orderRecord.getC_Country_ID()))
 						.build())
 				.isTaxIncluded(orderRecord.isTaxIncluded())
@@ -317,6 +318,7 @@ class POSOrdersLoaderAndSaver
 		orderRecord.setC_BPartner_Location_ID(from.getShipToCustomerAndLocationId().getBPartnerLocationRepoId());
 		orderRecord.setC_BPartner_Location_Value_ID(from.getShipToCustomerAndLocationId().getLocationCaptureRepoId());
 		orderRecord.setM_Warehouse_ID(from.getShipFrom().getWarehouseId().getRepoId());
+		Check.assumeEquals(orderRecord.getAD_Client_ID(), from.getClientAndOrgId().getClientId().getRepoId(), "AD_Client_ID");
 		orderRecord.setAD_Org_ID(from.getShipFrom().getOrgId().getRepoId());
 		orderRecord.setC_Country_ID(from.getShipFrom().getCountryId().getRepoId());
 		orderRecord.setIsTaxIncluded(from.isTaxIncluded());

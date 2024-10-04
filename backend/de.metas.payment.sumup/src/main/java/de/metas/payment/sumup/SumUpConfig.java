@@ -27,7 +27,8 @@ public class SumUpConfig
 
 	@Builder(toBuilder = true)
 	private SumUpConfig(
-			final @NonNull SumUpConfigId id, final boolean isActive,
+			@NonNull final SumUpConfigId id,
+			final boolean isActive,
 			@NonNull final String apiKey,
 			@NonNull final SumUpMerchantCode merchantCode,
 			@NonNull final List<SumUpCardReader> cardReaders,

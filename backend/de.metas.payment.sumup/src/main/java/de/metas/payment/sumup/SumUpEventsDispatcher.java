@@ -7,11 +7,14 @@ import de.metas.event.Topic;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
 @Service
 public class SumUpEventsDispatcher
@@ -46,7 +49,18 @@ public class SumUpEventsDispatcher
 
 	private void fireLocalListeners(final @NonNull SumUpTransactionStatusChangedEvent event)
 	{
-		statusChangedListeners.forEach(listener -> listener.onStatusChanged(event));
+		try (final IAutoCloseable ignored = Env.switchContext(newTemporaryCtx(event)))
+		{
+			statusChangedListeners.forEach(listener -> listener.onStatusChanged(event));
+		}
+	}
+
+	private static Properties newTemporaryCtx(final @NonNull SumUpTransactionStatusChangedEvent event)
+	{
+		final Properties ctx = Env.newTemporaryCtx();
+		Env.setClientId(ctx, event.getClientAndOrgId().getClientId());
+		Env.setOrgId(ctx, event.getClientAndOrgId().getOrgId());
+		return ctx;
 	}
 
 	private void fireLocalAndRemoteListenersAfterTrxCommit(final @NonNull SumUpTransactionStatusChangedEvent event)

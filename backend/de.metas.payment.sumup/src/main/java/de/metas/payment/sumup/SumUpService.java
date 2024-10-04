@@ -3,6 +3,7 @@ package de.metas.payment.sumup;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.logging.LogManager;
 import de.metas.money.MoneyService;
 import de.metas.payment.sumup.SumUpTransaction.SumUpTransactionBuilder;
 import de.metas.payment.sumup.client.SumUpClient;
@@ -15,8 +16,10 @@ import de.metas.payment.sumup.repository.SumUpConfigRepository;
 import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import de.metas.payment.sumup.repository.UpdateByPendingStatusResult;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.util.lang.Mutable;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -28,6 +31,7 @@ import java.util.Set;
 @Service
 public class SumUpService
 {
+	@NonNull private static final Logger logger = LogManager.getLogger(SumUpService.class);
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final SumUpClientFactory clientFactory;
 	@NonNull private final SumUpConfigRepository configRepository;
@@ -131,7 +135,7 @@ public class SumUpService
 				request.getCardReaderId(),
 				JsonReaderCheckoutRequest.builder()
 						.description(request.getDescription())
-						.return_url(request.getCallbackUrl())
+						.return_url(getValidCallbackUrlOrNull(request))
 						.total_amount(JsonReaderCheckoutRequest.JsonAmount.ofAmount(amount, currencyPrecision))
 						.build()
 		);
@@ -140,6 +144,23 @@ public class SumUpService
 		trxRepository.saveNew(trx);
 
 		return trx;
+	}
+
+	private static String getValidCallbackUrlOrNull(@NonNull SumUpCardReaderCheckoutRequest request)
+	{
+		final String callbackUrl = StringUtils.trimBlankToNull(request.getCallbackUrl());
+		if (callbackUrl == null)
+		{
+			return null;
+		}
+
+		if (!callbackUrl.startsWith("https://"))
+		{
+			logger.warn("SumUp callback URL must be a valid https URL: {}. Ignoring it", callbackUrl);
+			return null;
+		}
+
+		return callbackUrl;
 	}
 
 	private static SumUpTransaction toSumUpTransaction(
@@ -158,6 +179,7 @@ public class SumUpService
 				.status(SumUpTransactionStatus.PENDING)
 				.amount(request.getAmount())
 				.json(null)
+				.clientAndOrgId(request.getClientAndOrgId())
 				.posOrderId(request.getPosOrderId())
 				.posPaymentId(request.getPosPaymentId())
 				.build();

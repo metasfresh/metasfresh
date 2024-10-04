@@ -9,6 +9,7 @@ import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.pricing.PricingSystemAndListId;
@@ -111,6 +112,8 @@ public class POSOrder
 
 	public POSOrderId getLocalIdNotNull() {return Check.assumeNotNull(this.getLocalId(), "Expected POSOrder to be saved: {}", this);}
 
+	public ClientAndOrgId getClientAndOrgId() {return getShipFrom().getClientAndOrgId();}
+
 	public OrgId getOrgId() {return getShipFrom().getOrgId();}
 
 	public BPartnerId getShipToCustomerId() {return getShipToCustomerAndLocationId().getBpartnerId();}
@@ -194,7 +197,7 @@ public class POSOrder
 			return POSOrderStatus.WaitingPayment;
 		}
 
-		services.scheduleCreateSalesOrderInvoiceAndShipment(getLocalIdNotNull());
+		services.scheduleCreateSalesOrderInvoiceAndShipment(getLocalIdNotNull(), getCashierId());
 		return POSOrderStatus.Completed;
 	}
 

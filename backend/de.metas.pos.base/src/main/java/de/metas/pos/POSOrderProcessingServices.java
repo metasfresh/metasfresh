@@ -9,10 +9,12 @@ import de.metas.pos.payment_gateway.POSPaymentProcessRequest;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorService;
 import de.metas.pos.repository.model.I_C_POS_Order;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
@@ -55,7 +57,7 @@ public class POSOrderProcessingServices
 				}
 				case CARD:
 				{
-					posPayment = processPOSPayment_CARD(posPayment, posOrder.getLocalIdNotNull(), posTerminal.getPaymentProcessorConfigNotNull());
+					posPayment = processPOSPayment_CARD(posPayment, posOrder, posTerminal.getPaymentProcessorConfigNotNull());
 					break;
 				}
 				default:
@@ -83,12 +85,13 @@ public class POSOrderProcessingServices
 
 	private POSPayment processPOSPayment_CARD(
 			@NonNull final POSPayment posPayment,
-			@NonNull final POSOrderId posOrderId,
+			@NonNull final POSOrder posOrder,
 			@NonNull final POSTerminalPaymentProcessorConfig paymentProcessorConfig)
 	{
 		final POSPaymentProcessResponse processResponse = posPaymentProcessorService.processPayment(POSPaymentProcessRequest.builder()
 				.paymentProcessorConfig(paymentProcessorConfig)
-				.posOrderId(posOrderId)
+				.clientAndOrgId(posOrder.getClientAndOrgId())
+				.posOrderId(posOrder.getLocalIdNotNull())
 				.posPaymentId(posPayment.getLocalIdNotNull())
 				.amount(posPayment.getAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
 				.build());
@@ -115,12 +118,16 @@ public class POSOrderProcessingServices
 		return PaymentId.ofRepoId(paymentReceipt.getC_Payment_ID());
 	}
 
-	public void scheduleCreateSalesOrderInvoiceAndShipment(@NonNull final POSOrderId posOrderId)
+	public void scheduleCreateSalesOrderInvoiceAndShipment(@NonNull final POSOrderId posOrderId, @NonNull final UserId cashierId)
 	{
-		workPackageQueueFactory.getQueueForEnqueuing(Env.getCtx(), C_POSOrder_CreateInvoiceAndShipment.class)
-				.newWorkPackage()
-				.bindToThreadInheritedTrx()
-				.addElement(TableRecordReference.of(I_C_POS_Order.Table_Name, posOrderId))
-				.buildAndEnqueue();
+		final UserId adUserId = Env.getLoggedUserIdIfExists().orElse(cashierId);
+		try (IAutoCloseable ignored = Env.temporaryChangeLoggedUserId(adUserId))
+		{
+			workPackageQueueFactory.getQueueForEnqueuing(Env.getCtx(), C_POSOrder_CreateInvoiceAndShipment.class)
+					.newWorkPackage()
+					.addElement(TableRecordReference.of(I_C_POS_Order.Table_Name, posOrderId))
+					.bindToThreadInheritedTrx()
+					.buildAndEnqueue();
+		}
 	}
 }

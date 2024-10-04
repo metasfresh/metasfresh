@@ -1,6 +1,7 @@
 package de.metas.payment.sumup;
 
 import de.metas.currency.Amount;
+import de.metas.organization.ClientAndOrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -25,6 +26,7 @@ public class SumUpTransaction
 
 	@Nullable String json;
 
+	@NonNull ClientAndOrgId clientAndOrgId;
 	int posOrderId;
 	int posPaymentId;
 }

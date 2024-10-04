@@ -17,9 +17,12 @@ import java.util.Objects;
 public enum POSPaymentMethod implements ReferenceListAwareEnum
 {
 	CASH("CASH", TenderType.Cash, PaymentRule.Cash),
-	CARD("CARD", TenderType.CreditCard, PaymentRule.CreditCard),
+
+	// NOTE: in case of CARD we use OnCredit payment rule instead of CreditCard because
+	// CreditCard payment rule might be inactive and activating it might have other implications
+	CARD("CARD", TenderType.CreditCard, PaymentRule.OnCredit),
 	;
-	
+
 	private static final ReferenceListAwareEnums.ValuesIndex<POSPaymentMethod> index = ReferenceListAwareEnums.index(values());
 
 	@NonNull private final String code;
