@@ -2,7 +2,7 @@ import {
   ADD_ORDER_LINE,
   ADD_PAYMENT,
   NEW_ORDER,
-  ORDERS_LIST_INIT,
+  ORDERS_LIST_UPDATE,
   POS_TERMINAL_CLOSING,
   POS_TERMINAL_CLOSING_CANCEL,
   POS_TERMINAL_LOAD_DONE,
@@ -174,13 +174,8 @@ export const useOpenOrders = () => {
     if (loadStatus === 'new') {
       setLoadStatus('loading');
       ordersAPI
-        .getOpenOrdersArray()
-        .then((ordersArray) =>
-          dispatch({
-            type: ORDERS_LIST_INIT,
-            payload: { ordersArray },
-          })
-        )
+        .getOpenOrders()
+        .then(({ list }) => dispatch(updateOrdersArrayFromBackendAction({ list, isUpdateOnly: false })))
         .finally(() => setLoadStatus('load-done'));
     }
   }, []);
@@ -332,6 +327,23 @@ const syncOrderToBackend = ({ order_uuid }) => {
     const applicationState = getPOSApplicationState(globalState);
     const order = getOrderByUUID({ applicationState, order_uuid });
     ordersAPI.updateOrder({ order }).then((order) => dispatch(updateOrderFromBackendAction({ order })));
+  };
+};
+
+export const updateOrderFromBackend = ({ order_uuid }) => {
+  return (dispatch) => {
+    ordersAPI
+      .getOpenOrders({ ids: [order_uuid] })
+      .then(({ list, missingIds }) =>
+        dispatch(updateOrdersArrayFromBackendAction({ list, missingIds, isUpdateOnly: true }))
+      );
+  };
+};
+
+const updateOrdersArrayFromBackendAction = ({ list, missingIds, isUpdateOnly }) => {
+  return {
+    type: ORDERS_LIST_UPDATE,
+    payload: { ordersArray: list, missingIds, isUpdateOnly },
   };
 };
 

@@ -12,6 +12,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,9 +24,14 @@ public class POSOrdersService
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final POSOrderProcessingServices possOrderProcessingServices;
 
-	public List<POSOrder> getOpenOrders(@NonNull final UserId userId)
+	public List<POSOrder> list(@NonNull final POSOrderQuery query)
 	{
-		return ordersRepository.getOpenOrders(userId);
+		return ordersRepository.list(query);
+	}
+
+	public Optional<POSOrder> firstOnly(@NonNull final POSOrderQuery query)
+	{
+		return ordersRepository.firstOnly(query);
 	}
 
 	public POSOrder changeStatusTo(@NonNull final POSOrderExternalId externalId, @NonNull final POSOrderStatus nextStatus, @NonNull final UserId userId)

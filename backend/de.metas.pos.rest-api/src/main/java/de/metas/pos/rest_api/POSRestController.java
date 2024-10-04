@@ -1,5 +1,7 @@
 package de.metas.pos.rest_api;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.Profiles;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
@@ -36,6 +38,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Set;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/pos")
 @RestController
@@ -114,11 +118,28 @@ public class POSRestController
 	}
 
 	@GetMapping("/orders")
-	public JsonPOSOrdersList getOpenOrders()
+	public JsonPOSOrdersList getOpenOrders(
+			@RequestParam(value = "ids", required = false) final String commaSeparatedOrderIds
+	)
 	{
 		final UserId loggedUserId = getLoggedUserId();
+		final Set<POSOrderExternalId> onlyOrderIds = POSOrderExternalId.ofCommaSeparatedString(commaSeparatedOrderIds);
+		final List<POSOrder> orders = posService.getOpenOrders(loggedUserId, onlyOrderIds);
 
-		return JsonPOSOrdersList.of(posService.getOpenOrders(loggedUserId), newJsonContext());
+		final Set<POSOrderExternalId> missingIds;
+		if (onlyOrderIds != null && !onlyOrderIds.isEmpty())
+		{
+			final Set<POSOrderExternalId> existingIds = orders.stream().map(POSOrder::getExternalId).collect(ImmutableSet.toImmutableSet());
+			missingIds = Sets.difference(onlyOrderIds, existingIds);
+		}
+		else
+		{
+			missingIds = ImmutableSet.of();
+		}
+
+		return JsonPOSOrdersList.from(orders, newJsonContext())
+				.missingIds(missingIds)
+				.build();
 	}
 
 	@PostMapping("/orders/{orderId}/draft")

@@ -15,6 +15,7 @@ import de.metas.payment.PaymentId;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.pos.repository.model.I_C_POS_OrderLine;
 import de.metas.pos.repository.model.I_C_POS_Payment;
+import de.metas.pos.websocket.POSOrderWebsocketSender;
 import de.metas.pricing.PricingSystemAndListId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -50,11 +51,18 @@ import java.util.stream.Collectors;
 class POSOrdersLoaderAndSaver
 {
 	@NonNull private final IQueryBL queryBL;
+	@NonNull private final POSOrderWebsocketSender websocketSender;
 
 	private final HashMap<POSOrderId, I_C_POS_Order> orderRecordsById = new HashMap<>();
 	private final HashMap<POSOrderExternalId, Optional<I_C_POS_Order>> orderRecordsByExternalId = new HashMap<>();
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_OrderLine>> lineRecords = new HashMap<>();
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_Payment>> paymentRecords = new HashMap<>();
+
+	public POSOrder loadFromRecord(@NonNull final I_C_POS_Order orderRecord)
+	{
+		addToCacheAndWarmUp(ImmutableList.of(orderRecord));
+		return fromRecord(orderRecord);
+	}
 
 	public List<POSOrder> loadFromRecords(@NonNull final List<I_C_POS_Order> orderRecords)
 	{
@@ -464,5 +472,6 @@ class POSOrdersLoaderAndSaver
 			putPaymentRecordsToCache(posOrderId, paymentRecordsNew);
 		}
 
+		websocketSender.notifyFrontendThatOrderChanged(order);
 	}
 }
