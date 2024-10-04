@@ -108,7 +108,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -182,6 +181,13 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public I_C_OrderLine getOrderLineById(@NonNull final OrderLineId orderLineId)
+	{
+		return orderDAO.getOrderLineById(orderLineId);
+	}
+
+
+	@Override
 	public List<I_C_Order> getByIds(@NonNull final Collection<OrderId> orderIds)
 	{
 		return orderDAO.getByIds(orderIds);
@@ -194,13 +200,13 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public Map<OrderAndLineId, I_C_OrderLine> getLinesByIds(@NonNull Set<OrderAndLineId> orderAndLineIds)
+	public Map<OrderAndLineId, I_C_OrderLine> getLinesByIds(@NonNull final Set<OrderAndLineId> orderAndLineIds)
 	{
 		return orderDAO.getOrderLinesByIds(orderAndLineIds);
 	}
 
 	@Override
-	public I_C_OrderLine getLineById(@NonNull OrderAndLineId orderAndLineId)
+	public I_C_OrderLine getLineById(@NonNull final OrderAndLineId orderAndLineId)
 	{
 		return orderDAO.getOrderLineById(orderAndLineId);
 	}
@@ -562,6 +568,7 @@ public class OrderBL implements IOrderBL
 		return Optional.of(bpartnerOrderParamsRepository.getBy(query));
 	}
 
+	@org.jetbrains.annotations.Nullable
 	@Override
 	public PriceListVersionId getPriceListVersion(final I_C_Order order)
 	{
@@ -1290,7 +1297,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId)
+	public Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull final OrderAndLineId purchaseOrderLineId)
 	{
 		return orderDAO.getSOLineIdsByPOLineId(purchaseOrderLineId);
 	}
@@ -1303,7 +1310,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public void updateIsOnConsignmentFromLines(OrderId orderId)
+	public void updateIsOnConsignmentFromLines(final OrderId orderId)
 	{
 		final boolean isOnConsignment = orderDAO.hasIsOnConsignmentLines(orderId);
 		final I_C_Order order = getById(orderId);

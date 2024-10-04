@@ -24,13 +24,13 @@ package de.metas.contracts.modular.computing.purchasecontract.sales.raw;
 
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.AbstractRawComputingMethod;
 import de.metas.contracts.modular.computing.ComputingMethodService;
+import de.metas.contracts.modular.computing.purchasecontract.AbstractReceiptComputingMethod;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RawSalesComputingMethod extends AbstractRawComputingMethod
+public class RawSalesComputingMethod extends AbstractReceiptComputingMethod
 {
 
 	public RawSalesComputingMethod(

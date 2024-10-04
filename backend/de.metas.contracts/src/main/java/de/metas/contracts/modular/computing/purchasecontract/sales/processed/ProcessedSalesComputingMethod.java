@@ -90,7 +90,7 @@ public class ProcessedSalesComputingMethod extends AbstractComputingMethodHandle
 
 		final ManufacturingProcessedReceipt manufacturingProcessedReceipt = manufacturingFacadeService.getManufacturingProcessedReceipt(recordRef);
 		final ManufacturingOrder manufacturingOrder = manufacturingFacadeService.getManufacturingOrder(manufacturingProcessedReceipt.getManufacturingOrderId());
-		return ProductId.equals(manufacturingOrder.getProcessedProductId(), settings.getProcessedProductId());
+		return ProductId.equals(manufacturingOrder.getProcessedProductId(), settings.getProcessedProductId()) && settings.getSoTrx().isPurchase();
 	}
 
 	@Override

@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipmentSchedule
  *  @author metasfresh (generated) 
@@ -805,6 +805,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DOCSUBTYPE_Provision = "PRV";
 	/** ProFormaSO = PF */
 	public static final String DOCSUBTYPE_ProFormaSO = "PF";
+	/** Final Invoice = FI */
+	public static final String DOCSUBTYPE_FinalInvoice = "FI";
+	/** Final Credit Memo = FCM */
+	public static final String DOCSUBTYPE_FinalCreditMemo = "FCM";
+	/** Definitive Invoice = DS */
+	public static final String DOCSUBTYPE_DefinitiveInvoice = "DS";
+	/** DefinitiveCreditMemo = DCM */
+	public static final String DOCSUBTYPE_DefinitiveCreditMemo = "DCM";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
@@ -877,7 +885,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public boolean isCatchWeight() 
+	public boolean isCatchWeight()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCatchWeight);
 	}
@@ -939,6 +947,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public boolean isEdiDesadvRecipient() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEdiDesadvRecipient);
+	}
+
+	@Override
+	public void setIsShippingNotificationRequired (final boolean IsShippingNotificationRequired)
+	{
+		set_Value (COLUMNNAME_IsShippingNotificationRequired, IsShippingNotificationRequired);
+	}
+
+	@Override
+	public boolean isShippingNotificationRequired()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShippingNotificationRequired);
 	}
 
 	@Override

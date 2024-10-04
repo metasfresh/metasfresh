@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.settings;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
@@ -47,7 +48,6 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -125,10 +125,12 @@ public class ModularContractSettingsService
 		return getModuleContractType(modularContractModuleId).isMatching(computingMethodType);
 	}
 
-	public boolean isMatchingComputingMethodType(@NonNull final ModularContractTypeId modularContractTypeId, @NonNull final ComputingMethodType computingMethodType)
+	public boolean isMatchingAnyComputingMethodType(@NonNull final ModularContractTypeId modularContractTypeId, @NonNull final ImmutableSet<ComputingMethodType> computingMethodTypes)
 	{
 		final ModularContractType contractType = modularContractSettingsRepository.getContractTypeById(modularContractTypeId);
-		return contractType.isMatching(computingMethodType);
+		return computingMethodTypes
+				.stream()
+				.anyMatch(contractType::isMatching);
 	}
 
 	private void createInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ModularContractTypeId modularContractTypeId)
@@ -183,11 +185,7 @@ public class ModularContractSettingsService
 
 		if (existingModuleConfig == null)
 		{
-			//TODO remove after sales informative logs implementation
-			if(soTrx.isPurchase())
-			{
-				createInformativeLogsModule(modularContractSettingsId, modularContractTypeIdToUse);
-			}
+			createInformativeLogsModule(modularContractSettingsId, modularContractTypeIdToUse);
 		}
 		else if (!ProductId.ofRepoId(existingModuleConfig.getM_Product_ID()).equals(rawProductId))
 		{
@@ -230,10 +228,5 @@ public class ModularContractSettingsService
 				.modularContractTypeId(modularContractTypeId)
 				.productId(productId)
 				.build());
-	}
-
-	public List<ModularContractSettings> getSettingsByQuery(final @NonNull ModularContractSettingsQuery query)
-	{
-		return modularContractSettingsRepository.getSettingsByQuery(query);
 	}
 }

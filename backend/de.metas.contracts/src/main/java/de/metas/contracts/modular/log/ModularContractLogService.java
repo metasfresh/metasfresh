@@ -297,9 +297,11 @@
 
 	 public void unprocessModularContractLogs(@NonNull final InvoiceId invoiceId, @NonNull final DocTypeId docTypeId)
 	 {
-		 if ((!docTypeBL.isFinalInvoiceOrFinalCreditMemo(docTypeId)
-				 && !docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId))
-				 && !docTypeBL.isInterimInvoice(docTypeId))
+		 if (!(docTypeBL.isFinalInvoiceOrFinalCreditMemo(docTypeId)
+				 || docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId)
+				 || docTypeBL.isInterimInvoice(docTypeId)
+		 		 || docTypeBL.isSalesFinalInvoiceOrFinalCreditMemo(docTypeId))
+		 )
 		 {
 			 return;
 		 }
@@ -329,7 +331,7 @@
 	 {
 		 if (docTypeBL.isFinalInvoiceOrFinalCreditMemo(docTypeId))
 		 {
-			 return ComputingMethodType.FINAL_INVOICE_SPECIFIC_METHODS;
+			 return ComputingMethodType.PURCHASE_FINAL_INVOICE_SPECIFIC_METHODS;
 		 }
 		 if (docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId))
 		 {
@@ -338,6 +340,10 @@
 		 if (docTypeBL.isInterimInvoice(docTypeId))
 		 {
 			 return ComputingMethodType.INTERIM_INVOICE_SPECIFIC_METHODS;
+		 }
+		 if (docTypeBL.isSalesFinalInvoiceOrFinalCreditMemo(docTypeId))
+		 {
+			 return ComputingMethodType.SALES_FINAL_INVOICE_SPECIFIC_METHODS;
 		 }
 		 throw new AdempiereException("Unexpected document type: " + docTypeId);
 	 }
