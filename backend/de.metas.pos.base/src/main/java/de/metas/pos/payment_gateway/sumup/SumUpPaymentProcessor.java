@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SumUpPaymentProcessor implements POSPaymentProcessor
+class SumUpPaymentProcessor implements POSPaymentProcessor
 {
 	@NonNull IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final SumUpService sumUpService;

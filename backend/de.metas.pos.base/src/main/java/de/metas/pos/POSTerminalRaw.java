@@ -3,7 +3,6 @@ package de.metas.pos;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
-import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import de.metas.pricing.PriceListId;
 import lombok.Builder;
 import lombok.NonNull;

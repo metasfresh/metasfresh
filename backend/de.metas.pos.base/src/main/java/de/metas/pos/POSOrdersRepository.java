@@ -62,9 +62,9 @@ public class POSOrdersRepository
 		return trxManager.callInThreadInheritedTrx(() -> newLoaderAndSaver().createOrUpdateByExternalId(externalId, factory, updater));
 	}
 
-	public POSOrder updateById(@NonNull final POSOrderId id, @NonNull final Consumer<POSOrder> updater)
+	public void updateById(@NonNull final POSOrderId id, @NonNull final Consumer<POSOrder> updater)
 	{
-		return trxManager.callInThreadInheritedTrx(() -> newLoaderAndSaver().updateById(id, updater));
+		trxManager.callInThreadInheritedTrx(() -> newLoaderAndSaver().updateById(id, updater));
 	}
 
 	public void save(@NonNull final POSOrder order)

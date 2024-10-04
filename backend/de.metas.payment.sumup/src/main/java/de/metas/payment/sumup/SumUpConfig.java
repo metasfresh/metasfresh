@@ -12,7 +12,6 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @EqualsAndHashCode
@@ -80,10 +79,5 @@ public class SumUpConfig
 			throw new AdempiereException("No default card reader was configured for " + this);
 		}
 		return defaultCardReaderExternalId;
-	}
-
-	public Optional<SumUpCardReader> getCardReaderByExternalId(final SumUpCardReaderExternalId externalId)
-	{
-		return Optional.ofNullable(cardReadersByExternalId.get(externalId));
 	}
 }
