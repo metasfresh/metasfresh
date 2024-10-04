@@ -8,7 +8,7 @@ UPDATE AD_Val_Rule SET Code='(''@DocBaseType@''=''ARI'' AND AD_Ref_List.ValueNam
 -- Run mode: WEBUI
 
 -- 2024-10-01T08:28:31.287Z
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541126,TO_TIMESTAMP('2024-10-01 10:28:31.281','YYYY-MM-DD HH24:MI:SS.US'),100,'ARI',1,'de.metas.contracts',1000003,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Debitoren Schlussabrechnung','Schlussabrechnung',TO_TIMESTAMP('2024-10-01 10:28:31.281','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541126,TO_TIMESTAMP('2024-10-01 10:28:31.281','YYYY-MM-DD HH24:MI:SS.US'),100,'ARI',1,'de.metas.contracts',1000003,'N','N','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Debitoren Schlussabrechnung','Schlussabrechnung',TO_TIMESTAMP('2024-10-01 10:28:31.281','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2024-10-01T08:28:31.376Z
@@ -56,7 +56,7 @@ UPDATE C_DocType SET DocSubType='FI',Updated=TO_TIMESTAMP('2024-10-01 10:53:06.0
 ;
 
 -- 2024-10-01T08:55:02.847Z
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541127,TO_TIMESTAMP('2024-10-01 10:55:02.835','YYYY-MM-DD HH24:MI:SS.US'),100,'ARI',1,'de.metas.contracts',1000003,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Debitoren Schlussabrechnung Gutschrift','Schlussabrechnung Gutschrift',TO_TIMESTAMP('2024-10-01 10:55:02.835','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541127,TO_TIMESTAMP('2024-10-01 10:55:02.835','YYYY-MM-DD HH24:MI:SS.US'),100,'ARI',1,'de.metas.contracts',1000003,'N','N','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Debitoren Schlussabrechnung Gutschrift','Schlussabrechnung Gutschrift',TO_TIMESTAMP('2024-10-01 10:55:02.835','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2024-10-01T08:55:02.866Z
