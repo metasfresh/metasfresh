@@ -120,13 +120,13 @@ public class CompuDataInvoicBean
 		{
 			invoice.setPoReference(Util.mkOwnOrderNumber(xmlCctopInvoice.getInvoiceDocumentno()));
 		}
-		invoice.setReceivergln(xmlCctopInvoice.getReceiverGLN());
-		invoice.setSendergln(xmlCctopInvoice.getSenderGLN());
+		invoice.setReceivergln(xmlCctopInvoice.getReceivergln());
+		invoice.setSendergln(xmlCctopInvoice.getSendergln());
 		invoice.setShipmentDocumentno(xmlCctopInvoice.getShipmentDocumentno());
 		invoice.setVataxID(xmlCctopInvoice.getVATaxID());
 		// invoice.setTotalLines(formatNumber(xmlCctopInvoice.getTotalLines(), decimalFormat)); // not used
-		invoice.setTotaltaxbaseamt(formatNumber(xmlCctopInvoice.getTotalTaxBaseAmt(), decimalFormat));
-		invoice.setTotalvat(formatNumber(xmlCctopInvoice.getTotalVat(), decimalFormat));
+		invoice.setTotaltaxbaseamt(formatNumber(xmlCctopInvoice.getTotaltaxbaseamt(), decimalFormat));
+		invoice.setTotalvat(formatNumber(xmlCctopInvoice.getTotalvat(), decimalFormat));
 		invoice.setCountryCode(xmlCctopInvoice.getCountryCode());
 		invoice.setCountryCode3Digit(xmlCctopInvoice.getCountryCode3Digit());
 
@@ -180,7 +180,7 @@ public class CompuDataInvoicBean
 		}
 		cctop000V.setSenderGln(senderGln.toString());
 
-		final InvoicSettings settings = InvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceiverGLN());
+		final InvoicSettings settings = InvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceivergln());
 		cctop000V.setIsTest(settings.getTestIndicator());
 
 		return cctop000V;

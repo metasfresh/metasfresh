@@ -109,7 +109,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : Integer.parseInt(string);
 		}
 		catch (final NumberFormatException e)
@@ -190,10 +189,11 @@ public class DataTableUtil
 		return dataTableRow.get(columnName);
 	}
 
+	@Contract("null -> null")
 	@Nullable
 	public String nullToken2Null(@Nullable final String value)
 	{
-		return value == null || NULL_STRING.equals(value) ? null : value;
+		return Check.isBlank(value) || NULL_STRING.equals(value) ? null : value;
 	}
 
 	@NonNull
@@ -352,7 +352,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : new BigDecimal(string);
 		}
 		catch (final NumberFormatException e)
@@ -432,6 +431,7 @@ public class DataTableUtil
 		return StringUtils.toBoolean(string, defaultValue);
 	}
 
+	@Nullable
 	public static Boolean extractBooleanForColumnNameOrNull(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
@@ -474,7 +474,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : Double.parseDouble(string);
 		}
 		catch (final NumberFormatException e)

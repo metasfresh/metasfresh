@@ -132,7 +132,7 @@ StepComXMLInvoicBean
 	{
 		final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
 
-		final InvoicSettings settings = InvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceiverGLN());
+		final InvoicSettings settings = InvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceivergln());
 		final Xrech4H xrech4H = createDocument(exchange, xmlCctopInvoice, settings);
 
 		final Document document = INVOIC_objectFactory.createDocument();
@@ -251,7 +251,7 @@ StepComXMLInvoicBean
 		final TAMOU1 trailerTaxAmount = INVOIC_objectFactory.createTAMOU1();
 		trailerTaxAmount.setDOCUMENTID(documentId);
 		trailerTaxAmount.setAMOUNTQUAL(AmountQual.TZAX.name());
-		trailerTaxAmount.setAMOUNT(formatNumber(invoice.getTotalVat(), decimalFormat));
+		trailerTaxAmount.setAMOUNT(formatNumber(invoice.getTotalvat(), decimalFormat));
 		trailerTaxAmount.setCURRENCY(invoice.getISOCode());
 		docTrailer.getTAMOU1().add(trailerTaxAmount);
 
