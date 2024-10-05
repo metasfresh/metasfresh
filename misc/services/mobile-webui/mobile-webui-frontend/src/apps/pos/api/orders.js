@@ -59,3 +59,9 @@ export const useOrdersWebsocket = ({ terminalId, onWebsocketMessage }) => {
     };
   }, [terminalId]);
 };
+
+export const checkoutPayment = ({ order_uuid, payment_uuid }) => {
+  return axios
+    .post(`${apiBasePath}/pos/orders/${order_uuid}/payments/${payment_uuid}/checkout`)
+    .then((response) => unboxAxiosResponse(response));
+};

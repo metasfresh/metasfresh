@@ -6,6 +6,7 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 
 @Getter
 @RequiredArgsConstructor
@@ -28,12 +29,36 @@ public enum POSPaymentProcessingStatus implements ReferenceListAwareEnum
 
 	public boolean isPending() {return this == POSPaymentProcessingStatus.PENDING;}
 
+	public boolean isPendingOrSuccessful() {return isPending() || isSuccessful();}
+
 	public boolean isSuccessful() {return this == POSPaymentProcessingStatus.SUCCESSFUL;}
 
-	public boolean isNewOrCanTryAgain()
+	public boolean isAllowCheckout()
 	{
 		return isNew()
 				|| this == CANCELLED
 				|| this == FAILED;
 	}
+
+	public void assertAllowCheckout()
+	{
+		if (!isAllowCheckout())
+		{
+			throw new AdempiereException("Payments with status " + this + " cannot be checked out");
+		}
+	}
+
+	public boolean isAllowDelete()
+	{
+		return !isPendingOrSuccessful();
+	}
+
+	public void assertAllowDelete()
+	{
+		if (!isAllowDelete())
+		{
+			throw new AdempiereException("Payments with status " + this + " cannot be deleted");
+		}
+	}
+
 }

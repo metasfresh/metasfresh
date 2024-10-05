@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 @Builder(toBuilder = true)
 public class POSPayment
 {
-	@NonNull private final String externalId;
+	@NonNull private final POSPaymentExternalId externalId;
 	@Nullable private POSPaymentId localId;
 
 	@NonNull private final POSPaymentMethod paymentMethod;

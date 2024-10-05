@@ -42,7 +42,6 @@ public class POSOrderExternalId
 		return new POSOrderExternalId(value);
 	}
 
-	@JsonCreator
 	public static Set<POSOrderExternalId> ofCommaSeparatedString(@Nullable final String string)
 	{
 		return CollectionUtils.ofCommaSeparatedSet(string, POSOrderExternalId::ofString);

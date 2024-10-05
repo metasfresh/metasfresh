@@ -382,6 +382,13 @@ export const removePaymentAction = ({ order_uuid, payment_uuid }) => {
   return { type: REMOVE_PAYMENT, payload: { order_uuid, payment_uuid } };
 };
 
+export const checkoutPayment = ({ order_uuid, payment_uuid }) => {
+  return async (dispatch) => {
+    const order = await ordersAPI.checkoutPayment({ order_uuid, payment_uuid });
+    dispatch(updateOrderFromBackendAction({ order }));
+  };
+};
+
 //
 //
 //

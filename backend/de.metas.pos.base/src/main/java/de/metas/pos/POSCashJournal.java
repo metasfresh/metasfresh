@@ -116,10 +116,13 @@ public class POSCashJournal
 	{
 		final POSOrderId posOrderId = posOrder.getLocalIdNotNull();
 		final UserId cashierId = posOrder.getCashierId();
-		posOrder.getPayments().forEach(posPayment -> addPayment(posPayment, posOrderId, cashierId));
+		posOrder.getPayments()
+				.stream()
+				.filter(posPayment -> posPayment.getPaymentProcessingStatus().isSuccessful())
+				.forEach(posPayment -> addPayment(posPayment, posOrderId, cashierId));
 	}
 
-	public void addPayment(final POSPayment posPayment, POSOrderId posOrderId, UserId cashierId)
+	private void addPayment(final POSPayment posPayment, POSOrderId posOrderId, UserId cashierId)
 	{
 		add(
 				POSCashJournalLine.builder()

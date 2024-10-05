@@ -58,7 +58,7 @@ class POSOrderUpdateFromRemoteCommand
 		//
 		// Update payments
 		{
-			final HashSet<String> paymentExternalIdsToKeep = new HashSet<>();
+			final HashSet<POSPaymentExternalId> paymentExternalIdsToKeep = new HashSet<>();
 			final List<RemotePOSPayment> remotePayments = remoteOrder.getPayments();
 			if (!remotePayments.isEmpty())
 			{

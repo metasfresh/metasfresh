@@ -9,6 +9,7 @@ import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
 import de.metas.pos.POSOrderStatus;
+import de.metas.pos.POSPaymentExternalId;
 import de.metas.pos.POSProductsSearchResult;
 import de.metas.pos.POSService;
 import de.metas.pos.POSTerminal;
@@ -179,6 +180,19 @@ public class POSRestController
 	{
 		final UserId loggedUserId = getLoggedUserId();
 		final POSOrder order = posService.updateOrderFromRemote(remoteOrder.toRemotePOSOrder(), loggedUserId);
+		return JsonPOSOrder.of(order, newJsonContext());
+	}
+
+	@PostMapping("/orders/{orderId}/payments/{paymentId}/checkout")
+	public JsonPOSOrder checkoutPayment(
+			@PathVariable("orderId") @NonNull final String orderIdStr,
+			@PathVariable("paymentId") @NonNull final String paymentIdStr
+	)
+	{
+		final UserId loggedUserId = getLoggedUserId();
+		final POSOrderExternalId posOrderExternalId = POSOrderExternalId.ofString(orderIdStr);
+		final POSPaymentExternalId posPaymentExternalId = POSPaymentExternalId.ofString(paymentIdStr);
+		final POSOrder order = posService.checkoutPayment(posOrderExternalId, posPaymentExternalId, loggedUserId);
 		return JsonPOSOrder.of(order, newJsonContext());
 	}
 }

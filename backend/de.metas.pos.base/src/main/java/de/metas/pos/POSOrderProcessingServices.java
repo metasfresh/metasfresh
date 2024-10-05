@@ -39,65 +39,75 @@ public class POSOrderProcessingServices
 		final POSCashJournalId cashJournalId = posTerminal.getCashJournalIdNotNull();
 
 		final AtomicBoolean isAnyPaymentPending = new AtomicBoolean(false);
-		posOrder.updateAllPayments(posPayment -> {
+		posOrder.updateAllPayments(posPaymentToProcess -> {
 			// Don't go forward if we already have a pending payment
 			// We are processing payments one by one to cashier can take care step by step
 			if (isAnyPaymentPending.get())
 			{
-				return posPayment;
+				return posPaymentToProcess;
 			}
 
-			final POSPayment posPaymentProcessed = processPOSPayment(posPayment, posOrder, posTerminal);
-			if (posPaymentProcessed.getPaymentProcessingStatus().isPending())
+			POSPayment posPayment = posPaymentToProcess.getPaymentProcessingStatus().isNew()
+					? processPOSPayment(posPaymentToProcess, posOrder, posTerminal.getPaymentProcessorConfigNotNull())
+					: posPaymentToProcess;
+
+			posPayment = generatePaymentReceiptIfNeeded(posPayment, posOrder);
+
+			if (posPayment.getPaymentProcessingStatus().isPending())
 			{
 				isAnyPaymentPending.set(true);
 			}
 
-			return posPaymentProcessed;
+			return posPayment;
 		});
 
 		posCashJournalService.changeJournalById(cashJournalId, journal -> journal.addPayments(posOrder));
 	}
 
-	private POSPayment processPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull POSOrder posOrder, @NonNull POSTerminal posTerminal)
+	public POSPayment processPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull POSOrder posOrder, @NonNull final POSTerminalPaymentProcessorConfig paymentProcessorConfig)
 	{
+		posPaymentToProcess.getPaymentProcessingStatus().assertAllowCheckout();
+
 		//
 		// Process payment 
 		POSPayment posPayment = posPaymentToProcess;
-		if (posPayment.getPaymentProcessingStatus().isNewOrCanTryAgain())
+		switch (posPayment.getPaymentMethod())
 		{
-			switch (posPayment.getPaymentMethod())
+			case CASH:
 			{
-				case CASH:
-				{
-					posPayment = processPOSPayment_CASH(posPayment);
-					break;
-				}
-				case CARD:
-				{
-					posPayment = processPOSPayment_CARD(posPayment, posOrder, posTerminal.getPaymentProcessorConfigNotNull());
-					break;
-				}
-				default:
-				{
-					throw new AdempiereException("Unexpected payment method: " + posPayment.getPaymentMethod());
-				}
+				posPayment = processPOSPayment_CASH(posPayment);
+				break;
+			}
+			case CARD:
+			{
+				posPayment = processPOSPayment_CARD(posPayment, posOrder, paymentProcessorConfig);
+				break;
+			}
+			default:
+			{
+				throw new AdempiereException("Unexpected payment method: " + posPayment.getPaymentMethod());
 			}
 		}
 
-		//
-		// Make sure payment receipt is generated if payment processing was successful
+		posPayment = generatePaymentReceiptIfNeeded(posPayment, posOrder);
+
+		return posPayment;
+	}
+
+	private POSPayment generatePaymentReceiptIfNeeded(POSPayment posPayment, final @NonNull POSOrder posOrder)
+	{
 		if (posPayment.getPaymentProcessingStatus().isSuccessful() && posPayment.getPaymentReceiptId() == null)
 		{
 			final PaymentId paymentReceiptId = createPaymentReceipt(posPayment, posOrder);
 			posPayment = posPayment.withPaymentReceiptId(paymentReceiptId);
 		}
-
 		return posPayment;
 	}
 
 	private POSPayment processPOSPayment_CASH(@NonNull final POSPayment posPayment)
 	{
+		posPayment.getPaymentMethod().assertCash();
+
 		return posPayment.withPaymentProcessingStatus(POSPaymentProcessingStatus.SUCCESSFUL);
 	}
 
@@ -106,6 +116,8 @@ public class POSOrderProcessingServices
 			@NonNull final POSOrder posOrder,
 			@NonNull final POSTerminalPaymentProcessorConfig paymentProcessorConfig)
 	{
+		posPayment.getPaymentMethod().assertCard();
+
 		final POSPaymentProcessResponse processResponse = posPaymentProcessorService.processPayment(POSPaymentProcessRequest.builder()
 				.paymentProcessorConfig(paymentProcessorConfig)
 				.clientAndOrgId(posOrder.getClientAndOrgId())

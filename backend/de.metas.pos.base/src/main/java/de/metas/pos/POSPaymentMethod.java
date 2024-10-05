@@ -9,6 +9,7 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -37,4 +38,26 @@ public enum POSPaymentMethod implements ReferenceListAwareEnum
 	public String getCode() {return code;}
 
 	public static boolean equals(@Nullable final POSPaymentMethod value1, @Nullable final POSPaymentMethod value2) {return Objects.equals(value1, value2);}
+
+	public boolean isCash() {return this == CASH;}
+
+	public boolean isCard() {return this == CARD;}
+
+	public void assertCash()
+	{
+		if (!isCash())
+		{
+			throw new AdempiereException("Expected CASH payment method but it was " + this);
+		}
+
+	}
+
+	public void assertCard()
+	{
+		if (!isCard())
+		{
+			throw new AdempiereException("Expected CARD payment method but it was " + this);
+		}
+	}
+
 }

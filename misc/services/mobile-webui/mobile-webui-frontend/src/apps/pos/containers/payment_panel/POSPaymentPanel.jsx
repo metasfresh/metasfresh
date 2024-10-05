@@ -4,6 +4,7 @@ import {
   addPayment,
   changeOrderStatusToComplete,
   changeOrderStatusToDraft,
+  checkoutPayment,
   removePayment,
   useCurrentOrder,
   usePOSTerminal,
@@ -51,6 +52,10 @@ const POSPaymentPanel = () => {
     dispatch(addPayment({ order_uuid, paymentMethod, amount: openAmt }));
   };
 
+  const onPaymentCheckout = ({ uuid }) => {
+    dispatch(checkoutPayment({ order_uuid, payment_uuid: uuid }));
+  };
+
   const onPaymentDelete = ({ uuid }) => {
     dispatch(removePayment({ order_uuid, payment_uuid: uuid }));
   };
@@ -88,6 +93,9 @@ const POSPaymentPanel = () => {
             currency={currency}
             currencyPrecision={currencyPrecision}
             status={payment.status}
+            allowCheckout={payment.allowCheckout}
+            onCheckout={onPaymentCheckout}
+            allowDelete={payment.allowDelete}
             onDelete={onPaymentDelete}
           />
         ))}

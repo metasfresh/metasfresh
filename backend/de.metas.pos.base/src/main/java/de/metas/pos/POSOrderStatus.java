@@ -38,6 +38,8 @@ public enum POSOrderStatus implements ReferenceListAwareEnum
 
 	public boolean isDrafted() {return this == Drafted;}
 
+	public boolean isWaitingPayment() {return this == WaitingPayment;}
+
 	public boolean isCompleted() {return this == Completed;}
 
 	public boolean isVoided() {return this == Voided;}

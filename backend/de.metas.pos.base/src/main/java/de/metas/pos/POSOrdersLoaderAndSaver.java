@@ -383,7 +383,7 @@ class POSOrdersLoaderAndSaver
 	private static POSPayment fromRecord(final I_C_POS_Payment record, final CurrencyId currencyId)
 	{
 		return POSPayment.builder()
-				.externalId(record.getExternalId())
+				.externalId(extractExternalId(record))
 				.localId(POSPaymentId.ofRepoId(record.getC_POS_Payment_ID()))
 				.paymentMethod(POSPaymentMethod.ofCode(record.getPOSPaymentMethod()))
 				.amount(Money.of(record.getAmount(), currencyId))
@@ -394,7 +394,7 @@ class POSOrdersLoaderAndSaver
 
 	private static void updateRecord(final I_C_POS_Payment paymentRecord, final POSPayment payment)
 	{
-		paymentRecord.setExternalId(payment.getExternalId());
+		paymentRecord.setExternalId(payment.getExternalId().getAsString());
 		paymentRecord.setPOSPaymentMethod(payment.getPaymentMethod().getCode());
 		paymentRecord.setAmount(payment.getAmount().toBigDecimal());
 		paymentRecord.setPOSPaymentProcessingStatus(payment.getPaymentProcessingStatus().getCode());
@@ -448,7 +448,7 @@ class POSOrdersLoaderAndSaver
 		//
 		// Payments
 		{
-			final HashMap<String, I_C_POS_Payment> paymentRecordsByExternalId = getPaymentRecordsByOrderId(posOrderId).stream().collect(GuavaCollectors.toHashMapByKey(I_C_POS_Payment::getExternalId));
+			final HashMap<POSPaymentExternalId, I_C_POS_Payment> paymentRecordsByExternalId = getPaymentRecordsByOrderId(posOrderId).stream().collect(GuavaCollectors.toHashMapByKey(POSOrdersLoaderAndSaver::extractExternalId));
 			final ArrayList<I_C_POS_Payment> paymentRecordsNew = new ArrayList<>(paymentRecordsByExternalId.size());
 			for (final POSPayment payment : order.getPayments())
 			{
@@ -473,5 +473,10 @@ class POSOrdersLoaderAndSaver
 		}
 
 		websocketSender.notifyFrontendThatOrderChanged(order);
+	}
+
+	private static @NonNull POSPaymentExternalId extractExternalId(final I_C_POS_Payment record)
+	{
+		return POSPaymentExternalId.ofString(record.getExternalId());
 	}
 }

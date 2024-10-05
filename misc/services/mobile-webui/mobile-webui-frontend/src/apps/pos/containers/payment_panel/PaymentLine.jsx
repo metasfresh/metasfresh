@@ -3,7 +3,18 @@ import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const PaymentLine = ({ uuid, paymentMethod, amount, currency, currencyPrecision, status, onDelete }) => {
+const PaymentLine = ({
+  uuid,
+  paymentMethod,
+  amount,
+  currency,
+  currencyPrecision,
+  status,
+  allowCheckout,
+  onCheckout,
+  allowDelete,
+  onDelete,
+}) => {
   const icon = getPaymentMethodIcon({ paymentMethod });
   const iconClassName = `fa-regular ${icon}`;
   const caption = getPaymentMethodCaption({ paymentMethod });
@@ -16,14 +27,20 @@ const PaymentLine = ({ uuid, paymentMethod, amount, currency, currencyPrecision,
   return (
     <div className="payment-line">
       <div className="payment-line-label">
-        <i className={iconClassName} /> {caption}
+        <i className={iconClassName} /> {caption} ({status})
       </div>
       <div className="payment-line-value">{amountStr}</div>
       <div className="payment-line-actions">
-        {status}
-        <div className="payment-line-action-item" onClick={() => onDelete({ uuid })}>
-          <i className="fa-regular fa-trash-can" />
-        </div>
+        {allowCheckout && onCheckout && (
+          <div className="payment-line-action-item" onClick={() => onCheckout({ uuid })}>
+            <i className="fa-solid fa-repeat" />
+          </div>
+        )}
+        {allowDelete && onDelete && (
+          <div className="payment-line-action-item" onClick={() => onDelete({ uuid })}>
+            <i className="fa-solid fa-trash-can" />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -36,6 +53,9 @@ PaymentLine.propTypes = {
   currency: PropTypes.string.isRequired,
   currencyPrecision: PropTypes.number.isRequired,
   status: PropTypes.string,
+  allowCheckout: PropTypes.bool,
+  onCheckout: PropTypes.func.isRequired,
+  allowDelete: PropTypes.bool,
   onDelete: PropTypes.func.isRequired,
 };
 

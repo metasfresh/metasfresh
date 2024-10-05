@@ -22,7 +22,7 @@ public class POSOrdersService
 	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final POSOrdersRepository ordersRepository;
 	@NonNull private final CurrencyRepository currencyRepository;
-	@NonNull private final POSOrderProcessingServices possOrderProcessingServices;
+	@NonNull private final POSOrderProcessingServices posOrderProcessingServices;
 
 	public List<POSOrder> list(@NonNull final POSOrderQuery query)
 	{
@@ -38,7 +38,7 @@ public class POSOrdersService
 	{
 		return ordersRepository.updateByExternalId(externalId, order -> {
 			assertCanEdit(order, userId);
-			order.changeStatusTo(nextStatus, possOrderProcessingServices);
+			order.changeStatusTo(nextStatus, posOrderProcessingServices);
 		});
 	}
 
@@ -49,7 +49,7 @@ public class POSOrdersService
 	{
 		ordersRepository.updateById(posOrderId, order -> {
 			order.updatePaymentById(posPaymentId, payment -> payment.withPaymentProcessingStatus(paymentProcessingStatus));
-			order.changeStatusTo(POSOrderStatus.Completed, possOrderProcessingServices);
+			order.changeStatusTo(POSOrderStatus.Completed, posOrderProcessingServices);
 		});
 	}
 
@@ -100,5 +100,20 @@ public class POSOrdersService
 				.currencyId(posTerminal.getCurrencyId())
 				.posTerminalId(posTerminal.getId())
 				.build();
+	}
+
+	public POSOrder checkoutPayment(
+			final @NonNull POSOrderExternalId posOrderExternalId,
+			final @NonNull POSPaymentExternalId posPaymentExternalId,
+			final @NonNull UserId userId)
+	{
+		return ordersRepository.updateByExternalId(posOrderExternalId, posOrder -> {
+			assertCanEdit(posOrder, userId);
+			posOrder.assertWaitingForPayment();
+
+			final POSTerminalPaymentProcessorConfig paymentProcessorConfig = posTerminalService.getPOSTerminalById(posOrder.getPosTerminalId()).getPaymentProcessorConfigNotNull();
+
+			posOrder.updatePaymentByExternalId(posPaymentExternalId, posPayment -> posOrderProcessingServices.processPOSPayment(posPayment, posOrder, paymentProcessorConfig));
+		});
 	}
 }

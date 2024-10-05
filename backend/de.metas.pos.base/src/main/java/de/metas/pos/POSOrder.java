@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -164,26 +165,47 @@ public class POSOrder
 		switch (targetStatus)
 		{
 			case Drafted:
-			case Voided:
-			case WaitingPayment:
-				newStatus = targetStatus;
+			{
+				newStatus = POSOrderStatus.Drafted;
 				break;
+			}
+			case Voided:
+			{
+				changeStatusTo_Void();
+				newStatus = POSOrderStatus.Voided;
+				break;
+			}
+			case WaitingPayment:
+			{
+				newStatus = POSOrderStatus.WaitingPayment;
+				break;
+			}
 			case Completed:
+			{
 				newStatus = changeStatusTo_Complete(services);
 				break;
+			}
 			default:
+			{
 				throw new AdempiereException("Unknown next status " + targetStatus);
+			}
 		}
 
 		this.status = newStatus;
 	}
 
+	private void changeStatusTo_Void()
+	{
+		final boolean hasPendingOrCompletedPayments = getPayments().stream()
+				.anyMatch(posPayment -> posPayment.getPaymentProcessingStatus().isPendingOrSuccessful());
+		if (hasPendingOrCompletedPayments)
+		{
+			throw new AdempiereException("Cannot void pos orders with Pending or Successful payments. Cancel/Refund first");
+		}
+	}
+
 	private POSOrderStatus changeStatusTo_Complete(@NonNull final POSOrderProcessingServices services)
 	{
-		// TODO implement:
-		// * create payments & process synchronous (to make sure we got the money from card)
-		// * async create sales order, invoice, shipment and allocate the payments to that invoice 
-		// throw new UnsupportedOperationException("not implemented");
 		if (lines.isEmpty())
 		{
 			throw AdempiereException.noLines();
@@ -206,6 +228,14 @@ public class POSOrder
 		if (openAmt.signum() != 0)
 		{
 			throw new AdempiereException("POS Order shall be paid");
+		}
+	}
+
+	public void assertWaitingForPayment()
+	{
+		if (!status.isWaitingPayment())
+		{
+			throw new AdempiereException("Expected order status to be " + POSOrderStatus.WaitingPayment + " but it is " + status);
 		}
 	}
 
@@ -278,9 +308,17 @@ public class POSOrder
 		}
 	}
 
-	public void createOrUpdatePayment(@NonNull final String externalId, @NonNull final UnaryOperator<POSPayment> updater)
+	public void createOrUpdatePayment(@NonNull final POSPaymentExternalId externalId, @NonNull final UnaryOperator<POSPayment> updater)
 	{
-		final int paymentIdx = getPaymentIndexByExternalId(externalId);
+		final int paymentIdx = getPaymentIndexByExternalId(externalId).orElse(-1);
+		updatePaymentByIndex(paymentIdx, updater);
+	}
+
+	public void updatePaymentByExternalId(@NonNull final POSPaymentExternalId externalId, @NonNull final UnaryOperator<POSPayment> updater)
+	{
+		final int paymentIdx = getPaymentIndexByExternalId(externalId)
+				.orElseThrow(() -> new AdempiereException("No payment found for " + externalId + " in " + payments));
+
 		updatePaymentByIndex(paymentIdx, updater);
 	}
 
@@ -320,24 +358,28 @@ public class POSOrder
 		throw new AdempiereException("No payment found for " + posPaymentId + " in " + payments);
 	}
 
-	private int getPaymentIndexByExternalId(final @NonNull String externalId)
+	private OptionalInt getPaymentIndexByExternalId(final @NonNull POSPaymentExternalId externalId)
 	{
 		for (int i = 0; i < payments.size(); i++)
 		{
-			if (payments.get(i).getExternalId().equals(externalId))
+			if (POSPaymentExternalId.equals(payments.get(i).getExternalId(), externalId))
 			{
-				return i;
+				return OptionalInt.of(i);
 			}
 		}
-		return -1;
+		return OptionalInt.empty();
 	}
 
-	public void preserveOnlyPaymentExternalIds(@NonNull final Collection<String> paymentExternalIdsToKeep)
+	public void preserveOnlyPaymentExternalIds(@NonNull final Collection<POSPaymentExternalId> paymentExternalIdsToKeep)
 	{
-		final HashMap<String, POSPayment> paymentsByExternalId = payments.stream().collect(GuavaCollectors.toHashMapByKey(POSPayment::getExternalId));
+		payments.stream()
+				.filter(payment -> !paymentExternalIdsToKeep.contains(payment.getExternalId()))
+				.forEach(payment -> payment.getPaymentProcessingStatus().assertAllowDelete());
+
+		final HashMap<POSPaymentExternalId, POSPayment> paymentsByExternalId = payments.stream().collect(GuavaCollectors.toHashMapByKey(POSPayment::getExternalId));
 		payments.clear();
 
-		for (final String paymentExternalId : paymentExternalIdsToKeep)
+		for (final POSPaymentExternalId paymentExternalId : paymentExternalIdsToKeep)
 		{
 			final POSPayment payment = paymentsByExternalId.remove(paymentExternalId);
 			if (payment != null)
