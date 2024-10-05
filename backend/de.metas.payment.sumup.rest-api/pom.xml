@@ -35,7 +35,11 @@
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
         </dependency>
-
-
+        
+        <dependency>
+            <groupId>de.metas.util</groupId>
+            <artifactId>de.metas.util.web</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
     </dependencies>
 </project>
