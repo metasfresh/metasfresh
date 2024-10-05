@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMUP_Transaction, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1725855937L;
+	private static final long serialVersionUID = 1375477180L;
 
     /** Standard Constructor */
     public X_SUMUP_Transaction (final Properties ctx, final int SUMUP_Transaction_ID, @Nullable final String trxName)
@@ -112,6 +112,19 @@ public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMU
 	public java.lang.String getJsonResponse() 
 	{
 		return get_ValueAsString(COLUMNNAME_JsonResponse);
+	}
+
+	@Override
+	public void setRefundAmt (final BigDecimal RefundAmt)
+	{
+		set_Value (COLUMNNAME_RefundAmt, RefundAmt);
+	}
+
+	@Override
+	public BigDecimal getRefundAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_RefundAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

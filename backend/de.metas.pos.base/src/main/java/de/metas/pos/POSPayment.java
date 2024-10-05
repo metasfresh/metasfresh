@@ -25,6 +25,11 @@ public class POSPayment
 
 	public POSPaymentId getLocalIdNotNull() {return Check.assumeNotNull(this.getLocalId(), "Expected POSPayment to be saved: {}", this);}
 
+	public boolean isAllowRefund()
+	{
+		return paymentMethod.isCard() && paymentProcessingStatus.isAllowRefund();
+	}
+
 	public void assertNoPaymentReceipt()
 	{
 		if (paymentReceiptId != null)
@@ -68,24 +73,23 @@ public class POSPayment
 		return toBuilder().paymentProcessingStatus(newStatus).build();
 	}
 
-	public POSPayment withPaymentReceipt(@NonNull final PaymentId paymentReceiptId)
+	public POSPayment withPaymentReceipt(@Nullable final PaymentId paymentReceiptId)
 	{
-		if (!paymentProcessingStatus.isSuccessful())
-		{
-			throw new AdempiereException("Cannot set a payment receipt if status is not successful");
-		}
-
 		if (PaymentId.equals(this.paymentReceiptId, paymentReceiptId))
 		{
 			return this;
 		}
 
-		if (this.paymentReceiptId != null)
+		if (paymentReceiptId != null && !paymentProcessingStatus.isSuccessful())
+		{
+			throw new AdempiereException("Cannot set a payment receipt if status is not successful");
+		}
+
+		if (this.paymentReceiptId != null && paymentReceiptId != null)
 		{
 			throw new AdempiereException("Changing the payment receipt is not allowed");
 		}
 
 		return toBuilder().paymentReceiptId(paymentReceiptId).build();
 	}
-
 }

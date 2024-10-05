@@ -22,3 +22,10 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,A
 UPDATE AD_Table_Process SET WEBUI_ViewQuickAction='Y',Updated=TO_TIMESTAMP('2024-10-04 18:25:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=541524
 ;
 
+-- Process: SUMUP_Transaction_UpdateAllPending(de.metas.payment.sumup.webui.process.SUMUP_Transaction_UpdateAllPending)
+-- Table: SUMUP_Transaction
+-- EntityType: de.metas.payment.sumup
+-- 2024-10-05T16:59:42.090Z
+UPDATE AD_Table_Process SET WEBUI_DocumentAction='N',Updated=TO_TIMESTAMP('2024-10-05 19:59:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=541524
+;
+

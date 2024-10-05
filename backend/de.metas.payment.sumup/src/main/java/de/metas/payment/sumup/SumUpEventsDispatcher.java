@@ -5,6 +5,7 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.util.Services;
+import de.metas.util.lang.BooleanThreadLocal;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -23,7 +24,9 @@ public class SumUpEventsDispatcher
 	@NonNull private final ImmutableList<SumUpTransactionStatusChangedListener> statusChangedListeners;
 	@NonNull private final IEventBusFactory eventBusFactory;
 
-	private static final Topic EVENTS_TOPIC = Topic.remote("de.metas.payment.sumup.events");
+	@NonNull private static final BooleanThreadLocal forceSendChangeEventsThreadLocal = new BooleanThreadLocal(false);
+
+	private static final Topic EVENTS_TOPIC = Topic.remoteAndAsync("de.metas.payment.sumup.events");
 
 	public SumUpEventsDispatcher(
 			@NonNull final IEventBusFactory eventBusFactory,
@@ -38,6 +41,16 @@ public class SumUpEventsDispatcher
 	private void postConstruct()
 	{
 		getEventBus().subscribeOn(SumUpTransactionStatusChangedEvent.class, this::handleEvent);
+	}
+
+	public static IAutoCloseable temporaryForceSendingChangeEventsIf(final boolean condition)
+	{
+		return forceSendChangeEventsThreadLocal.temporarySetToTrueIf(condition);
+	}
+
+	private static boolean isForceSendingChangeEvents()
+	{
+		return forceSendChangeEventsThreadLocal.isTrue();
 	}
 
 	private IEventBus getEventBus() {return eventBusFactory.getEventBus(EVENTS_TOPIC);}
@@ -85,13 +98,21 @@ public class SumUpEventsDispatcher
 		fireLocalAndRemoteListenersAfterTrxCommit(SumUpTransactionStatusChangedEvent.ofNewTransaction(trx));
 	}
 
-	public void fireStatusChangedIfNeeded(@NonNull final SumUpTransaction trx, @NonNull final SumUpTransactionStatus statusPrev)
+	public void fireStatusChangedIfNeeded(
+			@NonNull final SumUpTransaction trx,
+			@NonNull final SumUpTransaction trxPrev)
 	{
-		if (SumUpTransactionStatus.equals(trx.getStatus(), statusPrev))
+		if (!isForceSendingChangeEvents() && hasChanges(trx, trxPrev))
 		{
 			return;
 		}
 
-		fireLocalAndRemoteListenersAfterTrxCommit(SumUpTransactionStatusChangedEvent.ofChangedTransaction(trx, statusPrev));
+		fireLocalAndRemoteListenersAfterTrxCommit(SumUpTransactionStatusChangedEvent.ofChangedTransaction(trx, trxPrev));
+	}
+
+	private static boolean hasChanges(final @NonNull SumUpTransaction trx, final @NonNull SumUpTransaction trxPrev)
+	{
+		return SumUpTransactionStatus.equals(trx.getStatus(), trxPrev.getStatus())
+				&& trx.isRefunded() == trxPrev.isRefunded();
 	}
 }

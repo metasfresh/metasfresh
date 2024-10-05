@@ -5,6 +5,7 @@ import {
   changeOrderStatusToComplete,
   changeOrderStatusToDraft,
   checkoutPayment,
+  refundPayment,
   removePayment,
   useCurrentOrder,
   usePOSTerminal,
@@ -60,6 +61,10 @@ const POSPaymentPanel = () => {
     dispatch(removePayment({ order_uuid, payment_uuid: uuid }));
   };
 
+  const onPaymentRefund = ({ uuid }) => {
+    dispatch(refundPayment({ order_uuid, payment_uuid: uuid }));
+  };
+
   const onBackClick = () => {
     dispatch(changeOrderStatusToDraft({ order_uuid }));
   };
@@ -97,6 +102,8 @@ const POSPaymentPanel = () => {
             onCheckout={onPaymentCheckout}
             allowDelete={payment.allowDelete}
             onDelete={onPaymentDelete}
+            allowRefund={payment.allowRefund}
+            onRefund={onPaymentRefund}
           />
         ))}
       </div>

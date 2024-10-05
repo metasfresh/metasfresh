@@ -2,13 +2,17 @@ package de.metas.pos;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.logging.LogManager;
 import de.metas.pos.remote.RemotePOSOrder;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +22,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class POSOrdersService
 {
+	@NonNull private static final Logger logger = LogManager.getLogger(POSOrdersService.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final POSOrdersRepository ordersRepository;
@@ -43,14 +49,46 @@ public class POSOrdersService
 	}
 
 	public void updatePaymentStatusFromRemoteAndTryCompleteOrder(
-			@NonNull final POSOrderId posOrderId,
-			@NonNull final POSPaymentId posPaymentId,
+			@NonNull final POSOrderAndPaymentId posOrderAndPaymentId,
 			@NonNull final POSPaymentProcessingStatus paymentProcessingStatus)
 	{
-		ordersRepository.updateById(posOrderId, order -> {
-			order.updatePaymentById(posPaymentId, payment -> payment.changingStatusFromRemote(paymentProcessingStatus));
-			order.changeStatusTo(POSOrderStatus.Completed, posOrderProcessingServices);
-		});
+		// NOTE: 
+		// Make sure we are running out of transaction. 
+		// Keep [POS payment update] and [POS order completing] in 2 separate transactions
+		// so it might be that updating can succeed (and it's saved) but order processing not.
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		updatePaymentStatusFromRemote(posOrderAndPaymentId, paymentProcessingStatus);
+		tryCompleteNoFail(posOrderAndPaymentId.getOrderId());
+	}
+
+	private void updatePaymentStatusFromRemote(
+			@NonNull final POSOrderAndPaymentId posOrderAndPaymentId,
+			@NonNull final POSPaymentProcessingStatus paymentProcessingStatus)
+	{
+		ordersRepository.updatePaymentById(posOrderAndPaymentId, (order, payment) -> payment.changingStatusFromRemote(paymentProcessingStatus));
+	}
+
+	private void tryCompleteNoFail(@NonNull final POSOrderId posOrderId)
+	{
+		try
+		{
+			ordersRepository.updateById(posOrderId, order -> {
+				final BooleanWithReason canComplete = order.checkCanTryComplete();
+				if (canComplete.isTrue())
+				{
+					order.changeStatusTo(POSOrderStatus.Completed, posOrderProcessingServices);
+				}
+				else
+				{
+					logger.debug("Skip completing {} because {}", posOrderId, canComplete.getReason());
+				}
+			});
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed completing order {}. Ignored.", posOrderId, ex);
+		}
 	}
 
 	private void assertCanEdit(@NonNull final POSOrder order, @NonNull final UserId userId)
@@ -116,4 +154,20 @@ public class POSOrdersService
 			posOrder.updatePaymentByExternalId(posPaymentExternalId, posPayment -> posOrderProcessingServices.processPOSPayment(posPayment, posOrder, paymentProcessorConfig));
 		});
 	}
+
+	public POSOrder refundPayment(
+			final @NonNull POSOrderExternalId posOrderExternalId,
+			final @NonNull POSPaymentExternalId posPaymentExternalId,
+			final @NonNull UserId userId)
+	{
+		return ordersRepository.updateByExternalId(posOrderExternalId, posOrder -> {
+			assertCanEdit(posOrder, userId);
+			posOrder.assertWaitingForPayment();
+
+			final POSTerminalPaymentProcessorConfig paymentProcessorConfig = posTerminalService.getPOSTerminalById(posOrder.getPosTerminalId()).getPaymentProcessorConfigNotNull();
+
+			posOrder.updatePaymentByExternalId(posPaymentExternalId, posPayment -> posOrderProcessingServices.refundPOSPayment(posPayment, posOrder.getLocalIdNotNull(), paymentProcessorConfig));
+		});
+	}
+
 }

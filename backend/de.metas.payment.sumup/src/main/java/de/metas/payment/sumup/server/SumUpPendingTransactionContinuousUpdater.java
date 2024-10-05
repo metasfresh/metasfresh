@@ -3,7 +3,7 @@ package de.metas.payment.sumup.server;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.payment.sumup.SumUpService;
-import de.metas.payment.sumup.repository.UpdateByPendingStatusResult;
+import de.metas.payment.sumup.repository.BulkUpdateByQueryResult;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -55,7 +55,7 @@ public class SumUpPendingTransactionContinuousUpdater
 
 			if (isEnabled)
 			{
-				updateAllPendingTransactionsNoFail();
+				bulkUpdatePendingTransactionsNoFail();
 			}
 		}
 	}
@@ -96,11 +96,11 @@ public class SumUpPendingTransactionContinuousUpdater
 		return Duration.ofSeconds(valueInt);
 	}
 
-	private void updateAllPendingTransactionsNoFail()
+	private void bulkUpdatePendingTransactionsNoFail()
 	{
 		try
 		{
-			final UpdateByPendingStatusResult result = sumUpService.updateAllPendingTransactions();
+			final BulkUpdateByQueryResult result = sumUpService.bulkUpdatePendingTransactions(false);
 			if (!result.isZero())
 			{
 				logger.info("Pending transactions updated: {}", result);

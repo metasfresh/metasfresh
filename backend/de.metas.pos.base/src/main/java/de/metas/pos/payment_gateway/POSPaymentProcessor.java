@@ -7,4 +7,6 @@ public interface POSPaymentProcessor
 	POSPaymentProcessorType getType();
 
 	POSPaymentProcessResponse process(@NonNull POSPaymentProcessRequest request);
+
+	POSRefundResponse refund(@NonNull POSRefundRequest request);
 }

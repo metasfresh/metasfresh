@@ -228,6 +228,29 @@ public interface I_SUMUP_Transaction
 	String COLUMNNAME_JsonResponse = "JsonResponse";
 
 	/**
+	 * Set Refund amount.
+	 * Refund amount per product unit
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRefundAmt (BigDecimal RefundAmt);
+
+	/**
+	 * Get Refund amount.
+	 * Refund amount per product unit
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getRefundAmt();
+
+	ModelColumn<I_SUMUP_Transaction, Object> COLUMN_RefundAmt = new ModelColumn<>(I_SUMUP_Transaction.class, "RefundAmt", null);
+	String COLUMNNAME_RefundAmt = "RefundAmt";
+
+	/**
 	 * Set Status.
 	 *
 	 * <br>Type: String

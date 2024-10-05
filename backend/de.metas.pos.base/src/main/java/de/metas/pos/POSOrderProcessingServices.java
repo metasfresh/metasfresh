@@ -8,6 +8,8 @@ import de.metas.pos.async.C_POSOrder_CreateInvoiceAndShipment;
 import de.metas.pos.payment_gateway.POSPaymentProcessRequest;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorService;
+import de.metas.pos.payment_gateway.POSRefundRequest;
+import de.metas.pos.payment_gateway.POSRefundResponse;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -121,8 +123,7 @@ public class POSOrderProcessingServices
 		final POSPaymentProcessResponse processResponse = posPaymentProcessorService.processPayment(POSPaymentProcessRequest.builder()
 				.paymentProcessorConfig(paymentProcessorConfig)
 				.clientAndOrgId(posOrder.getClientAndOrgId())
-				.posOrderId(posOrder.getLocalIdNotNull())
-				.posPaymentId(posPayment.getLocalIdNotNull())
+				.posOrderAndPaymentId(POSOrderAndPaymentId.of(posOrder.getLocalIdNotNull(), posPayment.getLocalIdNotNull()))
 				.amount(posPayment.getAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
 				.build());
 
@@ -146,6 +147,30 @@ public class POSOrderProcessingServices
 		// TODO: add the payment to bank statement
 
 		return PaymentId.ofRepoId(paymentReceipt.getC_Payment_ID());
+	}
+
+	public POSPayment refundPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull POSOrderId posOrderId, @NonNull final POSTerminalPaymentProcessorConfig paymentProcessorConfig)
+	{
+		posPaymentToProcess.getPaymentMethod().assertCard();
+		posPaymentToProcess.getPaymentProcessingStatus().assertAllowRefund();
+
+		POSPayment posPayment = posPaymentToProcess;
+
+		final POSRefundResponse refundResponse = posPaymentProcessorService.refund(POSRefundRequest.builder()
+				.paymentProcessorConfig(paymentProcessorConfig)
+				.posOrderAndPaymentId(POSOrderAndPaymentId.of(posOrderId, posPayment.getLocalIdNotNull()))
+				.build());
+		posPayment = posPayment.changingStatusFromRemote(refundResponse.getStatus());
+
+		//
+		// Reverse payment
+		if (posPayment.getPaymentReceiptId() != null)
+		{
+			paymentBL.reversePaymentById(posPayment.getPaymentReceiptId());
+			posPayment = posPayment.withPaymentReceipt(null);
+		}
+
+		return posPayment;
 	}
 
 	public void scheduleCreateSalesOrderInvoiceAndShipment(@NonNull final POSOrderId posOrderId, @NonNull final UserId cashierId)

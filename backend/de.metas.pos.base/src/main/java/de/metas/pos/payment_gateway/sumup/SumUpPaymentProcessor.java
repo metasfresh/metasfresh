@@ -14,6 +14,8 @@ import de.metas.pos.payment_gateway.POSPaymentProcessRequest;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessor;
 import de.metas.pos.payment_gateway.POSPaymentProcessorType;
+import de.metas.pos.payment_gateway.POSRefundRequest;
+import de.metas.pos.payment_gateway.POSRefundResponse;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -40,41 +42,38 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 	{
 		try
 		{
-			final POSTerminalPaymentProcessorConfig paymentProcessorConfig = request.getPaymentProcessorConfig();
-			Check.assumeEquals(paymentProcessorConfig.getType(), POSPaymentProcessorType.SumUp, "payment processor type is SumUp: {}", paymentProcessorConfig);
-			final SumUpConfigId sumUpConfigId = Check.assumeNotNull(paymentProcessorConfig.getSumUpConfigId(), "sumUpConfigId is set for {}", paymentProcessorConfig);
-
-			final SumUpConfig sumUpConfig = sumUpService.getConfig(sumUpConfigId);
+			final SumUpConfig sumUpConfig = getSumUpConfig(request.getPaymentProcessorConfig());
 
 			final SumUpTransaction sumUpTrx = sumUpService.cardReaderCheckout(
 					SumUpCardReaderCheckoutRequest.builder()
-							.configId(sumUpConfigId)
+							.configId(sumUpConfig.getId())
 							.cardReaderId(sumUpConfig.getDefaultCardReaderExternalIdNotNull())
 							.amount(request.getAmount())
 							.callbackUrl(getCallbackUrl())
 							.clientAndOrgId(request.getClientAndOrgId())
-							.posRef(extractPOSRef(request))
+							.posRef(SumUpUtils.toPOSRef(request.getPosOrderAndPaymentId()))
 							.build()
 			);
 
-			return POSPaymentProcessResponse.builder().status(SumUpUtils.toResponseStatus(sumUpTrx.getStatus())).build();
+			return POSPaymentProcessResponse.builder()
+					.status(SumUpUtils.toResponseStatus(sumUpTrx.getStatus(), sumUpTrx.isRefunded()))
+					.build();
 		}
 		catch (final Exception ex)
 		{
-			return errorResponse(ex);
+			return toProcessErrorResponse(ex);
 		}
 	}
 
-	@Nullable
-	private static SumUpPOSRef extractPOSRef(final POSPaymentProcessRequest request)
+	private SumUpConfig getSumUpConfig(@NonNull final POSTerminalPaymentProcessorConfig paymentProcessorConfig)
 	{
-		return SumUpPOSRef.builder()
-				.posOrderId(request.getPosOrderId().getRepoId())
-				.posPaymentId(request.getPosPaymentId().getRepoId())
-				.build();
+		Check.assumeEquals(paymentProcessorConfig.getType(), POSPaymentProcessorType.SumUp, "payment processor type is SumUp: {}", paymentProcessorConfig);
+		final SumUpConfigId sumUpConfigId = Check.assumeNotNull(paymentProcessorConfig.getSumUpConfigId(), "sumUpConfigId is set for {}", paymentProcessorConfig);
+
+		return sumUpService.getConfig(sumUpConfigId);
 	}
 
-	private POSPaymentProcessResponse errorResponse(final Exception ex)
+	private POSPaymentProcessResponse toProcessErrorResponse(@NonNull final Exception ex)
 	{
 		final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
 		final AdIssueId errorId = errorManager.createIssue(metasfreshException);
@@ -92,4 +91,16 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 
 		return appApiUrl + SumUp.ENDPOINT_PaymentCheckoutCallback;
 	}
+
+	@Override
+	public POSRefundResponse refund(@NonNull final POSRefundRequest request)
+	{
+		final SumUpPOSRef posRef = SumUpUtils.toPOSRef(request.getPosOrderAndPaymentId());
+		final SumUpTransaction trx = sumUpService.refundTransaction(posRef);
+
+		return POSRefundResponse.builder()
+				.status(SumUpUtils.toResponseStatus(trx.getStatus(), trx.isRefunded()))
+				.build();
+	}
+
 }

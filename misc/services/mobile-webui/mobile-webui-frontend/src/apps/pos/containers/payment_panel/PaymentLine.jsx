@@ -14,6 +14,8 @@ const PaymentLine = ({
   onCheckout,
   allowDelete,
   onDelete,
+  allowRefund,
+  onRefund,
 }) => {
   const icon = getPaymentMethodIcon({ paymentMethod });
   const iconClassName = `fa-regular ${icon}`;
@@ -23,6 +25,15 @@ const PaymentLine = ({
     currency: currency,
     precision: currencyPrecision,
   });
+
+  const allowDeleteOrRefund = (allowDelete && onDelete) || (allowRefund && onRefund);
+  const fireDeleteOrRefund = () => {
+    if (allowDelete && onDelete) {
+      onDelete({ uuid });
+    } else if (allowRefund && onRefund) {
+      onRefund({ uuid });
+    }
+  };
 
   return (
     <div className="payment-line">
@@ -36,8 +47,8 @@ const PaymentLine = ({
             <i className="fa-solid fa-repeat" />
           </div>
         )}
-        {allowDelete && onDelete && (
-          <div className="payment-line-action-item" onClick={() => onDelete({ uuid })}>
+        {allowDeleteOrRefund && (
+          <div className="payment-line-action-item" onClick={fireDeleteOrRefund}>
             <i className="fa-solid fa-trash-can" />
           </div>
         )}
@@ -57,6 +68,8 @@ PaymentLine.propTypes = {
   onCheckout: PropTypes.func.isRequired,
   allowDelete: PropTypes.bool,
   onDelete: PropTypes.func.isRequired,
+  allowRefund: PropTypes.bool,
+  onRefund: PropTypes.func.isRequired,
 };
 
 export default PaymentLine;

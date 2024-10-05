@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -95,6 +96,11 @@ public class POSOrdersRepository
 	public void updateById(@NonNull final POSOrderId id, @NonNull final Consumer<POSOrder> updater)
 	{
 		trxManager.callInThreadInheritedTrx(() -> newLoaderAndSaver().updateById(id, updater));
+	}
+
+	public void updatePaymentById(@NonNull final POSOrderAndPaymentId orderAndPaymentId, @NonNull final BiFunction<POSOrder, POSPayment, POSPayment> updater)
+	{
+		updateById(orderAndPaymentId.getOrderId(), order -> order.updatePaymentById(orderAndPaymentId.getPaymentId(), payment -> updater.apply(order, payment)));
 	}
 
 	public void save(@NonNull final POSOrder order)

@@ -26,6 +26,8 @@ class SumUpTransactionStatusChangedEventTest
 								.build())
 						.statusNew(SumUpTransactionStatus.SUCCESSFUL)
 						.statusOld(SumUpTransactionStatus.PENDING)
+						.refundedNew(true)
+						.refundedOld(false)
 						.build()
 		);
 	}

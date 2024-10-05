@@ -11,6 +11,7 @@ import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpLogRequest;
 import de.metas.payment.sumup.SumUpMerchantCode;
 import de.metas.payment.sumup.SumUpPOSRef;
+import de.metas.payment.sumup.SumUpTransactionExternalId;
 import de.metas.payment.sumup.client.json.JsonGetReadersResponse;
 import de.metas.payment.sumup.client.json.JsonGetTransactionResponse;
 import de.metas.payment.sumup.client.json.JsonPairReaderRequest;
@@ -115,18 +116,18 @@ public class SumUpClient
 			log.responseCode(responseEntity.getStatusCode());
 			log.responseBody(StringUtils.trimBlankToNull(bodyJson));
 
-			if (responseType != null && responseType.equals(String.class))
+			if (responseType == null || Void.class.equals(responseType))
+			{
+				return null;
+			}
+			if (String.class.equals(responseType))
 			{
 				//noinspection unchecked
 				return (T)bodyJson;
 			}
-			else if (responseType != null && !responseType.equals(Void.class))
-			{
-				return jsonObjectMapper.readValue(bodyJson, responseType);
-			}
 			else
 			{
-				return null;
+				return jsonObjectMapper.readValue(bodyJson, responseType);
 			}
 		}
 		catch (Exception ex)
@@ -213,4 +214,37 @@ public class SumUpClient
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
 	}
+
+	/**
+	 * @implSpec <a href="https://developer.sumup.com/api/transactions/get">spec</a>
+	 */
+	public JsonGetTransactionResponse getTransactionById(@NonNull final SumUpTransactionExternalId id)
+	{
+		final String uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+				.pathSegment("me", "transactions")
+				.queryParam("id", id.getAsString())
+				.toUriString();
+
+		final String json = httpCall(uri, HttpMethod.GET, null, String.class);
+
+		try
+		{
+			return jsonObjectMapper.readValue(json, JsonGetTransactionResponse.class)
+					.withJson(json);
+		}
+		catch (JsonProcessingException ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+	}
+
+	public void refundTransaction(@NonNull final SumUpTransactionExternalId id)
+	{
+		final String uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+				.pathSegment("me", "refund", id.getAsString())
+				.toUriString();
+
+		httpCall(uri, HttpMethod.POST, null, null);
+	}
+
 }

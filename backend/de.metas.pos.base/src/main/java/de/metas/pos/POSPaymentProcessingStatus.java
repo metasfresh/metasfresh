@@ -39,7 +39,7 @@ public enum POSPaymentProcessingStatus implements ReferenceListAwareEnum
 	public boolean isCanceled() {return this == POSPaymentProcessingStatus.CANCELLED;}
 
 	public boolean isDeleted() {return this == POSPaymentProcessingStatus.DELETED;}
-	
+
 	public boolean isAllowCheckout()
 	{
 		return isNew() || isCanceled() || isFailed();
@@ -78,4 +78,18 @@ public enum POSPaymentProcessingStatus implements ReferenceListAwareEnum
 			throw new AdempiereException("Payments with status " + this + " cannot be deleted");
 		}
 	}
+
+	public boolean isAllowRefund()
+	{
+		return isSuccessful();
+	}
+
+	public void assertAllowRefund()
+	{
+		if (!isAllowRefund())
+		{
+			throw new AdempiereException("Payments with status " + this + " cannot be refunded");
+		}
+	}
+
 }

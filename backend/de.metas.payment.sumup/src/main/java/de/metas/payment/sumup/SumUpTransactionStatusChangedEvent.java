@@ -21,15 +21,21 @@ public class SumUpTransactionStatusChangedEvent
 	@NonNull SumUpTransactionStatus statusNew;
 	@Nullable SumUpTransactionStatus statusOld;
 
+	boolean refundedNew;
+	boolean refundedOld;
+
 	public static SumUpTransactionStatusChangedEvent ofNewTransaction(@NonNull final SumUpTransaction trx)
 	{
 		return builderFrom(trx).build();
 	}
 
-	public static SumUpTransactionStatusChangedEvent ofChangedTransaction(@NonNull final SumUpTransaction trx, @NonNull final SumUpTransactionStatus statusPrev)
+	public static SumUpTransactionStatusChangedEvent ofChangedTransaction(
+			@NonNull final SumUpTransaction trx,
+			@NonNull final SumUpTransaction trxPrev)
 	{
 		return builderFrom(trx)
-				.statusOld(statusPrev)
+				.statusOld(trxPrev.getStatus())
+				.refundedOld(trxPrev.isRefunded())
 				.build();
 	}
 
@@ -40,6 +46,7 @@ public class SumUpTransactionStatusChangedEvent
 				.configId(trx.getConfigId())
 				.clientAndOrgId(trx.getClientAndOrgId())
 				.posRef(trx.getPosRef())
-				.statusNew(trx.getStatus());
+				.statusNew(trx.getStatus())
+				.refundedNew(trx.isRefunded());
 	}
 }

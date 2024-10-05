@@ -34,6 +34,12 @@ public class POSPaymentProcessorService
 		return paymentProcessor.process(request);
 	}
 
+	public POSRefundResponse refund(@NonNull final POSRefundRequest request)
+	{
+		final POSPaymentProcessor paymentProcessor = getPaymentProcessor(request.getPaymentProcessorConfig().getType());
+		return paymentProcessor.refund(request);
+	}
+
 	private POSPaymentProcessor getPaymentProcessor(@NonNull final POSPaymentProcessorType type)
 	{
 		final POSPaymentProcessor paymentProcessor = paymentProcessors.get(type);

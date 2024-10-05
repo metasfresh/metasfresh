@@ -6,6 +6,7 @@ import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.DocTypeId;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -214,15 +215,30 @@ public class POSOrder
 		}
 	}
 
-	private POSOrderStatus changeStatusTo_Complete(@NonNull final POSOrderProcessingServices services)
+	public BooleanWithReason checkCanTryComplete()
 	{
-		if (lines.isEmpty())
+		final BooleanWithReason canComplete = this.status.checkCanTransitionTo(POSOrderStatus.Completed);
+		if (canComplete.isFalse())
 		{
-			throw AdempiereException.noLines();
-
+			return canComplete;
 		}
 
-		assertPaid();
+		if (lines.isEmpty())
+		{
+			return BooleanWithReason.falseBecause(AdempiereException.MSG_NoLines);
+		}
+		if (!isPaid())
+		{
+			return BooleanWithReason.falseBecause("not completely paid");
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
+	private POSOrderStatus changeStatusTo_Complete(@NonNull final POSOrderProcessingServices services)
+	{
+		checkCanTryComplete().assertTrue();
+
 		services.processPOSPayments(this);
 		if (!isPaymentsProcessedSuccessfully())
 		{
@@ -230,16 +246,12 @@ public class POSOrder
 		}
 
 		services.scheduleCreateSalesOrderInvoiceAndShipment(getLocalIdNotNull(), getCashierId());
+
 		return POSOrderStatus.Completed;
 	}
 
-	public void assertPaid()
-	{
-		if (openAmt.signum() != 0)
-		{
-			throw new AdempiereException("POS Order shall be paid");
-		}
-	}
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	private boolean isPaid() {return openAmt.signum() == 0;}
 
 	public void assertWaitingForPayment()
 	{
@@ -392,7 +404,7 @@ public class POSOrder
 			{
 				return payment;
 			}
-			
+
 			if (!predicate.test(payment))
 			{
 				return payment;

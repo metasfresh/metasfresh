@@ -65,3 +65,9 @@ export const checkoutPayment = ({ order_uuid, payment_uuid }) => {
     .post(`${apiBasePath}/pos/orders/${order_uuid}/payments/${payment_uuid}/checkout`)
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const refundPayment = ({ order_uuid, payment_uuid }) => {
+  return axios
+    .post(`${apiBasePath}/pos/orders/${order_uuid}/payments/${payment_uuid}/refund`)
+    .then((response) => unboxAxiosResponse(response));
+};

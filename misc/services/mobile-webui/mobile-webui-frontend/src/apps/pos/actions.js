@@ -389,6 +389,13 @@ export const checkoutPayment = ({ order_uuid, payment_uuid }) => {
   };
 };
 
+export const refundPayment = ({ order_uuid, payment_uuid }) => {
+  return async (dispatch) => {
+    const order = await ordersAPI.refundPayment({ order_uuid, payment_uuid });
+    dispatch(updateOrderFromBackendAction({ order }));
+  };
+};
+
 //
 //
 //

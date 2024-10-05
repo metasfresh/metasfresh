@@ -195,4 +195,18 @@ public class POSRestController
 		final POSOrder order = posService.checkoutPayment(posOrderExternalId, posPaymentExternalId, loggedUserId);
 		return JsonPOSOrder.of(order, newJsonContext());
 	}
+
+	@PostMapping("/orders/{orderId}/payments/{paymentId}/refund")
+	public JsonPOSOrder refundPayment(
+			@PathVariable("orderId") @NonNull final String orderIdStr,
+			@PathVariable("paymentId") @NonNull final String paymentIdStr
+	)
+	{
+		final UserId loggedUserId = getLoggedUserId();
+		final POSOrderExternalId posOrderExternalId = POSOrderExternalId.ofString(orderIdStr);
+		final POSPaymentExternalId posPaymentExternalId = POSPaymentExternalId.ofString(paymentIdStr);
+		final POSOrder order = posService.refundPayment(posOrderExternalId, posPaymentExternalId, loggedUserId);
+		return JsonPOSOrder.of(order, newJsonContext());
+	}
+
 }

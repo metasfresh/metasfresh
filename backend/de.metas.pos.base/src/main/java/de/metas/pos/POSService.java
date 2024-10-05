@@ -114,5 +114,14 @@ public class POSService
 	{
 		return ordersService.checkoutPayment(posOrderExternalId, posPaymentExternalId, userId);
 	}
+
+	public POSOrder refundPayment(
+			@NonNull final POSOrderExternalId posOrderExternalId,
+			@NonNull final POSPaymentExternalId posPaymentExternalId,
+			@NonNull final UserId userId)
+	{
+		return ordersService.refundPayment(posOrderExternalId, posPaymentExternalId, userId);
+	}
+
 }
 

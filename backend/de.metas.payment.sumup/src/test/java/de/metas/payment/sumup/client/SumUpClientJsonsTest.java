@@ -9,6 +9,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.payment.sumup.SumUpCardReaderExternalId;
 import de.metas.payment.sumup.SumUpClientTransactionId;
 import de.metas.payment.sumup.SumUpMerchantCode;
+import de.metas.payment.sumup.SumUpTransactionExternalId;
 import de.metas.payment.sumup.client.json.JsonGetReadersResponse;
 import de.metas.payment.sumup.client.json.JsonGetTransactionResponse;
 import de.metas.payment.sumup.client.json.JsonPairReaderRequest;
@@ -62,13 +63,27 @@ class SumUpClientJsonsTest
 	{
 		testSerializeDeserialize(
 				JsonGetTransactionResponse.builder()
-						.id(UUID.randomUUID().toString())
+						.id(SumUpTransactionExternalId.ofString(UUID.randomUUID().toString()))
 						.client_transaction_id(SumUpClientTransactionId.ofString(UUID.randomUUID().toString()))
 						.merchant_code(SumUpMerchantCode.ofString("merchant_code"))
 						.timestamp(SystemTime.asInstant().toString())
 						.status("my PENDING status")
 						.amount(new BigDecimal("12.34"))
 						.currency(CurrencyCode.EUR)
+						.card(JsonGetTransactionResponse.Card.builder()
+								.type("VISA")
+								.last_4_digits("1234")
+								.build())
+						.events(ImmutableList.of(
+								JsonGetTransactionResponse.Event.builder()
+										.id(UUID.randomUUID().toString())
+										.type(JsonGetTransactionResponse.EventType.PAYOUT)
+										.status(JsonGetTransactionResponse.EventStatus.SCHEDULED)
+										.timestamp(SystemTime.asInstant().toString())
+										.amount(new BigDecimal("0.99"))
+										.fee_amount(new BigDecimal("0.01"))
+										.build()
+						))
 						.json(null) // this is not serialized
 						.build()
 		);

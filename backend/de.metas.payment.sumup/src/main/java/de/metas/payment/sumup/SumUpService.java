@@ -12,12 +12,14 @@ import de.metas.payment.sumup.client.json.JsonGetTransactionResponse;
 import de.metas.payment.sumup.client.json.JsonPairReaderRequest;
 import de.metas.payment.sumup.client.json.JsonReaderCheckoutRequest;
 import de.metas.payment.sumup.client.json.JsonReaderCheckoutResponse;
+import de.metas.payment.sumup.repository.BulkUpdateByQueryResult;
 import de.metas.payment.sumup.repository.SumUpConfigRepository;
+import de.metas.payment.sumup.repository.SumUpTransactionQuery;
 import de.metas.payment.sumup.repository.SumUpTransactionRepository;
-import de.metas.payment.sumup.repository.UpdateByPendingStatusResult;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +27,9 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class SumUpService
@@ -125,12 +129,11 @@ public class SumUpService
 	{
 		final SumUpConfigId configId = request.getConfigId();
 		final SumUpConfig config = configRepository.getById(configId);
+		final SumUpClient client = clientFactory.newClient(config);
+		client.setPosRef(request.getPosRef());
 
 		final Amount amount = request.getAmount();
 		final CurrencyPrecision currencyPrecision = moneyService.getStdPrecision(amount.getCurrencyCode());
-
-		final SumUpClient client = clientFactory.newClient(config);
-		client.setPosRef(request.getPosRef());
 
 		final JsonReaderCheckoutResponse checkoutResponse = client.cardReaderCheckout(
 				request.getCardReaderId(),
@@ -173,7 +176,7 @@ public class SumUpService
 
 		return SumUpTransaction.builder()
 				.configId(config.getId())
-				.externalId("UNKNOWN-" + clientTransactionId)
+				.externalId(SumUpTransactionExternalId.ofString("UNKNOWN-" + clientTransactionId))
 				.clientTransactionId(clientTransactionId)
 				.merchantCode(config.getMerchantCode())
 				.timestamp(SystemTime.asInstant())
@@ -196,7 +199,7 @@ public class SumUpService
 		final SumUpConfig config = configRepository.getById(configId);
 		final SumUpClient client = clientFactory.newClient(config);
 		client.setPosRef(trx.getPosRef());
-		
+
 		final JsonGetTransactionResponse remoteTrx = client.getTransactionById(trx.getClientTransactionId());
 
 		return updateTransactionFromRemote(trx, remoteTrx);
@@ -218,13 +221,64 @@ public class SumUpService
 				.timestamp(Instant.parse(remote.getTimestamp()))
 				.status(SumUpTransactionStatus.ofString(remote.getStatus()))
 				.amount(Amount.of(remote.getAmount(), remote.getCurrency()))
+				.amountRefunded(Amount.of(remote.getAmountRefunded(), remote.getCurrency()))
 				.json(remote.getJson())
 		;
 	}
 
-	public UpdateByPendingStatusResult updateAllPendingTransactions()
+	public BulkUpdateByQueryResult bulkUpdatePendingTransactions(boolean isForceSendingChangeEvents)
 	{
-		return trxRepository.updateByPendingStatus(this::updateTransactionFromRemote);
+		return bulkUpdateTransactions(SumUpTransactionQuery.ofStatus(SumUpTransactionStatus.PENDING), isForceSendingChangeEvents);
 	}
 
+	public BulkUpdateByQueryResult bulkUpdateTransactions(@NonNull SumUpTransactionQuery query, boolean isForceSendingChangeEvents)
+	{
+		return trxRepository.bulkUpdateByQuery(query, isForceSendingChangeEvents, this::updateTransactionFromRemote);
+	}
+
+	public SumUpTransaction refundTransaction(@NonNull final SumUpPOSRef posRef)
+	{
+		final SumUpTransactionExternalId id = findTransactionToRefundByPOSRef(posRef);
+		return refundTransaction(id);
+	}
+
+	private @NonNull SumUpTransactionExternalId findTransactionToRefundByPOSRef(final @NonNull SumUpPOSRef posRef)
+	{
+		if (posRef.getPosPaymentId() <= 0)
+		{
+			throw new AdempiereException("posPaymentId not provided");
+		}
+
+		final List<SumUpTransaction> trxs = trxRepository.stream(SumUpTransactionQuery.builder()
+						.status(SumUpTransactionStatus.SUCCESSFUL)
+						.posRef(posRef)
+						.build())
+				.filter(trx -> !trx.isRefunded())
+				.collect(Collectors.toList());
+		if (trxs.isEmpty())
+		{
+			throw new AdempiereException("No successful transactions found");
+		}
+		else if (trxs.size() != 1)
+		{
+			throw new AdempiereException("More than successful transaction found");
+		}
+		else
+		{
+			return trxs.get(0).getExternalId();
+		}
+	}
+
+	public SumUpTransaction refundTransaction(@NonNull final SumUpTransactionExternalId id)
+	{
+		return trxRepository.updateById(id, trx -> {
+			final SumUpConfig config = configRepository.getById(trx.getConfigId());
+			final SumUpClient client = clientFactory.newClient(config);
+			client.setPosRef(trx.getPosRef());
+
+			client.refundTransaction(trx.getExternalId());
+			final JsonGetTransactionResponse remoteTrx = client.getTransactionById(trx.getExternalId());
+			return updateTransactionFromRemote(trx, remoteTrx);
+		});
+	}
 }

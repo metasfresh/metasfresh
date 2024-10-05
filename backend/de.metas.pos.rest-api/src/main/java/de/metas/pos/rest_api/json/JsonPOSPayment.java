@@ -21,10 +21,11 @@ public class JsonPOSPayment
 	@NonNull POSPaymentExternalId uuid;
 	@NonNull POSPaymentMethod paymentMethod;
 	@NonNull BigDecimal amount;
-	
+
 	@Nullable JsonPOSPaymentStatus status;
 	boolean allowCheckout;
 	boolean allowDelete;
+	boolean allowRefund;
 
 	public static JsonPOSPayment of(@NonNull final POSPayment payment)
 	{
@@ -37,6 +38,7 @@ public class JsonPOSPayment
 				.status(JsonPOSPaymentStatus.of(paymentProcessingStatus))
 				.allowCheckout(paymentProcessingStatus.isAllowCheckout())
 				.allowDelete(paymentProcessingStatus.isAllowDelete())
+				.allowRefund(payment.isAllowRefund())
 				.build();
 	}
 

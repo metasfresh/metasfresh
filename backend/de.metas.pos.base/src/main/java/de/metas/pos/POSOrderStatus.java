@@ -3,12 +3,12 @@ package de.metas.pos;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -56,10 +56,14 @@ public enum POSOrderStatus implements ReferenceListAwareEnum
 
 	public void assertCanTransitionTo(@NonNull final POSOrderStatus nextStatus)
 	{
-		if (!allowedTransitions.containsEntry(this, nextStatus))
-		{
-			throw new AdempiereException("Changing status from " + this + " to " + nextStatus + " is not allowed");
-		}
+		checkCanTransitionTo(nextStatus).assertTrue();
+	}
+
+	public BooleanWithReason checkCanTransitionTo(final @NonNull POSOrderStatus nextStatus)
+	{
+		return allowedTransitions.containsEntry(this, nextStatus)
+				? BooleanWithReason.TRUE
+				: BooleanWithReason.falseBecause("Changing status from " + this + " to " + nextStatus + " is not allowed");
 	}
 
 }
