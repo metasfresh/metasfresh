@@ -150,4 +150,6 @@ public interface IPaymentBL extends ISingletonService
 	CurrencyConversionContext extractCurrencyConversionContext(@NonNull I_C_Payment payment);
 
 	void validateDocTypeIsInSync(@NonNull final I_C_Payment payment);
+
+	void reversePaymentById(@NonNull PaymentId paymentId);
 }
