@@ -16,8 +16,7 @@ public class SumUpTransactionStatusChangedEvent
 	@NonNull SumUpClientTransactionId clientTransactionId;
 	@NonNull SumUpConfigId configId;
 	@NonNull ClientAndOrgId clientAndOrgId;
-	int posOrderId;
-	int posPaymentId;
+	@Nullable SumUpPOSRef posRef;
 
 	@NonNull SumUpTransactionStatus statusNew;
 	@Nullable SumUpTransactionStatus statusOld;
@@ -40,8 +39,7 @@ public class SumUpTransactionStatusChangedEvent
 				.clientTransactionId(trx.getClientTransactionId())
 				.configId(trx.getConfigId())
 				.clientAndOrgId(trx.getClientAndOrgId())
-				.posOrderId(trx.getPosOrderId())
-				.posPaymentId(trx.getPosPaymentId())
+				.posRef(trx.getPosRef())
 				.statusNew(trx.getStatus());
 	}
 }

@@ -23,4 +23,6 @@ public class SumUpLogRequest
 	@Nullable HttpStatus responseCode;
 	@Nullable Object responseBody;
 	@Nullable AdIssueId adIssueId;
+	
+	@Nullable SumUpPOSRef posRef;
 }

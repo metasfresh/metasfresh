@@ -39,6 +39,10 @@ public class SumUpLogRepository
 			}
 			record.setResponseBody(toJson(request.getResponseBody()));
 			record.setAD_Issue_ID(AdIssueId.toRepoId(request.getAdIssueId()));
+
+			record.setC_POS_Order_ID(request.getPosRef() != null ? request.getPosRef().getPosOrderId() : -1);
+			record.setC_POS_Payment_ID(request.getPosRef() != null ? request.getPosRef().getPosPaymentId() : -1);
+
 			InterfaceWrapperHelper.save(record);
 		}
 		catch (Exception ex)

@@ -1,6 +1,7 @@
 package de.metas.pos.payment_gateway.sumup;
 
 import de.metas.Profiles;
+import de.metas.payment.sumup.SumUpPOSRef;
 import de.metas.payment.sumup.SumUpTransactionStatusChangedEvent;
 import de.metas.payment.sumup.SumUpTransactionStatusChangedListener;
 import de.metas.pos.POSOrderId;
@@ -22,13 +23,19 @@ class SumUpEventsListener implements SumUpTransactionStatusChangedListener
 	@Override
 	public void onStatusChanged(@NonNull final SumUpTransactionStatusChangedEvent event)
 	{
-		final POSOrderId posOrderId = POSOrderId.ofRepoIdOrNull(event.getPosOrderId());
+		final SumUpPOSRef posRef = event.getPosRef();
+		if (posRef == null)
+		{
+			return;
+		}
+
+		final POSOrderId posOrderId = POSOrderId.ofRepoIdOrNull(posRef.getPosOrderId());
 		if (posOrderId == null)
 		{
 			return;
 		}
 
-		final POSPaymentId posPaymentId = POSPaymentId.ofRepoIdOrNull(event.getPosPaymentId());
+		final POSPaymentId posPaymentId = POSPaymentId.ofRepoIdOrNull(posRef.getPosPaymentId());
 		if (posPaymentId == null)
 		{
 			return;

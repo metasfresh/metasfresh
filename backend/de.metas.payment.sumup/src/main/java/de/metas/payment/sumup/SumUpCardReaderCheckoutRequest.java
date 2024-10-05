@@ -20,6 +20,5 @@ public class SumUpCardReaderCheckoutRequest
 	@Nullable String callbackUrl;
 
 	@NonNull ClientAndOrgId clientAndOrgId;
-	int posOrderId;
-	int posPaymentId;
+	@Nullable SumUpPOSRef posRef;
 }

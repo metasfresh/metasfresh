@@ -130,6 +130,8 @@ public class SumUpService
 		final CurrencyPrecision currencyPrecision = moneyService.getStdPrecision(amount.getCurrencyCode());
 
 		final SumUpClient client = clientFactory.newClient(config);
+		client.setPosRef(request.getPosRef());
+
 		final JsonReaderCheckoutResponse checkoutResponse = client.cardReaderCheckout(
 				request.getCardReaderId(),
 				JsonReaderCheckoutRequest.builder()
@@ -179,8 +181,7 @@ public class SumUpService
 				.amount(request.getAmount())
 				.json(null)
 				.clientAndOrgId(request.getClientAndOrgId())
-				.posOrderId(request.getPosOrderId())
-				.posPaymentId(request.getPosPaymentId())
+				.posRef(request.getPosRef())
 				.build();
 	}
 
@@ -194,6 +195,8 @@ public class SumUpService
 		final SumUpConfigId configId = trx.getConfigId();
 		final SumUpConfig config = configRepository.getById(configId);
 		final SumUpClient client = clientFactory.newClient(config);
+		client.setPosRef(trx.getPosRef());
+		
 		final JsonGetTransactionResponse remoteTrx = client.getTransactionById(trx.getClientTransactionId());
 
 		return updateTransactionFromRemote(trx, remoteTrx);

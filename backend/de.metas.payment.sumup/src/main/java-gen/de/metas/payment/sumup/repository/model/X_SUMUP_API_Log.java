@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_SUMUP_API_Log extends org.compiere.model.PO implements I_SUMUP_API_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -983491469L;
+	private static final long serialVersionUID = 1645854555L;
 
     /** Standard Constructor */
     public X_SUMUP_API_Log (final Properties ctx, final int SUMUP_API_Log_ID, @Nullable final String trxName)
@@ -47,6 +47,36 @@ public class X_SUMUP_API_Log extends org.compiere.model.PO implements I_SUMUP_AP
 	public int getAD_Issue_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Issue_ID);
+	}
+
+	@Override
+	public void setC_POS_Order_ID (final int C_POS_Order_ID)
+	{
+		if (C_POS_Order_ID < 1) 
+			set_Value (COLUMNNAME_C_POS_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_POS_Order_ID, C_POS_Order_ID);
+	}
+
+	@Override
+	public int getC_POS_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_POS_Order_ID);
+	}
+
+	@Override
+	public void setC_POS_Payment_ID (final int C_POS_Payment_ID)
+	{
+		if (C_POS_Payment_ID < 1) 
+			set_Value (COLUMNNAME_C_POS_Payment_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_POS_Payment_ID, C_POS_Payment_ID);
+	}
+
+	@Override
+	public int getC_POS_Payment_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_POS_Payment_ID);
 	}
 
 	/** 

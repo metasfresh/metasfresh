@@ -27,6 +27,5 @@ public class SumUpTransaction
 	@Nullable String json;
 
 	@NonNull ClientAndOrgId clientAndOrgId;
-	int posOrderId;
-	int posPaymentId;
+	@Nullable SumUpPOSRef posRef;
 }

@@ -71,6 +71,48 @@ public interface I_SUMUP_API_Log
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set POS Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_POS_Order_ID (int C_POS_Order_ID);
+
+	/**
+	 * Get POS Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_POS_Order_ID();
+
+	ModelColumn<I_SUMUP_API_Log, Object> COLUMN_C_POS_Order_ID = new ModelColumn<>(I_SUMUP_API_Log.class, "C_POS_Order_ID", null);
+	String COLUMNNAME_C_POS_Order_ID = "C_POS_Order_ID";
+
+	/**
+	 * Set POS Payment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_POS_Payment_ID (int C_POS_Payment_ID);
+
+	/**
+	 * Get POS Payment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_POS_Payment_ID();
+
+	ModelColumn<I_SUMUP_API_Log, Object> COLUMN_C_POS_Payment_ID = new ModelColumn<>(I_SUMUP_API_Log.class, "C_POS_Payment_ID", null);
+	String COLUMNNAME_C_POS_Payment_ID = "C_POS_Payment_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *

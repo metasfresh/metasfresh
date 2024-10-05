@@ -6,6 +6,7 @@ import de.metas.payment.sumup.SumUp;
 import de.metas.payment.sumup.SumUpCardReaderCheckoutRequest;
 import de.metas.payment.sumup.SumUpConfig;
 import de.metas.payment.sumup.SumUpConfigId;
+import de.metas.payment.sumup.SumUpPOSRef;
 import de.metas.payment.sumup.SumUpService;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.pos.POSTerminalPaymentProcessorConfig;
@@ -52,8 +53,7 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 							.amount(request.getAmount())
 							.callbackUrl(getCallbackUrl())
 							.clientAndOrgId(request.getClientAndOrgId())
-							.posOrderId(request.getPosOrderId().getRepoId())
-							.posPaymentId(request.getPosPaymentId().getRepoId())
+							.posRef(extractPOSRef(request))
 							.build()
 			);
 
@@ -63,6 +63,15 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 		{
 			return errorResponse(ex);
 		}
+	}
+
+	@Nullable
+	private static SumUpPOSRef extractPOSRef(final POSPaymentProcessRequest request)
+	{
+		return SumUpPOSRef.builder()
+				.posOrderId(request.getPosOrderId().getRepoId())
+				.posPaymentId(request.getPosPaymentId().getRepoId())
+				.build();
 	}
 
 	private POSPaymentProcessResponse errorResponse(final Exception ex)

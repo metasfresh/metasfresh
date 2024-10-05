@@ -8,6 +8,7 @@ import de.metas.payment.sumup.SumUpClientTransactionId;
 import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpEventsDispatcher;
 import de.metas.payment.sumup.SumUpMerchantCode;
+import de.metas.payment.sumup.SumUpPOSRef;
 import de.metas.payment.sumup.SumUpTransaction;
 import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
@@ -105,8 +106,8 @@ public class SumUpTransactionRepository
 		record.setCurrencyCode(from.getAmount().getCurrencyCode().toThreeLetterCode());
 		record.setAmount(from.getAmount().toBigDecimal());
 		record.setJsonResponse(from.getJson());
-		record.setC_POS_Order_ID(from.getPosOrderId());
-		record.setC_POS_Payment_ID(from.getPosPaymentId());
+		record.setC_POS_Order_ID(from.getPosRef() != null ? from.getPosRef().getPosOrderId() : -1);
+		record.setC_POS_Payment_ID(from.getPosRef() != null ? from.getPosRef().getPosPaymentId() : -1);
 	}
 
 	private static SumUpTransaction fromRecord(final I_SUMUP_Transaction record)
@@ -121,8 +122,23 @@ public class SumUpTransactionRepository
 				.status(SumUpTransactionStatus.ofString(record.getStatus()))
 				.amount(Amount.of(record.getAmount(), CurrencyCode.ofThreeLetterCode(record.getCurrencyCode())))
 				.json(record.getJsonResponse())
-				.posOrderId(record.getC_POS_Order_ID())
-				.posPaymentId(record.getC_POS_Payment_ID())
+				.posRef(extractPOSRef(record))
+				.build();
+	}
+
+	@Nullable
+	private static SumUpPOSRef extractPOSRef(final I_SUMUP_Transaction record)
+	{
+		final int posOrderId = record.getC_POS_Order_ID();
+		final int posPaymentId = record.getC_POS_Payment_ID();
+		if (posOrderId <= 0 && posPaymentId <= 0)
+		{
+			return null;
+		}
+
+		return SumUpPOSRef.builder()
+				.posOrderId(posOrderId)
+				.posPaymentId(posPaymentId)
 				.build();
 	}
 

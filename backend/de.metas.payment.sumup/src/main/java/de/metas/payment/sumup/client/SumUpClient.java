@@ -10,6 +10,7 @@ import de.metas.payment.sumup.SumUpClientTransactionId;
 import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpLogRequest;
 import de.metas.payment.sumup.SumUpMerchantCode;
+import de.metas.payment.sumup.SumUpPOSRef;
 import de.metas.payment.sumup.client.json.JsonGetReadersResponse;
 import de.metas.payment.sumup.client.json.JsonGetTransactionResponse;
 import de.metas.payment.sumup.client.json.JsonPairReaderRequest;
@@ -20,6 +21,7 @@ import de.metas.payment.sumup.repository.SumUpLogRepository;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -46,6 +48,8 @@ public class SumUpClient
 	@NonNull private final SumUpMerchantCode merchantCode;
 
 	@NonNull private final RestTemplate restTemplate;
+
+	@Nullable @Setter private SumUpPOSRef posRef;
 
 	@Builder
 	private SumUpClient(
@@ -76,7 +80,8 @@ public class SumUpClient
 	{
 		return SumUpLogRequest.builder()
 				.configId(configId)
-				.merchantCode(merchantCode);
+				.merchantCode(merchantCode)
+				.posRef(posRef);
 	}
 
 	private HttpHeaders newHttpHeaders()
