@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMUP_Transaction, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1049975586L;
+	private static final long serialVersionUID = 1725855937L;
 
     /** Standard Constructor */
     public X_SUMUP_Transaction (final Properties ctx, final int SUMUP_Transaction_ID, @Nullable final String trxName)
@@ -93,7 +93,7 @@ public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMU
 	@Override
 	public void setExternalId (final java.lang.String ExternalId)
 	{
-		set_ValueNoCheck (COLUMNNAME_ExternalId, ExternalId);
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
 	}
 
 	@Override
@@ -168,7 +168,7 @@ public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMU
 	@Override
 	public void setSUMUP_merchant_code (final java.lang.String SUMUP_merchant_code)
 	{
-		set_ValueNoCheck (COLUMNNAME_SUMUP_merchant_code, SUMUP_merchant_code);
+		set_Value (COLUMNNAME_SUMUP_merchant_code, SUMUP_merchant_code);
 	}
 
 	@Override
@@ -195,7 +195,7 @@ public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMU
 	@Override
 	public void setTimestamp (final java.sql.Timestamp Timestamp)
 	{
-		set_ValueNoCheck (COLUMNNAME_Timestamp, Timestamp);
+		set_Value (COLUMNNAME_Timestamp, Timestamp);
 	}
 
 	@Override
