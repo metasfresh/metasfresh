@@ -17,6 +17,7 @@ public enum POSPaymentProcessingStatus implements ReferenceListAwareEnum
 	FAILED(X_C_POS_Payment.POSPAYMENTPROCESSINGSTATUS_FAILED),
 	PENDING(X_C_POS_Payment.POSPAYMENTPROCESSINGSTATUS_PENDING),
 	NEW(X_C_POS_Payment.POSPAYMENTPROCESSINGSTATUS_NEW),
+	DELETED(X_C_POS_Payment.POSPAYMENTPROCESSINGSTATUS_DELETED),
 	;
 
 	@NonNull private final String code;
@@ -33,11 +34,15 @@ public enum POSPaymentProcessingStatus implements ReferenceListAwareEnum
 
 	public boolean isSuccessful() {return this == POSPaymentProcessingStatus.SUCCESSFUL;}
 
+	public boolean isFailed() {return this == POSPaymentProcessingStatus.FAILED;}
+
+	public boolean isCanceled() {return this == POSPaymentProcessingStatus.CANCELLED;}
+
+	public boolean isDeleted() {return this == POSPaymentProcessingStatus.DELETED;}
+	
 	public boolean isAllowCheckout()
 	{
-		return isNew()
-				|| this == CANCELLED
-				|| this == FAILED;
+		return isNew() || isCanceled() || isFailed();
 	}
 
 	public void assertAllowCheckout()
@@ -48,9 +53,22 @@ public enum POSPaymentProcessingStatus implements ReferenceListAwareEnum
 		}
 	}
 
+	public boolean isAllowDeleteFromDB()
+	{
+		return isNew();
+	}
+
+	public void assertAllowDeleteFromDB()
+	{
+		if (!isAllowDeleteFromDB())
+		{
+			throw new AdempiereException("Payments with status " + this + " cannot be deleted from DB");
+		}
+	}
+
 	public boolean isAllowDelete()
 	{
-		return !isPendingOrSuccessful();
+		return isAllowDeleteFromDB() || isCanceled() || isFailed();
 	}
 
 	public void assertAllowDelete()
@@ -60,5 +78,4 @@ public enum POSPaymentProcessingStatus implements ReferenceListAwareEnum
 			throw new AdempiereException("Payments with status " + this + " cannot be deleted");
 		}
 	}
-
 }

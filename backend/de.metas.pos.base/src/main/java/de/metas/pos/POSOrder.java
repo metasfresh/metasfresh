@@ -28,14 +28,15 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 @EqualsAndHashCode
 @ToString
@@ -140,6 +141,11 @@ public class POSOrder
 		Money paidAmt = zero;
 		for (final POSPayment payment : payments)
 		{
+			if (payment.getPaymentProcessingStatus().isDeleted())
+			{
+				continue;
+			}
+
 			paidAmt = paidAmt.add(payment.getAmount());
 		}
 		this.paidAmt = paidAmt;
@@ -148,7 +154,11 @@ public class POSOrder
 
 	public ImmutableList<POSOrderLine> getLines() {return ImmutableList.copyOf(lines);}
 
-	public ImmutableList<POSPayment> getPayments() {return ImmutableList.copyOf(payments);}
+	public ImmutableList<POSPayment> getAllPayments() {return ImmutableList.copyOf(payments);}
+
+	public ImmutableList<POSPayment> getPaymentsNotDeleted() {return streamPaymentsNotDeleted().collect(ImmutableList.toImmutableList());}
+
+	public Stream<POSPayment> streamPaymentsNotDeleted() {return payments.stream().filter(payment -> !payment.getPaymentProcessingStatus().isDeleted());}
 
 	public void changeStatusTo(
 			@NonNull final POSOrderStatus targetStatus,
@@ -196,7 +206,7 @@ public class POSOrder
 
 	private void changeStatusTo_Void()
 	{
-		final boolean hasPendingOrCompletedPayments = getPayments().stream()
+		final boolean hasPendingOrCompletedPayments = streamPaymentsNotDeleted()
 				.anyMatch(posPayment -> posPayment.getPaymentProcessingStatus().isPendingOrSuccessful());
 		if (hasPendingOrCompletedPayments)
 		{
@@ -241,7 +251,7 @@ public class POSOrder
 
 	public boolean isPaymentsProcessedSuccessfully()
 	{
-		return payments.stream().allMatch(payment -> payment.getPaymentProcessingStatus().isSuccessful());
+		return streamPaymentsNotDeleted().allMatch(payment -> payment.getPaymentProcessingStatus().isSuccessful());
 	}
 
 	public void createOrUpdateLine(@NonNull final String externalId, @NonNull final UnaryOperator<POSOrderLine> updater)
@@ -299,6 +309,7 @@ public class POSOrder
 			final POSPayment paymentChanged = updater.apply(payment);
 			if (paymentChanged == null)
 			{
+				payment.getPaymentProcessingStatus().assertAllowDeleteFromDB();
 				it.remove();
 			}
 			else
@@ -306,6 +317,8 @@ public class POSOrder
 				it.set(paymentChanged);
 			}
 		}
+
+		updateTotals();
 	}
 
 	public void createOrUpdatePayment(@NonNull final POSPaymentExternalId externalId, @NonNull final UnaryOperator<POSPayment> updater)
@@ -370,30 +383,37 @@ public class POSOrder
 		return OptionalInt.empty();
 	}
 
-	public void preserveOnlyPaymentExternalIds(@NonNull final Collection<POSPaymentExternalId> paymentExternalIdsToKeep)
+	public void removePaymentsIf(@NonNull final Predicate<POSPayment> predicate)
 	{
-		payments.stream()
-				.filter(payment -> !paymentExternalIdsToKeep.contains(payment.getExternalId()))
-				.forEach(payment -> payment.getPaymentProcessingStatus().assertAllowDelete());
-
-		final HashMap<POSPaymentExternalId, POSPayment> paymentsByExternalId = payments.stream().collect(GuavaCollectors.toHashMapByKey(POSPayment::getExternalId));
-		payments.clear();
-
-		for (final POSPaymentExternalId paymentExternalId : paymentExternalIdsToKeep)
-		{
-			final POSPayment payment = paymentsByExternalId.remove(paymentExternalId);
-			if (payment != null)
+		updateAllPayments(payment -> {
+			// skip payments marked as DELETED
+			final POSPaymentProcessingStatus paymentProcessingStatus = payment.getPaymentProcessingStatus();
+			if (paymentProcessingStatus.isDeleted())
 			{
-				payments.add(payment);
+				return payment;
 			}
-		}
+			
+			if (!predicate.test(payment))
+			{
+				return payment;
+			}
 
-		updateTotals();
+			paymentProcessingStatus.assertAllowDelete();
+
+			if (paymentProcessingStatus.isAllowDeleteFromDB())
+			{
+				return null;
+			}
+			else
+			{
+				return payment.changingStatusToDeleted();
+			}
+		});
 	}
 
 	public Set<PaymentId> getPaymentReceiptIds()
 	{
-		return payments.stream()
+		return streamPaymentsNotDeleted()
 				.map(POSPayment::getPaymentReceiptId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());

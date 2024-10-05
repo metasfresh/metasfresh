@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Payment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 435333217L;
+	private static final long serialVersionUID = -313911426L;
 
     /** Standard Constructor */
     public X_C_POS_Payment (final Properties ctx, final int C_POS_Payment_ID, @Nullable final String trxName)
@@ -153,6 +153,8 @@ public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Pa
 	public static final String POSPAYMENTPROCESSINGSTATUS_PENDING = "PENDING";
 	/** NEW = NEW */
 	public static final String POSPAYMENTPROCESSINGSTATUS_NEW = "NEW";
+	/** DELETED = DELETED */
+	public static final String POSPAYMENTPROCESSINGSTATUS_DELETED = "DELETED";
 	@Override
 	public void setPOSPaymentProcessingStatus (final java.lang.String POSPaymentProcessingStatus)
 	{

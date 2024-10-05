@@ -116,8 +116,7 @@ public class POSCashJournal
 	{
 		final POSOrderId posOrderId = posOrder.getLocalIdNotNull();
 		final UserId cashierId = posOrder.getCashierId();
-		posOrder.getPayments()
-				.stream()
+		posOrder.streamPaymentsNotDeleted()
 				.filter(posPayment -> posPayment.getPaymentProcessingStatus().isSuccessful())
 				.forEach(posPayment -> addPayment(posPayment, posOrderId, cashierId));
 	}

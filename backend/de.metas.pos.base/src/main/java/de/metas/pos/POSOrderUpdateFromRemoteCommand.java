@@ -69,7 +69,7 @@ class POSOrderUpdateFromRemoteCommand
 				}
 			}
 
-			order.preserveOnlyPaymentExternalIds(paymentExternalIdsToKeep);
+			order.removePaymentsIf(payment -> !paymentExternalIdsToKeep.contains(payment.getExternalId()));
 		}
 
 	}

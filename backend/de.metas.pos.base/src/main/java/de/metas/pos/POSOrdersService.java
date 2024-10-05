@@ -42,13 +42,13 @@ public class POSOrdersService
 		});
 	}
 
-	public void updatePaymentStatusAndTryCompleteOrder(
+	public void updatePaymentStatusFromRemoteAndTryCompleteOrder(
 			@NonNull final POSOrderId posOrderId,
 			@NonNull final POSPaymentId posPaymentId,
 			@NonNull final POSPaymentProcessingStatus paymentProcessingStatus)
 	{
 		ordersRepository.updateById(posOrderId, order -> {
-			order.updatePaymentById(posPaymentId, payment -> payment.withPaymentProcessingStatus(paymentProcessingStatus));
+			order.updatePaymentById(posPaymentId, payment -> payment.changingStatusFromRemote(paymentProcessingStatus));
 			order.changeStatusTo(POSOrderStatus.Completed, posOrderProcessingServices);
 		});
 	}

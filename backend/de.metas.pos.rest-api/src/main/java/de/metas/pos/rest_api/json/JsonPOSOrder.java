@@ -43,7 +43,7 @@ public class JsonPOSOrder
 				.lines(order.getLines().stream()
 						.map(line -> JsonPOSOrderLine.of(line, currencySymbol))
 						.collect(ImmutableList.toImmutableList()))
-				.payments(order.getPayments().stream()
+				.payments(order.streamPaymentsNotDeleted()
 						.map(JsonPOSPayment::of)
 						.collect(ImmutableList.toImmutableList()))
 				.build();

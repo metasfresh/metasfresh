@@ -241,6 +241,7 @@ class POSOrdersLoaderAndSaver
 
 		final Map<POSOrderId, ImmutableList<I_C_POS_Payment>> recordsByOrderId = queryBL.createQueryBuilder(I_C_POS_Payment.class)
 				.addInArrayFilter(I_C_POS_Payment.COLUMNNAME_C_POS_Order_ID, posOrderIds)
+				//.addOnlyActiveRecordsFilter() // IMPORTANT: get all, inclusive inactive ones 
 				.orderBy(I_C_POS_Payment.COLUMNNAME_C_POS_Payment_ID)
 				.create()
 				.stream()
@@ -394,6 +395,7 @@ class POSOrdersLoaderAndSaver
 
 	private static void updateRecord(final I_C_POS_Payment paymentRecord, final POSPayment payment)
 	{
+		paymentRecord.setIsActive(!payment.getPaymentProcessingStatus().isDeleted());
 		paymentRecord.setExternalId(payment.getExternalId().getAsString());
 		paymentRecord.setPOSPaymentMethod(payment.getPaymentMethod().getCode());
 		paymentRecord.setAmount(payment.getAmount().toBigDecimal());
@@ -450,7 +452,7 @@ class POSOrdersLoaderAndSaver
 		{
 			final HashMap<POSPaymentExternalId, I_C_POS_Payment> paymentRecordsByExternalId = getPaymentRecordsByOrderId(posOrderId).stream().collect(GuavaCollectors.toHashMapByKey(POSOrdersLoaderAndSaver::extractExternalId));
 			final ArrayList<I_C_POS_Payment> paymentRecordsNew = new ArrayList<>(paymentRecordsByExternalId.size());
-			for (final POSPayment payment : order.getPayments())
+			for (final POSPayment payment : order.getAllPayments())
 			{
 				I_C_POS_Payment paymentRecord = paymentRecordsByExternalId.remove(payment.getExternalId());
 				if (paymentRecord == null)

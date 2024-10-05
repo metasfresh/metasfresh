@@ -18,7 +18,6 @@ import de.metas.payment.sumup.repository.UpdateByPendingStatusResult;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.util.lang.Mutable;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -187,12 +186,7 @@ public class SumUpService
 
 	public void updateTransactionFromRemote(@NonNull final SumUpClientTransactionId id)
 	{
-		final Mutable<SumUpTransaction> trxBeforeChangeRef = new Mutable<>();
-
-		trxRepository.updateById(id, trxBeforeChange -> {
-			trxBeforeChangeRef.setValue(trxBeforeChange);
-			return updateTransactionFromRemote(trxBeforeChange);
-		});
+		trxRepository.updateById(id, this::updateTransactionFromRemote);
 	}
 
 	private SumUpTransaction updateTransactionFromRemote(final SumUpTransaction trx)

@@ -35,6 +35,6 @@ class SumUpEventsListener implements SumUpTransactionStatusChangedListener
 		}
 
 		final POSPaymentProcessingStatus paymentProcessingStatus = SumUpUtils.toResponseStatus(event.getStatusNew());
-		posOrdersService.updatePaymentStatusAndTryCompleteOrder(posOrderId, posPaymentId, paymentProcessingStatus);
+		posOrdersService.updatePaymentStatusFromRemoteAndTryCompleteOrder(posOrderId, posPaymentId, paymentProcessingStatus);
 	}
 }

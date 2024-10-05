@@ -6,7 +6,6 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -21,8 +20,8 @@ public class POSPayment
 	@NonNull private final POSPaymentMethod paymentMethod;
 	@NonNull private final Money amount;
 
-	@NonNull @With private final POSPaymentProcessingStatus paymentProcessingStatus;
-	@Nullable @With private final PaymentId paymentReceiptId;
+	@NonNull private final POSPaymentProcessingStatus paymentProcessingStatus;
+	@Nullable private final PaymentId paymentReceiptId;
 
 	public POSPaymentId getLocalIdNotNull() {return Check.assumeNotNull(this.getLocalId(), "Expected POSPayment to be saved: {}", this);}
 
@@ -34,4 +33,59 @@ public class POSPayment
 					.setParameter("posPayment", this);
 		}
 	}
+
+	public POSPayment changingStatusToSuccessful()
+	{
+		if (paymentProcessingStatus == POSPaymentProcessingStatus.SUCCESSFUL)
+		{
+			return this;
+		}
+
+		return toBuilder().paymentProcessingStatus(POSPaymentProcessingStatus.SUCCESSFUL).build();
+	}
+
+	public POSPayment changingStatusToDeleted()
+	{
+		if (paymentProcessingStatus == POSPaymentProcessingStatus.DELETED)
+		{
+			return this;
+		}
+
+		paymentProcessingStatus.assertAllowDelete();
+		return toBuilder().paymentProcessingStatus(POSPaymentProcessingStatus.DELETED).build();
+	}
+
+	public POSPayment changingStatusFromRemote(final POSPaymentProcessingStatus newStatus)
+	{
+		if (paymentProcessingStatus == newStatus)
+		{
+			return this;
+		}
+
+		// NOTE: when changing status from remote we cannot validate if the status transition is OK
+		// we have to accept what we have on remote.
+
+		return toBuilder().paymentProcessingStatus(newStatus).build();
+	}
+
+	public POSPayment withPaymentReceipt(@NonNull final PaymentId paymentReceiptId)
+	{
+		if (!paymentProcessingStatus.isSuccessful())
+		{
+			throw new AdempiereException("Cannot set a payment receipt if status is not successful");
+		}
+
+		if (PaymentId.equals(this.paymentReceiptId, paymentReceiptId))
+		{
+			return this;
+		}
+
+		if (this.paymentReceiptId != null)
+		{
+			throw new AdempiereException("Changing the payment receipt is not allowed");
+		}
+
+		return toBuilder().paymentReceiptId(paymentReceiptId).build();
+	}
+
 }

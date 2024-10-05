@@ -99,7 +99,7 @@ public class POSOrderProcessingServices
 		if (posPayment.getPaymentProcessingStatus().isSuccessful() && posPayment.getPaymentReceiptId() == null)
 		{
 			final PaymentId paymentReceiptId = createPaymentReceipt(posPayment, posOrder);
-			posPayment = posPayment.withPaymentReceiptId(paymentReceiptId);
+			posPayment = posPayment.withPaymentReceipt(paymentReceiptId);
 		}
 		return posPayment;
 	}
@@ -108,7 +108,7 @@ public class POSOrderProcessingServices
 	{
 		posPayment.getPaymentMethod().assertCash();
 
-		return posPayment.withPaymentProcessingStatus(POSPaymentProcessingStatus.SUCCESSFUL);
+		return posPayment.changingStatusToSuccessful();
 	}
 
 	private POSPayment processPOSPayment_CARD(
@@ -126,7 +126,7 @@ public class POSOrderProcessingServices
 				.amount(posPayment.getAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
 				.build());
 
-		return posPayment.withPaymentProcessingStatus(processResponse.getStatus());
+		return posPayment.changingStatusFromRemote(processResponse.getStatus());
 	}
 
 	private PaymentId createPaymentReceipt(@NonNull final POSPayment posPayment, @NonNull POSOrder posOrder)
