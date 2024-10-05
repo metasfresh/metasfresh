@@ -13,7 +13,6 @@ import {
 import { useDispatch } from 'react-redux';
 import './POSPaymentPanel.scss';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
-import { PAYMENT_METHODS } from '../../utils/paymentMethods';
 import { round } from '../../../../utils/numbers';
 import PaymentLine from './PaymentLine';
 import PaymentMethodButton from './PaymentMethodButton';
@@ -108,7 +107,7 @@ const POSPaymentPanel = () => {
         ))}
       </div>
       <div className="payment-methods-container">
-        {PAYMENT_METHODS.map((paymentMethod) => (
+        {posTerminal.availablePaymentMethods?.map((paymentMethod) => (
           <PaymentMethodButton
             key={paymentMethod}
             paymentMethod={paymentMethod}

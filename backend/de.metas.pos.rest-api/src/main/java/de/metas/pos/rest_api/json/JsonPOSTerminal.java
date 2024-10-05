@@ -1,5 +1,6 @@
 package de.metas.pos.rest_api.json;
 
+import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalId;
 import lombok.Builder;
@@ -8,6 +9,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Value
 @Builder
@@ -18,6 +20,7 @@ public class JsonPOSTerminal
 	@NonNull String currencySymbol;
 	int pricePrecision;
 	int currencyPrecision;
+	@NonNull Set<POSPaymentMethod> availablePaymentMethods;
 	boolean isCashJournalOpen;
 	@NonNull BigDecimal cashLastBalance;
 
@@ -29,6 +32,7 @@ public class JsonPOSTerminal
 				.currencySymbol(posTerminal.getCurrencySymbol(adLanguage))
 				.pricePrecision(posTerminal.getPricePrecision().toInt())
 				.currencyPrecision(posTerminal.getCurrencyPrecision().toInt())
+				.availablePaymentMethods(posTerminal.getAvailablePaymentMethods())
 				.isCashJournalOpen(posTerminal.isCashJournalOpen())
 				.cashLastBalance(posTerminal.getCashLastBalance().toBigDecimal())
 				.build();

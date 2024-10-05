@@ -1,5 +1,6 @@
 package de.metas.pos;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.Currency;
@@ -26,6 +27,7 @@ public class POSTerminal
 {
 	@NonNull private final POSTerminalId id;
 
+	@NonNull private final ImmutableSet<POSPaymentMethod> availablePaymentMethods;
 	@NonNull private final BankAccountId cashbookId;
 	@Nullable private final POSTerminalPaymentProcessorConfig paymentProcessorConfig;
 
@@ -76,6 +78,14 @@ public class POSTerminal
 		this.currency = currency;
 		this.cashJournalId = cashJournalId;
 		this.cashLastBalance = cashLastBalance != null ? cashLastBalance : Money.zero(currency.getId());
+
+		final ImmutableSet.Builder<POSPaymentMethod> availablePaymentMethods = ImmutableSet.builder();
+		availablePaymentMethods.add(POSPaymentMethod.CASH);
+		if (paymentProcessorConfig != null)
+		{
+			availablePaymentMethods.add(POSPaymentMethod.CARD);
+		}
+		this.availablePaymentMethods = availablePaymentMethods.build();
 	}
 
 	public POSTerminalPaymentProcessorConfig getPaymentProcessorConfigNotNull()

@@ -3,10 +3,10 @@ package de.metas.payment.sumup.server;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.payment.sumup.SumUpService;
+import de.metas.payment.sumup.SumUpTransactionStatusChangedEvent;
+import de.metas.payment.sumup.SumUpTransactionStatusChangedListener;
 import de.metas.payment.sumup.repository.BulkUpdateByQueryResult;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
@@ -16,19 +16,23 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Profile(Profiles.PROFILE_App)
 @RequiredArgsConstructor
-public class SumUpPendingTransactionContinuousUpdater
+public class SumUpPendingTransactionContinuousUpdater implements SumUpTransactionStatusChangedListener
 {
+	private static final String SYSCONFIG_PollIntervalInSeconds = "de.metas.payment.sumup.pendingTransactionsUpdate.pollIntervalInSeconds";
+	private static final Duration DEFAULT_PollInterval = Duration.ofSeconds(2);
+
+	private static final int DEFAULT_NoPendingTransactionsDelayMultiplier = 5;
+
 	@NonNull private static final Logger logger = LogManager.getLogger(SumUpPendingTransactionContinuousUpdater.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final SumUpService sumUpService;
 
-	private static final String SYSCONFIG_PollIntervalInSeconds = "de.metas.payment.sumup.pendingTransactionsUpdate.pollIntervalInSeconds";
-	private static final Duration DEFAULT_PollInterval = Duration.ofSeconds(10);
-	private static final Duration DEEP_SLEEP_DURATION = Duration.ofSeconds(60);
+	@NonNull private final AtomicBoolean pendingTransactionsDetected = new AtomicBoolean(false);
 
 	@PostConstruct
 	public void postConstruct()
@@ -44,19 +48,23 @@ public class SumUpPendingTransactionContinuousUpdater
 	{
 		while (true)
 		{
-			final Duration pollInterval = getPollInterval();
-			final boolean isEnabled = pollInterval != null;
-
-			if (!sleep(isEnabled ? pollInterval : DEEP_SLEEP_DURATION))
+			final Duration delay = getPollInterval();
+			for (int i = 1; i <= DEFAULT_NoPendingTransactionsDelayMultiplier; i++)
 			{
-				logger.info("Got interrupt request. Exiting.");
-				return;
+				if (!sleep(delay))
+				{
+					logger.info("Got interrupt request. Exiting.");
+					return;
+				}
+
+				if (pendingTransactionsDetected.get())
+				{
+					logger.debug("Pending transactions detected.");
+					break;
+				}
 			}
 
-			if (isEnabled)
-			{
-				bulkUpdatePendingTransactionsNoFail();
-			}
+			bulkUpdatePendingTransactionsNoFail();
 		}
 	}
 
@@ -65,6 +73,7 @@ public class SumUpPendingTransactionContinuousUpdater
 	{
 		try
 		{
+			logger.debug("Sleeping {}", duration);
 			Thread.sleep(duration.toMillis());
 			return true;
 		}
@@ -74,28 +83,6 @@ public class SumUpPendingTransactionContinuousUpdater
 		}
 	}
 
-	private Duration getPollInterval()
-	{
-		final String valueStr = StringUtils.trimBlankToNull(sysConfigBL.getValue(SYSCONFIG_PollIntervalInSeconds));
-		if (valueStr == null)
-		{
-			return DEFAULT_PollInterval;
-		}
-
-		if ("-".equals(valueStr))
-		{
-			return null;
-		}
-
-		final Integer valueInt = NumberUtils.asInteger(valueStr, null);
-		if (valueInt == null || valueInt <= 0)
-		{
-			return null;
-		}
-
-		return Duration.ofSeconds(valueInt);
-	}
-
 	private void bulkUpdatePendingTransactionsNoFail()
 	{
 		try
@@ -103,12 +90,30 @@ public class SumUpPendingTransactionContinuousUpdater
 			final BulkUpdateByQueryResult result = sumUpService.bulkUpdatePendingTransactions(false);
 			if (!result.isZero())
 			{
-				logger.info("Pending transactions updated: {}", result);
+				logger.debug("Pending transactions updated: {}", result);
 			}
+
+			// Set the pending transactions flag as long as we get some updates
+			pendingTransactionsDetected.set(!result.isZero());
 		}
 		catch (final Exception ex)
 		{
 			logger.warn("Failed to process. Ignored.", ex);
+		}
+	}
+
+	private Duration getPollInterval()
+	{
+		final int valueInt = sysConfigBL.getPositiveIntValue(SYSCONFIG_PollIntervalInSeconds, 0);
+		return valueInt > 0 ? Duration.ofSeconds(valueInt) : DEFAULT_PollInterval;
+	}
+
+	@Override
+	public void onStatusChanged(@NonNull final SumUpTransactionStatusChangedEvent event)
+	{
+		if (event.getStatusNew().isPending())
+		{
+			pendingTransactionsDetected.set(true);
 		}
 	}
 }

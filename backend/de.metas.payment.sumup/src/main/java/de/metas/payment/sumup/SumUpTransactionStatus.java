@@ -64,4 +64,6 @@ public class SumUpTransactionStatus
 	public String getCode() {return code;}
 
 	public static boolean equals(@Nullable final SumUpTransactionStatus status1, @Nullable final SumUpTransactionStatus status2) {return Objects.equals(status1, status2);}
+
+	public boolean isPending() {return this.equals(PENDING);}
 }
