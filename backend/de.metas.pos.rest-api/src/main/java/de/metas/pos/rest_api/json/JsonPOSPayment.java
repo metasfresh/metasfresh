@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
@@ -18,6 +19,7 @@ public class JsonPOSPayment
 	@NonNull String uuid;
 	@NonNull POSPaymentMethod paymentMethod;
 	@NonNull BigDecimal amount;
+	@Nullable JsonPOSPaymentStatus status;
 
 	public static JsonPOSPayment of(@NonNull final POSPayment payment)
 	{
@@ -25,6 +27,7 @@ public class JsonPOSPayment
 				.uuid(payment.getExternalId())
 				.paymentMethod(payment.getPaymentMethod())
 				.amount(payment.getAmount().toBigDecimal())
+				.status(JsonPOSPaymentStatus.of(payment.getPaymentProcessingStatus()))
 				.build();
 	}
 

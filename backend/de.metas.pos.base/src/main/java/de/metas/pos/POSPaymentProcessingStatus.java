@@ -26,6 +26,8 @@ public enum POSPaymentProcessingStatus implements ReferenceListAwareEnum
 
 	public boolean isNew() {return this == POSPaymentProcessingStatus.NEW;}
 
+	public boolean isPending() {return this == POSPaymentProcessingStatus.PENDING;}
+
 	public boolean isSuccessful() {return this == POSPaymentProcessingStatus.SUCCESSFUL;}
 
 	public boolean isNewOrCanTryAgain()

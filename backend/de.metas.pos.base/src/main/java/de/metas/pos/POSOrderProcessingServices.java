@@ -20,6 +20,8 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 @Service
 @RequiredArgsConstructor
 public class POSOrderProcessingServices
@@ -36,7 +38,23 @@ public class POSOrderProcessingServices
 		final POSTerminal posTerminal = posTerminalService.getPOSTerminalById(posOrder.getPosTerminalId());
 		final POSCashJournalId cashJournalId = posTerminal.getCashJournalIdNotNull();
 
-		posOrder.updateAllPayments(posPayment -> processPOSPayment(posPayment, posOrder, posTerminal));
+		final AtomicBoolean isAnyPaymentPending = new AtomicBoolean(false);
+		posOrder.updateAllPayments(posPayment -> {
+			// Don't go forward if we already have a pending payment
+			// We are processing payments one by one to cashier can take care step by step
+			if (isAnyPaymentPending.get())
+			{
+				return posPayment;
+			}
+
+			final POSPayment posPaymentProcessed = processPOSPayment(posPayment, posOrder, posTerminal);
+			if (posPaymentProcessed.getPaymentProcessingStatus().isPending())
+			{
+				isAnyPaymentPending.set(true);
+			}
+
+			return posPaymentProcessed;
+		});
 
 		posCashJournalService.changeJournalById(cashJournalId, journal -> journal.addPayments(posOrder));
 	}

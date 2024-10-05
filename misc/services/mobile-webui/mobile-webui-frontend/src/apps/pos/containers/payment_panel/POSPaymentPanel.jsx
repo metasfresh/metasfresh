@@ -11,9 +11,10 @@ import {
 import { useDispatch } from 'react-redux';
 import './POSPaymentPanel.scss';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
-import PropTypes from 'prop-types';
-import { getPaymentMethodCaption, getPaymentMethodIcon, PAYMENT_METHODS } from '../../utils/paymentMethods';
+import { PAYMENT_METHODS } from '../../utils/paymentMethods';
 import { round } from '../../../../utils/numbers';
+import PaymentLine from './PaymentLine';
+import PaymentMethodButton from './PaymentMethodButton';
 
 const POSPaymentPanel = () => {
   const dispatch = useDispatch();
@@ -86,6 +87,7 @@ const POSPaymentPanel = () => {
             amount={payment.amount}
             currency={currency}
             currencyPrecision={currencyPrecision}
+            status={payment.status}
             onDelete={onPaymentDelete}
           />
         ))}
@@ -121,72 +123,5 @@ const POSPaymentPanel = () => {
     </div>
   );
 };
-
-//
-//
-//
-
-const PaymentLine = ({ uuid, paymentMethod, amount, currency, currencyPrecision, onDelete }) => {
-  const icon = getPaymentMethodIcon({ paymentMethod });
-  const iconClassName = `fa-regular ${icon}`;
-  const caption = getPaymentMethodCaption({ paymentMethod });
-  const amountStr = formatAmountToHumanReadableStr({
-    amount: amount,
-    currency: currency,
-    precision: currencyPrecision,
-  });
-
-  return (
-    <div className="payment-line">
-      <div className="payment-line-label">
-        <i className={iconClassName} /> {caption}
-      </div>
-      <div className="payment-line-value">{amountStr}</div>
-      <div className="payment-line-actions">
-        <div className="payment-line-action-item" onClick={() => onDelete({ uuid })}>
-          <i className="fa-regular fa-trash-can" />
-        </div>
-      </div>
-    </div>
-  );
-};
-PaymentLine.propTypes = {
-  uuid: PropTypes.string.isRequired,
-  paymentMethod: PropTypes.string.isRequired,
-  amount: PropTypes.number.isRequired,
-  currency: PropTypes.string.isRequired,
-  currencyPrecision: PropTypes.number.isRequired,
-  onDelete: PropTypes.func.isRequired,
-};
-
-//
-//
-//
-
-const PaymentMethodButton = ({ paymentMethod, disabled, onClick }) => {
-  const icon = getPaymentMethodIcon({ paymentMethod });
-  const caption = getPaymentMethodCaption({ paymentMethod });
-
-  return (
-    <div
-      className={cx('payment-method', { 'is-disabled': disabled })}
-      onClick={() => {
-        onClick({ paymentMethod });
-      }}
-    >
-      <i className={cx('payment-method-icon fa-regular', icon)} />
-      <span className="payment-method-caption">{caption}</span>
-    </div>
-  );
-};
-PaymentMethodButton.propTypes = {
-  paymentMethod: PropTypes.string.isRequired,
-  disabled: PropTypes.bool,
-  onClick: PropTypes.func.isRequired,
-};
-
-//
-//
-//
 
 export default POSPaymentPanel;
