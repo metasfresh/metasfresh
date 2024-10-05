@@ -29,6 +29,8 @@ public class JsonPOSOrder
 	@NonNull List<JsonPOSOrderLine> lines;
 	@Nullable List<JsonPOSPayment> payments;
 
+	int hashCode;
+
 	public static JsonPOSOrder of(@NonNull final POSOrder order, @NonNull final JsonContext jsonContext)
 	{
 		final String currencySymbol = jsonContext.getCurrencySymbol(order.getCurrencyId());
@@ -46,6 +48,7 @@ public class JsonPOSOrder
 				.payments(order.streamPaymentsNotDeleted()
 						.map(JsonPOSPayment::of)
 						.collect(ImmutableList.toImmutableList()))
+				.hashCode(order.hashCode())
 				.build();
 	}
 

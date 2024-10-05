@@ -27,6 +27,8 @@ public class JsonPOSPayment
 	boolean allowDelete;
 	boolean allowRefund;
 
+	int hashCode;
+
 	public static JsonPOSPayment of(@NonNull final POSPayment payment)
 	{
 		final POSPaymentProcessingStatus paymentProcessingStatus = payment.getPaymentProcessingStatus();
@@ -39,6 +41,7 @@ public class JsonPOSPayment
 				.allowCheckout(paymentProcessingStatus.isAllowCheckout())
 				.allowDelete(paymentProcessingStatus.isAllowDelete())
 				.allowRefund(payment.isAllowRefund())
+				.hashCode(payment.hashCode())
 				.build();
 	}
 

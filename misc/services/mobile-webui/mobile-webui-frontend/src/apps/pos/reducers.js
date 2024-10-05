@@ -10,7 +10,6 @@ import {
   REMOVE_ORDER,
   REMOVE_PAYMENT,
   SET_SELECTED_ORDER_LINE,
-  UPDATE_ORDER_FROM_BACKEND,
 } from './actionTypes';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -100,16 +99,6 @@ export function posReducer(applicationState = initialState, action) {
       return {
         ...applicationState,
         orders: removeOrderByUUID({ orders: applicationState.orders, order_uuid }),
-      };
-    }
-    case UPDATE_ORDER_FROM_BACKEND: {
-      const {
-        payload: { order },
-      } = action;
-
-      return {
-        ...applicationState,
-        orders: updateOrderFromBackend({ orders: applicationState.orders, order }),
       };
     }
     case ADD_ORDER_LINE: {
@@ -293,12 +282,6 @@ const removeOrderByUUID = ({ orders, order_uuid }) => {
   const current_uuid = byUUID[orders.current_uuid] ? orders.current_uuid : Object.keys(byUUID).find(() => true);
 
   return { ...orders, current_uuid, byUUID };
-};
-
-const updateOrderFromBackend = ({ orders, order }) => {
-  const byUUID = { ...orders.byUUID };
-  byUUID[order.uuid] = recomputeOrderDetails({ order });
-  return { ...orders, byUUID };
 };
 
 const recomputeOrderDetails = ({ order }) => {

@@ -38,6 +38,8 @@ public class JsonPOSOrderLine
 
 	@Nullable BigDecimal amount;
 
+	int hashCode;
+
 	public static JsonPOSOrderLine of(@NonNull final POSOrderLine line, @NonNull final String currencySymbol)
 	{
 		return builder()
@@ -55,6 +57,7 @@ public class JsonPOSOrderLine
 				.catchWeightUomId(line.getCatchWeight() != null ? line.getCatchWeight().getUomId() : null)
 				.catchWeightUomSymbol(line.getCatchWeight() != null ? line.getCatchWeight().getUOMSymbol() : null)
 				.amount(line.getAmount().toBigDecimal())
+				.hashCode(line.hashCode())
 				.build();
 	}
 

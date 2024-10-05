@@ -10,7 +10,6 @@ import {
   REMOVE_ORDER,
   REMOVE_PAYMENT,
   SET_SELECTED_ORDER_LINE,
-  UPDATE_ORDER_FROM_BACKEND,
 } from './actionTypes';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
@@ -349,9 +348,13 @@ const updateOrdersArrayFromBackendAction = ({ list, missingIds, isUpdateOnly }) 
 
 const updateOrderFromBackendAction = ({ order }) => {
   return {
-    type: UPDATE_ORDER_FROM_BACKEND,
-    payload: { order },
+    type: ORDERS_LIST_UPDATE,
+    payload: { ordersArray: [order], isUpdateOnly: true },
   };
+  // return {
+  //   type: UPDATE_ORDER_FROM_BACKEND,
+  //   payload: { order },
+  // };
 };
 
 export const setSelectedOrderLineAction = ({ order_uuid, selectedLineUUID }) => {
