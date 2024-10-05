@@ -1,5 +1,12 @@
 import React from 'react';
 import cx from 'classnames';
+import { useDispatch } from 'react-redux';
+import './POSPaymentPanel.scss';
+import { formatAmountToHumanReadableStr } from '../../../../utils/money';
+import { round } from '../../../../utils/numbers';
+import PaymentLine from './PaymentLine';
+import PaymentMethodButton from './PaymentMethodButton';
+import { usePOSTerminal } from '../../actions/posTerminal';
 import {
   addPayment,
   changeOrderStatusToComplete,
@@ -8,14 +15,7 @@ import {
   refundPayment,
   removePayment,
   useCurrentOrder,
-  usePOSTerminal,
-} from '../../actions';
-import { useDispatch } from 'react-redux';
-import './POSPaymentPanel.scss';
-import { formatAmountToHumanReadableStr } from '../../../../utils/money';
-import { round } from '../../../../utils/numbers';
-import PaymentLine from './PaymentLine';
-import PaymentMethodButton from './PaymentMethodButton';
+} from '../../actions/orders';
 
 const POSPaymentPanel = () => {
   const dispatch = useDispatch();
