@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Payment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1320258583L;
+	private static final long serialVersionUID = -313911426L;
 
     /** Standard Constructor */
     public X_C_POS_Payment (final Properties ctx, final int C_POS_Payment_ID, @Nullable final String trxName)
@@ -136,5 +136,34 @@ public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Pa
 	public java.lang.String getPOSPaymentMethod() 
 	{
 		return get_ValueAsString(COLUMNNAME_POSPaymentMethod);
+	}
+
+	/** 
+	 * POSPaymentProcessingStatus AD_Reference_ID=541897
+	 * Reference name: POSPaymentProcessingStatus
+	 */
+	public static final int POSPAYMENTPROCESSINGSTATUS_AD_Reference_ID=541897;
+	/** SUCCESSFUL = SUCCESSFUL */
+	public static final String POSPAYMENTPROCESSINGSTATUS_SUCCESSFUL = "SUCCESSFUL";
+	/** CANCELLED = CANCELLED */
+	public static final String POSPAYMENTPROCESSINGSTATUS_CANCELLED = "CANCELLED";
+	/** FAILED = FAILED */
+	public static final String POSPAYMENTPROCESSINGSTATUS_FAILED = "FAILED";
+	/** PENDING = PENDING */
+	public static final String POSPAYMENTPROCESSINGSTATUS_PENDING = "PENDING";
+	/** NEW = NEW */
+	public static final String POSPAYMENTPROCESSINGSTATUS_NEW = "NEW";
+	/** DELETED = DELETED */
+	public static final String POSPAYMENTPROCESSINGSTATUS_DELETED = "DELETED";
+	@Override
+	public void setPOSPaymentProcessingStatus (final java.lang.String POSPaymentProcessingStatus)
+	{
+		set_Value (COLUMNNAME_POSPaymentProcessingStatus, POSPaymentProcessingStatus);
+	}
+
+	@Override
+	public java.lang.String getPOSPaymentProcessingStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_POSPaymentProcessingStatus);
 	}
 }

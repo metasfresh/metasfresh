@@ -1,6 +1,7 @@
 package de.metas.pos;
 
 import de.metas.location.CountryId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -12,6 +13,8 @@ import org.adempiere.warehouse.WarehouseId;
 public class POSShipFrom
 {
 	@NonNull WarehouseId warehouseId;
-	@NonNull OrgId orgId;
+	@NonNull ClientAndOrgId clientAndOrgId;
 	@NonNull CountryId countryId;
+
+	public OrgId getOrgId() {return clientAndOrgId.getOrgId();}
 }

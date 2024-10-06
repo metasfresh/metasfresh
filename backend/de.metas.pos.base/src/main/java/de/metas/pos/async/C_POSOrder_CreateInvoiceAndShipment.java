@@ -166,7 +166,7 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 
 	private static PaymentRule getPaymentRule(final POSOrder posOrder)
 	{
-		final ImmutableSet<POSPaymentMethod> paymentMethods = posOrder.getPayments().stream().map(POSPayment::getPaymentMethod).collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<POSPaymentMethod> paymentMethods = posOrder.getPaymentsNotDeleted().stream().map(POSPayment::getPaymentMethod).collect(ImmutableSet.toImmutableSet());
 		if (paymentMethods.size() == 1)
 		{
 			return paymentMethods.iterator().next().getPaymentRule();

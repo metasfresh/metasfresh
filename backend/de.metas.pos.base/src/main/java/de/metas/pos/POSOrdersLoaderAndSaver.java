@@ -10,11 +10,12 @@ import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentId;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.pos.repository.model.I_C_POS_OrderLine;
 import de.metas.pos.repository.model.I_C_POS_Payment;
+import de.metas.pos.websocket.POSOrderWebsocketSender;
 import de.metas.pricing.PricingSystemAndListId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -23,6 +24,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -49,11 +51,18 @@ import java.util.stream.Collectors;
 class POSOrdersLoaderAndSaver
 {
 	@NonNull private final IQueryBL queryBL;
+	@NonNull private final POSOrderWebsocketSender websocketSender;
 
 	private final HashMap<POSOrderId, I_C_POS_Order> orderRecordsById = new HashMap<>();
 	private final HashMap<POSOrderExternalId, Optional<I_C_POS_Order>> orderRecordsByExternalId = new HashMap<>();
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_OrderLine>> lineRecords = new HashMap<>();
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_Payment>> paymentRecords = new HashMap<>();
+
+	public POSOrder loadFromRecord(@NonNull final I_C_POS_Order orderRecord)
+	{
+		addToCacheAndWarmUp(ImmutableList.of(orderRecord));
+		return fromRecord(orderRecord);
+	}
 
 	public List<POSOrder> loadFromRecords(@NonNull final List<I_C_POS_Order> orderRecords)
 	{
@@ -86,6 +95,15 @@ class POSOrdersLoaderAndSaver
 
 		save(order);
 
+		return order;
+	}
+
+	public POSOrder updateById(@NonNull final POSOrderId id, @NonNull final Consumer<POSOrder> updater)
+	{
+		final I_C_POS_Order orderRecord = getOrderRecordById(id);
+		final POSOrder order = fromRecord(orderRecord);
+		updater.accept(order);
+		save(order);
 		return order;
 	}
 
@@ -223,6 +241,7 @@ class POSOrdersLoaderAndSaver
 
 		final Map<POSOrderId, ImmutableList<I_C_POS_Payment>> recordsByOrderId = queryBL.createQueryBuilder(I_C_POS_Payment.class)
 				.addInArrayFilter(I_C_POS_Payment.COLUMNNAME_C_POS_Order_ID, posOrderIds)
+				//.addOnlyActiveRecordsFilter() // IMPORTANT: get all, inclusive inactive ones 
 				.orderBy(I_C_POS_Payment.COLUMNNAME_C_POS_Payment_ID)
 				.create()
 				.stream()
@@ -280,7 +299,7 @@ class POSOrdersLoaderAndSaver
 				.shipToCustomerAndLocationId(BPartnerLocationAndCaptureId.ofRepoId(orderRecord.getC_BPartner_ID(), orderRecord.getC_BPartner_Location_ID(), orderRecord.getC_BPartner_Location_Value_ID()))
 				.shipFrom(POSShipFrom.builder()
 						.warehouseId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()))
-						.orgId(OrgId.ofRepoId(orderRecord.getAD_Org_ID()))
+						.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(orderRecord.getAD_Client_ID(), orderRecord.getAD_Org_ID()))
 						.countryId(CountryId.ofRepoId(orderRecord.getC_Country_ID()))
 						.build())
 				.isTaxIncluded(orderRecord.isTaxIncluded())
@@ -308,6 +327,7 @@ class POSOrdersLoaderAndSaver
 		orderRecord.setC_BPartner_Location_ID(from.getShipToCustomerAndLocationId().getBPartnerLocationRepoId());
 		orderRecord.setC_BPartner_Location_Value_ID(from.getShipToCustomerAndLocationId().getLocationCaptureRepoId());
 		orderRecord.setM_Warehouse_ID(from.getShipFrom().getWarehouseId().getRepoId());
+		Check.assumeEquals(orderRecord.getAD_Client_ID(), from.getClientAndOrgId().getClientId().getRepoId(), "AD_Client_ID");
 		orderRecord.setAD_Org_ID(from.getShipFrom().getOrgId().getRepoId());
 		orderRecord.setC_Country_ID(from.getShipFrom().getCountryId().getRepoId());
 		orderRecord.setIsTaxIncluded(from.isTaxIncluded());
@@ -364,19 +384,22 @@ class POSOrdersLoaderAndSaver
 	private static POSPayment fromRecord(final I_C_POS_Payment record, final CurrencyId currencyId)
 	{
 		return POSPayment.builder()
-				.externalId(record.getExternalId())
+				.externalId(extractExternalId(record))
 				.localId(POSPaymentId.ofRepoId(record.getC_POS_Payment_ID()))
 				.paymentMethod(POSPaymentMethod.ofCode(record.getPOSPaymentMethod()))
 				.amount(Money.of(record.getAmount(), currencyId))
+				.paymentProcessingStatus(POSPaymentProcessingStatus.ofCode(record.getPOSPaymentProcessingStatus()))
 				.paymentReceiptId(PaymentId.ofRepoIdOrNull(record.getC_Payment_ID()))
 				.build();
 	}
 
 	private static void updateRecord(final I_C_POS_Payment paymentRecord, final POSPayment payment)
 	{
-		paymentRecord.setExternalId(payment.getExternalId());
+		paymentRecord.setIsActive(!payment.getPaymentProcessingStatus().isDeleted());
+		paymentRecord.setExternalId(payment.getExternalId().getAsString());
 		paymentRecord.setPOSPaymentMethod(payment.getPaymentMethod().getCode());
 		paymentRecord.setAmount(payment.getAmount().toBigDecimal());
+		paymentRecord.setPOSPaymentProcessingStatus(payment.getPaymentProcessingStatus().getCode());
 		paymentRecord.setC_Payment_ID(PaymentId.toRepoId(payment.getPaymentReceiptId()));
 	}
 
@@ -427,9 +450,9 @@ class POSOrdersLoaderAndSaver
 		//
 		// Payments
 		{
-			final HashMap<String, I_C_POS_Payment> paymentRecordsByExternalId = getPaymentRecordsByOrderId(posOrderId).stream().collect(GuavaCollectors.toHashMapByKey(I_C_POS_Payment::getExternalId));
+			final HashMap<POSPaymentExternalId, I_C_POS_Payment> paymentRecordsByExternalId = getPaymentRecordsByOrderId(posOrderId).stream().collect(GuavaCollectors.toHashMapByKey(POSOrdersLoaderAndSaver::extractExternalId));
 			final ArrayList<I_C_POS_Payment> paymentRecordsNew = new ArrayList<>(paymentRecordsByExternalId.size());
-			for (final POSPayment payment : order.getPayments())
+			for (final POSPayment payment : order.getAllPayments())
 			{
 				I_C_POS_Payment paymentRecord = paymentRecordsByExternalId.remove(payment.getExternalId());
 				if (paymentRecord == null)
@@ -451,5 +474,11 @@ class POSOrdersLoaderAndSaver
 			putPaymentRecordsToCache(posOrderId, paymentRecordsNew);
 		}
 
+		websocketSender.notifyFrontendThatOrderChanged(order);
+	}
+
+	private static @NonNull POSPaymentExternalId extractExternalId(final I_C_POS_Payment record)
+	{
+		return POSPaymentExternalId.ofString(record.getExternalId());
 	}
 }

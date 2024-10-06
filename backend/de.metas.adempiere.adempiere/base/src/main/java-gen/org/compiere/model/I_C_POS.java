@@ -363,6 +363,27 @@ public interface I_C_POS
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Payment Processor.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOSPaymentProcessor (@Nullable java.lang.String POSPaymentProcessor);
+
+	/**
+	 * Get Payment Processor.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOSPaymentProcessor();
+
+	ModelColumn<I_C_POS, Object> COLUMN_POSPaymentProcessor = new ModelColumn<>(I_C_POS.class, "POSPaymentProcessor", null);
+	String COLUMNNAME_POSPaymentProcessor = "POSPaymentProcessor";
+
+	/**
 	 * Set Printer.
 	 * Name of the Printer
 	 *
@@ -384,6 +405,27 @@ public interface I_C_POS
 
 	ModelColumn<I_C_POS, Object> COLUMN_PrinterName = new ModelColumn<>(I_C_POS.class, "PrinterName", null);
 	String COLUMNNAME_PrinterName = "PrinterName";
+
+	/**
+	 * Set SumUp Configuration.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSUMUP_Config_ID (int SUMUP_Config_ID);
+
+	/**
+	 * Get SumUp Configuration.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSUMUP_Config_ID();
+
+	ModelColumn<I_C_POS, Object> COLUMN_SUMUP_Config_ID = new ModelColumn<>(I_C_POS.class, "SUMUP_Config_ID", null);
+	String COLUMNNAME_SUMUP_Config_ID = "SUMUP_Config_ID";
 
 	/**
 	 * Get Updated.

@@ -75,6 +75,7 @@ public class POSTerminalService
 		return POSTerminal.builder()
 				.id(posTerminalRaw.getId())
 				.cashbookId(posTerminalRaw.getCashbookId())
+				.paymentProcessorConfig(posTerminalRaw.getPaymentProcessorConfig())
 				.pricingSystemAndListId(PricingSystemAndListId.ofRepoIds(priceList.getM_PricingSystem_ID(), priceList.getM_PriceList_ID()))
 				.isTaxIncluded(priceList.isTaxIncluded())
 				.pricePrecision(CurrencyPrecision.ofInt(priceList.getPricePrecision()))
@@ -92,7 +93,7 @@ public class POSTerminalService
 		final WarehouseId shipFromWarehouseId = posTerminalRaw.getShipFromWarehouseId();
 		return POSShipFrom.builder()
 				.warehouseId(shipFromWarehouseId)
-				.orgId(warehouseBL.getWarehouseOrgId(shipFromWarehouseId))
+				.clientAndOrgId(warehouseBL.getWarehouseClientAndOrgId(shipFromWarehouseId))
 				.countryId(warehouseBL.getCountryId(shipFromWarehouseId))
 				.build();
 	}

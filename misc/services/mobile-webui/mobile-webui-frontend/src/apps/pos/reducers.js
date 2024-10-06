@@ -2,7 +2,7 @@ import {
   ADD_ORDER_LINE,
   ADD_PAYMENT,
   NEW_ORDER,
-  ORDERS_LIST_INIT,
+  ORDERS_LIST_UPDATE,
   POS_TERMINAL_CLOSING,
   POS_TERMINAL_CLOSING_CANCEL,
   POS_TERMINAL_LOAD_DONE,
@@ -10,7 +10,6 @@ import {
   REMOVE_ORDER,
   REMOVE_PAYMENT,
   SET_SELECTED_ORDER_LINE,
-  UPDATE_ORDER_FROM_BACKEND,
 } from './actionTypes';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -71,14 +70,19 @@ export function posReducer(applicationState = initialState, action) {
         },
       };
     }
-    case ORDERS_LIST_INIT: {
+    case ORDERS_LIST_UPDATE: {
       const {
-        payload: { ordersArray },
+        payload: { ordersArray, missingIds, isUpdateOnly },
       } = action;
 
       return {
         ...applicationState,
-        orders: setOrders({ orders: applicationState.orders, ordersArray }),
+        orders: updateOrders({
+          orders: applicationState.orders,
+          fromOrdersArray: ordersArray,
+          missingIds,
+          isUpdateOnly,
+        }),
       };
     }
     case NEW_ORDER: {
@@ -95,16 +99,6 @@ export function posReducer(applicationState = initialState, action) {
       return {
         ...applicationState,
         orders: removeOrderByUUID({ orders: applicationState.orders, order_uuid }),
-      };
-    }
-    case UPDATE_ORDER_FROM_BACKEND: {
-      const {
-        payload: { order },
-      } = action;
-
-      return {
-        ...applicationState,
-        orders: updateOrderFromBackend({ orders: applicationState.orders, order }),
       };
     }
     case ADD_ORDER_LINE: {
@@ -158,9 +152,14 @@ export function posReducer(applicationState = initialState, action) {
 //
 //
 
-const setOrders = ({ orders, ordersArray }) => {
-  const byUUID = {};
-  ordersArray.forEach((order) => (byUUID[order.uuid] = recomputeOrderDetails({ order })));
+const updateOrders = ({ orders, fromOrdersArray, missingIds, isUpdateOnly }) => {
+  const byUUID = isUpdateOnly ? { ...orders.byUUID } : {};
+  fromOrdersArray.forEach((order) => (byUUID[order.uuid] = recomputeOrderDetails({ order })));
+  if (missingIds?.length > 0) {
+    missingIds.forEach((missingId) => {
+      delete byUUID[missingId];
+    });
+  }
 
   // Reset current_uuid if is no longer present in the orders array
   let current_uuid = orders.current_uuid;
@@ -169,8 +168,9 @@ const setOrders = ({ orders, ordersArray }) => {
   }
 
   if (!current_uuid) {
-    if (ordersArray.length > 0) {
-      current_uuid = ordersArray[0].uuid;
+    const allOrderIds = Object.keys(byUUID);
+    if (allOrderIds.length > 0) {
+      current_uuid = allOrderIds[0];
     } else {
       const newOrder = {
         uuid: uuidv4(),
@@ -282,12 +282,6 @@ const removeOrderByUUID = ({ orders, order_uuid }) => {
   const current_uuid = byUUID[orders.current_uuid] ? orders.current_uuid : Object.keys(byUUID).find(() => true);
 
   return { ...orders, current_uuid, byUUID };
-};
-
-const updateOrderFromBackend = ({ orders, order }) => {
-  const byUUID = { ...orders.byUUID };
-  byUUID[order.uuid] = recomputeOrderDetails({ order });
-  return { ...orders, byUUID };
 };
 
 const recomputeOrderDetails = ({ order }) => {

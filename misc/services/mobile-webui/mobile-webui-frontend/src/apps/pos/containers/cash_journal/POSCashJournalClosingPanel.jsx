@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import '../../styles/pos-input-panel.scss';
 import './POSCashJournalClosingPanel.scss';
 import cx from 'classnames';
-import { usePOSTerminal } from '../../actions';
 import { getJournalSummary } from '../../api/posJournal';
 import { PAYMENT_METHOD_CASH } from '../../utils/paymentMethods';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import PropTypes from 'prop-types';
 import useEscapeKey from '../../../../hooks/useEscapeKey';
+import { usePOSTerminal } from '../../actions/posTerminal';
 
 const POSCashJournalClosingPanel = () => {
   const posTerminal = usePOSTerminal();

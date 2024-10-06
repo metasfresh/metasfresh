@@ -73,4 +73,6 @@ public class PaymentId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static boolean equals(@Nullable PaymentId id1, @Nullable PaymentId id2) {return Objects.equals(id1, id2);}
 }
