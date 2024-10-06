@@ -136,6 +136,9 @@
         <module>de.metas.payment.sepa</module>
         <module>de.metas.payment.paypal</module>
         <module>de.metas.payment.revolut</module>
+        <module>de.metas.payment.sumup</module>
+        <module>de.metas.payment.sumup.webui</module>
+        <module>de.metas.payment.sumup.rest-api</module>
 
         <module>de.metas.printing</module>
         <module>de.metas.printing.rest-api-impl</module>

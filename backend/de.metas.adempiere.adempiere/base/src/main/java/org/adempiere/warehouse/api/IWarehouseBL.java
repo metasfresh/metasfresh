@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.location.DocumentLocation;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
@@ -65,6 +66,9 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	OrgId getWarehouseOrgId(WarehouseId warehouseId);
+
+	@NonNull
+	ClientAndOrgId getWarehouseClientAndOrgId(@NonNull WarehouseId warehouseId);
 
 	DocumentLocation getPlainDocumentLocation(WarehouseId warehouseId);
 

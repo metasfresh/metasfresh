@@ -40,6 +40,8 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -113,6 +115,7 @@ public class PaymentBL implements IPaymentBL
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	private static final AdMessageKey MSG_PaymentDocTypeInvoiceInconsistent = AdMessageKey.of("PaymentDocTypeInvoiceInconsistent");
 
@@ -904,5 +907,13 @@ public class PaymentBL implements IPaymentBL
 		{
 			throw new AdempiereException(MSG_PaymentDocTypeInvoiceInconsistent);
 		}
+	}
+
+	@Override
+	public void reversePaymentById(@NonNull final PaymentId paymentId)
+	{
+		final I_C_Payment payment = getById(paymentId);
+		payment.setDocAction(IDocument.ACTION_Reverse_Correct);
+		documentBL.processEx(payment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 	}
 }

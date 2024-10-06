@@ -1,10 +1,11 @@
 import React from 'react';
-import { setSelectedOrderLineAction, useCurrentOrderOrNew, usePOSTerminal } from '../../actions';
 import CurrentOrderActions from './CurrentOrderActions';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import { useDispatch } from 'react-redux';
 import './CurrentOrder.scss';
 import { OrderLine } from './OrderLine';
+import { usePOSTerminal } from '../../actions/posTerminal';
+import { setSelectedOrderLineAction, useCurrentOrderOrNew } from '../../actions/orders';
 
 const CurrentOrder = () => {
   const dispatch = useDispatch();

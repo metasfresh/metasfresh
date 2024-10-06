@@ -21,6 +21,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -248,7 +249,7 @@ public class OLCandRepository
 			olCandPO.setM_Warehouse_Dest_ID(request.getWarehouseDestId().getRepoId());
 		}
 
-		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());
+		olCandPO.setAD_User_EnteredBy_ID(Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM).getRepoId());
 
 		olCandPO.setAD_InputDataSource_ID(request.getDataSourceId().getRepoId());
 

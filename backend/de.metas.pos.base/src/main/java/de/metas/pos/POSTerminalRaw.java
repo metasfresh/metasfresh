@@ -21,7 +21,9 @@ public class POSTerminalRaw
 	@NonNull WarehouseId shipFromWarehouseId;
 	@NonNull BPartnerId walkInCustomerId;
 	@NonNull DocTypeId salesOrderDocTypeId;
+	
 	@NonNull BankAccountId cashbookId;
+	@Nullable POSTerminalPaymentProcessorConfig paymentProcessorConfig;
 
 	@Nullable POSCashJournalId cashJournalId;
 	@NonNull BigDecimal cashLastBalance;

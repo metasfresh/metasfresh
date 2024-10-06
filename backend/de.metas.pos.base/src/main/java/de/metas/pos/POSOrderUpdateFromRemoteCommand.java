@@ -14,6 +14,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -57,7 +58,7 @@ class POSOrderUpdateFromRemoteCommand
 		//
 		// Update payments
 		{
-			final HashSet<String> paymentExternalIdsToKeep = new HashSet<>();
+			final HashSet<POSPaymentExternalId> paymentExternalIdsToKeep = new HashSet<>();
 			final List<RemotePOSPayment> remotePayments = remoteOrder.getPayments();
 			if (!remotePayments.isEmpty())
 			{
@@ -68,7 +69,7 @@ class POSOrderUpdateFromRemoteCommand
 				}
 			}
 
-			order.preserveOnlyPaymentExternalIds(paymentExternalIdsToKeep);
+			order.removePaymentsIf(payment -> !paymentExternalIdsToKeep.contains(payment.getExternalId()));
 		}
 
 	}
@@ -166,16 +167,23 @@ class POSOrderUpdateFromRemoteCommand
 	private void createOrUpdatePaymentFromRemote(final RemotePOSPayment remotePayment)
 	{
 		order.createOrUpdatePayment(remotePayment.getUuid(), existingPayment -> {
-			final POSPayment.POSPaymentBuilder builder = existingPayment != null
-					? existingPayment.toBuilder()
-					: POSPayment.builder();
-
-			final BigDecimal amount = currencyPrecision.round(remotePayment.getAmount());
-
-			return builder.externalId(remotePayment.getUuid())
-					.paymentMethod(remotePayment.getPaymentMethod())
-					.amount(toMoney(amount))
-					.build();
+			final Money amount = toMoney(currencyPrecision.round(remotePayment.getAmount()));
+			if (existingPayment != null)
+			{
+				// don't update
+				Check.assumeEquals(existingPayment.getPaymentMethod(), remotePayment.getPaymentMethod(), "paymentMethod");
+				Check.assumeEquals(existingPayment.getAmount(), amount, "amount");
+				return existingPayment;
+			}
+			else
+			{
+				return POSPayment.builder()
+						.externalId(remotePayment.getUuid())
+						.paymentMethod(remotePayment.getPaymentMethod())
+						.amount(amount)
+						.paymentProcessingStatus(POSPaymentProcessingStatus.NEW)
+						.build();
+			}
 		});
 	}
 
