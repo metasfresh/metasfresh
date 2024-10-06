@@ -25,9 +25,9 @@ public class Topic
 		return builder().name(name).type(Type.DISTRIBUTED).build();
 	}
 
-	public static Topic remoteAndAsync(final String name)
+	public static Topic distributedAndAsync(final String name)
 	{
-		final Topic topic = remote(name);
+		final Topic topic = distributed(name);
 		EventBusConfig.alwaysConsiderAsync(topic);
 		return topic;
 	}

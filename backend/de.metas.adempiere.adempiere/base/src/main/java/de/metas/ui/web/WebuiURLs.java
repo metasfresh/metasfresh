@@ -76,14 +76,14 @@ public class WebuiURLs
 	@Nullable
 	public String getFrontendURL()
 	{
-		final String url = StringUtils.trimBlankToNull(sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL)));
+		final String url = StringUtils.trimBlankToNull(sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL));
 		if (url == null || "-".equals(url))
 		{
 			logger.warn("{} is not configured. Features like CORS, document links in emails etc will not work", SYSCONFIG_FRONTEND_URL);
 			return null;
 		}
 
-		return url.trim();
+		return url;
 	}
 
 	@Nullable
