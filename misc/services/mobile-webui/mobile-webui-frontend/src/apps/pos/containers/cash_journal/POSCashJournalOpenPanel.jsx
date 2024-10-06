@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../../styles/pos-input-panel.scss';
-import { usePOSTerminal } from '../../actions';
+
+import { usePOSTerminal } from '../../actions/posTerminal';
 
 const POSCashJournalOpenPanel = () => {
   const posTerminal = usePOSTerminal();

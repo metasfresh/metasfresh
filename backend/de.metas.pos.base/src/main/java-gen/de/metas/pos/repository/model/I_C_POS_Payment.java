@@ -232,6 +232,27 @@ public interface I_C_POS_Payment
 	String COLUMNNAME_POSPaymentMethod = "POSPaymentMethod";
 
 	/**
+	 * Set Payment Processing Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPOSPaymentProcessingStatus (java.lang.String POSPaymentProcessingStatus);
+
+	/**
+	 * Get Payment Processing Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getPOSPaymentProcessingStatus();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_POSPaymentProcessingStatus = new ModelColumn<>(I_C_POS_Payment.class, "POSPaymentProcessingStatus", null);
+	String COLUMNNAME_POSPaymentProcessingStatus = "POSPaymentProcessingStatus";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

@@ -2,13 +2,17 @@ package de.metas.pos;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSet;
 import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
 
 @EqualsAndHashCode
 public class POSOrderExternalId
@@ -36,6 +40,18 @@ public class POSOrderExternalId
 	public static POSOrderExternalId ofString(@NonNull final String value)
 	{
 		return new POSOrderExternalId(value);
+	}
+
+	public static Set<POSOrderExternalId> ofCommaSeparatedString(@Nullable final String string)
+	{
+		return CollectionUtils.ofCommaSeparatedSet(string, POSOrderExternalId::ofString);
+	}
+
+	public static Set<String> toStringSet(@NonNull final Collection<POSOrderExternalId> collection)
+	{
+		return collection.stream()
+				.map(POSOrderExternalId::getAsString)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override

@@ -1,11 +1,11 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import {
   addNewOrderAction,
   changeOrderStatusToVoid,
   changeOrderStatusToWaitingPayment,
   useCurrentOrder,
-} from '../../actions';
-import { useDispatch } from 'react-redux';
+} from '../../actions/orders';
 
 const CurrentOrderActions = () => {
   const dispatch = useDispatch();

@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -87,9 +88,13 @@ public class POSService
 		return productsService.getProducts(posTerminalId, evalDate, queryString);
 	}
 
-	public List<POSOrder> getOpenOrders(@NonNull final UserId userId)
+	public List<POSOrder> getOpenOrders(@NonNull final UserId userId, final Set<POSOrderExternalId> onlyOrderExternalIds)
 	{
-		return ordersService.getOpenOrders(userId);
+		return ordersService.list(POSOrderQuery.builder()
+				.cashierId(userId)
+				.isOpen(true)
+				.onlyOrderExternalIds(onlyOrderExternalIds)
+				.build());
 	}
 
 	public POSOrder changeStatusTo(@NonNull final POSOrderExternalId externalId, @NonNull final POSOrderStatus nextStatus, @NonNull final UserId userId)
@@ -101,5 +106,22 @@ public class POSService
 	{
 		return ordersService.updateOrderFromRemote(remoteOrder, userId);
 	}
+
+	public POSOrder checkoutPayment(
+			@NonNull final POSOrderExternalId posOrderExternalId,
+			@NonNull final POSPaymentExternalId posPaymentExternalId,
+			@NonNull final UserId userId)
+	{
+		return ordersService.checkoutPayment(posOrderExternalId, posPaymentExternalId, userId);
+	}
+
+	public POSOrder refundPayment(
+			@NonNull final POSOrderExternalId posOrderExternalId,
+			@NonNull final POSPaymentExternalId posPaymentExternalId,
+			@NonNull final UserId userId)
+	{
+		return ordersService.refundPayment(posOrderExternalId, posPaymentExternalId, userId);
+	}
+
 }
 

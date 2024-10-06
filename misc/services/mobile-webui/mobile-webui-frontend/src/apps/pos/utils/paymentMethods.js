@@ -1,6 +1,5 @@
 export const PAYMENT_METHOD_CASH = 'CASH';
 export const PAYMENT_METHOD_CARD = 'CARD';
-export const PAYMENT_METHODS = [PAYMENT_METHOD_CASH, PAYMENT_METHOD_CARD];
 
 export const getPaymentMethodCaption = ({ paymentMethod }) => {
   if (paymentMethod === PAYMENT_METHOD_CASH) {

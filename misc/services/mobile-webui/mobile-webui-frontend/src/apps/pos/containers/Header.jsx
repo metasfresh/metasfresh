@@ -3,7 +3,8 @@ import logoImage from '../../../assets/images/logo.png';
 import { useSelector } from 'react-redux';
 import { getUserFullnameFromState } from '../../../reducers/appHandler';
 import './Header.scss';
-import { usePOSTerminal } from '../actions';
+
+import { usePOSTerminal } from '../actions/posTerminal';
 
 const Header = () => {
   const posTerminal = usePOSTerminal();
