@@ -9,7 +9,10 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2024-10-04T06:29:44.469Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556374,TO_TIMESTAMP('2024-10-04 09:29:44','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table SUMUP_Transaction',1,'Y','N','Y','Y','SUMUP_Transaction','N',1000000,TO_TIMESTAMP('2024-10-04 09:29:44','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,
+                         StartNo,Updated,UpdatedBy) 
+VALUES (0,0,556374,TO_TIMESTAMP('2024-10-04 09:29:44','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table SUMUP_Transaction',1,'Y','N','Y','Y','SUMUP_Transaction',
+        1000000,TO_TIMESTAMP('2024-10-04 09:29:44','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2024-10-04T06:29:44.477Z
