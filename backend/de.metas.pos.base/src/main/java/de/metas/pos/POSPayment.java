@@ -1,5 +1,6 @@
 package de.metas.pos;
 
+import de.metas.i18n.BooleanWithReason;
 import de.metas.money.Money;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
@@ -25,10 +26,57 @@ public class POSPayment
 
 	public POSPaymentId getLocalIdNotNull() {return Check.assumeNotNull(this.getLocalId(), "Expected POSPayment to be saved: {}", this);}
 
+	public boolean isNew() {return paymentProcessingStatus.isNew();}
+
+	public boolean isPending() {return paymentProcessingStatus.isPending();}
+
+	public boolean isSuccessful() {return paymentProcessingStatus.isSuccessful();}
+
+	public boolean isDeleted() {return paymentProcessingStatus.isDeleted();}
+
+	public boolean isAllowDeleteFromDB() {return paymentProcessingStatus.isAllowDeleteFromDB();}
+
+	public void assertAllowDelete()
+	{
+		paymentProcessingStatus.assertAllowDelete();
+		if (paymentReceiptId != null)
+		{
+			throw new AdempiereException("Deleting a POS payment with receipt is not allowed");
+		}
+	}
+
+	public void assertAllowDeleteFromDB()
+	{
+		assertAllowDelete();
+		paymentProcessingStatus.assertAllowDeleteFromDB();
+	}
+
+	public void assertAllowCheckout()
+	{
+		paymentProcessingStatus.assertAllowCheckout();
+	}
+
 	public boolean isAllowRefund()
 	{
 		return paymentMethod.isCard() && paymentProcessingStatus.isAllowRefund();
 	}
+
+	public void assertAllowRefund()
+	{
+		if (!isAllowRefund())
+		{
+			throw new AdempiereException("Payments with " + paymentMethod + "/" + paymentProcessingStatus + " cannot be refunded");
+		}
+	}
+
+	public BooleanWithReason checkAllowVoid()
+	{
+		return paymentProcessingStatus.isPendingOrSuccessful()
+				? BooleanWithReason.falseBecause("Pending or Successful payments cannot be voided")
+				: BooleanWithReason.TRUE;
+	}
+
+	public void assertAllowVoid() {checkAllowVoid().assertTrue();}
 
 	public void assertNoPaymentReceipt()
 	{
@@ -51,12 +99,12 @@ public class POSPayment
 
 	public POSPayment changingStatusToDeleted()
 	{
-		if (paymentProcessingStatus == POSPaymentProcessingStatus.DELETED)
+		if (isDeleted())
 		{
 			return this;
 		}
 
-		paymentProcessingStatus.assertAllowDelete();
+		assertAllowDelete();
 		return toBuilder().paymentProcessingStatus(POSPaymentProcessingStatus.DELETED).build();
 	}
 
