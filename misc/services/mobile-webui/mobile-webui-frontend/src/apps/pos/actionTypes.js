@@ -8,6 +8,7 @@ export const NEW_ORDER = 'pos/orders/new';
 
 export const SET_SELECTED_ORDER_LINE = 'pos/orders/setSelectedLine';
 export const ADD_ORDER_LINE = 'pos/orders/line/add';
+export const REMOVE_ORDER_LINE = 'pos/orders/line/remove';
 
 export const ADD_PAYMENT = 'pos/orders/addPayment';
 export const REMOVE_PAYMENT = 'pos/orders/removePayment';

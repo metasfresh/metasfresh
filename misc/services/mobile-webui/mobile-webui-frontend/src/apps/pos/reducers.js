@@ -7,6 +7,7 @@ import {
   POS_TERMINAL_CLOSING_CANCEL,
   POS_TERMINAL_LOAD_DONE,
   POS_TERMINAL_LOAD_START,
+  REMOVE_ORDER_LINE,
   REMOVE_PAYMENT,
   SET_SELECTED_ORDER_LINE,
 } from './actionTypes';
@@ -94,6 +95,12 @@ export function posReducer(applicationState = initialState, action) {
       return {
         ...applicationState,
         orders: addOrderLineToCurrentOrder(applicationState.orders, action.payload),
+      };
+    }
+    case REMOVE_ORDER_LINE: {
+      return {
+        ...applicationState,
+        orders: removeOrderLine(applicationState.orders, action.payload),
       };
     }
     case SET_SELECTED_ORDER_LINE: {
@@ -237,6 +244,20 @@ const addOrderLineToOrder = ({ order, newOrderLine }) => {
   };
 };
 
+const removeOrderLine = (ordersState, { order_uuid, line_uuid }) => {
+  return changeOrder({
+    orders: ordersState,
+    order_uuid,
+    mapper: (order) => remoteOrderLineFromOrder({ order, line_uuid }),
+  });
+};
+const remoteOrderLineFromOrder = ({ order, line_uuid }) => {
+  const lines = order.lines.filter((line) => line.uuid !== line_uuid);
+  const selectedLineUUID = computeSelectedLineUUID({ selectedLineUUID: order.selectedLineUUID, lines });
+
+  return { ...order, lines, selectedLineUUID };
+};
+
 const changeOrderInApplicationState = ({ applicationState, order_uuid, mapper }) => {
   const orders = applicationState.orders;
   const ordersChanged = changeOrder({ orders, order_uuid, mapper });
@@ -267,13 +288,20 @@ const changeOrder = ({ orders, order_uuid, mapper }) => {
 const recomputeOrderDetails = ({ order }) => {
   let orderChanged = order;
 
-  if (!orderChanged.selectedLineUUID || !orderChanged.lines.some((line) => line.uuid === order.selectedLineUUID)) {
-    const lines = orderChanged.lines;
-    const selectedLineUUID = lines.length > 0 ? lines[lines.length - 1].uuid : null;
+  const selectedLineUUID = computeSelectedLineUUID({ selectedLineUUID: order.selectedLineUUID, lines: order.lines });
+  if (selectedLineUUID !== orderChanged.selectedLineUUID) {
     orderChanged = { ...orderChanged, selectedLineUUID };
   }
 
   return orderChanged;
+};
+
+const computeSelectedLineUUID = ({ selectedLineUUID, lines }) => {
+  if (!selectedLineUUID || !lines.some((line) => line.uuid === selectedLineUUID)) {
+    return lines.length > 0 ? lines[lines.length - 1].uuid : null;
+  } else {
+    return selectedLineUUID;
+  }
 };
 
 const setSelectedOrderLine = ({ orders, order_uuid, selectedLineUUID }) => {

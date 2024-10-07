@@ -4,6 +4,7 @@ import {
   ADD_PAYMENT,
   NEW_ORDER,
   ORDERS_LIST_UPDATE,
+  REMOVE_ORDER_LINE,
   REMOVE_PAYMENT,
   SET_SELECTED_ORDER_LINE,
 } from '../actionTypes';
@@ -59,6 +60,22 @@ export const useCurrentOrder = () => {
           order_uuid: currentOrder?.uuid,
         })
       );
+      dispatch(() => setProcessing(false));
+    },
+    removeOrderLine: (line_uuid) => {
+      if (isProcessing) {
+        console.log('Skip removing order line because order is currently processing', { line_uuid, currentOrder });
+        return;
+      }
+      setProcessing(true);
+
+      dispatch(
+        removeOrderLine({
+          order_uuid: currentOrder?.uuid,
+          line_uuid,
+        })
+      );
+
       dispatch(() => setProcessing(false));
     },
   };
@@ -209,6 +226,24 @@ const addOrderLineAction = ({
     },
   };
 };
+
+const removeOrderLine = ({ order_uuid, line_uuid }) => {
+  return (dispatch) => {
+    dispatch(removeOrderLineAction({ order_uuid, line_uuid }));
+    dispatch(syncOrderToBackend({ order_uuid }));
+  };
+};
+
+const removeOrderLineAction = ({ order_uuid, line_uuid }) => {
+  return {
+    type: REMOVE_ORDER_LINE,
+    payload: {
+      order_uuid,
+      line_uuid,
+    },
+  };
+};
+
 const syncOrderToBackend = ({ order_uuid }) => {
   return (dispatch, getState) => {
     const globalState = getState();
