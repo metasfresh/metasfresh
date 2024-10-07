@@ -5,7 +5,6 @@ export const POS_TERMINAL_CLOSING_CANCEL = 'pos/terminal/closing/cancel';
 
 export const ORDERS_LIST_UPDATE = 'pos/orders/update';
 export const NEW_ORDER = 'pos/orders/new';
-export const REMOVE_ORDER = 'pos/orders/remove';
 
 export const SET_SELECTED_ORDER_LINE = 'pos/orders/setSelectedLine';
 export const ADD_ORDER_LINE = 'pos/orders/line/add';

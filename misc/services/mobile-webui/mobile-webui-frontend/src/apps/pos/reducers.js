@@ -7,7 +7,6 @@ import {
   POS_TERMINAL_CLOSING_CANCEL,
   POS_TERMINAL_LOAD_DONE,
   POS_TERMINAL_LOAD_START,
-  REMOVE_ORDER,
   REMOVE_PAYMENT,
   SET_SELECTED_ORDER_LINE,
 } from './actionTypes';
@@ -89,16 +88,6 @@ export function posReducer(applicationState = initialState, action) {
       return {
         ...applicationState,
         orders: addNewOrderAndSetCurrent(applicationState.orders),
-      };
-    }
-    case REMOVE_ORDER: {
-      const {
-        payload: { order_uuid },
-      } = action;
-
-      return {
-        ...applicationState,
-        orders: removeOrderByUUID({ orders: applicationState.orders, order_uuid }),
       };
     }
     case ADD_ORDER_LINE: {
@@ -273,15 +262,6 @@ const changeOrder = ({ orders, order_uuid, mapper }) => {
       byUUID: { ...orders.byUUID, [orderChanged.uuid]: orderChanged },
     };
   }
-};
-
-const removeOrderByUUID = ({ orders, order_uuid }) => {
-  const byUUID = { ...orders.byUUID };
-  delete byUUID[order_uuid];
-
-  const current_uuid = byUUID[orders.current_uuid] ? orders.current_uuid : Object.keys(byUUID).find(() => true);
-
-  return { ...orders, current_uuid, byUUID };
 };
 
 const recomputeOrderDetails = ({ order }) => {
