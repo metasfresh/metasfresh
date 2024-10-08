@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.postfinance.base
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.bpartner.postfinance;
+package de.metas.postfinance.orgconfig;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -32,25 +32,25 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 
 @Value
-public class PostFinanceBPartnerConfigId implements RepoIdAware
+public class PostFinanceOrgConfigId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static PostFinanceBPartnerConfigId ofRepoId(final int repoId)
+	public static PostFinanceOrgConfigId ofRepoId(final int repoId)
 	{
-		return new PostFinanceBPartnerConfigId(repoId);
+		return new PostFinanceOrgConfigId(repoId);
 	}
 
 	@Nullable
-	public static PostFinanceBPartnerConfigId ofRepoIdOrNull(@Nullable final Integer repoId)
+	public static PostFinanceOrgConfigId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return repoId != null && repoId > 0 ? new PostFinanceBPartnerConfigId(repoId) : null;
+		return repoId != null && repoId > 0 ? new PostFinanceOrgConfigId(repoId) : null;
 	}
 
-	private PostFinanceBPartnerConfigId(final int repoId)
+	private PostFinanceOrgConfigId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "PostFinance_BPartner_Config");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "PostFinance_Org_Config");
 	}
 
 	@Override
@@ -60,17 +60,17 @@ public class PostFinanceBPartnerConfigId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(@Nullable final PostFinanceBPartnerConfigId postFinanceBPartnerConfigId)
+	public static int toRepoId(@Nullable final PostFinanceOrgConfigId postFinanceOrgConfigId)
 	{
-		return toRepoIdOr(postFinanceBPartnerConfigId, -1);
+		return toRepoIdOr(postFinanceOrgConfigId, -1);
 	}
 
-	public static int toRepoIdOr(@Nullable final PostFinanceBPartnerConfigId postFinanceBPartnerConfigId, final int defaultValue)
+	public static int toRepoIdOr(@Nullable final PostFinanceOrgConfigId postFinanceOrgConfigId, final int defaultValue)
 	{
-		return postFinanceBPartnerConfigId != null ? postFinanceBPartnerConfigId.getRepoId() : defaultValue;
+		return postFinanceOrgConfigId != null ? postFinanceOrgConfigId.getRepoId() : defaultValue;
 	}
 
-	public static boolean equals(@Nullable final PostFinanceBPartnerConfigId id1, @Nullable final PostFinanceBPartnerConfigId id2)
+	public static boolean equals(@Nullable final PostFinanceOrgConfigId id1, @Nullable final PostFinanceOrgConfigId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

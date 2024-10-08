@@ -1,4 +1,26 @@
-package org.compiere.model;
+/*
+ * #%L
+ * de.metas.postfinance.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.postfinance.model;
 
 import org.adempiere.model.ModelColumn;
 
@@ -99,6 +121,7 @@ public interface I_PostFinance_Org_Config
 
 	/**
 	 * Set Archive Data.
+	 * Download already downloaded data from PostFinance
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -108,6 +131,7 @@ public interface I_PostFinance_Org_Config
 
 	/**
 	 * Get Archive Data.
+	 * Download already downloaded data from PostFinance
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -117,6 +141,27 @@ public interface I_PostFinance_Org_Config
 
 	ModelColumn<I_PostFinance_Org_Config, Object> COLUMN_IsArchiveData = new ModelColumn<>(I_PostFinance_Org_Config.class, "IsArchiveData", null);
 	String COLUMNNAME_IsArchiveData = "IsArchiveData";
+
+	/**
+	 * Set Testserver.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsTestserver (boolean IsTestserver);
+
+	/**
+	 * Get Testserver.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isTestserver();
+
+	ModelColumn<I_PostFinance_Org_Config, Object> COLUMN_IsTestserver = new ModelColumn<>(I_PostFinance_Org_Config.class, "IsTestserver", null);
+	String COLUMNNAME_IsTestserver = "IsTestserver";
 
 	/**
 	 * Set Use Paper Bill Service.
