@@ -119,7 +119,7 @@ Feature: Call order contract
     And after not more than 120s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | callOrderLine_1           | N             |
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
       | schedule_1                       | D            | false               | false       | 2                                               |
     Then after not more than 60s, M_InOut is found:
@@ -169,7 +169,7 @@ Feature: Call order contract
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | callOrderLine_1           | N             |
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_1                       | D            | true                | false       |
     Then after not more than 60s, M_InOut is found:

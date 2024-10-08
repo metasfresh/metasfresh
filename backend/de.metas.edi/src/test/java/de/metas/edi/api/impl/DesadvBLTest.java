@@ -2,7 +2,7 @@ package de.metas.edi.api.impl;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.edi.api.EDIDesadvLineId;
-import de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest;
+import de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest;
 import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
 import de.metas.edi.api.impl.pack.EDIDesadvPackService;
 import de.metas.esb.edi.model.I_EDI_Desadv;
@@ -69,10 +69,11 @@ class DesadvBLTest
 	@Test
 	void setQty_isUOMForTUs()
 	{
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
+		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
+				.line(10)
 				.qtyItemCapacity(new BigDecimal("9"))
 				.qtyTu(BigDecimal.ZERO.intValue())
 				.movementQtyInStockUOM(BigDecimal.ZERO);
@@ -98,7 +99,7 @@ class DesadvBLTest
 				null);
 
 		// then
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("9"));
@@ -113,10 +114,11 @@ class DesadvBLTest
 	@Test
 	void setQty_isCatchWeight_noPicking()
 	{
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
+		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
+				.line(10)
 				.qtyTu(BigDecimal.ZERO.intValue())
 				.movementQtyInStockUOM(BigDecimal.ZERO);
 
@@ -140,7 +142,7 @@ class DesadvBLTest
 				BigDecimal.valueOf(0.25));
 
 		// then
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("5"));
@@ -154,10 +156,11 @@ class DesadvBLTest
 	@Test
 	void setQty_isCatchWeight_withPicking()
 	{
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
+		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
 				.inOutId(InOutId.ofRepoId(2))
 				.inOutLineId(InOutLineId.ofRepoId(3))
+				.line(10)
 				.qtyTu(BigDecimal.ZERO.intValue())
 				.movementQtyInStockUOM(BigDecimal.ZERO);
 
@@ -182,7 +185,7 @@ class DesadvBLTest
 				null);
 
 		// then
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerTU()).as("QtyCUsPerTU").isEqualByComparingTo(new BigDecimal("5"));

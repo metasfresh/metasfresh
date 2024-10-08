@@ -235,6 +235,7 @@ public class EDI_Desadv_StepDef
 		final String desadvIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final I_EDI_Desadv desadvRecord = desadvTable.get(desadvIdentifier);
+		assertThat(desadvRecord).as("Missing EDI_Desadv for identifier=%s", desadvIdentifier).isNotNull();
 
 		final String exportStatus = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus);
 

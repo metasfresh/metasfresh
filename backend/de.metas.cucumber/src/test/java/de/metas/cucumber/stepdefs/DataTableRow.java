@@ -61,8 +61,11 @@ import java.util.function.Function;
 public class DataTableRow
 {
 	private final int lineNo; // introduced to improve logging/debugging
-	@NonNull private final Map<String, String> map;
-	@Nullable @Setter private String additionalRowIdentifierColumnName;
+	@NonNull
+	private final Map<String, String> map;
+	@Nullable
+	@Setter
+	private String additionalRowIdentifierColumnName;
 
 	private static final Splitter COMMA_SEPARATED_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
@@ -84,7 +87,10 @@ public class DataTableRow
 		return new DataTableRow(-1, map);
 	}
 
-	public Map<String, String> asMap() {return map;}
+	public Map<String, String> asMap()
+	{
+		return map;
+	}
 
 	@NonNull
 	public String getAsString(@NonNull final String columnName)
@@ -274,6 +280,11 @@ public class DataTableRow
 		if (!columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
 		{
 			string = map.get("OPT." + columnName + "." + StepDefDataIdentifier.SUFFIX);
+		}
+
+		if (string == null && !columnName.startsWith("OPT."))
+		{
+			string = map.get("OPT." + columnName);
 		}
 
 		if (string == null && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))

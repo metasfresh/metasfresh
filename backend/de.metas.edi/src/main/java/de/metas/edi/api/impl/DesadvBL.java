@@ -10,9 +10,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.common.util.SimpleSequence;
 import de.metas.edi.api.DesadvInOutLine;
-import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.EDIExportStatus;
@@ -227,8 +225,9 @@ public class DesadvBL implements IDesadvBL
 		if (bPartnerProduct != null)
 		{
 			newDesadvLine.setProductNo(bPartnerProduct.getProductNo());
+			newDesadvLine.setGTIN_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getGTIN(), product.getGTIN()));
 			newDesadvLine.setUPC_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getUPC(), product.getUPC()));
-			newDesadvLine.setEAN_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getGTIN(), bPartnerProduct.getEAN_CU(), product.getGTIN()));
+			newDesadvLine.setEAN_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getEAN_CU(), product.getUPC()/*no EAN on M_Product; UPC plays both roles*/));
 
 			if (Check.isEmpty(newDesadvLine.getProductDescription(), true))
 			{
@@ -243,11 +242,12 @@ public class DesadvBL implements IDesadvBL
 		}
 		else 
 		{
+			newDesadvLine.setGTIN_CU(product.getGTIN());
 			newDesadvLine.setUPC_CU(product.getUPC());
-			newDesadvLine.setEAN_CU(product.getGTIN());
+			newDesadvLine.setEAN_CU(product.getUPC()/*no EAN on M_Product; UPC plays both roles*/);
 		}
 
-		if (Check.isEmpty(newDesadvLine.getProductDescription(), true))
+		if (Check.isBlank(newDesadvLine.getProductDescription()))
 		{
 			// fallback for product description
 			newDesadvLine.setProductDescription(product.getName());
@@ -256,7 +256,7 @@ public class DesadvBL implements IDesadvBL
 		//
 		// set infos from M_HU_PI_Item_Product
 		final I_M_HU_PI_Item_Product materialItemProduct = ediDesadvPackService.extractHUPIItemProduct(orderRecord, orderLineRecord);
-		newDesadvLine.setGTIN(materialItemProduct.getGTIN());
+		newDesadvLine.setGTIN_TU(materialItemProduct.getGTIN());
 		newDesadvLine.setUPC_TU(materialItemProduct.getUPC());
 		newDesadvLine.setEAN_TU(materialItemProduct.getEAN_TU());
 
@@ -356,8 +356,8 @@ public class DesadvBL implements IDesadvBL
 		inOut.setEDI_Desadv(desadv);
 
 		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
-		final int maxDesadvPackLine = desadvDAO.retrieveMaxDesadvPackLine(EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID()));
-		final SimpleSequence packLineSequence = SimpleSequence.createWithInitial(maxDesadvPackLine);
+		
+		final EDIDesadvPackService.Sequences sequences = ediDesadvPackService.createSequences(desadv);
 
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : inOutLines)
@@ -366,15 +366,16 @@ public class DesadvBL implements IDesadvBL
 			{
 				continue; // the DESADV-Line needs to relate to an orderline to make sense
 			}
-			addInOutLine(inOutLine, recipientBPartnerId, packLineSequence);
+			addInOutLine(inOutLine, recipientBPartnerId, sequences);
 		}
 		return desadv;
 	}
 
+
 	private void addInOutLine(
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final BPartnerId recipientBPartnerId,
-			@NonNull final SimpleSequence packLineSequence)
+			@NonNull final EDIDesadvPackService.Sequences sequences)
 	{
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLineRecord.getC_OrderLine(), I_C_OrderLine.class);
 
@@ -404,7 +405,7 @@ public class DesadvBL implements IDesadvBL
 		inOutLineRecord.setEDI_DesadvLine_ID(desadvLineRecord.getEDI_DesadvLine_ID());
 		InterfaceWrapperHelper.save(inOutLineRecord);
 
-		ediDesadvPackService.createPacks(inOutLineRecord, recipientBPartnerId, packLineSequence);
+		ediDesadvPackService.createOrExtendPacks(inOutLineRecord, recipientBPartnerId, sequences);
 	}
 
 	@Override
@@ -641,6 +642,7 @@ public class DesadvBL implements IDesadvBL
 		desadvRecord.setFulfillmentPercent(fullfilment.toBigDecimal());
 	}
 
+	@Nullable
 	@Override
 	public ReportResultData printSSCC18_Labels(
 			@NonNull final Properties ctx,
@@ -883,8 +885,11 @@ public class DesadvBL implements IDesadvBL
 	@NonNull
 	private EDIDesadvQuery buildEDIDesadvQuery(@NonNull final I_C_Order order)
 	{
+		final String poReference = Check.assumeNotNull(order.getPOReference(),
+													   "In the DESADV-Context, POReference is mandatory; C_Order_ID={}", 
+													   order.getC_Order_ID());
 		final EDIDesadvQuery.EDIDesadvQueryBuilder ediDesadvQueryBuilder = EDIDesadvQuery.builder()
-				.poReference(order.getPOReference())
+				.poReference(poReference)
 				.ctxAware(InterfaceWrapperHelper.getContextAware(order));
 
 		if (isMatchUsingBPartnerId())
@@ -904,8 +909,11 @@ public class DesadvBL implements IDesadvBL
 	@NonNull
 	private EDIDesadvQuery buildEDIDesadvQuery(@NonNull final I_M_InOut inOut)
 	{
+		final String poReference = Check.assumeNotNull(inOut.getPOReference(),
+													   "In the DESADV-Context, POReference is mandatory; M_InOut_ID={}",
+													   inOut.getM_InOut_ID());
 		final EDIDesadvQuery.EDIDesadvQueryBuilder ediDesadvQueryBuilder = EDIDesadvQuery.builder()
-				.poReference(inOut.getPOReference())
+				.poReference(poReference)
 				.ctxAware(InterfaceWrapperHelper.getContextAware(inOut));
 
 		if (isMatchUsingBPartnerId())

@@ -35,6 +35,7 @@ import org.compiere.model.I_C_DocType_Sequence;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -80,7 +81,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 			.build();
 
 	@Override
-	public DocumentSequenceInfo getOrCreateDocumentSequenceInfo(final String sequenceName, final int adClientId, final int adOrgId)
+	public DocumentSequenceInfo getOrCreateDocumentSequenceInfo(@NonNull final String sequenceName, final int adClientId, final int adOrgId)
 	{
 		final BySequenceNameCacheKey key = BySequenceNameCacheKey.builder()
 				.sequenceName(sequenceName)
@@ -120,6 +121,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		return toDocumentSequenceInfo(record);
 	}    // MSequence;
 
+	@Nullable
 	@Override
 	@Cached(cacheName = I_AD_Sequence.Table_Name + "#DocumentSequenceInfo#By#AD_Sequence_ID")
 	public DocumentSequenceInfo retriveDocumentSequenceInfo(@NonNull final DocSequenceId sequenceId)
@@ -171,6 +173,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		}
 	}
 
+	@Nullable
 	private static CustomSequenceNoProvider createCustomSequenceNoProviderOrNull(final I_AD_Sequence adSequence)
 	{
 		if (adSequence.getCustomSequenceNoProvider_JavaClass_ID() <= 0)

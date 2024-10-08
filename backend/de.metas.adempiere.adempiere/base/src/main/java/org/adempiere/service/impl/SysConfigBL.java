@@ -35,14 +35,14 @@ public class SysConfigBL implements ISysConfigBL
 
 	@Nullable
 	@Override
-	public String getValue(final String name, @Nullable final String defaultValue)
+	public String getValue(final @NonNull String name, @Nullable final String defaultValue)
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM).orElse(defaultValue);
 	}
 
 	@Nullable
 	@Override
-	public String getValue(final String name)
+	public String getValue(final @NonNull String name)
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM).orElse(null);
 	}
