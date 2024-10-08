@@ -31,6 +31,7 @@ import de.metas.document.DocumentNoFilter;
 import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.mobile.application.MobileApplicationId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -47,7 +48,6 @@ import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersFacetGroupList;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersFacetsQuery;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
@@ -108,11 +108,10 @@ public class WorkflowRestController
 	@GetMapping("/apps")
 	public JsonMobileApplicationsList getMobileApplications()
 	{
-		final UserId loggedUserId = Env.getLoggedUserId();
 		final JsonOpts jsonOpts = newJsonOpts();
 		return JsonMobileApplicationsList.builder()
 				.applications(
-						workflowRestAPIService.streamMobileApplicationInfos(loggedUserId)
+						workflowRestAPIService.streamMobileApplicationInfos(Env.getUserRolePermissions())
 								.map(applicationInfo -> JsonMobileApplication.of(applicationInfo, jsonOpts))
 								.sorted(Comparator.comparing(JsonMobileApplication::getSortNo).thenComparing(JsonMobileApplication::getCaption))
 								.collect(ImmutableList.toImmutableList()))

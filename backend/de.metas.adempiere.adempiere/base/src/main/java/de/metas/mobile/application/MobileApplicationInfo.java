@@ -1,7 +1,8 @@
-package de.metas.workflow.rest_api.model;
+package de.metas.mobile.application;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.mobile.application.repository.MobileApplicationRepoId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -11,6 +12,7 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class MobileApplicationInfo
 {
+	@NonNull MobileApplicationRepoId repoId;
 	@NonNull MobileApplicationId id;
 	@NonNull ITranslatableString caption;
 	boolean requiresWorkstation;

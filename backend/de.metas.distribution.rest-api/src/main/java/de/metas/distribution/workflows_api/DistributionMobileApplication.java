@@ -9,7 +9,7 @@ import de.metas.distribution.workflows_api.activity_handlers.MoveWFActivityHandl
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationId;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;

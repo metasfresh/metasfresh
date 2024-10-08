@@ -24,6 +24,10 @@ package de.metas.workflow.rest_api.service;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationInfo;
+import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
+import de.metas.security.IUserRolePermissions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
@@ -31,8 +35,6 @@ import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScann
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
-import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
@@ -83,15 +85,16 @@ public class WorkflowRestAPIService
 		this.wfActivityHandlersRegistry = wfActivityHandlersRegistry;
 	}
 
-	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(final UserId loggedUserId)
+	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(final IUserRolePermissions userPermissions)
 	{
 		return applicationInfoRepository.getAllActive()
 				.stream()
+				.filter(applicationInfo -> userPermissions.checkMobileApplicationPermission(applicationInfo.getRepoId()).hasWriteAccess())
 				.map(applicationInfo -> {
 					try
 					{
 						final MobileApplication application = applications.getById(applicationInfo.getId());
-						return application.customizeApplicationInfo(applicationInfo, loggedUserId);
+						return application.customizeApplicationInfo(applicationInfo, userPermissions.getUserId());
 					}
 					catch (Exception ex)
 					{

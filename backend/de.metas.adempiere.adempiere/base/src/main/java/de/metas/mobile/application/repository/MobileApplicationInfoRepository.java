@@ -1,14 +1,14 @@
-package de.metas.workflow.rest_api.service;
+package de.metas.mobile.application.repository;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
-import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -56,6 +56,7 @@ public class MobileApplicationInfoRepository
 		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(record);
 
 		return MobileApplicationInfo.builder()
+				.repoId(MobileApplicationRepoId.ofRepoId(record.getMobile_Application_ID()))
 				.id(MobileApplicationId.ofString(record.getValue()))
 				.caption(trls.getColumnTrl(I_Mobile_Application.COLUMNNAME_Name, record.getName()))
 				.showInMainMenu(record.isShowInMainMenu())

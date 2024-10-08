@@ -26,7 +26,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
