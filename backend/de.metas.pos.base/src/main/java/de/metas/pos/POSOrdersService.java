@@ -168,10 +168,7 @@ public class POSOrdersService
 		return ordersRepository.updateByExternalId(posOrderExternalId, posOrder -> {
 			assertCanEdit(posTerminalId, posOrder, userId);
 			posOrder.assertWaitingForPayment();
-
-			final POSTerminalPaymentProcessorConfig paymentProcessorConfig = posTerminalService.getPOSTerminalById(posOrder.getPosTerminalId()).getPaymentProcessorConfigNotNull();
-
-			posOrder.updatePaymentByExternalId(posPaymentExternalId, posPayment -> posOrderProcessingServices.processPOSPayment(posPayment, posOrder, paymentProcessorConfig));
+			posOrder.updatePaymentByExternalId(posPaymentExternalId, posPayment -> posOrderProcessingServices.processPOSPayment(posPayment, posOrder));
 		});
 	}
 
