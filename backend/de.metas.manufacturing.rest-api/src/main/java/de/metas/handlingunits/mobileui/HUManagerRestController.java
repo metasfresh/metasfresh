@@ -33,6 +33,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.GetByIdRequest;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
+import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -59,14 +60,22 @@ import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 @Profile(Profiles.PROFILE_App)
 public class HUManagerRestController
 {
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final HUManagerProfileRepository profileRepository;
-	private final HUQRCodesService huQRCodesService;
-	private final HandlingUnitsService handlingUnitsService;
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final MobileApplicationService mobileApplicationService;
+	@NonNull private final HUManagerProfileRepository profileRepository;
+	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final HandlingUnitsService handlingUnitsService;
+
+	private void assertApplicationAccess()
+	{
+		mobileApplicationService.assertAccess(HUManagerMobileApplication.APPLICATION_ID, Env.getUserRolePermissions());
+	}
 
 	@PostMapping("/byQRCode")
 	public ResponseEntity<JsonGetSingleHUResponse> retrieveHUManagerConfig(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
+		assertApplicationAccess();
+
 		return handlingUnitsService.getByIdSupplier(
 				() -> GetByIdRequest.builder()
 						.huId(getHuId(request.getQrCode()))

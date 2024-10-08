@@ -14,6 +14,7 @@ const CurrentOrderActions = () => {
   const isNewOrderAllowed = !currentOrder.isLoading && currentOrder.lines?.length > 0;
   const isVoidAllowed = !currentOrder.isLoading && currentOrder.lines?.length > 0;
   const isPayAllowed = !currentOrder.isLoading && currentOrder.lines?.length > 0;
+  const isDeleteCurrentLineAllowed = !!currentOrder.selectedLineUUID;
 
   const onNewOrderClick = () => {
     dispatch(addNewOrderAction());
@@ -22,7 +23,10 @@ const CurrentOrderActions = () => {
     if (!isVoidAllowed) return;
     dispatch(changeOrderStatusToVoid({ order_uuid: currentOrder?.uuid }));
   };
-
+  const onDeleteCurrentLine = () => {
+    if (!isDeleteCurrentLineAllowed) return;
+    currentOrder.removeOrderLine(currentOrder.selectedLineUUID);
+  };
   const onPayClick = () => {
     if (!isPayAllowed) return;
     dispatch(changeOrderStatusToWaitingPayment({ order_uuid: currentOrder?.uuid }));
@@ -36,6 +40,9 @@ const CurrentOrderActions = () => {
         </button>
         <button className="button" onClick={onVoidCurrentOrderClick} disabled={!isVoidAllowed}>
           Void
+        </button>
+        <button className="button" onClick={onDeleteCurrentLine} disabled={!isDeleteCurrentLineAllowed}>
+          Delete line
         </button>
       </div>
       <button className="button is-large pay-action" onClick={onPayClick} disabled={!isPayAllowed}>

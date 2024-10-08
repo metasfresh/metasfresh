@@ -79,6 +79,7 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 			Loggables.addLog("Sales order already generated. Doing nothing");
 			return Result.SUCCESS;
 		}
+		posOrder.assertCompleted();
 
 		final List<OLCand> olCands = createOLCands(posOrder);
 		Check.assumeNotEmpty(olCands, "No OLCands created for {}", posOrder);
@@ -240,6 +241,28 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 
 	private void allocatePaymentsInTrx(final POSOrder posOrder)
 	{
+		final I_C_Invoice invoice = getSingleInvoice(posOrder);
+
+		for (final POSPayment posPayment : posOrder.getPaymentsNotDeleted())
+		{
+			final I_C_Payment paymentReceipt;
+			if (posPayment.getPaymentReceiptId() != null)
+			{
+				paymentReceipt = paymentBL.getById(posPayment.getPaymentReceiptId());
+			}
+			else
+			{
+				paymentReceipt = createPaymentReceipt(posPayment, posOrder);
+				final PaymentId paymentReceiptId = PaymentId.ofRepoId(paymentReceipt.getC_Payment_ID());
+				posOrder.updatePaymentById(posPayment.getLocalIdNotNull(), payment -> payment.withPaymentReceipt(paymentReceiptId));
+			}
+
+			allocationBL.autoAllocateSpecificPayment(invoice, paymentReceipt, true);
+		}
+	}
+
+	private I_C_Invoice getSingleInvoice(final POSOrder posOrder)
+	{
 		final OrderId salesOrderId = posOrder.getSalesOrderId();
 		if (salesOrderId == null)
 		{
@@ -255,18 +278,24 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 		{
 			throw new AdempiereException("More than one invoice was generated for " + posOrder);
 		}
-		final I_C_Invoice invoice = invoices.get(0);
-
-		final Set<PaymentId> paymentReceiptIds = posOrder.getPaymentReceiptIds();
-		if (paymentReceiptIds.isEmpty())
-		{
-			throw new AdempiereException("No payment receipts were generated for " + posOrder);
-		}
-
-		final List<I_C_Payment> paymentReceipts = paymentBL.getByIds(paymentReceiptIds);
-		for (final I_C_Payment paymentReceipt : paymentReceipts)
-		{
-			allocationBL.autoAllocateSpecificPayment(invoice, paymentReceipt, true);
-		}
+		return invoices.get(0);
 	}
+
+	private I_C_Payment createPaymentReceipt(@NonNull final POSPayment posPayment, @NonNull POSOrder posOrder)
+	{
+		posPayment.assertNoPaymentReceipt();
+
+		return paymentBL.newInboundReceiptBuilder()
+				.adOrgId(posOrder.getOrgId())
+				.orgBankAccountId(posOrder.getCashbookId())
+				.bpartnerId(posOrder.getShipToCustomerId())
+				.payAmt(posPayment.getAmount().toBigDecimal())
+				.currencyId(posPayment.getAmount().getCurrencyId())
+				.tenderType(posPayment.getPaymentMethod().getTenderType())
+				.dateTrx(posOrder.getDate())
+				.createAndProcess();
+
+		// TODO: add the payment to bank statement
+	}
+
 }

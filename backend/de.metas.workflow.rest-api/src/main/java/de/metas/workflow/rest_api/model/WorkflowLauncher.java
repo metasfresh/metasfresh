@@ -22,6 +22,7 @@
 
 package de.metas.workflow.rest_api.model;
 
+import de.metas.mobile.application.MobileApplicationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

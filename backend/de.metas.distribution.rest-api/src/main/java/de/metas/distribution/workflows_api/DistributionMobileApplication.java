@@ -7,11 +7,9 @@ import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.distribution.workflows_api.activity_handlers.CompleteDistributionWFActivityHandler;
 import de.metas.distribution.workflows_api.activity_handlers.MoveWFActivityHandler;
 import de.metas.document.engine.IDocument;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
-import de.metas.workflow.rest_api.model.MobileApplicationInfo;
+import de.metas.mobile.application.MobileApplicationId;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
@@ -37,12 +35,6 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	@VisibleForTesting
 	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("distribution");
 
-	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.distribution.appName");
-	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
-			.id(APPLICATION_ID)
-			.caption(TranslatableStrings.adMessage(MSG_Caption))
-			.build();
-
 	private final DistributionRestService distributionRestService;
 	private final DistributionWorkflowLaunchersProvider wfLaunchersProvider;
 
@@ -56,12 +48,6 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 
 	@Override
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
-
-	@Override
-	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId)
-	{
-		return APPLICATION_INFO;
-	}
 
 	@Override
 	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)

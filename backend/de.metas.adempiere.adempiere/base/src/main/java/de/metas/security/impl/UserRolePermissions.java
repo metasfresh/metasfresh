@@ -37,6 +37,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.OrgIdAccessList;
@@ -183,6 +184,9 @@ class UserRolePermissions implements IUserRolePermissions
 	@Getter(AccessLevel.PACKAGE)
 	private final GenericPermissions miscPermissions;
 
+	@Getter(AccessLevel.PACKAGE)
+	private final ElementPermissions mobileApplicationPermissions;
+
 	private final ConcurrentHashMap<ArrayKey, Set<String>> docActionsAllowed = new ConcurrentHashMap<>();
 
 	/**
@@ -217,6 +221,7 @@ class UserRolePermissions implements IUserRolePermissions
 		taskPermissions = builder.getTaskPermissions();
 		workflowPermissions = builder.getWorkflowPermissions();
 		formPermissions = builder.getFormPermissions();
+		mobileApplicationPermissions = builder.getMobileApplicationAccesses();
 
 		miscPermissions = builder.getMiscPermissions();
 		constraints = builder.getConstraints();
@@ -262,12 +267,12 @@ class UserRolePermissions implements IUserRolePermissions
 		Joiner.on(Env.NL + Env.NL)
 				.skipNulls()
 				.appendTo(sb, miscPermissions, constraints, orgPermissions, tableOrgPermissions, tablePermissions, columnPermissions
-						  // don't show followings because they could be to big, mainly when is not a manual role:
-						  // , windowPermissions
-						  // , processPermissions
-						  // , taskPermissions
-						  // , formPermissions
-						  // , workflowPermissions
+						// don't show followings because they could be to big, mainly when is not a manual role:
+						// , windowPermissions
+						// , processPermissions
+						// , taskPermissions
+						// , formPermissions
+						// , workflowPermissions
 				);
 
 		return sb.toString();
@@ -721,6 +726,12 @@ class UserRolePermissions implements IUserRolePermissions
 	public ElementPermission checkWorkflowPermission(final int AD_Workflow_ID)
 	{
 		return workflowPermissions.getPermission(AD_Workflow_ID);
+	}
+
+	@Override
+	public ElementPermission checkMobileApplicationPermission(@NonNull final MobileApplicationRepoId applicationId)
+	{
+		return mobileApplicationPermissions.getPermission(applicationId.getRepoId());
 	}
 
 	@Override

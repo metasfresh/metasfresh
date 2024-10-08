@@ -2,6 +2,7 @@ package de.metas.security;
 
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
@@ -12,6 +13,7 @@ import de.metas.security.permissions.ResourceAsPermission;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.user.UserId;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.service.ClientId;
@@ -85,6 +87,8 @@ public interface IUserRolePermissions
 	boolean hasPermission(Permission permission);
 
 	<T extends Constraint> Optional<T> getConstraint(Class<T> constraintType);
+
+	ElementPermission checkMobileApplicationPermission(@NonNull MobileApplicationRepoId applicationId);
 
 	/*************************************************************************
 	 * Appends where clause to SQL statement for Table
