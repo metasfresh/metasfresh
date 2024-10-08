@@ -8,9 +8,9 @@ INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Tabl
 INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Table_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Table_ID=542446 AND NOT EXISTS (SELECT 1 FROM AD_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Table_ID=t.AD_Table_ID)
 ;
 
--- 2024-10-08T04:25:02.751Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556378,TO_TIMESTAMP('2024-10-08 07:25:02','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table Mobile_Application_Access',1,'Y','N','Y','Y','Mobile_Application_Access','N',1000000,TO_TIMESTAMP('2024-10-08 07:25:02','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- -- 2024-10-08T04:25:02.751Z
+-- INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556378,TO_TIMESTAMP('2024-10-08 07:25:02','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table Mobile_Application_Access',1,'Y','N','Y','Y','Mobile_Application_Access','N',1000000,TO_TIMESTAMP('2024-10-08 07:25:02','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
 -- 2024-10-08T04:25:02.763Z
 CREATE SEQUENCE MOBILE_APPLICATION_ACCESS_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1000000
