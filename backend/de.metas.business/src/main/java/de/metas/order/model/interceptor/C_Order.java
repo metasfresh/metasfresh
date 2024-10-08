@@ -137,7 +137,7 @@ public class C_Order
 		onPriceListChange(order);
 	}
 
-	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_DocTypeTarget_ID)
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_M_PriceList_ID)
 	public void onPriceListChangeCallout(final I_C_Order order)
 	{
 		onPriceListChange(order);
