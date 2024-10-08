@@ -3,11 +3,13 @@ package de.metas.pos.rest_api.json;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalId;
+import de.metas.workplace.WorkplaceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -18,6 +20,7 @@ public class JsonPOSTerminal
 {
 	@NonNull POSTerminalId id;
 	@NonNull String caption;
+	@Nullable WorkplaceId workplaceId;
 	@NonNull String currencySymbol;
 	int pricePrecision;
 	int currencyPrecision;
@@ -31,6 +34,7 @@ public class JsonPOSTerminal
 		return JsonPOSTerminal.builder()
 				.id(posTerminal.getId())
 				.caption(posTerminal.getName())
+				.workplaceId(posTerminal.getWorkplaceId())
 				.currencySymbol(posTerminal.getCurrencySymbol(adLanguage))
 				.pricePrecision(posTerminal.getPricePrecision().toInt())
 				.currencyPrecision(posTerminal.getCurrencyPrecision().toInt())

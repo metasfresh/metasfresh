@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS extends org.compiere.model.PO implements I_C_POS, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1839838638L;
+	private static final long serialVersionUID = -2043683520L;
 
     /** Standard Constructor */
     public X_C_POS (final Properties ctx, final int C_POS_ID, @Nullable final String trxName)
@@ -133,6 +133,33 @@ public class X_C_POS extends org.compiere.model.PO implements I_C_POS, org.compi
 	public int getC_POS_Journal_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_POS_Journal_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Workplace getC_Workplace()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class);
+	}
+
+	@Override
+	public void setC_Workplace(final org.compiere.model.I_C_Workplace C_Workplace)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class, C_Workplace);
+	}
+
+	@Override
+	public void setC_Workplace_ID (final int C_Workplace_ID)
+	{
+		if (C_Workplace_ID < 1) 
+			set_Value (COLUMNNAME_C_Workplace_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Workplace_ID, C_Workplace_ID);
+	}
+
+	@Override
+	public int getC_Workplace_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Workplace_ID);
 	}
 
 	@Override

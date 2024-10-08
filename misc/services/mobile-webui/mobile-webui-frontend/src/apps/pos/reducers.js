@@ -32,10 +32,10 @@ export function posReducer(applicationState = initialState, action) {
       });
     }
     case POS_TERMINAL_LOAD_DONE: {
-      const { terminal } = action.payload;
+      const { posTerminal } = action.payload;
       return setPOSTerminalToState({
         applicationState,
-        newTerminal: terminal,
+        newTerminal: posTerminal,
       });
     }
     case POS_TERMINAL_CLOSING: {

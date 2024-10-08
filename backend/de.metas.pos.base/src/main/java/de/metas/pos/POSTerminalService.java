@@ -20,6 +20,7 @@ import de.metas.pricing.PricingSystemAndListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -135,6 +136,7 @@ public class POSTerminalService
 				.isTaxIncluded(priceList.isTaxIncluded())
 				.pricePrecision(CurrencyPrecision.ofInt(priceList.getPricePrecision()))
 				.shipFrom(extractShipFrom(record))
+				.workplaceId(WorkplaceId.ofRepoIdOrNull(record.getC_Workplace_ID()))
 				.walkInCustomerShipToLocationId(extractWalkInCustomerShipTo(record))
 				.salesOrderDocTypeId(DocTypeId.ofRepoId(record.getC_DocTypeOrder_ID()))
 				.currency(currency)

@@ -11,6 +11,7 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemAndListId;
+import de.metas.workplace.WorkplaceId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -37,6 +38,7 @@ public class POSTerminal
 	private final boolean isTaxIncluded;
 
 	@NonNull private final POSShipFrom shipFrom;
+	@Nullable private final WorkplaceId workplaceId;
 
 	@NonNull private final BPartnerLocationAndCaptureId walkInCustomerShipToLocationId;
 
@@ -57,6 +59,7 @@ public class POSTerminal
 			@NonNull final CurrencyPrecision pricePrecision,
 			final boolean isTaxIncluded,
 			@NonNull final POSShipFrom shipFrom,
+			@Nullable final WorkplaceId workplaceId,
 			@NonNull final BPartnerLocationAndCaptureId walkInCustomerShipToLocationId,
 			@NonNull final DocTypeId salesOrderDocTypeId,
 			@NonNull final Currency currency,
@@ -76,6 +79,7 @@ public class POSTerminal
 		this.pricePrecision = pricePrecision;
 		this.isTaxIncluded = isTaxIncluded;
 		this.shipFrom = shipFrom;
+		this.workplaceId = workplaceId;
 		this.walkInCustomerShipToLocationId = walkInCustomerShipToLocationId;
 		this.salesOrderDocTypeId = salesOrderDocTypeId;
 		this.currency = currency;

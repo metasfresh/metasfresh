@@ -10,6 +10,7 @@ import * as posTerminalAPI from '../api/posTerminal';
 import * as posJournalAPI from '../api/posJournal';
 import { getPOSApplicationState } from './common';
 import Cookies from 'js-cookie';
+import { assignWorkplace } from '../../../api/workplace';
 
 const COOKIE_posTerminalId = 'posTerminalId';
 
@@ -57,12 +58,14 @@ const getPOSTerminalFromGlobalState = (globalState) => {
   return applicationState?.terminal ?? {};
 };
 const updatePOSTerminalFromBackend = ({ posTerminalId }) => {
-  console.trace('updatePOSTerminalFromBackend', { posTerminalId });
   return (dispatch) => {
     dispatch(posTerminalLoadStartAction({ posTerminalId }));
-    posTerminalAPI
-      .getPOSTerminalById(posTerminalId)
-      .then((terminal) => dispatch(posTerminalLoadDoneAction({ terminal })));
+    posTerminalAPI.getPOSTerminalById(posTerminalId).then((posTerminal) => {
+      dispatch(posTerminalLoadDoneAction({ posTerminal }));
+      if (posTerminal.workplaceId) {
+        assignWorkplace(posTerminal.workplaceId);
+      }
+    });
   };
 };
 const posTerminalLoadStartAction = ({ posTerminalId }) => {
@@ -71,10 +74,10 @@ const posTerminalLoadStartAction = ({ posTerminalId }) => {
     payload: { posTerminalId },
   };
 };
-const posTerminalLoadDoneAction = ({ terminal }) => {
+const posTerminalLoadDoneAction = ({ posTerminal }) => {
   return {
     type: POS_TERMINAL_LOAD_DONE,
-    payload: { terminal },
+    payload: { posTerminal },
   };
 };
 const posTerminalClosingAction = () => {
