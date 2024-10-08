@@ -24,6 +24,7 @@ package de.metas.postfinance.document.export;
 
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.organization.OrgId;
 import de.metas.postfinance.jaxb.Invoice;
 import lombok.Builder;
 import lombok.NonNull;
@@ -45,6 +46,7 @@ public class PostFinanceYbInvoiceResponse
 	@NonNull String transactionId;
 
 	@NonNull Invoice invoice;
+	@NonNull OrgId orgId;
 
 	public DocOutboundLogId getDocOutboundLogId()
 	{
