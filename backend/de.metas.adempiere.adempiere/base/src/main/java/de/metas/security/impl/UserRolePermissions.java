@@ -37,7 +37,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
-import de.metas.mobile.application.repository.MobileApplicationRepoId;
+import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.OrgIdAccessList;

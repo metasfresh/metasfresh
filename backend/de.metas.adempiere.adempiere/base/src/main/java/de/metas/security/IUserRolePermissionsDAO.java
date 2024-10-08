@@ -1,6 +1,6 @@
 package de.metas.security;
 
-import de.metas.mobile.application.repository.MobileApplicationRepoId;
+import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.organization.OrgId;
 import de.metas.security.impl.RolePermissionsNotFoundException;
 import de.metas.security.requests.CreateDocActionAccessRequest;

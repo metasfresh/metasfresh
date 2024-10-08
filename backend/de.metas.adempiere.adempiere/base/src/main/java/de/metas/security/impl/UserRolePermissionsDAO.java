@@ -9,7 +9,7 @@ import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.document.DocTypeId;
 import de.metas.logging.LogManager;
-import de.metas.mobile.application.repository.MobileApplicationRepoId;
+import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;

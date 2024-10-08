@@ -2,7 +2,6 @@ package de.metas.mobile.application;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
-import de.metas.mobile.application.repository.MobileApplicationRepoId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

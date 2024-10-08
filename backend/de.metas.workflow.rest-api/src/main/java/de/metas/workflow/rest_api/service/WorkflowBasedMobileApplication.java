@@ -1,5 +1,6 @@
 package de.metas.workflow.rest_api.service;
 
+import de.metas.mobile.application.MobileApplication;
 import de.metas.user.UserId;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;

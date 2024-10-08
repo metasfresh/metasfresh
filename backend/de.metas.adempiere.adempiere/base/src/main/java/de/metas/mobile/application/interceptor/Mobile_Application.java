@@ -1,6 +1,6 @@
 package de.metas.mobile.application.interceptor;
 
-import de.metas.mobile.application.repository.MobileApplicationRepoId;
+import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.Role;

@@ -20,11 +20,9 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.service;
+package de.metas.mobile.application;
 
 import de.metas.user.UserId;
-import de.metas.mobile.application.MobileApplicationId;
-import de.metas.mobile.application.MobileApplicationInfo;
 import lombok.NonNull;
 
 public interface MobileApplication

@@ -7,6 +7,7 @@ import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;
+import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;

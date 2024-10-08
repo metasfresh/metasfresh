@@ -28,7 +28,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;
-import de.metas.workflow.rest_api.service.MobileApplication;
+import de.metas.mobile.application.MobileApplication;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

@@ -90,6 +90,11 @@ public class WorkflowRestController
 	{
 		this.workflowRestAPIService = workflowRestAPIService;
 	}
+	
+	private void assertAccess(final MobileApplicationId applicationId)
+	{
+		workflowRestAPIService.assertAccess(applicationId, Env.getUserRolePermissions());
+	}
 
 	private JsonOpts newJsonOpts()
 	{
@@ -101,8 +106,7 @@ public class WorkflowRestController
 	@PostMapping("/logout")
 	public void logout()
 	{
-		final UserId loggedUserId = Env.getLoggedUserId();
-		workflowRestAPIService.logout(loggedUserId);
+		workflowRestAPIService.logout(Env.getUserRolePermissions());
 	}
 
 	@GetMapping("/apps")
@@ -124,8 +128,11 @@ public class WorkflowRestController
 			@RequestParam("applicationId") final String applicationIdStr,
 			@RequestParam(value = "filterByQRCode", required = false) final String filterByQRCodeStr)
 	{
+		final MobileApplicationId applicationId = MobileApplicationId.ofString(applicationIdStr);
+		assertAccess(applicationId);
+		
 		return getLaunchers(JsonLaunchersQuery.builder()
-				.applicationId(MobileApplicationId.ofString(applicationIdStr))
+				.applicationId(applicationId)
 				.filterByQRCode(GlobalQRCode.ofNullableString(filterByQRCodeStr))
 				.build());
 	}
@@ -133,6 +140,8 @@ public class WorkflowRestController
 	@PostMapping("/launchers/query")
 	public JsonWorkflowLaunchersList getLaunchers(@RequestBody @NonNull final JsonLaunchersQuery query)
 	{
+		assertAccess(query.getApplicationId());
+
 		final WorkflowLaunchersList launchers = workflowRestAPIService.getLaunchers(toWorkflowLaunchersQuery(query));
 
 		return JsonWorkflowLaunchersList.of(launchers, query, newJsonOpts());
@@ -153,6 +162,8 @@ public class WorkflowRestController
 	@PostMapping("/facets")
 	public JsonWorkflowLaunchersFacetGroupList getFacets(@RequestBody @NonNull final JsonWorkflowLaunchersFacetsQuery query)
 	{
+		assertAccess(query.getApplicationId());
+		
 		final WorkflowLaunchersFacetGroupList result = workflowRestAPIService.getFacets(
 				WorkflowLaunchersFacetQuery.builder()
 						.applicationId(query.getApplicationId())
@@ -168,6 +179,8 @@ public class WorkflowRestController
 	public JsonWFProcess getWFProcessById(@PathVariable("wfProcessId") final @NonNull String wfProcessIdStr)
 	{
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		assertAccess(wfProcessId.getApplicationId());
+		
 		final WFProcess wfProcess = workflowRestAPIService.getWFProcessById(wfProcessId);
 
 		final UserId loggedUserId = Env.getLoggedUserId();
@@ -180,6 +193,8 @@ public class WorkflowRestController
 	public JsonWFProcess continueWFProcess(@PathVariable("wfProcessId") final @NonNull String wfProcessIdStr)
 	{
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		assertAccess(wfProcessId.getApplicationId());
+		
 		final UserId loggedUserId = Env.getLoggedUserId();
 		final WFProcess wfProcess = workflowRestAPIService.continueWFProcess(wfProcessId, loggedUserId);
 		wfProcess.assertHasAccess(loggedUserId);
@@ -189,6 +204,8 @@ public class WorkflowRestController
 	@PostMapping("/wfProcess/start")
 	public JsonWFProcess start(@RequestBody final @NonNull JsonWFProcessStartRequest request)
 	{
+		assertAccess(request.getApplicationId());
+
 		final UserId loggedUserId = Env.getLoggedUserId();
 		final JsonOpts jsonOpts = newJsonOpts();
 
@@ -206,6 +223,8 @@ public class WorkflowRestController
 	public void abort(@PathVariable("wfProcessId") final @NonNull String wfProcessIdStr)
 	{
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		assertAccess(wfProcessId.getApplicationId());
+		
 		final UserId loggedUserId = Env.getLoggedUserId();
 
 		workflowRestAPIService.abortWFProcess(wfProcessId, loggedUserId);
@@ -214,9 +233,7 @@ public class WorkflowRestController
 	@PostMapping("/wfProcess/abortAll")
 	public void abortAll()
 	{
-		final UserId loggedUserId = Env.getLoggedUserId();
-
-		workflowRestAPIService.abortAllWFProcesses(loggedUserId);
+		workflowRestAPIService.abortAllWFProcesses(Env.getUserRolePermissions());
 	}
 
 	public JsonWFProcess toJson(final WFProcess wfProcess)
@@ -242,6 +259,8 @@ public class WorkflowRestController
 	{
 		final UserId invokerId = Env.getLoggedUserId();
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		assertAccess(wfProcessId.getApplicationId());
+		
 		final WFActivityId wfActivityId = WFActivityId.ofString(wfActivityIdStr);
 		final WFProcess wfProcess = workflowRestAPIService.setScannedBarcode(invokerId, wfProcessId, wfActivityId, request.getBarcode());
 
@@ -255,6 +274,8 @@ public class WorkflowRestController
 	{
 		final UserId invokerId = Env.getLoggedUserId();
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		assertAccess(wfProcessId.getApplicationId());
+		
 		final WFActivityId wfActivityId = WFActivityId.ofString(wfActivityIdStr);
 		final WFProcess wfProcess = workflowRestAPIService.setUserConfirmation(invokerId, wfProcessId, wfActivityId);
 
@@ -288,5 +309,4 @@ public class WorkflowRestController
 				.frontendUrl(jsonErrorItem.getFrontendUrl())
 				.build();
 	}
-
 }

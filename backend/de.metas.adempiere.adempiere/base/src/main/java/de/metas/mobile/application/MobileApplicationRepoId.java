@@ -1,4 +1,4 @@
-package de.metas.mobile.application.repository;
+package de.metas.mobile.application;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

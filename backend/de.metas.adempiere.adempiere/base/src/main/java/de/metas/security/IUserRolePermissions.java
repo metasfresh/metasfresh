@@ -2,7 +2,7 @@ package de.metas.security;
 
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.i18n.BooleanWithReason;
-import de.metas.mobile.application.repository.MobileApplicationRepoId;
+import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
