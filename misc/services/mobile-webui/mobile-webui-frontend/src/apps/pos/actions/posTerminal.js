@@ -33,8 +33,6 @@ export const usePOSTerminal = ({ refresh } = { refresh: false }) => {
     }
   }, [refresh, cookiePOSTerminalId]);
 
-  //const isLoading = posTerminal.isLoading || !posTerminalId || !posTerminalId !== posTerminal.id;
-
   return {
     ...posTerminal,
     changeStatusToClosing: () => dispatch(posTerminalClosingAction()),
