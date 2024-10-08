@@ -10,7 +10,7 @@ import { setSelectedOrderLineAction, useCurrentOrderOrNew } from '../../actions/
 const CurrentOrder = () => {
   const dispatch = useDispatch();
   const posTerminal = usePOSTerminal();
-  const { /*isCurrentOrderLoading,*/ currentOrder } = useCurrentOrderOrNew();
+  const { /*isCurrentOrderLoading,*/ currentOrder } = useCurrentOrderOrNew({ posTerminalId: posTerminal.id });
 
   const pricePrecision = posTerminal?.pricePrecision ?? 2;
   const currencyPrecision = posTerminal?.currencyPrecision ?? 2;

@@ -1,6 +1,7 @@
 import {
   ADD_ORDER_LINE,
   ADD_PAYMENT,
+  CLOSE_MODAL,
   NEW_ORDER,
   ORDERS_LIST_UPDATE,
   POS_TERMINAL_CLOSING,
@@ -10,6 +11,7 @@ import {
   REMOVE_ORDER_LINE,
   REMOVE_PAYMENT,
   SET_SELECTED_ORDER_LINE,
+  SHOW_MODAL,
 } from './actionTypes';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -24,61 +26,44 @@ const initialState = {
 export function posReducer(applicationState = initialState, action) {
   switch (action.type) {
     case POS_TERMINAL_LOAD_START: {
-      return {
-        ...applicationState,
-        terminal: {
-          ...applicationState?.terminal,
-          isLoading: true,
-        },
-      };
+      return updatePOSTerminalToState({
+        applicationState,
+        props: { isLoading: true },
+      });
     }
     case POS_TERMINAL_LOAD_DONE: {
       const { terminal } = action.payload;
-
-      // preserve closing flag.
-      // also, closing makes sense only if the journal is already open.
-      const isCashJournalClosing = applicationState?.terminal?.isCashJournalClosing && terminal?.cashJournalOpen;
-
-      return {
-        ...applicationState,
-        terminal: {
-          ...terminal,
-          isCashJournalClosing,
-          isLoading: false,
-          isLoaded: true,
-        },
-      };
+      return setPOSTerminalToState({
+        applicationState,
+        newTerminal: terminal,
+      });
     }
     case POS_TERMINAL_CLOSING: {
-      const terminal = applicationState?.terminal ?? {};
-      const isCashJournalClosing = !!terminal?.cashJournalOpen; // closing makes sense only if the journal is already open
-
-      return {
-        ...applicationState,
-        terminal: {
-          ...terminal,
-          isCashJournalClosing,
-        },
-      };
+      return updatePOSTerminalToState({
+        applicationState,
+        props: (terminal) => ({
+          isCashJournalClosing: !!terminal.cashJournalOpen, // closing makes sense only if the journal is already open
+        }),
+      });
     }
     case POS_TERMINAL_CLOSING_CANCEL: {
-      return {
-        ...applicationState,
-        terminal: {
-          ...applicationState?.terminal,
+      return updatePOSTerminalToState({
+        applicationState,
+        props: {
           isCashJournalClosing: false,
         },
-      };
+      });
     }
     case ORDERS_LIST_UPDATE: {
       const {
-        payload: { ordersArray, missingIds, isUpdateOnly },
+        payload: { ordersArray, posTerminalId, missingIds, isUpdateOnly },
       } = action;
 
       return {
         ...applicationState,
         orders: updateOrders({
-          orders: applicationState.orders,
+          ordersState: applicationState.orders,
+          posTerminalId,
           fromOrdersArray: ordersArray,
           missingIds,
           isUpdateOnly,
@@ -86,9 +71,14 @@ export function posReducer(applicationState = initialState, action) {
       };
     }
     case NEW_ORDER: {
+      const { posTerminalId } = action.payload;
+
       return {
         ...applicationState,
-        orders: addNewOrderAndSetCurrent(applicationState.orders),
+        orders: addNewOrderAndSetCurrent({
+          ordersState: applicationState.orders,
+          posTerminalId,
+        }),
       };
     }
     case ADD_ORDER_LINE: {
@@ -124,7 +114,29 @@ export function posReducer(applicationState = initialState, action) {
     }
     //
     //
+    case SHOW_MODAL: {
+      const { modal } = action.payload;
+      if (applicationState.modal === modal) {
+        return applicationState;
+      }
+      return {
+        ...applicationState,
+        modal,
+      };
+    }
+    case CLOSE_MODAL: {
+      const { ifModal } = action.payload;
+      if (ifModal && ifModal !== applicationState.modal) {
+        return applicationState;
+      }
+      return {
+        ...applicationState,
+        modal: null,
+      };
+    }
 
+    //
+    //
     default: {
       return applicationState;
     }
@@ -141,6 +153,43 @@ export function posReducer(applicationState = initialState, action) {
 //
 //
 
+const setPOSTerminalToState = ({ applicationState, newTerminal }) => {
+  // preserve closing flag.
+  // also, closing makes sense only if the journal is already open.
+  const currentTerminal = applicationState?.terminal ?? {};
+  const isCashJournalClosing =
+    currentTerminal.isCashJournalClosing && newTerminal?.cashJournalOpen && newTerminal.id === currentTerminal.id;
+
+  return {
+    ...applicationState,
+    terminal: {
+      ...newTerminal,
+      isCashJournalClosing,
+      isLoading: false,
+      isLoaded: true,
+    },
+  };
+};
+
+const updatePOSTerminalToState = ({ applicationState, props }) => {
+  const currentTerminal = applicationState.terminal ?? {};
+
+  let newProps;
+  if (typeof props === 'function') {
+    newProps = props(currentTerminal);
+  } else {
+    newProps = props;
+  }
+
+  return {
+    ...applicationState,
+    terminal: {
+      ...currentTerminal,
+      ...newProps,
+    },
+  };
+};
+
 //
 //
 //
@@ -148,8 +197,8 @@ export function posReducer(applicationState = initialState, action) {
 //
 //
 
-const updateOrders = ({ orders, fromOrdersArray, missingIds, isUpdateOnly }) => {
-  const byUUID = isUpdateOnly ? { ...orders.byUUID } : {};
+const updateOrders = ({ ordersState, posTerminalId, fromOrdersArray, missingIds, isUpdateOnly }) => {
+  const byUUID = isUpdateOnly ? { ...ordersState.byUUID } : {};
   fromOrdersArray.forEach((order) => (byUUID[order.uuid] = recomputeOrderDetails({ order })));
   if (missingIds?.length > 0) {
     missingIds.forEach((missingId) => {
@@ -158,7 +207,7 @@ const updateOrders = ({ orders, fromOrdersArray, missingIds, isUpdateOnly }) => 
   }
 
   // Reset current_uuid if is no longer present in the orders array
-  let current_uuid = orders.current_uuid;
+  let current_uuid = ordersState.current_uuid;
   if (current_uuid && !byUUID[current_uuid]) {
     current_uuid = null;
   }
@@ -168,32 +217,34 @@ const updateOrders = ({ orders, fromOrdersArray, missingIds, isUpdateOnly }) => 
     if (allOrderIds.length > 0) {
       current_uuid = allOrderIds[0];
     } else {
-      const newOrder = {
-        uuid: uuidv4(),
-        lines: [],
-      };
-      current_uuid = newOrder.uuid;
-      byUUID[newOrder.uuid] = newOrder;
+      const order = newOrder({ posTerminalId });
+      current_uuid = order.uuid;
+      byUUID[order.uuid] = order;
     }
   }
 
   return {
-    ...orders,
+    ...ordersState,
     current_uuid,
     byUUID,
   };
 };
 
-const addNewOrderAndSetCurrent = (orders) => {
-  const newOrder = {
+const newOrder = ({ posTerminalId }) => {
+  return {
     uuid: uuidv4(),
+    posTerminalId,
     lines: [],
   };
+};
+
+const addNewOrderAndSetCurrent = ({ ordersState, posTerminalId }) => {
+  const order = newOrder({ posTerminalId });
 
   return {
-    ...orders,
-    current_uuid: newOrder.uuid,
-    byUUID: { ...orders?.byUUID, [newOrder.uuid]: newOrder },
+    ...ordersState,
+    current_uuid: order.uuid,
+    byUUID: { ...ordersState?.byUUID, [order.uuid]: order },
   };
 };
 

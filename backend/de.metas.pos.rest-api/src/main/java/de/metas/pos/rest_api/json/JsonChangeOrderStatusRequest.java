@@ -1,20 +1,18 @@
 package de.metas.pos.rest_api.json;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.pos.POSOrderExternalId;
 import de.metas.pos.POSTerminalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 @Value
 @Builder
 @Jacksonized
-public class JsonPOSTerminalCloseJournalRequest
+public class JsonChangeOrderStatusRequest
 {
 	@NonNull POSTerminalId posTerminalId;
-	@NonNull BigDecimal cashClosingBalance;
-	@Nullable String closingNote;
+	@NonNull @JsonProperty("order_uuid") POSOrderExternalId order_uuid;
 }

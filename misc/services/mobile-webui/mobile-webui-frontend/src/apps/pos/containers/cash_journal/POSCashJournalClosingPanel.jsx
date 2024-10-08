@@ -31,6 +31,7 @@ const POSCashJournalClosingPanel = () => {
           <div className="line">
             <div className="field">
               <PaymentSummary
+                posTerminalId={posTerminal.id}
                 cashAmountExpected={cashClosingBalance}
                 onCashAmountExpectedChanged={setCashClosingBalance}
               />
@@ -62,8 +63,8 @@ const POSCashJournalClosingPanel = () => {
 //
 //
 
-const PaymentSummary = ({ cashAmountExpected, onCashAmountExpectedChanged }) => {
-  const journalSummary = useJournalSummary();
+const PaymentSummary = ({ posTerminalId, cashAmountExpected, onCashAmountExpectedChanged }) => {
+  const journalSummary = useJournalSummary({ posTerminalId });
 
   return (
     <table className="payment-summary">
@@ -94,6 +95,7 @@ const PaymentSummary = ({ cashAmountExpected, onCashAmountExpectedChanged }) => 
 };
 
 PaymentSummary.propTypes = {
+  posTerminalId: PropTypes.number.isRequired,
   cashAmountExpected: PropTypes.number.isRequired,
   onCashAmountExpectedChanged: PropTypes.func.isRequired,
 };
@@ -193,15 +195,15 @@ PaymentDetail.propTypes = {
 //
 //
 
-const useJournalSummary = () => {
+const useJournalSummary = ({ posTerminalId }) => {
   const [journalSummary, setJournalSummary] = useState(null);
 
   useEffect(() => {
     if (!journalSummary) {
       setJournalSummary({ isLoading: true });
-      getJournalSummary().then(setJournalSummary);
+      getJournalSummary({ posTerminalId }).then(setJournalSummary);
     }
-  }, []);
+  }, [posTerminalId]);
 
   return journalSummary;
 };

@@ -6,10 +6,13 @@ import {
   changeOrderStatusToWaitingPayment,
   useCurrentOrder,
 } from '../../actions/orders';
+import { usePOSTerminal } from '../../actions/posTerminal';
 
 const CurrentOrderActions = () => {
   const dispatch = useDispatch();
-  const currentOrder = useCurrentOrder();
+  const posTerminal = usePOSTerminal();
+  const posTerminalId = posTerminal.id;
+  const currentOrder = useCurrentOrder({ posTerminalId });
 
   const isNewOrderAllowed = !currentOrder.isLoading && currentOrder.lines?.length > 0;
   const isVoidAllowed = !currentOrder.isLoading && currentOrder.lines?.length > 0;
@@ -17,11 +20,11 @@ const CurrentOrderActions = () => {
   const isDeleteCurrentLineAllowed = !!currentOrder.selectedLineUUID;
 
   const onNewOrderClick = () => {
-    dispatch(addNewOrderAction());
+    dispatch(addNewOrderAction({ posTerminalId }));
   };
   const onVoidCurrentOrderClick = () => {
     if (!isVoidAllowed) return;
-    dispatch(changeOrderStatusToVoid({ order_uuid: currentOrder?.uuid }));
+    dispatch(changeOrderStatusToVoid({ posTerminalId, order_uuid: currentOrder?.uuid }));
   };
   const onDeleteCurrentLine = () => {
     if (!isDeleteCurrentLineAllowed) return;
@@ -29,7 +32,7 @@ const CurrentOrderActions = () => {
   };
   const onPayClick = () => {
     if (!isPayAllowed) return;
-    dispatch(changeOrderStatusToWaitingPayment({ order_uuid: currentOrder?.uuid }));
+    dispatch(changeOrderStatusToWaitingPayment({ posTerminalId, order_uuid: currentOrder?.uuid }));
   };
 
   return (

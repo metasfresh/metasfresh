@@ -40,10 +40,14 @@ public class POSOrdersService
 		return ordersRepository.firstOnly(query);
 	}
 
-	public POSOrder changeStatusTo(@NonNull final POSOrderExternalId externalId, @NonNull final POSOrderStatus nextStatus, @NonNull final UserId userId)
+	public POSOrder changeStatusTo(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final POSOrderExternalId externalId,
+			@NonNull final POSOrderStatus nextStatus,
+			@NonNull final UserId userId)
 	{
 		return ordersRepository.updateByExternalId(externalId, order -> {
-			assertCanEdit(order, userId);
+			assertCanEdit(posTerminalId, order, userId);
 			order.changeStatusTo(nextStatus, posOrderProcessingServices);
 		});
 	}
@@ -91,21 +95,33 @@ public class POSOrdersService
 		}
 	}
 
-	private void assertCanEdit(@NonNull final POSOrder order, @NonNull final UserId userId)
+	private void assertCanEdit(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final POSOrder order,
+			@NonNull final UserId userId)
 	{
+		if (!POSTerminalId.equals(order.getPosTerminalId(), posTerminalId))
+		{
+			throw new AdempiereException("Edit not allowed")
+					.setParameter("detail", "POS Order is not owned by " + posTerminalId);
+		}
 		if (!UserId.equals(order.getCashierId(), userId))
 		{
-			throw new AdempiereException("Edit not allowed");
+			throw new AdempiereException("Edit not allowed")
+					.setParameter("detail", "Not owned by cashier " + userId);
 		}
 	}
 
-	public POSOrder updateOrderFromRemote(final @NonNull RemotePOSOrder remoteOrder, final UserId userId)
+	public POSOrder updateOrderFromRemote(
+			@NonNull final RemotePOSOrder remoteOrder,
+			@NonNull final UserId userId)
 	{
+		final POSTerminalId posTerminalId = remoteOrder.getPosTerminalId();
 		return ordersRepository.createOrUpdateByExternalId(
 				remoteOrder.getUuid(),
-				externalId -> newPOSOrder(externalId, userId),
+				externalId -> newPOSOrder(posTerminalId, externalId, userId),
 				order -> {
-					assertCanEdit(order, userId);
+					assertCanEdit(posTerminalId, order, userId);
 					updateOrderFromRemote(order, remoteOrder);
 				});
 	}
@@ -121,9 +137,12 @@ public class POSOrdersService
 				.execute();
 	}
 
-	private POSOrder newPOSOrder(@NonNull final POSOrderExternalId externalId, @NonNull final UserId userId)
+	private POSOrder newPOSOrder(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final POSOrderExternalId externalId,
+			@NonNull final UserId userId)
 	{
-		final POSTerminal posTerminal = posTerminalService.getPOSTerminal();
+		final POSTerminal posTerminal = posTerminalService.getPOSTerminalById(posTerminalId);
 		return POSOrder.builder()
 				.externalId(externalId)
 				.status(POSOrderStatus.Drafted)
@@ -141,12 +160,13 @@ public class POSOrdersService
 	}
 
 	public POSOrder checkoutPayment(
-			final @NonNull POSOrderExternalId posOrderExternalId,
-			final @NonNull POSPaymentExternalId posPaymentExternalId,
-			final @NonNull UserId userId)
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final POSOrderExternalId posOrderExternalId,
+			@NonNull final POSPaymentExternalId posPaymentExternalId,
+			@NonNull final UserId userId)
 	{
 		return ordersRepository.updateByExternalId(posOrderExternalId, posOrder -> {
-			assertCanEdit(posOrder, userId);
+			assertCanEdit(posTerminalId, posOrder, userId);
 			posOrder.assertWaitingForPayment();
 
 			final POSTerminalPaymentProcessorConfig paymentProcessorConfig = posTerminalService.getPOSTerminalById(posOrder.getPosTerminalId()).getPaymentProcessorConfigNotNull();
@@ -156,12 +176,13 @@ public class POSOrdersService
 	}
 
 	public POSOrder refundPayment(
-			final @NonNull POSOrderExternalId posOrderExternalId,
-			final @NonNull POSPaymentExternalId posPaymentExternalId,
-			final @NonNull UserId userId)
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final POSOrderExternalId posOrderExternalId,
+			@NonNull final POSPaymentExternalId posPaymentExternalId,
+			@NonNull final UserId userId)
 	{
 		return ordersRepository.updateByExternalId(posOrderExternalId, posOrder -> {
-			assertCanEdit(posOrder, userId);
+			assertCanEdit(posTerminalId, posOrder, userId);
 			posOrder.assertWaitingForPayment();
 
 			final POSTerminalPaymentProcessorConfig paymentProcessorConfig = posTerminalService.getPOSTerminalById(posOrder.getPosTerminalId()).getPaymentProcessorConfigNotNull();

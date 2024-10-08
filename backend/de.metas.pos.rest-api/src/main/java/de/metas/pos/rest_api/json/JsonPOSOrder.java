@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
 import de.metas.pos.POSOrderStatus;
+import de.metas.pos.POSTerminalId;
 import de.metas.pos.remote.RemotePOSOrder;
 import lombok.Builder;
 import lombok.NonNull;
@@ -20,6 +21,7 @@ import java.util.List;
 public class JsonPOSOrder
 {
 	@NonNull POSOrderExternalId uuid;
+	@NonNull POSTerminalId posTerminalId;
 	@Nullable POSOrderStatus status;
 	@Nullable String currencySymbol;
 	@Nullable BigDecimal totalAmt;
@@ -36,6 +38,7 @@ public class JsonPOSOrder
 		final String currencySymbol = jsonContext.getCurrencySymbol(order.getCurrencyId());
 		return builder()
 				.uuid(order.getExternalId())
+				.posTerminalId(order.getPosTerminalId())
 				.status(order.getStatus())
 				.currencySymbol(currencySymbol)
 				.totalAmt(order.getTotalAmt().toBigDecimal())
@@ -56,6 +59,7 @@ public class JsonPOSOrder
 	{
 		return RemotePOSOrder.builder()
 				.uuid(uuid)
+				.posTerminalId(posTerminalId)
 				.lines(lines.stream().map(JsonPOSOrderLine::toRemotePOSOrderLine).collect(ImmutableList.toImmutableList()))
 				.payments(payments != null && !payments.isEmpty()
 						? payments.stream().map(JsonPOSPayment::toRemotePOSPayment).collect(ImmutableList.toImmutableList())

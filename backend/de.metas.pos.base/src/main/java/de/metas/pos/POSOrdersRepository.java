@@ -54,6 +54,7 @@ public class POSOrdersRepository
 	private IQueryBuilder<I_C_POS_Order> toSqlQuery(final POSOrderQuery query)
 	{
 		final IQueryBuilder<I_C_POS_Order> sqlQueryBuilder = queryBL.createQueryBuilder(I_C_POS_Order.class)
+				.addEqualsFilter(I_C_POS_Order.COLUMNNAME_C_POS_ID, query.getPosTerminalId())
 				.addEqualsFilter(I_C_POS_Order.COLUMNNAME_Cashier_ID, query.getCashierId());
 
 		if (query.isOpen())

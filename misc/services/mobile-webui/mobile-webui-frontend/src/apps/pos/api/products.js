@@ -7,7 +7,7 @@ import { useDebounce } from '../../../hooks/useDebounce';
 
 const queryDebounceMillis = 300;
 
-export const useProducts = ({ onBarcodeResult }) => {
+export const useProducts = ({ posTerminalId, onBarcodeResult }) => {
   const [isLoading, setLoading] = useState(false);
   const [queryString, setQueryStringState] = useState('');
   const [queryStringToSearch, setQueryStringToSearch] = useState('');
@@ -22,7 +22,7 @@ export const useProducts = ({ onBarcodeResult }) => {
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
-    getProducts(queryStringToSearch)
+    getProducts({ posTerminalId, query: queryStringToSearch })
       .then((productsNew) => {
         if (!isMounted) {
           console.log('ignoring getProducts result since the component is no longer mounted', { productsNew });
@@ -48,7 +48,7 @@ export const useProducts = ({ onBarcodeResult }) => {
     return () => {
       isMounted = false;
     };
-  }, [queryStringToSearch]);
+  }, [posTerminalId, queryStringToSearch]);
 
   return {
     isLoading,
@@ -59,7 +59,8 @@ export const useProducts = ({ onBarcodeResult }) => {
   };
 };
 
-const getProducts = (query) => {
-  const url = toUrl(`${apiBasePath}/pos/products`, { query });
-  return axios.get(url).then((response) => unboxAxiosResponse(response));
+const getProducts = ({ posTerminalId, query }) => {
+  return axios
+    .get(toUrl(`${apiBasePath}/pos/products`, { posTerminalId, query }))
+    .then((response) => unboxAxiosResponse(response));
 };

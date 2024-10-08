@@ -17,6 +17,7 @@ import java.util.Set;
 public class JsonPOSTerminal
 {
 	@NonNull POSTerminalId id;
+	@NonNull String caption;
 	@NonNull String currencySymbol;
 	int pricePrecision;
 	int currencyPrecision;
@@ -29,6 +30,7 @@ public class JsonPOSTerminal
 	{
 		return JsonPOSTerminal.builder()
 				.id(posTerminal.getId())
+				.caption(posTerminal.getName())
 				.currencySymbol(posTerminal.getCurrencySymbol(adLanguage))
 				.pricePrecision(posTerminal.getPricePrecision().toInt())
 				.currencyPrecision(posTerminal.getCurrencyPrecision().toInt())

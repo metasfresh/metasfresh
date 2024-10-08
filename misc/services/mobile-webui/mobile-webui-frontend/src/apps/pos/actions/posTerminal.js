@@ -9,43 +9,66 @@ import { useEffect } from 'react';
 import * as posTerminalAPI from '../api/posTerminal';
 import * as posJournalAPI from '../api/posJournal';
 import { getPOSApplicationState } from './common';
+import Cookies from 'js-cookie';
+
+const COOKIE_posTerminalId = 'posTerminalId';
 
 export const usePOSTerminal = ({ refresh } = { refresh: false }) => {
   const dispatch = useDispatch();
+
+  const cookiePOSTerminalId = Cookies.get(COOKIE_posTerminalId);
   const posTerminal = useSelector(getPOSTerminalFromGlobalState);
 
   useEffect(() => {
-    if (refresh) {
-      updatePOSTerminalFromBackend({ dispatch });
+    // just refresh the cookie
+    if (cookiePOSTerminalId) {
+      Cookies.set(COOKIE_posTerminalId, cookiePOSTerminalId, { expires: 365 });
     }
-  }, []);
 
-  if (!posTerminal) return { isLoading: true };
+    if (cookiePOSTerminalId && !posTerminal.isLoading) {
+      if (refresh) {
+        dispatch(updatePOSTerminalFromBackend({ posTerminalId: cookiePOSTerminalId }));
+      }
+    }
+  }, [refresh, cookiePOSTerminalId]);
+
+  //const isLoading = posTerminal.isLoading || !posTerminalId || !posTerminalId !== posTerminal.id;
 
   return {
     ...posTerminal,
-    updateFromBackend: () => updatePOSTerminalFromBackend({ dispatch }),
     changeStatusToClosing: () => dispatch(posTerminalClosingAction()),
     cancelClosing: () => dispatch(posTerminalClosingCancelAction()),
     openJournal: ({ cashBeginningBalance, openingNote }) => {
-      dispatch(openJournal({ cashBeginningBalance, openingNote }));
+      dispatch(openJournal({ posTerminalId: cookiePOSTerminalId, cashBeginningBalance, openingNote }));
     },
     closeJournal: ({ cashClosingBalance, closingNote }) => {
-      dispatch(closeJournal({ cashClosingBalance, closingNote }));
+      dispatch(closeJournal({ posTerminalId: cookiePOSTerminalId, cashClosingBalance, closingNote }));
+    },
+    setPOSTerminalId: (newPOSTerminalId) => {
+      Cookies.set(COOKIE_posTerminalId, newPOSTerminalId, { expires: 365 });
+      if (newPOSTerminalId !== posTerminal.id) {
+        dispatch(updatePOSTerminalFromBackend({ posTerminalId: newPOSTerminalId }));
+      }
     },
   };
 };
 const getPOSTerminalFromGlobalState = (globalState) => {
   const applicationState = getPOSApplicationState(globalState);
-  return applicationState?.terminal;
+  return applicationState?.terminal ?? {};
 };
-const updatePOSTerminalFromBackend = ({ dispatch }) => {
-  dispatch(posTerminalLoadStartAction());
-  posTerminalAPI.getPOSTerminal().then((terminal) => dispatch(posTerminalLoadDoneAction({ terminal })));
+const updatePOSTerminalFromBackend = ({ posTerminalId }) => {
+  console.trace('updatePOSTerminalFromBackend', { posTerminalId });
+  return (dispatch) => {
+    dispatch(posTerminalLoadStartAction({ posTerminalId }));
+    posTerminalAPI
+      .getPOSTerminalById(posTerminalId)
+      .then((terminal) => dispatch(posTerminalLoadDoneAction({ terminal })));
+  };
 };
-const posTerminalLoadStartAction = () => {
+const posTerminalLoadStartAction = ({ posTerminalId }) => {
   return {
     type: POS_TERMINAL_LOAD_START,
+    payload: { posTerminalId },
   };
 };
 const posTerminalLoadDoneAction = ({ terminal }) => {
@@ -64,17 +87,17 @@ const posTerminalClosingCancelAction = () => {
     type: POS_TERMINAL_CLOSING_CANCEL,
   };
 };
-const openJournal = ({ cashBeginningBalance, openingNote }) => {
+const openJournal = ({ posTerminalId, cashBeginningBalance, openingNote }) => {
   return (dispatch) => {
     return posJournalAPI
-      .openJournal({ cashBeginningBalance, openingNote })
+      .openJournal({ posTerminalId, cashBeginningBalance, openingNote })
       .then((terminal) => dispatch(posTerminalLoadDoneAction({ terminal })));
   };
 };
-const closeJournal = ({ cashClosingBalance, closingNote }) => {
+const closeJournal = ({ posTerminalId, cashClosingBalance, closingNote }) => {
   return (dispatch) => {
     return posJournalAPI
-      .closeJournal({ cashClosingBalance, closingNote })
+      .closeJournal({ posTerminalId, cashClosingBalance, closingNote })
       .then((terminal) => dispatch(posTerminalLoadDoneAction({ terminal })));
   };
 };

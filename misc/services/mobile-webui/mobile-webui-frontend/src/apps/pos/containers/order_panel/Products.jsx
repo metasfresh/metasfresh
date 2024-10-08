@@ -6,11 +6,14 @@ import ProductSearchBar from './ProductSearchBar';
 import GetCatchWeightModal from './GetCatchWeightModal';
 import './Products.scss';
 import { useCurrentOrder } from '../../actions/orders';
+import { usePOSTerminal } from '../../actions/posTerminal';
 
 const Products = () => {
-  const currentOrder = useCurrentOrder();
+  const posTerminal = usePOSTerminal();
+  const currentOrder = useCurrentOrder({ posTerminalId: posTerminal.id });
   const newOrderLineDispatcher = useNewOrderLineDispatcher({ currentOrder });
   const products = useProducts({
+    posTerminalId: posTerminal.id,
     onBarcodeResult: (product) => newOrderLineDispatcher.initialize(product),
   });
 

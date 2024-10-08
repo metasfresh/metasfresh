@@ -12,3 +12,6 @@ export const REMOVE_ORDER_LINE = 'pos/orders/line/remove';
 
 export const ADD_PAYMENT = 'pos/orders/addPayment';
 export const REMOVE_PAYMENT = 'pos/orders/removePayment';
+
+export const SHOW_MODAL = 'ui/showModal';
+export const CLOSE_MODAL = 'ui/closeModal';

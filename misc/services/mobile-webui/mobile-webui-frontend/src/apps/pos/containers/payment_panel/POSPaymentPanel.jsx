@@ -20,7 +20,7 @@ import {
 const POSPaymentPanel = () => {
   const dispatch = useDispatch();
   const posTerminal = usePOSTerminal();
-  const currentOrder = useCurrentOrder();
+  const currentOrder = useCurrentOrder({ posTerminalId: posTerminal.id });
 
   const order_uuid = currentOrder.uuid;
 
@@ -49,28 +49,28 @@ const POSPaymentPanel = () => {
   const onAddPaymentClick = ({ paymentMethod }) => {
     if (!isAllowAddPayment) return;
 
-    dispatch(addPayment({ order_uuid, paymentMethod, amount: openAmt }));
+    dispatch(addPayment({ posTerminalId: posTerminal.id, order_uuid, paymentMethod, amount: openAmt }));
   };
 
   const onPaymentCheckout = ({ uuid }) => {
-    dispatch(checkoutPayment({ order_uuid, payment_uuid: uuid }));
+    dispatch(checkoutPayment({ posTerminalId: posTerminal.id, order_uuid, payment_uuid: uuid }));
   };
 
   const onPaymentDelete = ({ uuid }) => {
-    dispatch(removePayment({ order_uuid, payment_uuid: uuid }));
+    dispatch(removePayment({ posTerminalId: posTerminal.id, order_uuid, payment_uuid: uuid }));
   };
 
   const onPaymentRefund = ({ uuid }) => {
-    dispatch(refundPayment({ order_uuid, payment_uuid: uuid }));
+    dispatch(refundPayment({ posTerminalId: posTerminal.id, order_uuid, payment_uuid: uuid }));
   };
 
   const onBackClick = () => {
-    dispatch(changeOrderStatusToDraft({ order_uuid }));
+    dispatch(changeOrderStatusToDraft({ posTerminalId: posTerminal.id, order_uuid }));
   };
 
   const onValidateClick = () => {
     if (!isAllowValidate) return;
-    dispatch(changeOrderStatusToComplete({ order_uuid }));
+    dispatch(changeOrderStatusToComplete({ posTerminalId: posTerminal.id, order_uuid }));
   };
 
   return (

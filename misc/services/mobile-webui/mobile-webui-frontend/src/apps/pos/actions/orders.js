@@ -12,34 +12,34 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { getPOSApplicationState } from './common';
 
-export const useCurrentOrderOrNew = () => {
+export const useCurrentOrderOrNew = ({ posTerminalId }) => {
   const dispatch = useDispatch();
   const [loadingStatus, setLoadingStatus] = useState('to-load');
   const currentOrder = useSelector(getCurrentOrderFromState);
 
   useEffect(() => {
-    if (!currentOrder) {
+    if (!currentOrder && posTerminalId) {
       if (loadingStatus === 'to-load') {
         setLoadingStatus('loading');
-        dispatch(addNewOrderAction());
-        console.log('No current order => creating new order', { currentOrder, loadingStatus });
+        dispatch(addNewOrderAction({ posTerminalId }));
+        console.log('No current order => creating new order');
       }
     } else {
       if (loadingStatus !== 'load-done') {
         setLoadingStatus('load-done');
       }
     }
-  }, []);
+  }, [posTerminalId]);
 
   return {
     isCurrentOrderLoading: loadingStatus !== 'load-done',
     currentOrder,
   };
 };
-export const useCurrentOrder = () => {
+export const useCurrentOrder = ({ posTerminalId }) => {
   const dispatch = useDispatch();
   const [isProcessing, setProcessing] = useState(false);
-  const { isOpenOrdersLoading } = useOpenOrders();
+  const { isOpenOrdersLoading } = useOpenOrders({ posTerminalId });
   const currentOrder = useSelector(getCurrentOrderFromState);
 
   const isLoading = isOpenOrdersLoading;
@@ -89,17 +89,17 @@ const getCurrentOrderFromState = (globalState) => {
 
   return getOrderByUUID({ applicationState, order_uuid: current_uuid });
 };
-export const useOpenOrders = () => {
+export const useOpenOrders = ({ posTerminalId }) => {
   const dispatch = useDispatch();
   const [loadStatus, setLoadStatus] = useState('new');
   const openOrders = useSelector(getOpenOrdersArrayFromState);
 
   useEffect(() => {
-    if (loadStatus === 'new') {
+    if (loadStatus === 'new' && posTerminalId) {
       setLoadStatus('loading');
       ordersAPI
-        .getOpenOrders()
-        .then(({ list }) => dispatch(updateOrdersArrayFromBackendAction({ list, isUpdateOnly: false })))
+        .getOpenOrders({ posTerminalId })
+        .then(({ list }) => dispatch(updateOrdersArrayFromBackendAction({ posTerminalId, list, isUpdateOnly: false })))
         .finally(() => setLoadStatus('load-done'));
     }
   }, []);
@@ -126,32 +126,33 @@ const getCurrentOrderUUID = ({ globalState, applicationState }) => {
 
   return applicationStateEff?.orders?.current_uuid;
 };
-export const addNewOrderAction = () => {
+export const addNewOrderAction = ({ posTerminalId }) => {
   return {
     type: NEW_ORDER,
+    payload: { posTerminalId },
   };
 };
-export const changeOrderStatusToDraft = ({ order_uuid }) => {
+export const changeOrderStatusToDraft = ({ posTerminalId, order_uuid }) => {
   return async (dispatch) => {
-    const order = await ordersAPI.changeOrderStatusToDraft({ order_uuid });
+    const order = await ordersAPI.changeOrderStatusToDraft({ posTerminalId, order_uuid });
     dispatch(updateOrderFromBackendAction({ order }));
   };
 };
-export const changeOrderStatusToVoid = ({ order_uuid }) => {
+export const changeOrderStatusToVoid = ({ posTerminalId, order_uuid }) => {
   return async (dispatch) => {
-    const order = await ordersAPI.changeOrderStatusToVoid({ order_uuid });
+    const order = await ordersAPI.changeOrderStatusToVoid({ posTerminalId, order_uuid });
     dispatch(updateOrderFromBackendAction({ order }));
   };
 };
-export const changeOrderStatusToWaitingPayment = ({ order_uuid }) => {
+export const changeOrderStatusToWaitingPayment = ({ posTerminalId, order_uuid }) => {
   return async (dispatch) => {
-    const order = await ordersAPI.changeOrderStatusToWaitingPayment({ order_uuid });
+    const order = await ordersAPI.changeOrderStatusToWaitingPayment({ posTerminalId, order_uuid });
     dispatch(updateOrderFromBackendAction({ order }));
   };
 };
-export const changeOrderStatusToComplete = ({ order_uuid }) => {
+export const changeOrderStatusToComplete = ({ posTerminalId, order_uuid }) => {
   return async (dispatch) => {
-    const order = await ordersAPI.changeOrderStatusToComplete({ order_uuid });
+    const order = await ordersAPI.changeOrderStatusToComplete({ posTerminalId, order_uuid });
     dispatch(updateOrderFromBackendAction({ order }));
   };
 };
@@ -252,25 +253,25 @@ const syncOrderToBackend = ({ order_uuid }) => {
     ordersAPI.updateOrder({ order }).then((order) => dispatch(updateOrderFromBackendAction({ order })));
   };
 };
-export const updateOrderFromBackend = ({ order_uuid }) => {
+export const updateOrderFromBackend = ({ posTerminalId, order_uuid }) => {
   return (dispatch) => {
     ordersAPI
-      .getOpenOrders({ ids: [order_uuid] })
+      .getOpenOrders({ posTerminalId, ids: [order_uuid] })
       .then(({ list, missingIds }) =>
-        dispatch(updateOrdersArrayFromBackendAction({ list, missingIds, isUpdateOnly: true }))
+        dispatch(updateOrdersArrayFromBackendAction({ posTerminalId, list, missingIds, isUpdateOnly: true }))
       );
   };
 };
-const updateOrdersArrayFromBackendAction = ({ list, missingIds, isUpdateOnly }) => {
+const updateOrdersArrayFromBackendAction = ({ posTerminalId, list, missingIds, isUpdateOnly }) => {
   return {
     type: ORDERS_LIST_UPDATE,
-    payload: { ordersArray: list, missingIds, isUpdateOnly },
+    payload: { posTerminalId, ordersArray: list, missingIds, isUpdateOnly },
   };
 };
 export const updateOrderFromBackendAction = ({ order }) => {
   return {
     type: ORDERS_LIST_UPDATE,
-    payload: { ordersArray: [order], isUpdateOnly: true },
+    payload: { posTerminalId: order.posTerminalId, ordersArray: [order], isUpdateOnly: true },
   };
   // return {
   //   type: UPDATE_ORDER_FROM_BACKEND,
@@ -301,15 +302,15 @@ export const removePayment = ({ order_uuid, payment_uuid }) => {
 export const removePaymentAction = ({ order_uuid, payment_uuid }) => {
   return { type: REMOVE_PAYMENT, payload: { order_uuid, payment_uuid } };
 };
-export const checkoutPayment = ({ order_uuid, payment_uuid }) => {
+export const checkoutPayment = ({ posTerminalId, order_uuid, payment_uuid }) => {
   return async (dispatch) => {
-    const order = await ordersAPI.checkoutPayment({ order_uuid, payment_uuid });
+    const order = await ordersAPI.checkoutPayment({ posTerminalId, order_uuid, payment_uuid });
     dispatch(updateOrderFromBackendAction({ order }));
   };
 };
-export const refundPayment = ({ order_uuid, payment_uuid }) => {
+export const refundPayment = ({ posTerminalId, order_uuid, payment_uuid }) => {
   return async (dispatch) => {
-    const order = await ordersAPI.refundPayment({ order_uuid, payment_uuid });
+    const order = await ordersAPI.refundPayment({ posTerminalId, order_uuid, payment_uuid });
     dispatch(updateOrderFromBackendAction({ order }));
   };
 };
