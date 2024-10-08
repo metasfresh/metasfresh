@@ -45,7 +45,7 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.InvoiceService;
 import de.metas.invoice.ManualInvoice;
 import de.metas.invoice.ManualInvoiceService;
@@ -874,7 +874,7 @@ public class JsonInvoiceService
 		@NonNull
 		private Tuple<InvoiceId, JsonPaymentAllocationLine.InvoiceIdentifier> getInvoiceId(@NonNull final JsonPaymentAllocationLine.InvoiceIdentifier identifier)
 		{
-			final InvoiceQuery invoiceQuery = createInvoiceQuery(identifier);
+			final SingleInvoiceQuery invoiceQuery = createInvoiceQuery(identifier);
 			final InvoiceId invoiceId = invoiceDAO.retrieveIdByInvoiceQuery(invoiceQuery)
 					.orElseThrow(() -> new AdempiereException("No Invoice found for query=" + invoiceQuery));
 
@@ -882,9 +882,9 @@ public class JsonInvoiceService
 		}
 
 		@NonNull
-		private InvoiceQuery createInvoiceQuery(@NonNull final JsonPaymentAllocationLine.InvoiceIdentifier invoiceIdentifier)
+		private SingleInvoiceQuery createInvoiceQuery(@NonNull final JsonPaymentAllocationLine.InvoiceIdentifier invoiceIdentifier)
 		{
-			final InvoiceQuery.InvoiceQueryBuilder invoiceQueryBuilder = InvoiceQuery.builder()
+			final SingleInvoiceQuery.SingleInvoiceQueryBuilder invoiceQueryBuilder = SingleInvoiceQuery.builder()
 					.orgId(orgId)
 					.docType(getDocType(invoiceIdentifier))
 					.docStatuses(DocStatus.completedOrClosedStatuses());

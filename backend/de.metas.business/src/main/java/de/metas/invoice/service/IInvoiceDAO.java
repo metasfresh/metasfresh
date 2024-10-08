@@ -34,7 +34,8 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
-import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.InvoiceMultiQuery;
+import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -91,7 +92,7 @@ public interface IInvoiceDAO extends ISingletonService
 	List<I_C_InvoiceLine> retrieveLines(I_M_InOutLine inoutLine);
 
 	List<I_C_LandedCost> retrieveLandedCosts(I_C_InvoiceLine invoiceLine,
-			String whereClause, String trxName);
+											 String whereClause, String trxName);
 
 	I_C_LandedCost createLandedCost(String trxName);
 
@@ -183,7 +184,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
 
-	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
+	Optional<InvoiceId> retrieveIdByInvoiceQuery(SingleInvoiceQuery query);
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
 
@@ -196,4 +197,6 @@ public interface IInvoiceDAO extends ISingletonService
 	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
 
 	Stream<org.compiere.model.I_C_Invoice> stream(@NonNull IQueryFilter<org.compiere.model.I_C_Invoice> invoiceFilter);
+
+	ImmutableSet<InvoiceId> retrieveInvoiceIds(@NonNull InvoiceMultiQuery multiQuery);
 }
