@@ -19,38 +19,36 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.math.BigDecimal;
-
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import org.compiere.model.I_Mobile_Application_Access;
 import org.compiere.model.X_AD_Role_Included;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
-
+import java.math.BigDecimal;
 
 /**
- *	Copy role access records
- *	
- *  @author Robert Klein
- *  @ author Paul Bowden
- *  @version $Id: CopyRole.java,v 1.0$
- *  
+ * Copy role access records
+ *
+ * @author Robert Klein
+ * @version $Id: CopyRole.java,v 1.0$
+ * @ author Paul Bowden
  */
 
 public class CopyRole extends JavaProcess
 {
 	private int m_AD_Role_ID_From = 0;
 	private int m_AD_Role_ID_To = 0;
-	private int m_AD_Client_ID = 0;	
+	private int m_AD_Client_ID = 0;
 	private int m_AD_Org_ID = 0;
-	
+
 	/**
-	 *  Prepare - e.g., get Parameters.
+	 * Prepare - e.g., get Parameters.
 	 */
 	protected void prepare()
 	{
-		
+
 		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
@@ -59,74 +57,78 @@ public class CopyRole extends JavaProcess
 				;
 			else if (name.equals("AD_Role_ID") && i == 0)
 				m_AD_Role_ID_From = para[i].getParameterAsInt();
-			else if (name.equals("AD_Role_ID")&& i == 1)
+			else if (name.equals("AD_Role_ID") && i == 1)
 				m_AD_Role_ID_To = para[i].getParameterAsInt();
 			else if (name.equals("AD_Client_ID"))
 				m_AD_Client_ID = para[i].getParameterAsInt();
 			else if (name.equals("AD_Org_ID"))
 				m_AD_Org_ID = para[i].getParameterAsInt();
-		}		
-	}	//	prepare
+		}
+	}    //	prepare
 
 	/**
-	 * 	Copy the role access records
-	 *	@return info
-	 *	@throws Exception
+	 * Copy the role access records
+	 *
+	 * @return info
+	 * @throws Exception
 	 */
 	protected String doIt() throws Exception
-	{	
-		String[] tables = new String[] {"AD_Window_Access", "AD_Process_Access", "AD_Form_Access",
+	{
+		String[] tables = new String[] { "AD_Window_Access", "AD_Process_Access", "AD_Form_Access",
 				"AD_Workflow_Access", "AD_Task_Access", "AD_Document_Action_Access",
+				I_Mobile_Application_Access.Table_Name,
 				X_AD_Role_Included.Table_Name,
 		};
-		String[] keycolumns = new String[] {"AD_Window_ID", "AD_Process_ID", "AD_Form_ID",
+		String[] keycolumns = new String[] { "AD_Window_ID", "AD_Process_ID", "AD_Form_ID",
 				"AD_Workflow_ID", "AD_Task_ID", "C_DocType_ID, AD_Ref_List_ID",
+				I_Mobile_Application_Access.COLUMNNAME_Mobile_Application_ID,
 				X_AD_Role_Included.COLUMNNAME_Included_Role_ID,
 		};
-		
+
 		int action = 0;
-		
-		for ( int i = 0; i < tables.length; i++ )
+
+		for (int i = 0; i < tables.length; i++)
 		{
 			String table = tables[i];
 			String keycolumn = keycolumns[i];
-			
+
 			String sql = "DELETE FROM " + table + " WHERE AD_Role_ID = " + m_AD_Role_ID_To;
 			int no = DB.executeUpdateEx(sql, get_TrxName());
-			addLog(action++, null, BigDecimal.valueOf(no), "Old records deleted from " + table );
-			
+			addLog(action++, null, BigDecimal.valueOf(no), "Old records deleted from " + table);
+
 			final boolean column_IsReadWrite =
-				!table.equals("AD_Document_Action_Access")
-				&& !table.equals(X_AD_Role_Included.Table_Name);
-			final boolean column_SeqNo = table.equals(X_AD_Role_Included.Table_Name); 
-			
+					!table.equals("AD_Document_Action_Access")
+							&& !table.equals(I_Mobile_Application_Access.Table_Name)
+							&& !table.equals(X_AD_Role_Included.Table_Name);
+			final boolean column_SeqNo = table.equals(X_AD_Role_Included.Table_Name);
+
 			sql = "INSERT INTO " + table
-			+   " (AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, " 
-			+   "AD_Role_ID, " + keycolumn +", isActive";
+					+ " (AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, "
+					+ "AD_Role_ID, " + keycolumn + ", isActive";
 			if (column_SeqNo)
 				sql += ", SeqNo ";
 			if (column_IsReadWrite)
 				sql += ", isReadWrite) ";
 			else
-				sql +=  ") ";
-			sql	+= "SELECT " + m_AD_Client_ID
-			+	", "+ m_AD_Org_ID
-			+	", getdate(), "+ Env.getAD_User_ID(Env.getCtx())
-			+	", getdate(), "+ Env.getAD_User_ID(Env.getCtx())
-			+	", " + m_AD_Role_ID_To
-			+	", " + keycolumn
-			+	", IsActive ";
+				sql += ") ";
+			sql += "SELECT " + m_AD_Client_ID
+					+ ", " + m_AD_Org_ID
+					+ ", getdate(), " + Env.getAD_User_ID(Env.getCtx())
+					+ ", getdate(), " + Env.getAD_User_ID(Env.getCtx())
+					+ ", " + m_AD_Role_ID_To
+					+ ", " + keycolumn
+					+ ", IsActive ";
 			if (column_SeqNo)
 				sql += ", SeqNo ";
 			if (column_IsReadWrite)
 				sql += ", isReadWrite ";
 			sql += "FROM " + table + " WHERE AD_Role_ID = " + m_AD_Role_ID_From;
 
-			no = DB.executeUpdateEx (sql, get_TrxName());
+			no = DB.executeUpdateEx(sql, get_TrxName());
 
-			addLog(action++, null, new BigDecimal(no), "New records inserted into " + table );
+			addLog(action++, null, new BigDecimal(no), "New records inserted into " + table);
 		}
-	
+
 		return "Role copied";
-	}	//	doIt
-			}	//	CopyRole
+	}    //	doIt
+}    //	CopyRole

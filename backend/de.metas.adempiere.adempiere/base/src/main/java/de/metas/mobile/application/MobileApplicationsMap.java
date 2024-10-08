@@ -20,13 +20,12 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.service;
+package de.metas.mobile.application;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -34,7 +33,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-final class MobileApplicationsMap
+public final class MobileApplicationsMap
 {
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static MobileApplicationsMap of(@NonNull final Optional<List<MobileApplication>> optionalMobileApplications)
