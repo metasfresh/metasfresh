@@ -2,7 +2,6 @@ package de.metas.pos;
 
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.money.MoneyService;
-import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.pos.async.C_POSOrder_CreateInvoiceAndShipment;
 import de.metas.pos.payment_gateway.POSPaymentProcessRequest;
@@ -18,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -49,13 +47,11 @@ public class POSOrderProcessingServices
 				return posPaymentToProcess;
 			}
 
-			POSPayment posPayment = posPaymentToProcess.getPaymentProcessingStatus().isNew()
+			POSPayment posPayment = posPaymentToProcess.isNew()
 					? processPOSPayment(posPaymentToProcess, posOrder, posTerminal.getPaymentProcessorConfigNotNull())
 					: posPaymentToProcess;
 
-			posPayment = generatePaymentReceiptIfNeeded(posPayment, posOrder);
-
-			if (posPayment.getPaymentProcessingStatus().isPending())
+			if (posPayment.isPending())
 			{
 				isAnyPaymentPending.set(true);
 			}
@@ -68,7 +64,7 @@ public class POSOrderProcessingServices
 
 	public POSPayment processPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull POSOrder posOrder, @NonNull final POSTerminalPaymentProcessorConfig paymentProcessorConfig)
 	{
-		posPaymentToProcess.getPaymentProcessingStatus().assertAllowCheckout();
+		posPaymentToProcess.assertAllowCheckout();
 
 		//
 		// Process payment 
@@ -91,18 +87,6 @@ public class POSOrderProcessingServices
 			}
 		}
 
-		posPayment = generatePaymentReceiptIfNeeded(posPayment, posOrder);
-
-		return posPayment;
-	}
-
-	private POSPayment generatePaymentReceiptIfNeeded(POSPayment posPayment, final @NonNull POSOrder posOrder)
-	{
-		if (posPayment.getPaymentProcessingStatus().isSuccessful() && posPayment.getPaymentReceiptId() == null)
-		{
-			final PaymentId paymentReceiptId = createPaymentReceipt(posPayment, posOrder);
-			posPayment = posPayment.withPaymentReceipt(paymentReceiptId);
-		}
 		return posPayment;
 	}
 
@@ -130,45 +114,31 @@ public class POSOrderProcessingServices
 		return posPayment.changingStatusFromRemote(processResponse.getStatus());
 	}
 
-	private PaymentId createPaymentReceipt(@NonNull final POSPayment posPayment, @NonNull POSOrder posOrder)
-	{
-		posPayment.assertNoPaymentReceipt();
-
-		final I_C_Payment paymentReceipt = paymentBL.newInboundReceiptBuilder()
-				.adOrgId(posOrder.getOrgId())
-				.orgBankAccountId(posOrder.getCashbookId())
-				.bpartnerId(posOrder.getShipToCustomerId())
-				.payAmt(posPayment.getAmount().toBigDecimal())
-				.currencyId(posPayment.getAmount().getCurrencyId())
-				.tenderType(posPayment.getPaymentMethod().getTenderType())
-				.dateTrx(posOrder.getDate())
-				.createAndProcess();
-
-		// TODO: add the payment to bank statement
-
-		return PaymentId.ofRepoId(paymentReceipt.getC_Payment_ID());
-	}
-
 	public POSPayment refundPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull POSOrderId posOrderId, @NonNull final POSTerminalPaymentProcessorConfig paymentProcessorConfig)
 	{
-		posPaymentToProcess.getPaymentMethod().assertCard();
-		posPaymentToProcess.getPaymentProcessingStatus().assertAllowRefund();
+		posPaymentToProcess.assertAllowRefund();
 
 		POSPayment posPayment = posPaymentToProcess;
 
-		final POSRefundResponse refundResponse = posPaymentProcessorService.refund(POSRefundRequest.builder()
-				.paymentProcessorConfig(paymentProcessorConfig)
-				.posOrderAndPaymentId(POSOrderAndPaymentId.of(posOrderId, posPayment.getLocalIdNotNull()))
-				.build());
-		posPayment = posPayment.changingStatusFromRemote(refundResponse.getStatus());
-
 		//
 		// Reverse payment
+		// (usually this field is not populated at this moment)
+		// TODO run this async!
 		if (posPayment.getPaymentReceiptId() != null)
 		{
 			paymentBL.reversePaymentById(posPayment.getPaymentReceiptId());
 			posPayment = posPayment.withPaymentReceipt(null);
 		}
+
+		//
+		// Ask payment processor to refund
+		final POSRefundResponse refundResponse = posPaymentProcessorService.refund(
+				POSRefundRequest.builder()
+						.paymentProcessorConfig(paymentProcessorConfig)
+						.posOrderAndPaymentId(POSOrderAndPaymentId.of(posOrderId, posPayment.getLocalIdNotNull()))
+						.build()
+		);
+		posPayment = posPayment.changingStatusFromRemote(refundResponse.getStatus());
 
 		return posPayment;
 	}

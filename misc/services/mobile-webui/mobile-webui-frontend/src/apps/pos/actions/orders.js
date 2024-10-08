@@ -4,7 +4,7 @@ import {
   ADD_PAYMENT,
   NEW_ORDER,
   ORDERS_LIST_UPDATE,
-  REMOVE_ORDER,
+  REMOVE_ORDER_LINE,
   REMOVE_PAYMENT,
   SET_SELECTED_ORDER_LINE,
 } from '../actionTypes';
@@ -14,21 +14,27 @@ import { getPOSApplicationState } from './common';
 
 export const useCurrentOrderOrNew = () => {
   const dispatch = useDispatch();
-  const [isLoading, setLoading] = useState();
+  const [loadingStatus, setLoadingStatus] = useState('to-load');
   const currentOrder = useSelector(getCurrentOrderFromState);
 
-  if (!currentOrder) {
-    if (!isLoading) {
-      setLoading(true);
-      dispatch(addNewOrderAction());
+  useEffect(() => {
+    if (!currentOrder) {
+      if (loadingStatus === 'to-load') {
+        setLoadingStatus('loading');
+        dispatch(addNewOrderAction());
+        console.log('No current order => creating new order', { currentOrder, loadingStatus });
+      }
+    } else {
+      if (loadingStatus !== 'load-done') {
+        setLoadingStatus('load-done');
+      }
     }
-    return { isCurrentOrderLoading: true, currentOrder };
-  } else {
-    if (isLoading) {
-      setLoading(false);
-    }
-    return { isCurrentOrderLoading: false, currentOrder };
-  }
+  }, []);
+
+  return {
+    isCurrentOrderLoading: loadingStatus !== 'load-done',
+    currentOrder,
+  };
 };
 export const useCurrentOrder = () => {
   const dispatch = useDispatch();
@@ -54,6 +60,22 @@ export const useCurrentOrder = () => {
           order_uuid: currentOrder?.uuid,
         })
       );
+      dispatch(() => setProcessing(false));
+    },
+    removeOrderLine: (line_uuid) => {
+      if (isProcessing) {
+        console.log('Skip removing order line because order is currently processing', { line_uuid, currentOrder });
+        return;
+      }
+      setProcessing(true);
+
+      dispatch(
+        removeOrderLine({
+          order_uuid: currentOrder?.uuid,
+          line_uuid,
+        })
+      );
+
       dispatch(() => setProcessing(false));
     },
   };
@@ -117,8 +139,8 @@ export const changeOrderStatusToDraft = ({ order_uuid }) => {
 };
 export const changeOrderStatusToVoid = ({ order_uuid }) => {
   return async (dispatch) => {
-    await ordersAPI.changeOrderStatusToVoid({ order_uuid });
-    dispatch(removeOrderAction({ order_uuid }));
+    const order = await ordersAPI.changeOrderStatusToVoid({ order_uuid });
+    dispatch(updateOrderFromBackendAction({ order }));
   };
 };
 export const changeOrderStatusToWaitingPayment = ({ order_uuid }) => {
@@ -129,17 +151,11 @@ export const changeOrderStatusToWaitingPayment = ({ order_uuid }) => {
 };
 export const changeOrderStatusToComplete = ({ order_uuid }) => {
   return async (dispatch) => {
-    await ordersAPI.changeOrderStatusToComplete({ order_uuid });
-    dispatch(removeOrderAction({ order_uuid }));
+    const order = await ordersAPI.changeOrderStatusToComplete({ order_uuid });
+    dispatch(updateOrderFromBackendAction({ order }));
   };
 };
 
-export const removeOrderAction = ({ order_uuid }) => {
-  return {
-    type: REMOVE_ORDER,
-    payload: { order_uuid },
-  };
-};
 export const addOrderLine = ({
   order_uuid,
   productId,
@@ -210,6 +226,24 @@ const addOrderLineAction = ({
     },
   };
 };
+
+const removeOrderLine = ({ order_uuid, line_uuid }) => {
+  return (dispatch) => {
+    dispatch(removeOrderLineAction({ order_uuid, line_uuid }));
+    dispatch(syncOrderToBackend({ order_uuid }));
+  };
+};
+
+const removeOrderLineAction = ({ order_uuid, line_uuid }) => {
+  return {
+    type: REMOVE_ORDER_LINE,
+    payload: {
+      order_uuid,
+      line_uuid,
+    },
+  };
+};
+
 const syncOrderToBackend = ({ order_uuid }) => {
   return (dispatch, getState) => {
     const globalState = getState();
