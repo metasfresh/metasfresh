@@ -94,10 +94,6 @@ INSERT INTO Mobile_Application (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActiv
 INSERT INTO Mobile_Application_Trl (AD_Language,Mobile_Application_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.Mobile_Application_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, Mobile_Application t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.Mobile_Application_ID=540006 AND NOT EXISTS (SELECT 1 FROM Mobile_Application_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.Mobile_Application_ID=t.Mobile_Application_ID)
 ;
 
--- 2024-10-07T15:58:13.523Z
-UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? RETURNING CurrentNext - ?
-;
-
 -- 2024-10-07T15:58:13.537Z
 INSERT INTO Mobile_Application (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,IsShowInMainMenu,Mobile_Application_ID,Name,Updated,UpdatedBy,Value) VALUES (0,0,TO_TIMESTAMP('2024-10-07 18:58:13','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y',540007,'Arbeitsstation',TO_TIMESTAMP('2024-10-07 18:58:13','YYYY-MM-DD HH24:MI:SS'),100,'1000000')
 ;
