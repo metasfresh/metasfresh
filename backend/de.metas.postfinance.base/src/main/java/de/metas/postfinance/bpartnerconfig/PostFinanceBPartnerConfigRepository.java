@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.postfinance.base
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.bpartner.postfinance;
+package de.metas.postfinance.bpartnerconfig;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.postfinance.model.I_PostFinance_BPartner_Config;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_PostFinance_BPartner_Config;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -82,12 +82,11 @@ public class PostFinanceBPartnerConfigRepository
 				.delete();
 	}
 
-	@NonNull
-	public PostFinanceBPartnerConfig createOrUpdate(
+	public void createOrUpdate(
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final String receiverEBillId)
 	{
-		return getByBPartnerId(bPartnerId)
+		getByBPartnerId(bPartnerId)
 				.map(existingBPartnerConfig -> existingBPartnerConfig.toBuilder()
 						.receiverEBillId(receiverEBillId)
 						.build())

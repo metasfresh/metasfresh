@@ -1,5 +1,27 @@
+/*
+ * #%L
+ * de.metas.postfinance.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 // Generated Model - DO NOT CHANGE
-package org.compiere.model;
+package de.metas.postfinance.model;
 
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
@@ -12,7 +34,7 @@ import java.util.Properties;
 public class X_PostFinance_Org_Config extends org.compiere.model.PO implements I_PostFinance_Org_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 61763720L;
+	private static final long serialVersionUID = 60689034L;
 
     /** Standard Constructor */
     public X_PostFinance_Org_Config (final Properties ctx, final int PostFinance_Org_Config_ID, @Nullable final String trxName)
@@ -44,6 +66,18 @@ public class X_PostFinance_Org_Config extends org.compiere.model.PO implements I
 	public boolean isArchiveData() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsArchiveData);
+	}
+
+	@Override
+	public void setIsTestserver (final boolean IsTestserver)
+	{
+		set_Value (COLUMNNAME_IsTestserver, IsTestserver);
+	}
+
+	@Override
+	public boolean isTestserver() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsTestserver);
 	}
 
 	@Override
