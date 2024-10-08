@@ -1,11 +1,14 @@
 package de.metas.material.event;
 
 import de.metas.logging.LogManager;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.service.ISysConfigBL;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -34,9 +37,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class PostMaterialEventService
 {
+	public static final String SYSCONFIG_ENQUEUE_EVENTS = "de.metas.material.event.EnqueueEvents";
+
 	private static final Logger logger = LogManager.getLogger(PostMaterialEventService.class);
 
 	private final MetasfreshEventBusService materialEventService;
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public PostMaterialEventService(@NonNull final MetasfreshEventBusService materialEventService)
 	{
@@ -48,6 +55,11 @@ public class PostMaterialEventService
 	 */
 	public void enqueueEventAfterNextCommit(@NonNull final MaterialEvent event)
 	{
+		if (dontEnqueueEvent(event))
+		{
+			return;
+		}
+
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
@@ -59,9 +71,24 @@ public class PostMaterialEventService
 	 * Fires the given event using our (distributed) event framework.
 	 * <b>Important:</b> Please make sure to only use this method if you know that all the data which this event refers to is already committed to database!
 	 */
-	public void enqueueEventNow(final MaterialEvent event)
+	public void enqueueEventNow(@NonNull final MaterialEvent event)
 	{
+		if (dontEnqueueEvent(event))
+		{
+			return;
+		}
+
 		materialEventService.enqueueEvent(event);
 		logger.info("Posted MaterialEvent={}", event);
+	}
+
+	private boolean dontEnqueueEvent(@NotNull final MaterialEvent event)
+	{
+		final EventDescriptor eventDescriptor = event.getEventDescriptor();
+
+		final boolean equeueEvents = sysConfigBL.getBooleanValue(SYSCONFIG_ENQUEUE_EVENTS,
+																 true,
+																 eventDescriptor.getClientAndOrgId());
+		return !equeueEvents;
 	}
 }
