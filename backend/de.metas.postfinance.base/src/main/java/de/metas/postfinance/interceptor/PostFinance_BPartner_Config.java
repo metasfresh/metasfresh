@@ -20,49 +20,47 @@
  * #L%
  */
 
-package de.metas.bpartner.postfinance.interceptor;
+package de.metas.postfinance.interceptor;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.postfinance.PostFinanceBPartnerConfig;
-import de.metas.bpartner.postfinance.PostFinanceBPartnerConfigRepository;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
+import de.metas.postfinance.model.I_PostFinance_BPartner_Config;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-@Interceptor(I_C_BPartner.class)
+@Interceptor(I_PostFinance_BPartner_Config.class)
 @Component
-public class C_BPartner
+public class PostFinance_BPartner_Config
 {
-	private static final AdMessageKey ERROR_ORG_BP_POST_FINANCE_CONFIG = AdMessageKey.of("C_BPartner.ERROR_ORG_BP_POSTFINANCE_CONFIG");
+	private static final AdMessageKey ERROR_ORG_BP_POST_FINANCE_CONFIG = AdMessageKey.of("PostFinance_BPartner_Config.ERROR_ORG_BP_POSTFINANCE_CONFIG");
 
-	private final PostFinanceBPartnerConfigRepository postFinanceBPartnerConfigRepository;
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
-	public C_BPartner(@NonNull final PostFinanceBPartnerConfigRepository postFinanceBPartnerConfigRepository)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = I_PostFinance_BPartner_Config.COLUMNNAME_IsActive)
+	public void validateBPartner(@NonNull final I_PostFinance_BPartner_Config config)
 	{
-		this.postFinanceBPartnerConfigRepository = postFinanceBPartnerConfigRepository;
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,
-			ifColumnsChanged = I_C_BPartner.COLUMNNAME_AD_OrgBP_ID)
-	public void validatePostFinanceConfig(@NonNull final I_C_BPartner bpartner)
-	{
-		final OrgId orgBPId = OrgId.ofRepoIdOrNull(bpartner.getAD_OrgBP_ID());
-		if (orgBPId == null)
+		if (!config.isActive())
 		{
 			return;
 		}
 
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
-		final Optional<PostFinanceBPartnerConfig> postFinanceConfigOptional = postFinanceBPartnerConfigRepository.getByBPartnerId(bPartnerId);
-		if (postFinanceConfigOptional.isPresent())
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(config.getC_BPartner_ID());
+		final I_C_BPartner bPartnerRecord = bPartnerBL.getById(bPartnerId);
+
+		final Optional<OrgId> orgBPIdOptional = InterfaceWrapperHelper.getRepoIdOptional(bPartnerRecord, I_C_BPartner.COLUMNNAME_AD_OrgBP_ID, OrgId::ofRepoId);
+		if (orgBPIdOptional.isPresent())
 		{
 			throw new AdempiereException(ERROR_ORG_BP_POST_FINANCE_CONFIG);
 		}

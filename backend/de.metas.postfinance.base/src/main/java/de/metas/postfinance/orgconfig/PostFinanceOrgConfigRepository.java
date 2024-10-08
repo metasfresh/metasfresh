@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.postfinance.base
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,14 +20,14 @@
  * #L%
  */
 
-package de.metas.bpartner.postfinance;
+package de.metas.postfinance.orgconfig;
 
 import de.metas.organization.OrgId;
+import de.metas.postfinance.model.I_PostFinance_Org_Config;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_PostFinance_Org_Config;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -72,6 +72,7 @@ public class PostFinanceOrgConfigRepository
 				.billerId(financeOrgConfig.getPostFinance_Sender_BillerId())
 				.isArchiveData(financeOrgConfig.isArchiveData())
 				.isUsePaperBill(financeOrgConfig.isUsePaperBill())
+				.isTestserver(financeOrgConfig.isTestserver())
 				.build();
 	}
 }

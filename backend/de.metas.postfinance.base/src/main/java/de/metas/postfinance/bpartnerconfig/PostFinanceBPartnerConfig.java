@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.postfinance.base
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,21 +20,20 @@
  * #L%
  */
 
-package de.metas.bpartner.postfinance;
+package de.metas.postfinance.bpartnerconfig;
 
+import de.metas.bpartner.BPartnerId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
-@Builder
-public class PostFinanceOrgConfig
+@Builder(toBuilder = true)
+public class PostFinanceBPartnerConfig
 {
-	@NonNull PostFinanceOrgConfigId id;
+	@NonNull PostFinanceBPartnerConfigId id;
 
-	@NonNull String billerId;
-	
-	boolean isArchiveData;
+	@NonNull BPartnerId bPartnerId;
 
-	boolean isUsePaperBill;
+	@NonNull String receiverEBillId;
 }
