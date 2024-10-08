@@ -21,7 +21,10 @@ public interface WorkflowBasedMobileApplication extends MobileApplication
 
 	@Override
 	@NonNull
-	MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId);
+	default MobileApplicationInfo customizeApplicationInfo(@NonNull MobileApplicationInfo applicationInfo, @NonNull UserId loggedUserId)
+	{
+		return MobileApplication.super.customizeApplicationInfo(applicationInfo, loggedUserId);
+	}
 
 	WorkflowLaunchersList provideLaunchers(WorkflowLaunchersQuery query);
 

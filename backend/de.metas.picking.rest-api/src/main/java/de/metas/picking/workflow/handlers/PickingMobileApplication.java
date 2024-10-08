@@ -41,7 +41,6 @@
 	import de.metas.handlingunits.qrcodes.model.HUQRCode;
 	import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 	import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-	import de.metas.i18n.AdMessageKey;
 	import de.metas.i18n.ImmutableTranslatableString;
 	import de.metas.i18n.TranslatableStrings;
 	import de.metas.picking.config.MobileUIPickingUserProfile;
@@ -93,15 +92,6 @@
 		@VisibleForTesting
 		public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
 
-		private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
-		public static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
-				.id(APPLICATION_ID)
-				.caption(TranslatableStrings.adMessage(MSG_Caption))
-				.requiresWorkplace(true)
-				.showFilterByDocumentNo(true)
-				.showFilters(true)
-				.build();
-
 		public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("A1");
 		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("A2");
 		public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("A3");
@@ -134,7 +124,14 @@
 		public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
 
 		@Override
-		public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull final UserId loggedUserId) {return APPLICATION_INFO;}
+		public @NonNull MobileApplicationInfo customizeApplicationInfo(@NonNull final MobileApplicationInfo applicationInfo, @NonNull final UserId loggedUserId)
+		{
+			return applicationInfo.toBuilder()
+					.requiresWorkplace(true)
+					.showFilterByDocumentNo(true)
+					.showFilters(true)
+					.build();
+		}
 
 		@Override
 		public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)

@@ -30,8 +30,9 @@ import lombok.NonNull;
 public interface MobileApplication
 {
 	MobileApplicationId getApplicationId();
+
 	@NonNull
-	MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId);
+	default MobileApplicationInfo customizeApplicationInfo(@NonNull MobileApplicationInfo applicationInfo, @NonNull UserId loggedUserId) {return applicationInfo;}
 
 	default void logout(@NonNull final UserId userId) {}
 }

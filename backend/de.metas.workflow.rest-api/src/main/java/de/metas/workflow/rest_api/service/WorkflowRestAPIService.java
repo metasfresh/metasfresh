@@ -67,13 +67,16 @@ public class WorkflowRestAPIService
 	private static final String SYSCONFIG_LaunchersLimit = "WorkflowRestAPIService.LaunchersLimit";
 	private static final QueryLimit DEFAULT_LaunchersLimit = QueryLimit.ofInt(20);
 
-	private final MobileApplicationsMap applications;
-	private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
+	@NonNull private final MobileApplicationInfoRepository applicationInfoRepository;
+	@NonNull private final MobileApplicationsMap applications;
+	@NonNull private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
 
 	public WorkflowRestAPIService(
+			@NonNull final MobileApplicationInfoRepository applicationInfoRepository,
 			@NonNull final Optional<List<MobileApplication>> applications,
 			@NonNull final WFActivityHandlersRegistry wfActivityHandlersRegistry)
 	{
+		this.applicationInfoRepository = applicationInfoRepository;
 		this.applications = MobileApplicationsMap.of(applications);
 		logger.info("applications: {}", this.applications);
 
@@ -82,15 +85,17 @@ public class WorkflowRestAPIService
 
 	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(final UserId loggedUserId)
 	{
-		return applications.stream()
-				.map(application -> {
+		return applicationInfoRepository.getAllActive()
+				.stream()
+				.map(applicationInfo -> {
 					try
 					{
-						return application.getApplicationInfo(loggedUserId);
+						final MobileApplication application = applications.getById(applicationInfo.getId());
+						return application.customizeApplicationInfo(applicationInfo, loggedUserId);
 					}
 					catch (Exception ex)
 					{
-						logger.warn("Failed getting application info from {}. Skipped", application, ex);
+						logger.warn("Failed getting application from {}. Skipped", applicationInfo, ex);
 						return null;
 					}
 				})
