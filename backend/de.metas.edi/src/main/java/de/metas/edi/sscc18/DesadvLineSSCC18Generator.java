@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest;
 import de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest;
 import de.metas.edi.api.impl.pack.EDIDesadvPack;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
@@ -207,11 +208,11 @@ public class DesadvLineSSCC18Generator
 		final String ipaSSCC18 = sscc18.asString(); // humanReadable=false
 
 		// Create SSCC record
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = buildCreateEDIDesadvPackItemRequest(desadvLine, luQtys);
+		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = buildCreateEDIDesadvPackItemRequest(desadvLine, luQtys);
 
 		final CreateEDIDesadvPackRequest createEDIDesadvPackRequest = CreateEDIDesadvPackRequest.builder()
 				.orgId(OrgId.ofRepoId(desadvLine.getAD_Org_ID()))
-				.line(10)
+				.seqNo(1)
 				.ediDesadvId(EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()))
 				.sscc18(ipaSSCC18)
 				.isManualIpaSSCC(true)
@@ -222,7 +223,7 @@ public class DesadvLineSSCC18Generator
 	}
 
 	@NonNull
-	private CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest buildCreateEDIDesadvPackItemRequest(
+	private CreateEDIDesadvPackItemRequest buildCreateEDIDesadvPackItemRequest(
 			@NonNull final I_EDI_DesadvLine desadvLine,
 			@NonNull final LUQtys luQtys)
 	{
@@ -270,7 +271,7 @@ public class DesadvLineSSCC18Generator
 			qtyCUPerLUinInvoiceUOM = null;
 		}
 
-		return CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
+		return CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLine.getEDI_DesadvLine_ID()))
 				.qtyCUsPerTU(qtyCUsPerTU.toBigDecimal())
 				.qtyTu(luQtys.getQtyTUsPerLU().intValueExact())
