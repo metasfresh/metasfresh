@@ -1644,6 +1644,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public final boolean isSalesFinalInvoiceOrFinalCreditMemo(final org.compiere.model.I_C_Invoice invoiceRecord)
+	{
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
+		return docTypeId != null && docTypeBL.isSalesFinalInvoiceOrFinalCreditMemo(docTypeId);
+	}
+
+	@Override
 	public final boolean isAdjustmentCharge(final org.compiere.model.I_C_Invoice invoice)
 	{
 		final I_C_DocType docType = assumeNotNull(getC_DocTypeEffectiveOrNull(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);

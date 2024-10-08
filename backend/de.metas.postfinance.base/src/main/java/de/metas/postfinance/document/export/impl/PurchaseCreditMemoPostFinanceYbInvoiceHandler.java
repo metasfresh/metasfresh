@@ -100,6 +100,7 @@ public class PurchaseCreditMemoPostFinanceYbInvoiceHandler implements IPostFinan
 				.pInstanceReference(postFinanceYbInvoiceRequest.getPInstanceReference())
 				.documentReference(postFinanceYbInvoiceRequest.getDocumentReference())
 				.transactionId(invoice.getTransactionID().getValue())
+				.orgId(postFinanceYbInvoiceRequest.getOrgId())
 				.build();
 	}
 }

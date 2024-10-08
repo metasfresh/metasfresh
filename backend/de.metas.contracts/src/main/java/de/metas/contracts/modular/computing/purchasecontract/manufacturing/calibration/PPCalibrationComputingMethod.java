@@ -97,13 +97,13 @@ public class PPCalibrationComputingMethod extends AbstractComputingMethodHandler
 		if (manufacturingProcessedReceipt != null)
 		{
 			final ManufacturingOrder manufacturingOrder = manufacturingFacadeService.getManufacturingOrder(manufacturingProcessedReceipt.getManufacturingOrderId());
-			return ProductId.equals(manufacturingOrder.getProcessedProductId(), settings.getProcessedProductId());
+			return ProductId.equals(manufacturingOrder.getProcessedProductId(), settings.getProcessedProductId()) && settings.getSoTrx().isPurchase();
 		}
 		else if (manufacturingRawIssued != null)
 		{
 			final ManufacturingOrder manufacturingOrder = manufacturingFacadeService.getManufacturingOrder(manufacturingRawIssued.getManufacturingOrderId());
 			return ProductId.equals(manufacturingOrder.getProcessedProductId(), settings.getProcessedProductId())
-					&& ProductId.equals(manufacturingRawIssued.getRawProductId(), settings.getRawProductId());
+					&& ProductId.equals(manufacturingRawIssued.getRawProductId(), settings.getRawProductId()) && settings.getSoTrx().isPurchase();
 		}
 		return false;
 	}

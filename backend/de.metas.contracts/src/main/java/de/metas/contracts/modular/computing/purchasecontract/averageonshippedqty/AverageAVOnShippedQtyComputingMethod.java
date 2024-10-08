@@ -25,68 +25,36 @@ package de.metas.contracts.modular.computing.purchasecontract.averageonshippedqt
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
+import de.metas.contracts.modular.computing.AbstractAverageAVOnShippedQtyComputingMethod;
 import de.metas.contracts.modular.computing.ComputingMethodService;
-import de.metas.contracts.modular.computing.ComputingRequest;
-import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogEntriesList;
-import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.money.Money;
-import de.metas.order.OrderId;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
-@RequiredArgsConstructor
-public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMethodHandler
+public class AverageAVOnShippedQtyComputingMethod extends AbstractAverageAVOnShippedQtyComputingMethod
 {
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@NonNull private final ModularContractProvider contractProvider;
-	@NonNull private final ComputingMethodService computingMethodService;
+	@NonNull @Getter ComputingMethodType computingMethodType = ComputingMethodType.PurchaseAverageAddedValueOnShippedQuantity;
 
-	// computeAverageAmount with at least 12 digit precision, will be rounded on IC creation according to priceList precision
-	private final CurrencyPrecision precision = CurrencyPrecision.ofInt(12);
-
-	@Override
-	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
+	public AverageAVOnShippedQtyComputingMethod(
+			@NonNull final ComputingMethodService computingMethodService,
+			@NonNull final ModularContractProvider contractProvider
+	)
 	{
-
-		if (recordRef.tableNameEqualsTo(I_M_InOutLine.Table_Name) && logEntryContractType.isModularContractType())
-		{
-			final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
-			final I_M_InOut inOutRecord = inOutDAO.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-
-			final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
-			if (orderId == null)
-			{
-				return false;
-			}
-			return inOutRecord.isSOTrx();
-		}
-		return false;
-
+		super(computingMethodService);
+		this.contractProvider = contractProvider;
 	}
 
 	@Override
@@ -103,61 +71,6 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMetho
 		final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId));
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 
-		return ProductId.equals(productId, settings.getProcessedProductId()) || ProductId.equals(productId, settings.getRawProductId());
+		return ProductId.equals(productId, settings.getProcessedProductId()) || ProductId.equals(productId, settings.getRawProductId()) && settings.getSoTrx().isPurchase();
 	}
-
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-
-		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
-		if (logs.isEmpty())
-		{
-			return computingMethodService.toZeroResponse(request);
-		}
-
-		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
-
-		final Money money = computeAverageAmount(logs)
-				.orElseGet(() -> Money.zero(request.getCurrencyId()));
-
-		return ComputingResponse.builder()
-				.ids(logs.getIds())
-				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
-				.price(ProductPrice.builder()
-						.productId(request.getProductId())
-						.money(money)
-						.uomId(stockUOMId)
-						.build())
-				.qty(computingMethodService.getQtySum(logs, stockUOMId))
-				.build();
-	}
-
-	@Override
-	public @NonNull ComputingMethodType getComputingMethodType()
-	{
-		return ComputingMethodType.AverageAddedValueOnShippedQuantity;
-	}
-
-	public Optional<Money> computeAverageAmount(@NonNull final ModularContractLogEntriesList logs)
-	{
-		final Optional<Money> totalMoney = logs.stream()
-				.map(ModularContractLogEntry::getAmount)
-				.filter(Objects::nonNull)
-				.reduce(Money::add);
-
-		final Optional<Quantity> totalQuantity = logs.stream()
-				.map(ModularContractLogEntry::getQuantity)
-				.filter(Objects::nonNull)
-				.reduce(Quantity::add);
-
-		if (totalMoney.isEmpty() || totalQuantity.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		final Money weightedAvgMoney = totalMoney.get().divide(totalQuantity.get().toBigDecimal(), precision);
-		return Optional.of(weightedAvgMoney);
-	}
-
 }

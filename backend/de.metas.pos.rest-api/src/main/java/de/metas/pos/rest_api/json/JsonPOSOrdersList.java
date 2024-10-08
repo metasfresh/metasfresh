@@ -2,12 +2,14 @@ package de.metas.pos.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.pos.POSOrder;
+import de.metas.pos.POSOrderExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.Set;
 
 @Value
 @Builder
@@ -15,13 +17,15 @@ import java.util.List;
 public class JsonPOSOrdersList
 {
 	@NonNull List<JsonPOSOrder> list;
+	@NonNull Set<POSOrderExternalId> missingIds;
 
-	public static JsonPOSOrdersList of(@NonNull final List<POSOrder> orders, @NonNull final JsonContext jsonContext)
+	public static JsonPOSOrdersListBuilder from(
+			@NonNull final List<POSOrder> orders,
+			@NonNull final JsonContext jsonContext)
 	{
 		return builder()
 				.list(orders.stream()
 						.map(order -> JsonPOSOrder.of(order, jsonContext))
-						.collect(ImmutableList.toImmutableList()))
-				.build();
+						.collect(ImmutableList.toImmutableList()));
 	}
 }

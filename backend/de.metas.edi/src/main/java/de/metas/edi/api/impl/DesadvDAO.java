@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
+import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
@@ -39,6 +40,7 @@ import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
 import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -46,7 +48,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 
 import java.math.BigDecimal;
@@ -61,27 +62,37 @@ public class DesadvDAO implements IDesadvDAO
 	 */
 	private static final String SYS_CONFIG_DefaultMinimumPercentage = "de.metas.esb.edi.DefaultMinimumPercentage";
 	private static final String SYS_CONFIG_DefaultMinimumPercentage_DEFAULT = "50";
-	private static final String SYS_CONFIG_MATCH_USING_BPARTNER_ID = "de.metas.edi.desadv.MatchUsingC_BPartner_ID";
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
-	public I_EDI_Desadv retrieveMatchingDesadvOrNull(@NonNull final String poReference, @NonNull final BPartnerId bPartnerId, @NonNull final IContextAware ctxAware)
+	public I_EDI_Desadv retrieveMatchingDesadvOrNull(@NonNull final EDIDesadvQuery query)
 	{
-		Check.assumeNotEmpty(poReference, "Param 'poReference' is not emtpy; ctxAware={}", ctxAware);
-		final IQueryBuilder<I_EDI_Desadv> query = queryBL.createQueryBuilder(I_EDI_Desadv.class, ctxAware)
+		final IQueryBuilder<I_EDI_Desadv> queryBuilder = queryBL.createQueryBuilder(I_EDI_Desadv.class, query.getCtxAware())
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_EDI_Desadv.COLUMN_POReference, poReference)
+				.addEqualsFilter(I_EDI_Desadv.COLUMN_POReference, query.getPoReference())
 				.addEqualsFilter(I_EDI_Desadv.COLUMN_Processed, false)
 				.addEqualsFilter(I_EDI_Desadv.COLUMN_Processing, false);
 
-		if (isMatchUsingBPartnerId())
+		final BPartnerId bPartnerId = query.getBPartnerId();
+		if (bPartnerId != null)
 		{
-			query.addEqualsFilter(I_EDI_Desadv.COLUMNNAME_C_BPartner_ID, bPartnerId.getRepoId());
+			queryBuilder.addEqualsFilter(I_EDI_Desadv.COLUMNNAME_C_BPartner_ID, bPartnerId);
 		}
 
-		return query.create().firstOnly(I_EDI_Desadv.class);
+		final OrderId orderId = query.getOrderId();
+		if (orderId != null)
+		{
+			final IQuery<I_C_Order> orderQuery = queryBL.createQueryBuilder(I_C_Order.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderId)
+					.create();
+
+			queryBuilder.addInSubQueryFilter(I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID, I_C_Order.COLUMNNAME_EDI_Desadv_ID, orderQuery);
+		}
+
+		return queryBuilder.create().firstOnly(I_EDI_Desadv.class);
 	}
 
 	@Override
@@ -108,11 +119,6 @@ public class DesadvDAO implements IDesadvDAO
 				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_Line, line);
 
 		return query.create().firstOnly(I_EDI_DesadvLine.class);
-	}
-
-	private boolean isMatchUsingBPartnerId()
-	{
-		return sysConfigBL.getBooleanValue(SYS_CONFIG_MATCH_USING_BPARTNER_ID, false);
 	}
 
 	@Override

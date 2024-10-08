@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1783588622L;
+	private static final long serialVersionUID = 1529483910L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -984,6 +984,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isManualPrice() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManualPrice);
+	}
+
+	@Override
+	public void setIsManualQtyInPriceUOM (final boolean IsManualQtyInPriceUOM)
+	{
+		set_Value (COLUMNNAME_IsManualQtyInPriceUOM, IsManualQtyInPriceUOM);
+	}
+
+	@Override
+	public boolean isManualQtyInPriceUOM() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManualQtyInPriceUOM);
 	}
 
 	@Override

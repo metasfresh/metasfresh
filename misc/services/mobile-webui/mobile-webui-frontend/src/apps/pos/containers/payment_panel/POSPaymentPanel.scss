@@ -60,7 +60,11 @@
         flex-grow: 0;
         min-width: 4rem;
         max-width: 4rem;
-        padding-left: 5px;
+        padding-left: 10px;
+        
+        display: flex;
+        flex-flow: row nowrap;
+        column-gap: 10px;
 
         .payment-line-action-item {
           font-weight: bold;

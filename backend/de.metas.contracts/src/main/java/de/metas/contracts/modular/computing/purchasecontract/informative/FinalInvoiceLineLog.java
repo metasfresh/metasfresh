@@ -27,7 +27,7 @@ import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepo
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.contracts.modular.workpackage.impl.AbstractModularPurchaseInvoiceLineLog;
+import de.metas.contracts.modular.workpackage.impl.AbstractInvoiceLineLog;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.lang.SOTrx;
 import lombok.Getter;
@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Getter
-public class FinalInvoiceLineLog extends AbstractModularPurchaseInvoiceLineLog
+public class FinalInvoiceLineLog extends AbstractInvoiceLineLog
 {
 	@NonNull private final InformativeLogComputingMethod computingMethod;
 	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.FINAL_INVOICE;

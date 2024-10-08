@@ -3,6 +3,8 @@ package de.metas.pos;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.payment.sumup.SumUpConfigId;
+import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import de.metas.pricing.PriceListId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -12,6 +14,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_POS;
 import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
 
 @Repository
 public class POSTerminalRawRepository
@@ -52,8 +56,24 @@ public class POSTerminalRawRepository
 				.walkInCustomerId(BPartnerId.ofRepoId(record.getC_BPartnerCashTrx_ID()))
 				.salesOrderDocTypeId(DocTypeId.ofRepoId(record.getC_DocTypeOrder_ID()))
 				.cashbookId(BankAccountId.ofRepoId(record.getC_BP_BankAccount_ID()))
+				.paymentProcessorConfig(extractPaymentProcessorConfig(record))
 				.cashJournalId(POSCashJournalId.ofRepoIdOrNull(record.getC_POS_Journal_ID()))
 				.cashLastBalance(record.getCashLastBalance())
+				.build();
+	}
+
+	@Nullable
+	private static POSTerminalPaymentProcessorConfig extractPaymentProcessorConfig(final I_C_POS record)
+	{
+		final POSPaymentProcessorType type = POSPaymentProcessorType.ofNullableCode(record.getPOSPaymentProcessor());
+		if (type == null)
+		{
+			return null;
+		}
+
+		return POSTerminalPaymentProcessorConfig.builder()
+				.type(type)
+				.sumUpConfigId(SumUpConfigId.ofRepoIdOrNull(record.getSUMUP_Config_ID()))
 				.build();
 	}
 

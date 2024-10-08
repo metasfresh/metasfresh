@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useProducts } from '../../api/products';
 import ProductButton from './ProductButton';
 import Spinner from '../../../../components/Spinner';
-import { useCurrentOrder } from '../../actions';
 import ProductSearchBar from './ProductSearchBar';
 import GetCatchWeightModal from './GetCatchWeightModal';
 import './Products.scss';
+import { useCurrentOrder } from '../../actions/orders';
 
 const Products = () => {
   const currentOrder = useCurrentOrder();
@@ -80,10 +80,17 @@ const useNewOrderLineDispatcher = ({ currentOrder }) => {
 
   return {
     clear: () => setOrderLineToAdd(null),
-    initialize: (product) => setOrderLineToAdd({ ...product }),
+    initialize: (product) => {
+      const { id: productId, name: productName, ...otherProductFields } = product;
+      setOrderLineToAdd({
+        productId,
+        productName,
+        ...otherProductFields,
+      });
+    },
     isCatchWeightRequiredButNotSet,
     catchWeightUomSymbol: orderLineToAdd?.catchWeightUomSymbol,
-    setCatchWeight: (catchWeight) => setOrderLineToAdd((productToAdd) => ({ ...productToAdd, catchWeight })),
+    setCatchWeight: (catchWeight) => setOrderLineToAdd((orderLine) => ({ ...orderLine, catchWeight })),
   };
 };
 

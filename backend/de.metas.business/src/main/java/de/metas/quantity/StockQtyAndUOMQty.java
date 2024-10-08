@@ -28,7 +28,7 @@ public class StockQtyAndUOMQty
 	@NonNull Quantity stockQty;
 
 	/**
-	 * Quantity in a "parallel" UOM. Note that often there is no fix UOM conversion rule between this quantity and {@link #getStockQty()}.
+	 * Quantity in a "parallel" UOM. Note that often there is no fix UOM conversion rule between this quantity and {@link #stockQty}.
 	 */
 	@Nullable Quantity uomQty;
 
@@ -54,6 +54,12 @@ public class StockQtyAndUOMQty
 	public boolean isUOMQtySet()
 	{
 		return uomQty != null;
+	}
+
+	@JsonIgnore
+	public boolean isDifferentUOMQty()
+	{
+		return uomQty != null && !uomQty.equals(stockQty);
 	}
 
 	@JsonIgnore
@@ -223,7 +229,7 @@ public class StockQtyAndUOMQty
 					{
 						return BigDecimal.ZERO;
 					}
-					
+
 					final UOMPrecision uomPrecision = UOMPrecision.ofInt(uomQuantity.getUOM().getStdPrecision());
 
 					return uomQuantity.toBigDecimal().setScale(uomPrecision.toInt(), uomPrecision.getRoundingMode())

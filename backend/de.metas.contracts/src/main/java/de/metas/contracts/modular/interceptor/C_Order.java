@@ -151,12 +151,6 @@ public class C_Order
 
 	private void createModularContractIfRequiredForEachLine(final @NonNull I_C_OrderLine orderLine, @NonNull final SOTrx soTrx)
 	{
-		//Sales modular contracts aren't supported atm
-		if(soTrx.isSales())
-		{
-			return;
-		}
-
 		if (!isModularContractLine(orderLine))
 		{
 			return;

@@ -34,6 +34,7 @@ import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -116,6 +117,12 @@ public class InterimComputingMethod extends AbstractComputingMethodHandler
 			}
 			default -> {return false;}
 		}
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
+		return settings.getSoTrx().isPurchase();
 	}
 
 	@Override

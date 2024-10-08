@@ -230,6 +230,33 @@ public interface I_C_POS_Order
 	String COLUMNNAME_C_DocTypeOrder_ID = "C_DocTypeOrder_ID";
 
 	/**
+	 * Set Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Order_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_Order();
+
+	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
+
+	ModelColumn<I_C_POS_Order, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_C_POS_Order.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
+
+	/**
 	 * Set POS Terminal.
 	 * Point of Sales Terminal
 	 *
@@ -545,6 +572,27 @@ public interface I_C_POS_Order
 
 	ModelColumn<I_C_POS_Order, Object> COLUMN_PaidAmt = new ModelColumn<>(I_C_POS_Order.class, "PaidAmt", null);
 	String COLUMNNAME_PaidAmt = "PaidAmt";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_C_POS_Order, Object> COLUMN_Processed = new ModelColumn<>(I_C_POS_Order.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Status.

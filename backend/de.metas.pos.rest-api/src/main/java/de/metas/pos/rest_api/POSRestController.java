@@ -1,5 +1,7 @@
 package de.metas.pos.rest_api;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.Profiles;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
@@ -7,7 +9,8 @@ import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
 import de.metas.pos.POSOrderStatus;
-import de.metas.pos.POSProductsList;
+import de.metas.pos.POSPaymentExternalId;
+import de.metas.pos.POSProductsSearchResult;
 import de.metas.pos.POSService;
 import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalCloseJournalRequest;
@@ -19,7 +22,7 @@ import de.metas.pos.rest_api.json.JsonPOSOrdersList;
 import de.metas.pos.rest_api.json.JsonPOSTerminal;
 import de.metas.pos.rest_api.json.JsonPOSTerminalCloseJournalRequest;
 import de.metas.pos.rest_api.json.JsonPOSTerminalOpenJournalRequest;
-import de.metas.pos.rest_api.json.JsonProductsList;
+import de.metas.pos.rest_api.json.JsonProductsSearchResult;
 import de.metas.user.UserId;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
@@ -36,6 +39,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Set;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/pos")
 @RestController
@@ -104,21 +109,38 @@ public class POSRestController
 	}
 
 	@GetMapping("/products")
-	public JsonProductsList getProducts(@RequestParam(value = "query", required = false) final String queryParam)
+	public JsonProductsSearchResult getProducts(@RequestParam(value = "query", required = false) final String queryParam)
 	{
 		final Instant date = SystemTime.asInstant();
 		final String adLanguage = getADLanguage();
 
-		final POSProductsList products = posService.getProducts(date, queryParam);
-		return JsonProductsList.from(products, adLanguage);
+		final POSProductsSearchResult products = posService.getProducts(date, queryParam);
+		return JsonProductsSearchResult.from(products, adLanguage);
 	}
 
 	@GetMapping("/orders")
-	public JsonPOSOrdersList getOpenOrders()
+	public JsonPOSOrdersList getOpenOrders(
+			@RequestParam(value = "ids", required = false) final String commaSeparatedOrderIds
+	)
 	{
 		final UserId loggedUserId = getLoggedUserId();
+		final Set<POSOrderExternalId> onlyOrderIds = POSOrderExternalId.ofCommaSeparatedString(commaSeparatedOrderIds);
+		final List<POSOrder> orders = posService.getOpenOrders(loggedUserId, onlyOrderIds);
 
-		return JsonPOSOrdersList.of(posService.getOpenOrders(loggedUserId), newJsonContext());
+		final Set<POSOrderExternalId> missingIds;
+		if (onlyOrderIds != null && !onlyOrderIds.isEmpty())
+		{
+			final Set<POSOrderExternalId> existingIds = orders.stream().map(POSOrder::getExternalId).collect(ImmutableSet.toImmutableSet());
+			missingIds = Sets.difference(onlyOrderIds, existingIds);
+		}
+		else
+		{
+			missingIds = ImmutableSet.of();
+		}
+
+		return JsonPOSOrdersList.from(orders, newJsonContext())
+				.missingIds(missingIds)
+				.build();
 	}
 
 	@PostMapping("/orders/{orderId}/draft")
@@ -160,4 +182,32 @@ public class POSRestController
 		final POSOrder order = posService.updateOrderFromRemote(remoteOrder.toRemotePOSOrder(), loggedUserId);
 		return JsonPOSOrder.of(order, newJsonContext());
 	}
+
+	@PostMapping("/orders/{orderId}/payments/{paymentId}/checkout")
+	public JsonPOSOrder checkoutPayment(
+			@PathVariable("orderId") @NonNull final String orderIdStr,
+			@PathVariable("paymentId") @NonNull final String paymentIdStr
+	)
+	{
+		final UserId loggedUserId = getLoggedUserId();
+		final POSOrderExternalId posOrderExternalId = POSOrderExternalId.ofString(orderIdStr);
+		final POSPaymentExternalId posPaymentExternalId = POSPaymentExternalId.ofString(paymentIdStr);
+		final POSOrder order = posService.checkoutPayment(posOrderExternalId, posPaymentExternalId, loggedUserId);
+		return JsonPOSOrder.of(order, newJsonContext());
+	}
+
+	@PostMapping("/orders/{orderId}/payments/{paymentId}/refund")
+	public JsonPOSOrder refundPayment(
+			@PathVariable("orderId") @NonNull final String orderIdStr,
+			@PathVariable("paymentId") @NonNull final String paymentIdStr
+	)
+	{
+		final UserId loggedUserId = getLoggedUserId();
+		final POSOrderExternalId posOrderExternalId = POSOrderExternalId.ofString(orderIdStr);
+		final POSPaymentExternalId posPaymentExternalId = POSPaymentExternalId.ofString(paymentIdStr);
+		final POSOrder order = posService.refundPayment(posOrderExternalId, posPaymentExternalId, loggedUserId);
+		return JsonPOSOrder.of(order, newJsonContext());
+	}
+
 }
+

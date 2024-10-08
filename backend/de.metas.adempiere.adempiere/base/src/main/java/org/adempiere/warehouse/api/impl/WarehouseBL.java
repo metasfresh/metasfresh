@@ -36,6 +36,7 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.user.User;
@@ -43,6 +44,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
@@ -202,8 +204,18 @@ public class WarehouseBL implements IWarehouseBL
 	@NonNull
 	public OrgId getWarehouseOrgId(@NonNull final WarehouseId warehouseId)
 	{
+		return getWarehouseClientAndOrgId(warehouseId).getOrgId();
+	}
+
+	@Override
+	@NonNull
+	public ClientAndOrgId getWarehouseClientAndOrgId(@NonNull final WarehouseId warehouseId)
+	{
 		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(warehouseId);
-		return OrgId.ofRepoIdOrAny(warehouseRecord.getAD_Org_ID());
+		return ClientAndOrgId.ofClientAndOrg(
+				ClientId.ofRepoId(warehouseRecord.getAD_Client_ID()),
+				OrgId.ofRepoIdOrAny(warehouseRecord.getAD_Org_ID())
+		);
 	}
 
 	@Override

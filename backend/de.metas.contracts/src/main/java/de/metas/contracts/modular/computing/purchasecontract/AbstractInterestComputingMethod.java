@@ -97,8 +97,7 @@ public abstract class AbstractInterestComputingMethod extends AbstractComputingM
 	@Override
 	public boolean isApplicableForSettings(@NonNull final TableRecordReference recordRef, @NonNull final ModularContractSettings settings)
 	{
-		return invoicingGroupRepository.getInvoicingGroupIdFor(settings.getRawProductId(), settings.getYearAndCalendarId())
-				.isPresent();
+		return invoicingGroupRepository.getInvoicingGroupIdFor(settings.getRawProductId(), settings.getYearAndCalendarId()).isPresent() && settings.getSoTrx().isPurchase();
 	}
 
 	@NonNull

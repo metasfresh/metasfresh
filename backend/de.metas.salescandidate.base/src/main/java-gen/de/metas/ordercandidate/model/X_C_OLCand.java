@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 834430199L;
+	private static final long serialVersionUID = -96067875L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -1414,6 +1414,19 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public void setManualQtyInPriceUOM (final @Nullable BigDecimal ManualQtyInPriceUOM)
+	{
+		set_Value (COLUMNNAME_ManualQtyInPriceUOM, ManualQtyInPriceUOM);
+	}
+
+	@Override
+	public BigDecimal getManualQtyInPriceUOM() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ManualQtyInPriceUOM);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public org.compiere.model.I_M_AttributeSet getM_AttributeSet()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSet_ID, org.compiere.model.I_M_AttributeSet.class);
@@ -1930,6 +1943,34 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyShipped);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyShipped_CatchWeight (final @Nullable BigDecimal QtyShipped_CatchWeight)
+	{
+		set_Value (COLUMNNAME_QtyShipped_CatchWeight, QtyShipped_CatchWeight);
+	}
+
+	@Override
+	public BigDecimal getQtyShipped_CatchWeight() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyShipped_CatchWeight);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyShipped_CatchWeight_UOM_ID (final int QtyShipped_CatchWeight_UOM_ID)
+	{
+		if (QtyShipped_CatchWeight_UOM_ID < 1) 
+			set_Value (COLUMNNAME_QtyShipped_CatchWeight_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_QtyShipped_CatchWeight_UOM_ID, QtyShipped_CatchWeight_UOM_ID);
+	}
+
+	@Override
+	public int getQtyShipped_CatchWeight_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_QtyShipped_CatchWeight_UOM_ID);
 	}
 
 	@Override

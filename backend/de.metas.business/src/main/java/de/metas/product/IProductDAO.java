@@ -3,6 +3,7 @@ package de.metas.product;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.pair.ImmutablePair;
+import de.metas.gs1.GTIN;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
@@ -109,6 +110,8 @@ public interface IProductDAO extends ISingletonService
 	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
 
 	void clearIndividualMasterDataFromProduct(ProductId productId);
+
+	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
 	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
 

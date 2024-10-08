@@ -1,8 +1,9 @@
 package de.metas.inoutcandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_ShipmentSchedule
  *  @author metasfresh (generated) 
@@ -1159,6 +1160,27 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsEdiDesadvRecipient = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsEdiDesadvRecipient", null);
 	String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
+
+	/**
+	 * Set Shipping Notification required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShippingNotificationRequired (boolean IsShippingNotificationRequired);
+
+	/**
+	 * Get Shipping Notification required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShippingNotificationRequired();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsShippingNotificationRequired = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsShippingNotificationRequired", null);
+	String COLUMNNAME_IsShippingNotificationRequired = "IsShippingNotificationRequired";
 
 	/**
 	 * Set Recompute.

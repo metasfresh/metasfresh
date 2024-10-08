@@ -45,6 +45,11 @@
             <version>10.0.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>de.metas.payment.sumup</groupId>
+            <artifactId>de.metas.payment.sumup</artifactId>
+            <version>10.0.0</version>
+        </dependency>
 
         <!--
             Lombok
@@ -56,6 +61,12 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>de.metas.util</groupId>
+            <artifactId>de.metas.util.web</artifactId>
+            <version>10.0.0</version>
         </dependency>
 
     </dependencies>

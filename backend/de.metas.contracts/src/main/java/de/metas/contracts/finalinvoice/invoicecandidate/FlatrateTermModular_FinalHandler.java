@@ -93,6 +93,7 @@ import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Iterator;
 import java.util.List;
@@ -146,7 +147,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 				.pricingSystemId(modularContractSettings.getPricingSystemId())
 				.lockOwner(lockOwner);
 
-		return modularContractSettings.getModuleConfigs(getModCntrInvoiceType().getComputingMethodTypes())
+		return modularContractSettings.getModuleConfigs(getModCntrInvoiceType(term.isSOTrx()).getComputingMethodTypes())
 				.stream()
 				.map(module -> createCandidateFor(requestTemplate.moduleConfig(module).build()))
 				.collect(ImmutableList.toImmutableList());
@@ -164,7 +165,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 			@NonNull final I_C_Invoice_Candidate icRecord,
 			@NonNull final I_C_Flatrate_Term term)
 	{
-		icRecord.setIsSOTrx(SOTrx.PURCHASE.toBoolean());
+		icRecord.setIsSOTrx(term.isSOTrx());
 
 		icRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate);
 		icRecord.setInvoicableQtyBasedOn(X_C_Invoice_Candidate.INVOICABLEQTYBASEDON_Nominal);
@@ -188,16 +189,16 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 
 	@Override
 	@NonNull
-	public IInvoiceCandidateHandler.CandidatesAutoCreateMode isMissingInvoiceCandidate(@NotNull final I_C_Flatrate_Term flatrateTerm)
+	public IInvoiceCandidateHandler.CandidatesAutoCreateMode isMissingInvoiceCandidate(@NotNull final I_C_Flatrate_Term term)
 	{
-		if (flatrateTerm.isReadyForDefinitiveInvoice())
+		if (term.isReadyForDefinitiveInvoice())
 		{
 			return DONT;
 		}
 
 		final boolean billableLogsExist = modularContractLogDAO.anyMatch(ModularContractLogQuery.builder()
-				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
-				.computingMethodTypes(getModCntrInvoiceType().getComputingMethodTypes())
+				.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
+				.computingMethodTypes(getModCntrInvoiceType(term.isSOTrx()).getComputingMethodTypes())
 				.processed(false)
 				.billable(true)
 				.build());
@@ -214,7 +215,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 				.add(term)
 				.addAll(modularContractLogDAO.list(ModularContractLogQuery.builder()
 						.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
-						.computingMethodTypes(getModCntrInvoiceType().getComputingMethodTypes())
+						.computingMethodTypes(getModCntrInvoiceType(term.isSOTrx()).getComputingMethodTypes())
 						.processed(false)
 						.billable(true)
 						.build()))
@@ -362,7 +363,8 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 		}
 		else
 		{
-			final FlatrateTermId interimContractId = flatrateBL.getInterimContractIdByModularContractIdAndDate(flatrateTermId, TimeUtil.asInstant(invoiceCandidate.getDateOrdered()));
+			final Instant dateOrdered = TimeUtil.asInstant(Check.assumeNotNull(invoiceCandidate.getDateOrdered(), "DateOrdered shouldn't be null"));
+			final FlatrateTermId interimContractId = flatrateBL.getInterimContractIdByModularContractIdAndDate(flatrateTermId, dateOrdered);
 
 			//interimContractId can be null, if ComputingMethodType.INTERIM_CONTRACT is present, but no interim contract was created (in this case the price will always be 0)
 			final FlatrateTermId contractToUse = interimContractId != null ? interimContractId : flatrateTermId;
@@ -401,21 +403,24 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 	private void setC_DocTypeInvoice(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		final BigDecimal total = invoiceCandidate.getQtyEntered().multiply(invoiceCandidate.getPriceEntered());
+		final boolean isSOTrx = invoiceCandidate.isSOTrx();
 
 		final DocTypeQuery.DocTypeQueryBuilder queryBuilder = DocTypeQuery.builder()
 				.adClientId(invoiceCandidate.getAD_Client_ID())
 				.adOrgId(invoiceCandidate.getAD_Org_ID())
-				.isSOTrx(false);
+				.isSOTrx(isSOTrx);
 
 		if (total.signum() >= 0)
 		{
-			queryBuilder.docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
-					.docSubType(getModCntrInvoiceType().getPositiveAmtDocSubType());
+			final InvoiceDocBaseType docBaseType = isSOTrx ? InvoiceDocBaseType.CustomerInvoice : InvoiceDocBaseType.VendorInvoice;
+			queryBuilder.docBaseType(docBaseType.getDocBaseType())
+					.docSubType(getModCntrInvoiceType(isSOTrx).getPositiveAmtDocSubType());
 		}
 		else
 		{
-			queryBuilder.docBaseType(InvoiceDocBaseType.VendorCreditMemo.getDocBaseType())
-					.docSubType(getModCntrInvoiceType().getNegativAmtDocSubType());
+			final InvoiceDocBaseType docBaseType = isSOTrx ? InvoiceDocBaseType.CustomerCreditMemo : InvoiceDocBaseType.VendorCreditMemo;
+			queryBuilder.docBaseType(docBaseType.getDocBaseType())
+					.docSubType(getModCntrInvoiceType(isSOTrx).getNegativAmtDocSubType());
 		}
 
 		final DocTypeId docTypeId = docTypeBL.getDocTypeId(queryBuilder.build());
@@ -423,9 +428,9 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 		invoiceCandidate.setC_DocTypeInvoice_ID(docTypeId.getRepoId());
 	}
 
-	protected @NonNull ModCntrInvoiceType getModCntrInvoiceType()
+	protected @NonNull ModCntrInvoiceType getModCntrInvoiceType(final boolean isSOTrx)
 	{
-		return ModCntrInvoiceType.Final;
+		return isSOTrx ? ModCntrInvoiceType.SalesFinal : ModCntrInvoiceType.PurchaseFinal;
 	}
 
 	@Value
