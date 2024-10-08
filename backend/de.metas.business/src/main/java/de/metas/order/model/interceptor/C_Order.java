@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -74,9 +75,11 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -134,7 +137,7 @@ public class C_Order
 		onPriceListChange(order);
 	}
 
-	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_M_PriceList_ID)
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_DocTypeTarget_ID)
 	public void onPriceListChangeCallout(final I_C_Order order)
 	{
 		onPriceListChange(order);
@@ -503,6 +506,25 @@ public class C_Order
 		if (!InterfaceWrapperHelper.isCopying(order))
 		{
 			orderBL.updateDescriptionFromDocTypeTargetId(order);
+		}
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_C_DocTypeTarget_ID
+	})
+	public void removeFlatRateConditionsForCallOrder(final I_C_Order order)
+	{
+		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(order.getC_DocTypeTarget_ID());
+		if (X_C_DocType.DOCSUBTYPE_CallOrder.equals(dt.getDocSubType()))
+		{
+			orderDAO.retrieveOrderLines(order)
+					.forEach(line -> {
+						line.setC_Flatrate_Conditions_ID(-1);
+						orderDAO.save(line);
+					});
 		}
 	}
 
