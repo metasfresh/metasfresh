@@ -444,13 +444,6 @@
             <xsd:element name="X12DE355" type="xsd:string"/>
         </xsd:sequence>
     </xsd:complexType>
-    <xsd:complexType name="EDI_Exp_C_UOMType">
-        <xsd:sequence>
-            <xsd:element name="Name" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="UOMSymbol" type="xsd:string"/>
-            <xsd:element name="X12DE355" type="xsd:string"/>
-        </xsd:sequence>
-    </xsd:complexType>
     <xsd:complexType name="EDI_cctop_invoic_500_vType">
         <xsd:sequence>
             <xsd:element minOccurs="0" name="C_Invoice_ID" type="xsd:integer"/>
