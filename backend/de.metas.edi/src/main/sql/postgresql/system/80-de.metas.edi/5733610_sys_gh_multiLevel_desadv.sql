@@ -715,3 +715,23 @@ UPDATE EXP_FormatLine SET Value='GTIN_PackingMaterial',Updated=TO_TIMESTAMP('202
 UPDATE AD_Column SET ColumnSQL='(select c.PackagingCode from M_HU_PackagingCode c where c.M_HU_PackagingCode_ID=EDI_Desadv_Pack.M_HU_PackagingCode_ID)',Updated=TO_TIMESTAMP('2024-09-19 16:59:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=583430
 ;
 
+
+
+
+-- Column: M_InOut_DesadvLine_V.GTIN_CU
+-- 2024-10-09T16:17:17.496Z
+UPDATE AD_Column SET AD_Element_ID=583259, ColumnName='GTIN_CU', Description=NULL, Help=NULL, IsUpdateable='N', Name='CU-GTIN',Updated=TO_TIMESTAMP('2024-10-09 16:17:17.495000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=588565
+;
+
+-- 2024-10-09T16:17:17.500Z
+UPDATE AD_Column_Trl trl SET Name='CU-GTIN' WHERE AD_Column_ID=588565 AND AD_Language='de_DE'
+;
+
+-- 2024-10-09T16:17:17.503Z
+UPDATE AD_Field SET Name='CU-GTIN', Description=NULL, Help=NULL WHERE AD_Column_ID=588565
+;
+
+-- 2024-10-09T16:17:17.506Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583259)
+;
+

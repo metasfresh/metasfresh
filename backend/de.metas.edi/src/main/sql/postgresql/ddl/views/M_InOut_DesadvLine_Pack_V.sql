@@ -19,7 +19,7 @@ select line.edi_desadvline_id || '-' || m_inoutline_id as M_InOut_DesadvLine_V_I
        pack.edi_desadv_id,
        ismanual_ipa_sscc18,
        bestbeforedate,
-       m_hu_packagingcode_id,
+       m_hu_packagingcode_id as m_hu_packagingcode_lu_id,
        m_hu_packagingcode_tu_id,
        c_uom_id,
        item.qtyitemcapacity,
