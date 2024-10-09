@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import '../../styles/pos-input-panel.scss';
-
 import { usePOSTerminal } from '../../actions/posTerminal';
+
+import './POSCashJournalOpenPanel.scss';
 
 const POSCashJournalOpenPanel = () => {
   const posTerminal = usePOSTerminal();
@@ -13,10 +13,13 @@ const POSCashJournalOpenPanel = () => {
   };
 
   return (
-    <div className="pos-content pos-input-panel-container pos-journal-open-panel">
-      <div className="pos-input-panel">
-        <div className="pos-input-panel-header">Open cash journal</div>
-        <div className="pos-input-panel-content">
+    <div className="modal is-active pos-journal-open-panel">
+      <div className="modal-background"></div>
+      <div className="modal-card">
+        <header className="modal-card-head">
+          <p className="modal-card-title">Opening cash</p>
+        </header>
+        <section className="modal-card-body">
           <div className="line">
             <div className="caption">Opening cash</div>
             <div className="field">
@@ -35,10 +38,14 @@ const POSCashJournalOpenPanel = () => {
               <textarea value={openingNote} onChange={(e) => setOpeningNote(e.target.value)} />
             </div>
           </div>
-        </div>
-        <div className="pos-input-panel-bottom">
-          <button onClick={onOpenClick}>Open</button>
-        </div>
+        </section>
+        <footer className="modal-card-foot">
+          <div className="buttons">
+            <button className="button is-large" onClick={onOpenClick}>
+              Open
+            </button>
+          </div>
+        </footer>
       </div>
     </div>
   );

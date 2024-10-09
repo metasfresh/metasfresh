@@ -38,9 +38,11 @@ export const usePOSTerminal = ({ refresh } = { refresh: false }) => {
     changeStatusToClosing: () => dispatch(posTerminalClosingAction()),
     cancelClosing: () => dispatch(posTerminalClosingCancelAction()),
     openJournal: ({ cashBeginningBalance, openingNote }) => {
+      console.log('openJournal', { cookiePOSTerminalId, cashBeginningBalance, openingNote });
       dispatch(openJournal({ posTerminalId: cookiePOSTerminalId, cashBeginningBalance, openingNote }));
     },
     closeJournal: ({ cashClosingBalance, closingNote }) => {
+      console.log('closeJournal', { cookiePOSTerminalId, cashClosingBalance, closingNote });
       dispatch(closeJournal({ posTerminalId: cookiePOSTerminalId, cashClosingBalance, closingNote }));
     },
     setPOSTerminalId: (newPOSTerminalId) => {
@@ -92,13 +94,13 @@ const openJournal = ({ posTerminalId, cashBeginningBalance, openingNote }) => {
   return (dispatch) => {
     return posJournalAPI
       .openJournal({ posTerminalId, cashBeginningBalance, openingNote })
-      .then((terminal) => dispatch(posTerminalLoadDoneAction({ terminal })));
+      .then((posTerminal) => dispatch(posTerminalLoadDoneAction({ posTerminal })));
   };
 };
 const closeJournal = ({ posTerminalId, cashClosingBalance, closingNote }) => {
   return (dispatch) => {
     return posJournalAPI
       .closeJournal({ posTerminalId, cashClosingBalance, closingNote })
-      .then((terminal) => dispatch(posTerminalLoadDoneAction({ terminal })));
+      .then((posTerminal) => dispatch(posTerminalLoadDoneAction({ posTerminal })));
   };
 };

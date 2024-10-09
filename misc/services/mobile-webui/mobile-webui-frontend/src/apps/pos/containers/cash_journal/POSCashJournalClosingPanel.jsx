@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import '../../styles/pos-input-panel.scss';
-import './POSCashJournalClosingPanel.scss';
 import cx from 'classnames';
 import { getJournalSummary } from '../../api/posJournal';
 import { PAYMENT_METHOD_CASH } from '../../utils/paymentMethods';
@@ -8,6 +6,8 @@ import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import PropTypes from 'prop-types';
 import useEscapeKey from '../../../../hooks/useEscapeKey';
 import { usePOSTerminal } from '../../actions/posTerminal';
+
+import './POSCashJournalClosingPanel.scss';
 
 const POSCashJournalClosingPanel = () => {
   const posTerminal = usePOSTerminal();
@@ -24,10 +24,13 @@ const POSCashJournalClosingPanel = () => {
   };
 
   return (
-    <div className="pos-content pos-input-panel-container pos-journal-closing-panel">
-      <div className="pos-input-panel">
-        <div className="pos-input-panel-header">Closing cash journal</div>
-        <div className="pos-input-panel-content">
+    <div className="modal is-active pos-journal-closing-panel">
+      <div className="modal-background"></div>
+      <div className="modal-card">
+        <header className="modal-card-head">
+          <p className="modal-card-title">Closing cash journal</p>
+        </header>
+        <section className="modal-card-body">
           <div className="line">
             <div className="field">
               <PaymentSummary
@@ -43,15 +46,17 @@ const POSCashJournalClosingPanel = () => {
               <textarea value={closingNote} onChange={(e) => setClosingNote(e.target.value)} />
             </div>
           </div>
-        </div>
-        <div className="pos-input-panel-bottom">
-          <button className="button is-large" onClick={onCloseClick}>
-            Close
-          </button>
-          <button className="button is-large" onClick={onCancelClick}>
-            Cancel
-          </button>
-        </div>
+        </section>
+        <footer className="modal-card-foot">
+          <div className="buttons">
+            <button className="button is-large" onClick={onCloseClick}>
+              Close
+            </button>
+            <button className="button is-large" onClick={onCancelClick}>
+              Cancel
+            </button>
+          </div>
+        </footer>
       </div>
     </div>
   );

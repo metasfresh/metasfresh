@@ -13,15 +13,20 @@ import { v4 as uuidv4 } from 'uuid';
 export function ordersReducer(applicationState, action) {
   switch (action.type) {
     case POS_TERMINAL_LOAD_DONE: {
+      console.log('ordersReducer', { action });
       const {
         posTerminal: { id: posTerminalId, openOrders },
       } = action.payload;
-      return syncOrdersFromSource({
-        applicationState,
-        posTerminalId,
-        fromOrdersArray: openOrders,
-        isUpdateOnly: false,
-      });
+      if (openOrders != null) {
+        return syncOrdersFromSource({
+          applicationState,
+          posTerminalId,
+          fromOrdersArray: openOrders,
+          isUpdateOnly: false,
+        });
+      } else {
+        return applicationState;
+      }
     }
     case ORDERS_LIST_UPDATE: {
       const { ordersArray, posTerminalId, missingIds, isUpdateOnly } = action.payload;
