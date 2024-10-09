@@ -102,7 +102,7 @@ export const useOpenOrders = ({ posTerminalId }) => {
         .then(({ list }) => dispatch(updateOrdersArrayFromBackendAction({ posTerminalId, list, isUpdateOnly: false })))
         .finally(() => setLoadStatus('load-done'));
     }
-  }, []);
+  }, [posTerminalId]);
 
   return {
     isOpenOrdersLoading: loadStatus === 'loading',
