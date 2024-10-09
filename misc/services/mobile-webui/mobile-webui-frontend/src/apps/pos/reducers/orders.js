@@ -12,50 +12,29 @@ import { v4 as uuidv4 } from 'uuid';
 export function ordersReducer(applicationState, action) {
   switch (action.type) {
     case ORDERS_LIST_UPDATE: {
-      const {
-        payload: { ordersArray, posTerminalId, missingIds, isUpdateOnly },
-      } = action;
-
-      return {
-        ...applicationState,
-        orders: updateOrders({
-          ordersState: applicationState.orders,
-          posTerminalId,
-          fromOrdersArray: ordersArray,
-          missingIds,
-          isUpdateOnly,
-        }),
-      };
+      const { ordersArray, posTerminalId, missingIds, isUpdateOnly } = action.payload;
+      return syncOrdersFromSource({
+        applicationState,
+        posTerminalId,
+        fromOrdersArray: ordersArray,
+        missingIds,
+        isUpdateOnly,
+      });
     }
     case NEW_ORDER: {
       const { posTerminalId } = action.payload;
-
-      return {
-        ...applicationState,
-        orders: addNewOrderAndSetCurrent({
-          ordersState: applicationState.orders,
-          posTerminalId,
-        }),
-      };
+      return addNewOrderAndSetCurrent({ applicationState, posTerminalId });
     }
     case ADD_ORDER_LINE: {
-      return {
-        ...applicationState,
-        orders: addOrderLineToCurrentOrder(applicationState.orders, action.payload),
-      };
+      return addOrderLine({ applicationState, newOrderLineRequest: action.payload });
     }
     case REMOVE_ORDER_LINE: {
-      return {
-        ...applicationState,
-        orders: removeOrderLine(applicationState.orders, action.payload),
-      };
+      const { order_uuid, line_uuid } = action.payload;
+      return removeOrderLine({ applicationState, order_uuid, line_uuid });
     }
     case SET_SELECTED_ORDER_LINE: {
       const { order_uuid, selectedLineUUID } = action.payload;
-      return {
-        ...applicationState,
-        orders: setSelectedOrderLine({ ordersState: applicationState.orders, order_uuid, selectedLineUUID }),
-      };
+      return setSelectedOrderLine({ applicationState, order_uuid, selectedLineUUID });
     }
 
     //
@@ -85,7 +64,67 @@ export function ordersReducer(applicationState, action) {
 //
 //
 
-const updateOrders = ({ ordersState, posTerminalId, fromOrdersArray, missingIds, isUpdateOnly }) => {
+const changeOrdersStateInApplicationState = ({ applicationState, mapper }) => {
+  const ordersState = applicationState.orders;
+  const ordersStateChanged = mapper(ordersState);
+  if (ordersState === ordersStateChanged) {
+    return applicationState;
+  } else {
+    return { ...applicationState, orders: ordersStateChanged };
+  }
+};
+
+const changeOrderInApplicationState = ({ applicationState, order_uuid, mapper }) => {
+  return changeOrdersStateInApplicationState({
+    applicationState,
+    mapper: (ordersState) => {
+      return changeOrder({ ordersState, order_uuid, mapper });
+    },
+  });
+};
+
+const changeOrder = ({ ordersState, order_uuid, mapper }) => {
+  const order = ordersState.byUUID[order_uuid];
+  if (!order) {
+    throw 'No order found for ' + order_uuid;
+  }
+
+  const orderChanged = mapper(order);
+  if (order === orderChanged) {
+    return ordersState;
+  } else {
+    return {
+      ...ordersState,
+      byUUID: { ...ordersState.byUUID, [orderChanged.uuid]: orderChanged },
+    };
+  }
+};
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+const syncOrdersFromSource = ({ applicationState, posTerminalId, fromOrdersArray, missingIds, isUpdateOnly }) => {
+  return changeOrdersStateInApplicationState({
+    applicationState,
+    mapper: (ordersState) =>
+      syncOrdersStateFromSource({
+        ordersState,
+        posTerminalId,
+        fromOrdersArray,
+        missingIds,
+        isUpdateOnly,
+      }),
+  });
+};
+
+const syncOrdersStateFromSource = ({ ordersState, posTerminalId, fromOrdersArray, missingIds, isUpdateOnly }) => {
   const byUUID = isUpdateOnly ? { ...ordersState.byUUID } : {};
   fromOrdersArray.forEach((order) => (byUUID[order.uuid] = recomputeOrderDetails({ order })));
   if (missingIds?.length > 0) {
@@ -126,19 +165,23 @@ const newOrder = ({ posTerminalId }) => {
   };
 };
 
-const addNewOrderAndSetCurrent = ({ ordersState, posTerminalId }) => {
+const addNewOrderAndSetCurrent = ({ applicationState, posTerminalId }) => {
   const order = newOrder({ posTerminalId });
 
-  return {
-    ...ordersState,
-    current_uuid: order.uuid,
-    byUUID: { ...ordersState?.byUUID, [order.uuid]: order },
-  };
+  return changeOrdersStateInApplicationState({
+    applicationState,
+    mapper: (ordersState) => {
+      return {
+        ...ordersState,
+        current_uuid: order.uuid,
+        byUUID: { ...ordersState?.byUUID, [order.uuid]: order },
+      };
+    },
+  });
 };
 
-const addOrderLineToCurrentOrder = (
-  ordersState,
-  {
+const addOrderLine = ({ applicationState, newOrderLineRequest }) => {
+  const {
     order_uuid,
     productId,
     productName,
@@ -152,8 +195,8 @@ const addOrderLineToCurrentOrder = (
     catchWeightUomSymbol,
     catchWeight,
     ...otherOrderLineFields
-  }
-) => {
+  } = newOrderLineRequest;
+
   const newOrderLine = {
     uuid: uuidv4(),
     productId,
@@ -169,8 +212,9 @@ const addOrderLineToCurrentOrder = (
     catchWeight,
     ...otherOrderLineFields,
   };
-  return changeOrder({
-    ordersState,
+
+  return changeOrderInApplicationState({
+    applicationState,
     order_uuid,
     mapper: (order) => addOrderLineToOrder({ order, newOrderLine }),
   });
@@ -183,9 +227,9 @@ const addOrderLineToOrder = ({ order, newOrderLine }) => {
   };
 };
 
-const removeOrderLine = (ordersState, { order_uuid, line_uuid }) => {
-  return changeOrder({
-    ordersState,
+const removeOrderLine = ({ applicationState, order_uuid, line_uuid }) => {
+  return changeOrderInApplicationState({
+    applicationState,
     order_uuid,
     mapper: (order) => remoteOrderLineFromOrder({ order, line_uuid }),
   });
@@ -195,33 +239,6 @@ const remoteOrderLineFromOrder = ({ order, line_uuid }) => {
   const selectedLineUUID = computeSelectedLineUUID({ selectedLineUUID: order.selectedLineUUID, lines });
 
   return { ...order, lines, selectedLineUUID };
-};
-
-const changeOrderInApplicationState = ({ applicationState, order_uuid, mapper }) => {
-  const ordersState = applicationState.orders;
-  const ordersStateChanged = changeOrder({ ordersState, order_uuid, mapper });
-  if (ordersState === ordersStateChanged) {
-    return applicationState;
-  } else {
-    return { ...applicationState, orders: ordersStateChanged };
-  }
-};
-
-const changeOrder = ({ ordersState, order_uuid, mapper }) => {
-  const order = ordersState.byUUID[order_uuid];
-  if (!order) {
-    throw 'No order found for ' + order_uuid;
-  }
-
-  const orderChanged = mapper(order);
-  if (order === orderChanged) {
-    return ordersState;
-  } else {
-    return {
-      ...ordersState,
-      byUUID: { ...ordersState.byUUID, [orderChanged.uuid]: orderChanged },
-    };
-  }
 };
 
 const recomputeOrderDetails = ({ order }) => {
@@ -243,9 +260,9 @@ const computeSelectedLineUUID = ({ selectedLineUUID, lines }) => {
   }
 };
 
-const setSelectedOrderLine = ({ ordersState, order_uuid, selectedLineUUID }) => {
-  return changeOrder({
-    ordersState,
+const setSelectedOrderLine = ({ applicationState, order_uuid, selectedLineUUID }) => {
+  return changeOrderInApplicationState({
+    applicationState,
     order_uuid,
     mapper: (order) => {
       if (order.selectedLineUUID === selectedLineUUID) {
