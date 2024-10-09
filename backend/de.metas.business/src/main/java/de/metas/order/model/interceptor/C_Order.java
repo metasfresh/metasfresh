@@ -106,6 +106,7 @@ public class C_Order
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
@@ -174,8 +175,8 @@ public class C_Order
 		{
 			return;
 		}
-		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(order.getC_DocTypeTarget_ID());
-		if (X_C_DocType.DOCSUBTYPE_CallOrder.equals(dt.getDocSubType()))
+		final I_C_DocType docType = docTypeDAO.getById(order.getC_DocTypeTarget_ID());
+		if (X_C_DocType.DOCSUBTYPE_CallOrder.equals(docType.getDocSubType()))
 		{
 			orderDAO.retrieveOrderLines(order)
 					.forEach(line -> {
