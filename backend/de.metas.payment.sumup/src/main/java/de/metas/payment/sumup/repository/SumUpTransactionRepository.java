@@ -3,6 +3,7 @@ package de.metas.payment.sumup.repository;
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
+import de.metas.error.AdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.sumup.SumUpClientTransactionId;
@@ -11,6 +12,8 @@ import de.metas.payment.sumup.SumUpEventsDispatcher;
 import de.metas.payment.sumup.SumUpMerchantCode;
 import de.metas.payment.sumup.SumUpPOSRef;
 import de.metas.payment.sumup.SumUpTransaction;
+import de.metas.payment.sumup.SumUpTransaction.LastSync;
+import de.metas.payment.sumup.SumUpTransaction.LastSyncStatus;
 import de.metas.payment.sumup.SumUpTransactionExternalId;
 import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
@@ -35,6 +38,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -136,12 +140,20 @@ public class SumUpTransactionRepository
 		record.setJsonResponse(from.getJson());
 		record.setC_POS_Order_ID(from.getPosRef() != null ? from.getPosRef().getPosOrderId() : -1);
 		record.setC_POS_Payment_ID(from.getPosRef() != null ? from.getPosRef().getPosPaymentId() : -1);
+		updateRecord(record, from.getLastSync());
 	}
 
 	private static void updateRecord(final I_SUMUP_Transaction record, final @Nullable SumUpTransaction.Card from)
 	{
 		record.setCardType(from != null ? from.getType() : null);
 		record.setCardLast4Digits(from != null ? from.getLast4Digits() : null);
+	}
+
+	private static void updateRecord(final I_SUMUP_Transaction record, final @Nullable SumUpTransaction.LastSync from)
+	{
+		record.setSUMUP_LastSync_Status(from != null ? from.getStatus().getCode() : null);
+		record.setSUMUP_LastSync_Timestamp(from != null && from.getTimestamp() != null ? Timestamp.from(from.getTimestamp()) : null);
+		record.setSUMUP_LastSync_Error_ID(from != null ? AdIssueId.toRepoId(from.getErrorId()) : -1);
 	}
 
 	private static SumUpTransaction fromRecord(final I_SUMUP_Transaction record)
@@ -161,6 +173,7 @@ public class SumUpTransactionRepository
 				.card(extractCard(record))
 				.json(record.getJsonResponse())
 				.posRef(extractPOSRef(record))
+				.lastSync(extractLastSync(record))
 				.build();
 	}
 
@@ -197,6 +210,24 @@ public class SumUpTransactionRepository
 		return SumUpPOSRef.builder()
 				.posOrderId(posOrderId)
 				.posPaymentId(posPaymentId)
+				.build();
+	}
+
+	@Nullable
+	private static LastSync extractLastSync(final I_SUMUP_Transaction record)
+	{
+		final LastSyncStatus status = LastSyncStatus.ofNullableCode(record.getSUMUP_LastSync_Status());
+		if (status == null)
+		{
+			return null;
+		}
+
+		final Timestamp timestamp = record.getSUMUP_LastSync_Timestamp();
+
+		return LastSync.builder()
+				.status(status)
+				.timestamp(timestamp != null ? timestamp.toInstant() : null)
+				.errorId(AdIssueId.ofRepoIdOrNull(record.getSUMUP_LastSync_Error_ID()))
 				.build();
 	}
 

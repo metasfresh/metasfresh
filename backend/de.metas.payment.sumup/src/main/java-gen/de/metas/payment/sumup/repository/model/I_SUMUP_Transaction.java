@@ -360,6 +360,68 @@ public interface I_SUMUP_Transaction
 	String COLUMNNAME_SUMUP_Config_ID = "SUMUP_Config_ID";
 
 	/**
+	 * Set Last Sync Error.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSUMUP_LastSync_Error_ID (int SUMUP_LastSync_Error_ID);
+
+	/**
+	 * Get Last Sync Error.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSUMUP_LastSync_Error_ID();
+
+	String COLUMNNAME_SUMUP_LastSync_Error_ID = "SUMUP_LastSync_Error_ID";
+
+	/**
+	 * Set Last Sync Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSUMUP_LastSync_Status (@Nullable java.lang.String SUMUP_LastSync_Status);
+
+	/**
+	 * Get Last Sync Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSUMUP_LastSync_Status();
+
+	ModelColumn<I_SUMUP_Transaction, Object> COLUMN_SUMUP_LastSync_Status = new ModelColumn<>(I_SUMUP_Transaction.class, "SUMUP_LastSync_Status", null);
+	String COLUMNNAME_SUMUP_LastSync_Status = "SUMUP_LastSync_Status";
+
+	/**
+	 * Set Last Sync Timestamp.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSUMUP_LastSync_Timestamp (@Nullable java.sql.Timestamp SUMUP_LastSync_Timestamp);
+
+	/**
+	 * Get Last Sync Timestamp.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getSUMUP_LastSync_Timestamp();
+
+	ModelColumn<I_SUMUP_Transaction, Object> COLUMN_SUMUP_LastSync_Timestamp = new ModelColumn<>(I_SUMUP_Transaction.class, "SUMUP_LastSync_Timestamp", null);
+	String COLUMNNAME_SUMUP_LastSync_Timestamp = "SUMUP_LastSync_Timestamp";
+
+	/**
 	 * Set Merchant Code.
 	 *
 	 * <br>Type: String
