@@ -1,5 +1,9 @@
 package de.metas.currency;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
@@ -20,6 +24,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -52,6 +57,7 @@ import java.util.stream.Stream;
  * @author metas-dev <dev@metasfresh.com>
  */
 @Value
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class Amount implements Comparable<Amount>
 {
 	public static Amount of(@NonNull final BigDecimal value, @NonNull final CurrencyCode currencyCode)
@@ -85,7 +91,28 @@ public class Amount implements Comparable<Amount>
 	}
 
 	@Override
-	public String toString() {return value + " " + currencyCode;}
+	public String toString() {return toJson();}
+
+	@JsonValue
+	public String toJson() {return value + " " + currencyCode;}
+
+	@JsonCreator
+	public static Amount fromJson(@NonNull final String json)
+	{
+		try
+		{
+			final List<String> parts = Splitter.on(" ")
+					.trimResults()
+					.omitEmptyStrings()
+					.splitToList(json);
+
+			return Amount.of(parts.get(0), CurrencyCode.ofThreeLetterCode(parts.get(1)));
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException("Cannot convert json to Amount: " + json, e);
+		}
+	}
 
 	public BigDecimal getAsBigDecimal()
 	{
