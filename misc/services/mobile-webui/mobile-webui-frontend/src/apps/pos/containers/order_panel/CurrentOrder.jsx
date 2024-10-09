@@ -6,8 +6,9 @@ import './CurrentOrder.scss';
 import { OrderLine } from './OrderLine';
 import { usePOSTerminal } from '../../actions/posTerminal';
 import { setSelectedOrderLineAction, useCurrentOrderOrNew } from '../../actions/orders';
+import PropTypes from 'prop-types';
 
-const CurrentOrder = () => {
+const CurrentOrder = ({ disabled }) => {
   const dispatch = useDispatch();
   const posTerminal = usePOSTerminal();
   const { /*isCurrentOrderLoading,*/ currentOrder } = useCurrentOrderOrNew({ posTerminalId: posTerminal.id });
@@ -32,6 +33,7 @@ const CurrentOrder = () => {
         {lines.map((line) => (
           <OrderLine
             key={line.uuid}
+            disabled={disabled}
             uuid={line.uuid}
             productName={line.productName}
             qty={line.qty}
@@ -62,6 +64,10 @@ const CurrentOrder = () => {
       <CurrentOrderActions />
     </div>
   );
+};
+
+CurrentOrder.propTypes = {
+  disabled: PropTypes.bool,
 };
 
 export default CurrentOrder;

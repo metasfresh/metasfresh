@@ -5,12 +5,13 @@ import PropTypes from 'prop-types';
 
 const PaymentLine = ({
   uuid,
+  disabled,
   paymentMethod,
   amount,
   currency,
   currencyPrecision,
   status,
-  allowCheckout,
+  allowCheckout: allowCheckoutParam,
   onCheckout,
   allowDelete,
   onDelete,
@@ -26,7 +27,8 @@ const PaymentLine = ({
     precision: currencyPrecision,
   });
 
-  const allowDeleteOrRefund = (allowDelete && onDelete) || (allowRefund && onRefund);
+  const allowCheckout = !disabled && allowCheckoutParam;
+  const allowDeleteOrRefund = !disabled && ((allowDelete && onDelete) || (allowRefund && onRefund));
   const fireDeleteOrRefund = () => {
     if (allowDelete && onDelete) {
       onDelete({ uuid });
@@ -59,6 +61,7 @@ const PaymentLine = ({
 
 PaymentLine.propTypes = {
   uuid: PropTypes.string.isRequired,
+  disabled: PropTypes.bool,
   paymentMethod: PropTypes.string.isRequired,
   amount: PropTypes.number.isRequired,
   currency: PropTypes.string.isRequired,

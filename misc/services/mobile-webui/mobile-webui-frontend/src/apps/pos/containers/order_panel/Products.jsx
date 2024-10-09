@@ -7,8 +7,9 @@ import './Products.scss';
 import { useCurrentOrder } from '../../actions/orders';
 import { usePOSTerminal } from '../../actions/posTerminal';
 import { useProducts } from '../../actions/products';
+import PropTypes from 'prop-types';
 
-const Products = () => {
+const Products = ({ disabled }) => {
   const posTerminal = usePOSTerminal();
   const currentOrder = useCurrentOrder({ posTerminalId: posTerminal.id });
   const newOrderLineDispatcher = useNewOrderLineDispatcher({ currentOrder });
@@ -18,7 +19,7 @@ const Products = () => {
   });
 
   const order_uuid = !currentOrder.isLoading ? currentOrder.uuid : null;
-  const isEnabled = !!order_uuid && !currentOrder.isProcessing;
+  const isEnabled = !disabled && !!order_uuid && !currentOrder.isProcessing;
 
   const onProductButtonClick = (product) => {
     if (!isEnabled) return;
@@ -31,7 +32,7 @@ const Products = () => {
 
   return (
     <div className="products-container">
-      {newOrderLineDispatcher.isCatchWeightRequiredButNotSet && (
+      {isEnabled && newOrderLineDispatcher.isCatchWeightRequiredButNotSet && (
         <GetCatchWeightModal
           catchWeightUomSymbol={newOrderLineDispatcher.catchWeightUomSymbol}
           onOk={setProductToAddWeight}
@@ -95,6 +96,10 @@ const useNewOrderLineDispatcher = ({ currentOrder }) => {
     catchWeightUomSymbol: orderLineToAdd?.catchWeightUomSymbol,
     setCatchWeight: (catchWeight) => setOrderLineToAdd((orderLine) => ({ ...orderLine, catchWeight })),
   };
+};
+
+Products.propTypes = {
+  disabled: PropTypes.bool,
 };
 
 export default Products;

@@ -7,19 +7,21 @@ import {
   useCurrentOrder,
 } from '../../actions/orders';
 import { usePOSTerminal } from '../../actions/posTerminal';
+import PropTypes from 'prop-types';
 
-const CurrentOrderActions = () => {
+const CurrentOrderActions = ({ disabled }) => {
   const dispatch = useDispatch();
   const posTerminal = usePOSTerminal();
   const posTerminalId = posTerminal.id;
   const currentOrder = useCurrentOrder({ posTerminalId });
 
-  const isNewOrderAllowed = !currentOrder.isLoading && currentOrder.lines?.length > 0;
-  const isVoidAllowed = !currentOrder.isLoading && currentOrder.lines?.length > 0;
-  const isPayAllowed = !currentOrder.isLoading && currentOrder.lines?.length > 0;
-  const isDeleteCurrentLineAllowed = !!currentOrder.selectedLineUUID;
+  const isNewOrderAllowed = !disabled && !currentOrder.isLoading && currentOrder.lines?.length > 0;
+  const isVoidAllowed = !disabled && !currentOrder.isLoading && currentOrder.lines?.length > 0;
+  const isPayAllowed = !disabled && !currentOrder.isLoading && currentOrder.lines?.length > 0;
+  const isDeleteCurrentLineAllowed = !disabled && !!currentOrder.selectedLineUUID;
 
   const onNewOrderClick = () => {
+    if (!isNewOrderAllowed) return;
     dispatch(addNewOrderAction({ posTerminalId }));
   };
   const onVoidCurrentOrderClick = () => {
@@ -54,6 +56,10 @@ const CurrentOrderActions = () => {
       </button>
     </div>
   );
+};
+
+CurrentOrderActions.propTypes = {
+  disabled: PropTypes.bool,
 };
 
 export default CurrentOrderActions;

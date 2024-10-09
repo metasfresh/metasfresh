@@ -12,6 +12,7 @@ import POSTerminalSelectPanel from './select_terminal/POSTerminalSelectPanel';
 import { usePOSTerminal } from '../actions/posTerminal';
 import { MODAL_POSTerminalSelect } from '../actions/ui';
 import { getModalFromState } from '../reducers/uiUtils';
+import PropTypes from 'prop-types';
 
 const POSScreen = () => {
   const dispatch = useDispatch();
@@ -25,18 +26,56 @@ const POSScreen = () => {
     },
   });
 
+  const modal = useModal();
+
   return (
     <div className="pos-screen">
       <Header />
-      <POSContent />
+      {modal}
+      <POSContent disabled={!!modal} />
     </div>
   );
 };
 
-const POSContent = () => {
+const POSContent = ({ disabled }) => {
+  const posTerminal = usePOSTerminal();
+  const currentOrder = useCurrentOrder({ posTerminalId: posTerminal.id });
+
+  const orderStatus = currentOrder?.status ?? '--';
+  if (orderStatus === 'DR' || orderStatus === 'VO') {
+    return <POSOrderPanel disabled={disabled} />;
+  } else if (orderStatus === 'WP' || orderStatus === 'CO') {
+    return <POSPaymentPanel disabled={disabled} />;
+  } else {
+    //console.warn('No view to be rendered for orderStatus=' + orderStatus);
+    return <></>;
+  }
+};
+POSContent.propTypes = {
+  disabled: PropTypes.bool,
+};
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+const getCashJournalStatus = (posTerminal) => {
+  if (posTerminal?.cashJournalOpen) {
+    return posTerminal?.isCashJournalClosing ? 'closing' : 'open';
+  } else {
+    return 'closed';
+  }
+};
+
+const useModal = () => {
   const posTerminal = usePOSTerminal();
   const modal = useSelector((globalState) => getModalFromState({ globalState }));
-  const currentOrder = useCurrentOrder({ posTerminalId: posTerminal.id });
 
   if (!posTerminal.id) {
     return <POSTerminalSelectPanel />;
@@ -53,25 +92,9 @@ const POSContent = () => {
     return <POSCashJournalOpenPanel />;
   } else if (journalStatus === 'closing') {
     return <POSCashJournalClosingPanel />;
-  } else if (journalStatus === 'open') {
-    const orderStatus = journalStatus === 'open' ? currentOrder.status ?? 'DR' : '--';
-    if (orderStatus === 'DR' || orderStatus === 'VO') {
-      return <POSOrderPanel />;
-    } else if (orderStatus === 'WP' || orderStatus === 'CO') {
-      return <POSPaymentPanel />;
-    } else {
-      console.warn('No view to be rendered for orderStatus=' + orderStatus);
-      return <></>;
-    }
   }
-};
 
-const getCashJournalStatus = (posTerminal) => {
-  if (posTerminal?.cashJournalOpen) {
-    return posTerminal?.isCashJournalClosing ? 'closing' : 'open';
-  } else {
-    return 'closed';
-  }
+  return null;
 };
 
 export default POSScreen;
