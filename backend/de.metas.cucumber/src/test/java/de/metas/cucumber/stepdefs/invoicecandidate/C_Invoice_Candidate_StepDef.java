@@ -99,6 +99,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.*;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID;
@@ -647,7 +648,7 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
-	@And("^after not more than (.*)s locate invoice candidates by order line:$")
+	@And("^after not more than (.*)s locate up2date invoice candidates by order line:$")
 	public void locate_invoice_candidate(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
@@ -825,11 +826,22 @@ public class C_Invoice_Candidate_StepDef
 
 		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, () -> invoiceCandDAO
-				.retrieveInvoiceCandidatesForOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID())).size() > 0);
+		final ItemProvider<List<I_C_Invoice_Candidate>> provider = () -> {
 
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO
 				.retrieveInvoiceCandidatesForOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+			if (invoiceCandidates.isEmpty())
+			{
+				return resultWasNotFound("No C_Invoice_Candidates (yet) for C_OrderLine_ID={0} (C_OrderLine_ID.Identifier={1}", orderLine.getC_OrderLine_ID(), orderLineIdentifier);
+			}
+			final ImmutableList<InvoiceCandidateId> invoiceCandidateIds = invoiceCandidates.stream().map(ic -> InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID())).collect(ImmutableList.toImmutableList());
+			if (invoiceCandDAO.hasInvalidInvoiceCandidates(invoiceCandidateIds))
+			{
+				return resultWasNotFound("C_Invoice_Candidate_ID={0} is not (yet) updated; C_OrderLine_ID={0} (C_OrderLine_ID.Identifier={1}", invoiceCandidateIds, orderLine.getC_OrderLine_ID(), orderLineIdentifier);
+			}
+			return resultWasFound(invoiceCandidates);
+		};
+		final List<I_C_Invoice_Candidate> invoiceCandidates = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, provider);
 
 		assertThat(invoiceCandidates.size()).isEqualTo(1);
 
@@ -969,9 +981,9 @@ public class C_Invoice_Candidate_StepDef
 		final I_C_Invoice_Candidate invoiceCandidate = candidateIQuery.firstOnlyOrNull(I_C_Invoice_Candidate.class);
 		if (invoiceCandidate == null)
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("No invoice candidate found for query " + candidateIQuery);
+			return resultWasNotFound("No invoice candidate found for query " + candidateIQuery);
 		}
-		return ItemProvider.ProviderResult.resultWasFound(invoiceCandidate);
+		return resultWasFound(invoiceCandidate);
 	}
 
 	private IQuery<I_C_Invoice_Candidate> createInvoiceCandidateQuery(final @NonNull Map<String, String> row)
@@ -1080,9 +1092,9 @@ public class C_Invoice_Candidate_StepDef
 		InterfaceWrapperHelper.refresh(invoiceCandidate);
 		if (invoiceCandidate.isProcessed())
 		{
-			return ItemProvider.ProviderResult.resultWasFound(invoiceCandidate);
+			return resultWasFound(invoiceCandidate);
 		}
-		return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidate.getC_Invoice_Candidate_ID() + " has Processed='N'");
+		return resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidate.getC_Invoice_Candidate_ID() + " has Processed='N'");
 	}
 
 	@NonNull
@@ -1137,10 +1149,10 @@ public class C_Invoice_Candidate_StepDef
 		if (errors.size() > 0)
 		{
 			final String errorMessages = String.join(" && \n", errors);
-			return ItemProvider.ProviderResult.resultWasNotFound(errorMessages);
+			return resultWasNotFound(errorMessages);
 		}
 
-		return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
+		return resultWasFound(invoiceCandidateRecord);
 	}
 
 	private boolean isInvoiceCandidateProcessed(
