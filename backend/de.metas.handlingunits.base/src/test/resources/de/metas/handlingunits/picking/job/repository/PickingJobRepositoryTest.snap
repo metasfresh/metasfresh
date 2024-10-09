@@ -22,6 +22,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
   "lines" : [ {
     "id" : 1000000,
     "isManuallyClosed" : false,
+    "orderLineSeqNo" : 0,
     "packingInfo" : {
       "allowAnyProduct" : true,
       "finiteTU" : false,
@@ -31,6 +32,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
       "piItemId" : 123
     },
     "pickingUnit" : "CU",
+    "productCategoryId" : 1,
     "productId" : 6,
     "productName" : "productName-6",
     "productNo" : "productNo-6",
