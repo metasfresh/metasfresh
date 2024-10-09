@@ -92,6 +92,7 @@ public class InvoiceCandidate
 				.activityId(upsertRequest.getActivityId())
 				.paymentTermId(upsertRequest.getPaymentTermId())
 				.harvestYearAndCalendarId(upsertRequest.getHarvestYearAndCalendarId())
+				.modularContractSettingsId(upsertRequest.getModularContractSettingsId())
 				.isInterimInvoice(upsertRequest.isInterimInvoice())
 				.handlerId(upsertRequest.getHandlerId())
 				.isManual(upsertRequest.isManual())

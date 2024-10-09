@@ -356,6 +356,7 @@ public class InvoiceCandidateRepository
 		candidate.isManual(icRecord.isManual());
 		candidate.handlerId(ILCandHandlerId.ofRepoId(icRecord.getC_ILCandHandler_ID()));
 		candidate.harvestYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(icRecord.getHarvesting_Year_ID(), icRecord.getC_Harvesting_Calendar_ID()));
+		candidate.modularContractSettingsId(ModularContractSettingsId.ofRepoIdOrNull(icRecord.getModCntr_Settings_ID()));
 		candidate.auctionId(AuctionId.ofRepoIdOrNull(icRecord.getC_Auction_ID()));
 		candidate.isActive(icRecord.isActive());
 		candidate.processed(icRecord.isProcessed());
