@@ -4,44 +4,50 @@ import { toUrl, unboxAxiosResponse } from '../../../utils';
 import { useEffect } from 'react';
 import * as ws from '../../../utils/websocket';
 
-export const getOpenOrders = ({ ids } = {}) => {
-  const queryParams = {};
+const posApiBase = `${apiBasePath}/pos`;
+
+export const getOpenOrders = ({ posTerminalId, ids } = {}) => {
+  const queryParams = { posTerminalId };
   if (ids?.length > 0) {
     queryParams.ids = ids.join(',');
   }
 
-  return axios.get(toUrl(`${apiBasePath}/pos/orders`, queryParams)).then((response) => unboxAxiosResponse(response));
+  return axios.get(toUrl(`${posApiBase}/orders`, queryParams)).then((response) => unboxAxiosResponse(response));
 };
 
 export const updateOrder = ({ order }) => {
-  return axios.post(`${apiBasePath}/pos/orders`, order).then((response) => unboxAxiosResponse(response));
+  return axios.post(`${posApiBase}/orders`, order).then((response) => unboxAxiosResponse(response));
 };
 
-export const changeOrderStatusToDraft = ({ order_uuid }) => {
-  return axios.post(`${apiBasePath}/pos/orders/${order_uuid}/draft`).then((response) => unboxAxiosResponse(response));
-};
-export const changeOrderStatusToWaitingPayment = ({ order_uuid }) => {
+export const changeOrderStatusToDraft = ({ posTerminalId, order_uuid }) => {
   return axios
-    .post(`${apiBasePath}/pos/orders/${order_uuid}/waitingPayment`)
+    .post(`${posApiBase}/orders/draft`, { posTerminalId, order_uuid })
+    .then((response) => unboxAxiosResponse(response));
+};
+export const changeOrderStatusToWaitingPayment = ({ posTerminalId, order_uuid }) => {
+  return axios
+    .post(`${posApiBase}/orders/waitingPayment`, { posTerminalId, order_uuid })
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const changeOrderStatusToVoid = ({ order_uuid }) => {
-  return axios.post(`${apiBasePath}/pos/orders/${order_uuid}/void`).then((response) => unboxAxiosResponse(response));
-};
-
-export const changeOrderStatusToComplete = ({ order_uuid }) => {
+export const changeOrderStatusToVoid = ({ posTerminalId, order_uuid }) => {
   return axios
-    .post(`${apiBasePath}/pos/orders/${order_uuid}/complete`)
+    .post(`${posApiBase}/orders/void`, { posTerminalId, order_uuid })
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const useOrdersWebsocket = ({ terminalId, onWebsocketMessage }) => {
+export const changeOrderStatusToComplete = ({ posTerminalId, order_uuid }) => {
+  return axios
+    .post(`${posApiBase}/orders/complete`, { posTerminalId, order_uuid })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const useOrdersWebsocket = ({ posTerminalId, onWebsocketMessage }) => {
   useEffect(() => {
     let client;
-    const topic = `/pos/orders/${terminalId}`;
+    const topic = `/pos/orders/${posTerminalId}`;
 
-    if (terminalId) {
+    if (posTerminalId) {
       client = ws.connectAndSubscribe({
         topic,
         debug: !!window?.debug_ws,
@@ -51,7 +57,7 @@ export const useOrdersWebsocket = ({ terminalId, onWebsocketMessage }) => {
       });
       console.log(`WS connected to ${topic}`, { client });
     } else {
-      console.log('Skip connecting to WS because terminalId is not valid', { terminalId });
+      console.log('Skip connecting to WS because terminalId is not valid', { posTerminalId });
     }
 
     return () => {
@@ -61,17 +67,17 @@ export const useOrdersWebsocket = ({ terminalId, onWebsocketMessage }) => {
         console.log(`WS disconnected from ${topic}`);
       }
     };
-  }, [terminalId]);
+  }, [posTerminalId]);
 };
 
-export const checkoutPayment = ({ order_uuid, payment_uuid }) => {
+export const checkoutPayment = ({ posTerminalId, order_uuid, payment_uuid }) => {
   return axios
-    .post(`${apiBasePath}/pos/orders/${order_uuid}/payments/${payment_uuid}/checkout`)
+    .post(`${posApiBase}/orders/checkoutPayment`, { posTerminalId, order_uuid, payment_uuid })
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const refundPayment = ({ order_uuid, payment_uuid }) => {
+export const refundPayment = ({ posTerminalId, order_uuid, payment_uuid }) => {
   return axios
-    .post(`${apiBasePath}/pos/orders/${order_uuid}/payments/${payment_uuid}/refund`)
+    .post(`${posApiBase}/orders/refundPayment`, { posTerminalId, order_uuid, payment_uuid })
     .then((response) => unboxAxiosResponse(response));
 };

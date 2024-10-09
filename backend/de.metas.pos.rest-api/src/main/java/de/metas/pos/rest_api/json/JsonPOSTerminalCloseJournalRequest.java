@@ -1,5 +1,6 @@
 package de.metas.pos.rest_api.json;
 
+import de.metas.pos.POSTerminalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
 @Jacksonized
 public class JsonPOSTerminalCloseJournalRequest
 {
+	@NonNull POSTerminalId posTerminalId;
 	@NonNull BigDecimal cashClosingBalance;
 	@Nullable String closingNote;
 }

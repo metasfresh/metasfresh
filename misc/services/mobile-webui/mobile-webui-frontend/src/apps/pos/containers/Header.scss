@@ -3,6 +3,7 @@
     background-color: #ffffff;
     padding-left: 12px;
     padding-right: 12px;
+    height: 3rem;
 
     display: flex;
     flex-flow: row nowrap;
@@ -11,7 +12,7 @@
     .pos-header-button {
       font-size: 1rem;
       font-weight: bold;
-      height: 100%;
+      height: 2.5rem;
       padding-left: 10px;
       padding-right: 10px;
       border-radius: 2px;
@@ -19,14 +20,20 @@
       display: flex;
       flex-flow: row nowrap;
       align-items: center;
+      justify-content: center;
+      vertical-align: baseline;
 
       .icon-letter {
-        width: 25px;
-        height: 25px;
+        width: 2rem;
+        height: 2rem;
         border-radius: 4px;
-        text-align: center;
         color: white;
         background-color: #74b727;
+
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        justify-content: center;
       }
 
       .text {

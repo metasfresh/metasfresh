@@ -1,6 +1,5 @@
 package de.metas.pos.rest_api.json;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
 import lombok.Builder;
@@ -24,8 +23,6 @@ public class JsonPOSOrdersList
 			@NonNull final JsonContext jsonContext)
 	{
 		return builder()
-				.list(orders.stream()
-						.map(order -> JsonPOSOrder.of(order, jsonContext))
-						.collect(ImmutableList.toImmutableList()));
+				.list(JsonPOSOrder.fromList(orders, jsonContext::getCurrencySymbol));
 	}
 }

@@ -12,6 +12,7 @@ import java.util.Set;
 @Builder
 public class POSOrderQuery
 {
+	@NonNull POSTerminalId posTerminalId;
 	@NonNull UserId cashierId;
 	boolean isOpen;
 	@Nullable Set<POSOrderExternalId> onlyOrderExternalIds;
