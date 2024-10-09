@@ -23,7 +23,7 @@ ALTER TABLE C_Invoice ADD CONSTRAINT ModCntrSettings_CInvoice FOREIGN KEY (ModCn
 
 
 
--- Field: Eingangsrechnung_OLD(183,D) -> Eingangsrechnung(290,D) -> Einstellungen für modulare Verträge
+-- Field: Eingangsrechnung(183,D) -> Eingangsrechnung(290,D) -> Einstellungen für modulare Verträge
 -- Column: C_Invoice.ModCntr_Settings_ID
 -- 2024-10-09T11:01:57.654Z
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,589285,731887,0,290,TO_TIMESTAMP('2024-10-09 14:01:57.53','YYYY-MM-DD HH24:MI:SS.US'),100,10,'D','Y','N','N','N','N','N','N','N','Einstellungen für modulare Verträge',TO_TIMESTAMP('2024-10-09 14:01:57.53','YYYY-MM-DD HH24:MI:SS.US'),100)
@@ -45,13 +45,13 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=731887
 /* DDL */ select AD_Element_Link_Create_Missing_Field(731887)
 ;
 
--- UI Element: Eingangsrechnung_OLD(183,D) -> Eingangsrechnung(290,D) -> advanced edit -> 10 -> advanced edit.Einstellungen für modulare Verträge
+-- UI Element: EingangsRechnung(183,D) -> Eingangsrechnung(290,D) -> advanced edit -> 10 -> advanced edit.Einstellungen für modulare Verträge
 -- Column: C_Invoice.ModCntr_Settings_ID
 -- 2024-10-09T11:02:40.260Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,731887,0,290,540218,626168,'F',TO_TIMESTAMP('2024-10-09 14:02:40.124','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','Y','N','N','Einstellungen für modulare Verträge',360,0,0,TO_TIMESTAMP('2024-10-09 14:02:40.124','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
--- UI Element: Eingangsrechnung_OLD(183,D) -> Eingangsrechnung(290,D) -> advanced edit -> 10 -> advanced edit.Einstellungen für modulare Verträge
+-- UI Element: EingangsRechnung(183,D) -> Eingangsrechnung(290,D) -> advanced edit -> 10 -> advanced edit.Einstellungen für modulare Verträge
 -- Column: C_Invoice.ModCntr_Settings_ID
 -- 2024-10-09T11:02:48.824Z
 UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2024-10-09 14:02:48.824','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=626168
@@ -61,7 +61,7 @@ UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2024-10-09 14
 
 
 
--- Field: Rechnung_OLD(167,D) -> Rechnung(263,D) -> Einstellungen für modulare Verträge
+-- Field: Rechnung(167,D) -> Rechnung(263,D) -> Einstellungen für modulare Verträge
 -- Column: C_Invoice.ModCntr_Settings_ID
 -- 2024-10-09T11:03:32.322Z
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,589285,731888,0,263,TO_TIMESTAMP('2024-10-09 14:03:32.204','YYYY-MM-DD HH24:MI:SS.US'),100,10,'D','Y','N','N','N','N','N','N','N','Einstellungen für modulare Verträge',TO_TIMESTAMP('2024-10-09 14:03:32.204','YYYY-MM-DD HH24:MI:SS.US'),100)
@@ -83,13 +83,13 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=731888
 /* DDL */ select AD_Element_Link_Create_Missing_Field(731888)
 ;
 
--- UI Element: Rechnung_OLD(167,D) -> Rechnung(263,D) -> advanced edit -> 10 -> advanced edit.Einstellungen für modulare Verträge
+-- UI Element: Rechnung(167,D) -> Rechnung(263,D) -> advanced edit -> 10 -> advanced edit.Einstellungen für modulare Verträge
 -- Column: C_Invoice.ModCntr_Settings_ID
 -- 2024-10-09T11:03:56.627Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,731888,0,263,541214,626169,'F',TO_TIMESTAMP('2024-10-09 14:03:56.505','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','Y','N','N','Einstellungen für modulare Verträge',130,0,0,TO_TIMESTAMP('2024-10-09 14:03:56.505','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
--- UI Element: Rechnung_OLD(167,D) -> Rechnung(263,D) -> advanced edit -> 10 -> advanced edit.Einstellungen für modulare Verträge
+-- UI Element: Rechnung(167,D) -> Rechnung(263,D) -> advanced edit -> 10 -> advanced edit.Einstellungen für modulare Verträge
 -- Column: C_Invoice.ModCntr_Settings_ID
 -- 2024-10-09T11:04:06.058Z
 UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2024-10-09 14:04:06.058','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=626169
@@ -105,36 +105,6 @@ UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2024-10-09 14
 
 
 -- Column: C_Invoice.ModCntr_Settings_ID
--- 2024-10-09T14:45:47.200Z
-UPDATE AD_Column SET IsUpdateable='N',Updated=TO_TIMESTAMP('2024-10-09 17:45:47.2','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589285
-;
-
--- Column: C_Invoice.ModCntr_Settings_ID
 -- 2024-10-09T14:46:22.003Z
-UPDATE AD_Column SET IsUpdateable='Y', ReadOnlyLogic='1=1',Updated=TO_TIMESTAMP('2024-10-09 17:46:22.003','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589285
+UPDATE AD_Column SET ReadOnlyLogic='1=1',Updated=TO_TIMESTAMP('2024-10-09 17:46:22.003','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589285
 ;
-
-
--- Column: C_Invoice.ModCntr_Settings_ID
--- 2024-10-09T15:21:36.624Z
-UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2024-10-09 18:21:36.624','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589285
-;
-
-
-
-
--- Column: C_Invoice.C_Harvesting_Calendar_ID
--- 2024-10-09T16:06:10.713Z
-UPDATE AD_Column SET IsSelectionColumn='N', SelectionColumnSeqNo=0,Updated=TO_TIMESTAMP('2024-10-09 19:06:10.713','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587250
-;
-
--- Column: C_Invoice.Harvesting_Year_ID
--- 2024-10-09T16:06:11.109Z
-UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=90,Updated=TO_TIMESTAMP('2024-10-09 19:06:11.109','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587251
-;
-
--- Column: C_Invoice.ModCntr_Settings_ID
--- 2024-10-09T16:06:11.502Z
-UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=100,Updated=TO_TIMESTAMP('2024-10-09 19:06:11.502','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589285
-;
-

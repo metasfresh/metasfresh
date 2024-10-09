@@ -139,8 +139,8 @@ public class InterimInvoiceCandidateService
 		final ZoneId orgTimeZone = orgDAO.getTimeZone(orgId);
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(flatrateTermRecord.getHarvesting_Year_ID(), flatrateTermRecord.getC_Harvesting_Calendar_ID());
 
-		final ModularContractSettingsId modularContractSettingsId= modularContractService.getModularSettingsForContract(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID())).getId();
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID());
+		final ModularContractSettingsId modularContractSettingsId= modularContractService.getModularSettingsForContract(flatrateTermId).getId();
 
 		final InvoiceCandidateUpsertRequest.InvoiceCandidateUpsertRequestBuilder newInvoiceCandidateTemplate = InvoiceCandidateUpsertRequest.builder()
 				.invoiceCandidateId(interimLogsToInvoice.getSingleInvoiceCandidateIdOrNull())

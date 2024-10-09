@@ -793,14 +793,7 @@ public class InvoiceHeaderImplBuilder
 
 	public void setModularContractSettingsId(final int modularContractSettingsId)
 	{
-		if (MODCNTR_Settings_ID == REPO_ID_UNSET_VALUE)
-		{
-			MODCNTR_Settings_ID = modularContractSettingsId;
-		}
-		else if (modularContractSettingsId != MODCNTR_Settings_ID)
-		{
-			M_Warehouse_ID = -1;
-		}
+		this.MODCNTR_Settings_ID = checkOverrideID("MODCNTR_Settings_ID", this.MODCNTR_Settings_ID, modularContractSettingsId);
 	}
 
 	public int getM_Warehouse_ID()
