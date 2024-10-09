@@ -3,6 +3,7 @@ import {
   ADD_PAYMENT,
   NEW_ORDER,
   ORDERS_LIST_UPDATE,
+  POS_TERMINAL_LOAD_DONE,
   REMOVE_ORDER_LINE,
   REMOVE_PAYMENT,
   SET_SELECTED_ORDER_LINE,
@@ -11,6 +12,17 @@ import { v4 as uuidv4 } from 'uuid';
 
 export function ordersReducer(applicationState, action) {
   switch (action.type) {
+    case POS_TERMINAL_LOAD_DONE: {
+      const {
+        posTerminal: { id: posTerminalId, openOrders },
+      } = action.payload;
+      return syncOrdersFromSource({
+        applicationState,
+        posTerminalId,
+        fromOrdersArray: openOrders,
+        isUpdateOnly: false,
+      });
+    }
     case ORDERS_LIST_UPDATE: {
       const { ordersArray, posTerminalId, missingIds, isUpdateOnly } = action.payload;
       return syncOrdersFromSource({
@@ -162,6 +174,7 @@ const newOrder = ({ posTerminalId }) => {
     uuid: uuidv4(),
     posTerminalId,
     lines: [],
+    payments: [],
   };
 };
 

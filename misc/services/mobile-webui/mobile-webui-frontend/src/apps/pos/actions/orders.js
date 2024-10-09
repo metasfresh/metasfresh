@@ -10,11 +10,7 @@ import {
 } from '../actionTypes';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
-import {
-  getCurrentOrderFromGlobalState,
-  getOpenOrdersArrayFromGlobalState,
-  getOrderByUUID,
-} from '../reducers/orderUtils';
+import { getCurrentOrderFromGlobalState, getOrderByUUID } from '../reducers/orderUtils';
 
 export const useCurrentOrderOrNew = ({ posTerminalId }) => {
   const dispatch = useDispatch();
@@ -43,10 +39,9 @@ export const useCurrentOrderOrNew = ({ posTerminalId }) => {
 export const useCurrentOrder = ({ posTerminalId }) => {
   const dispatch = useDispatch();
   const [isProcessing, setProcessing] = useState(false);
-  const { isOpenOrdersLoading } = useOpenOrders({ posTerminalId });
   const currentOrder = useSelector(getCurrentOrderFromGlobalState);
 
-  const isLoading = isOpenOrdersLoading;
+  const isLoading = !posTerminalId;
   return {
     ...(currentOrder ?? {}),
     isLoading,
@@ -82,26 +77,6 @@ export const useCurrentOrder = ({ posTerminalId }) => {
 
       dispatch(() => setProcessing(false));
     },
-  };
-};
-export const useOpenOrders = ({ posTerminalId }) => {
-  const dispatch = useDispatch();
-  const [loadStatus, setLoadStatus] = useState('new');
-  const openOrders = useSelector(getOpenOrdersArrayFromGlobalState);
-
-  useEffect(() => {
-    if (loadStatus === 'new' && posTerminalId) {
-      setLoadStatus('loading');
-      ordersAPI
-        .getOpenOrders({ posTerminalId })
-        .then(({ list }) => dispatch(updateOrdersArrayFromBackendAction({ posTerminalId, list, isUpdateOnly: false })))
-        .finally(() => setLoadStatus('load-done'));
-    }
-  }, [posTerminalId]);
-
-  return {
-    isOpenOrdersLoading: loadStatus === 'loading',
-    openOrders,
   };
 };
 
