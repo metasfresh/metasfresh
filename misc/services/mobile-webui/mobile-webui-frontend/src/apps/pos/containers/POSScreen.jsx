@@ -1,24 +1,16 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import './POSScreen.scss';
 import Header from './Header';
-import POSOrderPanel from './order_panel/POSOrderPanel';
-import POSPaymentPanel from './payment_panel/POSPaymentPanel';
 import POSCashJournalOpenModal from './cash_journal/POSCashJournalOpenModal';
 import POSCashJournalClosingModal from './cash_journal/POSCashJournalClosingModal';
 import { useOrdersWebsocket } from '../api/orders';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateOrderFromBackend, useCurrentOrder } from '../actions/orders';
+import { updateOrderFromBackend } from '../actions/orders';
 import POSTerminalSelectModal from './select_terminal/POSTerminalSelectModal';
 import { usePOSTerminal } from '../actions/posTerminal';
 import { MODAL_POSTerminalSelect } from '../actions/ui';
 import { getModalFromState } from '../reducers/uiUtils';
-import {
-  ORDER_STATUS_COMPLETED,
-  ORDER_STATUS_DRAFTED,
-  ORDER_STATUS_VOIDED,
-  ORDER_STATUS_WAITING_PAYMENT,
-} from '../constants/orderStatus';
+import { POSContent } from './POSContent';
 
 const POSScreen = () => {
   const dispatch = useDispatch();
@@ -41,24 +33,6 @@ const POSScreen = () => {
       <POSContent disabled={!!modal} />
     </div>
   );
-};
-
-const POSContent = ({ disabled }) => {
-  const posTerminal = usePOSTerminal();
-  const currentOrder = useCurrentOrder({ posTerminalId: posTerminal.id });
-
-  const status = currentOrder?.status ?? '--';
-  if (status === ORDER_STATUS_DRAFTED || status === ORDER_STATUS_VOIDED) {
-    return <POSOrderPanel disabled={disabled} />;
-  } else if (status === ORDER_STATUS_WAITING_PAYMENT || status === ORDER_STATUS_COMPLETED) {
-    return <POSPaymentPanel disabled={disabled} />;
-  } else {
-    //console.warn('No view to be rendered for orderStatus=' + orderStatus);
-    return <></>;
-  }
-};
-POSContent.propTypes = {
-  disabled: PropTypes.bool,
 };
 
 //
