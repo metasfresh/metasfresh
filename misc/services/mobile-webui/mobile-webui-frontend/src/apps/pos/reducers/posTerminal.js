@@ -84,7 +84,6 @@ const setPOSTerminalToState = ({ applicationState, newTerminal }) => {
     isLoaded: true,
   };
   delete newTerminalEffective.openOrders;
-  delete newTerminalEffective.products;
 
   return {
     ...applicationState,

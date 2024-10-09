@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useProducts } from '../../api/products';
 import ProductButton from './ProductButton';
 import Spinner from '../../../../components/Spinner';
 import ProductSearchBar from './ProductSearchBar';
@@ -7,6 +6,7 @@ import GetCatchWeightModal from './GetCatchWeightModal';
 import './Products.scss';
 import { useCurrentOrder } from '../../actions/orders';
 import { usePOSTerminal } from '../../actions/posTerminal';
+import { useProducts } from '../../actions/products';
 
 const Products = () => {
   const posTerminal = usePOSTerminal();
