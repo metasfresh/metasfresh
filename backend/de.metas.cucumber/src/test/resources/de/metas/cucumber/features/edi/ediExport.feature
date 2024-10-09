@@ -4,6 +4,7 @@ Feature: EDI_cctop_invoic_v export format
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
   #   Convenience Salat 250g
