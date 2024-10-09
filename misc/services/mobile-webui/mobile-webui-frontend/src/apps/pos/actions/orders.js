@@ -10,12 +10,16 @@ import {
 } from '../actionTypes';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
-import { getPOSApplicationState } from './common';
+import {
+  getCurrentOrderFromGlobalState,
+  getOpenOrdersArrayFromGlobalState,
+  getOrderByUUID,
+} from '../reducers/orderUtils';
 
 export const useCurrentOrderOrNew = ({ posTerminalId }) => {
   const dispatch = useDispatch();
   const [loadingStatus, setLoadingStatus] = useState('to-load');
-  const currentOrder = useSelector(getCurrentOrderFromState);
+  const currentOrder = useSelector(getCurrentOrderFromGlobalState);
 
   useEffect(() => {
     if (!currentOrder && posTerminalId) {
@@ -40,7 +44,7 @@ export const useCurrentOrder = ({ posTerminalId }) => {
   const dispatch = useDispatch();
   const [isProcessing, setProcessing] = useState(false);
   const { isOpenOrdersLoading } = useOpenOrders({ posTerminalId });
-  const currentOrder = useSelector(getCurrentOrderFromState);
+  const currentOrder = useSelector(getCurrentOrderFromGlobalState);
 
   const isLoading = isOpenOrdersLoading;
   return {
@@ -80,19 +84,10 @@ export const useCurrentOrder = ({ posTerminalId }) => {
     },
   };
 };
-const getCurrentOrderFromState = (globalState) => {
-  const applicationState = getPOSApplicationState(globalState);
-  const current_uuid = getCurrentOrderUUID({ applicationState });
-  if (!current_uuid) {
-    return null;
-  }
-
-  return getOrderByUUID({ applicationState, order_uuid: current_uuid });
-};
 export const useOpenOrders = ({ posTerminalId }) => {
   const dispatch = useDispatch();
   const [loadStatus, setLoadStatus] = useState('new');
-  const openOrders = useSelector(getOpenOrdersArrayFromState);
+  const openOrders = useSelector(getOpenOrdersArrayFromGlobalState);
 
   useEffect(() => {
     if (loadStatus === 'new' && posTerminalId) {
@@ -109,23 +104,7 @@ export const useOpenOrders = ({ posTerminalId }) => {
     openOrders,
   };
 };
-const getOpenOrdersArrayFromState = (globalState) => {
-  const applicationState = getPOSApplicationState(globalState);
-  const orders = applicationState?.orders?.byUUID ?? {};
-  return Object.values(orders);
-};
-const getOrderByUUID = ({ applicationState, order_uuid }) => applicationState?.orders?.byUUID?.[order_uuid];
-const getCurrentOrderUUID = ({ globalState, applicationState }) => {
-  let applicationStateEff = applicationState;
-  if (applicationState == null && globalState != null) {
-    applicationStateEff = getPOSApplicationState(globalState);
-  }
-  if (applicationStateEff == null) {
-    throw 'Cannot determine applicationState';
-  }
 
-  return applicationStateEff?.orders?.current_uuid;
-};
 export const addNewOrderAction = ({ posTerminalId }) => {
   return {
     type: NEW_ORDER,
@@ -248,8 +227,7 @@ const removeOrderLineAction = ({ order_uuid, line_uuid }) => {
 const syncOrderToBackend = ({ order_uuid }) => {
   return (dispatch, getState) => {
     const globalState = getState();
-    const applicationState = getPOSApplicationState(globalState);
-    const order = getOrderByUUID({ applicationState, order_uuid });
+    const order = getOrderByUUID({ globalState, order_uuid });
     ordersAPI.updateOrder({ order }).then((order) => dispatch(updateOrderFromBackendAction({ order })));
   };
 };
@@ -280,6 +258,17 @@ export const setSelectedOrderLineAction = ({ order_uuid, selectedLineUUID }) => 
     payload: { order_uuid, selectedLineUUID },
   };
 };
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
 export const addPayment = ({ order_uuid, paymentMethod, amount }) => {
   return (dispatch) => {
     dispatch(addPaymentAction({ order_uuid, paymentMethod, amount }));

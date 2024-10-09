@@ -10,8 +10,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateOrderFromBackend, useCurrentOrder } from '../actions/orders';
 import POSTerminalSelectPanel from './select_terminal/POSTerminalSelectPanel';
 import { usePOSTerminal } from '../actions/posTerminal';
-import { getPOSApplicationState } from '../actions/common';
 import { MODAL_POSTerminalSelect } from '../actions/ui';
+import { getModalFromState } from '../reducers/uiUtils';
 
 const POSScreen = () => {
   const dispatch = useDispatch();
@@ -35,7 +35,7 @@ const POSScreen = () => {
 
 const POSContent = () => {
   const posTerminal = usePOSTerminal();
-  const modal = useSelector((globalState) => getPOSApplicationState(globalState)?.modal);
+  const modal = useSelector((globalState) => getModalFromState({ globalState }));
   const currentOrder = useCurrentOrder({ posTerminalId: posTerminal.id });
 
   if (!posTerminal.id) {

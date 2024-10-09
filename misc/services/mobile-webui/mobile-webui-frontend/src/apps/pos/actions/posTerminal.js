@@ -8,9 +8,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import * as posTerminalAPI from '../api/posTerminal';
 import * as posJournalAPI from '../api/posJournal';
-import { getPOSApplicationState } from './common';
 import Cookies from 'js-cookie';
 import { assignWorkplace } from '../../../api/workplace';
+import { getPOSApplicationState } from '../reducers/commonUtils';
 
 const COOKIE_posTerminalId = 'posTerminalId';
 
