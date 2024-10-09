@@ -517,6 +517,10 @@ public class C_Order
 	})
 	public void removeFlatRateConditionsForCallOrder(final I_C_Order order)
 	{
+		if (order.getC_DocTypeTarget_ID() <= 0)
+		{
+			return;
+		}
 		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(order.getC_DocTypeTarget_ID());
 		if (X_C_DocType.DOCSUBTYPE_CallOrder.equals(dt.getDocSubType()))
 		{
