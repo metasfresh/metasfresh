@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.settings;
 
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.computing.ColumnOption;
 import de.metas.product.ProductId;

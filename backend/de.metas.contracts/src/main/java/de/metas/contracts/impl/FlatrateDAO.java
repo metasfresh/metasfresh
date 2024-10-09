@@ -30,7 +30,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.settings.ModularContractSettingsId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.costing.ChargeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
