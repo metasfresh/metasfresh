@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { getPOSTerminalsArray } from '../../api/posTerminal';
 import { usePOSTerminal } from '../../actions/posTerminal';
@@ -6,8 +7,9 @@ import { closeModalAction, MODAL_POSTerminalSelect } from '../../actions/ui';
 import { useDispatch } from 'react-redux';
 
 import './POSTerminalSelectModal.scss';
+import useEscapeKey from '../../../../hooks/useEscapeKey';
 
-const POSTerminalSelectModal = () => {
+const POSTerminalSelectModal = ({ allowCancel }) => {
   const dispatch = useDispatch();
   const currentTerminal = usePOSTerminal();
   const [posTerminals, setPOSTerminals] = useState(null);
@@ -22,10 +24,20 @@ const POSTerminalSelectModal = () => {
     });
   }, []);
 
-  const onTerminalSelected = (posTerminalId) => {
-    currentTerminal.setPOSTerminalId(posTerminalId);
+  const closeModal = () => {
     dispatch(closeModalAction({ ifModal: MODAL_POSTerminalSelect }));
   };
+  const onTerminalSelected = (posTerminalId) => {
+    currentTerminal.setPOSTerminalId(posTerminalId);
+    closeModal();
+  };
+
+  const onCancel = () => {
+    if (!allowCancel) return;
+    closeModal();
+  };
+
+  useEscapeKey(onCancel);
 
   if (posTerminals == null) return null;
 
@@ -35,6 +47,7 @@ const POSTerminalSelectModal = () => {
       <div className="modal-card">
         <header className="modal-card-head">
           <p className="modal-card-title">Select terminal</p>
+          {allowCancel && <button className="delete" aria-label="close" onClick={onCancel}></button>}
         </header>
         <section className="modal-card-body">
           {posTerminals.map((posTerminal) => (
@@ -49,6 +62,9 @@ const POSTerminalSelectModal = () => {
       </div>
     </div>
   );
+};
+POSTerminalSelectModal.propTypes = {
+  allowCancel: PropTypes.bool.isRequired,
 };
 
 export default POSTerminalSelectModal;

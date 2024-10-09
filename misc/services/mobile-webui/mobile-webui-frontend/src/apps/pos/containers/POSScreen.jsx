@@ -78,12 +78,12 @@ const useModal = () => {
   const modal = useSelector((globalState) => getModalFromState({ globalState }));
 
   if (!posTerminal.id) {
-    return <POSTerminalSelectModal />;
+    return <POSTerminalSelectModal allowCancel={false} />;
   }
 
   if (modal) {
     if (modal === MODAL_POSTerminalSelect) {
-      return <POSTerminalSelectModal />;
+      return <POSTerminalSelectModal allowCancel={true} />;
     }
   }
 
