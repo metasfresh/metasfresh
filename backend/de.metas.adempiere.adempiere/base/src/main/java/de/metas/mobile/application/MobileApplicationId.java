@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.model;
+package de.metas.mobile.application;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

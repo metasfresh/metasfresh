@@ -83,13 +83,4 @@ public enum POSPaymentProcessingStatus implements ReferenceListAwareEnum
 	{
 		return isSuccessful();
 	}
-
-	public void assertAllowRefund()
-	{
-		if (!isAllowRefund())
-		{
-			throw new AdempiereException("Payments with status " + this + " cannot be refunded");
-		}
-	}
-
 }

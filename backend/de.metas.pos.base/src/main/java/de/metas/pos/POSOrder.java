@@ -1,7 +1,6 @@
 package de.metas.pos;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -12,7 +11,6 @@ import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.payment.PaymentId;
 import de.metas.pricing.PricingSystemAndListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.user.UserId;
@@ -32,9 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Objects;
 import java.util.OptionalInt;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -139,17 +135,7 @@ public class POSOrder
 
 		//
 		// Payments
-		Money paidAmt = zero;
-		for (final POSPayment payment : payments)
-		{
-			if (payment.getPaymentProcessingStatus().isDeleted())
-			{
-				continue;
-			}
-
-			paidAmt = paidAmt.add(payment.getAmount());
-		}
-		this.paidAmt = paidAmt;
+		this.paidAmt = streamPaymentsNotDeleted().map(POSPayment::getAmount).reduce(zero, Money::add);
 		this.openAmt = this.totalAmt.subtract(this.paidAmt);
 	}
 
@@ -159,7 +145,7 @@ public class POSOrder
 
 	public ImmutableList<POSPayment> getPaymentsNotDeleted() {return streamPaymentsNotDeleted().collect(ImmutableList.toImmutableList());}
 
-	public Stream<POSPayment> streamPaymentsNotDeleted() {return payments.stream().filter(payment -> !payment.getPaymentProcessingStatus().isDeleted());}
+	public Stream<POSPayment> streamPaymentsNotDeleted() {return payments.stream().filter(payment -> !payment.isDeleted());}
 
 	public void changeStatusTo(
 			@NonNull final POSOrderStatus targetStatus,
@@ -207,12 +193,11 @@ public class POSOrder
 
 	private void changeStatusTo_Void()
 	{
-		final boolean hasPendingOrCompletedPayments = streamPaymentsNotDeleted()
-				.anyMatch(posPayment -> posPayment.getPaymentProcessingStatus().isPendingOrSuccessful());
-		if (hasPendingOrCompletedPayments)
+		if (salesOrderId != null)
 		{
-			throw new AdempiereException("Cannot void pos orders with Pending or Successful payments. Cancel/Refund first");
+			throw new AdempiereException("Voiding POS orders with generated sales orders is not allowed");
 		}
+		streamPaymentsNotDeleted().forEach(POSPayment::assertAllowVoid);
 	}
 
 	public BooleanWithReason checkCanTryComplete()
@@ -255,15 +240,25 @@ public class POSOrder
 
 	public void assertWaitingForPayment()
 	{
-		if (!status.isWaitingPayment())
+		assertStatus(POSOrderStatus.WaitingPayment);
+	}
+
+	public void assertCompleted()
+	{
+		assertStatus(POSOrderStatus.Completed);
+	}
+
+	public void assertStatus(@NonNull final POSOrderStatus expectedStatus)
+	{
+		if (!POSOrderStatus.equals(this.status, expectedStatus))
 		{
-			throw new AdempiereException("Expected order status to be " + POSOrderStatus.WaitingPayment + " but it is " + status);
+			throw new AdempiereException("Expected order status to be " + expectedStatus + " but it is " + status);
 		}
 	}
 
 	public boolean isPaymentsProcessedSuccessfully()
 	{
-		return streamPaymentsNotDeleted().allMatch(payment -> payment.getPaymentProcessingStatus().isSuccessful());
+		return streamPaymentsNotDeleted().allMatch(POSPayment::isSuccessful);
 	}
 
 	public void createOrUpdateLine(@NonNull final String externalId, @NonNull final UnaryOperator<POSOrderLine> updater)
@@ -321,7 +316,7 @@ public class POSOrder
 			final POSPayment paymentChanged = updater.apply(payment);
 			if (paymentChanged == null)
 			{
-				payment.getPaymentProcessingStatus().assertAllowDeleteFromDB();
+				payment.assertAllowDeleteFromDB();
 				it.remove();
 			}
 			else
@@ -399,8 +394,7 @@ public class POSOrder
 	{
 		updateAllPayments(payment -> {
 			// skip payments marked as DELETED
-			final POSPaymentProcessingStatus paymentProcessingStatus = payment.getPaymentProcessingStatus();
-			if (paymentProcessingStatus.isDeleted())
+			if (payment.isDeleted())
 			{
 				return payment;
 			}
@@ -410,10 +404,9 @@ public class POSOrder
 				return payment;
 			}
 
-			paymentProcessingStatus.assertAllowDelete();
-
-			if (paymentProcessingStatus.isAllowDeleteFromDB())
+			if (payment.isAllowDeleteFromDB())
 			{
+				payment.assertAllowDelete();
 				return null;
 			}
 			else
@@ -421,13 +414,5 @@ public class POSOrder
 				return payment.changingStatusToDeleted();
 			}
 		});
-	}
-
-	public Set<PaymentId> getPaymentReceiptIds()
-	{
-		return streamPaymentsNotDeleted()
-				.map(POSPayment::getPaymentReceiptId)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 }
