@@ -29,6 +29,7 @@ const POSCashJournalClosingModal = () => {
       <div className="modal-card">
         <header className="modal-card-head">
           <p className="modal-card-title">Closing cash journal</p>
+          <button className="delete" aria-label="close" onClick={onCancelClick}></button>
         </header>
         <section className="modal-card-body">
           <div className="line">
