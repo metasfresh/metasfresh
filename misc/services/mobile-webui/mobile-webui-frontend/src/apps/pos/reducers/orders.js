@@ -7,6 +7,7 @@ import {
   REMOVE_ORDER_LINE,
   REMOVE_PAYMENT,
   SET_SELECTED_ORDER_LINE,
+  UPDATE_ORDER,
 } from '../actionTypes';
 import { v4 as uuidv4 } from 'uuid';
 import { ORDER_STATUS_DRAFTED } from '../constants/orderStatus';
@@ -36,6 +37,15 @@ export function ordersReducer(applicationState, action) {
         fromOrdersArray: ordersArray,
         missingIds,
         isUpdateOnly,
+      });
+    }
+    case UPDATE_ORDER: {
+      const { order } = action.payload;
+      return syncOrdersFromSource({
+        applicationState,
+        posTerminalId: order.posTerminalId,
+        fromOrdersArray: [order],
+        isUpdateOnly: true,
       });
     }
     case NEW_ORDER: {

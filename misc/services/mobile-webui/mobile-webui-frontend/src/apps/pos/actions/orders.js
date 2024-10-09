@@ -7,6 +7,7 @@ import {
   REMOVE_ORDER_LINE,
   REMOVE_PAYMENT,
   SET_SELECTED_ORDER_LINE,
+  UPDATE_ORDER,
 } from '../actionTypes';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
@@ -223,8 +224,8 @@ const updateOrdersArrayFromBackendAction = ({ posTerminalId, list, missingIds, i
 };
 export const updateOrderFromBackendAction = ({ order }) => {
   return {
-    type: ORDERS_LIST_UPDATE,
-    payload: { posTerminalId: order.posTerminalId, ordersArray: [order], isUpdateOnly: true },
+    type: UPDATE_ORDER,
+    payload: { order },
   };
 };
 export const setSelectedOrderLineAction = ({ order_uuid, selectedLineUUID }) => {
