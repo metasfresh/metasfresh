@@ -1,5 +1,12 @@
-drop view if exists M_InOut_DesadvLine_Pack_V
+
+DROP VIEW IF EXISTS m_inout_desadvline_pack_v;
+
+SELECT public.db_alter_table('EDI_Desadv_Pack','ALTER TABLE public.EDI_Desadv_Pack RENAME COLUMN M_HU_PackagingCode_LU_ID TO M_HU_PackagingCode_ID')
 ;
+
+SELECT public.db_alter_table('EDI_Desadv_Pack','ALTER TABLE public.EDI_Desadv_Pack RENAME COLUMN GTIN_LU_PackingMaterial TO GTIN_PackingMaterial')
+;
+
 
 create or replace view M_InOut_DesadvLine_Pack_V as
 select line.edi_desadvline_id || '-' || m_inoutline_id as M_InOut_DesadvLine_V_ID,
@@ -28,7 +35,7 @@ select line.edi_desadvline_id || '-' || m_inoutline_id as M_InOut_DesadvLine_V_I
        m_inout_id,
        lotnumber,
        gtin_tu_packingmaterial,
-       gtin_lu_packingmaterial,
+       gtin_packingmaterial AS gtin_lu_packingmaterial,
        (select PackagingCode from M_HU_PackagingCode c where c.M_HU_PackagingCode_ID=M_HU_PackagingCode_ID) as M_HU_PackagingCode_LU_Text,
        (select PackagingCode from M_HU_PackagingCode c where c.M_HU_PackagingCode_ID=M_HU_PackagingCode_TU_ID) as M_HU_PackagingCode_TU_Text
 from EDI_Desadv_Pack pack
