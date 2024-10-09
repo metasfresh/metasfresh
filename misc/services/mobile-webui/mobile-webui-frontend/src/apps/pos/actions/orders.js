@@ -273,10 +273,6 @@ export const updateOrderFromBackendAction = ({ order }) => {
     type: ORDERS_LIST_UPDATE,
     payload: { posTerminalId: order.posTerminalId, ordersArray: [order], isUpdateOnly: true },
   };
-  // return {
-  //   type: UPDATE_ORDER_FROM_BACKEND,
-  //   payload: { order },
-  // };
 };
 export const setSelectedOrderLineAction = ({ order_uuid, selectedLineUUID }) => {
   return {
