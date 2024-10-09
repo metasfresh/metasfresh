@@ -114,3 +114,143 @@ UPDATE AD_Column SET ReadOnlyLogic='1=1',Updated=TO_TIMESTAMP('2024-10-09 17:49:
 UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2024-10-09 18:10:18.409','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589284
 ;
 
+
+
+
+
+-- Column: C_Invoice_Candidate.C_Harvesting_Calendar_ID
+-- 2024-10-09T16:05:10.716Z
+UPDATE AD_Column SET IsSelectionColumn='N', SelectionColumnSeqNo=0,Updated=TO_TIMESTAMP('2024-10-09 19:05:10.716','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587248
+;
+
+-- Column: C_Invoice_Candidate.ProductName
+-- 2024-10-09T16:05:11.468Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=10,Updated=TO_TIMESTAMP('2024-10-09 19:05:11.468','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588110
+;
+
+-- Column: C_Invoice_Candidate.ProductDescription
+-- 2024-10-09T16:05:11.841Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=20,Updated=TO_TIMESTAMP('2024-10-09 19:05:11.841','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=585322
+;
+
+-- Column: C_Invoice_Candidate.C_Async_Batch_ID
+-- 2024-10-09T16:05:12.274Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=30,Updated=TO_TIMESTAMP('2024-10-09 19:05:12.274','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=575016
+;
+
+-- Column: C_Invoice_Candidate.Bill_BPartner_ID
+-- 2024-10-09T16:05:12.669Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=40,Updated=TO_TIMESTAMP('2024-10-09 19:05:12.669','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=544920
+;
+
+-- Column: C_Invoice_Candidate.POReference
+-- 2024-10-09T16:05:13.029Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=50,Updated=TO_TIMESTAMP('2024-10-09 19:05:13.029','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=551469
+;
+
+-- Column: C_Invoice_Candidate.ExternalHeaderId
+-- 2024-10-09T16:05:13.419Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=60,Updated=TO_TIMESTAMP('2024-10-09 19:05:13.419','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=569216
+;
+
+-- Column: C_Invoice_Candidate.C_Activity_ID
+-- 2024-10-09T16:05:13.848Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=70,Updated=TO_TIMESTAMP('2024-10-09 19:05:13.848','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=551072
+;
+
+-- Column: C_Invoice_Candidate.C_DocTypeInvoice_ID
+-- 2024-10-09T16:05:14.242Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=80,Updated=TO_TIMESTAMP('2024-10-09 19:05:14.242','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=551286
+;
+
+-- Column: C_Invoice_Candidate.C_ILCandHandler_ID
+-- 2024-10-09T16:05:14.739Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=90,Updated=TO_TIMESTAMP('2024-10-09 19:05:14.739','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=546203
+;
+
+-- Column: C_Invoice_Candidate.C_InvoiceSchedule_ID
+-- 2024-10-09T16:05:15.233Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=100,Updated=TO_TIMESTAMP('2024-10-09 19:05:15.233','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=546600
+;
+
+-- Column: C_Invoice_Candidate.C_Order_BPartner
+-- 2024-10-09T16:05:15.773Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=110,Updated=TO_TIMESTAMP('2024-10-09 19:05:15.773','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=551953
+;
+
+-- Column: C_Invoice_Candidate.C_Order_ID
+-- 2024-10-09T16:05:16.185Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=120,Updated=TO_TIMESTAMP('2024-10-09 19:05:16.185','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=544913
+;
+
+-- Column: C_Invoice_Candidate.DateToInvoice
+-- 2024-10-09T16:05:16.612Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=130,Updated=TO_TIMESTAMP('2024-10-09 19:05:16.612','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=546339
+;
+
+-- Column: C_Invoice_Candidate.DeliveryDate
+-- 2024-10-09T16:05:17.184Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=140,Updated=TO_TIMESTAMP('2024-10-09 19:05:17.184','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=551761
+;
+
+-- Column: C_Invoice_Candidate.ApprovalForInvoicing
+-- 2024-10-09T16:05:17.652Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=150,Updated=TO_TIMESTAMP('2024-10-09 19:05:17.652','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=551293
+;
+
+-- Column: C_Invoice_Candidate.IsEdiInvoicRecipient
+-- 2024-10-09T16:05:18.140Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=160,Updated=TO_TIMESTAMP('2024-10-09 19:05:18.14','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=552564
+;
+
+-- Column: C_Invoice_Candidate.IsError
+-- 2024-10-09T16:05:18.675Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=170,Updated=TO_TIMESTAMP('2024-10-09 19:05:18.675','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=546227
+;
+
+-- Column: C_Invoice_Candidate.IsMaterialTracking
+-- 2024-10-09T16:05:19.237Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=180,Updated=TO_TIMESTAMP('2024-10-09 19:05:19.237','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=551796
+;
+
+-- Column: C_Invoice_Candidate.Processed
+-- 2024-10-09T16:05:19.833Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=190,Updated=TO_TIMESTAMP('2024-10-09 19:05:19.833','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=545771
+;
+
+-- Column: C_Invoice_Candidate.IsSOTrx
+-- 2024-10-09T16:05:20.335Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=200,Updated=TO_TIMESTAMP('2024-10-09 19:05:20.335','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=549847
+;
+
+-- Column: C_Invoice_Candidate.IsInDispute
+-- 2024-10-09T16:05:20.829Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=210,Updated=TO_TIMESTAMP('2024-10-09 19:05:20.829','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=550515
+;
+
+-- Column: C_Invoice_Candidate.IsInEffect
+-- 2024-10-09T16:05:21.328Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=220,Updated=TO_TIMESTAMP('2024-10-09 19:05:21.328','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=584279
+;
+
+-- Column: C_Invoice_Candidate.Harvesting_Year_ID
+-- 2024-10-09T16:05:21.878Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=300,Updated=TO_TIMESTAMP('2024-10-09 19:05:21.878','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587249
+;
+
+-- Column: C_Invoice_Candidate.ModCntr_Settings_ID
+-- 2024-10-09T16:05:22.379Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=310,Updated=TO_TIMESTAMP('2024-10-09 19:05:22.379','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589284
+;
+
+
+
+
+
+
+
+
+
+
+
+

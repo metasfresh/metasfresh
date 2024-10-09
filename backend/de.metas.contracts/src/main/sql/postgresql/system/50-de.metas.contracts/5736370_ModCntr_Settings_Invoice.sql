@@ -123,3 +123,18 @@ UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMEST
 
 
 
+-- Column: C_Invoice.C_Harvesting_Calendar_ID
+-- 2024-10-09T16:06:10.713Z
+UPDATE AD_Column SET IsSelectionColumn='N', SelectionColumnSeqNo=0,Updated=TO_TIMESTAMP('2024-10-09 19:06:10.713','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587250
+;
+
+-- Column: C_Invoice.Harvesting_Year_ID
+-- 2024-10-09T16:06:11.109Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=90,Updated=TO_TIMESTAMP('2024-10-09 19:06:11.109','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587251
+;
+
+-- Column: C_Invoice.ModCntr_Settings_ID
+-- 2024-10-09T16:06:11.502Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=100,Updated=TO_TIMESTAMP('2024-10-09 19:06:11.502','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589285
+;
+
