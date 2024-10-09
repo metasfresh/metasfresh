@@ -27,7 +27,7 @@ public class JsonPOSTerminal
 	int pricePrecision;
 	int currencyPrecision;
 	@NonNull Set<POSPaymentMethod> availablePaymentMethods;
-	boolean isCashJournalOpen;
+	boolean cashJournalOpen;
 	@NonNull BigDecimal cashLastBalance;
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -52,7 +52,7 @@ public class JsonPOSTerminal
 				.pricePrecision(posTerminal.getPricePrecision().toInt())
 				.currencyPrecision(posTerminal.getCurrencyPrecision().toInt())
 				.availablePaymentMethods(posTerminal.getAvailablePaymentMethods())
-				.isCashJournalOpen(posTerminal.isCashJournalOpen())
+				.cashJournalOpen(posTerminal.isCashJournalOpen())
 				.cashLastBalance(posTerminal.getCashLastBalance().toBigDecimal());
 	}
 }

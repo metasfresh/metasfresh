@@ -15,13 +15,13 @@ import java.util.List;
 public class JsonProductsSearchResult
 {
 	@NonNull List<JsonProduct> list;
-	@Getter boolean isBarcodeMatched;
+	@Getter boolean barcodeMatched;
 
 	public static JsonProductsSearchResult from(@NonNull final POSProductsSearchResult result, @NonNull final String adLanguage)
 	{
 		return builder()
 				.list(JsonProduct.fromList(result.toList(), adLanguage))
-				.isBarcodeMatched(result.isBarcodeMatched())
+				.barcodeMatched(result.isBarcodeMatched())
 				.build();
 	}
 }
