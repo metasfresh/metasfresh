@@ -9,6 +9,7 @@ import {
   SET_SELECTED_ORDER_LINE,
 } from '../actionTypes';
 import { v4 as uuidv4 } from 'uuid';
+import { ORDER_STATUS_DRAFTED } from '../constants/orderStatus';
 
 export function ordersReducer(applicationState, action) {
   switch (action.type) {
@@ -177,6 +178,7 @@ const newOrder = ({ posTerminalId }) => {
   return {
     uuid: uuidv4(),
     posTerminalId,
+    status: ORDER_STATUS_DRAFTED,
     lines: [],
     payments: [],
   };

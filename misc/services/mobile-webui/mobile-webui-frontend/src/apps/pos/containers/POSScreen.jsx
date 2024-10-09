@@ -13,6 +13,12 @@ import POSTerminalSelectModal from './select_terminal/POSTerminalSelectModal';
 import { usePOSTerminal } from '../actions/posTerminal';
 import { MODAL_POSTerminalSelect } from '../actions/ui';
 import { getModalFromState } from '../reducers/uiUtils';
+import {
+  ORDER_STATUS_COMPLETED,
+  ORDER_STATUS_DRAFTED,
+  ORDER_STATUS_VOIDED,
+  ORDER_STATUS_WAITING_PAYMENT,
+} from '../constants/orderStatus';
 
 const POSScreen = () => {
   const dispatch = useDispatch();
@@ -41,10 +47,10 @@ const POSContent = ({ disabled }) => {
   const posTerminal = usePOSTerminal();
   const currentOrder = useCurrentOrder({ posTerminalId: posTerminal.id });
 
-  const orderStatus = currentOrder?.status ?? '--';
-  if (orderStatus === 'DR' || orderStatus === 'VO') {
+  const status = currentOrder?.status ?? '--';
+  if (status === ORDER_STATUS_DRAFTED || status === ORDER_STATUS_VOIDED) {
     return <POSOrderPanel disabled={disabled} />;
-  } else if (orderStatus === 'WP' || orderStatus === 'CO') {
+  } else if (status === ORDER_STATUS_WAITING_PAYMENT || status === ORDER_STATUS_COMPLETED) {
     return <POSPaymentPanel disabled={disabled} />;
   } else {
     //console.warn('No view to be rendered for orderStatus=' + orderStatus);
