@@ -1,47 +1,81 @@
 import React from 'react';
 import './POSScreen.scss';
 import Header from './Header';
-import POSOrderPanel from './order_panel/POSOrderPanel';
-import POSPaymentPanel from './payment_panel/POSPaymentPanel';
-import POSCashJournalOpenPanel from './cash_journal/POSCashJournalOpenPanel';
-import POSCashJournalClosingPanel from './cash_journal/POSCashJournalClosingPanel';
+import POSCashJournalOpenModal from './cash_journal/POSCashJournalOpenModal';
+import POSCashJournalClosingModal from './cash_journal/POSCashJournalClosingModal';
 import { useOrdersWebsocket } from '../api/orders';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateOrderFromBackendAction } from '../actions/orders';
+import POSTerminalSelectModal from './select_terminal/POSTerminalSelectModal';
 import { usePOSTerminal } from '../actions/posTerminal';
-import { updateOrderFromBackend, useCurrentOrder } from '../actions/orders';
+import { MODAL_POSTerminalSelect } from '../actions/ui';
+import { getModalFromState } from '../reducers/uiUtils';
+import { POSContent } from './POSContent';
 
 const POSScreen = () => {
   const dispatch = useDispatch();
   const posTerminal = usePOSTerminal({ refresh: true });
-  const currentOrder = useCurrentOrder();
-
-  const journalStatus = getCashJouralStatus(posTerminal);
-  const orderStatus = journalStatus === 'open' ? currentOrder.status ?? 'DR' : '--';
+  const posTerminalId = posTerminal.id;
 
   useOrdersWebsocket({
-    terminalId: posTerminal.id,
+    posTerminalId,
     onWebsocketMessage: (message) => {
-      dispatch(updateOrderFromBackend({ order_uuid: message.posOrderId }));
+      console.log('WS message', { message });
+      dispatch(updateOrderFromBackendAction({ order: message.posOrder }));
     },
   });
+
+  const modal = useModal();
 
   return (
     <div className="pos-screen">
       <Header />
-      {journalStatus === 'closed' && <POSCashJournalOpenPanel />}
-      {journalStatus === 'closing' && <POSCashJournalClosingPanel />}
-      {orderStatus === 'DR' && <POSOrderPanel />}
-      {orderStatus === 'WP' && <POSPaymentPanel />}
+      {modal}
+      <POSContent disabled={!!modal} />
     </div>
   );
 };
 
-const getCashJouralStatus = (posTerminal) => {
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+const getCashJournalStatus = (posTerminal) => {
   if (posTerminal?.cashJournalOpen) {
     return posTerminal?.isCashJournalClosing ? 'closing' : 'open';
   } else {
     return 'closed';
   }
+};
+
+const useModal = () => {
+  const posTerminal = usePOSTerminal();
+  const modal = useSelector((globalState) => getModalFromState({ globalState }));
+
+  if (!posTerminal.id) {
+    return <POSTerminalSelectModal allowCancel={false} />;
+  }
+
+  if (modal) {
+    if (modal === MODAL_POSTerminalSelect) {
+      return <POSTerminalSelectModal allowCancel={true} />;
+    }
+  }
+
+  const journalStatus = getCashJournalStatus(posTerminal);
+  if (journalStatus === 'closed') {
+    return <POSCashJournalOpenModal />;
+  } else if (journalStatus === 'closing') {
+    return <POSCashJournalClosingModal />;
+  }
+
+  return null;
 };
 
 export default POSScreen;

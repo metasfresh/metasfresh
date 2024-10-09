@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 @Builder
 public class POSTerminalCloseJournalRequest
 {
+	@NonNull POSTerminalId posTerminalId;
 	@NonNull UserId cashierId;
 	@NonNull BigDecimal cashClosingBalance;
 	@Nullable String closingNote;

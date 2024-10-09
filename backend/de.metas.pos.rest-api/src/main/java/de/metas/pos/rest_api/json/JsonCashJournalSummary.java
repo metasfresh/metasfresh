@@ -19,7 +19,7 @@ import java.util.List;
 @Jacksonized
 public class JsonCashJournalSummary
 {
-	boolean isClosed;
+	boolean closed;
 	@Nullable String openingNote;
 	@Nullable String closingNote;
 	@NonNull String currencySymbol;
@@ -93,7 +93,7 @@ public class JsonCashJournalSummary
 
 		//
 		return JsonCashJournalSummary.builder()
-				.isClosed(cashJournal.isClosed())
+				.closed(cashJournal.isClosed())
 				.openingNote(cashJournal.getOpeningNote())
 				.closingNote(cashJournal.getClosingNote())
 				.currencySymbol(jsonContext.getCurrencySymbol(cashJournal.getCurrencyId()))

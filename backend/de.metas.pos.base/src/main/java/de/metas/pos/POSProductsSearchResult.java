@@ -39,4 +39,6 @@ public class POSProductsSearchResult
 	}
 
 	public Stream<POSProduct> stream() {return products.stream();}
+
+	public List<POSProduct> toList() {return products;}
 }

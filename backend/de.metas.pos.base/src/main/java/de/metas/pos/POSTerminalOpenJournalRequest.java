@@ -13,6 +13,7 @@ import java.time.Instant;
 @Builder
 public class POSTerminalOpenJournalRequest
 {
+	@NonNull POSTerminalId posTerminalId;
 	@NonNull UserId cashierId;
 	@NonNull Instant dateTrx;
 	@NonNull BigDecimal cashBeginningBalance;

@@ -5,6 +5,7 @@ import cx from 'classnames';
 import PropTypes from 'prop-types';
 
 export const OrderLine = ({
+  disabled,
   /*uuid,*/ productName,
   qty,
   uom,
@@ -39,8 +40,14 @@ export const OrderLine = ({
     }
   }, [selected]);
 
+  const fireOnClick = () => {
+    if (!disabled && onClick) {
+      onClick();
+    }
+  };
+
   return (
-    <div className={cx('line', { 'line-selected': selected })} ref={elementRef} onClick={onClick}>
+    <div className={cx('line', { 'line-selected': selected })} ref={elementRef} onClick={fireOnClick}>
       <div className="main">
         <div className="productName">{productName}</div>
         <div className="amount">{amountStr}</div>
@@ -51,6 +58,7 @@ export const OrderLine = ({
 };
 
 OrderLine.propTypes = {
+  disabled: PropTypes.bool,
   productName: PropTypes.string.isRequired,
   qty: PropTypes.number.isRequired,
   uom: PropTypes.string.isRequired,

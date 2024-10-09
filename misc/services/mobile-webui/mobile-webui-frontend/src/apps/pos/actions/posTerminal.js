@@ -8,50 +8,76 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import * as posTerminalAPI from '../api/posTerminal';
 import * as posJournalAPI from '../api/posJournal';
-import { getPOSApplicationState } from './common';
+import Cookies from 'js-cookie';
+import { assignWorkplace } from '../../../api/workplace';
+import { getPOSApplicationState } from '../reducers/commonUtils';
+
+const COOKIE_posTerminalId = 'posTerminalId';
 
 export const usePOSTerminal = ({ refresh } = { refresh: false }) => {
   const dispatch = useDispatch();
+
+  const cookiePOSTerminalId = Cookies.get(COOKIE_posTerminalId);
   const posTerminal = useSelector(getPOSTerminalFromGlobalState);
 
   useEffect(() => {
-    if (refresh) {
-      updatePOSTerminalFromBackend({ dispatch });
+    // just refresh the cookie
+    if (cookiePOSTerminalId) {
+      Cookies.set(COOKIE_posTerminalId, cookiePOSTerminalId, { expires: 365 });
     }
-  }, []);
 
-  if (!posTerminal) return { isLoading: true };
+    if (cookiePOSTerminalId && !posTerminal.isLoading) {
+      if (refresh) {
+        dispatch(updatePOSTerminalFromBackend({ posTerminalId: cookiePOSTerminalId }));
+      }
+    }
+  }, [refresh, cookiePOSTerminalId]);
 
   return {
     ...posTerminal,
-    updateFromBackend: () => updatePOSTerminalFromBackend({ dispatch }),
     changeStatusToClosing: () => dispatch(posTerminalClosingAction()),
     cancelClosing: () => dispatch(posTerminalClosingCancelAction()),
     openJournal: ({ cashBeginningBalance, openingNote }) => {
-      dispatch(openJournal({ cashBeginningBalance, openingNote }));
+      console.log('openJournal', { cookiePOSTerminalId, cashBeginningBalance, openingNote });
+      dispatch(openJournal({ posTerminalId: cookiePOSTerminalId, cashBeginningBalance, openingNote }));
     },
     closeJournal: ({ cashClosingBalance, closingNote }) => {
-      dispatch(closeJournal({ cashClosingBalance, closingNote }));
+      console.log('closeJournal', { cookiePOSTerminalId, cashClosingBalance, closingNote });
+      dispatch(closeJournal({ posTerminalId: cookiePOSTerminalId, cashClosingBalance, closingNote }));
+    },
+    setPOSTerminalId: (newPOSTerminalId) => {
+      Cookies.set(COOKIE_posTerminalId, newPOSTerminalId, { expires: 365 });
+      if (newPOSTerminalId !== posTerminal.id) {
+        dispatch(updatePOSTerminalFromBackend({ posTerminalId: newPOSTerminalId }));
+      }
     },
   };
 };
 const getPOSTerminalFromGlobalState = (globalState) => {
   const applicationState = getPOSApplicationState(globalState);
-  return applicationState?.terminal;
+  return applicationState?.terminal ?? {};
 };
-const updatePOSTerminalFromBackend = ({ dispatch }) => {
-  dispatch(posTerminalLoadStartAction());
-  posTerminalAPI.getPOSTerminal().then((terminal) => dispatch(posTerminalLoadDoneAction({ terminal })));
-};
-const posTerminalLoadStartAction = () => {
-  return {
-    type: POS_TERMINAL_LOAD_START,
+const updatePOSTerminalFromBackend = ({ posTerminalId }) => {
+  return (dispatch) => {
+    dispatch(posTerminalLoadStartAction({ posTerminalId }));
+    posTerminalAPI.getPOSTerminalById(posTerminalId).then((posTerminal) => {
+      dispatch(posTerminalLoadDoneAction({ posTerminal }));
+      if (posTerminal.workplaceId) {
+        assignWorkplace(posTerminal.workplaceId);
+      }
+    });
   };
 };
-const posTerminalLoadDoneAction = ({ terminal }) => {
+const posTerminalLoadStartAction = ({ posTerminalId }) => {
+  return {
+    type: POS_TERMINAL_LOAD_START,
+    payload: { posTerminalId },
+  };
+};
+const posTerminalLoadDoneAction = ({ posTerminal }) => {
   return {
     type: POS_TERMINAL_LOAD_DONE,
-    payload: { terminal },
+    payload: { posTerminal },
   };
 };
 const posTerminalClosingAction = () => {
@@ -64,17 +90,17 @@ const posTerminalClosingCancelAction = () => {
     type: POS_TERMINAL_CLOSING_CANCEL,
   };
 };
-const openJournal = ({ cashBeginningBalance, openingNote }) => {
+const openJournal = ({ posTerminalId, cashBeginningBalance, openingNote }) => {
   return (dispatch) => {
     return posJournalAPI
-      .openJournal({ cashBeginningBalance, openingNote })
-      .then((terminal) => dispatch(posTerminalLoadDoneAction({ terminal })));
+      .openJournal({ posTerminalId, cashBeginningBalance, openingNote })
+      .then((posTerminal) => dispatch(posTerminalLoadDoneAction({ posTerminal })));
   };
 };
-const closeJournal = ({ cashClosingBalance, closingNote }) => {
+const closeJournal = ({ posTerminalId, cashClosingBalance, closingNote }) => {
   return (dispatch) => {
     return posJournalAPI
-      .closeJournal({ cashClosingBalance, closingNote })
-      .then((terminal) => dispatch(posTerminalLoadDoneAction({ terminal })));
+      .closeJournal({ posTerminalId, cashClosingBalance, closingNote })
+      .then((posTerminal) => dispatch(posTerminalLoadDoneAction({ posTerminal })));
   };
 };
