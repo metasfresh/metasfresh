@@ -395,7 +395,7 @@ class POSOrdersLoaderAndSaver
 
 	private static void updateRecord(final I_C_POS_Payment paymentRecord, final POSPayment payment)
 	{
-		paymentRecord.setIsActive(!payment.getPaymentProcessingStatus().isDeleted());
+		paymentRecord.setIsActive(!payment.isDeleted());
 		paymentRecord.setExternalId(payment.getExternalId().getAsString());
 		paymentRecord.setPOSPaymentMethod(payment.getPaymentMethod().getCode());
 		paymentRecord.setAmount(payment.getAmount().toBigDecimal());

@@ -44,9 +44,10 @@
 	import de.metas.handlingunits.qrcodes.model.HUQRCode;
 	import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 	import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-	import de.metas.i18n.AdMessageKey;
 	import de.metas.i18n.ImmutableTranslatableString;
 	import de.metas.i18n.TranslatableStrings;
+	import de.metas.mobile.application.MobileApplicationId;
+	import de.metas.mobile.application.MobileApplicationInfo;
 	import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 	import de.metas.picking.rest_api.json.JsonPickingEventsList;
 	import de.metas.picking.rest_api.json.JsonPickingJobAvailableTargets;
@@ -64,8 +65,6 @@
 	import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 	import de.metas.user.UserId;
 	import de.metas.util.StringUtils;
-	import de.metas.workflow.rest_api.model.MobileApplicationId;
-	import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 	import de.metas.workflow.rest_api.model.WFActivity;
 	import de.metas.workflow.rest_api.model.WFActivityId;
 	import de.metas.workflow.rest_api.model.WFProcess;
@@ -96,15 +95,6 @@
 	{
 		@VisibleForTesting
 		public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
-
-		private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
-		public static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
-				.id(APPLICATION_ID)
-				.caption(TranslatableStrings.adMessage(MSG_Caption))
-				.requiresWorkplace(true)
-				.showFilterByDocumentNo(true)
-				.showFilters(true)
-				.build();
 
 		public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("A10");
 		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("A20");
@@ -138,7 +128,14 @@
 		public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
 
 		@Override
-		public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull final UserId loggedUserId) {return APPLICATION_INFO;}
+		public @NonNull MobileApplicationInfo customizeApplicationInfo(@NonNull final MobileApplicationInfo applicationInfo, @NonNull final UserId loggedUserId)
+		{
+			return applicationInfo.toBuilder()
+					.requiresWorkplace(true)
+					.showFilterByDocumentNo(true)
+					.showFilters(true)
+					.build();
+		}
 
 		@Override
 		public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)

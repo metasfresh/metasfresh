@@ -20,9 +20,15 @@ export const useProducts = ({ onBarcodeResult }) => {
   };
 
   useEffect(() => {
+    let isMounted = true;
     setLoading(true);
     getProducts(queryStringToSearch)
       .then((productsNew) => {
+        if (!isMounted) {
+          console.log('ignoring getProducts result since the component is no longer mounted', { productsNew });
+          return productsNew;
+        }
+
         if (onBarcodeResult && productsNew.barcodeMatched && productsNew.list?.length === 1) {
           const product = productsNew.list[0];
           onBarcodeResult({
@@ -34,7 +40,14 @@ export const useProducts = ({ onBarcodeResult }) => {
           setProducts(productsNew);
         }
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!isMounted) return;
+        setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [queryStringToSearch]);
 
   return {
@@ -42,10 +55,7 @@ export const useProducts = ({ onBarcodeResult }) => {
     isBarcodeMatched: !!products?.barcodeMatched,
     list: products?.list ?? [],
     queryString,
-    setQueryString: (queryStringNew) => {
-      setQueryStringState(queryStringNew);
-      setQueryStringToSearchDebounced(queryStringNew);
-    },
+    setQueryString,
   };
 };
 

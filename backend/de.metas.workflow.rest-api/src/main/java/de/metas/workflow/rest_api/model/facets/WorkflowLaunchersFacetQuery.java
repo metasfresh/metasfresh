@@ -25,7 +25,7 @@ package de.metas.workflow.rest_api.model.facets;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocumentNoFilter;
 import de.metas.user.UserId;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -20,18 +20,17 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.service;
+package de.metas.mobile.application;
 
 import de.metas.user.UserId;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
-import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 import lombok.NonNull;
 
 public interface MobileApplication
 {
 	MobileApplicationId getApplicationId();
+
 	@NonNull
-	MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId);
+	default MobileApplicationInfo customizeApplicationInfo(@NonNull MobileApplicationInfo applicationInfo, @NonNull UserId loggedUserId) {return applicationInfo;}
 
 	default void logout(@NonNull final UserId userId) {}
 }

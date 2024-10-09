@@ -41,14 +41,18 @@ export const useOrdersWebsocket = ({ terminalId, onWebsocketMessage }) => {
     let client;
     const topic = `/pos/orders/${terminalId}`;
 
-    client = ws.connectAndSubscribe({
-      topic,
-      debug: !!window?.debug_ws,
-      onWebsocketMessage: (message) => {
-        onWebsocketMessage(JSON.parse(message.body));
-      },
-    });
-    console.log(`WS connected to ${topic}`, { client });
+    if (terminalId) {
+      client = ws.connectAndSubscribe({
+        topic,
+        debug: !!window?.debug_ws,
+        onWebsocketMessage: (message) => {
+          onWebsocketMessage(JSON.parse(message.body));
+        },
+      });
+      console.log(`WS connected to ${topic}`, { client });
+    } else {
+      console.log('Skip connecting to WS because terminalId is not valid', { terminalId });
+    }
 
     return () => {
       if (client) {

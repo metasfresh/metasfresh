@@ -25,6 +25,7 @@ package de.metas.picking.rest_api;
 import de.metas.Profiles;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingJobAvailableTargets;
@@ -57,12 +58,20 @@ import javax.annotation.Nullable;
 @RequiredArgsConstructor
 public class PickingRestController
 {
+	@NonNull private final MobileApplicationService mobileApplicationService;
 	@NonNull private final PickingMobileApplication pickingMobileApplication;
 	@NonNull private final WorkflowRestController workflowRestController;
+
+	private void assertApplicationAccess()
+	{
+		mobileApplicationService.assertAccess(pickingMobileApplication.getApplicationId(), Env.getUserRolePermissions());
+	}
 
 	@GetMapping("/job/{wfProcessId}/target/available")
 	public JsonPickingJobAvailableTargets getAvailableTargets(@PathVariable("wfProcessId") final String wfProcessIdStr)
 	{
+		assertApplicationAccess();
+
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		return pickingMobileApplication.getAvailableTargets(wfProcessId, Env.getLoggedUserId());
 	}
@@ -83,6 +92,8 @@ public class PickingRestController
 			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
 			@RequestBody(required = false) @Nullable final JsonTUPickingTarget jsonTarget)
 	{
+		assertApplicationAccess();
+
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final TUPickingTarget target = jsonTarget != null ? jsonTarget.unbox() : null;
 		final WFProcess wfProcess = pickingMobileApplication.setPickTarget(wfProcessId, target, Env.getLoggedUserId());
@@ -93,6 +104,8 @@ public class PickingRestController
 	public JsonWFProcess closeTarget(
 			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr)
 	{
+		assertApplicationAccess();
+
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final WFProcess wfProcess = pickingMobileApplication.closeLUPickTarget(wfProcessId, Env.getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
@@ -111,6 +124,8 @@ public class PickingRestController
 	public void postEvents(
 			@RequestBody @NonNull final JsonPickingEventsList eventsList)
 	{
+		assertApplicationAccess();
+
 		pickingMobileApplication.processStepEvents(eventsList, Env.getLoggedUserId());
 	}
 
@@ -118,6 +133,8 @@ public class PickingRestController
 	public JsonWFProcess postEvent(
 			@RequestBody @NonNull final JsonPickingStepEvent event)
 	{
+		assertApplicationAccess();
+
 		final WFProcess wfProcess = pickingMobileApplication.processStepEvent(event, Env.getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
 	}
@@ -125,6 +142,8 @@ public class PickingRestController
 	@PostMapping("/closeLine")
 	public JsonWFProcess closeLine(@RequestBody @NonNull JsonPickingLineCloseRequest request)
 	{
+		assertApplicationAccess();
+
 		final WFProcess wfProcess = pickingMobileApplication.closeLine(request, Env.getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
 	}
@@ -132,6 +151,8 @@ public class PickingRestController
 	@PostMapping("/openLine")
 	public JsonWFProcess openLine(@RequestBody @NonNull JsonPickingLineOpenRequest request)
 	{
+		assertApplicationAccess();
+
 		final WFProcess wfProcess = pickingMobileApplication.openLine(request, Env.getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
 	}
