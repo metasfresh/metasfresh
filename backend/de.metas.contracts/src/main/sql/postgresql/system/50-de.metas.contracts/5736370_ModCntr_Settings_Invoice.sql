@@ -104,3 +104,22 @@ UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2024-10-09 14
 
 
 
+-- Column: C_Invoice.ModCntr_Settings_ID
+-- 2024-10-09T14:45:47.200Z
+UPDATE AD_Column SET IsUpdateable='N',Updated=TO_TIMESTAMP('2024-10-09 17:45:47.2','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589285
+;
+
+-- Column: C_Invoice.ModCntr_Settings_ID
+-- 2024-10-09T14:46:22.003Z
+UPDATE AD_Column SET IsUpdateable='Y', ReadOnlyLogic='1=1',Updated=TO_TIMESTAMP('2024-10-09 17:46:22.003','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589285
+;
+
+
+-- Column: C_Invoice.ModCntr_Settings_ID
+-- 2024-10-09T15:21:36.624Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2024-10-09 18:21:36.624','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589285
+;
+
+
+
+

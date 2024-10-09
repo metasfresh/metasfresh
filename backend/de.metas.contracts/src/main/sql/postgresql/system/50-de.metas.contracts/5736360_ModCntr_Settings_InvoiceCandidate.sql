@@ -103,3 +103,14 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2024-10-09 14:07:37.473','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=626171
 ;
 
+
+-- Column: C_Invoice_Candidate.ModCntr_Settings_ID
+-- 2024-10-09T14:49:35.212Z
+UPDATE AD_Column SET ReadOnlyLogic='1=1',Updated=TO_TIMESTAMP('2024-10-09 17:49:35.211','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589284
+;
+
+-- Column: C_Invoice_Candidate.ModCntr_Settings_ID
+-- 2024-10-09T15:10:18.409Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2024-10-09 18:10:18.409','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589284
+;
+
