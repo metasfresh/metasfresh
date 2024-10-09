@@ -9,10 +9,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
+// NOTE: keep this class separate from other listeners in order to avoid spring beans cyclic dependencies
 @Component
 public class POSWebsocketTopicNames implements OutboundWebsocketTopicNamePrefixAware
 {
-	public static final String TOPIC_PREFIX_ORDERS = "/pos/orders";
+	private static final String TOPIC_PREFIX_ORDERS = "/pos/orders";
 
 	@Override
 	public Set<String> getOutboundTopicNamePrefixes()

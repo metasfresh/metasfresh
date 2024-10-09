@@ -3,6 +3,7 @@ package de.metas.pos;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.pos.websocket.json.JsonPOSOrderChangedWebSocketEvent;
 import lombok.NonNull;
 import org.junit.jupiter.api.Test;
 

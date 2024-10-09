@@ -1,7 +1,6 @@
 package de.metas.pos;
 
 import de.metas.pos.repository.model.I_C_POS_Order;
-import de.metas.pos.websocket.POSOrderWebsocketSender;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +23,13 @@ public class POSOrdersRepository
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final POSOrderWebsocketSender websocketSender;
+	@NonNull private final POSOrderEventDispatcher eventDispatcher;
 
 	private POSOrdersLoaderAndSaver newLoaderAndSaver()
 	{
 		return POSOrdersLoaderAndSaver.builder()
 				.queryBL(queryBL)
-				.websocketSender(websocketSender)
+				.eventDispatcher(eventDispatcher)
 				.build();
 	}
 

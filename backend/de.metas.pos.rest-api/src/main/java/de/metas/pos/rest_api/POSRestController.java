@@ -84,7 +84,7 @@ public class POSRestController
 
 		return JsonPOSTerminal.builderFrom(posTerminal, adLanguage)
 				.products(JsonProduct.fromList(products.toList(), adLanguage))
-				.openOrders(JsonPOSOrder.fromList(orders, jsonContext))
+				.openOrders(JsonPOSOrder.fromList(orders, jsonContext::getCurrencySymbol))
 				.build();
 	}
 
@@ -210,28 +210,28 @@ public class POSRestController
 		final POSOrderExternalId externalId = request.getOrder_uuid();
 		final UserId loggedUserId = getLoggedUserId();
 		final POSOrder order = posService.changeStatusTo(posTerminalId, externalId, nextStatus, loggedUserId);
-		return JsonPOSOrder.from(order, newJsonContext());
+		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
 	}
 
 	@PostMapping("/orders")
 	public JsonPOSOrder updateOrder(@RequestBody @NonNull final JsonPOSOrder remoteOrder)
 	{
 		final POSOrder order = posService.updateOrderFromRemote(remoteOrder.toRemotePOSOrder(), getLoggedUserId());
-		return JsonPOSOrder.from(order, newJsonContext());
+		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
 	}
 
 	@PostMapping("/orders/checkoutPayment")
 	public JsonPOSOrder checkoutPayment(@RequestBody JsonPOSPaymentCheckoutRequest request)
 	{
 		final POSOrder order = posService.checkoutPayment(request.getPosTerminalId(), request.getOrder_uuid(), request.getPayment_uuid(), getLoggedUserId());
-		return JsonPOSOrder.from(order, newJsonContext());
+		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
 	}
 
 	@PostMapping("/orders/refundPayment")
 	public JsonPOSOrder refundPayment(@RequestBody JsonPOSPaymentRefundRequest request)
 	{
 		final POSOrder order = posService.refundPayment(request.getPosTerminalId(), request.getOrder_uuid(), request.getPayment_uuid(), getLoggedUserId());
-		return JsonPOSOrder.from(order, newJsonContext());
+		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
 	}
 
 }

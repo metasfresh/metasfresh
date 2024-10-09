@@ -1,5 +1,7 @@
-package de.metas.pos;
+package de.metas.pos.websocket.json;
 
+import de.metas.pos.POSOrderExternalId;
+import de.metas.pos.rest_api.json.JsonPOSOrder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -10,5 +12,5 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonPOSOrderChangedWebSocketEvent
 {
-	@NonNull POSOrderExternalId posOrderId;
+	@NonNull JsonPOSOrder posOrder;
 }

@@ -5,7 +5,7 @@ import POSCashJournalOpenModal from './cash_journal/POSCashJournalOpenModal';
 import POSCashJournalClosingModal from './cash_journal/POSCashJournalClosingModal';
 import { useOrdersWebsocket } from '../api/orders';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateOrderFromBackend } from '../actions/orders';
+import { updateOrderFromBackendAction } from '../actions/orders';
 import POSTerminalSelectModal from './select_terminal/POSTerminalSelectModal';
 import { usePOSTerminal } from '../actions/posTerminal';
 import { MODAL_POSTerminalSelect } from '../actions/ui';
@@ -20,7 +20,8 @@ const POSScreen = () => {
   useOrdersWebsocket({
     posTerminalId,
     onWebsocketMessage: (message) => {
-      dispatch(updateOrderFromBackend({ posTerminalId, order_uuid: message.posOrderId }));
+      console.log('WS message', { message });
+      dispatch(updateOrderFromBackendAction({ order: message.posOrder }));
     },
   });
 
