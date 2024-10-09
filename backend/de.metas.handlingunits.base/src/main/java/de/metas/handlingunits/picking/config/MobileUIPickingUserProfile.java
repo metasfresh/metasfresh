@@ -77,6 +77,8 @@ public class MobileUIPickingUserProfile
 	boolean isAllowSkippingRejectedReason;
 	boolean isShowConfirmationPromptWhenOverPick;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
+	@Nullable PickingLineGroupBy pickingLineGroupBy;
+	@Nullable PickingLineSortBy pickingLineSortBy;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
 	@Getter(AccessLevel.PACKAGE) @NonNull ImmutableList<PickingJobField> fields;
 
@@ -96,6 +98,8 @@ public class MobileUIPickingUserProfile
 			final boolean isAllowSkippingRejectedReason,
 			final boolean isShowConfirmationPromptWhenOverPick,
 			final @Nullable CreateShipmentPolicy createShipmentPolicy,
+			final @Nullable PickingLineGroupBy pickingLineGroupBy,
+			final @Nullable PickingLineSortBy pickingLineSortBy,
 			final @Nullable PickingFiltersList filters,
 			final @NonNull ImmutableList<PickingJobField> fields)
 	{
@@ -125,6 +129,8 @@ public class MobileUIPickingUserProfile
 		this.isAllowSkippingRejectedReason = isAllowSkippingRejectedReason;
 		this.isAllowNewTU = isAllowNewTU;
 		this.isShowConfirmationPromptWhenOverPick = isShowConfirmationPromptWhenOverPick;
+		this.pickingLineGroupBy = pickingLineGroupBy;
+		this.pickingLineSortBy = pickingLineSortBy;
 	}
 
 	public ImmutableList<PickingJobFacetGroup> getFilterGroupsInOrder() {return filters.getGroupsInOrder();}

@@ -25,6 +25,7 @@ package de.metas.picking.rest_api;
 import de.metas.Profiles;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.picking.rest_api.json.JsonHUIdList;
 import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingJobAvailableTargets;
@@ -134,5 +135,14 @@ public class PickingRestController
 	{
 		final WFProcess wfProcess = pickingMobileApplication.openLine(request, Env.getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
+	}
+
+	@GetMapping("/job/{wfProcessId}/closed-lu")
+	public JsonHUIdList getClosedHUs(@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr)
+	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		return JsonHUIdList.builder()
+				.huIds(pickingMobileApplication.getClosedLUs(wfProcessId, Env.getLoggedUserId()))
+				.build();
 	}
 }
