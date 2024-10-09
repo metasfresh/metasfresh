@@ -13,6 +13,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 
 @Value
@@ -33,7 +34,7 @@ public class JsonPOSOrder
 
 	int hashCode;
 
-	public static JsonPOSOrder of(@NonNull final POSOrder order, @NonNull final JsonContext jsonContext)
+	public static JsonPOSOrder from(@NonNull final POSOrder order, @NonNull final JsonContext jsonContext)
 	{
 		final String currencySymbol = jsonContext.getCurrencySymbol(order.getCurrencyId());
 		return builder()
@@ -53,6 +54,14 @@ public class JsonPOSOrder
 						.collect(ImmutableList.toImmutableList()))
 				.hashCode(order.hashCode())
 				.build();
+	}
+
+	public static ImmutableList<JsonPOSOrder> fromList(@NonNull final List<POSOrder> orders, @NonNull final JsonContext jsonContext)
+	{
+		return orders.stream()
+				.sorted(Comparator.comparing(posOrder -> posOrder.getLocalId() != null ? posOrder.getLocalId().getRepoId() : Integer.MAX_VALUE))
+				.map(order -> from(order, jsonContext))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public RemotePOSOrder toRemotePOSOrder()

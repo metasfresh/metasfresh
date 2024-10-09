@@ -1,5 +1,6 @@
 package de.metas.pos.rest_api.json;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalId;
@@ -11,6 +12,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 
 @Value
@@ -28,8 +30,19 @@ public class JsonPOSTerminal
 	boolean isCashJournalOpen;
 	@NonNull BigDecimal cashLastBalance;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable List<JsonProduct> products;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable List<JsonPOSOrder> openOrders;
+
 	@NonNull
 	public static JsonPOSTerminal from(@NonNull final POSTerminal posTerminal, @NonNull final String adLanguage)
+	{
+		return builderFrom(posTerminal, adLanguage).build();
+	}
+
+	public static JsonPOSTerminalBuilder builderFrom(final @NonNull POSTerminal posTerminal, final @NonNull String adLanguage)
 	{
 		return JsonPOSTerminal.builder()
 				.id(posTerminal.getId())
@@ -40,7 +53,6 @@ public class JsonPOSTerminal
 				.currencyPrecision(posTerminal.getCurrencyPrecision().toInt())
 				.availablePaymentMethods(posTerminal.getAvailablePaymentMethods())
 				.isCashJournalOpen(posTerminal.isCashJournalOpen())
-				.cashLastBalance(posTerminal.getCashLastBalance().toBigDecimal())
-				.build();
+				.cashLastBalance(posTerminal.getCashLastBalance().toBigDecimal());
 	}
 }

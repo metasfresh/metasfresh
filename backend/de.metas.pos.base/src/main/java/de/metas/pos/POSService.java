@@ -89,7 +89,7 @@ public class POSService
 	public List<POSOrder> getOpenOrders(
 			@NonNull final POSTerminalId posTerminalId,
 			@NonNull final UserId userId,
-			final Set<POSOrderExternalId> onlyOrderExternalIds)
+			@Nullable final Set<POSOrderExternalId> onlyOrderExternalIds)
 	{
 		return ordersService.list(POSOrderQuery.builder()
 				.posTerminalId(posTerminalId)

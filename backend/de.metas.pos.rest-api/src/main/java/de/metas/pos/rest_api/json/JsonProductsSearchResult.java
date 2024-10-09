@@ -1,6 +1,5 @@
 package de.metas.pos.rest_api.json;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.pos.POSProductsSearchResult;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,7 +7,6 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import java.util.Comparator;
 import java.util.List;
 
 @Value
@@ -22,10 +20,7 @@ public class JsonProductsSearchResult
 	public static JsonProductsSearchResult from(@NonNull final POSProductsSearchResult result, @NonNull final String adLanguage)
 	{
 		return builder()
-				.list(result.stream()
-						.map(product -> JsonProduct.from(product, adLanguage))
-						.sorted(Comparator.comparing(JsonProduct::getName))
-						.collect(ImmutableList.toImmutableList()))
+				.list(JsonProduct.fromList(result.toList(), adLanguage))
 				.isBarcodeMatched(result.isBarcodeMatched())
 				.build();
 	}

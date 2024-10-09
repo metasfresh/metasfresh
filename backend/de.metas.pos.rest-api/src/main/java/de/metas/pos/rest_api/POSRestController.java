@@ -26,6 +26,7 @@ import de.metas.pos.rest_api.json.JsonPOSPaymentRefundRequest;
 import de.metas.pos.rest_api.json.JsonPOSTerminal;
 import de.metas.pos.rest_api.json.JsonPOSTerminalCloseJournalRequest;
 import de.metas.pos.rest_api.json.JsonPOSTerminalOpenJournalRequest;
+import de.metas.pos.rest_api.json.JsonProduct;
 import de.metas.pos.rest_api.json.JsonProductsSearchResult;
 import de.metas.user.UserId;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -70,9 +71,21 @@ public class POSRestController
 	@GetMapping("/terminal")
 	public JsonPOSTerminal getPOSTerminalById(@RequestParam("id") String posTerminalIdStr)
 	{
-		final String adLanguage = getADLanguage();
+		final JsonContext jsonContext = newJsonContext();
+		final String adLanguage = jsonContext.getAdLanguage();
+		final UserId loggedUserId = getLoggedUserId();
+		final Instant date = SystemTime.asInstant();
+
 		final POSTerminalId posTerminalId = POSTerminalId.ofString(posTerminalIdStr);
-		return JsonPOSTerminal.from(posService.getPOSTerminalById(posTerminalId), adLanguage);
+		final POSTerminal posTerminal = posService.getPOSTerminalById(posTerminalId);
+		final POSProductsSearchResult products = posService.getProducts(posTerminalId, date, null);
+
+		final List<POSOrder> orders = posService.getOpenOrders(posTerminalId, loggedUserId, null);
+
+		return JsonPOSTerminal.builderFrom(posTerminal, adLanguage)
+				.products(JsonProduct.fromList(products.toList(), adLanguage))
+				.openOrders(JsonPOSOrder.fromList(orders, jsonContext))
+				.build();
 	}
 
 	@GetMapping("/terminal/list")
@@ -197,28 +210,28 @@ public class POSRestController
 		final POSOrderExternalId externalId = request.getOrder_uuid();
 		final UserId loggedUserId = getLoggedUserId();
 		final POSOrder order = posService.changeStatusTo(posTerminalId, externalId, nextStatus, loggedUserId);
-		return JsonPOSOrder.of(order, newJsonContext());
+		return JsonPOSOrder.from(order, newJsonContext());
 	}
 
 	@PostMapping("/orders")
 	public JsonPOSOrder updateOrder(@RequestBody @NonNull final JsonPOSOrder remoteOrder)
 	{
 		final POSOrder order = posService.updateOrderFromRemote(remoteOrder.toRemotePOSOrder(), getLoggedUserId());
-		return JsonPOSOrder.of(order, newJsonContext());
+		return JsonPOSOrder.from(order, newJsonContext());
 	}
 
 	@PostMapping("/orders/checkoutPayment")
 	public JsonPOSOrder checkoutPayment(@RequestBody JsonPOSPaymentCheckoutRequest request)
 	{
 		final POSOrder order = posService.checkoutPayment(request.getPosTerminalId(), request.getOrder_uuid(), request.getPayment_uuid(), getLoggedUserId());
-		return JsonPOSOrder.of(order, newJsonContext());
+		return JsonPOSOrder.from(order, newJsonContext());
 	}
 
 	@PostMapping("/orders/refundPayment")
 	public JsonPOSOrder refundPayment(@RequestBody JsonPOSPaymentRefundRequest request)
 	{
 		final POSOrder order = posService.refundPayment(request.getPosTerminalId(), request.getOrder_uuid(), request.getPayment_uuid(), getLoggedUserId());
-		return JsonPOSOrder.of(order, newJsonContext());
+		return JsonPOSOrder.from(order, newJsonContext());
 	}
 
 }
