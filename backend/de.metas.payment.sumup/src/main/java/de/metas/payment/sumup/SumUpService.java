@@ -222,8 +222,34 @@ public class SumUpService
 				.status(SumUpTransactionStatus.ofString(remote.getStatus()))
 				.amount(Amount.of(remote.getAmount(), remote.getCurrency()))
 				.amountRefunded(Amount.of(remote.getAmountRefunded(), remote.getCurrency()))
+				.card(extractSumUpTransactionCard(remote.getCard()))
 				.json(remote.getJson())
 		;
+	}
+
+	private static SumUpTransaction.Card extractSumUpTransactionCard(@Nullable JsonGetTransactionResponse.Card from)
+	{
+		if (from == null)
+		{
+			return null;
+		}
+
+		final String type = StringUtils.trimBlankToNull(from.getType());
+		if (type == null)
+		{
+			return null;
+		}
+
+		final String last4Digits = StringUtils.trimBlankToNull(from.getLast_4_digits());
+		if (last4Digits == null)
+		{
+			return null;
+		}
+
+		return SumUpTransaction.Card.builder()
+				.type(type)
+				.last4Digits(last4Digits)
+				.build();
 	}
 
 	public BulkUpdateByQueryResult bulkUpdatePendingTransactions(boolean isForceSendingChangeEvents)

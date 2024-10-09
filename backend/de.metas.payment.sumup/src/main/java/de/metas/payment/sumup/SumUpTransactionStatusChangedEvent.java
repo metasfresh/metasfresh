@@ -1,28 +1,23 @@
 package de.metas.payment.sumup;
 
-import de.metas.organization.ClientAndOrgId;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 
 @Value
 @Builder
 @Jacksonized
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class SumUpTransactionStatusChangedEvent
 {
-	@NonNull SumUpClientTransactionId clientTransactionId;
-	@NonNull SumUpConfigId configId;
-	@NonNull ClientAndOrgId clientAndOrgId;
-	@Nullable SumUpPOSRef posRef;
-
-	@NonNull SumUpTransactionStatus statusNew;
-	@Nullable SumUpTransactionStatus statusOld;
-
-	boolean refundedNew;
-	boolean refundedOld;
+	@NonNull SumUpTransaction trx;
+	@Nullable SumUpTransaction trxPrev;
 
 	public static SumUpTransactionStatusChangedEvent ofNewTransaction(@NonNull final SumUpTransaction trx)
 	{
@@ -34,19 +29,24 @@ public class SumUpTransactionStatusChangedEvent
 			@NonNull final SumUpTransaction trxPrev)
 	{
 		return builderFrom(trx)
-				.statusOld(trxPrev.getStatus())
-				.refundedOld(trxPrev.isRefunded())
+				.trxPrev(trxPrev)
 				.build();
 	}
 
 	private static SumUpTransactionStatusChangedEventBuilder builderFrom(final @NonNull SumUpTransaction trx)
 	{
-		return builder()
-				.clientTransactionId(trx.getClientTransactionId())
-				.configId(trx.getConfigId())
-				.clientAndOrgId(trx.getClientAndOrgId())
-				.posRef(trx.getPosRef())
-				.statusNew(trx.getStatus())
-				.refundedNew(trx.isRefunded());
+		return builder().trx(trx);
 	}
+
+	@NonNull
+	public ClientId getClientId() {return trx.getClientAndOrgId().getClientId();}
+
+	@NonNull
+	public OrgId getOrgId() {return trx.getClientAndOrgId().getOrgId();}
+
+	@NonNull
+	public SumUpTransactionStatus getStatusNew() {return trx.getStatus();}
+
+	@Nullable
+	public SumUpPOSRef getPosRef() {return trx.getPosRef();}
 }

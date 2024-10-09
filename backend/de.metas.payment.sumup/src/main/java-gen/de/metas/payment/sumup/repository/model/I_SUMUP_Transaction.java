@@ -75,6 +75,48 @@ public interface I_SUMUP_Transaction
 	String COLUMNNAME_Amount = "Amount";
 
 	/**
+	 * Set Card Last 4 Digits.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCardLast4Digits (@Nullable java.lang.String CardLast4Digits);
+
+	/**
+	 * Get Card Last 4 Digits.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCardLast4Digits();
+
+	ModelColumn<I_SUMUP_Transaction, Object> COLUMN_CardLast4Digits = new ModelColumn<>(I_SUMUP_Transaction.class, "CardLast4Digits", null);
+	String COLUMNNAME_CardLast4Digits = "CardLast4Digits";
+
+	/**
+	 * Set Card Type.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCardType (@Nullable java.lang.String CardType);
+
+	/**
+	 * Get Card Type.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCardType();
+
+	ModelColumn<I_SUMUP_Transaction, Object> COLUMN_CardType = new ModelColumn<>(I_SUMUP_Transaction.class, "CardType", null);
+	String COLUMNNAME_CardType = "CardType";
+
+	/**
 	 * Set POS Order.
 	 *
 	 * <br>Type: Search

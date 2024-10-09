@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMUP_Transaction, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1375477180L;
+	private static final long serialVersionUID = 1312765888L;
 
     /** Standard Constructor */
     public X_SUMUP_Transaction (final Properties ctx, final int SUMUP_Transaction_ID, @Nullable final String trxName)
@@ -46,6 +46,30 @@ public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMU
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Amount);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCardLast4Digits (final @Nullable java.lang.String CardLast4Digits)
+	{
+		set_Value (COLUMNNAME_CardLast4Digits, CardLast4Digits);
+	}
+
+	@Override
+	public java.lang.String getCardLast4Digits() 
+	{
+		return get_ValueAsString(COLUMNNAME_CardLast4Digits);
+	}
+
+	@Override
+	public void setCardType (final @Nullable java.lang.String CardType)
+	{
+		set_Value (COLUMNNAME_CardType, CardType);
+	}
+
+	@Override
+	public java.lang.String getCardType() 
+	{
+		return get_ValueAsString(COLUMNNAME_CardType);
 	}
 
 	@Override

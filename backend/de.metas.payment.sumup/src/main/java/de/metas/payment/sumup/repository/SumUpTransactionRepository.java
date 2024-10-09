@@ -16,6 +16,7 @@ import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.payment.sumup.repository.model.I_SUMUP_Transaction;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -131,9 +132,16 @@ public class SumUpTransactionRepository
 		record.setCurrencyCode(from.getAmount().getCurrencyCode().toThreeLetterCode());
 		record.setAmount(from.getAmount().toBigDecimal());
 		record.setRefundAmt(from.getAmountRefunded().toBigDecimal());
+		updateRecord(record, from.getCard());
 		record.setJsonResponse(from.getJson());
 		record.setC_POS_Order_ID(from.getPosRef() != null ? from.getPosRef().getPosOrderId() : -1);
 		record.setC_POS_Payment_ID(from.getPosRef() != null ? from.getPosRef().getPosPaymentId() : -1);
+	}
+
+	private static void updateRecord(final I_SUMUP_Transaction record, final @Nullable SumUpTransaction.Card from)
+	{
+		record.setCardType(from != null ? from.getType() : null);
+		record.setCardLast4Digits(from != null ? from.getLast4Digits() : null);
 	}
 
 	private static SumUpTransaction fromRecord(final I_SUMUP_Transaction record)
@@ -150,8 +158,29 @@ public class SumUpTransactionRepository
 				.status(SumUpTransactionStatus.ofString(record.getStatus()))
 				.amount(Amount.of(record.getAmount(), currencyCode))
 				.amountRefunded(Amount.of(record.getRefundAmt(), currencyCode))
+				.card(extractCard(record))
 				.json(record.getJsonResponse())
 				.posRef(extractPOSRef(record))
+				.build();
+	}
+
+	private static SumUpTransaction.Card extractCard(final I_SUMUP_Transaction record)
+	{
+		final String cardType = StringUtils.trimBlankToNull(record.getCardType());
+		if (cardType == null)
+		{
+			return null;
+		}
+
+		final String cardLast4Digits = StringUtils.trimBlankToNull(record.getCardLast4Digits());
+		if (cardLast4Digits == null)
+		{
+			return null;
+		}
+
+		return SumUpTransaction.Card.builder()
+				.type(cardType)
+				.last4Digits(cardLast4Digits)
 				.build();
 	}
 

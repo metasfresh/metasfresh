@@ -12,6 +12,8 @@ import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentId;
+import de.metas.payment.sumup.SumUpConfigId;
+import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.pos.repository.model.I_C_POS_OrderLine;
 import de.metas.pos.repository.model.I_C_POS_Payment;
@@ -25,6 +27,7 @@ import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -388,18 +391,58 @@ class POSOrdersLoaderAndSaver
 				.paymentMethod(POSPaymentMethod.ofCode(record.getPOSPaymentMethod()))
 				.amount(Money.of(record.getAmount(), currencyId))
 				.paymentProcessingStatus(POSPaymentProcessingStatus.ofCode(record.getPOSPaymentProcessingStatus()))
+				.cardProcessingDetails(extractCardProcessingDetails(record))
 				.paymentReceiptId(PaymentId.ofRepoIdOrNull(record.getC_Payment_ID()))
 				.build();
 	}
 
-	private static void updateRecord(final I_C_POS_Payment paymentRecord, final POSPayment payment)
+	private static void updateRecord(final I_C_POS_Payment record, final POSPayment from)
 	{
-		paymentRecord.setIsActive(!payment.isDeleted());
-		paymentRecord.setExternalId(payment.getExternalId().getAsString());
-		paymentRecord.setPOSPaymentMethod(payment.getPaymentMethod().getCode());
-		paymentRecord.setAmount(payment.getAmount().toBigDecimal());
-		paymentRecord.setPOSPaymentProcessingStatus(payment.getPaymentProcessingStatus().getCode());
-		paymentRecord.setC_Payment_ID(PaymentId.toRepoId(payment.getPaymentReceiptId()));
+		record.setIsActive(!from.isDeleted());
+		record.setExternalId(from.getExternalId().getAsString());
+		record.setPOSPaymentMethod(from.getPaymentMethod().getCode());
+		record.setAmount(from.getAmount().toBigDecimal());
+		record.setPOSPaymentProcessingStatus(from.getPaymentProcessingStatus().getCode());
+		updateRecord(record, from.getCardProcessingDetails());
+		record.setC_Payment_ID(PaymentId.toRepoId(from.getPaymentReceiptId()));
+	}
+
+	private static void updateRecord(final I_C_POS_Payment paymentRecord, @Nullable final POSPaymentCardProcessingDetails from)
+	{
+		paymentRecord.setPOSPaymentProcessor(from != null ? from.getConfig().getType().getCode() : null);
+		paymentRecord.setSUMUP_Config_ID(from != null ? SumUpConfigId.toRepoId(from.getConfig().getSumUpConfigId()) : -1);
+		paymentRecord.setPOSPaymentProcessing_TrxId(from != null ? StringUtils.trimBlankToNull(from.getTransactionId()) : null);
+		paymentRecord.setPOSPaymentProcessingSummary(from != null ? StringUtils.trimBlankToNull(from.getSummary()) : null);
+	}
+
+	@Nullable
+	private static POSPaymentCardProcessingDetails extractCardProcessingDetails(final I_C_POS_Payment record)
+	{
+		final POSTerminalPaymentProcessorConfig config = extractPaymentProcessorConfig(record);
+		if (config == null)
+		{
+			return null;
+		}
+
+		return POSPaymentCardProcessingDetails.builder()
+				.config(config)
+				.transactionId(StringUtils.trimBlankToNull(record.getPOSPaymentProcessing_TrxId()))
+				.summary(StringUtils.trimBlankToNull(record.getPOSPaymentProcessingSummary()))
+				.build();
+	}
+
+	private static POSTerminalPaymentProcessorConfig extractPaymentProcessorConfig(final I_C_POS_Payment record)
+	{
+		final POSPaymentProcessorType type = POSPaymentProcessorType.ofNullableCode(record.getPOSPaymentProcessor());
+		if (type == null)
+		{
+			return null;
+		}
+
+		return POSTerminalPaymentProcessorConfig.builder()
+				.type(type)
+				.sumUpConfigId(SumUpConfigId.ofRepoIdOrNull(record.getSUMUP_Config_ID()))
+				.build();
 	}
 
 	public void save(@NonNull final POSOrder order)
