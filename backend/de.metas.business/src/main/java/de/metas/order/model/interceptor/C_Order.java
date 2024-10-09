@@ -30,7 +30,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.IDocTypeDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -75,11 +76,9 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -106,7 +105,7 @@ public class C_Order
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
@@ -171,12 +170,13 @@ public class C_Order
 	})
 	public void removeFlatRateConditionsForCallOrder(final I_C_Order order)
 	{
-		if (order.getC_DocTypeTarget_ID() <= 0)
+		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
+		if (docTypeTargetId == null)
 		{
 			return;
 		}
-		final I_C_DocType docType = docTypeDAO.getById(order.getC_DocTypeTarget_ID());
-		if (X_C_DocType.DOCSUBTYPE_CallOrder.equals(docType.getDocSubType()))
+
+		if (docTypeBL.isCallOrder(docTypeTargetId))
 		{
 			orderDAO.retrieveOrderLines(order)
 					.forEach(line -> {
