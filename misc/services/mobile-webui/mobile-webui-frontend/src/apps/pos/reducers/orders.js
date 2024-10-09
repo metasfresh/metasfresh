@@ -284,51 +284,44 @@ const setSelectedOrderLine = ({ applicationState, order_uuid, selectedLineUUID }
 //
 //
 
-const addPayment = ({ applicationState, order_uuid, paymentMethod, amount }) => {
+const changePayment = ({ applicationState, order_uuid, payment_uuid, mapper }) => {
   return changeOrderInApplicationState({
     applicationState,
     order_uuid,
-    mapper: (order) => addPaymentToOrder({ order, paymentMethod, amount }),
+    mapper: (order) => {
+      const orderPayments = order.payments ?? [];
+      const paymentBeforeChange = orderPayments.find((payment) => payment.uuid === payment_uuid);
+      const paymentChanged = mapper(paymentBeforeChange);
+
+      let orderPaymentsChanged;
+      if (paymentBeforeChange === paymentChanged) {
+        // no change:
+        return order;
+      } else if (paymentBeforeChange == null) {
+        if (paymentChanged == null) {
+          // no change:
+          return order;
+        } else {
+          // new payment:
+          orderPaymentsChanged = [...orderPayments, paymentChanged];
+        }
+      } else {
+        if (paymentChanged == null) {
+          // delete payment
+          orderPaymentsChanged = orderPayments.filter((payment) => payment.uuid !== payment_uuid);
+        } else {
+          // replace payment
+          orderPaymentsChanged = orderPayments.map((payment) => {
+            return payment.uuid === payment_uuid ? paymentChanged : payment;
+          });
+        }
+      }
+
+      let orderChanged = { ...order, payments: orderPaymentsChanged };
+      orderChanged = updatePaymentAmounts(orderChanged);
+      return orderChanged;
+    },
   });
-};
-
-const addPaymentToOrder = ({ order, paymentMethod, amount }) => {
-  const newPayment = {
-    uuid: uuidv4(),
-    paymentMethod,
-    amount,
-  };
-
-  const paymentsPrev = order?.payments ?? [];
-  const payments = [...paymentsPrev, newPayment];
-
-  let orderChanged = { ...order, payments };
-  orderChanged = updatePaymentAmounts(orderChanged);
-  return orderChanged;
-};
-
-const removePayment = ({ applicationState, order_uuid, payment_uuid }) => {
-  return changeOrderInApplicationState({
-    applicationState,
-    order_uuid,
-    mapper: (order) => removePaymentFromOrder({ order, payment_uuid }),
-  });
-};
-
-const removePaymentFromOrder = ({ order, payment_uuid }) => {
-  if (!order.payments) {
-    return order;
-  }
-
-  const paymentsPrev = order?.payments ?? [];
-  const payments = order.payments.filter((payment) => payment.uuid !== payment_uuid);
-  if (payments.length === paymentsPrev.length) {
-    return order;
-  }
-
-  let orderChanged = { ...order, payments };
-  orderChanged = updatePaymentAmounts(orderChanged);
-  return orderChanged;
 };
 
 const updatePaymentAmounts = (order) => {
@@ -341,4 +334,23 @@ const updatePaymentAmounts = (order) => {
 
   let openAmt = order.totalAmt - paidAmt;
   return { ...order, paidAmt, openAmt };
+};
+
+const addPayment = ({ applicationState, order_uuid, paymentMethod, amount }) => {
+  const newPayment = { uuid: uuidv4(), paymentMethod, amount };
+  return changePayment({
+    applicationState,
+    order_uuid,
+    payment_uuid: newPayment.uuid,
+    mapper: () => newPayment,
+  });
+};
+
+const removePayment = ({ applicationState, order_uuid, payment_uuid }) => {
+  return changePayment({
+    applicationState,
+    order_uuid,
+    payment_uuid,
+    mapper: () => null,
+  });
 };
