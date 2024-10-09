@@ -162,6 +162,29 @@ public class C_Order
 		order.setIsTaxIncluded(pl.isTaxIncluded());
 	}
 
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_C_DocTypeTarget_ID
+	})
+	public void removeFlatRateConditionsForCallOrder(final I_C_Order order)
+	{
+		if (order.getC_DocTypeTarget_ID() <= 0)
+		{
+			return;
+		}
+		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(order.getC_DocTypeTarget_ID());
+		if (X_C_DocType.DOCSUBTYPE_CallOrder.equals(dt.getDocSubType()))
+		{
+			orderDAO.retrieveOrderLines(order)
+					.forEach(line -> {
+						line.setC_Flatrate_Conditions_ID(-1);
+						orderDAO.save(line);
+					});
+		}
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeChange_updateLocationAndRenderedAddress(final I_C_Order order)
 	{
@@ -506,29 +529,6 @@ public class C_Order
 		if (!InterfaceWrapperHelper.isCopying(order))
 		{
 			orderBL.updateDescriptionFromDocTypeTargetId(order);
-		}
-	}
-
-	@ModelChange(timings = {
-			ModelValidator.TYPE_BEFORE_NEW,
-			ModelValidator.TYPE_BEFORE_CHANGE
-	}, ifColumnsChanged = {
-			I_C_Order.COLUMNNAME_C_DocTypeTarget_ID
-	})
-	public void removeFlatRateConditionsForCallOrder(final I_C_Order order)
-	{
-		if (order.getC_DocTypeTarget_ID() <= 0)
-		{
-			return;
-		}
-		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(order.getC_DocTypeTarget_ID());
-		if (X_C_DocType.DOCSUBTYPE_CallOrder.equals(dt.getDocSubType()))
-		{
-			orderDAO.retrieveOrderLines(order)
-					.forEach(line -> {
-						line.setC_Flatrate_Conditions_ID(-1);
-						orderDAO.save(line);
-					});
 		}
 	}
 
