@@ -226,7 +226,6 @@ public class BusinessTestHelper
 		product.setC_UOM_ID(UomId.toRepoId(uomId));
 		product.setProductType(ProductType.Item.getCode());
 		product.setIsStocked(true);
-		product.setM_Product_Category_ID(createProductCategory(name + "_Category", null).getRepoId());
 
 		if (weightKg != null)
 		{
