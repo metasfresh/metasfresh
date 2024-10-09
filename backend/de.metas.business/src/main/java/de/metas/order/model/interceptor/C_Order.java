@@ -30,6 +30,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -103,6 +105,7 @@ public class C_Order
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
@@ -157,6 +160,30 @@ public class C_Order
 		order.setM_PricingSystem_ID(pl.getM_PricingSystem_ID());
 		order.setC_Currency_ID(pl.getC_Currency_ID());
 		order.setIsTaxIncluded(pl.isTaxIncluded());
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_C_DocTypeTarget_ID
+	})
+	public void removeFlatRateConditionsForCallOrder(final I_C_Order order)
+	{
+		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
+		if (docTypeTargetId == null)
+		{
+			return;
+		}
+
+		if (docTypeBL.isCallOrder(docTypeTargetId))
+		{
+			orderDAO.retrieveOrderLines(order)
+					.forEach(line -> {
+						line.setC_Flatrate_Conditions_ID(-1);
+						orderDAO.save(line);
+					});
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
