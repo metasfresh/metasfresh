@@ -3,10 +3,12 @@ package de.metas.pos;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
-public class POSOrderChangedWebSocketEvent
+@Jacksonized
+public class JsonPOSOrderChangedWebSocketEvent
 {
 	@NonNull POSOrderExternalId posOrderId;
 }

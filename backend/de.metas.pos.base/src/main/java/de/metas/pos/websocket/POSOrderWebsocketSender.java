@@ -2,7 +2,7 @@ package de.metas.pos.websocket;
 
 import de.metas.logging.LogManager;
 import de.metas.pos.POSOrder;
-import de.metas.pos.POSOrderChangedWebSocketEvent;
+import de.metas.pos.JsonPOSOrderChangedWebSocketEvent;
 import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.sender.WebsocketSender;
 import lombok.NonNull;
@@ -31,7 +31,7 @@ public class POSOrderWebsocketSender
 	{
 		send(
 				POSWebsocketTopicNames.orders(posOrder.getPosTerminalId()),
-				POSOrderChangedWebSocketEvent.builder()
+				JsonPOSOrderChangedWebSocketEvent.builder()
 						.posOrderId(posOrder.getExternalId())
 						.build()
 		);

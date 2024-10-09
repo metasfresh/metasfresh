@@ -1,6 +1,7 @@
 package de.metas.pos.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.money.CurrencyId;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
 import de.metas.pos.POSOrderStatus;
@@ -15,6 +16,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 
 @Value
 @Builder
@@ -34,9 +36,9 @@ public class JsonPOSOrder
 
 	int hashCode;
 
-	public static JsonPOSOrder from(@NonNull final POSOrder order, @NonNull final JsonContext jsonContext)
+	public static JsonPOSOrder from(@NonNull final POSOrder order, @NonNull final Function<CurrencyId, String> getCurrencySymbolById)
 	{
-		final String currencySymbol = jsonContext.getCurrencySymbol(order.getCurrencyId());
+		final String currencySymbol = getCurrencySymbolById.apply(order.getCurrencyId());
 		return builder()
 				.uuid(order.getExternalId())
 				.posTerminalId(order.getPosTerminalId())
@@ -56,11 +58,11 @@ public class JsonPOSOrder
 				.build();
 	}
 
-	public static ImmutableList<JsonPOSOrder> fromList(@NonNull final List<POSOrder> orders, @NonNull final JsonContext jsonContext)
+	public static ImmutableList<JsonPOSOrder> fromList(@NonNull final List<POSOrder> orders, @NonNull final Function<CurrencyId, String> getCurrencySymbolById)
 	{
 		return orders.stream()
 				.sorted(Comparator.comparing(posOrder -> posOrder.getLocalId() != null ? posOrder.getLocalId().getRepoId() : Integer.MAX_VALUE))
-				.map(order -> from(order, jsonContext))
+				.map(order -> from(order, getCurrencySymbolById))
 				.collect(ImmutableList.toImmutableList());
 	}
 

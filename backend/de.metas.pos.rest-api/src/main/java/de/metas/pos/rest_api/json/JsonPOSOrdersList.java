@@ -23,6 +23,6 @@ public class JsonPOSOrdersList
 			@NonNull final JsonContext jsonContext)
 	{
 		return builder()
-				.list(JsonPOSOrder.fromList(orders, jsonContext));
+				.list(JsonPOSOrder.fromList(orders, jsonContext::getCurrencySymbol));
 	}
 }
