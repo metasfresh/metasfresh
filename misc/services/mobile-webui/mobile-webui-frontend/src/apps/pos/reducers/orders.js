@@ -13,7 +13,6 @@ import { v4 as uuidv4 } from 'uuid';
 export function ordersReducer(applicationState, action) {
   switch (action.type) {
     case POS_TERMINAL_LOAD_DONE: {
-      console.log('ordersReducer', { action });
       const {
         posTerminal: { id: posTerminalId, openOrders },
       } = action.payload;

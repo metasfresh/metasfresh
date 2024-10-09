@@ -1,18 +1,18 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import './POSScreen.scss';
 import Header from './Header';
 import POSOrderPanel from './order_panel/POSOrderPanel';
 import POSPaymentPanel from './payment_panel/POSPaymentPanel';
-import POSCashJournalOpenPanel from './cash_journal/POSCashJournalOpenPanel';
-import POSCashJournalClosingPanel from './cash_journal/POSCashJournalClosingPanel';
+import POSCashJournalOpenModal from './cash_journal/POSCashJournalOpenModal';
+import POSCashJournalClosingModal from './cash_journal/POSCashJournalClosingModal';
 import { useOrdersWebsocket } from '../api/orders';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateOrderFromBackend, useCurrentOrder } from '../actions/orders';
-import POSTerminalSelectPanel from './select_terminal/POSTerminalSelectPanel';
+import POSTerminalSelectModal from './select_terminal/POSTerminalSelectModal';
 import { usePOSTerminal } from '../actions/posTerminal';
 import { MODAL_POSTerminalSelect } from '../actions/ui';
 import { getModalFromState } from '../reducers/uiUtils';
-import PropTypes from 'prop-types';
 
 const POSScreen = () => {
   const dispatch = useDispatch();
@@ -78,20 +78,20 @@ const useModal = () => {
   const modal = useSelector((globalState) => getModalFromState({ globalState }));
 
   if (!posTerminal.id) {
-    return <POSTerminalSelectPanel />;
+    return <POSTerminalSelectModal />;
   }
 
   if (modal) {
     if (modal === MODAL_POSTerminalSelect) {
-      return <POSTerminalSelectPanel />;
+      return <POSTerminalSelectModal />;
     }
   }
 
   const journalStatus = getCashJournalStatus(posTerminal);
   if (journalStatus === 'closed') {
-    return <POSCashJournalOpenPanel />;
+    return <POSCashJournalOpenModal />;
   } else if (journalStatus === 'closing') {
-    return <POSCashJournalClosingPanel />;
+    return <POSCashJournalClosingModal />;
   }
 
   return null;

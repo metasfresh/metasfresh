@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import { getPOSTerminalsArray } from '../../api/posTerminal';
-import './POSTerminalSelectPanel.scss';
 import { usePOSTerminal } from '../../actions/posTerminal';
 import { closeModalAction, MODAL_POSTerminalSelect } from '../../actions/ui';
 import { useDispatch } from 'react-redux';
 
-const POSTerminalSelectPanel = () => {
+import './POSTerminalSelectModal.scss';
+
+const POSTerminalSelectModal = () => {
   const dispatch = useDispatch();
   const currentTerminal = usePOSTerminal();
   const [posTerminals, setPOSTerminals] = useState(null);
@@ -50,4 +51,4 @@ const POSTerminalSelectPanel = () => {
   );
 };
 
-export default POSTerminalSelectPanel;
+export default POSTerminalSelectModal;

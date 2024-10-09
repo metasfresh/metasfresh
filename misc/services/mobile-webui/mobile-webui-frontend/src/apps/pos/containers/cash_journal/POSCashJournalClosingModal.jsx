@@ -7,9 +7,9 @@ import PropTypes from 'prop-types';
 import useEscapeKey from '../../../../hooks/useEscapeKey';
 import { usePOSTerminal } from '../../actions/posTerminal';
 
-import './POSCashJournalClosingPanel.scss';
+import './POSCashJournalClosingModal.scss';
 
-const POSCashJournalClosingPanel = () => {
+const POSCashJournalClosingModal = () => {
   const posTerminal = usePOSTerminal();
   const [cashClosingBalance, setCashClosingBalance] = useState(0);
   const [closingNote, setClosingNote] = useState('');
@@ -219,4 +219,4 @@ const useJournalSummary = ({ posTerminalId }) => {
 //
 //
 
-export default POSCashJournalClosingPanel;
+export default POSCashJournalClosingModal;

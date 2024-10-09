@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { usePOSTerminal } from '../../actions/posTerminal';
 
-import './POSCashJournalOpenPanel.scss';
+import './POSCashJournalOpenModal.scss';
 
-const POSCashJournalOpenPanel = () => {
+const POSCashJournalOpenModal = () => {
   const posTerminal = usePOSTerminal();
   const [cashBeginningBalance, setCashBeginningBalance] = useState(posTerminal?.cashLastBalance ?? 0);
   const [openingNote, setOpeningNote] = useState('');
@@ -51,4 +51,4 @@ const POSCashJournalOpenPanel = () => {
   );
 };
 
-export default POSCashJournalOpenPanel;
+export default POSCashJournalOpenModal;
