@@ -1,3 +1,6 @@
+DROP FUNCTION IF EXISTS report.TaxNote(p_c_invoice_id numeric)
+;
+
 DROP FUNCTION IF EXISTS report.TaxNote(IN p_c_invoice_id numeric,
                                        IN p_ad_language  character varying)
 ;
