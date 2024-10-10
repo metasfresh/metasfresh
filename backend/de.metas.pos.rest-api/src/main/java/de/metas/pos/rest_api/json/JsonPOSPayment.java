@@ -22,6 +22,9 @@ public class JsonPOSPayment
 	@NonNull POSPaymentMethod paymentMethod;
 	@NonNull BigDecimal amount;
 
+	@Nullable BigDecimal cashTenderedAmount;
+	@Nullable BigDecimal cashGiveBackAmount;
+
 	@Nullable JsonPOSPaymentStatus status;
 	@Nullable String statusDetails;
 	boolean allowCheckout;
@@ -38,6 +41,8 @@ public class JsonPOSPayment
 				.uuid(payment.getExternalId())
 				.paymentMethod(payment.getPaymentMethod())
 				.amount(payment.getAmount().toBigDecimal())
+				.cashTenderedAmount(payment.getCashTenderedAmount().toBigDecimal())
+				.cashGiveBackAmount(payment.getCashGiveBackAmount().toBigDecimal())
 				.status(JsonPOSPaymentStatus.of(paymentProcessingStatus))
 				.statusDetails(payment.getCardProcessingDetails() != null ? payment.getCardProcessingDetails().getSummary() : null)
 				.allowCheckout(paymentProcessingStatus.isAllowCheckout())

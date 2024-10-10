@@ -75,6 +75,48 @@ public interface I_C_POS_Payment
 	String COLUMNNAME_Amount = "Amount";
 
 	/**
+	 * Set Tendered Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAmountTendered (BigDecimal AmountTendered);
+
+	/**
+	 * Get Tendered Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getAmountTendered();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_AmountTendered = new ModelColumn<>(I_C_POS_Payment.class, "AmountTendered", null);
+	String COLUMNNAME_AmountTendered = "AmountTendered";
+
+	/**
+	 * Set Change.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setChangeBackAmount (BigDecimal ChangeBackAmount);
+
+	/**
+	 * Get Change.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getChangeBackAmount();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_ChangeBackAmount = new ModelColumn<>(I_C_POS_Payment.class, "ChangeBackAmount", null);
+	String COLUMNNAME_ChangeBackAmount = "ChangeBackAmount";
+
+	/**
 	 * Set Payment.
 	 * Payment identifier
 	 *

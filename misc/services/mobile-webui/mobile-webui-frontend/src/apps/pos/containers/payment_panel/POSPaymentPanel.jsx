@@ -17,6 +17,7 @@ import {
   useCurrentOrder,
 } from '../../actions/orders';
 import PropTypes from 'prop-types';
+import CashPaymentDetailsModal from './CashPaymentDetailsModal';
 
 const POSPaymentPanel = ({ disabled }) => {
   const dispatch = useDispatch();
@@ -41,11 +42,47 @@ const POSPaymentPanel = ({ disabled }) => {
     currency: currency,
     precision: currencyPrecision,
   });
+  const isAllowAddPayment = !disabled && openAmt > 0;
+  const isAllowValidate = !disabled && openAmt === 0;
 
   const payments = currentOrder?.payments ?? [];
 
-  const isAllowAddPayment = !disabled && openAmt > 0;
-  const isAllowValidate = !disabled && openAmt === 0;
+  let pendingPayment = null;
+  let pendingPaymentModal = null;
+  for (const payment of payments) {
+    console.log('payment', { payment });
+    if (payment.status === 'PENDING') {
+      if (payment.paymentMethod === 'CASH') {
+        pendingPayment = payment;
+        pendingPaymentModal = (
+          <CashPaymentDetailsModal
+            currency={currentOrder.currencySymbol}
+            precision={currencyPrecision}
+            payAmount={payment.amount}
+            tenderedAmount={payment.cashTenderedAmount}
+            onOK={({ cashTenderedAmount }) => {
+              console.log('got', { cashTenderedAmount });
+              dispatch(
+                checkoutPayment({
+                  posTerminalId: posTerminal.id,
+                  order_uuid: currentOrder.uuid,
+                  payment_uuid: payment.uuid,
+                  cashTenderedAmount,
+                })
+              );
+            }}
+          />
+        );
+        break;
+      }
+    }
+  }
+
+  console.log('***', { pendingPayment, pendingPaymentModal, payments });
+
+  //
+  //
+  //
 
   const onAddPaymentClick = ({ paymentMethod }) => {
     if (!isAllowAddPayment) return;
@@ -77,8 +114,13 @@ const POSPaymentPanel = ({ disabled }) => {
     dispatch(changeOrderStatusToComplete({ posTerminalId: posTerminal.id, order_uuid }));
   };
 
+  //
+  //
+  //
+
   return (
     <div className="pos-content pos-payment-panel">
+      {pendingPaymentModal}
       <div className="payment-summary">
         <div className="payment-summary-line totalAmt">
           <div className="payment-summary-label">Total</div>

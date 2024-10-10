@@ -61,7 +61,7 @@ public class POSOrderProcessingServices
 		posCashJournalService.changeJournalById(cashJournalId, journal -> journal.addPayments(posOrder));
 	}
 
-	public POSPayment processPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull POSOrder posOrder)
+	public POSPayment processPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull final POSOrder posOrder)
 	{
 		posPaymentToProcess.assertAllowCheckout();
 
@@ -93,7 +93,22 @@ public class POSOrderProcessingServices
 	{
 		posPayment.getPaymentMethod().assertCash();
 
-		return posPayment.changingStatusToSuccessful();
+		final POSPaymentProcessingStatus paymentProcessingStatus = posPayment.getPaymentProcessingStatus();
+		if (paymentProcessingStatus.isNew() || paymentProcessingStatus.isPending())
+		{
+			if (posPayment.getCashTenderedAmount().signum() > 0)
+			{
+				return posPayment.changingStatusToSuccessful();
+			}
+			else
+			{
+				return posPayment.changingStatusToPending();
+			}
+		}
+		else
+		{
+			return posPayment;
+		}
 	}
 
 	private POSPayment processPOSPayment_CARD(

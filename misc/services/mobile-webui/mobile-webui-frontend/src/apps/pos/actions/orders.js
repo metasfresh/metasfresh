@@ -260,12 +260,12 @@ export const removePayment = ({ order_uuid, payment_uuid }) => {
     dispatch(syncOrderToBackend({ order_uuid }));
   };
 };
-export const removePaymentAction = ({ order_uuid, payment_uuid }) => {
+const removePaymentAction = ({ order_uuid, payment_uuid }) => {
   return { type: REMOVE_PAYMENT, payload: { order_uuid, payment_uuid } };
 };
-export const checkoutPayment = ({ posTerminalId, order_uuid, payment_uuid }) => {
+export const checkoutPayment = ({ posTerminalId, order_uuid, payment_uuid, cashTenderedAmount }) => {
   return async (dispatch) => {
-    const order = await ordersAPI.checkoutPayment({ posTerminalId, order_uuid, payment_uuid });
+    const order = await ordersAPI.checkoutPayment({ posTerminalId, order_uuid, payment_uuid, cashTenderedAmount });
     dispatch(updateOrderFromBackendAction({ order }));
   };
 };

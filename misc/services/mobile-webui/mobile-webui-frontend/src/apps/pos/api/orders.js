@@ -70,9 +70,9 @@ export const useOrdersWebsocket = ({ posTerminalId, onWebsocketMessage }) => {
   }, [posTerminalId]);
 };
 
-export const checkoutPayment = ({ posTerminalId, order_uuid, payment_uuid }) => {
+export const checkoutPayment = ({ posTerminalId, order_uuid, payment_uuid, cashTenderedAmount }) => {
   return axios
-    .post(`${posApiBase}/orders/checkoutPayment`, { posTerminalId, order_uuid, payment_uuid })
+    .post(`${posApiBase}/orders/checkoutPayment`, { posTerminalId, order_uuid, payment_uuid, cashTenderedAmount })
     .then((response) => unboxAxiosResponse(response));
 };
 

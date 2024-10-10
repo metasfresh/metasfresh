@@ -1,5 +1,6 @@
 package de.metas.pos;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.Money;
 import de.metas.payment.PaymentId;
@@ -11,9 +12,9 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Data
-@Builder(toBuilder = true)
 public class POSPayment
 {
 	@NonNull private final POSPaymentExternalId externalId;
@@ -22,9 +23,45 @@ public class POSPayment
 	@NonNull private final POSPaymentMethod paymentMethod;
 	@NonNull private final Money amount;
 
+	@NonNull private final Money cashTenderedAmount;
+	@NonNull private final Money cashGiveBackAmount;
+
 	@NonNull private final POSPaymentProcessingStatus paymentProcessingStatus;
 	@Nullable private final POSPaymentCardProcessingDetails cardProcessingDetails;
 	@Nullable private final PaymentId paymentReceiptId;
+
+	@Builder(toBuilder = true)
+	private POSPayment(
+			@NonNull final POSPaymentExternalId externalId,
+			@Nullable final POSPaymentId localId,
+			@NonNull final POSPaymentMethod paymentMethod,
+			@NonNull final Money amount,
+			@Nullable final Money cashTenderedAmount,
+			@NonNull final POSPaymentProcessingStatus paymentProcessingStatus,
+			@Nullable final POSPaymentCardProcessingDetails cardProcessingDetails,
+			@Nullable final PaymentId paymentReceiptId)
+	{
+		this.externalId = externalId;
+		this.localId = localId;
+		this.paymentMethod = paymentMethod;
+		this.amount = amount;
+		this.paymentProcessingStatus = paymentProcessingStatus;
+		this.cardProcessingDetails = cardProcessingDetails;
+		this.paymentReceiptId = paymentReceiptId;
+
+		final Money zero = amount.toZero();
+		if (paymentMethod.isCash())
+		{
+			this.cashTenderedAmount = CoalesceUtil.coalesceNotNull(cashTenderedAmount, zero);
+			this.cashGiveBackAmount = this.cashTenderedAmount.subtract(this.amount);
+		}
+		else
+		{
+			this.cashTenderedAmount = zero;
+			this.cashGiveBackAmount = zero;
+		}
+		Money.assertSameCurrency(this.amount, this.cashTenderedAmount, this.cashGiveBackAmount);
+	}
 
 	public POSPaymentId getLocalIdNotNull() {return Check.assumeNotNull(this.getLocalId(), "Expected POSPayment to be saved: {}", this);}
 
@@ -55,6 +92,9 @@ public class POSPayment
 
 	public void assertAllowCheckout()
 	{
+		if (paymentMethod.isCash() && paymentProcessingStatus.isPending())
+			return; // FIXME workaround!
+
 		paymentProcessingStatus.assertAllowCheckout();
 	}
 
@@ -89,6 +129,20 @@ public class POSPayment
 		}
 	}
 
+	public POSPayment changingStatusToPending()
+	{
+		if (paymentProcessingStatus.isPending())
+		{
+			return this;
+		}
+		if (!paymentProcessingStatus.isNew())
+		{
+			throw new AdempiereException("Cannot change status from " + paymentProcessingStatus + " to Pending");
+		}
+
+		return toBuilder().paymentProcessingStatus(POSPaymentProcessingStatus.PENDING).build();
+	}
+
 	public POSPayment changingStatusToSuccessful()
 	{
 		if (paymentProcessingStatus == POSPaymentProcessingStatus.SUCCESSFUL)
@@ -112,6 +166,8 @@ public class POSPayment
 
 	public POSPayment changingStatusFromRemote(@NonNull final POSPaymentProcessResponse response)
 	{
+		paymentMethod.assertCard();
+
 		// NOTE: when changing status from remote we cannot validate if the status transition is OK
 		// we have to accept what we have on remote.
 
@@ -143,5 +199,19 @@ public class POSPayment
 		}
 
 		return toBuilder().paymentReceiptId(paymentReceiptId).build();
+	}
+
+	public POSPayment withCashTenderedAmount(@NonNull final BigDecimal cashTenderedAmountBD)
+	{
+		paymentMethod.assertCash();
+		Check.assume(cashTenderedAmountBD.signum() > 0, "Cash Tendered Amount must be positive");
+
+		final Money cashTenderedAmountNew = Money.of(cashTenderedAmountBD, this.cashTenderedAmount.getCurrencyId());
+		if (Money.equals(this.cashTenderedAmount, cashTenderedAmountNew))
+		{
+			return this;
+		}
+
+		return toBuilder().cashTenderedAmount(cashTenderedAmountNew).build();
 	}
 }

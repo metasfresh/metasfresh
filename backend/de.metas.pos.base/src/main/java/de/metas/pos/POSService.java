@@ -115,13 +115,9 @@ public class POSService
 		return ordersService.updateOrderFromRemote(remoteOrder, userId);
 	}
 
-	public POSOrder checkoutPayment(
-			@NonNull final POSTerminalId posTerminalId,
-			@NonNull final POSOrderExternalId posOrderExternalId,
-			@NonNull final POSPaymentExternalId posPaymentExternalId,
-			@NonNull final UserId userId)
+	public POSOrder checkoutPayment(@NonNull POSPaymentCheckoutRequest request)
 	{
-		return ordersService.checkoutPayment(posTerminalId, posOrderExternalId, posPaymentExternalId, userId);
+		return ordersService.checkoutPayment(request);
 	}
 
 	public POSOrder refundPayment(
@@ -132,6 +128,5 @@ public class POSService
 	{
 		return ordersService.refundPayment(posTerminalId, posOrderExternalId, posPaymentExternalId, userId);
 	}
-
 }
 

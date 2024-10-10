@@ -10,6 +10,7 @@ import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
 import de.metas.pos.POSOrderStatus;
+import de.metas.pos.POSPaymentCheckoutRequest;
 import de.metas.pos.POSProductsSearchResult;
 import de.metas.pos.POSService;
 import de.metas.pos.POSTerminal;
@@ -223,7 +224,13 @@ public class POSRestController
 	@PostMapping("/orders/checkoutPayment")
 	public JsonPOSOrder checkoutPayment(@RequestBody JsonPOSPaymentCheckoutRequest request)
 	{
-		final POSOrder order = posService.checkoutPayment(request.getPosTerminalId(), request.getOrder_uuid(), request.getPayment_uuid(), getLoggedUserId());
+		final POSOrder order = posService.checkoutPayment(POSPaymentCheckoutRequest.builder()
+				.posTerminalId(request.getPosTerminalId())
+				.posOrderExternalId(request.getOrder_uuid())
+				.posPaymentExternalId(request.getPayment_uuid())
+				.userId(getLoggedUserId())
+				.cashTenderedAmount(request.getCashTenderedAmount())
+				.build());
 		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
 	}
 
@@ -233,5 +240,4 @@ public class POSRestController
 		final POSOrder order = posService.refundPayment(request.getPosTerminalId(), request.getOrder_uuid(), request.getPayment_uuid(), getLoggedUserId());
 		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
 	}
-
 }
