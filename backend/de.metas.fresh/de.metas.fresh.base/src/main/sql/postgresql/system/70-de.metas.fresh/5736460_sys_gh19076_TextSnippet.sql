@@ -1,3 +1,6 @@
+DROP FUNCTION IF EXISTS report.TextSnippet(IN p_ad_boilerplate_id numeric)
+;
+
 DROP FUNCTION IF EXISTS report.TextSnippet(IN p_ad_boilerplate_id numeric,
                                            IN p_ad_language       character varying)
 ;
