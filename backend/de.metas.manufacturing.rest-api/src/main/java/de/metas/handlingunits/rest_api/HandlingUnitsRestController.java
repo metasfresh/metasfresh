@@ -234,13 +234,13 @@ public class HandlingUnitsRestController
 
 	@GetMapping("/byIds")
 	public JsonHUList getByIds(
-			@Parameter(required = true, value = HU_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = HU_IDENTIFIER_DOC) //
 			@RequestParam(name = "M_HU_IDs") final List<Integer> huRepoIds)
 	{
 		return JsonHUList.builder()
 				.hus(huRepoIds.stream()
 							 .map(HuId::ofRepoId)
-							 .map(repoId -> handlingUnitsService.getFullHU(repoId, Env.getADLanguageOrBaseLanguage(), false))
+							 .map(repoId -> handlingUnitsService.getFullHU(repoId, null, Env.getADLanguageOrBaseLanguage(), false))
 							 .collect(ImmutableList.toImmutableList()))
 				.build();
 	}
