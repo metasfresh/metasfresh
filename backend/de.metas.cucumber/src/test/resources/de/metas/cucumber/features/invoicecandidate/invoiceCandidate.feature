@@ -67,7 +67,7 @@ Feature: In effect invoice candidates
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
       | shipmentSchedule_1               | 50                        |
-    When 'generate shipments' process is invoked
+    When  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_1               | D            | true                | false       |
     Then after not more than 60s, M_InOut is found:

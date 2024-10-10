@@ -176,7 +176,7 @@ Feature: accounting for shipping notification
       | factAcct_3              | P_ExternallyOwnedStock_Acct | -113 | 0    | chf                      | P_ExternallyOwnedStock_Acct | -10     | bpLocationDefault                     | p_1                         | locator                     |
       | factAcct_4              | P_Asset_Acct                | 0    | -113 | chf                      | P_Asset_Acct                | 10      | bpLocationDefault                     | p_1                         | locator                     |
 
-    When 'generate shipments' process is invoked
+    When  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_ol_1                           | D            | true                | false       |
     Then after not more than 60s, M_InOut is found:
@@ -281,7 +281,7 @@ Feature: accounting for shipping notification
     And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_ol_1                           |
-    When 'generate shipments' process is invoked
+    When  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_ol_1                           | D            | true                | false       |
     Then after not more than 60s, M_InOut is found:
@@ -347,7 +347,7 @@ Feature: accounting for shipping notification
     And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_ol_1                           |
-    When 'generate shipments' process is invoked
+    When  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_ol_1                           | D            | true                | false       |
     Then after not more than 60s, M_InOut is found:

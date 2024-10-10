@@ -330,7 +330,7 @@ Feature: Modular contract log from purchase order for processed product
       | log_avInterim_snline      | shippingNotificationLine_06062024_1 | ModularContract | bp_moduleLogPO                             | warehouse_06062024_1          | addValueOnInterim       | bp_moduleLogPO                      | bp_moduleLogPO                  | 1050 | M_Shipping_NotificationLine | moduleLogContract_1           | modCntr_type_5             | false         | ShippingNotification         | EUR                        | PCE                   | -21000     | y2022                             | avOnInterim_module               | -20.00          | PCE                       | addValueOnInterim_06062024_1 | Y              |
       | log_svInterim_snline      | shippingNotificationLine_06062024_1 | ModularContract | bp_moduleLogPO                             | warehouse_06062024_1          | subValueOnInterim       | bp_moduleLogPO                      | bp_moduleLogPO                  | 1050 | M_Shipping_NotificationLine | moduleLogContract_1           | modCntr_type_6             | false         | ShippingNotification         | EUR                        | PCE                   | 21000      | y2022                             | svOnInterim_module               | 20.00           | PCE                       | subValueOnInterim_06062024_1 | Y              |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | sch_1                            | D            | true                | false       |
 

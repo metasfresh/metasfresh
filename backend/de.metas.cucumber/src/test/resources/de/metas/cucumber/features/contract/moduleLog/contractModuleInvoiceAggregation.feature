@@ -73,7 +73,7 @@ Feature: Invoice candidate aggregation with harvesting details rule
     Then after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | sch_1      | soLine_1                  | N             |
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | sch_1                            | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -83,7 +83,7 @@ Feature: Invoice candidate aggregation with harvesting details rule
     Then after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | sch_2      | soLine_2                  | N             |
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | sch_2                            | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -152,7 +152,7 @@ Feature: Invoice candidate aggregation with harvesting details rule
     Then after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | sch_1      | soLine_1                  | N             |
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | sch_1                            | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -162,7 +162,7 @@ Feature: Invoice candidate aggregation with harvesting details rule
     Then after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | sch_2      | soLine_2                  | N             |
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | sch_2                            | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -233,7 +233,7 @@ Feature: Invoice candidate aggregation with harvesting details rule
     Then after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | sch_1      | soLine_1                  | N             |
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | sch_1                            | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -243,7 +243,7 @@ Feature: Invoice candidate aggregation with harvesting details rule
     Then after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | sch_2      | soLine_2                  | N             |
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | sch_2                            | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -311,7 +311,7 @@ Feature: Invoice candidate aggregation with harvesting details rule
     Then after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | sch_1      | soLine_1                  | N             |
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | sch_1                            | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -321,7 +321,7 @@ Feature: Invoice candidate aggregation with harvesting details rule
     Then after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | sch_2      | soLine_2                  | N             |
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | sch_2                            | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
