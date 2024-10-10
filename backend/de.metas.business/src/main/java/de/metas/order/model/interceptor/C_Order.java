@@ -64,6 +64,8 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
+import de.metas.warehouseassignment.ProductWarehouseAssignments;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -133,7 +135,9 @@ public class C_Order
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
-			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService)
+			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
+			@NonNull final ProductWarehouseAssignmentService productWarehouseAssignmentService,
+			@NonNull final ProjectService projectService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
