@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -89,5 +90,14 @@ public class PickingJobStepPickedTo
 		}
 
 		return toBuilder().actualPickedHUs(actualPickedHUsNew).build();
+	}
+
+	@NonNull
+	public List<HuId> getPickedHuIds()
+	{
+		return actualPickedHUs.stream()
+				.map(PickingJobStepPickedToHU::getActualPickedHU)
+				.map(HUInfo::getId)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

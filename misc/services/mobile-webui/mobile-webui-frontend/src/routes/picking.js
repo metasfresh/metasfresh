@@ -6,6 +6,7 @@ import PickLineScanScreen from '../containers/activities/picking/PickLineScanScr
 import PickProductsScanScreen from '../containers/activities/picking/PickProductsScanScreen';
 import { toUrl } from '../utils';
 import { SelectPickTargetScreen } from '../containers/activities/picking/SelectPickTargetScreen';
+import { ReopenLUScreen } from '../containers/activities/picking/ReopenLUScreen';
 
 export const selectPickTargetScreenLocation = ({ applicationId, wfProcessId, activityId }) =>
   getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/selectPickTarget/${activityId}`;
@@ -39,6 +40,9 @@ export const pickingStepScanScreenLocation = ({
 }) => {
   return pickingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }) + `/scanner`;
 };
+
+export const reopenClosedLUScreenLocation = ({ applicationId, wfProcessId }) =>
+  getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/reopen-lu`;
 
 export const pickingRoutes = [
   {
@@ -116,5 +120,12 @@ export const pickingRoutes = [
       altStepId: ':altStepId',
     }),
     Component: PickStepScanScreen,
+  },
+  {
+    path: reopenClosedLUScreenLocation({
+      applicationId: ':applicationId',
+      wfProcessId: ':workflowId',
+    }),
+    Component: ReopenLUScreen,
   },
 ];

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
@@ -6,6 +6,7 @@ import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
 import {
   pickingLineScreenLocation,
   pickingScanScreenLocation,
+  reopenClosedLUScreenLocation,
   selectPickTargetScreenLocation,
   selectTUPickTargetScreenLocation,
 } from '../../../routes/picking';
@@ -24,7 +25,31 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   const {
     dataStored: { isUserEditable, isPickWithNewLU, isAllowNewTU },
   } = activity;
-  const lines = getLinesArrayFromActivity(activity);
+
+  const groupedLines = useMemo(() => {
+    const lines = getLinesArrayFromActivity(activity);
+    lines.sort((a, b) => (a?.sortingIndex ?? 0) - (b.sortingIndex ?? 0));
+    let currentGroupKey = undefined;
+    const groups = [];
+    let currentGroup = [];
+
+    for (const line of lines) {
+      if (currentGroupKey === undefined) {
+        currentGroupKey = line.displayGroupKey;
+      }
+      if (currentGroupKey !== line.displayGroupKey) {
+        groups.push([...currentGroup]);
+        currentGroupKey = line.displayGroupKey;
+        currentGroup = [line];
+      } else {
+        currentGroup.push(line);
+      }
+    }
+    groups.push([...currentGroup]);
+
+    return groups;
+  }, [getLinesArrayFromActivity, activity]);
+
   const allowPickingAnyHU = isAllowPickingAnyHUForActivity({ activity });
 
   const history = useHistory();
@@ -35,6 +60,10 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
 
   const onSelectPickTargetClick = () => {
     history.push(selectPickTargetScreenLocation({ applicationId, wfProcessId, activityId }));
+  };
+
+  const onReopenClosedLUClicked = () => {
+    history.push(reopenClosedLUScreenLocation({ applicationId, wfProcessId }));
   };
 
   const currentTUPickTarget = useCurrentTUPickTarget({ wfProcessId, activityId });
@@ -61,12 +90,19 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
     );
   };
 
-  const isAtLeastOneReadOnlyLine = (lines) => {
-    return lines.some((line) => isLineReadOnly(line));
+  const isAtLeastOneReadOnlyLine = (groupedLines) => {
+    return groupedLines.some((lines) => lines.some((line) => isLineReadOnly(line)));
   };
 
   return (
     <div className="mt-5">
+      {isPickWithNewLU && (
+        <ButtonWithIndicator
+          caption={trl('activities.picking.reopenLU')}
+          disabled={!isUserEditable}
+          onClick={onReopenClosedLUClicked}
+        />
+      )}
       {isPickWithNewLU && (
         <ButtonWithIndicator
           caption={
@@ -94,30 +130,41 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
       {allowPickingAnyHU && (
         <ButtonWithIndicator
           caption={trl('activities.picking.scanQRCode')}
-          disabled={isAtLeastOneReadOnlyLine(lines)}
+          disabled={isAtLeastOneReadOnlyLine(groupedLines)}
           onClick={onScanButtonClick}
         />
       )}
-      {lines &&
-        lines.map((lineItem) => {
-          const lineId = lineItem.pickingLineId;
-          const { uom, qtyToPick, qtyPicked } = lineItem;
+      {groupedLines &&
+        groupedLines.map((group, index) => {
+          const getDisplayLines = (lines) => {
+            return lines.map((lineItem) => {
+              const lineId = lineItem.pickingLineId;
+              const { uom, qtyToPick, qtyPicked } = lineItem;
+
+              return (
+                <ButtonWithIndicator
+                  key={lineId}
+                  caption={lineItem.caption}
+                  completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
+                  disabled={isLineReadOnly(lineItem)}
+                  onClick={() => onLineButtonClick({ lineId })}
+                >
+                  <ButtonQuantityProp
+                    qtyCurrent={qtyPicked}
+                    qtyTarget={qtyToPick}
+                    uom={uom}
+                    applicationId={applicationId}
+                  />
+                </ButtonWithIndicator>
+              );
+            });
+          };
 
           return (
-            <ButtonWithIndicator
-              key={lineId}
-              caption={lineItem.caption}
-              completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
-              disabled={isLineReadOnly(lineItem)}
-              onClick={() => onLineButtonClick({ lineId })}
-            >
-              <ButtonQuantityProp
-                qtyCurrent={qtyPicked}
-                qtyTarget={qtyToPick}
-                uom={uom}
-                applicationId={applicationId}
-              />
-            </ButtonWithIndicator>
+            <>
+              {getDisplayLines(group)}
+              {index !== groupedLines.length - 1 && <br />}
+            </>
           );
         })}
     </div>

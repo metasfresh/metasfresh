@@ -20,7 +20,9 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -28,7 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJob_Scenarios_Test
@@ -125,6 +127,11 @@ class PickingJob_Scenarios_Test
 	void pickCU_QtyToPick_EqualsTo_HUQty()
 	{
 		final ProductId productId = BusinessTestHelper.createProductId("P1", helper.uomEach);
+
+		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		product.setM_Product_Category_ID(BusinessTestHelper.createProductCategory("P1-Category", null).getRepoId());
+		InterfaceWrapperHelper.save(product);
+
 		final HUInfo vhu1 = helper.createVHUInfo(productId, "100", "QR-VHU1");
 
 		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("salesOrder002");

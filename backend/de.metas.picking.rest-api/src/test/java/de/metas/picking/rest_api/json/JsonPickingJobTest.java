@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
+import de.metas.handlingunits.picking.config.PickingLineGroupBy;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class JsonPickingJobTest
 {
@@ -99,6 +100,7 @@ class JsonPickingJobTest
 
 		return JsonPickingJobLine.builder()
 				.pickingLineId("pickingLineId_" + id)
+				.displayGroupKey(PickingLineGroupBy.NONE.getCode())
 				.productId("productId")
 				.productNo("productNo")
 				.caption("caption")
