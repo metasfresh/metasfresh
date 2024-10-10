@@ -1,7 +1,7 @@
-DROP VIEW IF EXISTS ModCntr_Storage_Purchase_V
+DROP VIEW IF EXISTS ModCntr_Storage_Sales_V
 ;
 
-CREATE OR REPLACE VIEW ModCntr_Storage_Purchase_V AS
+CREATE OR REPLACE VIEW ModCntr_Storage_Sales_V AS
 SELECT modularcontracthandlertype,
        productname,
        qtyinvoicedinpriceuom,
