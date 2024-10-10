@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Payment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -313911426L;
+	private static final long serialVersionUID = 1345166671L;
 
     /** Standard Constructor */
     public X_C_POS_Payment (final Properties ctx, final int C_POS_Payment_ID, @Nullable final String trxName)
@@ -165,5 +165,63 @@ public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Pa
 	public java.lang.String getPOSPaymentProcessingStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_POSPaymentProcessingStatus);
+	}
+
+	@Override
+	public void setPOSPaymentProcessingSummary (final @Nullable java.lang.String POSPaymentProcessingSummary)
+	{
+		set_Value (COLUMNNAME_POSPaymentProcessingSummary, POSPaymentProcessingSummary);
+	}
+
+	@Override
+	public java.lang.String getPOSPaymentProcessingSummary() 
+	{
+		return get_ValueAsString(COLUMNNAME_POSPaymentProcessingSummary);
+	}
+
+	@Override
+	public void setPOSPaymentProcessing_TrxId (final @Nullable java.lang.String POSPaymentProcessing_TrxId)
+	{
+		set_Value (COLUMNNAME_POSPaymentProcessing_TrxId, POSPaymentProcessing_TrxId);
+	}
+
+	@Override
+	public java.lang.String getPOSPaymentProcessing_TrxId() 
+	{
+		return get_ValueAsString(COLUMNNAME_POSPaymentProcessing_TrxId);
+	}
+
+	/** 
+	 * POSPaymentProcessor AD_Reference_ID=541896
+	 * Reference name: POSPaymentProcessor
+	 */
+	public static final int POSPAYMENTPROCESSOR_AD_Reference_ID=541896;
+	/** SumUp = sumup */
+	public static final String POSPAYMENTPROCESSOR_SumUp = "sumup";
+	@Override
+	public void setPOSPaymentProcessor (final @Nullable java.lang.String POSPaymentProcessor)
+	{
+		set_Value (COLUMNNAME_POSPaymentProcessor, POSPaymentProcessor);
+	}
+
+	@Override
+	public java.lang.String getPOSPaymentProcessor() 
+	{
+		return get_ValueAsString(COLUMNNAME_POSPaymentProcessor);
+	}
+
+	@Override
+	public void setSUMUP_Config_ID (final int SUMUP_Config_ID)
+	{
+		if (SUMUP_Config_ID < 1) 
+			set_Value (COLUMNNAME_SUMUP_Config_ID, null);
+		else 
+			set_Value (COLUMNNAME_SUMUP_Config_ID, SUMUP_Config_ID);
+	}
+
+	@Override
+	public int getSUMUP_Config_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SUMUP_Config_ID);
 	}
 }

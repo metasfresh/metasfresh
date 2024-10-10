@@ -10,7 +10,7 @@ import {
   UPDATE_ORDER,
 } from '../actionTypes';
 import { v4 as uuidv4 } from 'uuid';
-import { ORDER_STATUS_DRAFTED } from '../constants/orderStatus';
+import { isOpenOrderStatus, ORDER_STATUS_DRAFTED } from '../constants/orderStatus';
 
 export function ordersReducer(applicationState, action) {
   switch (action.type) {
@@ -41,10 +41,13 @@ export function ordersReducer(applicationState, action) {
     }
     case UPDATE_ORDER: {
       const { order } = action.payload;
+
+      let isOpenOrder = isOpenOrderStatus(order.status);
       return syncOrdersFromSource({
         applicationState,
         posTerminalId: order.posTerminalId,
-        fromOrdersArray: [order],
+        fromOrdersArray: isOpenOrder ? [order] : [],
+        missingIds: isOpenOrder ? [] : [order.uuid],
         isUpdateOnly: true,
       });
     }
@@ -153,7 +156,11 @@ const syncOrdersFromSource = ({ applicationState, posTerminalId, fromOrdersArray
 
 const syncOrdersStateFromSource = ({ ordersState, posTerminalId, fromOrdersArray, missingIds, isUpdateOnly }) => {
   const byUUID = isUpdateOnly ? { ...ordersState.byUUID } : {};
-  fromOrdersArray.forEach((order) => (byUUID[order.uuid] = recomputeOrderDetails({ order })));
+
+  if (fromOrdersArray?.length > 0) {
+    fromOrdersArray.forEach((order) => (byUUID[order.uuid] = recomputeOrderDetails({ order })));
+  }
+
   if (missingIds?.length > 0) {
     missingIds.forEach((missingId) => {
       delete byUUID[missingId];

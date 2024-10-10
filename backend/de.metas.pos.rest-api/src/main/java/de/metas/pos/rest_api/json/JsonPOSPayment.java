@@ -23,6 +23,7 @@ public class JsonPOSPayment
 	@NonNull BigDecimal amount;
 
 	@Nullable JsonPOSPaymentStatus status;
+	@Nullable String statusDetails;
 	boolean allowCheckout;
 	boolean allowDelete;
 	boolean allowRefund;
@@ -38,6 +39,7 @@ public class JsonPOSPayment
 				.paymentMethod(payment.getPaymentMethod())
 				.amount(payment.getAmount().toBigDecimal())
 				.status(JsonPOSPaymentStatus.of(paymentProcessingStatus))
+				.statusDetails(payment.getCardProcessingDetails() != null ? payment.getCardProcessingDetails().getSummary() : null)
 				.allowCheckout(paymentProcessingStatus.isAllowCheckout())
 				.allowDelete(paymentProcessingStatus.isAllowDelete())
 				.allowRefund(payment.isAllowRefund())

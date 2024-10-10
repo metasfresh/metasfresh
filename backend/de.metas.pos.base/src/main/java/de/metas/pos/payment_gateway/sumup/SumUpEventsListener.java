@@ -6,7 +6,6 @@ import de.metas.payment.sumup.SumUpTransactionStatusChangedEvent;
 import de.metas.payment.sumup.SumUpTransactionStatusChangedListener;
 import de.metas.pos.POSOrderAndPaymentId;
 import de.metas.pos.POSOrdersService;
-import de.metas.pos.POSPaymentProcessingStatus;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
@@ -30,8 +29,7 @@ class SumUpEventsListener implements SumUpTransactionStatusChangedListener
 			return;
 		}
 
-		final POSPaymentProcessingStatus paymentProcessingStatus = SumUpUtils.toResponseStatus(event.getStatusNew(), event.isRefundedNew());
-		posOrdersService.updatePaymentStatusFromRemoteAndTryCompleteOrder(posOrderAndPaymentId, paymentProcessingStatus);
+		posOrdersService.updatePaymentStatusFromRemoteAndTryCompleteOrder(posOrderAndPaymentId, SumUpUtils.extractProcessResponse(event.getTrx()));
 	}
 
 	@Nullable

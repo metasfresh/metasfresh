@@ -8,5 +8,5 @@ public interface POSPaymentProcessor
 
 	POSPaymentProcessResponse process(@NonNull POSPaymentProcessRequest request);
 
-	POSRefundResponse refund(@NonNull POSRefundRequest request);
+	POSPaymentProcessResponse refund(@NonNull POSRefundRequest request);
 }

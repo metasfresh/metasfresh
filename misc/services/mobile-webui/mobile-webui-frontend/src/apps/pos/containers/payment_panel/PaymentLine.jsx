@@ -11,6 +11,7 @@ const PaymentLine = ({
   currency,
   currencyPrecision,
   status,
+  statusDetails,
   allowCheckout: allowCheckoutParam,
   onCheckout,
   allowDelete,
@@ -20,7 +21,7 @@ const PaymentLine = ({
 }) => {
   const icon = getPaymentMethodIcon({ paymentMethod });
   const iconClassName = `fa-regular ${icon}`;
-  const caption = getPaymentMethodCaption({ paymentMethod });
+  const caption = getPaymentMethodCaption({ paymentMethod }) + (statusDetails ? ' ' + statusDetails : '');
   const amountStr = formatAmountToHumanReadableStr({
     amount: amount,
     currency: currency,
@@ -67,6 +68,7 @@ PaymentLine.propTypes = {
   currency: PropTypes.string.isRequired,
   currencyPrecision: PropTypes.number.isRequired,
   status: PropTypes.string,
+  statusDetails: PropTypes.string,
   allowCheckout: PropTypes.bool,
   onCheckout: PropTypes.func.isRequired,
   allowDelete: PropTypes.bool,

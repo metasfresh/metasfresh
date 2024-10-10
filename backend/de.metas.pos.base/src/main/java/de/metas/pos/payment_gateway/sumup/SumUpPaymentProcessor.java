@@ -1,6 +1,5 @@
 package de.metas.pos.payment_gateway.sumup;
 
-import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.payment.sumup.SumUp;
 import de.metas.payment.sumup.SumUpCardReaderCheckoutRequest;
@@ -15,7 +14,6 @@ import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessor;
 import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import de.metas.pos.payment_gateway.POSRefundRequest;
-import de.metas.pos.payment_gateway.POSRefundResponse;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -55,13 +53,16 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 							.build()
 			);
 
-			return POSPaymentProcessResponse.builder()
-					.status(SumUpUtils.toResponseStatus(sumUpTrx.getStatus(), sumUpTrx.isRefunded()))
-					.build();
+			return SumUpUtils.extractProcessResponse(sumUpTrx);
 		}
 		catch (final Exception ex)
 		{
-			return toProcessErrorResponse(ex);
+			final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
+			return POSPaymentProcessResponse.error(
+					request.getPaymentProcessorConfig(),
+					AdempiereException.extractMessage(metasfreshException),
+					errorManager.createIssue(metasfreshException)
+			);
 		}
 	}
 
@@ -71,13 +72,6 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 		final SumUpConfigId sumUpConfigId = Check.assumeNotNull(paymentProcessorConfig.getSumUpConfigId(), "sumUpConfigId is set for {}", paymentProcessorConfig);
 
 		return sumUpService.getConfig(sumUpConfigId);
-	}
-
-	private POSPaymentProcessResponse toProcessErrorResponse(@NonNull final Exception ex)
-	{
-		final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
-		final AdIssueId errorId = errorManager.createIssue(metasfreshException);
-		return POSPaymentProcessResponse.error(AdempiereException.extractMessage(metasfreshException), errorId);
 	}
 
 	@Nullable
@@ -93,14 +87,11 @@ class SumUpPaymentProcessor implements POSPaymentProcessor
 	}
 
 	@Override
-	public POSRefundResponse refund(@NonNull final POSRefundRequest request)
+	public POSPaymentProcessResponse refund(@NonNull final POSRefundRequest request)
 	{
 		final SumUpPOSRef posRef = SumUpUtils.toPOSRef(request.getPosOrderAndPaymentId());
 		final SumUpTransaction trx = sumUpService.refundTransaction(posRef);
-
-		return POSRefundResponse.builder()
-				.status(SumUpUtils.toResponseStatus(trx.getStatus(), trx.isRefunded()))
-				.build();
+		return SumUpUtils.extractProcessResponse(trx);
 	}
 
 }
