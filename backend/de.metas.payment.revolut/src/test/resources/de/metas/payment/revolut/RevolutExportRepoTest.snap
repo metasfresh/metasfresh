@@ -6,12 +6,22 @@ de.metas.payment.revolut.RevolutExportRepoTest.saveAll=[
       "accountNo": "accountNo",
       "addressLine1": "addr1",
       "addressLine2": "addr2",
-      "amount" : "10 CHF",
-      "city" : "city",
-      "postalCode" : "postal",
-      "recipientCountryId" : 5,
-      "recipientBankCountryId" : 4,
-      "recipientType" : "COMPANY"
+      "amount": "10 CHF",
+      "city": "city",
+      "name": "name",
+      "orgId": 1,
+      "paymentReference": "payReference",
+      "postalCode": "postal",
+      "recipientBankCountryId": 4,
+      "recipientCountryId": 5,
+      "recipientType": "COMPANY",
+      "recordReference": {
+        "recordId": 1,
+        "tableName": "C_PaySelection"
+      },
+      "regionName": "region",
+      "revolutPaymentExportId": 1000000,
+      "routingNo": "routingNo"
     }
   ]
 ]
