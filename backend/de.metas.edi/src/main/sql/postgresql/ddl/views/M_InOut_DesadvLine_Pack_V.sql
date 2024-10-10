@@ -19,7 +19,7 @@ select line.edi_desadvline_id || '-' || m_inoutline_id as M_InOut_DesadvLine_V_I
        pack.edi_desadv_id,
        ismanual_ipa_sscc18,
        bestbeforedate,
-       m_hu_packagingcode_lu_id,
+       m_hu_packagingcode_id as m_hu_packagingcode_lu_id,
        m_hu_packagingcode_tu_id,
        c_uom_id,
        item.qtyitemcapacity,
@@ -29,7 +29,7 @@ select line.edi_desadvline_id || '-' || m_inoutline_id as M_InOut_DesadvLine_V_I
        lotnumber,
        gtin_tu_packingmaterial,
        gtin_lu_packingmaterial,
-       (select PackagingCode from M_HU_PackagingCode c where c.M_HU_PackagingCode_ID=M_HU_PackagingCode_LU_ID) as M_HU_PackagingCode_LU_Text,
+       (select PackagingCode from M_HU_PackagingCode c where c.M_HU_PackagingCode_ID=M_HU_PackagingCode_ID) as M_HU_PackagingCode_LU_Text,
        (select PackagingCode from M_HU_PackagingCode c where c.M_HU_PackagingCode_ID=M_HU_PackagingCode_TU_ID) as M_HU_PackagingCode_TU_Text
 from EDI_Desadv_Pack pack
          INNER JOIN EDI_Desadv_Pack_Item item on pack.edi_desadv_pack_id = item.edi_desadv_pack_id

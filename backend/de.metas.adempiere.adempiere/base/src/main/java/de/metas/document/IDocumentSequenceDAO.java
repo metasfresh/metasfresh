@@ -2,6 +2,7 @@ package de.metas.document;
 
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
@@ -15,11 +16,12 @@ import java.util.Date;
  */
 public interface IDocumentSequenceDAO extends ISingletonService
 {
-	DocumentSequenceInfo getOrCreateDocumentSequenceInfo(String sequenceName, int adClientId, int adOrgId);
+	DocumentSequenceInfo getOrCreateDocumentSequenceInfo(@NonNull String sequenceName, int adClientId, int adOrgId);
 
 	@Nullable
 	DocumentSequenceInfo retriveDocumentSequenceInfo(DocSequenceId sequenceId);
 
+	@Nullable
 	@Deprecated
 	default DocumentSequenceInfo retriveDocumentSequenceInfo(final int adSequenceRepoId)
 	{

@@ -222,7 +222,7 @@ Feature: Modular contract log for proForma Sales Order
 
     And validate that there are no M_ShipmentSchedule_Recompute records after no more than 120 seconds for order 'so_order_S0315'
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1_S0315                      | PD           | true                | false       |
 

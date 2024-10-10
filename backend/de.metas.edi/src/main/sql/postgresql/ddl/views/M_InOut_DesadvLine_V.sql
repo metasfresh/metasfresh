@@ -40,7 +40,7 @@ select shipment.m_inout_id                                                      
        dline.IsSubsequentDeliveryPlanned,
        dline.EAN_CU,
        dline.EAN_TU,
-       dline.GTIN,
+       dline.GTIN_CU,
        dline.UPC_TU,
        dline.upc_cu,
        dline.PriceActual,

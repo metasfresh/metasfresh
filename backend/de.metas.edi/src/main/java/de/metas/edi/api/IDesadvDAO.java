@@ -133,7 +133,12 @@ public interface IDesadvDAO extends ISingletonService
 	I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull InOutId shipmentId);
 
 	/**
-	 * @return the max {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack#COLUMNNAME_Line} value for the given desadvId.
+	 * @return the max {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack#COLUMNNAME_SeqNo} value for the given desadvId.
 	 */
-	int retrieveMaxDesadvPackLine(@NonNull EDIDesadvId desadvId);
+	int retrieveMaxDesadvPackSeqNo(@NonNull EDIDesadvId desadvId);
+
+	/**
+	 * @return the max {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item#COLUMNNAME_Line} value for the given desadvId.
+	 */
+	int retrieveMaxDesadvPackItemLine(@NonNull EDIDesadvId ediDesadvId);
 }

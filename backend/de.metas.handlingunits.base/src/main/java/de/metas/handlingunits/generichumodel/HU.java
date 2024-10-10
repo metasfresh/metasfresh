@@ -1,5 +1,6 @@
 package de.metas.handlingunits.generichumodel;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
@@ -9,13 +10,17 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UOMConversionContext;
+import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.util.lang.Mutable;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +68,7 @@ public class HU
 
 	@NonNull
 	@Singular
+	@Getter(AccessLevel.NONE)
 	Map<BPartnerId, String> packagingGTINs;
 
 	@NonNull
@@ -183,5 +189,22 @@ public class HU
 
 		final BigDecimal qtyCU = allQuantities.get(allQuantities.size() / 2);
 		return Quantitys.of(qtyCU, productId);
+	}
+
+	@Nullable
+	public String getPackagingGTIN(@NonNull final BPartnerId bpartnerId)
+	{
+		final String gtin = packagingGTINs.get(bpartnerId);
+		if(Check.isNotBlank(gtin))
+		{
+			return gtin;
+		}
+		return packagingGTINs.get(BPartnerId.NONE);
+	}
+
+	@VisibleForTesting
+	public ImmutableMap<BPartnerId, String> getAllPackaginGTINs()
+	{
+		return ImmutableMap.copyOf(packagingGTINs);
 	}
 }
