@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.forex.ForexContractRef;
@@ -127,6 +128,7 @@ public class InvoiceHeaderImplBuilder
 	private int C_Harvesting_Calendar_ID = REPO_ID_UNSET_VALUE;
 	private int Harvesting_Year_ID = REPO_ID_UNSET_VALUE;
 	private int M_Warehouse_ID = REPO_ID_UNSET_VALUE;
+	private int MODCNTR_Settings_ID = REPO_ID_UNSET_VALUE;
 
 	InvoiceHeaderImplBuilder()
 	{
@@ -193,6 +195,7 @@ public class InvoiceHeaderImplBuilder
 
 		invoiceHeader.setCalendarId(CalendarId.ofRepoIdOrNull(getC_Harvesting_Calendar_ID()));
 		invoiceHeader.setYearId(YearId.ofRepoIdOrNull(getHarvesting_Year_ID()));
+		invoiceHeader.setModularContractSettingsId(ModularContractSettingsId.ofRepoIdOrNull(getModularContractSettingsId()));
 		invoiceHeader.setWarehouseId(WarehouseId.ofRepoIdOrNull(getM_Warehouse_ID()));
 		invoiceHeader.setAuctionId(AuctionId.ofRepoIdOrNull(auctionId));
 		invoiceHeader.setOrgBankAccountId(BankAccountId.ofRepoIdOrNull(getOrgBankAccount_ID()));
@@ -781,6 +784,16 @@ public class InvoiceHeaderImplBuilder
 		{
 			Harvesting_Year_ID = -1;
 		}
+	}
+
+	public int getModularContractSettingsId()
+	{
+		return MODCNTR_Settings_ID;
+	}
+
+	public void setModularContractSettingsId(final int modularContractSettingsId)
+	{
+		this.MODCNTR_Settings_ID = checkOverrideID("MODCNTR_Settings_ID", this.MODCNTR_Settings_ID, modularContractSettingsId);
 	}
 
 	public int getM_Warehouse_ID()
