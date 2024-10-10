@@ -30,7 +30,7 @@ import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepo
 import de.metas.contracts.modular.settings.InvoicingGroupType;
 import de.metas.contracts.modular.settings.ModularContractModuleUpdateRequest;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.settings.ModularContractType;

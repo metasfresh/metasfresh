@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.settings;
 
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;

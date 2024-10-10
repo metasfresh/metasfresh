@@ -28,6 +28,7 @@ import de.metas.banking.BankAccountId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -91,6 +92,7 @@ public class InvoiceCandidate
 				.activityId(upsertRequest.getActivityId())
 				.paymentTermId(upsertRequest.getPaymentTermId())
 				.harvestYearAndCalendarId(upsertRequest.getHarvestYearAndCalendarId())
+				.modularContractSettingsId(upsertRequest.getModularContractSettingsId())
 				.isInterimInvoice(upsertRequest.isInterimInvoice())
 				.handlerId(upsertRequest.getHandlerId())
 				.isManual(upsertRequest.isManual())
@@ -183,6 +185,8 @@ public class InvoiceCandidate
 
 	@Nullable final YearAndCalendarId harvestYearAndCalendarId;
 
+	@Nullable final ModularContractSettingsId modularContractSettingsId;
+
 	boolean processed;
 	boolean isActive;
 
@@ -237,6 +241,7 @@ public class InvoiceCandidate
 			@Nullable final String descriptionBottom,
 			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final YearAndCalendarId harvestYearAndCalendarId,
+			@Nullable final ModularContractSettingsId modularContractSettingsId,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems,
 			final boolean isInterimInvoice,
@@ -279,6 +284,7 @@ public class InvoiceCandidate
 		this.activityId = activityId;
 		this.paymentTermId = paymentTermId;
 		this.harvestYearAndCalendarId = harvestYearAndCalendarId;
+		this.modularContractSettingsId = modularContractSettingsId;
 		this.recordReference = recordReference;
 		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
 		this.isInterimInvoice = isInterimInvoice;

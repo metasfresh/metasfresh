@@ -27,7 +27,7 @@ import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.settings.ModularContractSettingsId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
