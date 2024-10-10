@@ -3,9 +3,11 @@ package de.metas.payment.sumup;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.logging.LogManager;
 import de.metas.money.MoneyService;
-import de.metas.payment.sumup.SumUpTransaction.SumUpTransactionBuilder;
+import de.metas.payment.sumup.SumUpTransaction.LastSync;
 import de.metas.payment.sumup.client.SumUpClient;
 import de.metas.payment.sumup.client.json.JsonGetReadersResponse;
 import de.metas.payment.sumup.client.json.JsonGetTransactionResponse;
@@ -17,6 +19,7 @@ import de.metas.payment.sumup.repository.SumUpConfigRepository;
 import de.metas.payment.sumup.repository.SumUpTransactionQuery;
 import de.metas.payment.sumup.repository.SumUpTransactionRepository;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,6 +38,7 @@ import java.util.stream.Collectors;
 public class SumUpService
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(SumUpService.class);
+	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final SumUpClientFactory clientFactory;
 	@NonNull private final SumUpConfigRepository configRepository;
@@ -200,21 +204,23 @@ public class SumUpService
 		final SumUpClient client = clientFactory.newClient(config);
 		client.setPosRef(trx.getPosRef());
 
-		final JsonGetTransactionResponse remoteTrx = client.getTransactionById(trx.getClientTransactionId());
-
-		return updateTransactionFromRemote(trx, remoteTrx);
+		try
+		{
+			final JsonGetTransactionResponse remoteTrx = client.getTransactionById(trx.getClientTransactionId());
+			return updateTransactionFromRemote(trx, remoteTrx);
+		}
+		catch (Exception ex)
+		{
+			final AdIssueId errorId = errorManager.createIssue(ex);
+			return trx.toBuilder()
+					.lastSync(LastSync.error(errorId))
+					.build();
+		}
 	}
 
 	private static SumUpTransaction updateTransactionFromRemote(@NonNull SumUpTransaction trx, @NonNull final JsonGetTransactionResponse remote)
 	{
-		final SumUpTransactionBuilder trxBuilder = trx.toBuilder();
-		updateTransactionFromRemote(trxBuilder, remote);
-		return trxBuilder.build();
-	}
-
-	private static void updateTransactionFromRemote(@NonNull SumUpTransactionBuilder trxBuilder, @NonNull final JsonGetTransactionResponse remote)
-	{
-		trxBuilder
+		return trx.toBuilder()
 				.externalId(remote.getId())
 				.clientTransactionId(remote.getClient_transaction_id())
 				.merchantCode(remote.getMerchant_code())
@@ -222,8 +228,35 @@ public class SumUpService
 				.status(SumUpTransactionStatus.ofString(remote.getStatus()))
 				.amount(Amount.of(remote.getAmount(), remote.getCurrency()))
 				.amountRefunded(Amount.of(remote.getAmountRefunded(), remote.getCurrency()))
+				.card(extractSumUpTransactionCard(remote.getCard()))
 				.json(remote.getJson())
-		;
+				.lastSync(LastSync.ok())
+				.build();
+	}
+
+	private static SumUpTransaction.Card extractSumUpTransactionCard(@Nullable JsonGetTransactionResponse.Card from)
+	{
+		if (from == null)
+		{
+			return null;
+		}
+
+		final String type = StringUtils.trimBlankToNull(from.getType());
+		if (type == null)
+		{
+			return null;
+		}
+
+		final String last4Digits = StringUtils.trimBlankToNull(from.getLast_4_digits());
+		if (last4Digits == null)
+		{
+			return null;
+		}
+
+		return SumUpTransaction.Card.builder()
+				.type(type)
+				.last4Digits(last4Digits)
+				.build();
 	}
 
 	public BulkUpdateByQueryResult bulkUpdatePendingTransactions(boolean isForceSendingChangeEvents)

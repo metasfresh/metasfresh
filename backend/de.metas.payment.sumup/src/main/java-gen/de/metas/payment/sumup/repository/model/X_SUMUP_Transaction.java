@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMUP_Transaction, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1375477180L;
+	private static final long serialVersionUID = 1530438573L;
 
     /** Standard Constructor */
     public X_SUMUP_Transaction (final Properties ctx, final int SUMUP_Transaction_ID, @Nullable final String trxName)
@@ -46,6 +46,30 @@ public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMU
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Amount);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCardLast4Digits (final @Nullable java.lang.String CardLast4Digits)
+	{
+		set_Value (COLUMNNAME_CardLast4Digits, CardLast4Digits);
+	}
+
+	@Override
+	public java.lang.String getCardLast4Digits() 
+	{
+		return get_ValueAsString(COLUMNNAME_CardLast4Digits);
+	}
+
+	@Override
+	public void setCardType (final @Nullable java.lang.String CardType)
+	{
+		set_Value (COLUMNNAME_CardType, CardType);
+	}
+
+	@Override
+	public java.lang.String getCardType() 
+	{
+		return get_ValueAsString(COLUMNNAME_CardType);
 	}
 
 	@Override
@@ -176,6 +200,54 @@ public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMU
 	public int getSUMUP_Config_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SUMUP_Config_ID);
+	}
+
+	@Override
+	public void setSUMUP_LastSync_Error_ID (final int SUMUP_LastSync_Error_ID)
+	{
+		if (SUMUP_LastSync_Error_ID < 1) 
+			set_Value (COLUMNNAME_SUMUP_LastSync_Error_ID, null);
+		else 
+			set_Value (COLUMNNAME_SUMUP_LastSync_Error_ID, SUMUP_LastSync_Error_ID);
+	}
+
+	@Override
+	public int getSUMUP_LastSync_Error_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SUMUP_LastSync_Error_ID);
+	}
+
+	/** 
+	 * SUMUP_LastSync_Status AD_Reference_ID=541901
+	 * Reference name: SUMUP_LastSync_Status
+	 */
+	public static final int SUMUP_LASTSYNC_STATUS_AD_Reference_ID=541901;
+	/** OK = OK */
+	public static final String SUMUP_LASTSYNC_STATUS_OK = "OK";
+	/** Error = ERR */
+	public static final String SUMUP_LASTSYNC_STATUS_Error = "ERR";
+	@Override
+	public void setSUMUP_LastSync_Status (final @Nullable java.lang.String SUMUP_LastSync_Status)
+	{
+		set_Value (COLUMNNAME_SUMUP_LastSync_Status, SUMUP_LastSync_Status);
+	}
+
+	@Override
+	public java.lang.String getSUMUP_LastSync_Status() 
+	{
+		return get_ValueAsString(COLUMNNAME_SUMUP_LastSync_Status);
+	}
+
+	@Override
+	public void setSUMUP_LastSync_Timestamp (final @Nullable java.sql.Timestamp SUMUP_LastSync_Timestamp)
+	{
+		set_Value (COLUMNNAME_SUMUP_LastSync_Timestamp, SUMUP_LastSync_Timestamp);
+	}
+
+	@Override
+	public java.sql.Timestamp getSUMUP_LastSync_Timestamp() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_SUMUP_LastSync_Timestamp);
 	}
 
 	@Override

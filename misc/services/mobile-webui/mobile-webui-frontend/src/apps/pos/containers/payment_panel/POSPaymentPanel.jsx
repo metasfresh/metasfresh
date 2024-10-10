@@ -102,6 +102,7 @@ const POSPaymentPanel = ({ disabled }) => {
             currency={currency}
             currencyPrecision={currencyPrecision}
             status={payment.status}
+            statusDetails={payment.statusDetails}
             allowCheckout={payment.allowCheckout}
             onCheckout={onPaymentCheckout}
             allowDelete={payment.allowDelete}

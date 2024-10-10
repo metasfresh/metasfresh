@@ -1,6 +1,7 @@
 package de.metas.pos.repository.model;
 
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_POS_Payment
@@ -251,6 +252,90 @@ public interface I_C_POS_Payment
 
 	ModelColumn<I_C_POS_Payment, Object> COLUMN_POSPaymentProcessingStatus = new ModelColumn<>(I_C_POS_Payment.class, "POSPaymentProcessingStatus", null);
 	String COLUMNNAME_POSPaymentProcessingStatus = "POSPaymentProcessingStatus";
+
+	/**
+	 * Set Payment Processing Summary.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOSPaymentProcessingSummary (@Nullable java.lang.String POSPaymentProcessingSummary);
+
+	/**
+	 * Get Payment Processing Summary.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOSPaymentProcessingSummary();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_POSPaymentProcessingSummary = new ModelColumn<>(I_C_POS_Payment.class, "POSPaymentProcessingSummary", null);
+	String COLUMNNAME_POSPaymentProcessingSummary = "POSPaymentProcessingSummary";
+
+	/**
+	 * Set Payment Processing Trx ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOSPaymentProcessing_TrxId (@Nullable java.lang.String POSPaymentProcessing_TrxId);
+
+	/**
+	 * Get Payment Processing Trx ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOSPaymentProcessing_TrxId();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_POSPaymentProcessing_TrxId = new ModelColumn<>(I_C_POS_Payment.class, "POSPaymentProcessing_TrxId", null);
+	String COLUMNNAME_POSPaymentProcessing_TrxId = "POSPaymentProcessing_TrxId";
+
+	/**
+	 * Set Payment Processor.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOSPaymentProcessor (@Nullable java.lang.String POSPaymentProcessor);
+
+	/**
+	 * Get Payment Processor.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOSPaymentProcessor();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_POSPaymentProcessor = new ModelColumn<>(I_C_POS_Payment.class, "POSPaymentProcessor", null);
+	String COLUMNNAME_POSPaymentProcessor = "POSPaymentProcessor";
+
+	/**
+	 * Set SumUp Configuration.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSUMUP_Config_ID (int SUMUP_Config_ID);
+
+	/**
+	 * Get SumUp Configuration.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSUMUP_Config_ID();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_SUMUP_Config_ID = new ModelColumn<>(I_C_POS_Payment.class, "SUMUP_Config_ID", null);
+	String COLUMNNAME_SUMUP_Config_ID = "SUMUP_Config_ID";
 
 	/**
 	 * Get Updated.

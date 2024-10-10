@@ -6,11 +6,7 @@ de.metas.payment.revolut.RevolutExportRepoTest.saveAll=[
       "accountNo": "accountNo",
       "addressLine1": "addr1",
       "addressLine2": "addr2",
-      "amount": {
-        "currencyCode": "CHF",
-        "value": 10,
-        "zero": false
-      },
+      "amount": "10 CHF",
       "city": "city",
       "name": "name",
       "orgId": 1,

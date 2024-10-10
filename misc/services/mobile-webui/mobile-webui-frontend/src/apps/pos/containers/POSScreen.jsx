@@ -20,7 +20,6 @@ const POSScreen = () => {
   useOrdersWebsocket({
     posTerminalId,
     onWebsocketMessage: (message) => {
-      console.log('WS message', { message });
       dispatch(updateOrderFromBackendAction({ order: message.posOrder }));
     },
   });

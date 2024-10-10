@@ -3,6 +3,7 @@ package de.metas.pos;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.Money;
 import de.metas.payment.PaymentId;
+import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class POSPayment
 	@NonNull private final Money amount;
 
 	@NonNull private final POSPaymentProcessingStatus paymentProcessingStatus;
+	@Nullable private final POSPaymentCardProcessingDetails cardProcessingDetails;
 	@Nullable private final PaymentId paymentReceiptId;
 
 	public POSPaymentId getLocalIdNotNull() {return Check.assumeNotNull(this.getLocalId(), "Expected POSPayment to be saved: {}", this);}
@@ -108,17 +110,19 @@ public class POSPayment
 		return toBuilder().paymentProcessingStatus(POSPaymentProcessingStatus.DELETED).build();
 	}
 
-	public POSPayment changingStatusFromRemote(final POSPaymentProcessingStatus newStatus)
+	public POSPayment changingStatusFromRemote(@NonNull final POSPaymentProcessResponse response)
 	{
-		if (paymentProcessingStatus == newStatus)
-		{
-			return this;
-		}
-
 		// NOTE: when changing status from remote we cannot validate if the status transition is OK
 		// we have to accept what we have on remote.
 
-		return toBuilder().paymentProcessingStatus(newStatus).build();
+		return toBuilder()
+				.paymentProcessingStatus(response.getStatus())
+				.cardProcessingDetails(POSPaymentCardProcessingDetails.builder()
+						.config(response.getConfig())
+						.transactionId(response.getTransactionId())
+						.summary(response.getSummary())
+						.build())
+				.build();
 	}
 
 	public POSPayment withPaymentReceipt(@Nullable final PaymentId paymentReceiptId)

@@ -8,7 +8,6 @@ import de.metas.pos.payment_gateway.POSPaymentProcessRequest;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorService;
 import de.metas.pos.payment_gateway.POSRefundRequest;
-import de.metas.pos.payment_gateway.POSRefundResponse;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -113,7 +112,7 @@ public class POSOrderProcessingServices
 				.amount(posPayment.getAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
 				.build());
 
-		return posPayment.changingStatusFromRemote(processResponse.getStatus());
+		return posPayment.changingStatusFromRemote(processResponse);
 	}
 
 	public POSPayment refundPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull POSOrderId posOrderId, @NonNull final POSTerminalPaymentProcessorConfig paymentProcessorConfig)
@@ -134,13 +133,13 @@ public class POSOrderProcessingServices
 
 		//
 		// Ask payment processor to refund
-		final POSRefundResponse refundResponse = posPaymentProcessorService.refund(
+		final POSPaymentProcessResponse refundResponse = posPaymentProcessorService.refund(
 				POSRefundRequest.builder()
 						.paymentProcessorConfig(paymentProcessorConfig)
 						.posOrderAndPaymentId(POSOrderAndPaymentId.of(posOrderId, posPayment.getLocalIdNotNull()))
 						.build()
 		);
-		posPayment = posPayment.changingStatusFromRemote(refundResponse.getStatus());
+		posPayment = posPayment.changingStatusFromRemote(refundResponse);
 
 		return posPayment;
 	}

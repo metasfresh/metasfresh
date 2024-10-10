@@ -4,6 +4,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
+import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.remote.RemotePOSOrder;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.user.UserId;
@@ -54,7 +55,7 @@ public class POSOrdersService
 
 	public void updatePaymentStatusFromRemoteAndTryCompleteOrder(
 			@NonNull final POSOrderAndPaymentId posOrderAndPaymentId,
-			@NonNull final POSPaymentProcessingStatus paymentProcessingStatus)
+			@NonNull final POSPaymentProcessResponse response)
 	{
 		// NOTE: 
 		// Make sure we are running out of transaction. 
@@ -62,15 +63,8 @@ public class POSOrdersService
 		// so it might be that updating can succeed (and it's saved) but order processing not.
 		trxManager.assertThreadInheritedTrxNotExists();
 
-		updatePaymentStatusFromRemote(posOrderAndPaymentId, paymentProcessingStatus);
+		ordersRepository.updatePaymentById(posOrderAndPaymentId, (order, payment) -> payment.changingStatusFromRemote(response));
 		tryCompleteNoFail(posOrderAndPaymentId.getOrderId());
-	}
-
-	private void updatePaymentStatusFromRemote(
-			@NonNull final POSOrderAndPaymentId posOrderAndPaymentId,
-			@NonNull final POSPaymentProcessingStatus paymentProcessingStatus)
-	{
-		ordersRepository.updatePaymentById(posOrderAndPaymentId, (order, payment) -> payment.changingStatusFromRemote(paymentProcessingStatus));
 	}
 
 	private void tryCompleteNoFail(@NonNull final POSOrderId posOrderId)
