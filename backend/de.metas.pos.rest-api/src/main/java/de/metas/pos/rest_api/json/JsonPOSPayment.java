@@ -1,9 +1,11 @@
 package de.metas.pos.rest_api.json;
 
 import de.metas.pos.POSPayment;
+import de.metas.pos.POSPaymentCardProcessingDetails;
 import de.metas.pos.POSPaymentExternalId;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSPaymentProcessingStatus;
+import de.metas.pos.payment_gateway.POSCardReader;
 import de.metas.pos.remote.RemotePOSPayment;
 import lombok.Builder;
 import lombok.NonNull;
@@ -25,6 +27,8 @@ public class JsonPOSPayment
 	@Nullable BigDecimal cashTenderedAmount;
 	@Nullable BigDecimal cashGiveBackAmount;
 
+	@Nullable String cardReaderName;
+
 	@Nullable JsonPOSPaymentStatus status;
 	@Nullable String statusDetails;
 	boolean allowCheckout;
@@ -43,13 +47,32 @@ public class JsonPOSPayment
 				.amount(payment.getAmount().toBigDecimal())
 				.cashTenderedAmount(payment.getCashTenderedAmount().toBigDecimal())
 				.cashGiveBackAmount(payment.getCashGiveBackAmount().toBigDecimal())
+				.cardReaderName(extractCardReaderName(payment))
 				.status(JsonPOSPaymentStatus.of(paymentProcessingStatus))
 				.statusDetails(payment.getCardProcessingDetails() != null ? payment.getCardProcessingDetails().getSummary() : null)
 				.allowCheckout(paymentProcessingStatus.isAllowCheckout())
-				.allowDelete(paymentProcessingStatus.isAllowDelete())
+				.allowDelete(payment.isAllowDelete())
 				.allowRefund(payment.isAllowRefund())
 				.hashCode(payment.hashCode())
 				.build();
+	}
+
+	@Nullable
+	private static String extractCardReaderName(@NonNull final POSPayment payment)
+	{
+		final POSPaymentCardProcessingDetails cardProcessingDetails = payment.getCardProcessingDetails();
+		if (cardProcessingDetails == null)
+		{
+			return null;
+		}
+
+		final POSCardReader cardReader = cardProcessingDetails.getCardReader();
+		if (cardReader == null)
+		{
+			return null;
+		}
+
+		return cardReader.getName();
 	}
 
 	RemotePOSPayment toRemotePOSPayment()

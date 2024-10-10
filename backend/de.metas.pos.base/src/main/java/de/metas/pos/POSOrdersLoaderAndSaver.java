@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -13,6 +14,8 @@ import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.sumup.SumUpConfigId;
+import de.metas.pos.payment_gateway.POSCardReader;
+import de.metas.pos.payment_gateway.POSCardReaderExternalId;
 import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.pos.repository.model.I_C_POS_OrderLine;
@@ -407,12 +410,19 @@ class POSOrdersLoaderAndSaver
 		record.setC_Payment_ID(PaymentId.toRepoId(from.getPaymentReceiptId()));
 	}
 
-	private static void updateRecord(final I_C_POS_Payment paymentRecord, @Nullable final POSPaymentCardProcessingDetails from)
+	private static void updateRecord(final I_C_POS_Payment record, @Nullable final POSPaymentCardProcessingDetails from)
 	{
-		paymentRecord.setPOSPaymentProcessor(from != null ? from.getConfig().getType().getCode() : null);
-		paymentRecord.setSUMUP_Config_ID(from != null ? SumUpConfigId.toRepoId(from.getConfig().getSumUpConfigId()) : -1);
-		paymentRecord.setPOSPaymentProcessing_TrxId(from != null ? StringUtils.trimBlankToNull(from.getTransactionId()) : null);
-		paymentRecord.setPOSPaymentProcessingSummary(from != null ? StringUtils.trimBlankToNull(from.getSummary()) : null);
+		record.setPOSPaymentProcessor(from != null ? from.getConfig().getType().getCode() : null);
+		record.setSUMUP_Config_ID(from != null ? SumUpConfigId.toRepoId(from.getConfig().getSumUpConfigId()) : -1);
+		record.setPOSPaymentProcessing_TrxId(from != null ? StringUtils.trimBlankToNull(from.getTransactionId()) : null);
+		record.setPOSPaymentProcessingSummary(from != null ? StringUtils.trimBlankToNull(from.getSummary()) : null);
+		updateRecord(record, from != null ? from.getCardReader() : null);
+	}
+
+	private static void updateRecord(final I_C_POS_Payment record, final POSCardReader from)
+	{
+		record.setPOS_CardReader_ExternalId(from != null ? from.getExternalId().getAsString() : null);
+		record.setPOS_CardReader_Name(from != null ? from.getName() : null);
 	}
 
 	@Nullable
@@ -428,6 +438,7 @@ class POSOrdersLoaderAndSaver
 				.config(config)
 				.transactionId(StringUtils.trimBlankToNull(record.getPOSPaymentProcessing_TrxId()))
 				.summary(StringUtils.trimBlankToNull(record.getPOSPaymentProcessingSummary()))
+				.cardReader(extractCardReader(record))
 				.build();
 	}
 
@@ -442,6 +453,22 @@ class POSOrdersLoaderAndSaver
 		return POSTerminalPaymentProcessorConfig.builder()
 				.type(type)
 				.sumUpConfigId(SumUpConfigId.ofRepoIdOrNull(record.getSUMUP_Config_ID()))
+				.build();
+	}
+
+	@Nullable
+	private static POSCardReader extractCardReader(final I_C_POS_Payment record)
+	{
+		POSCardReaderExternalId externalId = POSCardReaderExternalId.ofNullableString(record.getPOS_CardReader_ExternalId());
+		if (externalId == null)
+		{
+			return null;
+		}
+
+		final String name = StringUtils.trimBlankToNull(record.getPOS_CardReader_Name());
+		return POSCardReader.builder()
+				.externalId(externalId)
+				.name(CoalesceUtil.coalesceNotNull(name, "?"))
 				.build();
 	}
 

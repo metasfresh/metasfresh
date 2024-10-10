@@ -15,6 +15,7 @@ public class POSPaymentProcessResponse
 {
 	@NonNull POSPaymentProcessingStatus status;
 	@NonNull POSTerminalPaymentProcessorConfig config;
+	@Nullable POSCardReader cardReader;
 
 	@Nullable String transactionId;
 	@Nullable String summary;

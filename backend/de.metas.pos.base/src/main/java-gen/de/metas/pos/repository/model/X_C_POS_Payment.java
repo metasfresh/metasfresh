@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Payment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1235909151L;
+	private static final long serialVersionUID = 663180181L;
 
     /** Standard Constructor */
     public X_C_POS_Payment (final Properties ctx, final int C_POS_Payment_ID, @Nullable final String trxName)
@@ -141,6 +141,30 @@ public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Pa
 	public java.lang.String getExternalId() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
+	public void setPOS_CardReader_ExternalId (final @Nullable java.lang.String POS_CardReader_ExternalId)
+	{
+		set_Value (COLUMNNAME_POS_CardReader_ExternalId, POS_CardReader_ExternalId);
+	}
+
+	@Override
+	public java.lang.String getPOS_CardReader_ExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_POS_CardReader_ExternalId);
+	}
+
+	@Override
+	public void setPOS_CardReader_Name (final @Nullable java.lang.String POS_CardReader_Name)
+	{
+		set_Value (COLUMNNAME_POS_CardReader_Name, POS_CardReader_Name);
+	}
+
+	@Override
+	public java.lang.String getPOS_CardReader_Name() 
+	{
+		return get_ValueAsString(COLUMNNAME_POS_CardReader_Name);
 	}
 
 	/** 

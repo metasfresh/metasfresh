@@ -6,6 +6,8 @@ import de.metas.payment.sumup.SumUpTransactionStatus;
 import de.metas.pos.POSOrderAndPaymentId;
 import de.metas.pos.POSPaymentProcessingStatus;
 import de.metas.pos.POSTerminalPaymentProcessorConfig;
+import de.metas.pos.payment_gateway.POSCardReader;
+import de.metas.pos.payment_gateway.POSCardReaderExternalId;
 import de.metas.pos.payment_gateway.POSPaymentProcessResponse;
 import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import lombok.NonNull;
@@ -22,16 +24,31 @@ class SumUpUtils
 		return POSPaymentProcessResponse.builder()
 				.status(SumUpUtils.toResponseStatus(sumUpTrx.getStatus(), sumUpTrx.isRefunded()))
 				.config(extractPaymentProcessorConfig(sumUpTrx))
+				.cardReader(extractCardReader(sumUpTrx.getCardReader()))
 				.transactionId(sumUpTrx.getExternalId().getAsString())
 				.summary(sumUpTrx.getCard() != null ? sumUpTrx.getCard().getAsString() : null)
 				.build();
 	}
 
-	public static POSTerminalPaymentProcessorConfig extractPaymentProcessorConfig(final SumUpTransaction sumUpTrx)
+	private static POSTerminalPaymentProcessorConfig extractPaymentProcessorConfig(final SumUpTransaction sumUpTrx)
 	{
 		return POSTerminalPaymentProcessorConfig.builder()
 				.type(POSPaymentProcessorType.SumUp)
 				.sumUpConfigId(sumUpTrx.getConfigId())
+				.build();
+	}
+
+	@Nullable
+	private static POSCardReader extractCardReader(@Nullable final SumUpTransaction.CardReader sumUpCardReader)
+	{
+		if(sumUpCardReader == null)
+		{
+			return null;
+		}
+		
+		return POSCardReader.builder()
+				.externalId(POSCardReaderExternalId.ofString(sumUpCardReader.getExternalId().getAsString()))
+				.name(sumUpCardReader.getName())
 				.build();
 	}
 

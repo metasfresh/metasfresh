@@ -254,6 +254,48 @@ public interface I_C_POS_Payment
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Card Reader External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOS_CardReader_ExternalId (@Nullable java.lang.String POS_CardReader_ExternalId);
+
+	/**
+	 * Get Card Reader External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOS_CardReader_ExternalId();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_POS_CardReader_ExternalId = new ModelColumn<>(I_C_POS_Payment.class, "POS_CardReader_ExternalId", null);
+	String COLUMNNAME_POS_CardReader_ExternalId = "POS_CardReader_ExternalId";
+
+	/**
+	 * Set Card Reader Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOS_CardReader_Name (@Nullable java.lang.String POS_CardReader_Name);
+
+	/**
+	 * Get Card Reader Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOS_CardReader_Name();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_POS_CardReader_Name = new ModelColumn<>(I_C_POS_Payment.class, "POS_CardReader_Name", null);
+	String COLUMNNAME_POS_CardReader_Name = "POS_CardReader_Name";
+
+	/**
 	 * Set POS Payment Method.
 	 *
 	 * <br>Type: List

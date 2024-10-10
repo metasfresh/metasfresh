@@ -73,21 +73,33 @@ public class POSPayment
 
 	public boolean isDeleted() {return paymentProcessingStatus.isDeleted();}
 
-	public boolean isAllowDeleteFromDB() {return paymentProcessingStatus.isAllowDeleteFromDB();}
+	public boolean isAllowDeleteFromDB() {return paymentProcessingStatus.checkAllowDeleteFromDB().isTrue();}
 
-	public void assertAllowDelete()
+	public boolean isAllowDelete()
 	{
-		paymentProcessingStatus.assertAllowDelete();
+		return checkAllowDelete().isTrue();
+	}
+
+	private BooleanWithReason checkAllowDelete()
+	{
 		if (paymentReceiptId != null)
 		{
-			throw new AdempiereException("Deleting a POS payment with receipt is not allowed");
+			return BooleanWithReason.falseBecause("Deleting a POS payment with receipt is not allowed");
 		}
+
+		return paymentProcessingStatus.checkAllowDelete(paymentMethod);
+	}
+
+	void assertAllowDelete()
+	{
+		checkAllowDelete().assertTrue();
 	}
 
 	public void assertAllowDeleteFromDB()
 	{
-		assertAllowDelete();
-		paymentProcessingStatus.assertAllowDeleteFromDB();
+		paymentProcessingStatus.checkAllowDeleteFromDB()
+				.and(this::checkAllowDelete)
+				.assertTrue();
 	}
 
 	public void assertAllowCheckout()
@@ -177,6 +189,7 @@ public class POSPayment
 						.config(response.getConfig())
 						.transactionId(response.getTransactionId())
 						.summary(response.getSummary())
+						.cardReader(response.getCardReader())
 						.build())
 				.build();
 	}
