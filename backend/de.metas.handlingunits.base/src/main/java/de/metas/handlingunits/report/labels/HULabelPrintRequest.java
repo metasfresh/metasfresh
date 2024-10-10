@@ -15,8 +15,15 @@ import javax.annotation.Nullable;
 public class HULabelPrintRequest
 {
 	@NonNull HULabelSourceDocType sourceDocType;
+	
 	@NonNull @Singular("hu") ImmutableList<HUToReport> hus;
+
+	/**
+	 * Autoprint can be switched on/off via sysconfig {@link HULabelConfigFromSysConfigProvider#SYSCONFIG_PICKING_LABEL_AUTO_PRINT_ENABLED}.
+	 */
 	boolean onlyIfAutoPrint;
+		
 	@Nullable PrintCopies printCopiesOverride;
+	
 	boolean failOnMissingLabelConfig;
 }

@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.esb.edi.model;
 
 import org.adempiere.model.ModelColumn;
@@ -170,27 +148,27 @@ public interface I_EDI_Desadv_Pack
 	String COLUMNNAME_EDI_Desadv_Parent_Pack_ID = "EDI_Desadv_Parent_Pack_ID";
 
 	/**
-	 * Set LU Packaging-GTIN.
-	 * GTIN des verwendeten Gebindes, z.B. Palette. Wird automatisch über die Packvorschrift aus den Produkt-Stammdaten zum jeweiligen Lieferempfänger ermittelt.
+	 * Set Packingmaterial-GTIN.
+	 * GTIN of the container used, e.g. pallet. Is determined automatically via the packing instruction from the product master data for the respective delivery recipient.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setGTIN_LU_PackingMaterial (@Nullable java.lang.String GTIN_LU_PackingMaterial);
+	void setGTIN_PackingMaterial (@Nullable java.lang.String GTIN_PackingMaterial);
 
 	/**
-	 * Get LU Packaging-GTIN.
-	 * GTIN des verwendeten Gebindes, z.B. Palette. Wird automatisch über die Packvorschrift aus den Produkt-Stammdaten zum jeweiligen Lieferempfänger ermittelt.
+	 * Get Packingmaterial-GTIN.
+	 * GTIN of the container used, e.g. pallet. Is determined automatically via the packing instruction from the product master data for the respective delivery recipient.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getGTIN_LU_PackingMaterial();
+	@Nullable java.lang.String getGTIN_PackingMaterial();
 
-	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_GTIN_LU_PackingMaterial = new ModelColumn<>(I_EDI_Desadv_Pack.class, "GTIN_LU_PackingMaterial", null);
-	String COLUMNNAME_GTIN_LU_PackingMaterial = "GTIN_LU_PackingMaterial";
+	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_GTIN_PackingMaterial = new ModelColumn<>(I_EDI_Desadv_Pack.class, "GTIN_PackingMaterial", null);
+	String COLUMNNAME_GTIN_PackingMaterial = "GTIN_PackingMaterial";
 
 	/**
 	 * Set SSCC18.
@@ -260,27 +238,6 @@ public interface I_EDI_Desadv_Pack
 	String COLUMNNAME_IsManual_IPA_SSCC18 = "IsManual_IPA_SSCC18";
 
 	/**
-	 * Set SeqNo..
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setLine (int Line);
-
-	/**
-	 * Get SeqNo..
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getLine();
-
-	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_Line = new ModelColumn<>(I_EDI_Desadv_Pack.class, "Line", null);
-	String COLUMNNAME_Line = "Line";
-
-	/**
 	 * Set Handling Unit.
 	 *
 	 * <br>Type: Search
@@ -302,48 +259,71 @@ public interface I_EDI_Desadv_Pack
 	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set LU packaging code.
+	 * Set Packaging code.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_HU_PackagingCode_LU_ID (int M_HU_PackagingCode_LU_ID);
+	void setM_HU_PackagingCode_ID (int M_HU_PackagingCode_ID);
 
 	/**
-	 * Get LU packaging code.
+	 * Get Packaging code.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_HU_PackagingCode_LU_ID();
+	int getM_HU_PackagingCode_ID();
 
-	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_M_HU_PackagingCode_LU_ID = new ModelColumn<>(I_EDI_Desadv_Pack.class, "M_HU_PackagingCode_LU_ID", null);
-	String COLUMNNAME_M_HU_PackagingCode_LU_ID = "M_HU_PackagingCode_LU_ID";
+	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_M_HU_PackagingCode_ID = new ModelColumn<>(I_EDI_Desadv_Pack.class, "M_HU_PackagingCode_ID", null);
+	String COLUMNNAME_M_HU_PackagingCode_ID = "M_HU_PackagingCode_ID";
 
 	/**
-	 * Set M_HU_PackagingCode_LU_Text.
+	 * Set M_HU_PackagingCode_Text.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	void setM_HU_PackagingCode_LU_Text (@Nullable java.lang.String M_HU_PackagingCode_LU_Text);
+	void setM_HU_PackagingCode_Text (@Nullable java.lang.String M_HU_PackagingCode_Text);
 
 	/**
-	 * Get M_HU_PackagingCode_LU_Text.
+	 * Get M_HU_PackagingCode_Text.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
-	@Nullable java.lang.String getM_HU_PackagingCode_LU_Text();
+	@Deprecated
+	@Nullable java.lang.String getM_HU_PackagingCode_Text();
 
-	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_M_HU_PackagingCode_LU_Text = new ModelColumn<>(I_EDI_Desadv_Pack.class, "M_HU_PackagingCode_LU_Text", null);
-	String COLUMNNAME_M_HU_PackagingCode_LU_Text = "M_HU_PackagingCode_LU_Text";
+	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_M_HU_PackagingCode_Text = new ModelColumn<>(I_EDI_Desadv_Pack.class, "M_HU_PackagingCode_Text", null);
+	String COLUMNNAME_M_HU_PackagingCode_Text = "M_HU_PackagingCode_Text";
+
+	/**
+	 * Set SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_EDI_Desadv_Pack, Object> COLUMN_SeqNo = new ModelColumn<>(I_EDI_Desadv_Pack.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Get Updated.

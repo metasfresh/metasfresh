@@ -61,7 +61,7 @@ Feature: Locked HUs can not be picked
       | huProduct_inventoryLine       | createdCU          |
 
     And transform CU to new TUs
-      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier | OPT.resultedNewCUs.Identifier |
       | createdCU           | 10    | huProductTU                        | createdTU                 | newCreatedCU              |
 
     And after not more than 60s, M_HUs should have
@@ -98,7 +98,7 @@ Feature: Locked HUs can not be picked
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
 

@@ -6,17 +6,19 @@ import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.util.Map;
 
 public interface ISysConfigBL extends ISingletonService
 {
+	@Contract("_, !null -> !null")
 	@Nullable
-	String getValue(String name, String defaultValue);
+	String getValue(@NonNull String name, @Nullable String defaultValue);
 
 	@Nullable
-	String getValue(String name);
+	String getValue(@NonNull String name);
 
 	int getIntValue(String name, int defaultValue);
 
