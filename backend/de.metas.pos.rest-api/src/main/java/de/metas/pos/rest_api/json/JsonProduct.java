@@ -1,5 +1,6 @@
 package de.metas.pos.rest_api.json;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.pos.POSProduct;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
@@ -11,6 +12,8 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
 
 @Value
 @Builder
@@ -42,5 +45,13 @@ public class JsonProduct
 				.catchWeight(product.getCatchWeight())
 				.taxCategoryId(product.getTaxCategoryId())
 				.build();
+	}
+
+	public static List<JsonProduct> fromList(@NonNull final List<POSProduct> list, @NonNull final String adLanguage)
+	{
+		return list.stream()
+				.map(product -> from(product, adLanguage))
+				.sorted(Comparator.comparing(JsonProduct::getName))
+				.collect(ImmutableList.toImmutableList());
 	}
 }

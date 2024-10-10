@@ -1,12 +1,14 @@
 import React from 'react';
 import logoImage from '../../../assets/images/logo.png';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getUserFullnameFromState } from '../../../reducers/appHandler';
 import './Header.scss';
 
 import { usePOSTerminal } from '../actions/posTerminal';
+import { MODAL_POSTerminalSelect, showModalAction } from '../actions/ui';
 
 const Header = () => {
+  const dispatch = useDispatch();
   const posTerminal = usePOSTerminal();
   const userFullname = useSelector(getUserFullnameFromState);
   const avatarLetter = userFullname ? userFullname.charAt(0).toUpperCase() : '';
@@ -28,9 +30,20 @@ const Header = () => {
         )}
       </div>
       <div className="right">
+        {posTerminal.id && (
+          <div
+            className="pos-header-button posTerminal"
+            onClick={() => dispatch(showModalAction({ modal: MODAL_POSTerminalSelect }))}
+          >
+            <div className="icon-letter">
+              <i className="fa-solid fa-display" />
+            </div>
+            <span className="text">{posTerminal.caption}</span>
+          </div>
+        )}
         <div className="pos-header-button userFullname">
-          <span className="icon-letter">{avatarLetter}</span>
-          <span className="text">{userFullname}</span>
+          <div className="icon-letter">{avatarLetter}</div>
+          <div className="text">{userFullname}</div>
         </div>
       </div>
     </div>

@@ -6,22 +6,27 @@ import {
   changeOrderStatusToWaitingPayment,
   useCurrentOrder,
 } from '../../actions/orders';
+import { usePOSTerminal } from '../../actions/posTerminal';
+import PropTypes from 'prop-types';
 
-const CurrentOrderActions = () => {
+const CurrentOrderActions = ({ disabled }) => {
   const dispatch = useDispatch();
-  const currentOrder = useCurrentOrder();
+  const posTerminal = usePOSTerminal();
+  const posTerminalId = posTerminal.id;
+  const currentOrder = useCurrentOrder({ posTerminalId });
 
-  const isNewOrderAllowed = !currentOrder.isLoading && currentOrder.lines?.length > 0;
-  const isVoidAllowed = !currentOrder.isLoading && currentOrder.lines?.length > 0;
-  const isPayAllowed = !currentOrder.isLoading && currentOrder.lines?.length > 0;
-  const isDeleteCurrentLineAllowed = !!currentOrder.selectedLineUUID;
+  const isNewOrderAllowed = !disabled && !currentOrder.isLoading && currentOrder.lines?.length > 0;
+  const isVoidAllowed = !disabled && !currentOrder.isLoading && currentOrder.lines?.length > 0;
+  const isPayAllowed = !disabled && !currentOrder.isLoading && currentOrder.lines?.length > 0;
+  const isDeleteCurrentLineAllowed = !disabled && !!currentOrder.selectedLineUUID;
 
   const onNewOrderClick = () => {
-    dispatch(addNewOrderAction());
+    if (!isNewOrderAllowed) return;
+    dispatch(addNewOrderAction({ posTerminalId }));
   };
   const onVoidCurrentOrderClick = () => {
     if (!isVoidAllowed) return;
-    dispatch(changeOrderStatusToVoid({ order_uuid: currentOrder?.uuid }));
+    dispatch(changeOrderStatusToVoid({ posTerminalId, order_uuid: currentOrder?.uuid }));
   };
   const onDeleteCurrentLine = () => {
     if (!isDeleteCurrentLineAllowed) return;
@@ -29,7 +34,7 @@ const CurrentOrderActions = () => {
   };
   const onPayClick = () => {
     if (!isPayAllowed) return;
-    dispatch(changeOrderStatusToWaitingPayment({ order_uuid: currentOrder?.uuid }));
+    dispatch(changeOrderStatusToWaitingPayment({ posTerminalId, order_uuid: currentOrder?.uuid }));
   };
 
   return (
@@ -51,6 +56,10 @@ const CurrentOrderActions = () => {
       </button>
     </div>
   );
+};
+
+CurrentOrderActions.propTypes = {
+  disabled: PropTypes.bool,
 };
 
 export default CurrentOrderActions;

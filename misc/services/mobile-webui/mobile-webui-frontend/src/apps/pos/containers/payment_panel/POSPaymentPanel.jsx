@@ -16,11 +16,12 @@ import {
   removePayment,
   useCurrentOrder,
 } from '../../actions/orders';
+import PropTypes from 'prop-types';
 
-const POSPaymentPanel = () => {
+const POSPaymentPanel = ({ disabled }) => {
   const dispatch = useDispatch();
   const posTerminal = usePOSTerminal();
-  const currentOrder = useCurrentOrder();
+  const currentOrder = useCurrentOrder({ posTerminalId: posTerminal.id });
 
   const order_uuid = currentOrder.uuid;
 
@@ -43,34 +44,37 @@ const POSPaymentPanel = () => {
 
   const payments = currentOrder?.payments ?? [];
 
-  const isAllowAddPayment = openAmt > 0;
-  const isAllowValidate = openAmt === 0;
+  const isAllowAddPayment = !disabled && openAmt > 0;
+  const isAllowValidate = !disabled && openAmt === 0;
 
   const onAddPaymentClick = ({ paymentMethod }) => {
     if (!isAllowAddPayment) return;
-
-    dispatch(addPayment({ order_uuid, paymentMethod, amount: openAmt }));
+    dispatch(addPayment({ posTerminalId: posTerminal.id, order_uuid, paymentMethod, amount: openAmt }));
   };
 
   const onPaymentCheckout = ({ uuid }) => {
-    dispatch(checkoutPayment({ order_uuid, payment_uuid: uuid }));
+    if (disabled) return;
+    dispatch(checkoutPayment({ posTerminalId: posTerminal.id, order_uuid, payment_uuid: uuid }));
   };
 
   const onPaymentDelete = ({ uuid }) => {
-    dispatch(removePayment({ order_uuid, payment_uuid: uuid }));
+    if (disabled) return;
+    dispatch(removePayment({ posTerminalId: posTerminal.id, order_uuid, payment_uuid: uuid }));
   };
 
   const onPaymentRefund = ({ uuid }) => {
-    dispatch(refundPayment({ order_uuid, payment_uuid: uuid }));
+    if (disabled) return;
+    dispatch(refundPayment({ posTerminalId: posTerminal.id, order_uuid, payment_uuid: uuid }));
   };
 
   const onBackClick = () => {
-    dispatch(changeOrderStatusToDraft({ order_uuid }));
+    if (disabled) return;
+    dispatch(changeOrderStatusToDraft({ posTerminalId: posTerminal.id, order_uuid }));
   };
 
   const onValidateClick = () => {
     if (!isAllowValidate) return;
-    dispatch(changeOrderStatusToComplete({ order_uuid }));
+    dispatch(changeOrderStatusToComplete({ posTerminalId: posTerminal.id, order_uuid }));
   };
 
   return (
@@ -92,6 +96,7 @@ const POSPaymentPanel = () => {
           <PaymentLine
             key={payment.uuid}
             uuid={payment.uuid}
+            disabled={disabled}
             paymentMethod={payment.paymentMethod}
             amount={payment.amount}
             currency={currency}
@@ -136,6 +141,9 @@ const POSPaymentPanel = () => {
       </div>
     </div>
   );
+};
+POSPaymentPanel.propTypes = {
+  disabled: PropTypes.bool,
 };
 
 export default POSPaymentPanel;

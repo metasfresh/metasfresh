@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import '../../styles/pos-input-panel.scss';
-import './POSCashJournalClosingPanel.scss';
 import cx from 'classnames';
 import { getJournalSummary } from '../../api/posJournal';
 import { PAYMENT_METHOD_CASH } from '../../utils/paymentMethods';
@@ -9,7 +7,9 @@ import PropTypes from 'prop-types';
 import useEscapeKey from '../../../../hooks/useEscapeKey';
 import { usePOSTerminal } from '../../actions/posTerminal';
 
-const POSCashJournalClosingPanel = () => {
+import './POSCashJournalClosingModal.scss';
+
+const POSCashJournalClosingModal = () => {
   const posTerminal = usePOSTerminal();
   const [cashClosingBalance, setCashClosingBalance] = useState(0);
   const [closingNote, setClosingNote] = useState('');
@@ -24,13 +24,18 @@ const POSCashJournalClosingPanel = () => {
   };
 
   return (
-    <div className="pos-content pos-input-panel-container pos-journal-closing-panel">
-      <div className="pos-input-panel">
-        <div className="pos-input-panel-header">Closing cash journal</div>
-        <div className="pos-input-panel-content">
+    <div className="modal is-active pos-journal-closing-panel">
+      <div className="modal-background"></div>
+      <div className="modal-card">
+        <header className="modal-card-head">
+          <p className="modal-card-title">Closing cash journal</p>
+          <button className="delete" aria-label="close" onClick={onCancelClick}></button>
+        </header>
+        <section className="modal-card-body">
           <div className="line">
             <div className="field">
               <PaymentSummary
+                posTerminalId={posTerminal.id}
                 cashAmountExpected={cashClosingBalance}
                 onCashAmountExpectedChanged={setCashClosingBalance}
               />
@@ -42,15 +47,17 @@ const POSCashJournalClosingPanel = () => {
               <textarea value={closingNote} onChange={(e) => setClosingNote(e.target.value)} />
             </div>
           </div>
-        </div>
-        <div className="pos-input-panel-bottom">
-          <button className="button is-large" onClick={onCloseClick}>
-            Close
-          </button>
-          <button className="button is-large" onClick={onCancelClick}>
-            Cancel
-          </button>
-        </div>
+        </section>
+        <footer className="modal-card-foot">
+          <div className="buttons">
+            <button className="button is-large" onClick={onCloseClick}>
+              Close
+            </button>
+            <button className="button is-large" onClick={onCancelClick}>
+              Cancel
+            </button>
+          </div>
+        </footer>
       </div>
     </div>
   );
@@ -62,8 +69,8 @@ const POSCashJournalClosingPanel = () => {
 //
 //
 
-const PaymentSummary = ({ cashAmountExpected, onCashAmountExpectedChanged }) => {
-  const journalSummary = useJournalSummary();
+const PaymentSummary = ({ posTerminalId, cashAmountExpected, onCashAmountExpectedChanged }) => {
+  const journalSummary = useJournalSummary({ posTerminalId });
 
   return (
     <table className="payment-summary">
@@ -94,6 +101,7 @@ const PaymentSummary = ({ cashAmountExpected, onCashAmountExpectedChanged }) => 
 };
 
 PaymentSummary.propTypes = {
+  posTerminalId: PropTypes.number.isRequired,
   cashAmountExpected: PropTypes.number.isRequired,
   onCashAmountExpectedChanged: PropTypes.func.isRequired,
 };
@@ -193,15 +201,15 @@ PaymentDetail.propTypes = {
 //
 //
 
-const useJournalSummary = () => {
+const useJournalSummary = ({ posTerminalId }) => {
   const [journalSummary, setJournalSummary] = useState(null);
 
   useEffect(() => {
     if (!journalSummary) {
       setJournalSummary({ isLoading: true });
-      getJournalSummary().then(setJournalSummary);
+      getJournalSummary({ posTerminalId }).then(setJournalSummary);
     }
-  }, []);
+  }, [posTerminalId]);
 
   return journalSummary;
 };
@@ -212,4 +220,4 @@ const useJournalSummary = () => {
 //
 //
 
-export default POSCashJournalClosingPanel;
+export default POSCashJournalClosingModal;

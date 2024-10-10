@@ -47,8 +47,8 @@ public class POSOrderProcessingServices
 				return posPaymentToProcess;
 			}
 
-			POSPayment posPayment = posPaymentToProcess.isNew()
-					? processPOSPayment(posPaymentToProcess, posOrder, posTerminal.getPaymentProcessorConfigNotNull())
+			final POSPayment posPayment = posPaymentToProcess.isNew()
+					? processPOSPayment(posPaymentToProcess, posOrder)
 					: posPaymentToProcess;
 
 			if (posPayment.isPending())
@@ -62,7 +62,7 @@ public class POSOrderProcessingServices
 		posCashJournalService.changeJournalById(cashJournalId, journal -> journal.addPayments(posOrder));
 	}
 
-	public POSPayment processPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull POSOrder posOrder, @NonNull final POSTerminalPaymentProcessorConfig paymentProcessorConfig)
+	public POSPayment processPOSPayment(@NonNull final POSPayment posPaymentToProcess, @NonNull POSOrder posOrder)
 	{
 		posPaymentToProcess.assertAllowCheckout();
 
@@ -78,7 +78,7 @@ public class POSOrderProcessingServices
 			}
 			case CARD:
 			{
-				posPayment = processPOSPayment_CARD(posPayment, posOrder, paymentProcessorConfig);
+				posPayment = processPOSPayment_CARD(posPayment, posOrder);
 				break;
 			}
 			default:
@@ -99,10 +99,12 @@ public class POSOrderProcessingServices
 
 	private POSPayment processPOSPayment_CARD(
 			@NonNull final POSPayment posPayment,
-			@NonNull final POSOrder posOrder,
-			@NonNull final POSTerminalPaymentProcessorConfig paymentProcessorConfig)
+			@NonNull final POSOrder posOrder)
 	{
 		posPayment.getPaymentMethod().assertCard();
+
+		final POSTerminal posTerminal = posTerminalService.getPOSTerminalById(posOrder.getPosTerminalId());
+		final POSTerminalPaymentProcessorConfig paymentProcessorConfig = posTerminal.getPaymentProcessorConfigNotNull();
 
 		final POSPaymentProcessResponse processResponse = posPaymentProcessorService.processPayment(POSPaymentProcessRequest.builder()
 				.paymentProcessorConfig(paymentProcessorConfig)

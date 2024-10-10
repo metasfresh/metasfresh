@@ -231,6 +231,31 @@ public interface I_C_POS
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Workplace.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Workplace_ID (int C_Workplace_ID);
+
+	/**
+	 * Get Workplace.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Workplace_ID();
+
+	@Nullable org.compiere.model.I_C_Workplace getC_Workplace();
+
+	void setC_Workplace(@Nullable org.compiere.model.I_C_Workplace C_Workplace);
+
+	ModelColumn<I_C_POS, org.compiere.model.I_C_Workplace> COLUMN_C_Workplace_ID = new ModelColumn<>(I_C_POS.class, "C_Workplace_ID", org.compiere.model.I_C_Workplace.class);
+	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: String

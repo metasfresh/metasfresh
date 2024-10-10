@@ -11,6 +11,7 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemAndListId;
+import de.metas.workplace.WorkplaceId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -26,6 +27,7 @@ import javax.annotation.Nullable;
 public class POSTerminal
 {
 	@NonNull private final POSTerminalId id;
+	@NonNull private final String name;
 
 	@NonNull private final ImmutableSet<POSPaymentMethod> availablePaymentMethods;
 	@NonNull private final BankAccountId cashbookId;
@@ -36,6 +38,7 @@ public class POSTerminal
 	private final boolean isTaxIncluded;
 
 	@NonNull private final POSShipFrom shipFrom;
+	@Nullable private final WorkplaceId workplaceId;
 
 	@NonNull private final BPartnerLocationAndCaptureId walkInCustomerShipToLocationId;
 
@@ -43,18 +46,20 @@ public class POSTerminal
 
 	@NonNull private final Currency currency;
 
-	@Nullable POSCashJournalId cashJournalId;
-	@NonNull Money cashLastBalance;
+	@Nullable private final POSCashJournalId cashJournalId;
+	@NonNull private final Money cashLastBalance;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private POSTerminal(
 			@NonNull final POSTerminalId id,
+			@NonNull final String name,
 			@NonNull final BankAccountId cashbookId,
 			@Nullable final POSTerminalPaymentProcessorConfig paymentProcessorConfig,
 			@NonNull final PricingSystemAndListId pricingSystemAndListId,
 			@NonNull final CurrencyPrecision pricePrecision,
 			final boolean isTaxIncluded,
 			@NonNull final POSShipFrom shipFrom,
+			@Nullable final WorkplaceId workplaceId,
 			@NonNull final BPartnerLocationAndCaptureId walkInCustomerShipToLocationId,
 			@NonNull final DocTypeId salesOrderDocTypeId,
 			@NonNull final Currency currency,
@@ -67,12 +72,14 @@ public class POSTerminal
 		}
 
 		this.id = id;
+		this.name = name;
 		this.cashbookId = cashbookId;
 		this.paymentProcessorConfig = paymentProcessorConfig;
 		this.pricingSystemAndListId = pricingSystemAndListId;
 		this.pricePrecision = pricePrecision;
 		this.isTaxIncluded = isTaxIncluded;
 		this.shipFrom = shipFrom;
+		this.workplaceId = workplaceId;
 		this.walkInCustomerShipToLocationId = walkInCustomerShipToLocationId;
 		this.salesOrderDocTypeId = salesOrderDocTypeId;
 		this.currency = currency;
@@ -119,21 +126,25 @@ public class POSTerminal
 		return cashJournalId;
 	}
 
-	public void openCashJournal(@NonNull final POSCashJournalId cashJournalId)
+	public POSTerminal openingCashJournal(@NonNull final POSCashJournalId cashJournalId)
 	{
 		if (this.cashJournalId != null)
 		{
 			throw new AdempiereException("Cash journal already open");
 		}
 
-		this.cashJournalId = cashJournalId;
+		return toBuilder()
+				.cashJournalId(cashJournalId)
+				.build();
 	}
 
-	public void closeCashJournal(@NonNull final Money cashEndingBalance)
+	public POSTerminal closingCashJournal(@NonNull final Money cashEndingBalance)
 	{
 		cashEndingBalance.assertCurrencyId(currency.getId());
 
-		this.cashJournalId = null;
-		this.cashLastBalance = cashEndingBalance;
+		return toBuilder()
+				.cashJournalId(null)
+				.cashLastBalance(cashEndingBalance)
+				.build();
 	}
 }
