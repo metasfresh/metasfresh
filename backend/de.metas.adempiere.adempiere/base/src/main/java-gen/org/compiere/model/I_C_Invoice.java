@@ -1916,6 +1916,27 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
 
 	/**
+	 * Set Modular Contract Settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Settings_ID (int ModCntr_Settings_ID);
+
+	/**
+	 * Get Modular Contract Settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Settings_ID();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_ModCntr_Settings_ID = new ModelColumn<>(I_C_Invoice.class, "ModCntr_Settings_ID", null);
+	String COLUMNNAME_ModCntr_Settings_ID = "ModCntr_Settings_ID";
+
+	/**
 	 * Set Price List.
 	 * Unique identifier of a Price List
 	 *

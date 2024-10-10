@@ -573,6 +573,7 @@ public final class AggregationEngine
 
 			invoiceHeader.setC_Harvesting_Calendar_ID(icRecord.getC_Harvesting_Calendar_ID());
 			invoiceHeader.setHarvesting_Year_ID(icRecord.getHarvesting_Year_ID());
+			invoiceHeader.setModularContractSettingsId(icRecord.getModCntr_Settings_ID());
 			invoiceHeader.setM_Warehouse_ID(icRecord.getM_Warehouse_ID());
 			invoiceHeader.setAuctionId(icRecord.getC_Auction_ID());
 			invoiceHeader.setOrgBankAccountId(icRecord.getOrg_BP_Account_ID());

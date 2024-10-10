@@ -2666,6 +2666,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_ModCntr_Module_ID = "ModCntr_Module_ID";
 
 	/**
+	 * Set Modular Contract Settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Settings_ID (int ModCntr_Settings_ID);
+
+	/**
+	 * Get Modular Contract Settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Settings_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ModCntr_Settings_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "ModCntr_Settings_ID", null);
+	String COLUMNNAME_ModCntr_Settings_ID = "ModCntr_Settings_ID";
+
+	/**
 	 * Set Price List Version.
 	 * Identifies a unique instance of a Price List
 	 *

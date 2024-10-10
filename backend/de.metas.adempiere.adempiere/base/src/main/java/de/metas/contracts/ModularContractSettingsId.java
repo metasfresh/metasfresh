@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.settings;
+package de.metas.contracts;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -50,6 +50,16 @@ public class ModularContractSettingsId implements RepoIdAware
 	private ModularContractSettingsId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "modularContractSettingsId");
+	}
+
+	public static int toRepoId(@Nullable final ModularContractSettingsId modularContractSettingsId)
+	{
+		return toRepoIdOr(modularContractSettingsId, -1);
+	}
+
+	public static int toRepoIdOr(@Nullable final ModularContractSettingsId modularContractSettingsId, final int defaultValue)
+	{
+		return modularContractSettingsId != null ? modularContractSettingsId.getRepoId() : defaultValue;
 	}
 
 	@Override

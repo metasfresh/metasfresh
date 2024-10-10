@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
@@ -145,6 +146,9 @@ public interface IInvoiceHeader
 
 	@Nullable
 	YearId getYearId();
+
+	@Nullable
+	ModularContractSettingsId getModularContractSettingsId();
 
 	@Nullable
 	WarehouseId getWarehouseId();

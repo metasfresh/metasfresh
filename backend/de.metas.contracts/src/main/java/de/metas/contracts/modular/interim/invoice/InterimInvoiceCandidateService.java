@@ -29,6 +29,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
@@ -139,6 +140,7 @@ public class InterimInvoiceCandidateService
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(flatrateTermRecord.getHarvesting_Year_ID(), flatrateTermRecord.getC_Harvesting_Calendar_ID());
 
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID());
+		final ModularContractSettingsId modularContractSettingsId= modularContractService.getModularSettingsForContract(flatrateTermId).getId();
 
 		final InvoiceCandidateUpsertRequest.InvoiceCandidateUpsertRequestBuilder newInvoiceCandidateTemplate = InvoiceCandidateUpsertRequest.builder()
 				.invoiceCandidateId(interimLogsToInvoice.getSingleInvoiceCandidateIdOrNull())
@@ -147,6 +149,7 @@ public class InterimInvoiceCandidateService
 				.invoiceDocTypeId(getInterimInvoiceDocType(ClientId.ofRepoId(flatrateTermRecord.getAD_Client_ID())))
 				.invoiceRule(InvoiceRule.Immediate)
 				.harvestYearAndCalendarId(yearAndCalendarId)
+				.modularContractSettingsId(modularContractSettingsId)
 				.productId(productId)
 				.paymentTermId(PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID()))
 				.billPartnerInfo(BPartnerInfo.builder()
