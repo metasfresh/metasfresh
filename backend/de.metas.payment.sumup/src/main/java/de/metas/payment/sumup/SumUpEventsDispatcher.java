@@ -71,8 +71,8 @@ public class SumUpEventsDispatcher
 	private static Properties newTemporaryCtx(final @NonNull SumUpTransactionStatusChangedEvent event)
 	{
 		final Properties ctx = Env.newTemporaryCtx();
-		Env.setClientId(ctx, event.getClientAndOrgId().getClientId());
-		Env.setOrgId(ctx, event.getClientAndOrgId().getOrgId());
+		Env.setClientId(ctx, event.getClientId());
+		Env.setOrgId(ctx, event.getOrgId());
 		return ctx;
 	}
 
