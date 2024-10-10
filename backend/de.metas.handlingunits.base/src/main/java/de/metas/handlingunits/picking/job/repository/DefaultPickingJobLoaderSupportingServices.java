@@ -19,6 +19,8 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -27,6 +29,7 @@ import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -55,6 +58,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IBPartnerBL bpartnerBL;
 	private final PickingJobSlotService pickingSlotService;
 	private final WorkplaceService workplaceService;
@@ -144,6 +148,11 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
+	public ProductCategoryId getProductCategoryId(@NonNull final ProductId productId) {
+		return getProductInfo(productId).getProductCategoryId();
+	}
+
+	@Override
 	public ITranslatableString getProductName(@NonNull final ProductId productId)
 	{
 		return getProductInfo(productId).getName();
@@ -154,12 +163,14 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 		return productInfoCache.computeIfAbsent(productId, this::retrieveProductInfo);
 	}
 
+	@NonNull
 	private ProductInfo retrieveProductInfo(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = productBL.getById(productId);
 		return ProductInfo.builder()
 				.productId(productId)
 				.productNo(product.getValue())
+				.productCategoryId(ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()))
 				.name(InterfaceWrapperHelper.getModelTranslationMap(product).getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName()))
 				.build();
 
@@ -204,6 +215,12 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 		return mobileUIPickingUserProfileRepository.getProfile().isCatchWeightTUPickingEnabled();
 	}
 
+	@Override
+	public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		return orderDAO.getOrderLineById(orderAndLineId).getLine();
+	}
+
 	//
 	//
 	//
@@ -214,6 +231,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	{
 		@NonNull ProductId productId;
 		@NonNull String productNo;
+		@NonNull ProductCategoryId productCategoryId;
 		@NonNull ITranslatableString name;
 	}
 }

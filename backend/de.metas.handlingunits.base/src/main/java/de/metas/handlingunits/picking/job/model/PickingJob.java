@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
@@ -47,6 +48,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -302,6 +304,15 @@ public final class PickingJob
 	{
 		return lines.stream()
 				.map(PickingJobLine::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public ImmutableSet<HuId> getPickedHuIds()
+	{
+		return lines.stream()
+				.map(PickingJobLine::getPickedHUIds)
+				.flatMap(List::stream)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 }
