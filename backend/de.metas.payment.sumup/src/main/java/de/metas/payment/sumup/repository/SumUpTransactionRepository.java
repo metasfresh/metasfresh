@@ -1,11 +1,13 @@
 package de.metas.payment.sumup.repository;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.error.AdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.sumup.SumUpCardReaderExternalId;
 import de.metas.payment.sumup.SumUpClientTransactionId;
 import de.metas.payment.sumup.SumUpConfigId;
 import de.metas.payment.sumup.SumUpEventsDispatcher;
@@ -130,6 +132,7 @@ public class SumUpTransactionRepository
 		record.setExternalId(from.getExternalId().getAsString());
 		record.setSUMUP_ClientTransactionId(from.getClientTransactionId().getAsString());
 		record.setSUMUP_merchant_code(from.getMerchantCode().getAsString());
+		updateRecord(record, from.getCardReader());
 		record.setTimestamp(Timestamp.from(from.getTimestamp()));
 		record.setStatus(from.getStatus().getCode());
 		record.setCurrencyCode(from.getAmount().getCurrencyCode().toThreeLetterCode());
@@ -142,13 +145,19 @@ public class SumUpTransactionRepository
 		updateRecord(record, from.getLastSync());
 	}
 
+	private static void updateRecord(final I_SUMUP_Transaction record, final @Nullable SumUpTransaction.CardReader from)
+	{
+		record.setSUMUP_CardReader_ExternalId(from != null ? from.getExternalId().getAsString() : null);
+		record.setSUMUP_CardReader_Name(from != null ? from.getName() : null);
+	}
+
 	private static void updateRecord(final I_SUMUP_Transaction record, final @Nullable SumUpTransaction.Card from)
 	{
 		record.setCardType(from != null ? from.getType() : null);
 		record.setCardLast4Digits(from != null ? from.getLast4Digits() : null);
 	}
 
-	private static void updateRecord(final I_SUMUP_Transaction record, final @Nullable SumUpTransaction.LastSync from)
+	private static void updateRecord(final I_SUMUP_Transaction record, final @Nullable LastSync from)
 	{
 		record.setSUMUP_LastSync_Status(from != null ? from.getStatus().getCode() : null);
 		record.setSUMUP_LastSync_Timestamp(from != null && from.getTimestamp() != null ? Timestamp.from(from.getTimestamp()) : null);
@@ -165,6 +174,7 @@ public class SumUpTransactionRepository
 				.externalId(SumUpTransactionExternalId.ofString(record.getExternalId()))
 				.clientTransactionId(SumUpClientTransactionId.ofString(record.getSUMUP_ClientTransactionId()))
 				.merchantCode(SumUpMerchantCode.ofString(record.getSUMUP_merchant_code()))
+				.cardReader(extractCardReader(record))
 				.timestamp(record.getTimestamp().toInstant())
 				.status(SumUpTransactionStatus.ofString(record.getStatus()))
 				.amount(Amount.of(record.getAmount(), currencyCode))
@@ -173,6 +183,21 @@ public class SumUpTransactionRepository
 				.json(record.getJsonResponse())
 				.posRef(extractPOSRef(record))
 				.lastSync(extractLastSync(record))
+				.build();
+	}
+
+	@Nullable
+	private static SumUpTransaction.CardReader extractCardReader(final I_SUMUP_Transaction record)
+	{
+		final SumUpCardReaderExternalId externalId = SumUpCardReaderExternalId.ofNullableString(record.getSUMUP_CardReader_ExternalId());
+		if (externalId == null)
+		{
+			return null;
+		}
+
+		return SumUpTransaction.CardReader.builder()
+				.externalId(externalId)
+				.name(CoalesceUtil.coalesceNotNull(record.getSUMUP_CardReader_Name(), "?"))
 				.build();
 	}
 

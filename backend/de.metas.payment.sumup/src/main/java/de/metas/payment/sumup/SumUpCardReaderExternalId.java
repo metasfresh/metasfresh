@@ -8,6 +8,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+
 @EqualsAndHashCode
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class SumUpCardReaderExternalId
@@ -29,6 +31,13 @@ public class SumUpCardReaderExternalId
 	public static SumUpCardReaderExternalId ofString(@NonNull final String value)
 	{
 		return new SumUpCardReaderExternalId(value);
+	}
+
+	@Nullable
+	public static SumUpCardReaderExternalId ofNullableString(@Nullable final String value)
+	{
+		final String valueNorm = StringUtils.trimBlankToNull(value);
+		return valueNorm != null ? new SumUpCardReaderExternalId(valueNorm) : null;
 	}
 
 	@Override
