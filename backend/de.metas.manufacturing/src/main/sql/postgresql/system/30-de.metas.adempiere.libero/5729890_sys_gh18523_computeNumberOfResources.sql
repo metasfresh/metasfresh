@@ -57,7 +57,7 @@ BEGIN
             p_C_UOM_From_ID := p_Qty_UOM_ID,
             p_C_UOM_To_ID := resource.capacityperproductioncycle_uom_id,
             p_Qty := p_Qty
-        );
+              );
     IF (qtyConv IS NULL) THEN
         RAISE EXCEPTION 'No UOM conversion found from C_UOM_ID=% to C_UOM_ID=%, M_Product_ID=%', p_Qty_UOM_ID, resource.capacityperproductioncycle_uom_id, p_M_Product_ID;
     END IF;
@@ -70,27 +70,4 @@ $$
     LANGUAGE plpgsql VOLATILE
 ;
 
---
--- Test:
---
-/*
-SELECT r.name
-           || ' / ' || COALESCE(r.capacityperproductioncycle, 9999) || ' ' || COALESCE((SELECT uom.uomsymbol FROM c_uom uom WHERE uom.c_uom_id = r.capacityperproductioncycle_uom_id), '')
-                                                                                                AS resource,
-       (SELECT p.value || '_' || p.name FROM m_product p WHERE p.m_product_id = c.m_product_id) AS product,
-       (SELECT uom.uomsymbol FROM c_uom uom WHERE uom.c_uom_id = c.c_uom_id)                    AS uom,
-       c.qtyentered,
-       c.qtytoprocess,
-       c.qtyprocessed,
-       computeNumberOfResources(
-               p_S_Resource_ID := pp_order_candidate.s_resource_id,
-               p_Qty := pp_order_candidate.qtyentered,
-               p_Qty_UOM_ID := pp_order_candidate.c_uom_id,
-               p_M_Product_ID := pp_order_candidate.m_product_id
-           )                                                                                    AS NumberOfResources
-FROM pp_order_candidate
-         LEFT OUTER JOIN s_resource r ON r.s_resource_id = pp_order_candidate.s_resource_id
-;
-
-*/
 
