@@ -58,14 +58,14 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				</jr:QRCode>
 			</componentElement>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="74" y="59" width="50" height="10" uuid="7fde2959-85e7-48ba-9215-bdaa594769a0"/>
+				<reportElement x="74" y="55" width="50" height="10" uuid="7fde2959-85e7-48ba-9215-bdaa594769a0"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hu}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="74" y="32" width="50" height="10" uuid="85aeb64c-6220-4f2c-a45d-ef4e0ee38f92"/>
+				<reportElement x="74" y="28" width="50" height="10" uuid="85aeb64c-6220-4f2c-a45d-ef4e0ee38f92"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="12" isBold="true"/>
 				</textElement>
@@ -79,7 +79,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$F{stringattributevalue}!=null?$F{stringattributevalue}:"000000"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="74" y="42" width="50" height="10" uuid="6ef5e45a-6712-420b-91ec-b095100bf532"/>
+				<reportElement x="74" y="38" width="50" height="10" uuid="6ef5e45a-6712-420b-91ec-b095100bf532"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
 					<font fontName="Arial" size="4" isBold="false"/>
 				</textElement>
@@ -93,7 +93,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$R{CheeseDairyNo}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="74" y="69" width="50" height="10" uuid="d586b010-a399-47a0-8ab6-1f8ec979935d"/>
+				<reportElement x="74" y="65" width="50" height="10" uuid="d586b010-a399-47a0-8ab6-1f8ec979935d"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
 					<font fontName="Arial" size="4" isBold="false"/>
 				</textElement>
