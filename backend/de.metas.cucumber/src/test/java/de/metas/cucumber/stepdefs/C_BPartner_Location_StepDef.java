@@ -192,7 +192,7 @@ public class C_BPartner_Location_StepDef
 
 	private void load_bpartner_location(@NonNull final DataTableRow tableRow)
 	{
-		final String bpartnerLocationIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID).getAsString();
+		final String bpartnerLocationIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID+"." + StepDefDataIdentifier.SUFFIX).getAsString();
 
 		final int id = tableRow.getAsOptionalInt(COLUMNNAME_C_BPartner_Location_ID).orElse(-1);
 		if (id > 0)
