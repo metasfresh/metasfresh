@@ -113,7 +113,7 @@ public class SumUpTransaction
 
 	@RequiredArgsConstructor
 	@Getter
-	public static enum LastSyncStatus implements ReferenceListAwareEnum
+	public enum LastSyncStatus implements ReferenceListAwareEnum
 	{
 		OK(X_SUMUP_Transaction.SUMUP_LASTSYNC_STATUS_OK),
 		Error(X_SUMUP_Transaction.SUMUP_LASTSYNC_STATUS_Error),
