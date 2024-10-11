@@ -138,12 +138,23 @@ export const toEditingAmount = ({ value, precision }) => {
     intPart,
     fractionPart,
     isDecimalEditing: false,
+    isInitialValue: true,
   };
 };
 
 export const recomputeAmount = (editingAmount, key) => {
-  const { precision } = editingAmount;
-  let { intPart, fractionPart, isDecimalEditing } = editingAmount;
+  const { precision, isInitialValue } = editingAmount;
+
+  let intPart, fractionPart, isDecimalEditing;
+  if (isInitialValue) {
+    intPart = '0';
+    fractionPart = '0';
+    isDecimalEditing = false;
+  } else {
+    intPart = editingAmount.intPart;
+    fractionPart = editingAmount.fractionPart;
+    isDecimalEditing = editingAmount.isDecimalEditing;
+  }
 
   if (
     key === '0' ||
@@ -229,5 +240,6 @@ export const recomputeAmount = (editingAmount, key) => {
     intPart,
     fractionPart,
     isDecimalEditing,
+    isInitialValue: false,
   };
 };
