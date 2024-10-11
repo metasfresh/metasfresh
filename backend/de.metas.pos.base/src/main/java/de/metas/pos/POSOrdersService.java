@@ -81,7 +81,7 @@ public class POSOrdersService
 
 	private void tryCompleteNoFail(@NonNull final POSOrder order)
 	{
-		final BooleanWithReason canComplete = order.checkCanTryComplete();
+		final BooleanWithReason canComplete = order.checkCanTryTransitionToCompleted();
 		if (canComplete.isTrue())
 		{
 			order.changeStatusTo(POSOrderStatus.Completed, posOrderProcessingServices);

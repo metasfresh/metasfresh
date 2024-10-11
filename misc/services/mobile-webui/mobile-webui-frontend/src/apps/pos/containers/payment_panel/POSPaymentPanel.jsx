@@ -42,8 +42,10 @@ const POSPaymentPanel = ({ disabled }) => {
     currency: currency,
     precision: currencyPrecision,
   });
-  const isAllowAddPayment = !disabled && openAmt > 0;
-  const isAllowValidate = !disabled && openAmt === 0;
+
+  const isAllowAddPayment = !disabled && currentOrder.allowAddPayment;
+  const isAllowValidate = !disabled && currentOrder.allowTryComplete;
+  const isAllowBack = !disabled && currentOrder.allowDraft;
 
   const payments = currentOrder?.payments ?? [];
 
@@ -72,7 +74,7 @@ const POSPaymentPanel = ({ disabled }) => {
   };
 
   const onBackClick = () => {
-    if (disabled) return;
+    if (!isAllowBack) return;
     dispatch(changeOrderStatusToDraft({ posTerminalId: posTerminal.id, order_uuid }));
   };
 
@@ -138,7 +140,7 @@ const POSPaymentPanel = ({ disabled }) => {
         ))}
       </div>
       <div className="payment-bottom">
-        <button className="button is-large back" onClick={onBackClick}>
+        <button className="button is-large back" disabled={!isAllowBack} onClick={onBackClick}>
           <span className="icon is-medium">
             <i className="fa-solid fa-chevron-left" />
           </span>

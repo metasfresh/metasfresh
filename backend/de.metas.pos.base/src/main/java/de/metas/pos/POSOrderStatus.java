@@ -54,11 +54,6 @@ public enum POSOrderStatus implements ReferenceListAwareEnum
 	@NonNull
 	public String getCode() {return code;}
 
-	public void assertCanTransitionTo(@NonNull final POSOrderStatus nextStatus)
-	{
-		checkCanTransitionTo(nextStatus).assertTrue();
-	}
-
 	public BooleanWithReason checkCanTransitionTo(final @NonNull POSOrderStatus nextStatus)
 	{
 		return allowedTransitions.containsEntry(this, nextStatus)

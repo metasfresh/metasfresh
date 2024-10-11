@@ -147,6 +147,15 @@ public class POSOrder
 
 	public Stream<POSPayment> streamPaymentsNotDeleted() {return payments.stream().filter(payment -> !payment.isDeleted());}
 
+	public BooleanWithReason checkUserCanAddPayment()
+	{
+		if (getOpenAmt().signum() <= 0)
+		{
+			return BooleanWithReason.falseBecause("Already completely paid");
+		}
+		return BooleanWithReason.TRUE;
+	}
+
 	public void changeStatusTo(
 			@NonNull final POSOrderStatus targetStatus,
 			@NonNull final POSOrderProcessingServices services)
@@ -156,13 +165,12 @@ public class POSOrder
 			return;
 		}
 
-		this.status.assertCanTransitionTo(targetStatus);
-
 		POSOrderStatus newStatus;
 		switch (targetStatus)
 		{
 			case Drafted:
 			{
+				changeStatusTo_Drafted();
 				newStatus = POSOrderStatus.Drafted;
 				break;
 			}
@@ -174,6 +182,7 @@ public class POSOrder
 			}
 			case WaitingPayment:
 			{
+				changeStatusTo_WaitingPayment();
 				newStatus = POSOrderStatus.WaitingPayment;
 				break;
 			}
@@ -191,16 +200,74 @@ public class POSOrder
 		this.status = newStatus;
 	}
 
-	private void changeStatusTo_Void()
+	private BooleanWithReason checkCanTransitionTo(@NonNull final POSOrderStatus targetStatus)
 	{
-		if (salesOrderId != null)
-		{
-			throw new AdempiereException("Voiding POS orders with generated sales orders is not allowed");
-		}
-		streamPaymentsNotDeleted().forEach(POSPayment::assertAllowVoid);
+		return this.status.checkCanTransitionTo(targetStatus);
 	}
 
-	public BooleanWithReason checkCanTryComplete()
+	public BooleanWithReason checkCanTransitionToDrafted()
+	{
+		return checkCanTransitionTo(POSOrderStatus.Drafted);
+	}
+
+	private void changeStatusTo_Drafted()
+	{
+		checkCanTransitionToDrafted().assertTrue();
+	}
+
+	public BooleanWithReason checkCanTransitionToWaitingPayment()
+	{
+		final BooleanWithReason canTransition = checkCanTransitionTo(POSOrderStatus.WaitingPayment);
+		if (canTransition.isFalse())
+		{
+			return canTransition;
+		}
+
+		if (lines.isEmpty())
+		{
+			return BooleanWithReason.falseBecause(AdempiereException.MSG_NoLines);
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
+	private void changeStatusTo_WaitingPayment()
+	{
+		checkCanTransitionToWaitingPayment().assertTrue();
+	}
+
+	private void changeStatusTo_Void()
+	{
+		checkCanTransitionToVoided().assertTrue();
+	}
+
+	public BooleanWithReason checkCanTransitionToVoided()
+	{
+		final BooleanWithReason canVoid = this.status.checkCanTransitionTo(POSOrderStatus.Voided);
+		if (canVoid.isFalse())
+		{
+			return canVoid;
+		}
+
+		if (salesOrderId != null)
+		{
+			return BooleanWithReason.falseBecause("Voiding POS orders with generated sales orders is not allowed");
+		}
+
+		final BooleanWithReason allowVoidingPayments = streamPaymentsNotDeleted()
+				.map(POSPayment::checkAllowVoid)
+				.filter(BooleanWithReason::isFalse)
+				.findFirst()
+				.orElse(BooleanWithReason.TRUE);
+		if (allowVoidingPayments.isFalse())
+		{
+			return allowVoidingPayments;
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
+	public BooleanWithReason checkCanTryTransitionToCompleted()
 	{
 		final BooleanWithReason canComplete = this.status.checkCanTransitionTo(POSOrderStatus.Completed);
 		if (canComplete.isFalse())
@@ -222,7 +289,7 @@ public class POSOrder
 
 	private POSOrderStatus changeStatusTo_Complete(@NonNull final POSOrderProcessingServices services)
 	{
-		checkCanTryComplete().assertTrue();
+		checkCanTryTransitionToCompleted().assertTrue();
 
 		services.processPOSPayments(this);
 		if (!isPaymentsProcessedSuccessfully())

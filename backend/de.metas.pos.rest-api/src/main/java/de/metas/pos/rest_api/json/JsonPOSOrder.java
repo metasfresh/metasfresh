@@ -1,6 +1,8 @@
 package de.metas.pos.rest_api.json;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
@@ -34,11 +36,29 @@ public class JsonPOSOrder
 	@NonNull List<JsonPOSOrderLine> lines;
 	@Nullable List<JsonPOSPayment> payments;
 
+	boolean allowDraft;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) String allowDraftReason;
+	boolean allowWaitPayment;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) String allowWaitPaymentReason;
+	boolean allowTryComplete;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) String allowTryCompleteReason;
+	boolean allowVoid;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) String allowVoidReason;
+	boolean allowAddPayment;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) String allowAddPaymentReason;
+
 	int hashCode;
 
 	public static JsonPOSOrder from(@NonNull final POSOrder order, @NonNull final Function<CurrencyId, String> getCurrencySymbolById)
 	{
 		final String currencySymbol = getCurrencySymbolById.apply(order.getCurrencyId());
+
+		final BooleanWithReason allowDraft = order.checkCanTransitionToDrafted();
+		final BooleanWithReason allowWaitingPayment = order.checkCanTransitionToWaitingPayment();
+		final BooleanWithReason allowTryComplete = order.checkCanTryTransitionToCompleted();
+		final BooleanWithReason allowVoid = order.checkCanTransitionToVoided();
+		final BooleanWithReason allowAddPayment = order.checkUserCanAddPayment();
+
 		return builder()
 				.uuid(order.getExternalId())
 				.posTerminalId(order.getPosTerminalId())
@@ -54,7 +74,20 @@ public class JsonPOSOrder
 				.payments(order.streamPaymentsNotDeleted()
 						.map(JsonPOSPayment::of)
 						.collect(ImmutableList.toImmutableList()))
+				//
+				.allowDraft(allowDraft.isTrue())
+				.allowDraftReason(allowDraft.getReasonAsString())
+				.allowWaitPayment(allowWaitingPayment.isTrue())
+				.allowWaitPaymentReason(allowWaitingPayment.getReasonAsString())
+				.allowTryComplete(allowTryComplete.isTrue())
+				.allowTryCompleteReason(allowTryComplete.getReasonAsString())
+				.allowVoid(allowVoid.isTrue())
+				.allowVoidReason(allowVoid.getReasonAsString())
+				.allowAddPayment(allowAddPayment.isTrue())
+				.allowAddPaymentReason(allowAddPayment.getReasonAsString())
+				//
 				.hashCode(order.hashCode())
+				//
 				.build();
 	}
 
