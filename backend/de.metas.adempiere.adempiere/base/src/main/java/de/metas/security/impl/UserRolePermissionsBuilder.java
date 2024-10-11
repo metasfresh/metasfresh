@@ -41,7 +41,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
@@ -74,6 +73,7 @@ class UserRolePermissionsBuilder
 				.setWorkflowPermissions(permissions.getWorkflowPermissions())
 				.setFormPermissions(permissions.getFormPermissions())
 				.setMiscPermissions(permissions.getMiscPermissions())
+				.setMobileApplicationAccesses(permissions.getMobileApplicationPermissions())
 				//
 				.setConstraints(permissions.getConstraints());
 	}
@@ -105,7 +105,7 @@ class UserRolePermissionsBuilder
 	private ElementPermissions taskAccesses;
 	private ElementPermissions workflowAccesses;
 	private ElementPermissions formAccesses;
-	@Getter @Setter private ElementPermissions mobileApplicationAccesses;
+	@Getter private ElementPermissions mobileApplicationAccesses;
 
 	private GenericPermissions miscPermissions;
 	private Constraints constraints;
@@ -463,6 +463,12 @@ class UserRolePermissionsBuilder
 	public UserRolePermissionsBuilder setFormPermissions(final ElementPermissions formAccesses)
 	{
 		this.formAccesses = formAccesses;
+		return this;
+	}
+
+	public UserRolePermissionsBuilder setMobileApplicationAccesses(final ElementPermissions mobileApplicationAccesses)
+	{
+		this.mobileApplicationAccesses = mobileApplicationAccesses;
 		return this;
 	}
 
