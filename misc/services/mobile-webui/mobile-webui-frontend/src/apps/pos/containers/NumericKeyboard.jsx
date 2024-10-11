@@ -70,7 +70,7 @@ export const NumericKeyboard = ({ onKey }) => {
       <Key code="+/-" caption="±" onKey={onKey} />
       <Key code="0" onKey={onKey} />
       <Key code="." onKey={onKey} />
-      <Key code="DEL" icon="fa-solid fa-delete-left" onKey={onKey} />
+      <Key code="Backspace" icon="fa-solid fa-delete-left" onKey={onKey} />
     </div>
   );
 };
@@ -219,6 +219,8 @@ export const recomputeAmount = (editingAmount, key) => {
       }
     }
   }
+
+  //console.log('', { key, intPart, fractionPart, isDecimalEditing, editingAmount });
 
   // No change
   if (
