@@ -92,6 +92,7 @@ const POSPaymentPanel = ({ disabled }) => {
       <PendingPaymentModal
         posTerminalId={posTerminal.id}
         order_uuid={currentOrder.uuid}
+        orderTotalAmount={totalAmt}
         payments={payments}
         currency={currency}
         currencyPrecision={currencyPrecision}

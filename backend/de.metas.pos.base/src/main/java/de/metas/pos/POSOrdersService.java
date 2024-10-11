@@ -140,6 +140,7 @@ public class POSOrdersService
 			@NonNull final UserId userId)
 	{
 		final POSTerminal posTerminal = posTerminalService.getPOSTerminalById(posTerminalId);
+
 		return POSOrder.builder()
 				.externalId(externalId)
 				.status(POSOrderStatus.Drafted)
@@ -175,6 +176,11 @@ public class POSOrdersService
 	private POSPayment checkoutPayment(@NonNull POSPaymentCheckoutRequest request, @NonNull final POSPayment posPaymentToProcess, @NonNull final POSOrder posOrder)
 	{
 		POSPayment posPayment = posPaymentToProcess;
+
+		if (posPayment.getPaymentMethod().isCard() && request.getCardPayAmount() != null)
+		{
+			posPayment = posPayment.withCardPayAmount(request.getCardPayAmount());
+		}
 
 		if (posPayment.getPaymentMethod().isCash() && request.getCashTenderedAmount() != null)
 		{

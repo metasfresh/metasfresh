@@ -130,8 +130,6 @@ public class POSPayment
 				: BooleanWithReason.TRUE;
 	}
 
-	public void assertAllowVoid() {checkAllowVoid().assertTrue();}
-
 	public void assertNoPaymentReceipt()
 	{
 		if (paymentReceiptId != null)
@@ -226,5 +224,19 @@ public class POSPayment
 		}
 
 		return toBuilder().cashTenderedAmount(cashTenderedAmountNew).build();
+	}
+
+	public POSPayment withCardPayAmount(@NonNull final BigDecimal cardPayAmountBD)
+	{
+		paymentMethod.assertCard();
+		Check.assume(cardPayAmountBD.signum() > 0, "Card Pay Amount must be positive");
+
+		final Money amountNew = Money.of(cardPayAmountBD, this.amount.getCurrencyId());
+		if (Money.equals(this.amount, amountNew))
+		{
+			return this;
+		}
+
+		return toBuilder().amount(amountNew).build();
 	}
 }

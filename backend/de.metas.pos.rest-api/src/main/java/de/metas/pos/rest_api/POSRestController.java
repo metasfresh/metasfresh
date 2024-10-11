@@ -229,6 +229,7 @@ public class POSRestController
 				.posOrderExternalId(request.getOrder_uuid())
 				.posPaymentExternalId(request.getPayment_uuid())
 				.userId(getLoggedUserId())
+				.cardPayAmount(request.getCardPayAmount())
 				.cashTenderedAmount(request.getCashTenderedAmount())
 				.build());
 		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);

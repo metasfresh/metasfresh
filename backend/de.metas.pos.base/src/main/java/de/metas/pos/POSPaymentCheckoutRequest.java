@@ -18,5 +18,6 @@ public class POSPaymentCheckoutRequest
 
 	@NonNull UserId userId;
 
+	@Nullable BigDecimal cardPayAmount;
 	@Nullable BigDecimal cashTenderedAmount;
 }

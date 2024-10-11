@@ -19,10 +19,10 @@ const CashPaymentDetailsModal = ({
   );
 
   const tenderedAmount = tenderedEditingAmount.value;
-  const isNegativeTenderedAmount = tenderedAmount < 0;
   const changeBackAmount = tenderedAmount - payAmount;
-  const isNegativeChange = changeBackAmount < 0;
-  const isValid = !isNegativeTenderedAmount && !isNegativeChange;
+  const isChangeBackAmountValid = changeBackAmount >= 0;
+  const isTenderedAmountValid = tenderedAmount > 0 && tenderedAmount >= payAmount;
+  const isValid = isTenderedAmountValid && isChangeBackAmountValid;
 
   const onNumKeyPressed = (key) => {
     setTenderedEditingAmount((tenderedEditingAmount) => recomputeAmount(tenderedEditingAmount, key));
@@ -54,13 +54,13 @@ const CashPaymentDetailsModal = ({
           </div>
           <div className="detail-line">
             <div className="detail-caption">Tendered Amount</div>
-            <div className={cx('detail-value', { 'has-text-danger': isNegativeTenderedAmount })}>
-              {tenderedAmountStr}
-            </div>
+            <div className={cx('detail-value', { 'has-text-danger': !isTenderedAmountValid })}>{tenderedAmountStr}</div>
           </div>
           <div className="detail-line">
             <div className="detail-caption">Change</div>
-            <div className={cx('detail-value', { 'has-text-danger': isNegativeChange })}>{changeBackAmountStr}</div>
+            <div className={cx('detail-value', { 'has-text-danger': !isChangeBackAmountValid })}>
+              {changeBackAmountStr}
+            </div>
           </div>
           <div className="numpad-container">
             <NumericKeyboard onKey={onNumKeyPressed} />

@@ -21,5 +21,6 @@ public class JsonPOSPaymentCheckoutRequest
 	@NonNull @JsonProperty("order_uuid") POSOrderExternalId order_uuid;
 	@NonNull @JsonProperty("payment_uuid") POSPaymentExternalId payment_uuid;
 
+	@Nullable BigDecimal cardPayAmount;
 	@Nullable BigDecimal cashTenderedAmount;
 }
