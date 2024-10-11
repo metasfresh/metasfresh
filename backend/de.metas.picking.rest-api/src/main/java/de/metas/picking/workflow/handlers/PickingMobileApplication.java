@@ -29,6 +29,7 @@
 	import de.metas.common.util.time.SystemTime;
 	import de.metas.document.engine.IDocument;
 	import de.metas.document.location.IDocumentLocationBL;
+	import de.metas.handlingunits.HuId;
 	import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 	import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
 	import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
@@ -84,6 +85,7 @@
 
 	import javax.annotation.Nullable;
 	import java.util.Collection;
+	import java.util.List;
 	import java.util.Objects;
 	import java.util.function.BiFunction;
 	import java.util.function.UnaryOperator;
@@ -519,4 +521,11 @@
 
 		}
 
+		@NonNull
+		public List<HuId> getClosedLUs(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		{
+			final WFProcess wfProcess = getWFProcessById(wfProcessId);
+			wfProcess.assertHasAccess(callerId);
+			return pickingJobRestService.getClosedLUs(getPickingJob(wfProcess));
+		}
 	}

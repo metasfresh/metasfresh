@@ -34,6 +34,7 @@ import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUAttribute;
 import de.metas.common.handlingunits.JsonHUAttributes;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
+import de.metas.common.handlingunits.JsonHUList;
 import de.metas.common.handlingunits.JsonHUProduct;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
@@ -231,6 +232,19 @@ public class HandlingUnitsRestController
 				.build());
 	}
 
+	@GetMapping("/byIds")
+	public JsonHUList getByIds(
+			@Parameter(required = true, description = HU_IDENTIFIER_DOC) //
+			@RequestParam(name = "M_HU_IDs") final List<Integer> huRepoIds)
+	{
+		return JsonHUList.builder()
+				.hus(huRepoIds.stream()
+							 .map(HuId::ofRepoId)
+							 .map(repoId -> handlingUnitsService.getFullHU(repoId, null, Env.getADLanguageOrBaseLanguage(), false))
+							 .collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+	
 	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(
 			@NonNull final Supplier<I_M_HU> huSupplier,
 			@NonNull final ClientAndOrgId clientAndOrgId)
