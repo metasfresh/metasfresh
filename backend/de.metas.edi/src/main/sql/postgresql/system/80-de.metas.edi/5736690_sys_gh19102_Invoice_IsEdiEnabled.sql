@@ -160,3 +160,31 @@ UPDATE AD_UI_Element SET SeqNo=35,Updated=TO_TIMESTAMP('2024-10-10 19:43:39','YY
 -- 2024-10-10T17:47:55.979Z
 UPDATE AD_Column SET ColumnSQL='(CASE WHEN ''CS'' = (SELECT docsubtype from C_DocType where C_DocType_ID = C_Doc_Outbound_Log.C_DocType_ID) THEN (SELECT invoice.IsEdiEnabled from C_Invoice invoice where invoice.C_Invoice_ID = C_Doc_Outbound_Log.Record_ID) ELSE ((SELECT bp.IsEdiInvoicRecipient from C_BPartner bp where bp.C_BPartner_ID = C_Doc_Outbound_Log.C_BPartner_ID)) END)',Updated=TO_TIMESTAMP('2024-10-10 20:47:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551507
 ;
+
+-- Column: C_Invoice.DocSubType
+-- Source Table: C_DocType
+-- 2024-10-11T09:34:10.686Z
+INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Link_Column_ID,Source_Column_ID,Source_Table_ID,Updated,UpdatedBy) VALUES (0,589302,0,540163,318,TO_TIMESTAMP('2024-10-11 12:34:10','YYYY-MM-DD HH24:MI:SS'),100,'L','Y',3392,1501,217,TO_TIMESTAMP('2024-10-11 12:34:10','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Column: C_Invoice.DocSubType
+-- Source Table: C_DocType
+-- 2024-10-11T09:37:11.067Z
+UPDATE AD_SQLColumn_SourceTableColumn SET Link_Column_ID=1501,Updated=TO_TIMESTAMP('2024-10-11 12:37:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SQLColumn_SourceTableColumn_ID=540163
+;
+
+-- Column: C_Invoice.DocSubType
+-- Column SQL (old): (SELECT dt.docsubtype from C_DocType dt where dt.C_DocType_ID=(SELECT   CASE WHEN C_Invoice.C_DocType_ID > 0 THEN C_Invoice.C_DocType_ID  ELSE C_Invoice.C_DocTypeTarget_ID  END))
+-- Column: C_Invoice.DocSubType
+-- Column SQL (old): (SELECT dt.docsubtype from C_DocType dt where dt.C_DocType_ID=(SELECT   CASE WHEN C_Invoice.C_DocType_ID > 0 THEN C_Invoice.C_DocType_ID  ELSE C_Invoice.C_DocTypeTarget_ID  END))
+-- 2024-10-11T09:49:30.166Z
+UPDATE AD_Column SET ColumnSQL='(SELECT dt.docsubtype from C_DocType dt where dt.C_DocType_ID=(SELECT   CASE WHEN C_Invoice.C_DocTypeTarget_ID > 0 THEN C_Invoice.C_DocTypeTarget_ID  ELSE C_Invoice.C_DocType_ID  END))',Updated=TO_TIMESTAMP('2024-10-11 12:49:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=589302
+;
+
+-- Column: C_Doc_Outbound_Log.IsEdiEnabled
+-- Column SQL (old): (CASE WHEN 'CS' = (SELECT docsubtype from C_DocType where C_DocType_ID = C_Doc_Outbound_Log.C_DocType_ID) THEN (SELECT invoice.IsEdiEnabled from C_Invoice invoice where invoice.C_Invoice_ID = C_Doc_Outbound_Log.Record_ID) ELSE ((SELECT bp.IsEdiInvoicRecipient from C_BPartner bp where bp.C_BPartner_ID = C_Doc_Outbound_Log.C_BPartner_ID)) END)
+-- Column: C_Doc_Outbound_Log.IsEdiEnabled
+-- Column SQL (old): (CASE WHEN 'CS' = (SELECT docsubtype from C_DocType where C_DocType_ID = C_Doc_Outbound_Log.C_DocType_ID) THEN (SELECT invoice.IsEdiEnabled from C_Invoice invoice where invoice.C_Invoice_ID = C_Doc_Outbound_Log.Record_ID) ELSE ((SELECT bp.IsEdiInvoicRecipient from C_BPartner bp where bp.C_BPartner_ID = C_Doc_Outbound_Log.C_BPartner_ID)) END)
+-- 2024-10-11T09:51:06.278Z
+UPDATE AD_Column SET ColumnSQL='(CASE WHEN 318 = C_Doc_Outbound_Log.AD_Table_ID THEN (SELECT invoice.IsEdiEnabled from C_Invoice invoice where invoice.C_Invoice_ID = C_Doc_Outbound_Log.Record_ID) ELSE ((SELECT bp.IsEdiInvoicRecipient from C_BPartner bp where bp.C_BPartner_ID = C_Doc_Outbound_Log.C_BPartner_ID)) END)',Updated=TO_TIMESTAMP('2024-10-11 12:51:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551507
+;
