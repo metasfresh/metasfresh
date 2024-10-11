@@ -17,7 +17,7 @@ import {
   useCurrentOrder,
 } from '../../actions/orders';
 import PropTypes from 'prop-types';
-import CashPaymentDetailsModal from './CashPaymentDetailsModal';
+import PendingPaymentModal from './PendingPaymentModal';
 
 const POSPaymentPanel = ({ disabled }) => {
   const dispatch = useDispatch();
@@ -46,39 +46,6 @@ const POSPaymentPanel = ({ disabled }) => {
   const isAllowValidate = !disabled && openAmt === 0;
 
   const payments = currentOrder?.payments ?? [];
-
-  let pendingPayment = null;
-  let pendingPaymentModal = null;
-  for (const payment of payments) {
-    console.log('payment', { payment });
-    if (payment.status === 'PENDING') {
-      if (payment.paymentMethod === 'CASH') {
-        pendingPayment = payment;
-        pendingPaymentModal = (
-          <CashPaymentDetailsModal
-            currency={currentOrder.currencySymbol}
-            precision={currencyPrecision}
-            payAmount={payment.amount}
-            tenderedAmount={payment.cashTenderedAmount}
-            onOK={({ cashTenderedAmount }) => {
-              console.log('got', { cashTenderedAmount });
-              dispatch(
-                checkoutPayment({
-                  posTerminalId: posTerminal.id,
-                  order_uuid: currentOrder.uuid,
-                  payment_uuid: payment.uuid,
-                  cashTenderedAmount,
-                })
-              );
-            }}
-          />
-        );
-        break;
-      }
-    }
-  }
-
-  console.log('***', { pendingPayment, pendingPaymentModal, payments });
 
   //
   //
@@ -120,7 +87,13 @@ const POSPaymentPanel = ({ disabled }) => {
 
   return (
     <div className="pos-content pos-payment-panel">
-      {pendingPaymentModal}
+      <PendingPaymentModal
+        posTerminalId={posTerminal.id}
+        order_uuid={currentOrder.uuid}
+        payments={payments}
+        currency={currency}
+        currencyPrecision={currencyPrecision}
+      />
       <div className="payment-summary">
         <div className="payment-summary-line totalAmt">
           <div className="payment-summary-label">Total</div>

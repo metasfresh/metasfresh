@@ -5,7 +5,15 @@ import './PaymentDetailsModal.scss';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import { NumericKeyboard, recomputeAmount, toEditingAmount } from '../NumericKeyboard';
 
-const CashPaymentDetailsModal = ({ currency, precision, payAmount, tenderedAmount: tenderedAmountParam, onOK }) => {
+const CashPaymentDetailsModal = ({
+  currency,
+  precision,
+  payAmount,
+  tenderedAmount: tenderedAmountParam,
+  isAllowCancel,
+  onOK,
+  onCancel,
+}) => {
   const [tenderedEditingAmount, setTenderedEditingAmount] = useState(() =>
     toEditingAmount({ value: tenderedAmountParam, precision })
   );
@@ -22,6 +30,10 @@ const CashPaymentDetailsModal = ({ currency, precision, payAmount, tenderedAmoun
   const fireOK = () => {
     if (!isValid) return;
     onOK({ cashTenderedAmount: tenderedAmount });
+  };
+  const fireCancel = () => {
+    if (!isAllowCancel) return;
+    onCancel();
   };
 
   const payAmountStr = formatAmountToHumanReadableStr({ amount: payAmount, currency, precision });
@@ -59,6 +71,11 @@ const CashPaymentDetailsModal = ({ currency, precision, payAmount, tenderedAmoun
             <button className="button is-large" disabled={!isValid} onClick={fireOK}>
               OK
             </button>
+            {isAllowCancel && (
+              <button className="button is-large" onClick={fireCancel}>
+                Cancel
+              </button>
+            )}
           </div>
         </footer>
       </div>
@@ -71,7 +88,9 @@ CashPaymentDetailsModal.propTypes = {
   payAmount: PropTypes.number.isRequired,
   tenderedAmount: PropTypes.number,
   changeBackAmount: PropTypes.number,
+  isAllowCancel: PropTypes.bool.isRequired,
   onOK: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
 };
 
 export default CashPaymentDetailsModal;
