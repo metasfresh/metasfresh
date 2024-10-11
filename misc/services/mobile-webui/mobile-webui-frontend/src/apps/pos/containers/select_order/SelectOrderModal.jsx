@@ -4,8 +4,7 @@ import cx from 'classnames';
 import { usePOSTerminal } from '../../actions/posTerminal';
 import { closeModalAction, MODAL_SelectOrders } from '../../actions/ui';
 import useEscapeKey from '../../../../hooks/useEscapeKey';
-import { useOpenOrdersArray } from '../../reducers/orderUtils';
-import { setCurrentOrder, useCurrentOrder } from '../../actions/orders';
+import { setCurrentOrder, useCurrentOrder, useOpenOrdersArray } from '../../actions/orders';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 
 const SelectOrderModal = () => {
@@ -71,7 +70,7 @@ const computeOrderSummary = ({ order, currencyPrecision }) => {
   });
 
   const statusStr = order.status;
-  const documentNo = order.documentNo ?? 'NEW';
+  const documentNo = order.documentNo ?? 'new';
 
   return amountStr + ' | ' + statusStr + ' | ' + documentNo;
 };

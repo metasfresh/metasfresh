@@ -69,7 +69,7 @@ public class POSOrder
 	@Builder
 	private POSOrder(
 			@NonNull final POSOrderExternalId externalId,
-			@Nullable final POSOrderId localId, 
+			@Nullable final POSOrderId localId,
 			@Nullable final String documentNo,
 			@Nullable final POSOrderStatus status,
 			@NonNull final DocTypeId salesOrderDocTypeId,
@@ -194,6 +194,12 @@ public class POSOrder
 				newStatus = changeStatusTo_Complete(services);
 				break;
 			}
+			case Closed:
+			{
+				changeStatusTo_Closed();
+				newStatus = POSOrderStatus.Closed;
+				break;
+			}
 			default:
 			{
 				throw new AdempiereException("Unknown next status " + targetStatus);
@@ -203,14 +209,9 @@ public class POSOrder
 		this.status = newStatus;
 	}
 
-	private BooleanWithReason checkCanTransitionTo(@NonNull final POSOrderStatus targetStatus)
-	{
-		return this.status.checkCanTransitionTo(targetStatus);
-	}
-
 	public BooleanWithReason checkCanTransitionToDrafted()
 	{
-		return checkCanTransitionTo(POSOrderStatus.Drafted);
+		return status.checkCanTransitionTo(POSOrderStatus.Drafted);
 	}
 
 	private void changeStatusTo_Drafted()
@@ -220,7 +221,7 @@ public class POSOrder
 
 	public BooleanWithReason checkCanTransitionToWaitingPayment()
 	{
-		final BooleanWithReason canTransition = checkCanTransitionTo(POSOrderStatus.WaitingPayment);
+		final BooleanWithReason canTransition = status.checkCanTransitionTo(POSOrderStatus.WaitingPayment);
 		if (canTransition.isFalse())
 		{
 			return canTransition;
@@ -246,7 +247,7 @@ public class POSOrder
 
 	public BooleanWithReason checkCanTransitionToVoided()
 	{
-		final BooleanWithReason canVoid = this.status.checkCanTransitionTo(POSOrderStatus.Voided);
+		final BooleanWithReason canVoid = status.checkCanTransitionTo(POSOrderStatus.Voided);
 		if (canVoid.isFalse())
 		{
 			return canVoid;
@@ -272,7 +273,7 @@ public class POSOrder
 
 	public BooleanWithReason checkCanTryTransitionToCompleted()
 	{
-		final BooleanWithReason canComplete = this.status.checkCanTransitionTo(POSOrderStatus.Completed);
+		final BooleanWithReason canComplete = status.checkCanTransitionTo(POSOrderStatus.Completed);
 		if (canComplete.isFalse())
 		{
 			return canComplete;
@@ -303,6 +304,16 @@ public class POSOrder
 		services.scheduleCreateSalesOrderInvoiceAndShipment(getLocalIdNotNull(), getCashierId());
 
 		return POSOrderStatus.Completed;
+	}
+
+	private void changeStatusTo_Closed()
+	{
+		checkCanTransitionToClosed().assertTrue();
+	}
+
+	private BooleanWithReason checkCanTransitionToClosed()
+	{
+		return status.checkCanTransitionTo(POSOrderStatus.Closed);
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")

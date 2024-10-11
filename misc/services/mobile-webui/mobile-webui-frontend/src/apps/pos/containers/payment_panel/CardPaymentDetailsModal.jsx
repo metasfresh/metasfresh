@@ -5,6 +5,7 @@ import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import Spinner from '../../../../components/Spinner';
 import { NumericKeyboard, recomputeAmount, toEditingAmount } from '../NumericKeyboard';
 import cx from 'classnames';
+import { PAYMENT_STATUS_FAILED, PAYMENT_STATUS_NEW, PAYMENT_STATUS_PENDING } from '../../constants/paymentStatus';
 
 const CardPaymentDetailsModal = ({
   currency,
@@ -24,8 +25,8 @@ const CardPaymentDetailsModal = ({
   const orderOpenAmountStr = formatAmountToHumanReadableStr({ amount: orderOpenAmount, currency, precision });
   const payAmountStr = formatAmountToHumanReadableStr({ amount: payAmount, currency, precision });
 
-  const isAllowEditing = status === 'NEW' || status === 'FAILED';
-  const isPending = status === 'PENDING';
+  const isAllowEditing = status === PAYMENT_STATUS_NEW || status === PAYMENT_STATUS_FAILED;
+  const isPending = status === PAYMENT_STATUS_PENDING;
   const isAllowCancel = isAllowEditing;
   const isAllowCheckout = isAllowEditing && isPayAmountValid;
 

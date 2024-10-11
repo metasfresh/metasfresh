@@ -3,7 +3,6 @@ import {
   ADD_ORDER_LINE,
   ADD_PAYMENT,
   NEW_ORDER,
-  ORDERS_LIST_UPDATE,
   REMOVE_ORDER_LINE,
   REMOVE_PAYMENT,
   SET_CURRENT_ORDER,
@@ -12,8 +11,15 @@ import {
 } from '../actionTypes';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
-import { getCurrentOrderFromGlobalState, getOrderByUUID } from '../reducers/orderUtils';
+import {
+  getCurrentOrderFromGlobalState,
+  getOpenOrdersArrayFromGlobalState,
+  getOrderByUUID,
+} from '../reducers/orderUtils';
 
+export const useOpenOrdersArray = () => {
+  return useSelector((globalState) => getOpenOrdersArrayFromGlobalState(globalState));
+};
 export const useCurrentOrderOrNew = ({ posTerminalId }) => {
   const dispatch = useDispatch();
   const [loadingStatus, setLoadingStatus] = useState('to-load');
@@ -121,6 +127,12 @@ export const changeOrderStatusToComplete = ({ posTerminalId, order_uuid }) => {
     dispatch(updateOrderFromBackendAction({ order }));
   };
 };
+export const changeOrderStatusToClosed = ({ posTerminalId, order_uuid }) => {
+  return async (dispatch) => {
+    const order = await ordersAPI.changeOrderStatusToClosed({ posTerminalId, order_uuid });
+    dispatch(updateOrderFromBackendAction({ order }));
+  };
+};
 
 export const addOrderLine = ({
   order_uuid,
@@ -217,21 +229,7 @@ const syncOrderToBackend = ({ order_uuid }) => {
     ordersAPI.updateOrder({ order }).then((order) => dispatch(updateOrderFromBackendAction({ order })));
   };
 };
-export const updateOrderFromBackend = ({ posTerminalId, order_uuid }) => {
-  return (dispatch) => {
-    ordersAPI
-      .getOpenOrders({ posTerminalId, ids: [order_uuid] })
-      .then(({ list, missingIds }) =>
-        dispatch(updateOrdersArrayFromBackendAction({ posTerminalId, list, missingIds, isUpdateOnly: true }))
-      );
-  };
-};
-const updateOrdersArrayFromBackendAction = ({ posTerminalId, list, missingIds, isUpdateOnly }) => {
-  return {
-    type: ORDERS_LIST_UPDATE,
-    payload: { posTerminalId, ordersArray: list, missingIds, isUpdateOnly },
-  };
-};
+
 export const updateOrderFromBackendAction = ({ order }) => {
   return {
     type: UPDATE_ORDER,

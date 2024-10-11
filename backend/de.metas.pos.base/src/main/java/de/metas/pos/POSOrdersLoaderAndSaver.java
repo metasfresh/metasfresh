@@ -394,6 +394,7 @@ class POSOrdersLoaderAndSaver
 				.localId(POSPaymentId.ofRepoId(record.getC_POS_Payment_ID()))
 				.paymentMethod(POSPaymentMethod.ofCode(record.getPOSPaymentMethod()))
 				.amount(Money.of(record.getAmount(), currencyId))
+				.cashTenderedAmount(Money.of(record.getAmountTendered(), currencyId))
 				.paymentProcessingStatus(POSPaymentProcessingStatus.ofCode(record.getPOSPaymentProcessingStatus()))
 				.cardProcessingDetails(extractCardProcessingDetails(record))
 				.paymentReceiptId(PaymentId.ofRepoIdOrNull(record.getC_Payment_ID()))
@@ -406,6 +407,8 @@ class POSOrdersLoaderAndSaver
 		record.setExternalId(from.getExternalId().getAsString());
 		record.setPOSPaymentMethod(from.getPaymentMethod().getCode());
 		record.setAmount(from.getAmount().toBigDecimal());
+		record.setAmountTendered(from.getCashTenderedAmount().toBigDecimal());
+		record.setChangeBackAmount(from.getCashGiveBackAmount().toBigDecimal());
 		record.setPOSPaymentProcessingStatus(from.getPaymentProcessingStatus().getCode());
 		updateRecord(record, from.getCardProcessingDetails());
 		record.setC_Payment_ID(PaymentId.toRepoId(from.getPaymentReceiptId()));

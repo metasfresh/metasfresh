@@ -6,7 +6,7 @@ import './Header.scss';
 
 import { usePOSTerminal } from '../actions/posTerminal';
 import { MODAL_POSTerminalSelect, MODAL_SelectOrders, showModalAction } from '../actions/ui';
-import { useOpenOrdersArray } from '../reducers/orderUtils';
+import { useOpenOrdersArray } from '../actions/orders';
 
 const Header = () => {
   const dispatch = useDispatch();

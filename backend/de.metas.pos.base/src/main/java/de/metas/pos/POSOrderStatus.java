@@ -2,6 +2,7 @@ package de.metas.pos;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -19,7 +20,12 @@ public enum POSOrderStatus implements ReferenceListAwareEnum
 	Drafted("DR"),
 	WaitingPayment("WP"),
 	Completed("CO"),
-	Voided("VO");
+	Voided("VO"),
+	Closed("CL"),
+	;
+
+	// IMPORTANT: keep in sync with misc/services/mobile-webui/mobile-webui-frontend/src/apps/pos/constants/orderStatus.js - OPEN_ORDER_STATUSES
+	public static final ImmutableSet<POSOrderStatus> OPEN_STATUSES = ImmutableSet.of(Drafted, WaitingPayment, Completed);
 
 	private static final ValuesIndex<POSOrderStatus> index = ReferenceListAwareEnums.index(values());
 
@@ -29,6 +35,7 @@ public enum POSOrderStatus implements ReferenceListAwareEnum
 			.put(WaitingPayment, Drafted)
 			.put(WaitingPayment, Completed)
 			.put(WaitingPayment, Voided)
+			.put(Completed, Closed)
 			.build();
 
 	@NonNull private final String code;

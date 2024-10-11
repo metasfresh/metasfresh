@@ -5,6 +5,8 @@ import CardPaymentDetailsModal from './CardPaymentDetailsModal';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { round } from '../../../../utils/numbers';
+import { PAYMENT_STATUS_FAILED, PAYMENT_STATUS_NEW, PAYMENT_STATUS_PENDING } from '../../constants/paymentStatus';
+import { PAYMENT_METHOD_CARD, PAYMENT_METHOD_CASH } from '../../constants/paymentMethods';
 
 const PendingPaymentModal = ({
   posTerminalId,
@@ -35,7 +37,7 @@ const PendingPaymentModal = ({
     dispatch(removePayment({ posTerminalId, order_uuid, payment_uuid: payment.uuid }));
   };
 
-  if (payment.paymentMethod === 'CASH') {
+  if (payment.paymentMethod === PAYMENT_METHOD_CASH) {
     return (
       <CashPaymentDetailsModal
         currency={currency}
@@ -47,7 +49,7 @@ const PendingPaymentModal = ({
         onCancel={handleDelete}
       />
     );
-  } else if (payment.paymentMethod === 'CARD') {
+  } else if (payment.paymentMethod === PAYMENT_METHOD_CARD) {
     const orderOpenAmount = computeOrderOpenAmount({
       orderTotalAmount,
       currencyPrecision,
@@ -97,8 +99,10 @@ const findNextPendingPayment = ({ payments }) => {
   // First, take care of card payments
   for (const payment of payments) {
     if (
-      payment.paymentMethod === 'CARD' &&
-      (payment.status === 'NEW' || payment.status === 'PENDING' || payment.status === 'FAILED')
+      payment.paymentMethod === PAYMENT_METHOD_CARD &&
+      (payment.status === PAYMENT_STATUS_NEW ||
+        payment.status === PAYMENT_STATUS_PENDING ||
+        payment.status === PAYMENT_STATUS_FAILED)
     ) {
       return payment;
     }
@@ -106,7 +110,10 @@ const findNextPendingPayment = ({ payments }) => {
 
   // Lastly, the cash payments
   for (const payment of payments) {
-    if (payment.paymentMethod === 'CASH' && payment.status === 'PENDING') {
+    if (
+      payment.paymentMethod === PAYMENT_METHOD_CASH &&
+      (payment.status === PAYMENT_STATUS_NEW || payment.status === PAYMENT_STATUS_PENDING)
+    ) {
       return payment;
     }
   }

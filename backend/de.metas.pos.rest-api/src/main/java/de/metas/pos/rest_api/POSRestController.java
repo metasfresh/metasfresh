@@ -182,7 +182,7 @@ public class POSRestController
 	}
 
 	@PostMapping("/orders/draft")
-	public JsonPOSOrder changeStatusToDraft(@RequestBody JsonChangeOrderStatusRequest request)
+	public JsonPOSOrder changeStatusToDrafted(@RequestBody JsonChangeOrderStatusRequest request)
 	{
 		return changeStatusTo(request, POSOrderStatus.Drafted);
 	}
@@ -194,15 +194,21 @@ public class POSRestController
 	}
 
 	@PostMapping("/orders/void")
-	public JsonPOSOrder changeStatusToVoid(@RequestBody JsonChangeOrderStatusRequest request)
+	public JsonPOSOrder changeStatusToVoided(@RequestBody JsonChangeOrderStatusRequest request)
 	{
 		return changeStatusTo(request, POSOrderStatus.Voided);
 	}
 
 	@PostMapping("/orders/complete")
-	public JsonPOSOrder changeStatusToComplete(@RequestBody JsonChangeOrderStatusRequest request)
+	public JsonPOSOrder changeStatusToCompleted(@RequestBody JsonChangeOrderStatusRequest request)
 	{
 		return changeStatusTo(request, POSOrderStatus.Completed);
+	}
+
+	@PostMapping("/orders/close")
+	public JsonPOSOrder changeStatusToClosed(@RequestBody JsonChangeOrderStatusRequest request)
+	{
+		return changeStatusTo(request, POSOrderStatus.Closed);
 	}
 
 	private JsonPOSOrder changeStatusTo(@NonNull JsonChangeOrderStatusRequest request, @NonNull final POSOrderStatus nextStatus)

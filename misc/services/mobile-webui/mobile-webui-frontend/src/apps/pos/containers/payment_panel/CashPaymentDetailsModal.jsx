@@ -15,7 +15,7 @@ const CashPaymentDetailsModal = ({
   onCancel,
 }) => {
   const [tenderedEditingAmount, setTenderedEditingAmount] = useState(() =>
-    toEditingAmount({ value: tenderedAmountParam, precision })
+    toEditingAmount({ value: tenderedAmountParam ?? 0, precision })
   );
 
   const tenderedAmount = tenderedEditingAmount.value;

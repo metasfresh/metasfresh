@@ -41,6 +41,11 @@ export const changeOrderStatusToComplete = ({ posTerminalId, order_uuid }) => {
     .post(`${posApiBase}/orders/complete`, { posTerminalId, order_uuid })
     .then((response) => unboxAxiosResponse(response));
 };
+export const changeOrderStatusToClosed = ({ posTerminalId, order_uuid }) => {
+  return axios
+    .post(`${posApiBase}/orders/close`, { posTerminalId, order_uuid })
+    .then((response) => unboxAxiosResponse(response));
+};
 
 export const useOrdersWebsocket = ({ posTerminalId, onWebsocketMessage }) => {
   useEffect(() => {

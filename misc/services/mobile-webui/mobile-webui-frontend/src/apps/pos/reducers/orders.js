@@ -12,6 +12,7 @@ import {
 } from '../actionTypes';
 import { v4 as uuidv4 } from 'uuid';
 import { isOpenOrderStatus, ORDER_STATUS_DRAFTED } from '../constants/orderStatus';
+import { PAYMENT_STATUS_NEW } from '../constants/paymentStatus';
 
 export function ordersReducer(applicationState, action) {
   switch (action.type) {
@@ -400,7 +401,16 @@ const updatePaymentAmounts = (order) => {
 };
 
 const addPayment = ({ applicationState, order_uuid, paymentMethod, amount }) => {
-  const newPayment = { uuid: uuidv4(), paymentMethod, amount, status: 'NEW' };
+  const newPayment = {
+    uuid: uuidv4(),
+    paymentMethod,
+    amount,
+    cashTenderedAmount: 0,
+    status: PAYMENT_STATUS_NEW,
+    allowCheckout: false,
+    allowDelete: true,
+    allowRefund: false,
+  };
   return changePayment({
     applicationState,
     order_uuid,

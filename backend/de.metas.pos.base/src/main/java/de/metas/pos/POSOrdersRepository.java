@@ -58,7 +58,7 @@ public class POSOrdersRepository
 
 		if (query.isOpen())
 		{
-			sqlQueryBuilder.addInArrayFilter(I_C_POS_Order.COLUMNNAME_Status, POSOrderStatus.Drafted, POSOrderStatus.WaitingPayment);
+			sqlQueryBuilder.addInArrayFilter(I_C_POS_Order.COLUMNNAME_Status, POSOrderStatus.OPEN_STATUSES);
 		}
 
 		final Set<POSOrderExternalId> onlyOrderExternalIds = query.getOnlyOrderExternalIds();
