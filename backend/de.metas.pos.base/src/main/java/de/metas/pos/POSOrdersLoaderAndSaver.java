@@ -295,6 +295,7 @@ class POSOrdersLoaderAndSaver
 		return POSOrder.builder()
 				.externalId(extractExternalId(orderRecord))
 				.localId(extractPOSOrderId(orderRecord))
+				.documentNo(orderRecord.getDocumentNo())
 				.status(POSOrderStatus.ofCode(orderRecord.getStatus()))
 				.salesOrderDocTypeId(DocTypeId.ofRepoId(orderRecord.getC_DocTypeOrder_ID()))
 				.pricingSystemAndListId(PricingSystemAndListId.ofRepoIds(orderRecord.getM_PricingSystem_ID(), orderRecord.getM_PriceList_ID()))
@@ -489,6 +490,7 @@ class POSOrdersLoaderAndSaver
 		InterfaceWrapperHelper.save(orderRecord);
 		final POSOrderId posOrderId = extractPOSOrderId(orderRecord);
 		order.setLocalId(posOrderId);
+		order.setDocumentNo(orderRecord.getDocumentNo());
 		addToCache(orderRecord);
 
 		//

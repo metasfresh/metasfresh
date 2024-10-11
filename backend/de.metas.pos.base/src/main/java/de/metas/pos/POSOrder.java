@@ -41,6 +41,7 @@ public class POSOrder
 {
 	@NonNull @Getter private final POSOrderExternalId externalId;
 	@Nullable @Getter @Setter private POSOrderId localId;
+	@Nullable @Getter @Setter private String documentNo;
 
 	@NonNull @Getter private POSOrderStatus status;
 	@NonNull @Getter private final DocTypeId salesOrderDocTypeId;
@@ -68,7 +69,8 @@ public class POSOrder
 	@Builder
 	private POSOrder(
 			@NonNull final POSOrderExternalId externalId,
-			@Nullable final POSOrderId localId,
+			@Nullable final POSOrderId localId, 
+			@Nullable final String documentNo,
 			@Nullable final POSOrderStatus status,
 			@NonNull final DocTypeId salesOrderDocTypeId,
 			@NonNull final PricingSystemAndListId pricingSystemAndListId,
@@ -86,6 +88,7 @@ public class POSOrder
 	{
 		this.externalId = externalId;
 		this.localId = localId;
+		this.documentNo = documentNo;
 		this.status = status != null ? status : POSOrderStatus.Drafted;
 		this.salesOrderDocTypeId = salesOrderDocTypeId;
 		this.pricingSystemAndListId = pricingSystemAndListId;

@@ -26,6 +26,7 @@ import java.util.function.Function;
 public class JsonPOSOrder
 {
 	@NonNull POSOrderExternalId uuid;
+	@Nullable String documentNo;
 	@NonNull POSTerminalId posTerminalId;
 	@Nullable POSOrderStatus status;
 	@Nullable String currencySymbol;
@@ -62,6 +63,7 @@ public class JsonPOSOrder
 		return builder()
 				.uuid(order.getExternalId())
 				.posTerminalId(order.getPosTerminalId())
+				.documentNo(order.getDocumentNo())
 				.status(order.getStatus())
 				.currencySymbol(currencySymbol)
 				.totalAmt(order.getTotalAmt().toBigDecimal())
