@@ -114,6 +114,7 @@ public class ModularContractPriceRepository
 		record.setPrice(from.amount().toBigDecimal());
 		record.setMinValue(from.minValue());
 		record.setIsScalePrice(from.isScalePrice());
+		record.setIsAveragePrice(from.isAveragePrice());
 		record.setModCntr_Module_ID(from.modularContractModuleId().getRepoId());
 		record.setC_UOM_ID(from.uomId().getRepoId());
 		record.setSeqNo(from.seqNo().toInt());
@@ -193,6 +194,7 @@ public class ModularContractPriceRepository
 				.uomId(UomId.ofRepoId(modCntrSpecificPrice.getC_UOM_ID()))
 				.minValue(modCntrSpecificPrice.getMinValue())
 				.isScalePrice(modCntrSpecificPrice.isScalePrice())
+				.isAveragePrice(modCntrSpecificPrice.isAveragePrice())
 				.productId(ProductId.ofRepoId(modCntrSpecificPrice.getM_Product_ID()))
 				.amount(Money.of(modCntrSpecificPrice.getPrice(), CurrencyId.ofRepoId(modCntrSpecificPrice.getC_Currency_ID())))
 				.seqNo(SeqNo.ofInt(modCntrSpecificPrice.getSeqNo()))

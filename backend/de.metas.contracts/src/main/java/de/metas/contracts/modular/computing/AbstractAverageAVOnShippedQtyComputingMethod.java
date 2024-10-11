@@ -24,7 +24,6 @@ package de.metas.contracts.modular.computing;
 
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
-import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -43,7 +42,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -107,15 +105,8 @@ public abstract class AbstractAverageAVOnShippedQtyComputingMethod extends Abstr
 
 	public Optional<Money> computeAverageAmount(@NonNull final ModularContractLogEntriesList logs)
 	{
-		final Optional<Money> totalMoney = logs.stream()
-				.map(ModularContractLogEntry::getAmount)
-				.filter(Objects::nonNull)
-				.reduce(Money::add);
-
-		final Optional<Quantity> totalQuantity = logs.stream()
-				.map(ModularContractLogEntry::getQuantity)
-				.filter(Objects::nonNull)
-				.reduce(Quantity::add);
+		final Optional<Money> totalMoney = logs.getAmountSum();
+		final Optional<Quantity> totalQuantity = logs.getQtySum();
 
 		if (totalMoney.isEmpty() || totalQuantity.isEmpty())
 		{

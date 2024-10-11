@@ -149,10 +149,10 @@ public class ModularContractSettings
 				.count();
 	}
 
-	public long countMatchingAnyOf(@NonNull final ComputingMethodType computingMethodType1, @NonNull final ComputingMethodType computingMethodType2)
+	public long countMatchingAnyOf(@NonNull final Collection<ComputingMethodType> computingMethodTypes)
 	{
 		return moduleConfigs.stream()
-				.filter(config -> config.isMatchingAnyOf(computingMethodType1, computingMethodType2))
+				.filter(config -> config.isMatchingAnyOf(computingMethodTypes))
 				.count();
 	}
 

@@ -20,72 +20,42 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.salescontract;
+package de.metas.contracts.modular.computing.purchasecontract;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.computing.salescontract.AbstractShipmentComputingMethod;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
-import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.InOutId;
-import de.metas.inout.InOutLineId;
-import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
-import de.metas.util.Services;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.stream.Stream;
 
-@RequiredArgsConstructor
-public abstract class AbstractShipmentComputingMethod extends AbstractComputingMethodHandler
+public abstract class AbstractShipmentForPurchaseComputingMethod extends AbstractShipmentComputingMethod
 {
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
 
-	@Getter @NonNull private final ComputingMethodType computingMethodType;
+    protected AbstractShipmentForPurchaseComputingMethod(
+			@NonNull final ModularContractProvider contractProvider,
+			@NonNull final ComputingMethodService computingMethodService,
+			@NonNull final ComputingMethodType computingMethodType)
+    {
+        super(contractProvider, computingMethodService, computingMethodType);
+        this.contractProvider = contractProvider;
+        this.computingMethodService = computingMethodService;
+    }
 
-	@Override
-	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
-	{
-		if (!logEntryContractType.isModularContractType()
-				|| !recordRef.tableNameEqualsTo(I_M_InOutLine.Table_Name))
-		{
-			return false;
-		}
-
-		final I_M_InOutLine inOutLineRecord = getShipmentLine(recordRef);
-		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-
-		return inOutRecord.isSOTrx() && !inOutBL.isReversal(inOutRecord);
-	}
-
-	@Override
+    @Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
-		return contractProvider.streamModularSalesContractsForShipmentLine(getShipmentLineId(recordRef));
-	}
-
-	@Override
-	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
-	{
-		final I_M_InOutLine shipmentLine = getShipmentLine(recordRef);
-		final ProductId shipmentProductId = ProductId.ofRepoId(shipmentLine.getM_Product_ID());
-		return ProductId.equals(shipmentProductId, settings.getRawProductId()) && settings.getSoTrx().isSales();
+		return contractProvider.streamModularPurchaseContractsForShipmentLine(getShipmentLineId(recordRef));
 	}
 	
 	@Override
@@ -108,16 +78,5 @@ public abstract class AbstractShipmentComputingMethod extends AbstractComputingM
 				.price(pricePerStockUOM)
 				.qty(qtyInStockUOM)
 				.build();
-	}
-
-	protected static InOutLineId getShipmentLineId(final @NotNull TableRecordReference recordRef)
-	{
-		return recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
-	}
-
-	protected I_M_InOutLine getShipmentLine(final @NotNull TableRecordReference recordRef)
-	{
-		final InOutLineId shipmentLineId = getShipmentLineId(recordRef);
-		return inOutBL.getLineByIdInTrx(shipmentLineId);
 	}
 }

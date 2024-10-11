@@ -2633,12 +2633,21 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@NonNull
+	@Override
 	public Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull final OrderLineId orderLineId, @NonNull final TypeConditions typeConditions)
 	{
 		return flatrateDAO.getByOrderLineId(orderLineId, typeConditions);
 	}
 
 	@Nullable
+	@Override
+	public ProductPrice extractPriceActualById(@NonNull final FlatrateTermId flatrateTermId)
+	{
+	   return extractPriceActual(getById(flatrateTermId));
+	}
+
+	@Nullable
+	@Override
 	public ProductPrice extractPriceActual(@NonNull final I_C_Flatrate_Term contract)
 	{
 		final BigDecimal priceActual = contract.getPriceActual();
@@ -2662,6 +2671,7 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@NonNull
+	@Override
 	public Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull final ModularContractSettingsId modularContractSettingsId)
 	{
 		return flatrateDAO.streamCompletedConditionsBy(modularContractSettingsId);

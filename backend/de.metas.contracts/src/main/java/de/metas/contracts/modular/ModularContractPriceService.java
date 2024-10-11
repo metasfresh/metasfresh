@@ -49,6 +49,7 @@ import de.metas.pricing.service.ScalePriceQtyFrom;
 import de.metas.pricing.service.ScalePriceUsage;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
@@ -263,6 +264,18 @@ public class ModularContractPriceService
 	public ModCntrSpecificPrice cloneById(@NonNull final ModCntrSpecificPriceId id, @NonNull final UnaryOperator<ModCntrSpecificPrice> mapper)
 	{
 		return modularContractPriceRepository.cloneById(id, mapper);
+	}
+
+	@NonNull
+	public ModCntrSpecificPrice retrievePrice(@NonNull final ContractSpecificPriceRequest contractSpecificPriceRequest)
+	{
+		return modularContractPriceRepository.retrievePriceForProductAndContract(contractSpecificPriceRequest);
+	}
+
+	public void updateAveragePricePrice(@NonNull final ContractSpecificPriceRequest contractSpecificPriceRequest, @NonNull final ProductPrice productPrice)
+	{
+		//TODO update non shipment logs and add trade margin
+		modularContractPriceRepository.save(retrievePrice(contractSpecificPriceRequest).updateProductPrice(productPrice).toBuilder().isAveragePrice(true).build());
 	}
 
 	@Builder

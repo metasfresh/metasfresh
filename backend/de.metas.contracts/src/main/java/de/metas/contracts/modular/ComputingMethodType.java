@@ -45,6 +45,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	DefinitiveInvoiceProcessedProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceProcessedProduct),
 	SalesOnRawProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SalesOnRawProduct),
 	SalesOnProcessedProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SalesOnProcessedProduct),
+	SalesOnRawProductShippedQty("SalesOnRawProductShippedQty"), //TODO
+	SalesOnProcessedProductShippedQty("SalesOnProcessedProductShippedQty"), //TODO
 	CoProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_CoProduct),
 	AddValueOnRawProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_AddValueOnRawProduct),
 	AddValueOnProcessedProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_AddValueOnProcessedProduct),
@@ -68,11 +70,21 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	public static final ImmutableSet<ComputingMethodType> DEFINITIVE_INVOICE_SPECIFIC_METHODS = ImmutableSet.of(
 			DefinitiveInvoiceRawProduct,
 			DefinitiveInvoiceProcessedProduct);
+
+	public static final ImmutableSet<ComputingMethodType> PURCHASE_SALES_METHODS = ImmutableSet.of(
+			SalesOnRawProduct,
+			SalesOnProcessedProduct,
+			SalesOnRawProductShippedQty,
+			SalesOnProcessedProductShippedQty
+	);
+
 	public static final ImmutableSet<ComputingMethodType> PURCHASE_FINAL_INVOICE_SPECIFIC_METHODS = ImmutableSet.of(
 			INTERIM_CONTRACT,
 			Receipt,
 			SalesOnRawProduct,
 			SalesOnProcessedProduct,
+			SalesOnRawProductShippedQty,
+			SalesOnProcessedProductShippedQty,
 			CoProduct,
 			AddValueOnRawProduct,
 			AddValueOnProcessedProduct,
@@ -103,6 +115,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 			Receipt,
 			SalesOnRawProduct,
 			SalesOnProcessedProduct,
+			SalesOnRawProductShippedQty,
+			SalesOnProcessedProductShippedQty,
 			CoProduct,
 			AddValueOnRawProduct,
 			AddValueOnProcessedProduct,
@@ -133,6 +147,13 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	public static final ImmutableSet<ComputingMethodType> SCALE_PRICE_METHODS = ImmutableSet.of(
 			PurchaseAverageAddedValueOnShippedQuantity,
 			SalesAverageAddedValueOnShippedQuantity
+	);
+
+	public static final ImmutableSet<ComputingMethodType> AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS = ImmutableSet.of(
+			SalesOnRawProductShippedQty,
+			SalesOnProcessedProductShippedQty,
+			DefinitiveInvoiceRawProduct,
+			DefinitiveInvoiceProcessedProduct
 	);
 
 

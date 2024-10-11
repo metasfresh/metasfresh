@@ -283,6 +283,9 @@ public interface IFlatrateBL extends ISingletonService
 	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId, @NonNull TypeConditions typeConditions);
 
 	@Nullable
+	ProductPrice extractPriceActualById(@NonNull FlatrateTermId flatrateTermId);
+
+	@Nullable
 	ProductPrice extractPriceActual(@NonNull I_C_Flatrate_Term contract);
 
 	@NonNull

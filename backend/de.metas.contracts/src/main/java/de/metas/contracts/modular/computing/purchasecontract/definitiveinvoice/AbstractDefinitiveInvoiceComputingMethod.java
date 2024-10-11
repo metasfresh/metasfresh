@@ -129,12 +129,12 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod extends AbstractC
 	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
-		final ModularContractLogEntriesList productionLogs = logs.subsetOf(getSourceLogEntryDocumentType());
+		final ModularContractLogEntriesList productionOrReceiptLogs = logs.subsetOf(getSourceLogEntryDocumentType());
 		final ModularContractLogEntriesList shipmentLogs = logs.subsetOf(LogEntryDocumentType.SHIPMENT);
-		final ProductPrice productPrice = logs.getUniqueProductPriceOrErrorNotNull();
+		final ProductPrice productPrice = shipmentLogs.getAverageProductPriceOrError();
 		final UomId uomId = productPrice.getUomId();
 
-		final Quantity producedQty = productionLogs.getQtySum(uomId, uomConversionBL);
+		final Quantity producedQty = productionOrReceiptLogs.getQtySum(uomId, uomConversionBL);
 		final Quantity shippedQty = shipmentLogs.getQtySum(uomId, uomConversionBL);
 
 		final Quantity qtyDifference = shippedQty.subtract(producedQty);

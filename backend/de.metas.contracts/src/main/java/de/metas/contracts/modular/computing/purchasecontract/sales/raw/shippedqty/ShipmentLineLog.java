@@ -1,4 +1,4 @@
-package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice.processed;
+package de.metas.contracts.modular.computing.purchasecontract.sales.raw.shippedqty;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -14,7 +14,7 @@ public class ShipmentLineLog extends AbstractOrderPriceShipmentLogHandler
 	public ShipmentLineLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final DefinitiveInvoiceForProcessedProductComputingMethod computingMethod)
+			@NonNull final RawSalesShippedQtyComputingMethod computingMethod)
 	{
 		super(modularContractService, modCntrInvoicingGroupRepository, computingMethod);
 	}
