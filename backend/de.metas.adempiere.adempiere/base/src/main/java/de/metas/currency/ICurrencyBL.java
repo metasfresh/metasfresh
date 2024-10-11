@@ -206,4 +206,6 @@ public interface ICurrencyBL extends ISingletonService
 	CurrencyConversionTypeId getCurrencyConversionTypeIdOrDefault(@NonNull OrgId orgId, @Nullable String conversionTypeName);
 
 	boolean isApply5CentCashRounding(@NonNull CurrencyId currencyId);
+
+	boolean isPOApply5CentCashRounding(@NonNull CurrencyId currencyId);
 }

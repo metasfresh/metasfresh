@@ -48,4 +48,6 @@ public class Currency
 	CurrencyPrecision costingPrecision;
 
 	boolean isApply5CentCashRounding;
+
+	boolean isPOApply5CentCashRounding;
 }

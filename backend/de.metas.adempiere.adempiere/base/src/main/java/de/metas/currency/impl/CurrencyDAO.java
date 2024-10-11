@@ -110,6 +110,7 @@ public class CurrencyDAO implements ICurrencyDAO
 				.precision(CurrencyPrecision.ofInt(record.getStdPrecision()))
 				.costingPrecision(CurrencyPrecision.ofInt(record.getCostingPrecision()))
 				.isApply5CentCashRounding(record.isApply5CentCashRounding())
+				.isPOApply5CentCashRounding(record.isPOApply5CentCashRounding())
 				.build();
 	}
 
