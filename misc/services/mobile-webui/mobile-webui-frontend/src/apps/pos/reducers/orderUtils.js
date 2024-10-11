@@ -1,4 +1,5 @@
 import { determineApplicationState, getPOSApplicationState } from './commonUtils';
+import { useSelector } from 'react-redux';
 
 export const getCurrentOrderFromGlobalState = (globalState) => {
   const applicationState = getPOSApplicationState(globalState);
@@ -10,7 +11,10 @@ export const getCurrentOrderFromGlobalState = (globalState) => {
   return getOrderByUUID({ applicationState, order_uuid: current_uuid });
 };
 
-export const getOpenOrdersArrayFromGlobalState = (globalState) => {
+export const useOpenOrdersArray = () => {
+  return useSelector((globalState) => getOpenOrdersArrayFromGlobalState(globalState));
+};
+const getOpenOrdersArrayFromGlobalState = (globalState) => {
   const applicationState = getPOSApplicationState(globalState);
   const orders = applicationState?.orders?.byUUID ?? {};
   return Object.values(orders);

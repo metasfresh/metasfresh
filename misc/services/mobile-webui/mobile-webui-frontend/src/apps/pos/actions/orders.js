@@ -6,6 +6,7 @@ import {
   ORDERS_LIST_UPDATE,
   REMOVE_ORDER_LINE,
   REMOVE_PAYMENT,
+  SET_CURRENT_ORDER,
   SET_SELECTED_ORDER_LINE,
   UPDATE_ORDER,
 } from '../actionTypes';
@@ -85,6 +86,15 @@ export const addNewOrderAction = ({ posTerminalId }) => {
   return {
     type: NEW_ORDER,
     payload: { posTerminalId },
+  };
+};
+export const setCurrentOrder = ({ order_uuid }) => {
+  return (dispatch) => dispatch(setCurrentOrderAction({ order_uuid }));
+};
+const setCurrentOrderAction = ({ order_uuid }) => {
+  return {
+    type: SET_CURRENT_ORDER,
+    payload: { order_uuid },
   };
 };
 export const changeOrderStatusToDraft = ({ posTerminalId, order_uuid }) => {
@@ -263,9 +273,15 @@ export const removePayment = ({ order_uuid, payment_uuid }) => {
 const removePaymentAction = ({ order_uuid, payment_uuid }) => {
   return { type: REMOVE_PAYMENT, payload: { order_uuid, payment_uuid } };
 };
-export const checkoutPayment = ({ posTerminalId, order_uuid, payment_uuid, cashTenderedAmount }) => {
+export const checkoutPayment = ({ posTerminalId, order_uuid, payment_uuid, cardPayAmount, cashTenderedAmount }) => {
   return async (dispatch) => {
-    const order = await ordersAPI.checkoutPayment({ posTerminalId, order_uuid, payment_uuid, cashTenderedAmount });
+    const order = await ordersAPI.checkoutPayment({
+      posTerminalId,
+      order_uuid,
+      payment_uuid,
+      cardPayAmount,
+      cashTenderedAmount,
+    });
     dispatch(updateOrderFromBackendAction({ order }));
   };
 };
