@@ -97,7 +97,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
 					<font fontName="Arial" size="4" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{hu}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{hu-value}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
