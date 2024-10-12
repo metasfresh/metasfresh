@@ -92,3 +92,18 @@ export const refundPayment = ({ posTerminalId, order_uuid, payment_uuid }) => {
     .post(`${posApiBase}/orders/refundPayment`, { posTerminalId, order_uuid, payment_uuid })
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const getReceiptPdf = ({ order_uuid }) => {
+  return axios({
+    url: toUrl(`${posApiBase}/orders/receipt/receipt.pdf`, { id: order_uuid }),
+    responseType: 'blob',
+  }).then((response) => convertToBase64(response.data));
+};
+
+const convertToBase64 = (blob) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+};

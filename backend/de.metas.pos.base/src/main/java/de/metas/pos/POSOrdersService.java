@@ -12,8 +12,10 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,6 +28,7 @@ public class POSOrdersService
 	@NonNull private static final Logger logger = LogManager.getLogger(POSOrdersService.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	@NonNull private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final POSOrdersRepository ordersRepository;
 	@NonNull private final CurrencyRepository currencyRepository;
@@ -205,5 +208,11 @@ public class POSOrdersService
 
 			posOrder.updatePaymentByExternalId(posPaymentExternalId, posPayment -> posOrderProcessingServices.refundPOSPayment(posPayment, posOrder.getLocalIdNotNull(), paymentProcessorConfig));
 		});
+	}
+
+	public Optional<Resource> getReceiptPdf(final @NonNull POSOrderExternalId externalId)
+	{
+		final POSOrderId id = ordersRepository.getIdByExternalId(externalId);
+		return archiveBL.getLastArchiveBinaryData(id.toRecordRef());
 	}
 }

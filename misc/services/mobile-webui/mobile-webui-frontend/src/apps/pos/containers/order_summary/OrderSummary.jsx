@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import '../payment_panel/PaymentDetailsModal.scss';
 import { usePOSTerminal } from '../../actions/posTerminal';
 import { changeOrderStatusToClosed, useCurrentOrder } from '../../actions/orders';
@@ -8,11 +8,21 @@ import { PAYMENT_STATUS_SUCCESSFUL } from '../../constants/paymentStatus';
 import { PAYMENT_METHOD_CARD, PAYMENT_METHOD_CASH } from '../../constants/paymentMethods';
 import { getPaymentSummaryLine } from '../../utils/payments';
 import cx from 'classnames';
+import { getReceiptPdf } from '../../api/orders';
 
 const OrderSummary = () => {
   const dispatch = useDispatch();
   const { id: posTerminalId, currencyPrecision: precision } = usePOSTerminal();
   const { uuid: order_uuid, currencySymbol: currency, totalAmt, payments } = useCurrentOrder({ posTerminalId });
+  const [receiptPdfData, setReceiptPdfData] = useState();
+
+  useEffect(() => {
+    getReceiptPdf({ order_uuid }).then((data) => {
+      setReceiptPdfData(data);
+      console.log('loaded pdf', { data });
+    });
+  }, [order_uuid]);
+  console.log('OrderSummary', { receiptPdfData });
 
   const totalAmtStr = formatAmountToHumanReadableStr({ amount: totalAmt, currency, precision });
 
@@ -35,6 +45,44 @@ const OrderSummary = () => {
       cashGiveBackAmount += payment.cashGiveBackAmount;
     }
   }
+
+  const onPrint = () => {
+    //getReceiptPdf({ order_uuid });
+
+    // window.print();
+
+    // let printWindow = window.open(receiptPdfData);
+    // printWindow.print();
+    // window.alert('printed');
+
+    console.log('', { receiptPdfData });
+
+    // // const blob = b64toBlob(receiptPdfData, 'application/pdf');
+    // console.log('', { blob });
+    //
+    // const blobUrl = URL.createObjectURL(blob);
+    // console.log('', { blobUrl });
+  };
+
+  // const b64toBlob = (b64Data, contentType = '', sliceSize = 512) => {
+  //   const byteCharacters = atob(b64Data);
+  //   const byteArrays = [];
+  //
+  //   for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+  //     const slice = byteCharacters.slice(offset, offset + sliceSize);
+  //
+  //     const byteNumbers = new Array(slice.length);
+  //     for (let i = 0; i < slice.length; i++) {
+  //       byteNumbers[i] = slice.charCodeAt(i);
+  //     }
+  //
+  //     const byteArray = new Uint8Array(byteNumbers);
+  //     byteArrays.push(byteArray);
+  //   }
+  //
+  //   const blob = new Blob(byteArrays, { type: contentType });
+  //   return blob;
+  // };
 
   const onClose = () => {
     dispatch(changeOrderStatusToClosed({ posTerminalId, order_uuid }));
@@ -74,9 +122,13 @@ const OrderSummary = () => {
               </div>
             </>
           )}
+          <object data={receiptPdfData} width="400px" height="400px" />
         </section>
         <footer className="modal-card-foot">
           <div className="buttons">
+            <button className="button is-large" onClick={onPrint}>
+              Print
+            </button>
             <button className="button is-large" onClick={onClose}>
               Close
             </button>

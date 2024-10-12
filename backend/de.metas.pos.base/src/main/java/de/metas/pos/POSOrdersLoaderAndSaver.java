@@ -63,24 +63,31 @@ class POSOrdersLoaderAndSaver
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_OrderLine>> lineRecords = new HashMap<>();
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_Payment>> paymentRecords = new HashMap<>();
 
-	public POSOrder loadFromRecord(@NonNull final I_C_POS_Order orderRecord)
+	POSOrder loadFromRecord(@NonNull final I_C_POS_Order orderRecord)
 	{
 		addToCacheAndWarmUp(ImmutableList.of(orderRecord));
 		return fromRecord(orderRecord);
 	}
 
-	public List<POSOrder> loadFromRecords(@NonNull final List<I_C_POS_Order> orderRecords)
+	List<POSOrder> loadFromRecords(@NonNull final List<I_C_POS_Order> orderRecords)
 	{
 		addToCacheAndWarmUp(orderRecords);
 		return orderRecords.stream().map(this::fromRecord).collect(ImmutableList.toImmutableList());
 	}
 
-	public POSOrder getById(final @NonNull POSOrderId posOrderId)
+	POSOrder getById(final @NonNull POSOrderId posOrderId)
 	{
 		return fromRecord(getOrderRecordById(posOrderId));
 	}
 
-	public POSOrder createOrUpdateByExternalId(
+	public POSOrderId getIdByExternalId(final @NonNull POSOrderExternalId externalId)
+	{
+		return getOrderRecordByExternalId(externalId)
+				.map(POSOrdersLoaderAndSaver::extractPOSOrderId)
+				.orElseThrow(() -> new AdempiereException("No POS order found for " + externalId));
+	}
+
+	POSOrder createOrUpdateByExternalId(
 			@NonNull final POSOrderExternalId externalId,
 			@NonNull final Function<POSOrderExternalId, POSOrder> factory,
 			@NonNull final Consumer<POSOrder> updater)
@@ -103,7 +110,7 @@ class POSOrdersLoaderAndSaver
 		return order;
 	}
 
-	public POSOrder updateById(@NonNull final POSOrderId id, @NonNull final Consumer<POSOrder> updater)
+	POSOrder updateById(@NonNull final POSOrderId id, @NonNull final Consumer<POSOrder> updater)
 	{
 		final I_C_POS_Order orderRecord = getOrderRecordById(id);
 		final POSOrder order = fromRecord(orderRecord);
@@ -163,7 +170,7 @@ class POSOrdersLoaderAndSaver
 		return orderRecord;
 	}
 
-	private Optional<I_C_POS_Order> getOrderRecordByExternalId(@NonNull final POSOrderExternalId externalId)
+	Optional<I_C_POS_Order> getOrderRecordByExternalId(@NonNull final POSOrderExternalId externalId)
 	{
 		Optional<I_C_POS_Order> orderRecord = orderRecordsByExternalId.get(externalId);
 		if (orderRecord == null)
@@ -275,7 +282,7 @@ class POSOrdersLoaderAndSaver
 		return fromRecord(orderRecord, lineRecords, paymentRecords);
 	}
 
-	private static POSOrderId extractPOSOrderId(final I_C_POS_Order orderRecord)
+	static POSOrderId extractPOSOrderId(final I_C_POS_Order orderRecord)
 	{
 		return POSOrderId.ofRepoId(orderRecord.getC_POS_Order_ID());
 	}
@@ -476,7 +483,7 @@ class POSOrdersLoaderAndSaver
 				.build();
 	}
 
-	public void save(@NonNull final POSOrder order)
+	void save(@NonNull final POSOrder order)
 	{
 		final I_C_POS_Order orderRecord;
 		if (order.getLocalId() != null)

@@ -103,9 +103,8 @@ public class POSOrdersRepository
 		updateById(orderAndPaymentId.getOrderId(), order -> order.updatePaymentById(orderAndPaymentId.getPaymentId(), payment -> updater.apply(order, payment)));
 	}
 
-	public void save(@NonNull final POSOrder order)
+	public POSOrderId getIdByExternalId(final @NonNull POSOrderExternalId externalId)
 	{
-		newLoaderAndSaver().save(order);
+		return newLoaderAndSaver().getIdByExternalId(externalId);
 	}
-
 }

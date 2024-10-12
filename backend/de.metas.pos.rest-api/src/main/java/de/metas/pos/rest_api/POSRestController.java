@@ -35,8 +35,14 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
+import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -246,5 +252,27 @@ public class POSRestController
 	{
 		final POSOrder order = posService.refundPayment(request.getPosTerminalId(), request.getOrder_uuid(), request.getPayment_uuid(), getLoggedUserId());
 		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
+	}
+
+	@GetMapping("/orders/receipt/{filename:.*}")
+	@PostMapping("/orders/receipt/{filename:.*}")
+	public ResponseEntity<Resource> getReceiptPdf(
+			@PathVariable("filename") final String filename,
+			@RequestParam(value = "id") final String idStr)
+	{
+		final POSOrderExternalId posOrderExternalId = POSOrderExternalId.ofString(idStr);
+		return posService.getReceiptPdf(posOrderExternalId)
+				.map(resource -> createPDFResponseEntry(resource, filename))
+				.orElseGet(() -> ResponseEntity.notFound().build());
+	}
+
+	private static ResponseEntity<Resource> createPDFResponseEntry(@NonNull final Resource resource, @NonNull final String filename)
+	{
+		final HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MimeType.getMediaType(filename));
+		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
+		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+		return new ResponseEntity<>(resource, headers, HttpStatus.OK);
 	}
 }
