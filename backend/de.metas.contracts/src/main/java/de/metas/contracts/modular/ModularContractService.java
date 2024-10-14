@@ -47,6 +47,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
@@ -63,6 +64,17 @@ public class ModularContractService
 	@NonNull private final ComputingMethodService computingMethodService;
 	@NonNull private final ModularContractPriceRepository modularContractPriceRepository;
 
+	public static ModularContractService newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ModularContractService(
+			ModularContractComputingMethodHandlerRegistry.newInstanceForJUnitTesting(),
+			new ModularContractSettingsRepository(),
+			ProcessModularLogsEnqueuer.newInstanceForJUnitTesting(),
+			ComputingMethodService.newInstanceForJUnitTesting(),
+			new ModularContractPriceRepository()
+		);
+	}
 
 	public void scheduleLogCreation(@NonNull final DocStatusChangedEvent event)
 	{

@@ -59,6 +59,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
@@ -84,6 +85,16 @@ public class ModularContractPriceService
 	@NonNull private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+	public static ModularContractPriceService newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ModularContractPriceService(
+				new ModularContractPriceRepository(),
+				new ModularContractSettingsRepository(),
+				ProductScalePriceService.newInstanceForUnitTesting()
+		);
+	}
 
 	public ModCntrSpecificPrice getById(@NonNull final ModCntrSpecificPriceId id)
 	{

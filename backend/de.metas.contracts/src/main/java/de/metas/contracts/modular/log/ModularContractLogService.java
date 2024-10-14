@@ -45,7 +45,6 @@
  import de.metas.invoice.detail.InvoiceCandidateWithDetails;
  import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
  import de.metas.invoice.detail.InvoiceDetailItem;
- import de.metas.invoice.service.IInvoiceBL;
  import de.metas.invoicecandidate.InvoiceCandidateId;
  import de.metas.invoicecandidate.api.IInvoiceCandDAO;
  import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -76,6 +75,7 @@
  import org.adempiere.model.InterfaceWrapperHelper;
  import org.adempiere.util.lang.impl.TableRecordReference;
  import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+ import org.compiere.Adempiere;
  import org.springframework.stereotype.Service;
 
  import javax.annotation.Nullable;
@@ -100,7 +100,6 @@
 	 @NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	 @NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	 @NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	 @NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	 @NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	 @NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	 @NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -110,6 +109,17 @@
 	 @NonNull private final InvoiceCandidateWithDetailsRepository invoiceCandidateWithDetailsRepository;
 	 @NonNull private final ModularContractPriceService modularContractPriceService;
 	 @NonNull private final ModularContractSettingsService modularContractSettingsService;
+
+	 public static ModularContractLogService newInstanceForJUnitTesting()
+	 {
+		 Adempiere.assertUnitTestMode();
+		 return new ModularContractLogService(
+				 new ModularContractLogDAO(),
+				 new InvoiceCandidateWithDetailsRepository(),
+				 ModularContractPriceService.newInstanceForJUnitTesting(),
+				 ModularContractSettingsService.newInstanceForJUnitTesting()
+		 );
+	 }
 
 	 public void throwErrorIfLogExistsForDocumentLine(@NonNull final TableRecordReference tableRecordReference)
 	 {

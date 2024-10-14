@@ -45,6 +45,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -55,15 +56,20 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ModularContractSettingsService
 {
-	public static final String AD_ELEMENT_DEFINITIVE_INVOICE = "DefinitiveInvoice";
+	@NonNull private static final AdMessageKey ERROR_MSG_NO_FLATRATE_TERM_CONDITIONS = AdMessageKey.of("de.metas.contracts.modular.settings.missingFlatrateTermCondition");
+	@NonNull private static final AdMessageKey MSG_ERROR_MODULARCONTRACTSETTINGS_ALREADY_USED = AdMessageKey.of("MSG_ModularContractSettings_AlreadyUsed");
+	@NonNull private static final String AD_ELEMENT_DEFINITIVE_INVOICE = "DefinitiveInvoice";
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
 
-	private static final AdMessageKey ERROR_MSG_NO_FLATRATE_TERM_CONDITIONS = AdMessageKey.of("de.metas.contracts.modular.settings.missingFlatrateTermCondition");
-	public static final AdMessageKey MSG_ERROR_MODULARCONTRACTSETTINGS_ALREADY_USED = AdMessageKey.of("MSG_ModularContractSettings_AlreadyUsed");
+	public static ModularContractSettingsService newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ModularContractSettingsService(new ModularContractSettingsRepository());
+	}
 
 	public ConditionsId retrieveFlatrateConditionId(
 			@NonNull final ModularContractSettings modularContractSettings,
