@@ -22,6 +22,7 @@
 
 package de.metas.common.util;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
@@ -50,10 +51,13 @@ public class SimpleSequence
 		return new SimpleSequence(initial, 10);
 	}
 
+	@Builder
 	private SimpleSequence(final int initial, final int increment)
 	{
 
 		this.initial = initial;
+
+		Check.errorIf(increment == 0, "The given increment may not be zero");
 		this.increment = increment;
 
 		current = initial;

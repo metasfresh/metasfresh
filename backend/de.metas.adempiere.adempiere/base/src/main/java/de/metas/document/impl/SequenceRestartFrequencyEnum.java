@@ -48,7 +48,7 @@ public enum SequenceRestartFrequencyEnum implements ReferenceListAwareEnum
 	}
 
 	@Nullable
-	public static SequenceRestartFrequencyEnum ofNullableCode(final String code)
+	public static SequenceRestartFrequencyEnum ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}
