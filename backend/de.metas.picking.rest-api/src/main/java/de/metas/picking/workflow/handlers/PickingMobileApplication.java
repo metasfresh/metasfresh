@@ -92,6 +92,19 @@
 		@VisibleForTesting
 		public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
 
+<<<<<<< HEAD
+=======
+		private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
+		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
+		public static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
+				.id(APPLICATION_ID)
+				.caption(TranslatableStrings.adMessage(MSG_Caption))
+				.requiresWorkplace(true)
+				.showFilterByDocumentNo(true)
+				.showFilters(true)
+				.build();
+
+>>>>>>> 78e0a68347b (MobileUI Picking - User Error Handling (#19112))
 		public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("A1");
 		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("A2");
 		public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("A3");
@@ -138,7 +151,9 @@
 		{
 			if (query.getFilterByQRCode() != null)
 			{
-				throw new AdempiereException("Invalid QR Code: " + query.getFilterByQRCode());
+				throw new AdempiereException(INVALID_QR_CODE_ERROR_MSG)
+						.appendParametersToMessage()
+						.setParameter("QRCode", query.getFilterByQRCode());
 			}
 
 			return wfLaunchersProvider.provideLaunchers(query);
