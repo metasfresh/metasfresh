@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.i18n.AdMessageKey;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
@@ -41,6 +42,8 @@ import java.util.List;
 @Builder
 public class JsonWFProcess
 {
+	private static final AdMessageKey NO_ACTIVITY_ERROR_MSG = AdMessageKey.of("de.metas.workflow.rest_api.model.NO_ACTIVITY_ERROR_MSG");
+
 	@NonNull String id;
 
 	@NonNull JsonWFProcessHeaderProperties headerProperties;
@@ -66,4 +69,17 @@ public class JsonWFProcess
 				.build();
 	}
 
+<<<<<<< HEAD
+=======
+	@JsonIgnore
+	public JsonWFActivity getActivityById(@NonNull final String activityId)
+	{
+		return activities.stream().filter(activity -> activity.getActivityId().equals(activityId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException(NO_ACTIVITY_ERROR_MSG)
+						.appendParametersToMessage()
+						.setParameter("ID", activityId)
+						.setParameter("WFProcess", this));
+	}
+>>>>>>> 87370c761fe (MobileUI Picking - User Error Handling (#19112) (#19121))
 }

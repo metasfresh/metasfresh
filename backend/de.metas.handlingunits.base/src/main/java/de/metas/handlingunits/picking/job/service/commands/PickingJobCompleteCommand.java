@@ -6,6 +6,12 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
+import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
+import de.metas.i18n.AdMessageKey;
+>>>>>>> 87370c761fe (MobileUI Picking - User Error Handling (#19112) (#19121))
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -14,6 +20,9 @@ import org.adempiere.exceptions.AdempiereException;
 
 public class PickingJobCompleteCommand
 {
+	private final static AdMessageKey PICKING_ON_ALL_STEPS_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.PICKING_ON_ALL_STEPS_ERROR_MSG");
+	private final static AdMessageKey ALL_STEPS_SHALL_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.ALL_STEPS_SHALL_BE_PICKED_ERROR_MSG");
+
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
@@ -44,7 +53,7 @@ public class PickingJobCompleteCommand
 		initialPickingJob.assertNotProcessed();
 		if (!initialPickingJob.getProgress().isDone())
 		{
-			throw new AdempiereException("Picking shall be DONE on all steps in order to complete the job");
+			throw new AdempiereException(PICKING_ON_ALL_STEPS_ERROR_MSG);
 		}
 
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
@@ -54,7 +63,7 @@ public class PickingJobCompleteCommand
 	{
 		if (!initialPickingJob.getProgress().isDone())
 		{
-			throw new AdempiereException("All steps shall be picked");
+			throw new AdempiereException(ALL_STEPS_SHALL_BE_PICKED_ERROR_MSG);
 		}
 
 		final PickingJob pickingJob = initialPickingJob.withDocStatus(PickingJobDocStatus.Completed);
