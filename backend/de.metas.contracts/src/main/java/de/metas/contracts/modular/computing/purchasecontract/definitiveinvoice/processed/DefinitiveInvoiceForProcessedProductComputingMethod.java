@@ -24,6 +24,7 @@ package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice.
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
@@ -47,9 +48,10 @@ public class DefinitiveInvoiceForProcessedProductComputingMethod extends Abstrac
 
 	public DefinitiveInvoiceForProcessedProductComputingMethod(@NonNull final ManufacturingFacadeService manufacturingFacadeService,
 			@NonNull final ModularContractProvider contractProvider,
-			@NonNull final ComputingMethodService computingMethodService)
+			@NonNull final ComputingMethodService computingMethodService,
+			@NonNull final ModularContractPriceService modularContractPriceService)
 	{
-		super(contractProvider, computingMethodService);
+		super(contractProvider, computingMethodService, modularContractPriceService);
 		this.contractProvider = contractProvider;
 		this.manufacturingFacadeService = manufacturingFacadeService;
 	}

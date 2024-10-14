@@ -23,6 +23,8 @@
 package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.ContractSpecificPriceRequest;
+import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingMethodService;
@@ -38,6 +40,8 @@ import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -57,13 +61,14 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public abstract class AbstractDefinitiveInvoiceComputingMethod extends AbstractComputingMethodHandler
 {
+	@NonNull private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+	@NonNull private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
-
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
-	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final ModularContractPriceService modularContractPriceService;
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
@@ -131,8 +136,14 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod extends AbstractC
 		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
 		final ModularContractLogEntriesList productionOrReceiptLogs = logs.subsetOf(getSourceLogEntryDocumentType());
 		final ModularContractLogEntriesList shipmentLogs = logs.subsetOf(LogEntryDocumentType.SHIPMENT);
-		final ProductPrice productPrice = shipmentLogs.getAverageProductPriceOrError();
-		final UomId uomId = productPrice.getUomId();
+		final ProductId productId = request.getProductId();
+		final UomId uomId = productBL.getStockUOMId(productId);
+		final ProductPrice productPrice = modularContractPriceService.retrievePrice(
+				ContractSpecificPriceRequest.builder()
+						.modularContractModuleId(request.getModularContractModuleId())
+						.flatrateTermId(request.getFlatrateTermId())
+						.build()
+		).getProductPrice();
 
 		final Quantity producedQty = productionOrReceiptLogs.getQtySum(uomId, uomConversionBL);
 		final Quantity shippedQty = shipmentLogs.getQtySum(uomId, uomConversionBL);

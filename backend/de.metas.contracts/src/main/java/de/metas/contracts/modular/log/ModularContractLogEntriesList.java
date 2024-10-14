@@ -23,6 +23,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
@@ -65,9 +66,20 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 
 	public ModularContractLogEntriesList subsetOf(@NonNull final LogEntryDocumentType documentType)
 	{
-		return ModularContractLogEntriesList.ofCollection(list.stream()
-				.filter(log -> documentType.equals(log.getDocumentType()))
-				.toList());
+		return ModularContractLogEntriesList.ofCollection(
+				list.stream()
+						.filter(log -> documentType.equals(log.getDocumentType()))
+						.toList()
+		);
+	}
+
+	public ModularContractLogEntriesList subsetOfNot(@NonNull final LogEntryDocumentType documentType)
+	{
+		return ModularContractLogEntriesList.ofCollection(
+				list.stream()
+						.filter(log -> !documentType.equals(log.getDocumentType()))
+						.toList()
+		);
 	}
 
 	public ModularContractLogEntriesList subsetOf(final boolean processed)
@@ -212,46 +224,35 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getClientAndOrgId);
 	}
 
-
 	@NonNull
-	public ProductPrice getAverageProductPriceOrError()
-	{
-		return getAverageProductPrice().orElseThrow(() -> new AdempiereException("No product price found"));
-	}
-
-	@NonNull
-	public Optional<ProductPrice> getAverageProductPrice()
+	public Optional<ProductPrice> getAveragePrice(
+			@NonNull final ProductId productId,
+			@NonNull final UomId targetUOMId,
+			@NonNull final QuantityUOMConverter quantityUOMConverter,
+			@NonNull final BigDecimal tradeMargin)
 	{
 		if (list.isEmpty())
 		{
 			return Optional.empty();
 		}
 
-		final Optional<ProductPrice> priceSum = getPriceActualSum();
-		final Optional<Quantity> qtySum = getQtySum();
+		final Optional<Money> priceSum = getAmountSum();
+		final Quantity qtySum = getQtySum(targetUOMId, quantityUOMConverter);
 
-		if(priceSum.isEmpty() || qtySum.isEmpty())
+		if(priceSum.isEmpty() || qtySum.isZero())
 		{
 			return Optional.empty();
 		}
 
-        return Optional.of(priceSum.get().divide(qtySum.get(), precision));
+		final Money priceAverage = priceSum.get().divide(qtySum.toBigDecimal(), precision).subtract(tradeMargin);
 
+		return Optional.of(ProductPrice.builder()
+								   .money(priceAverage)
+								   .productId(productId)
+								   .uomId(targetUOMId)
+								   .build()
+		);
     }
-
-	@NonNull
-	private Optional<ProductPrice> getPriceActualSum()
-	{
-		if (list.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		return list.stream()
-				.map(ModularContractLogEntry::getPriceActual)
-				.filter(Objects::nonNull)
-				.reduce(ProductPrice::add);
-	}
 
 	@NonNull
 	public Optional<Quantity> getQtySum()

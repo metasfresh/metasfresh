@@ -58,7 +58,8 @@ public class ModularContractSettingsService
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private ModularContractSettingsRepository modularContractSettingsRepository;
+
+	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
 
 	private static final AdMessageKey ERROR_MSG_NO_FLATRATE_TERM_CONDITIONS = AdMessageKey.of("de.metas.contracts.modular.settings.missingFlatrateTermCondition");
 	public static final AdMessageKey MSG_ERROR_MODULARCONTRACTSETTINGS_ALREADY_USED = AdMessageKey.of("MSG_ModularContractSettings_AlreadyUsed");
@@ -224,7 +225,7 @@ public class ModularContractSettingsService
 
 	public void updateModule(@NonNull final ModuleConfig moduleConfig, @Nullable final ModularContractTypeId modularContractTypeId, @NonNull final ProductId productId)
 	{
-		modularContractSettingsRepository.updateModule(moduleConfig.getId().getModularContractModuleId(), ModularContractModuleUpdateRequest.builder()
+		modularContractSettingsRepository.updateModule(moduleConfig.getModularContractModuleId(), ModularContractModuleUpdateRequest.builder()
 				.modularContractTypeId(modularContractTypeId)
 				.productId(productId)
 				.build());

@@ -149,13 +149,7 @@ public class ModularContractService
 	@NonNull
 	public ProductPrice getContractSpecificPrice(@NonNull final ContractSpecificPriceRequest contractSpecificPriceRequest)
 	{
-		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceRepository.retrievePriceForProductAndContract(contractSpecificPriceRequest);
-
-		return ProductPrice.builder()
-				.productId(modCntrSpecificPrice.productId())
-				.money(modCntrSpecificPrice.amount())
-				.uomId(modCntrSpecificPrice.uomId())
-				.build();
+		return modularContractPriceRepository.retrievePriceForProductAndContract(contractSpecificPriceRequest).getProductPrice();
 	}
 
 	@Nullable

@@ -22,13 +22,19 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.settings.ModularContractSettingsId;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
+import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +46,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
+import static de.metas.contracts.modular.ComputingMethodType.AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS;
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
 import static de.metas.contracts.modular.ModelAction.REVERSED;
 
@@ -49,9 +56,12 @@ import static de.metas.contracts.modular.ModelAction.REVERSED;
 public class C_Invoice
 {
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	@NonNull private final ModularContractService contractService;
 	@NonNull private final ModularContractLogService modularContractLogService;
+	@NonNull private final ModularContractSettingsService modularContractSettingsService;
+	@NonNull private final ModularContractLogHandlerRegistry logHandlerRegistry;
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(@NonNull final I_C_Invoice invoiceRecord)
@@ -63,8 +73,19 @@ public class C_Invoice
 	public void afterReverse(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		invokeHandlerForEachLine(invoiceRecord, REVERSED);
-		modularContractLogService.unprocessModularContractLogs(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()), DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID()));
-		//TODO update averagePrice
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
+		modularContractLogService.unprocessModularContractLogs(invoiceId, DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID()));
+
+		final ModularContractSettingsId modularContractSettingsId = null; //TODO ModularContractSettingsId.ofRepoIdOrNull(invoiceRecord.getModCntr_Settings_ID);
+		if(modularContractSettingsId == null)
+		{
+			return;
+		}
+		final FlatrateTermId flatrateTermId = Check.assumePresent(flatrateBL.getIdForInvoice(invoiceId), "FlatrateTermId should be present");
+
+		modularContractSettingsService.getById(modularContractSettingsId).getModuleConfigs().stream()
+				.filter(config -> config.isMatchingAnyOf(AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS))
+				.forEach(config -> modularContractLogService.updateAverageContractSpecificPrice(config, flatrateTermId, logHandlerRegistry));
 	}
 
 	private void invokeHandlerForEachLine(

@@ -10,7 +10,6 @@ import de.metas.quantity.UOMConversionRateProvider;
 import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -156,22 +155,6 @@ public class ProductPrice
 	{
 		return toBuilder()
 				.money(money.round(precision))
-				.build();
-	}
-
-	public ProductPrice add(@NonNull final ProductPrice productPrice)
-	{
-		Check.assume(UomId.equals(uomId, productPrice.getUomId()), "Summed ProductPrices should have same UOM");
-		return toBuilder()
-				.money(money.add(productPrice.toMoney()))
-				.build();
-	}
-
-	public ProductPrice divide(@NonNull final Quantity qty, final CurrencyPrecision precision)
-	{
-		Check.assume(UomId.equals(qty.getUomId(), getUomId()), "Qty and ProductPrice UOMs should be equal");
-		return toBuilder()
-				.money(money.divide(qty.toBigDecimal(), precision))
 				.build();
 	}
 }

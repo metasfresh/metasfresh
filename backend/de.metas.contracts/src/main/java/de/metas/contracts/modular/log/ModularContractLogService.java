@@ -29,6 +29,12 @@
  import de.metas.contracts.IFlatrateBL;
  import de.metas.contracts.model.I_ModCntr_Log;
  import de.metas.contracts.modular.ComputingMethodType;
+ import de.metas.contracts.modular.ContractSpecificPriceRequest;
+ import de.metas.contracts.modular.ModularContractPriceService;
+ import de.metas.contracts.modular.settings.ModularContractModuleId;
+ import de.metas.contracts.modular.settings.ModularContractSettings;
+ import de.metas.contracts.modular.settings.ModularContractSettingsService;
+ import de.metas.contracts.modular.settings.ModuleConfig;
  import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
  import de.metas.currency.CurrencyConversionContext;
  import de.metas.currency.ICurrencyBL;
@@ -47,11 +53,15 @@
  import de.metas.order.OrderLineId;
  import de.metas.organization.IOrgDAO;
  import de.metas.organization.OrgId;
+ import de.metas.pricing.IEditablePricingContext;
+ import de.metas.pricing.IPricingResult;
+ import de.metas.pricing.service.IPricingBL;
  import de.metas.process.PInstanceId;
  import de.metas.product.IProductBL;
  import de.metas.product.ProductId;
  import de.metas.product.ProductPrice;
  import de.metas.quantity.Quantity;
+ import de.metas.quantity.Quantitys;
  import de.metas.quantity.StockQtyAndUOMQty;
  import de.metas.uom.IUOMConversionBL;
  import de.metas.uom.UomId;
@@ -69,12 +79,11 @@
  import org.springframework.stereotype.Service;
 
  import javax.annotation.Nullable;
+ import java.math.BigDecimal;
  import java.time.Instant;
  import java.util.Collection;
  import java.util.List;
  import java.util.Optional;
- import java.util.Set;
- import java.util.stream.Collectors;
  import java.util.stream.Stream;
 
  @Service
@@ -95,9 +104,12 @@
 	 @NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	 @NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	 @NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	 @NonNull private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
 	 @NonNull private final ModularContractLogDAO modularContractLogDAO;
 	 @NonNull private final InvoiceCandidateWithDetailsRepository invoiceCandidateWithDetailsRepository;
+	 @NonNull private final ModularContractPriceService modularContractPriceService;
+	 @NonNull private final ModularContractSettingsService modularContractSettingsService;
 
 	 public void throwErrorIfLogExistsForDocumentLine(@NonNull final TableRecordReference tableRecordReference)
 	 {
@@ -317,12 +329,7 @@
 		 InterfaceWrapperHelper.saveAll(invoiceCandidates);
 		 if (docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId))
 		 {
-			 final Set<FlatrateTermId> contractIds = invoiceBL.getLines(invoiceId)
-					 .stream()
-					 .map(org.compiere.model.I_C_InvoiceLine::getC_Flatrate_Term_ID)
-					 .map(FlatrateTermId::ofRepoId)
-					 .collect(Collectors.toSet());
-			 flatrateBL.reverseDefinitiveInvoice(contractIds);
+			 flatrateBL.reverseDefinitiveInvoice(ImmutableSet.of(Check.assumePresent(flatrateBL.getIdForInvoice(invoiceId), "FlatrateTermId should be present")));
 		 }
 	 }
 
@@ -348,6 +355,7 @@
 		 throw new AdempiereException("Unexpected document type: " + docTypeId);
 	 }
 
+	 @NonNull
 	 public ModularContractLogEntry getById(final ModularContractLogEntryId modularContractLogEntryId)
 	 {
 		 return modularContractLogDAO.getById(modularContractLogEntryId);
@@ -361,4 +369,76 @@
 														   logEntry.getClientAndOrgId().getClientId(),
 														   logEntry.getClientAndOrgId().getOrgId());
 	 }
+
+	 public void updateAverageContractSpecificPrice(
+			 @NonNull final ModuleConfig moduleConfig,
+			 @NonNull final FlatrateTermId flatrateTermId,
+			 @NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
+	 {
+		 final ModularContractModuleId modularContractModuleId = moduleConfig.getModularContractModuleId();
+		 final ModularContractLogEntriesList logs = modularContractLogDAO.getModularContractLogEntries(
+				 ModularContractLogQuery.builder()
+						 .billable(true)
+						 .contractModuleId(modularContractModuleId)
+						 .flatrateTermId(flatrateTermId)
+						 .build()
+		 );
+
+		 final ModularContractLogEntriesList shipmentLogs = logs.subsetOf(LogEntryDocumentType.SHIPMENT);
+		 final ProductPrice averagePrice = getAveragePrice(shipmentLogs, flatrateTermId, moduleConfig);
+
+		 final ContractSpecificPriceRequest contractSpecificPriceRequest = ContractSpecificPriceRequest.builder()
+				 .flatrateTermId(flatrateTermId)
+				 .modularContractModuleId(modularContractModuleId)
+				 .build();
+		 modularContractPriceService.updateAveragePrice(contractSpecificPriceRequest, averagePrice);
+		 final ModularContractLogEntriesList logsToUpdate = logs.subsetOfNot(LogEntryDocumentType.SHIPMENT).subsetOf(false);
+		 logsToUpdate.withPriceActualAndCalculateAmount(averagePrice, uomConversionBL, logHandlerRegistry);
+	 }
+
+	 @NonNull
+	 private ProductPrice getAveragePrice(
+			 @NonNull final ModularContractLogEntriesList logs,
+			 @NonNull final FlatrateTermId flatrateTermId,
+			 @NonNull final ModuleConfig moduleConfig
+	 )
+	 {
+		 final ProductId productId = moduleConfig.getProductId();
+		 final UomId targetUOMId = productBL.getStockUOMId(productId);
+		 final ModularContractSettings settings = modularContractSettingsService.getById(moduleConfig.getModularContractSettingsId());
+
+		 final Optional<ProductPrice> unprocessedLogsPrice = logs.subsetOf(false).getAveragePrice(productId, targetUOMId, uomConversionBL, settings.getTradeMargin());
+		 if (unprocessedLogsPrice.isPresent())
+		 {
+			 return unprocessedLogsPrice.get();
+		 }
+
+		 final Optional<ProductPrice> processedLogsPrice = logs.subsetOf(true).getAveragePrice(productId, targetUOMId, uomConversionBL, settings.getTradeMargin());
+		 if (processedLogsPrice.isPresent())
+		 {
+			 return processedLogsPrice.get();
+		 }
+
+		 if(ProductId.equals(productId, settings.getRawProductId()))
+		 {
+			 return Check.assumeNotNull(flatrateBL.extractPriceActualById(flatrateTermId), "contract product price shouldn't be null");
+		 }
+		 else if(ProductId.equals(productId, settings.getProcessedProductId()))
+		 {
+			 final IEditablePricingContext pricingContext = modularContractPriceService.createPricingContextTemplate(flatrateBL.getById(flatrateTermId), settings)
+					 .setQty(Quantitys.of(BigDecimal.ONE, targetUOMId))
+					 .setProductId(productId);
+
+			 final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
+			 return ProductPrice.builder()
+					 .money(pricingResult.getPriceStdAsMoney())
+					 .productId(pricingResult.getProductId())
+					 .uomId(pricingResult.getPriceUomId())
+					 .build();
+		 }
+		 else
+		 {
+			 throw new AdempiereException("Couldn't find average price, this shouldn't happen");
+		 }
+     }
  }

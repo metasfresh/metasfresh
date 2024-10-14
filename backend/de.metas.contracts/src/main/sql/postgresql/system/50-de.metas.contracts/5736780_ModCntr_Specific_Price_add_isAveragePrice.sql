@@ -54,3 +54,37 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- 2024-10-11T07:18:51.712Z
 /* DDL */ SELECT public.db_alter_table('ModCntr_Specific_Price','ALTER TABLE public.ModCntr_Specific_Price ADD COLUMN IsAveragePrice CHAR(1) DEFAULT ''N'' CHECK (IsAveragePrice IN (''Y'',''N'')) NOT NULL')
 ;
+
+-- Field: Vertrag(540359,de.metas.contracts) -> Vertragsspezifische Preise(547570,de.metas.contracts) -> Durchschnittspreis
+-- Column: ModCntr_Specific_Price.IsAveragePrice
+-- 2024-10-11T08:55:13.005Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,589303,731906,0,547570,TO_TIMESTAMP('2024-10-11 10:55:12.801','YYYY-MM-DD HH24:MI:SS.US'),100,1,'de.metas.contracts','Y','N','N','N','N','N','N','N','Durchschnittspreis',TO_TIMESTAMP('2024-10-11 10:55:12.801','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2024-10-11T08:55:13.008Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=731906 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2024-10-11T08:55:13.009Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583328)
+;
+
+-- 2024-10-11T08:55:13.018Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=731906
+;
+
+-- 2024-10-11T08:55:13.019Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(731906)
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertragsspezifische Preise(547570,de.metas.contracts) -> main -> 10 -> default.Durchschnittspreis
+-- Column: ModCntr_Specific_Price.IsAveragePrice
+-- 2024-10-11T08:55:43.106Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,731906,0,547570,551895,626190,'F',TO_TIMESTAMP('2024-10-11 10:55:42.949','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','Y','N','N','N',0,'Durchschnittspreis',100,0,0,TO_TIMESTAMP('2024-10-11 10:55:42.949','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertragsspezifische Preise(547570,de.metas.contracts) -> main -> 10 -> default.Durchschnittspreis
+-- Column: ModCntr_Specific_Price.IsAveragePrice
+-- 2024-10-11T08:55:52.052Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2024-10-11 10:55:52.052','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=626190
+;

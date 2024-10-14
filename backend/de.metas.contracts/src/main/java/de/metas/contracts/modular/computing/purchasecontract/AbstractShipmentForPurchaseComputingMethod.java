@@ -24,6 +24,8 @@ package de.metas.contracts.modular.computing.purchasecontract;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ContractSpecificPriceRequest;
+import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
@@ -41,14 +43,17 @@ public abstract class AbstractShipmentForPurchaseComputingMethod extends Abstrac
 {
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
+	@NonNull private final ModularContractPriceService modularContractPriceService;
 
     protected AbstractShipmentForPurchaseComputingMethod(
 			@NonNull final ModularContractProvider contractProvider,
 			@NonNull final ComputingMethodService computingMethodService,
+			@NonNull final ModularContractPriceService modularContractPriceService,
 			@NonNull final ComputingMethodType computingMethodType)
     {
         super(contractProvider, computingMethodService, computingMethodType);
         this.contractProvider = contractProvider;
+		this.modularContractPriceService = modularContractPriceService;
         this.computingMethodService = computingMethodService;
     }
 
@@ -69,8 +74,13 @@ public abstract class AbstractShipmentForPurchaseComputingMethod extends Abstrac
 
 		final Quantity qtyInStockUOM = computingMethodService.getQtySumInStockUOM(logs);
 
-		final ProductPrice price = logs.getUniqueProductPriceOrErrorNotNull();
-		final ProductPrice pricePerStockUOM = computingMethodService.productPriceToUOM(price, qtyInStockUOM.getUomId());
+		final ProductPrice productPrice = modularContractPriceService.retrievePrice(
+				ContractSpecificPriceRequest.builder()
+						.modularContractModuleId(request.getModularContractModuleId())
+						.flatrateTermId(request.getFlatrateTermId())
+						.build()
+		).getProductPrice();
+		final ProductPrice pricePerStockUOM = computingMethodService.productPriceToUOM(productPrice, qtyInStockUOM.getUomId());
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())

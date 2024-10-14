@@ -23,31 +23,22 @@
 package de.metas.contracts.modular.log.interceptor;
 
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.ContractSpecificPriceRequest;
-import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntryId;
-import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.settings.ModuleConfig;
-import de.metas.product.ProductPrice;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 import static de.metas.contracts.modular.ComputingMethodType.AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS;
 import static de.metas.contracts.modular.log.LogEntryDocumentType.INTERIM_INVOICE;
@@ -59,12 +50,11 @@ import static de.metas.contracts.modular.log.LogEntryDocumentType.SHIPPING_NOTIF
 @AllArgsConstructor
 public class ModCntr_Log
 {
-	@NonNull final ModularLogInterestRepository interestRepo;
-	@NonNull final ModularContractSettingsRepository contractSettingsRepo;
-	@NonNull final ModularContractPriceService modularContractPriceService;
-	@NonNull final ModularContractLogDAO modularContractLogDAO;
+	@NonNull private final ModularLogInterestRepository interestRepo;
+	@NonNull private final ModularContractSettingsRepository contractSettingsRepo;
+	@NonNull private final ModularContractLogService modularContractLogService;
+	@NonNull private final ModularContractLogHandlerRegistry logHandlerRegistry;
 
-	@NonNull final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void validateModule(@NonNull final I_ModCntr_Log log)
@@ -92,6 +82,12 @@ public class ModCntr_Log
 			return;
 		}
 
+		//as the initial log isBillable flag changes on reversal, we don't need to update on reversal log new
+		if(log.getQty().signum() <= 0)
+		{
+			return;
+		}
+
 		final ModularContractModuleId modularContractModuleId = ModularContractModuleId.ofRepoId(log.getModCntr_Module_ID());
 		final ModuleConfig moduleConfig = contractSettingsRepo.getByModuleId(modularContractModuleId);
 		if(!moduleConfig.isMatchingAnyOf(AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS))
@@ -99,36 +95,6 @@ public class ModCntr_Log
 			return;
 		}
 
-		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(log.getC_Flatrate_Term_ID());
-		final ModularContractLogEntriesList logs = modularContractLogDAO.getModularContractLogEntries(
-				ModularContractLogQuery.builder()
-						.billable(true)
-						.logEntryDocumentType(LogEntryDocumentType.SHIPMENT)
-						.contractModuleId(modularContractModuleId)
-						.flatrateTermId(flatrateTermId)
-						.build()
-		);
-
-		final ContractSpecificPriceRequest contractSpecificPriceRequest = ContractSpecificPriceRequest.builder()
-				.flatrateTermId(flatrateTermId)
-				.modularContractModuleId(modularContractModuleId)
-				.build();
-
-		final Optional<ProductPrice> unprocessedLogsPrice = logs.subsetOf(false).getAverageProductPrice();
-		if(unprocessedLogsPrice.isPresent())
-		{
-			modularContractPriceService.updateAveragePricePrice(contractSpecificPriceRequest, unprocessedLogsPrice.get());
-			return;
-		}
-
-		final Optional<ProductPrice> processedLogsPrice = logs.subsetOf(true).getAverageProductPrice();
-		if(processedLogsPrice.isPresent())
-		{
-			modularContractPriceService.updateAveragePricePrice(contractSpecificPriceRequest, processedLogsPrice.get());
-			return;
-		}
-
-		final ProductPrice contractPrice = Check.assumeNotNull(flatrateBL.extractPriceActualById(flatrateTermId), "contract product price shouldn't be null");
-		modularContractPriceService.updateAveragePricePrice(contractSpecificPriceRequest, contractPrice);
+		modularContractLogService.updateAverageContractSpecificPrice(moduleConfig, FlatrateTermId.ofRepoId(log.getC_Flatrate_Term_ID()), logHandlerRegistry);
 	}
 }

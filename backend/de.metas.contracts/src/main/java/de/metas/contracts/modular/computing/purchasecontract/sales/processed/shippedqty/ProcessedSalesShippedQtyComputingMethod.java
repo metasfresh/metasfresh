@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.computing.purchasecontract.sales.processed.shippedqty;
 
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.purchasecontract.AbstractShipmentForPurchaseComputingMethod;
@@ -37,10 +38,11 @@ import org.springframework.stereotype.Component;
 public class ProcessedSalesShippedQtyComputingMethod extends AbstractShipmentForPurchaseComputingMethod
 {
 	protected ProcessedSalesShippedQtyComputingMethod(
-			final @NonNull ModularContractProvider contractProvider,
-			final @NonNull ComputingMethodService computingMethodService)
+			@NonNull final ModularContractProvider contractProvider,
+			@NonNull final ModularContractPriceService modularContractPriceService,
+			@NonNull final ComputingMethodService computingMethodService)
 	{
-		super(contractProvider, computingMethodService, ComputingMethodType.SalesOnProcessedProductShippedQty);
+		super(contractProvider, computingMethodService, modularContractPriceService, ComputingMethodType.SalesOnProcessedProductShippedQty);
 	}
 
 	@Override

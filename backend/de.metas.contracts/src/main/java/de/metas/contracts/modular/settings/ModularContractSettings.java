@@ -43,6 +43,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -75,6 +76,9 @@ public class ModularContractSettings
 
 	@Builder.Default @Getter
 	@NonNull Percent interimPricePercent = Percent.ZERO;
+
+	@Builder.Default @Getter
+	@NonNull BigDecimal tradeMargin = BigDecimal.ZERO;
 
 	private static final AdMessageKey MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Flatrate_Conditions.INVALID_MODULAR_CONTRACT_SETTINGS");
 

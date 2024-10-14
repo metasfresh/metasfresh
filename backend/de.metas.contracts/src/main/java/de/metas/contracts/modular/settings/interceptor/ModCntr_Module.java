@@ -225,7 +225,7 @@ public class ModCntr_Module
 
 	private void updateDefinitiveModuleName(@NonNull final ModuleConfig moduleConfig, @NonNull final String productName)
 	{
-		modularContractSettingsRepository.updateModule(moduleConfig.getId().getModularContractModuleId(), ModularContractModuleUpdateRequest.builder()
+		modularContractSettingsRepository.updateModule(moduleConfig.getModularContractModuleId(), ModularContractModuleUpdateRequest.builder()
 				.moduleName(productName)
 				.build());
 	}

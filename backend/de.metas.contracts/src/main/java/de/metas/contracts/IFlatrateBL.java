@@ -38,6 +38,7 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoice.InvoiceId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.process.PInstanceId;
@@ -125,6 +126,8 @@ public interface IFlatrateBL extends ISingletonService
 	void prepareForDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
 
 	void reverseDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
+
+	Optional<FlatrateTermId> getIdForInvoice(@NonNull InvoiceId invoiceId);
 
 	/**
 	 * term to extend

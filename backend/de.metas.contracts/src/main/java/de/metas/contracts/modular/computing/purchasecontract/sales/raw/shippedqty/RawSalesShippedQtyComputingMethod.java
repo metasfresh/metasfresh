@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.computing.purchasecontract.sales.raw.shippedqty;
 
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.purchasecontract.AbstractShipmentForPurchaseComputingMethod;
@@ -38,9 +39,10 @@ public class RawSalesShippedQtyComputingMethod extends AbstractShipmentForPurcha
 {
 	public RawSalesShippedQtyComputingMethod(
 			@NonNull final ModularContractProvider contractProvider,
+			@NonNull final ModularContractPriceService modularContractPriceService,
 			@NonNull final ComputingMethodService computingMethodService)
 	{
-		super(contractProvider, computingMethodService, ComputingMethodType.SalesOnRawProductShippedQty);
+		super(contractProvider, computingMethodService, modularContractPriceService, ComputingMethodType.SalesOnRawProductShippedQty);
 	}
 
 	@Override
