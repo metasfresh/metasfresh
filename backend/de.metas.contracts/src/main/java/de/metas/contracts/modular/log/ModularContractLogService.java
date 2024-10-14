@@ -403,7 +403,7 @@
 				 .build();
 		 modularContractPriceService.updateAveragePrice(contractSpecificPriceRequest, averagePrice);
 		 final ModularContractLogEntriesList logsToUpdate = logs.subsetOfNot(LogEntryDocumentType.SHIPMENT).subsetOf(false);
-		 logsToUpdate.withPriceActualAndCalculateAmount(averagePrice, uomConversionBL, logHandlerRegistry);
+		 modularContractLogDAO.save(logsToUpdate.withPriceActualAndCalculateAmount(averagePrice, uomConversionBL, logHandlerRegistry));
 	 }
 
 	 @NonNull
