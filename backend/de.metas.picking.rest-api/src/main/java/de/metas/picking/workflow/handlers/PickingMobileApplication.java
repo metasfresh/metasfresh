@@ -45,6 +45,7 @@
 	import de.metas.handlingunits.qrcodes.model.HUQRCode;
 	import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 	import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+	import de.metas.i18n.AdMessageKey;
 	import de.metas.i18n.ImmutableTranslatableString;
 	import de.metas.i18n.TranslatableStrings;
 	import de.metas.mobile.application.MobileApplicationId;
@@ -101,6 +102,7 @@
 		public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("A10");
 		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("A20");
 		public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("A90");
+		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
 
 		private final PickingJobRestService pickingJobRestService;
 		private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
@@ -144,7 +146,9 @@
 		{
 			if (query.getFilterByQRCode() != null)
 			{
-				throw new AdempiereException("Invalid QR Code: " + query.getFilterByQRCode());
+				throw new AdempiereException(INVALID_QR_CODE_ERROR_MSG)
+						.appendParametersToMessage()
+						.setParameter("QRCode", query.getFilterByQRCode());
 			}
 
 			return wfLaunchersProvider.provideLaunchers(query);

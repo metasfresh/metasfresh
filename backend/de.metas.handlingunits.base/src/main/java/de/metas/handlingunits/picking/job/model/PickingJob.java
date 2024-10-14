@@ -55,6 +55,8 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import static de.metas.handlingunits.picking.job.service.PickingJobService.PICKING_JOB_PROCESSED_ERROR_MSG;
+
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @ToString
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -157,7 +159,7 @@ public final class PickingJob
 	{
 		if (isProcessed())
 		{
-			throw new AdempiereException("Picking Job was already processed");
+			throw new AdempiereException(PICKING_JOB_PROCESSED_ERROR_MSG);
 		}
 	}
 
