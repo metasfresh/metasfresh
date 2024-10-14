@@ -27,3 +27,52 @@ FROM c_invoiceline il
          JOIN c_uom uom ON log.c_uom_id = uom.c_uom_id
 ORDER BY log.datetrx, p.name
 ;
+
+
+DROP VIEW IF EXISTS ModCntr_Storage_Purchase_V
+;
+
+CREATE OR REPLACE VIEW ModCntr_Storage_Purchase_V AS
+SELECT modularcontracthandlertype,
+       productname,
+       qtyinvoicedinpriceuom,
+       priceactual,
+       linenetamt,
+       datetrx,
+       storagedays,
+       qty,
+       uom,
+       amount,
+       initialproduct,
+       initialproducevalue,
+       c_invoice_id,
+       PricePattern,
+       amountpattern
+FROM ModCntr_Storage_V
+WHERE modularcontracthandlertype::text = 'StorageCost'::text
+ORDER BY datetrx, initialproduct
+;
+
+
+DROP VIEW IF EXISTS ModCntr_Storage_Sales_V
+;
+
+CREATE OR REPLACE VIEW ModCntr_Storage_Sales_V AS
+SELECT modularcontracthandlertype,
+       productname,
+       qtyinvoicedinpriceuom,
+       priceactual,
+       linenetamt,
+       datetrx,
+       storagedays,
+       qty,
+       uom,
+       amount,
+       initialproduct,
+       initialproducevalue,
+       c_invoice_id,
+       PricePattern,
+       amountpattern
+FROM ModCntr_Storage_V
+WHERE modularcontracthandlertype::text = 'SalesStorageCost'::text
+ORDER BY datetrx, initialproduct

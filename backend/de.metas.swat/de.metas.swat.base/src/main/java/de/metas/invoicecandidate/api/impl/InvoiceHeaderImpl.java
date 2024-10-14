@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.forex.ForexContractRef;
@@ -144,6 +145,9 @@ import java.util.Optional;
 
 	@Setter @Getter @Nullable
 	YearId yearId;
+
+	@Setter @Getter @Nullable
+	ModularContractSettingsId modularContractSettingsId;
 
 	@Setter @Getter @Nullable
 	WarehouseId warehouseId;

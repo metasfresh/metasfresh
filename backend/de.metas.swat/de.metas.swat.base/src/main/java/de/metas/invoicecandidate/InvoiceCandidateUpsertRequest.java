@@ -26,6 +26,7 @@ import de.metas.banking.BankAccountId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.spi.ILCandHandlerId;
@@ -116,7 +117,12 @@ public class InvoiceCandidateUpsertRequest
 
 	List<InvoiceDetailItem> invoiceDetailItems;
 
+	@Nullable
 	YearAndCalendarId harvestYearAndCalendarId;
+
+	@Nullable
+	ModularContractSettingsId modularContractSettingsId;
+
 	boolean isInterimInvoice;
 	ILCandHandlerId handlerId;
 	boolean isManual;
@@ -160,6 +166,7 @@ public class InvoiceCandidateUpsertRequest
 			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems,
 			@Nullable final YearAndCalendarId harvestYearAndCalendarId,
+			@Nullable final ModularContractSettingsId modularContractSettingsId,
 			final boolean isInterimInvoice,
 			@NonNull final ILCandHandlerId handlerId,
 			final boolean isManual,
@@ -196,6 +203,7 @@ public class InvoiceCandidateUpsertRequest
 		this.paymentTermId = paymentTermId;
 		this.invoiceDetailItems = invoiceDetailItems;
 		this.harvestYearAndCalendarId = harvestYearAndCalendarId;
+		this.modularContractSettingsId = modularContractSettingsId;
 		this.isInterimInvoice = isInterimInvoice;
 		this.handlerId = handlerId;
 		this.isManual = isManual;

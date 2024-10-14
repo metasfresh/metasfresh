@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;

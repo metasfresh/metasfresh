@@ -254,6 +254,8 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 		invoiceCandidate.setHarvesting_Year_ID(yearAndCalendarId.yearId().getRepoId());
 		invoiceCandidate.setC_Harvesting_Calendar_ID(yearAndCalendarId.calendarId().getRepoId());
 		//
+		invoiceCandidate.setModCntr_Settings_ID(moduleConfig.getModularContractSettingsId().getRepoId());
+		//
 		invoiceCandidate.setM_PricingSystem_ID(PricingSystemId.toRepoId(createInvoiceCandidateRequest.getPricingSystemId()));
 		//
 		invoiceCandidate.setModCntr_Module_ID(moduleConfig.getModularContractModuleId().getRepoId());
