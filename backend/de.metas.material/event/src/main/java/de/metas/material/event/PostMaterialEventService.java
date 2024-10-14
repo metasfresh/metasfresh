@@ -5,13 +5,17 @@ import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.logging.LogManager;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
 
 import static org.compiere.util.Env.getCtx;
 
@@ -40,10 +44,13 @@ import static org.compiere.util.Env.getCtx;
 @Service
 public class PostMaterialEventService
 {
+	public static final String SYSCONFIG_ENQUEUE_EVENTS = "de.metas.material.event.EnqueueEvents";
+	
 	private static final Logger logger = LogManager.getLogger(PostMaterialEventService.class);
 
 	private final MetasfreshEventBusService materialEventService;
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public PostMaterialEventService(@NonNull final MetasfreshEventBusService materialEventService)
 	{
@@ -75,10 +82,18 @@ public class PostMaterialEventService
 	}
 
 	/**
-	 * Creates a work package and queues it for execution.
+	 * Creates a work-package and queues it for execution, unless the sysconfig {@link #SYSCONFIG_ENQUEUE_EVENTS} is set to {@code false}.
 	 */
+	@Nullable
 	public QueueWorkPackageId postEventAsync(final MaterialEvent event)
 	{
+		final EventDescriptor eventDescriptor = event.getEventDescriptor();
+		final boolean equeueEvents = sysConfigBL.getBooleanValue(SYSCONFIG_ENQUEUE_EVENTS, true, eventDescriptor.getClientId().getRepoId(), eventDescriptor.getOrgId().getRepoId());
+		if(!equeueEvents)
+		{
+			return null;
+		}
+
 		final String serializedEvent = JacksonMaterialEventSerializer.instance.toString(event);
 		final IWorkPackageBuilder workPackageBuilder = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), MaterialEventWorkpackageProcessor.class)
 				.newWorkPackage(getCtx())

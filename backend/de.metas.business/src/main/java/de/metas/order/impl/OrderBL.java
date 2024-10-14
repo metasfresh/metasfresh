@@ -1044,7 +1044,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Nullable
-	private DocTypeId getDocTypeIdEffectiveOrNull(@NonNull final I_C_Order order)
+	public DocTypeId getDocTypeIdEffectiveOrNull(@NonNull final I_C_Order order)
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
 		if (docTypeId != null)
@@ -1052,8 +1052,7 @@ public class OrderBL implements IOrderBL
 			return docTypeId;
 		}
 
-		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
-		return docTypeTargetId;
+		return DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
 	}
 
 	@Override
@@ -1222,5 +1221,19 @@ public class OrderBL implements IOrderBL
 	public String getDocumentNoById(@NonNull final OrderId orderId)
 	{
 		return getById(orderId).getDocumentNo();
+	}
+
+	@Override
+	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(
+			@NonNull final I_C_Order order,
+			@NonNull final Class<T> clazz)
+	{
+		return orderDAO.retrieveOrderLines(order, clazz);
+	}
+
+	@Override
+	public List<I_C_OrderLine> retrieveOrderLines(@NonNull final I_C_Order order)
+	{
+		return orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 	}
 }
