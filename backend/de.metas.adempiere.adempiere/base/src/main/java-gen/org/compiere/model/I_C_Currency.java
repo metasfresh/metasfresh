@@ -324,6 +324,27 @@ public interface I_C_Currency
 	String COLUMNNAME_ISO_Code = "ISO_Code";
 
 	/**
+	 * Set Apply 5 Cent Cash Rounding (Purchase).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPOApply5CentCashRounding (boolean IsPOApply5CentCashRounding);
+
+	/**
+	 * Get Apply 5 Cent Cash Rounding (Purchase).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPOApply5CentCashRounding();
+
+	ModelColumn<I_C_Currency, Object> COLUMN_IsPOApply5CentCashRounding = new ModelColumn<>(I_C_Currency.class, "IsPOApply5CentCashRounding", null);
+	String COLUMNNAME_IsPOApply5CentCashRounding = "IsPOApply5CentCashRounding";
+
+	/**
 	 * Set Round Off Factor.
 	 * Used to Round Off Payment Amount
 	 *
