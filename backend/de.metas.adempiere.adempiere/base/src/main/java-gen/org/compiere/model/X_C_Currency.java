@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1586514238L;
+	private static final long serialVersionUID = 840022724L;
 
     /** Standard Constructor */
     public X_C_Currency (final Properties ctx, final int C_Currency_ID, @Nullable final String trxName)
@@ -157,6 +157,18 @@ public class X_C_Currency extends org.compiere.model.PO implements I_C_Currency,
 	public java.lang.String getISO_Code() 
 	{
 		return get_ValueAsString(COLUMNNAME_ISO_Code);
+	}
+
+	@Override
+	public void setIsPOApply5CentCashRounding (final boolean IsPOApply5CentCashRounding)
+	{
+		set_Value (COLUMNNAME_IsPOApply5CentCashRounding, IsPOApply5CentCashRounding);
+	}
+
+	@Override
+	public boolean isPOApply5CentCashRounding() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPOApply5CentCashRounding);
 	}
 
 	@Override
