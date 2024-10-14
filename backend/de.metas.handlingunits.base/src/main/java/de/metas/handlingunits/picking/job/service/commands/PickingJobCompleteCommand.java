@@ -11,6 +11,7 @@ import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -23,6 +24,9 @@ import static de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_Qua
 
 public class PickingJobCompleteCommand
 {
+	private final static AdMessageKey PICKING_ON_ALL_STEPS_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.PICKING_ON_ALL_STEPS_ERROR_MSG");
+	private final static AdMessageKey ALL_STEPS_SHALL_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.ALL_STEPS_SHALL_BE_PICKED_ERROR_MSG");
+
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final PickingJobRepository pickingJobRepository;
@@ -67,7 +71,7 @@ public class PickingJobCompleteCommand
 		initialPickingJob.assertNotProcessed();
 		if (!initialPickingJob.getProgress().isDone())
 		{
-			throw new AdempiereException("Picking shall be DONE on all steps in order to complete the job");
+			throw new AdempiereException(PICKING_ON_ALL_STEPS_ERROR_MSG);
 		}
 
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
@@ -77,7 +81,7 @@ public class PickingJobCompleteCommand
 	{
 		if (!initialPickingJob.getProgress().isDone())
 		{
-			throw new AdempiereException("All steps shall be picked");
+			throw new AdempiereException(ALL_STEPS_SHALL_BE_PICKED_ERROR_MSG);
 		}
 
 		PickingJob pickingJob = initialPickingJob.withDocStatus(PickingJobDocStatus.Completed);
