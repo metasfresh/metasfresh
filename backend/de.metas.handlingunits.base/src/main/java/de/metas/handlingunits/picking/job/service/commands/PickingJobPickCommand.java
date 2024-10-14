@@ -28,6 +28,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -46,18 +47,32 @@ import java.util.Objects;
 
 public class PickingJobPickCommand
 {
-	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
-	@NonNull private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
-	@NonNull private final PickingJobRepository pickingJobRepository;
-	@NonNull private final PickingCandidateService pickingCandidateService;
+	@NonNull
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull
+	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
+	@NonNull
+	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
+	@NonNull
+	private final PickingJobRepository pickingJobRepository;
+	@NonNull
+	private final PickingCandidateService pickingCandidateService;
 
-	@NonNull private final PickingJob initialPickingJob;
-	@NonNull private final PickingJobStep initialStep;
-	@NonNull private final PickingJobStepPickFromKey pickFromKey;
-	@NonNull private final Quantity qtyToPick;
-	@Nullable private final QtyRejectedWithReason qtyRejected;
+	@NonNull
+	private final PickingJob initialPickingJob;
+	@NonNull
+	private final PickingJobStep initialStep;
+	@NonNull
+	private final PickingJobStepPickFromKey pickFromKey;
+	@NonNull
+	private final Quantity qtyToPick;
+	@Nullable
+	private final QtyRejectedWithReason qtyRejected;
+
+	private final static AdMessageKey QTY_REJECTED_ALTERNATIVES_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.QTY_REJECTED_ALTERNATIVES_ERROR_MSG");
+	private final static AdMessageKey CANNOT_PACK_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CANNOT_PACK_ERROR_MSG");
 
 	@Builder
 	private PickingJobPickCommand(
@@ -110,7 +125,7 @@ public class PickingJobPickCommand
 		{
 			// NOTE: because, in case of alternatives, we don't know which is the qty scheduled to pick
 			// we cannot calculate the qtyRejected
-			throw new AdempiereException("Cannot calculate QtyRejected in case of alternatives");
+			throw new AdempiereException(QTY_REJECTED_ALTERNATIVES_ERROR_MSG);
 		}
 
 	}
@@ -144,21 +159,21 @@ public class PickingJobPickCommand
 			for (final PickedToHU pickedToHU : pickedToHUs)
 			{
 				final PickHUResult pickResult = pickingCandidateService.pickHU(PickRequest.builder()
-						.shipmentScheduleId(initialStep.getShipmentScheduleId())
-						.pickFrom(PickFrom.ofHuId(pickedToHU.getActuallyPickedToHUId()))
-						.packToSpec(pickedToHU.getPickToSpecUsed())
-						.qtyToPick(pickedToHU.getQtyPicked())
-						.pickingSlotId(initialPickingJob.getPickingSlotId().orElse(null))
-						.autoReview(true)
-						.build());
+																					   .shipmentScheduleId(initialStep.getShipmentScheduleId())
+																					   .pickFrom(PickFrom.ofHuId(pickedToHU.getActuallyPickedToHUId()))
+																					   .packToSpec(pickedToHU.getPickToSpecUsed())
+																					   .qtyToPick(pickedToHU.getQtyPicked())
+																					   .pickingSlotId(initialPickingJob.getPickingSlotId().orElse(null))
+																					   .autoReview(true)
+																					   .build());
 
 				pickedToHU.setPickingCandidateId(pickResult.getPickingCandidateId());
 			}
 
 			pickingCandidateService.process(ProcessPickingCandidatesRequest.builder()
-					.pickingCandidateIds(extractPickingCandidateIds(pickedToHUs))
-					.alwaysPackEachCandidateInItsOwnHU(true)
-					.build());
+													.pickingCandidateIds(extractPickingCandidateIds(pickedToHUs))
+													.alwaysPackEachCandidateInItsOwnHU(true)
+													.build());
 
 			return pickedToHUs;
 		}
@@ -204,17 +219,17 @@ public class PickingJobPickCommand
 
 		if (packedHUs.isEmpty())
 		{
-			throw new AdempiereException("Cannot pack to HUs from " + pickFromHU + " using " + packToInfo + ", qtyToPick=" + qtyToPick);
+			throw new AdempiereException(CANNOT_PACK_ERROR_MSG, pickFromHU, packToInfo, qtyToPick);
 		}
 		else if (packedHUs.size() == 1)
 		{
 			final I_M_HU packedHU = packedHUs.get(0);
 			return ImmutableList.of(PickedToHU.builder()
-					.pickedFromHUId(pickFromHU.getId())
-					.actuallyPickedToHUId(HuId.ofRepoId(packedHU.getM_HU_ID()))
-					.pickToSpecUsed(packToSpec)
-					.qtyPicked(qtyToPick)
-					.build());
+											.pickedFromHUId(pickFromHU.getId())
+											.actuallyPickedToHUId(HuId.ofRepoId(packedHU.getM_HU_ID()))
+											.pickToSpecUsed(packToSpec)
+											.qtyPicked(qtyToPick)
+											.build());
 		}
 		else
 		{
@@ -224,11 +239,11 @@ public class PickingJobPickCommand
 			{
 				final Quantity qtyPicked = huStorageFactory.getStorage(packedHU).getQuantity(productId, qtyToPick.getUOM());
 				result.add(PickedToHU.builder()
-						.pickedFromHUId(pickFromHU.getId())
-						.actuallyPickedToHUId(HuId.ofRepoId(packedHU.getM_HU_ID()))
-						.pickToSpecUsed(packToSpec)
-						.qtyPicked(qtyPicked)
-						.build());
+								   .pickedFromHUId(pickFromHU.getId())
+								   .actuallyPickedToHUId(HuId.ofRepoId(packedHU.getM_HU_ID()))
+								   .pickToSpecUsed(packToSpec)
+								   .qtyPicked(qtyPicked)
+								   .build());
 			}
 
 			return result.build();
@@ -250,8 +265,8 @@ public class PickingJobPickCommand
 		return PickingJobStepPickedTo.builder()
 				.qtyRejected(qtyRejected)
 				.actualPickedHUs(pickedHUs.stream()
-						.map(PickingJobPickCommand::toPickingJobStepPickedToHU)
-						.collect(ImmutableList.toImmutableList())
+										 .map(PickingJobPickCommand::toPickingJobStepPickedToHU)
+										 .collect(ImmutableList.toImmutableList())
 				)
 				.build();
 	}
@@ -282,13 +297,18 @@ public class PickingJobPickCommand
 	@Builder
 	private static class PickedToHU
 	{
-		@NonNull final HuId pickedFromHUId;
+		@NonNull
+		final HuId pickedFromHUId;
 
-		@NonNull final PackToSpec pickToSpecUsed;
-		@NonNull final HuId actuallyPickedToHUId;
+		@NonNull
+		final PackToSpec pickToSpecUsed;
+		@NonNull
+		final HuId actuallyPickedToHUId;
 
-		@NonNull final Quantity qtyPicked;
+		@NonNull
+		final Quantity qtyPicked;
 
-		@Nullable PickingCandidateId pickingCandidateId;
+		@Nullable
+		PickingCandidateId pickingCandidateId;
 	}
 }

@@ -15,6 +15,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobPickFromAlternativeId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -27,6 +28,8 @@ import org.adempiere.warehouse.LocatorId;
 
 class PickingJobCreateRepoCommand
 {
+	private final static AdMessageKey PACKING_TO_GENERIC_PACKING_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.repository.PACKING_TO_GENERIC_PACKING_ERROR_MSG");
+
 	private final PickingJobLoaderSupportingServices loadingSupportServices;
 	private final PickingJobCreateRepoRequest request;
 
@@ -149,7 +152,9 @@ class PickingJobCreateRepoCommand
 					@Override
 					public Void packToGenericHU(final HuPackingInstructionsId genericPackingInstructionsId)
 					{
-						throw new AdempiereException("Packing to generic packing instructions is not supported: " + genericPackingInstructionsId);
+						throw new AdempiereException(PACKING_TO_GENERIC_PACKING_ERROR_MSG)
+								.appendParametersToMessage()
+								.setParameter("GenericPackingInstructionsId", genericPackingInstructionsId);
 					}
 				});
 

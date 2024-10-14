@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -42,22 +43,32 @@ import java.util.function.UnaryOperator;
 @ToString
 public final class WFProcess
 {
-	@Getter
-	@NonNull private final WFProcessId id;
+	private static final AdMessageKey NO_ACCESS_ERROR_MSG = AdMessageKey.of("de.metas.workflow.rest_api.model.NO_ACCESS_ERROR_MSG");
+	private static final AdMessageKey NO_ACTIVITY_ERROR_MSG = AdMessageKey.of("de.metas.workflow.rest_api.model.NO_ACTIVITY_ERROR_MSG");
 
 	@Getter
-	@NonNull private final UserId invokerId;
+	@NonNull
+	private final WFProcessId id;
 
 	@Getter
-	@NonNull private final ITranslatableString caption;
-
-	@NonNull private final WFProcessStatus status;
-
-	@NonNull private final Object document;
+	@NonNull
+	private final UserId invokerId;
 
 	@Getter
-	@NonNull private final ImmutableList<WFActivity> activities;
-	@NonNull private final ImmutableMap<WFActivityId, WFActivity> activitiesById;
+	@NonNull
+	private final ITranslatableString caption;
+
+	@NonNull
+	private final WFProcessStatus status;
+
+	@NonNull
+	private final Object document;
+
+	@Getter
+	@NonNull
+	private final ImmutableList<WFActivity> activities;
+	@NonNull
+	private final ImmutableMap<WFActivityId, WFActivity> activitiesById;
 
 	@Builder(toBuilder = true)
 	private WFProcess(
@@ -93,7 +104,7 @@ public final class WFProcess
 	{
 		if (!hasAccess(userId))
 		{
-			throw new AdempiereException("User does not have access");
+			throw new AdempiereException(NO_ACCESS_ERROR_MSG);
 		}
 	}
 
@@ -122,7 +133,10 @@ public final class WFProcess
 		final WFActivity wfActivity = activitiesById.get(id);
 		if (wfActivity == null)
 		{
-			throw new AdempiereException("No activity found for " + id + " in " + this);
+			throw new AdempiereException(NO_ACTIVITY_ERROR_MSG)
+					.appendParametersToMessage()
+					.setParameter("ID", id)
+					.setParameter("WFProcess", this);
 		}
 		return wfActivity;
 	}

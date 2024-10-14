@@ -19,6 +19,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateComma
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
@@ -40,6 +41,8 @@ import java.util.stream.Stream;
 @Service
 public class PickingJobService
 {
+	public final static AdMessageKey PICKING_JOB_PROCESSED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.PICKING_JOB_PROCESSED_ERROR_MSG");
+
 	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	private final PickingJobRepository pickingJobRepository;
 	private final PickingJobLockService pickingJobLockService;
