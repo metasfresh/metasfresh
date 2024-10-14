@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -13,6 +14,8 @@ import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.sumup.SumUpConfigId;
+import de.metas.pos.payment_gateway.POSCardReader;
+import de.metas.pos.payment_gateway.POSCardReaderExternalId;
 import de.metas.pos.payment_gateway.POSPaymentProcessorType;
 import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.pos.repository.model.I_C_POS_OrderLine;
@@ -60,24 +63,31 @@ class POSOrdersLoaderAndSaver
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_OrderLine>> lineRecords = new HashMap<>();
 	private final HashMap<POSOrderId, ImmutableList<I_C_POS_Payment>> paymentRecords = new HashMap<>();
 
-	public POSOrder loadFromRecord(@NonNull final I_C_POS_Order orderRecord)
+	POSOrder loadFromRecord(@NonNull final I_C_POS_Order orderRecord)
 	{
 		addToCacheAndWarmUp(ImmutableList.of(orderRecord));
 		return fromRecord(orderRecord);
 	}
 
-	public List<POSOrder> loadFromRecords(@NonNull final List<I_C_POS_Order> orderRecords)
+	List<POSOrder> loadFromRecords(@NonNull final List<I_C_POS_Order> orderRecords)
 	{
 		addToCacheAndWarmUp(orderRecords);
 		return orderRecords.stream().map(this::fromRecord).collect(ImmutableList.toImmutableList());
 	}
 
-	public POSOrder getById(final @NonNull POSOrderId posOrderId)
+	POSOrder getById(final @NonNull POSOrderId posOrderId)
 	{
 		return fromRecord(getOrderRecordById(posOrderId));
 	}
 
-	public POSOrder createOrUpdateByExternalId(
+	public POSOrderId getIdByExternalId(final @NonNull POSOrderExternalId externalId)
+	{
+		return getOrderRecordByExternalId(externalId)
+				.map(POSOrdersLoaderAndSaver::extractPOSOrderId)
+				.orElseThrow(() -> new AdempiereException("No POS order found for " + externalId));
+	}
+
+	POSOrder createOrUpdateByExternalId(
 			@NonNull final POSOrderExternalId externalId,
 			@NonNull final Function<POSOrderExternalId, POSOrder> factory,
 			@NonNull final Consumer<POSOrder> updater)
@@ -100,7 +110,7 @@ class POSOrdersLoaderAndSaver
 		return order;
 	}
 
-	public POSOrder updateById(@NonNull final POSOrderId id, @NonNull final Consumer<POSOrder> updater)
+	POSOrder updateById(@NonNull final POSOrderId id, @NonNull final Consumer<POSOrder> updater)
 	{
 		final I_C_POS_Order orderRecord = getOrderRecordById(id);
 		final POSOrder order = fromRecord(orderRecord);
@@ -160,7 +170,7 @@ class POSOrdersLoaderAndSaver
 		return orderRecord;
 	}
 
-	private Optional<I_C_POS_Order> getOrderRecordByExternalId(@NonNull final POSOrderExternalId externalId)
+	Optional<I_C_POS_Order> getOrderRecordByExternalId(@NonNull final POSOrderExternalId externalId)
 	{
 		Optional<I_C_POS_Order> orderRecord = orderRecordsByExternalId.get(externalId);
 		if (orderRecord == null)
@@ -272,7 +282,7 @@ class POSOrdersLoaderAndSaver
 		return fromRecord(orderRecord, lineRecords, paymentRecords);
 	}
 
-	private static POSOrderId extractPOSOrderId(final I_C_POS_Order orderRecord)
+	static POSOrderId extractPOSOrderId(final I_C_POS_Order orderRecord)
 	{
 		return POSOrderId.ofRepoId(orderRecord.getC_POS_Order_ID());
 	}
@@ -292,6 +302,7 @@ class POSOrdersLoaderAndSaver
 		return POSOrder.builder()
 				.externalId(extractExternalId(orderRecord))
 				.localId(extractPOSOrderId(orderRecord))
+				.documentNo(orderRecord.getDocumentNo())
 				.status(POSOrderStatus.ofCode(orderRecord.getStatus()))
 				.salesOrderDocTypeId(DocTypeId.ofRepoId(orderRecord.getC_DocTypeOrder_ID()))
 				.pricingSystemAndListId(PricingSystemAndListId.ofRepoIds(orderRecord.getM_PricingSystem_ID(), orderRecord.getM_PriceList_ID()))
@@ -390,6 +401,7 @@ class POSOrdersLoaderAndSaver
 				.localId(POSPaymentId.ofRepoId(record.getC_POS_Payment_ID()))
 				.paymentMethod(POSPaymentMethod.ofCode(record.getPOSPaymentMethod()))
 				.amount(Money.of(record.getAmount(), currencyId))
+				.cashTenderedAmount(Money.of(record.getAmountTendered(), currencyId))
 				.paymentProcessingStatus(POSPaymentProcessingStatus.ofCode(record.getPOSPaymentProcessingStatus()))
 				.cardProcessingDetails(extractCardProcessingDetails(record))
 				.paymentReceiptId(PaymentId.ofRepoIdOrNull(record.getC_Payment_ID()))
@@ -402,17 +414,26 @@ class POSOrdersLoaderAndSaver
 		record.setExternalId(from.getExternalId().getAsString());
 		record.setPOSPaymentMethod(from.getPaymentMethod().getCode());
 		record.setAmount(from.getAmount().toBigDecimal());
+		record.setAmountTendered(from.getCashTenderedAmount().toBigDecimal());
+		record.setChangeBackAmount(from.getCashGiveBackAmount().toBigDecimal());
 		record.setPOSPaymentProcessingStatus(from.getPaymentProcessingStatus().getCode());
 		updateRecord(record, from.getCardProcessingDetails());
 		record.setC_Payment_ID(PaymentId.toRepoId(from.getPaymentReceiptId()));
 	}
 
-	private static void updateRecord(final I_C_POS_Payment paymentRecord, @Nullable final POSPaymentCardProcessingDetails from)
+	private static void updateRecord(final I_C_POS_Payment record, @Nullable final POSPaymentCardProcessingDetails from)
 	{
-		paymentRecord.setPOSPaymentProcessor(from != null ? from.getConfig().getType().getCode() : null);
-		paymentRecord.setSUMUP_Config_ID(from != null ? SumUpConfigId.toRepoId(from.getConfig().getSumUpConfigId()) : -1);
-		paymentRecord.setPOSPaymentProcessing_TrxId(from != null ? StringUtils.trimBlankToNull(from.getTransactionId()) : null);
-		paymentRecord.setPOSPaymentProcessingSummary(from != null ? StringUtils.trimBlankToNull(from.getSummary()) : null);
+		record.setPOSPaymentProcessor(from != null ? from.getConfig().getType().getCode() : null);
+		record.setSUMUP_Config_ID(from != null ? SumUpConfigId.toRepoId(from.getConfig().getSumUpConfigId()) : -1);
+		record.setPOSPaymentProcessing_TrxId(from != null ? StringUtils.trimBlankToNull(from.getTransactionId()) : null);
+		record.setPOSPaymentProcessingSummary(from != null ? StringUtils.trimBlankToNull(from.getSummary()) : null);
+		updateRecord(record, from != null ? from.getCardReader() : null);
+	}
+
+	private static void updateRecord(final I_C_POS_Payment record, final POSCardReader from)
+	{
+		record.setPOS_CardReader_ExternalId(from != null ? from.getExternalId().getAsString() : null);
+		record.setPOS_CardReader_Name(from != null ? from.getName() : null);
 	}
 
 	@Nullable
@@ -428,6 +449,7 @@ class POSOrdersLoaderAndSaver
 				.config(config)
 				.transactionId(StringUtils.trimBlankToNull(record.getPOSPaymentProcessing_TrxId()))
 				.summary(StringUtils.trimBlankToNull(record.getPOSPaymentProcessingSummary()))
+				.cardReader(extractCardReader(record))
 				.build();
 	}
 
@@ -445,7 +467,23 @@ class POSOrdersLoaderAndSaver
 				.build();
 	}
 
-	public void save(@NonNull final POSOrder order)
+	@Nullable
+	private static POSCardReader extractCardReader(final I_C_POS_Payment record)
+	{
+		POSCardReaderExternalId externalId = POSCardReaderExternalId.ofNullableString(record.getPOS_CardReader_ExternalId());
+		if (externalId == null)
+		{
+			return null;
+		}
+
+		final String name = StringUtils.trimBlankToNull(record.getPOS_CardReader_Name());
+		return POSCardReader.builder()
+				.externalId(externalId)
+				.name(CoalesceUtil.coalesceNotNull(name, "?"))
+				.build();
+	}
+
+	void save(@NonNull final POSOrder order)
 	{
 		final I_C_POS_Order orderRecord;
 		if (order.getLocalId() != null)
@@ -462,6 +500,7 @@ class POSOrdersLoaderAndSaver
 		InterfaceWrapperHelper.save(orderRecord);
 		final POSOrderId posOrderId = extractPOSOrderId(orderRecord);
 		order.setLocalId(posOrderId);
+		order.setDocumentNo(orderRecord.getDocumentNo());
 		addToCache(orderRecord);
 
 		//

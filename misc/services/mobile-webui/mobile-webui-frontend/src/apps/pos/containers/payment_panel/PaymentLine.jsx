@@ -1,7 +1,8 @@
-import { getPaymentMethodCaption, getPaymentMethodIcon } from '../../utils/paymentMethods';
+import { getPaymentMethodIcon } from '../../constants/paymentMethods';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import React from 'react';
 import PropTypes from 'prop-types';
+import { getPaymentSummaryLine } from '../../utils/payments';
 
 const PaymentLine = ({
   uuid,
@@ -12,6 +13,7 @@ const PaymentLine = ({
   currencyPrecision,
   status,
   statusDetails,
+  //
   allowCheckout: allowCheckoutParam,
   onCheckout,
   allowDelete,
@@ -21,7 +23,7 @@ const PaymentLine = ({
 }) => {
   const icon = getPaymentMethodIcon({ paymentMethod });
   const iconClassName = `fa-regular ${icon}`;
-  const caption = getPaymentMethodCaption({ paymentMethod }) + (statusDetails ? ' ' + statusDetails : '');
+  const caption = getPaymentSummaryLine({ paymentMethod, statusDetails });
   const amountStr = formatAmountToHumanReadableStr({
     amount: amount,
     currency: currency,

@@ -81,4 +81,14 @@ public class SumUpConfig
 		}
 		return defaultCardReaderExternalId;
 	}
+
+	public SumUpCardReader getCardReaderById(@NonNull SumUpCardReaderExternalId id)
+	{
+		final SumUpCardReader cardReader = cardReadersByExternalId.get(id);
+		if (cardReader == null)
+		{
+			throw new AdempiereException("No card reader found for " + id);
+		}
+		return cardReader;
+	}
 }

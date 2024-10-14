@@ -1,4 +1,4 @@
-import { getPaymentMethodCaption, getPaymentMethodIcon } from '../../utils/paymentMethods';
+import { getPaymentMethodCaption, getPaymentMethodIcon } from '../../constants/paymentMethods';
 import cx from 'classnames';
 import React from 'react';
 import PropTypes from 'prop-types';

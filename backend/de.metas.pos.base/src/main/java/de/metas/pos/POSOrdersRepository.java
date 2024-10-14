@@ -58,7 +58,7 @@ public class POSOrdersRepository
 
 		if (query.isOpen())
 		{
-			sqlQueryBuilder.addInArrayFilter(I_C_POS_Order.COLUMNNAME_Status, POSOrderStatus.Drafted, POSOrderStatus.WaitingPayment);
+			sqlQueryBuilder.addInArrayFilter(I_C_POS_Order.COLUMNNAME_Status, POSOrderStatus.OPEN_STATUSES);
 		}
 
 		final Set<POSOrderExternalId> onlyOrderExternalIds = query.getOnlyOrderExternalIds();
@@ -103,9 +103,8 @@ public class POSOrdersRepository
 		updateById(orderAndPaymentId.getOrderId(), order -> order.updatePaymentById(orderAndPaymentId.getPaymentId(), payment -> updater.apply(order, payment)));
 	}
 
-	public void save(@NonNull final POSOrder order)
+	public POSOrderId getIdByExternalId(final @NonNull POSOrderExternalId externalId)
 	{
-		newLoaderAndSaver().save(order);
+		return newLoaderAndSaver().getIdByExternalId(externalId);
 	}
-
 }

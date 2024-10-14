@@ -6,6 +6,7 @@ import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -115,13 +116,9 @@ public class POSService
 		return ordersService.updateOrderFromRemote(remoteOrder, userId);
 	}
 
-	public POSOrder checkoutPayment(
-			@NonNull final POSTerminalId posTerminalId,
-			@NonNull final POSOrderExternalId posOrderExternalId,
-			@NonNull final POSPaymentExternalId posPaymentExternalId,
-			@NonNull final UserId userId)
+	public POSOrder checkoutPayment(@NonNull POSPaymentCheckoutRequest request)
 	{
-		return ordersService.checkoutPayment(posTerminalId, posOrderExternalId, posPaymentExternalId, userId);
+		return ordersService.checkoutPayment(request);
 	}
 
 	public POSOrder refundPayment(
@@ -133,5 +130,9 @@ public class POSService
 		return ordersService.refundPayment(posTerminalId, posOrderExternalId, posPaymentExternalId, userId);
 	}
 
+	public Optional<Resource> getReceiptPdf(@NonNull final POSOrderExternalId externalId)
+	{
+		return ordersService.getReceiptPdf(externalId);
+	}
 }
 
