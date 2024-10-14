@@ -397,7 +397,7 @@ Feature: Modular contract log from purchase order for processed product
       | candidate_addValueOnProcessedProduct_2 | 0            | 1000           | 1000             | I               | -6              | 0                   | -6000              | Y             |
       | candidate_addValueOnInterim            | 0            | 1              | 1                | I               | -40             | 0                   | -40                | Y             |
       | candidate_subValueOnInterim            | 0            | 1              | 1                | I               | 18.96           | 0                   | 18.96              | Y             |
-      | candidate_storageCost                  | 0            | 1              | 1                | I               | -1764           | 0                   | -1764              | Y             |
+      | candidate_storageCost                  | 0            | 1              | 1                | I               | -1890           | 0                   | -1890              | Y             |
 
     And after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus | OPT.TotalLines |
@@ -415,7 +415,7 @@ Feature: Modular contract log from purchase order for processed product
       | invoiceLine_1_4             | invoice_1               | addValueOnProcessed_PO_2       | addValueOnProcessedProduct_06062024_2 | 1000        | true      | -6               | -6              | -6000          | PCE                   | PCE                       |
       | invoiceLine_1_5             | invoice_1               | addValueOnInterim              | addValueOnInterim_06062024_1          | 1           | true      | -40              | -40             | -40            | PCE                   | PCE                       |
       | invoiceLine_1_6             | invoice_1               | subValueOnInterim              | subValueOnInterim_06062024_1          | 1           | true      | 18.96            | 18.96           | 18.96          | PCE                   | PCE                       |
-      | invoiceLine_1_7             | invoice_1               | storageCostForProcessedProduct | storageCost_06062024_1                | 1           | true      | -1764            | -1764           | -1764          | PCE                   | PCE                       |
+      | invoiceLine_1_7             | invoice_1               | storageCostForProcessedProduct | storageCost_06062024_1                | 1           | true      | -1890            | -1890           | -1890          | PCE                   | PCE                       |
 
     And create definitive invoice
       | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier | OPT.DateInvoiced | OPT.DateAcct |
