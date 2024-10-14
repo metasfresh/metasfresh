@@ -273,7 +273,7 @@ import java.util.TreeMap;
 	public List<IInvoicingItem> getRawAdditionalFeeProducts()
 	{
 		final List<IInvoicingItem> invoicingItems = type2AdditionalFeeProducts.get(QualityInspectionLineType.Raw);
-		if(invoicingItems ==null)
+		if(invoicingItems == null)
 		{
 			return ImmutableList.of();
 		}
