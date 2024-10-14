@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.i18n.AdMessageKey;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
@@ -42,6 +43,9 @@ import java.util.function.UnaryOperator;
 @ToString
 public final class WFProcess
 {
+	private static final AdMessageKey NO_ACCESS_ERROR_MSG = AdMessageKey.of("de.metas.workflow.rest_api.model.NO_ACCESS_ERROR_MSG");
+	private static final AdMessageKey NO_ACTIVITY_ERROR_MSG = AdMessageKey.of("de.metas.workflow.rest_api.model.NO_ACTIVITY_ERROR_MSG");
+
 	@Getter
 	@NonNull private final WFProcessId id;
 
@@ -103,7 +107,7 @@ public final class WFProcess
 	{
 		if (!hasAccess(userId))
 		{
-			throw new AdempiereException("User does not have access");
+			throw new AdempiereException(NO_ACCESS_ERROR_MSG);
 		}
 	}
 
@@ -122,7 +126,10 @@ public final class WFProcess
 		final WFActivity wfActivity = activitiesById.get(id);
 		if (wfActivity == null)
 		{
-			throw new AdempiereException("No activity found for " + id + " in " + this);
+			throw new AdempiereException(NO_ACTIVITY_ERROR_MSG)
+					.appendParametersToMessage()
+					.setParameter("ID", id)
+					.setParameter("WFProcess", this);
 		}
 		return wfActivity;
 	}

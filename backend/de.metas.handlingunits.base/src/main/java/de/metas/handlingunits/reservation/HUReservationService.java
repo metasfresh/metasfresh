@@ -20,6 +20,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -94,6 +95,8 @@ public class HUReservationService
 	private Supplier<HUTransformService> huTransformServiceSupplier = HUTransformService::newInstance;
 
 	private static final String SYSCONFIG_AllowSqlWhenFilteringHUAttributes = "de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService.AllowSqlWhenFilteringHUAttributes";
+	private final static AdMessageKey NO_QTY_RESERVED_ERROR_MSG = AdMessageKey.of("de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService.NO_QTY_RESERVED_ERROR_MSG");
+	private final static AdMessageKey RESERVED_ERROR_MSG = AdMessageKey.of("de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService.RESERVED_ERROR_MSG");
 
 	private static final String SYSCONFIG_ConsiderAttributes = "de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService.ConsiderAttributes";
 	private final ImmutableSet<DocStatus> docStatusesThatAllowReservation = ImmutableSet.of(
@@ -161,10 +164,12 @@ public class HUReservationService
 		final Quantity qtyReserved = repoRequests.stream()
 				.map(HUReservationEntryUpdateRepoRequest::getQtyReserved)
 				.reduce(Quantity::add)
-				.orElseThrow(() -> new AdempiereException("No qty could be reserved for " + reservationRequest));
+				.orElseThrow(() -> new AdempiereException(NO_QTY_RESERVED_ERROR_MSG)
+						.appendParametersToMessage()
+						.setParameter("request", reservationRequest));
 		if (reservationRequest.getQtyToReserve().compareTo(qtyReserved) != 0)
 		{
-			throw new AdempiereException("Cannot reserved the whole requested quantity")
+			throw new AdempiereException(RESERVED_ERROR_MSG) 
 					.appendParametersToMessage()
 					.setParameter("reservationRequest", reservationRequest)
 					.setParameter("reservations", repoRequests);
