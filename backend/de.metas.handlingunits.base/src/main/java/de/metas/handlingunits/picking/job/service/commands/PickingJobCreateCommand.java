@@ -180,7 +180,7 @@ public class PickingJobCreateCommand
 				//
 				.build().execute();
 	}
-	
+
 	private PickingConfigV2 getPickingConfig()
 	{
 		PickingConfigV2 pickingConfig = this._pickingConfig;
@@ -290,9 +290,9 @@ public class PickingJobCreateCommand
 	private PickingJobCreateRepoRequest.Line createLineRequest_WithPickingPlan(final @NonNull PackageableList items)
 	{
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
-				.packageables(items)
-				.considerAttributes(getPickingConfig().isConsiderAttributes())
-				.build());
+																			.packageables(items)
+																			.considerAttributes(getPickingConfig().isConsiderAttributes())
+																			.build());
 
 		final ImmutableList<PickingPlanLine> lines = plan.getLines();
 		if (lines.isEmpty())

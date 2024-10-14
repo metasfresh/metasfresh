@@ -9,12 +9,11 @@ import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -28,7 +27,6 @@ import static de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_Qua
 public class PickingJobCompleteCommand
 {
 	private final static AdMessageKey PICKING_ON_ALL_STEPS_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.PICKING_ON_ALL_STEPS_ERROR_MSG");
-	private final static AdMessageKey ALL_STEPS_SHALL_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.ALL_STEPS_SHALL_BE_PICKED_ERROR_MSG");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final PickingJobService pickingJobService;
@@ -72,7 +70,10 @@ public class PickingJobCompleteCommand
 
 	public static class PickingJobCompleteCommandBuilder
 	{
-		public PickingJob execute() {return build().execute();}
+		public PickingJob execute()
+		{
+			return build().execute();
+		}
 	}
 
 	public PickingJob execute()
@@ -125,14 +126,14 @@ public class PickingJobCompleteCommand
 		if (createShipmentPolicy.isCreateShipment())
 		{
 			shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
-					.scheduleIds(pickingJob.getShipmentScheduleIds())
-					.quantityTypeToUse(TYPE_PICKED_QTY)
-					.onTheFlyPickToPackingInstructions(true)
-					.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
-					.isCloseShipmentSchedules(createShipmentPolicy.isCloseShipmentSchedules())
-					// since we are not going to immediately create invoices, we want to move on and to wait for shipments
-					.waitForShipments(false)
-					.build());
+																	.scheduleIds(pickingJob.getShipmentScheduleIds())
+																	.quantityTypeToUse(TYPE_PICKED_QTY)
+																	.onTheFlyPickToPackingInstructions(true)
+																	.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
+																	.isCloseShipmentSchedules(createShipmentPolicy.isCloseShipmentSchedules())
+																	// since we are not going to immediately create invoices, we want to move on and to wait for shipments
+																	.waitForShipments(false)
+																	.build());
 		}
 	}
 }
