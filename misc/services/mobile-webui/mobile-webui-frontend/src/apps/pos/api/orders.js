@@ -94,16 +94,8 @@ export const refundPayment = ({ posTerminalId, order_uuid, payment_uuid }) => {
 };
 
 export const getReceiptPdf = ({ order_uuid }) => {
-  return axios({
-    url: toUrl(`${posApiBase}/orders/receipt/receipt.pdf`, { id: order_uuid }),
-    responseType: 'blob',
-  }).then((response) => convertToBase64(response.data));
-};
-
-const convertToBase64 = (blob) => {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.readAsDataURL(blob);
+  return axios.get(toUrl(`${posApiBase}/orders/receipt/receipt.pdf`, { id: order_uuid }), {
+    responseType: 'arraybuffer',
+    validateStatus: false,
   });
 };

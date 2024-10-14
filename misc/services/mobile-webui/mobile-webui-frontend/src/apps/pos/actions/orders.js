@@ -243,6 +243,33 @@ export const setSelectedOrderLineAction = ({ order_uuid, selectedLineUUID }) => 
   };
 };
 
+export const getReceiptPdf = async ({ order_uuid, retryCount = 10, retryDelayMillis = 1000 }) => {
+  return retryIf404({
+    httpCall: () => ordersAPI.getReceiptPdf({ order_uuid }),
+    retryCount,
+    retryDelayMillis,
+  }).then((response) => Buffer.from(response.data, 'binary').toString('base64'));
+};
+
+const retryIf404 = ({ httpCall, retryCount, retryDelayMillis }) => {
+  const recursiveCall = (resolve, reject, count = 1) => {
+    return httpCall().then((response) => {
+      if (response.status === 200) {
+        console.log(`Got 200 OK answer after ${count} tries. Accepting.`, { response });
+        resolve(response);
+      } else if (response.status === 404 && count < retryCount) {
+        console.log(`Got 404 after ${count}/${retryCount} tries. Recheduling...`, { response });
+        setTimeout(() => recursiveCall(resolve, reject, count + 1), retryDelayMillis);
+      } else {
+        console.log(`Got no 200 answer after ${count} tries. Rejecting.`, { response });
+        reject(response);
+      }
+    });
+  };
+
+  return new Promise((resolve, reject) => recursiveCall(resolve, reject));
+};
+
 //
 //
 //
