@@ -41,6 +41,7 @@
 	import de.metas.handlingunits.qrcodes.model.HUQRCode;
 	import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 	import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+	import de.metas.i18n.AdMessageKey;
 	import de.metas.i18n.ImmutableTranslatableString;
 	import de.metas.i18n.TranslatableStrings;
 	import de.metas.mobile.application.MobileApplicationId;
