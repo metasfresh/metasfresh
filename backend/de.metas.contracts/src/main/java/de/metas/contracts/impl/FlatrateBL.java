@@ -238,7 +238,7 @@ public class FlatrateBL implements IFlatrateBL
 	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository = SpringContextHolder.instance.getBean(ModularContractSettingsRepository.class);
 	@NonNull private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
 
-	@NonNull public final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
+	@NonNull private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 
 	@Override
 	public I_C_Flatrate_Conditions getConditionsById(final ConditionsId flatrateConditionsId)

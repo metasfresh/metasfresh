@@ -145,10 +145,10 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod extends AbstractC
 						.build()
 		).getProductPrice();
 
-		final Quantity producedQty = productionOrReceiptLogs.getQtySum(uomId, uomConversionBL);
+		final Quantity producedOrReceiptQty = productionOrReceiptLogs.getQtySum(uomId, uomConversionBL);
 		final Quantity shippedQty = shipmentLogs.getQtySum(uomId, uomConversionBL);
 
-		final Quantity qtyDifference = shippedQty.subtract(producedQty);
+		final Quantity qtyDifference = shippedQty.subtract(producedOrReceiptQty);
 		final ComputingResponse.ComputingResponseBuilder responseBuilder = ComputingResponse.builder()
 				.ids(logs.getIds())
 				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull());
