@@ -88,3 +88,27 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- 2024-10-11T08:55:52.052Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2024-10-11 10:55:52.052','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=626190
 ;
+
+-- Value: de.metas.contracts.modular.process.ModCntr_Specific_Price_Update.RejectMsgAveragePrice
+-- 2024-10-14T11:03:48.980Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545476,0,TO_TIMESTAMP('2024-10-14 13:03:48.833','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Update von Durchschnittspreisen ist nicht erlaubt!','E',TO_TIMESTAMP('2024-10-14 13:03:48.833','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts.modular.process.ModCntr_Specific_Price_Update.RejectMsgAveragePrice')
+;
+
+-- 2024-10-14T11:03:48.989Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545476 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Value: de.metas.contracts.modular.process.ModCntr_Specific_Price_Update.RejectMsgAveragePrice
+-- 2024-10-14T11:04:14.538Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Update of average price isn''t allowed!',Updated=TO_TIMESTAMP('2024-10-14 13:04:14.538','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545476
+;
+
+-- Value: de.metas.contracts.modular.process.ModCntr_Specific_Price_Update.RejectMsgAveragePrice
+-- 2024-10-14T11:04:15.653Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-10-14 13:04:15.653','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545476
+;
+
+-- Value: de.metas.contracts.modular.process.ModCntr_Specific_Price_Update.RejectMsgAveragePrice
+-- 2024-10-14T11:04:16.987Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-10-14 13:04:16.987','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545476
+;

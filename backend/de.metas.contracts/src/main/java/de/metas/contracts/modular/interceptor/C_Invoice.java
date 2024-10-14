@@ -24,11 +24,11 @@ package de.metas.contracts.modular.interceptor;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.document.DocTypeId;
@@ -76,7 +76,7 @@ public class C_Invoice
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
 		modularContractLogService.unprocessModularContractLogs(invoiceId, DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID()));
 
-		final ModularContractSettingsId modularContractSettingsId = null; //TODO ModularContractSettingsId.ofRepoIdOrNull(invoiceRecord.getModCntr_Settings_ID);
+		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoIdOrNull(invoiceRecord.getModCntr_Settings_ID());
 		if(modularContractSettingsId == null)
 		{
 			return;

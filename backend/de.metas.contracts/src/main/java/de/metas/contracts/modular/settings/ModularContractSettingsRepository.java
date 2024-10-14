@@ -67,7 +67,6 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -238,7 +237,7 @@ public class ModularContractSettingsRepository
 						OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
 						orgDAO::getTimeZone))
 				.freeStorageCostDays(settingsRecord.getFreeStorageCostDays())
-				.tradeMargin(BigDecimal.ZERO) //TODO
+				.tradeMargin(settingsRecord.getTradeMargin())
 				.moduleConfigs(moduleRecords.stream()
 						.map(moduleRecord -> fromRecord(moduleRecord, contractTypes))
 						.collect(ImmutableList.toImmutableList()))

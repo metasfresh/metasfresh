@@ -37,7 +37,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -72,14 +71,10 @@ public class ModularContractSettings
 	@NonNull LocalDateAndOrgId storageCostStartDate;
 	int freeStorageCostDays;
 	int additionalInterestDays;
-	@Builder.Default @Getter
-	@NonNull Percent interestPercent = Percent.ZERO;
 
-	@Builder.Default @Getter
-	@NonNull Percent interimPricePercent = Percent.ZERO;
-
-	@Builder.Default @Getter
-	@NonNull BigDecimal tradeMargin = BigDecimal.ZERO;
+	@NonNull Percent interestPercent;
+	@NonNull Percent interimPricePercent;
+	@NonNull BigDecimal tradeMargin;
 
 	private static final AdMessageKey MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Flatrate_Conditions.INVALID_MODULAR_CONTRACT_SETTINGS");
 
