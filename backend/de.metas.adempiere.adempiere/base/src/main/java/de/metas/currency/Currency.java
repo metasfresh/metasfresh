@@ -47,7 +47,7 @@ public class Currency
 	@NonNull
 	CurrencyPrecision costingPrecision;
 
-	boolean isApply5CentCashRounding;
+	boolean isSOApply5CentCashRounding;
 
 	boolean isPOApply5CentCashRounding;
 }

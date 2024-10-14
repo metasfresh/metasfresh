@@ -2100,10 +2100,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		if (soTrx.isPurchase())
 		{
-			currencyBL.isPOApply5CentCashRounding(currencyId);
+			return currencyBL.isPOApply5CentCashRounding(currencyId);
 		}
 
-		return currencyBL.isApply5CentCashRounding(currencyId);
+		return currencyBL.isSOApply5CentCashRounding(currencyId);
 
 	}
 
