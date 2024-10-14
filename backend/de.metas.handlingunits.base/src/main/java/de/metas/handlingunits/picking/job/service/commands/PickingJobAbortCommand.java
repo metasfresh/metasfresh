@@ -8,6 +8,7 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -18,6 +19,8 @@ import java.util.stream.Stream;
 
 public class PickingJobAbortCommand
 {
+	private final static AdMessageKey ONLY_ONE_PICKING_JOB_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.ONE_PICKING_JOB_ERROR_MSG");
+	
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
@@ -48,7 +51,22 @@ public class PickingJobAbortCommand
 
 	public PickingJob execute()
 	{
+<<<<<<< HEAD
 		initialPickingJob.assertNotProcessed();
+=======
+		if (initialPickingJobs.size() != 1)
+		{
+			throw new AdempiereException(ONLY_ONE_PICKING_JOB_ERROR_MSG);
+		}
+
+		final ImmutableList<PickingJob> result = execute();
+		return CollectionUtils.singleElement(result);
+	}
+
+	public ImmutableList<PickingJob> execute()
+	{
+		initialPickingJobs.forEach(PickingJob::assertNotProcessed);
+>>>>>>> 78e0a68347b (MobileUI Picking - User Error Handling (#19112))
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
 	}
 
