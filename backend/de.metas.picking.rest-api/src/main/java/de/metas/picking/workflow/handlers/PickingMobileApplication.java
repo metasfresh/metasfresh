@@ -99,6 +99,7 @@
 		public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
 
 		private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
+		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
 		public static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
 				.id(APPLICATION_ID)
 				.caption(TranslatableStrings.adMessage(MSG_Caption))
@@ -146,7 +147,9 @@
 		{
 			if (query.getFilterByQRCode() != null)
 			{
-				throw new AdempiereException("Invalid QR Code: " + query.getFilterByQRCode());
+				throw new AdempiereException(INVALID_QR_CODE_ERROR_MSG)
+						.appendParametersToMessage()
+						.setParameter("QRCode", query.getFilterByQRCode());
 			}
 
 			return wfLaunchersProvider.provideLaunchers(query);
