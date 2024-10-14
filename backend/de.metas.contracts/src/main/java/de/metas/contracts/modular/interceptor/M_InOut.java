@@ -76,19 +76,15 @@ public class M_InOut
 	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
 	@NonNull private final ModularContractLogService modularContractLogService;
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void beforeComplete(@NonNull final I_M_InOut inOutRecord)
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void afterComplete(@NonNull final I_M_InOut inOutRecord)
 	{
 		inOutBL.getLines(inOutRecord)
 				.forEach(line -> {
 					propagateFlatrateTerm(line);
 					propagateHarvestingDetails(line);
 				});
-	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void afterComplete(@NonNull final I_M_InOut inOutRecord)
-	{
 		invokeHandlerForEachLine(inOutRecord, COMPLETED);
 	}
 
@@ -117,6 +113,7 @@ public class M_InOut
 		{
 			final I_M_ReceiptSchedule receiptScheduleRecord = receiptScheduleDAO.getById(ReceiptScheduleId.ofRepoId(lineAlloc.get(0).getM_ReceiptSchedule_ID()));
 			inOutLineRecord.setC_Flatrate_Term_ID(receiptScheduleRecord.getC_Flatrate_Term_ID());
+			inOutBL.save(inOutLineRecord);
 		}
 	}
 
@@ -159,6 +156,8 @@ public class M_InOut
 			inOutLineRecord.setC_Harvesting_Calendar_ID(-1);
 			inOutLineRecord.setHarvesting_Year_ID(-1);
 		}
+
+		inOutBL.save(inOutLineRecord);
 	}
 
 	@ModelChange(

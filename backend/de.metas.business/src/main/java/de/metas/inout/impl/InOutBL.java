@@ -144,6 +144,12 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public void save(@NonNull final I_M_InOutLine inoutLine)
+	{
+		inOutDAO.save(inoutLine);
+	}
+
+	@Override
 	public List<I_M_InOutLine> getLines(@NonNull final I_M_InOut inout)
 	{
 		return inOutDAO.retrieveLines(inout);

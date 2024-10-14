@@ -63,6 +63,8 @@ public interface IInOutBL extends ISingletonService
 
 	void save(I_M_InOut inout);
 
+	void save(@NonNull I_M_InOutLine inoutLine);
+
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
 
 	Quantity getQtyEntered(@NonNull I_M_InOutLine inoutLine);
