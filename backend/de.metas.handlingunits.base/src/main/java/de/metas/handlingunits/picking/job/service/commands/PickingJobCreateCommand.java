@@ -52,6 +52,7 @@ public class PickingJobCreateCommand
 {
 	private static final AdMessageKey MSG_NotAllItemsAreAvailableToBePicked = AdMessageKey.of("PickingJobCreateCommand.notAllItemsAreAvailableToBePicked");
 	private static final Logger logger = LogManager.getLogger(PickingJobCreateCommand.class);
+	private static final AdMessageKey MORE_THAN_ONE_JOB_ERROR_MSG = AdMessageKey.of("PickingJobCreateCommand.MORE_THAN_ONE_JOB_ERROR_MSG");
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
@@ -111,7 +112,7 @@ public class PickingJobCreateCommand
 			final PickingJobHeaderKey headerKey = items.stream()
 					.map(PickingJobCreateCommand::extractPickingJobHeaderKey)
 					.distinct()
-					.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More than one job found")));
+					.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException(MORE_THAN_ONE_JOB_ERROR_MSG)));
 
 			final PickingJob pickingJob = pickingJobRepository.createNewAndGet(
 					PickingJobCreateRepoRequest.builder()

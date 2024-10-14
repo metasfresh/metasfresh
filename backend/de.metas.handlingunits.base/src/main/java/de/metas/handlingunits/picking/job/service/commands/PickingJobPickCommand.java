@@ -136,6 +136,21 @@ public class PickingJobPickCommand
 	@NonNull private final HashMap<ShipmentScheduleId, ShipmentScheduleInfo> shipmentSchedulesCache = new HashMap<>();
 
 	private final static AdMessageKey HU_CANNOT_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_CANNOT_BE_PICKED_ERROR_MSG");
+	private final static AdMessageKey TU_CANNOT_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.TU_CANNOT_BE_PICKED_ERROR_MSG");
+	private final static AdMessageKey PICKING_UNIT_NOT_SUPPORTED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICKING_UNIT_NOT_SUPPORTED_ERROR_MSG");
+	private final static AdMessageKey NEGATIVE_CATCH_WEIGHT_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NEGATIVE_CATCH_WEIGHT_ERROR_MSG");
+	private final static AdMessageKey QTY_REJECTED_ALTERNATIVES_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.QTY_REJECTED_ALTERNATIVES_ERROR_MSG");
+	private final static AdMessageKey NO_QR_CODE_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QR_CODE_ERROR_MSG");
+	private final static AdMessageKey L_M_QR_CODE_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.L_M_QR_CODE_ERROR_MSG");
+	private final static AdMessageKey QR_CODE_EXTERNAL_LOT_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_EXTERNAL_LOT_ERROR_MSG");
+	private final static AdMessageKey QR_CODE_NOT_SUPPORTED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_NOT_SUPPORTED_ERROR_MSG");
+	private final static AdMessageKey CANNOT_PACK_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CANNOT_PACK_ERROR_MSG");
+	private final static AdMessageKey INVALID_NUMBER_QR_CODES_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.INVALID_NUMBER_QR_CODES_ERROR_MSG");
+	private final static AdMessageKey UNKNOWN_TARGET_LU_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.UNKNOWN_TARGET_LU_ERROR_MSG");
+	private final static AdMessageKey NOT_ENOUGH_TUS_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NOT_ENOUGH_TUS_ERROR_MSG");
+	private final static AdMessageKey CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG");
+	private final static AdMessageKey CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG");
+	private final static AdMessageKey NO_QTY_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QTY_ERROR_MSG");
 
 	@Builder
 	private PickingJobPickCommand(
@@ -196,6 +211,13 @@ public class PickingJobPickCommand
 		this.pickingUnit = line.getPickingUnit();
 		if (this.pickingUnit.isTU())
 		{
+			if (pickingJob.getTuPickTarget().isPresent())
+			{
+				throw new AdempiereException(TU_CANNOT_BE_PICKED_ERROR_MSG)
+						.appendParametersToMessage()
+						.setParameter("PickingJobId", pickingJob.getId());
+			}
+
 			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
 			final HUPIItemProduct packingInfo = line.getPackingInfo();
 			this.qtyToPickCUs = packingInfo.computeQtyCUsOfQtyTUs(this.qtyToPickTUs);
@@ -233,7 +255,9 @@ public class PickingJobPickCommand
 		}
 		else
 		{
-			throw new AdempiereException("Picking unit not supported: " + pickingUnit);
+			throw new AdempiereException(PICKING_UNIT_NOT_SUPPORTED_ERROR_MSG)
+					.appendParametersToMessage()
+					.setParameter("PickingUnit", pickingUnit);
 		}
 
 		this.catchWeight = line.getCatchUomId() != null && catchWeightBD != null
@@ -241,7 +265,7 @@ public class PickingJobPickCommand
 				: null;
 		if (this.catchWeight != null && !this.catchWeight.isPositive())
 		{
-			throw new AdempiereException("Catch Weight shall be positive");
+			throw new AdempiereException(NEGATIVE_CATCH_WEIGHT_ERROR_MSG);
 		}
 
 		this.isSetBestBeforeDate = isSetBestBeforeDate;
@@ -268,7 +292,7 @@ public class PickingJobPickCommand
 			{
 				// NOTE: because, in case of alternatives, we don't know which is the qty scheduled to pick
 				// we cannot calculate the qtyRejected
-				throw new AdempiereException("Cannot calculate QtyRejected in case of alternatives");
+				throw new AdempiereException(QTY_REJECTED_ALTERNATIVES_ERROR_MSG);
 			}
 		}
 		else
@@ -427,7 +451,8 @@ public class PickingJobPickCommand
 	@NonNull
 	private HUQRCode getPickFromHUQRCode()
 	{
-		final IHUQRCode pickFromHUQRCode = Check.assumeNotNull(this.pickFromHUQRCode, "HU QR code shall be provided");
+		final IHUQRCode pickFromHUQRCode = Optional.ofNullable(this.pickFromHUQRCode)
+				.orElseThrow(() -> new AdempiereException(NO_QR_CODE_ERROR_MSG));
 
 		if (pickFromHUQRCode instanceof HUQRCode)
 		{
@@ -439,16 +464,20 @@ public class PickingJobPickCommand
 			final String lotNumber = lmQRCode.getLotNumber();
 			if (lotNumber == null)
 			{
-				throw new AdempiereException("L+M QR code does not contain external lot number");
+				throw new AdempiereException(L_M_QR_CODE_ERROR_MSG);
 			}
 
 			return handlingUnitsBL.getFirstHuIdByExternalLotNo(lotNumber)
 					.map(huQRCodesService::getQRCodeByHuId)
-					.orElseThrow(() -> new AdempiereException("No HU associated with external lot number: " + lotNumber));
+					.orElseThrow(() -> new AdempiereException(QR_CODE_EXTERNAL_LOT_ERROR_MSG)
+							.appendParametersToMessage()
+							.setParameter("LotNumber", lotNumber));
 		}
 		else
 		{
-			throw new AdempiereException("HU QR code not supported: " + pickFromHUQRCode);
+			throw new AdempiereException(QR_CODE_NOT_SUPPORTED_ERROR_MSG)
+					.appendParametersToMessage()
+					.setParameter("QRCode", pickFromHUQRCode);
 		}
 	}
 
@@ -516,7 +545,7 @@ public class PickingJobPickCommand
 
 		if (packedHUs.isEmpty())
 		{
-			throw new AdempiereException("Cannot pack to HUs from " + pickFromHU + " using " + packToInfo + ", qtyToPick=" + qtyToPickCUs);
+			throw new AdempiereException(CANNOT_PACK_ERROR_MSG, pickFromHU, packToInfo, qtyToPickCUs);
 		}
 		else if (packedHUs.getQtyTUs().isOne())
 		{
@@ -718,7 +747,7 @@ public class PickingJobPickCommand
 		final List<HUQRCode> huQRCodes = huQRCodesService.getOrCreateQRCodesByHuId(tu.getId());
 		if (huQRCodes.size() != tu.getQtyTU().toInt())
 		{
-			throw new AdempiereException("Expected " + tu.getQtyTU() + " QR Codes but got only " + huQRCodes.size());
+			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, tu.getQtyTU(), huQRCodes.size());
 		}
 
 		final List<Quantity> qtyPickedPerTU = qtyPicked.spreadEqually(tu.getQtyTU().toInt());
@@ -799,13 +828,15 @@ public class PickingJobPickCommand
 			}
 			else
 			{
-				throw new AdempiereException("Unknown target LU: " + pickingTarget);
+				throw new AdempiereException(UNKNOWN_TARGET_LU_ERROR_MSG)
+						.appendParametersToMessage()
+						.setParameter("pickingTarget", pickingTarget);
 			}
 		}
 
 		if (result.getQtyTUs().compareTo(qtyToPickTUs) != 0)
 		{
-			throw new AdempiereException("Not enough TUs found") // TODO trl
+			throw new AdempiereException(NOT_ENOUGH_TUS_ERROR_MSG)
 					.setParameter("qtyToPickTUs", qtyToPickTUs)
 					.setParameter("actuallyPickedTUsCount", result.getQtyTUs())
 					.setParameter("result", result);
@@ -848,14 +879,14 @@ public class PickingJobPickCommand
 	{
 		if (catchWeightBD == null)
 		{
-			throw new AdempiereException("catchWeightBD must be present when picking via LMQRCode")
+			throw new AdempiereException(CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG)
 					.appendParametersToMessage()
 					.setParameter("LMQRCode", pickFromHUQRCode);
 		}
 
 		if (pickFromHUQRCode.getWeightInKg().compareTo(catchWeightBD) != 0)
 		{
-			throw new AdempiereException("catchWeightBD must match the LMQRCode.Weight")
+			throw new AdempiereException(CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG)
 					.appendParametersToMessage()
 					.setParameter("LMQRCode", pickFromHUQRCode)
 					.setParameter("catchWeightBD", catchWeightBD);
@@ -956,7 +987,7 @@ public class PickingJobPickCommand
 	public Quantity getStorageQty(@NonNull final TU tu, @NonNull final ProductId productId)
 	{
 		final IHUStorageFactory huStorageFactory = HUContextHolder.getCurrent().getHUStorageFactory();
-		return huStorageFactory.getStorage(tu.toHU()).getQuantity(productId).orElseThrow(() -> new AdempiereException("No qty found for " + tu + ", " + productId));
+		return huStorageFactory.getStorage(tu.toHU()).getQuantity(productId).orElseThrow(() -> new AdempiereException(NO_QTY_ERROR_MSG, tu, productId));
 	}
 
 	private HUQRCode getQRCode(@NonNull final LU lu)

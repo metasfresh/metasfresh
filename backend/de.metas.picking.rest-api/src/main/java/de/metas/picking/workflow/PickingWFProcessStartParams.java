@@ -29,7 +29,7 @@ import de.metas.order.OrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
- import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.Params;
 import org.adempiere.warehouse.WarehouseTypeId;
 
