@@ -23,6 +23,7 @@
 package de.metas.workflow.rest_api.service;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.mobile.application.MobileApplication;
 import de.metas.mobile.application.MobileApplicationId;
@@ -64,6 +65,8 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class WorkflowRestAPIService
 {
+	private final static AdMessageKey NOT_WORKFLOW_APP_ERROR_MSG = AdMessageKey.of("de.metas.workflow.rest_api.service.NOT_WORKFLOW_APP_ERROR_MSG");
+
 	private static final Logger logger = LogManager.getLogger(WorkflowRestAPIService.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -103,7 +106,7 @@ public class WorkflowRestAPIService
 		}
 		else
 		{
-			throw new AdempiereException("Application '" + applicationId + "' is not a workflow based application");
+			throw new AdempiereException(NOT_WORKFLOW_APP_ERROR_MSG, applicationId);
 		}
 	}
 
