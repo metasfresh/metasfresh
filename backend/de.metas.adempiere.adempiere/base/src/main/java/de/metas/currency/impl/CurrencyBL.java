@@ -374,11 +374,20 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
-	public boolean isApply5CentCashRounding(@NonNull final CurrencyId currencyId)
+	public boolean isSOApply5CentCashRounding(@NonNull final CurrencyId currencyId)
 	{
 		final Currency currency = currencyDAO.getById(currencyId);
 
-		return currency.isApply5CentCashRounding();
+		return currency.isSOApply5CentCashRounding();
+
+	}
+
+	@Override
+	public boolean isPOApply5CentCashRounding(@NonNull final CurrencyId currencyId)
+	{
+		final Currency currency = currencyDAO.getById(currencyId);
+
+		return currency.isPOApply5CentCashRounding();
 
 	}
 
