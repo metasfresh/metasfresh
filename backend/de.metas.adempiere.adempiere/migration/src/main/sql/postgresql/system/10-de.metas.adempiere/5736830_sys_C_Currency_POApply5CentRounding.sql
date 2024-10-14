@@ -68,3 +68,123 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 
 
 
+-- Run mode: SWING_CLIENT
+
+-- Element: IsPOApply5CentCashRounding
+-- 2024-10-14T07:55:56.140Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='5-Cent-Bargeldrundung anwenden (Einkauf)', PrintName='5-Cent-Bargeldrundung anwenden (Einkauf)',Updated=TO_TIMESTAMP('2024-10-14 10:55:56.139','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583329 AND AD_Language='de_DE'
+;
+
+-- 2024-10-14T07:55:56.146Z
+UPDATE AD_Element SET Name='5-Cent-Bargeldrundung anwenden (Einkauf)', PrintName='5-Cent-Bargeldrundung anwenden (Einkauf)' WHERE AD_Element_ID=583329
+;
+
+-- 2024-10-14T07:55:56.529Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(583329,'de_DE')
+;
+
+-- 2024-10-14T07:55:56.532Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583329,'de_DE')
+;
+
+-- Element: IsPOApply5CentCashRounding
+-- 2024-10-14T07:56:59.397Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='5-Cent-Bargeldrundung anwenden (Einkauf)', PrintName='5-Cent-Bargeldrundung anwenden (Einkauf)',Updated=TO_TIMESTAMP('2024-10-14 10:56:59.397','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583329 AND AD_Language='de_CH'
+;
+
+-- 2024-10-14T07:56:59.399Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583329,'de_CH')
+;
+
+-- Element: IsPOApply5CentCashRounding
+-- 2024-10-14T07:57:09.686Z
+UPDATE AD_Element_Trl SET Name='5-Cent-Bargeldrundung anwenden (Einkauf)', PrintName='5-Cent-Bargeldrundung anwenden (Einkauf)',Updated=TO_TIMESTAMP('2024-10-14 10:57:09.686','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583329 AND AD_Language='it_IT'
+;
+
+-- 2024-10-14T07:57:09.689Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583329,'it_IT')
+;
+
+-- Element: IsPOApply5CentCashRounding
+-- 2024-10-14T07:57:13.514Z
+UPDATE AD_Element_Trl SET Name='5-Cent-Bargeldrundung anwenden (Einkauf)', PrintName='5-Cent-Bargeldrundung anwenden (Einkauf)',Updated=TO_TIMESTAMP('2024-10-14 10:57:13.514','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583329 AND AD_Language='fr_CH'
+;
+
+-- 2024-10-14T07:57:13.516Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583329,'fr_CH')
+;
+
+-- Element: IsApply5CentCashRounding
+-- 2024-10-14T07:57:51.215Z
+UPDATE AD_Element_Trl SET Name='5-Cent-Bargeldrundung anwenden (Vertrieb)', PrintName='5-Cent-Bargeldrundung anwenden (Vertrieb)',Updated=TO_TIMESTAMP('2024-10-14 10:57:51.215','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583244 AND AD_Language='de_CH'
+;
+
+-- 2024-10-14T07:57:51.218Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583244,'de_CH')
+;
+
+-- Element: IsApply5CentCashRounding
+-- 2024-10-14T07:57:58.302Z
+UPDATE AD_Element_Trl SET Name='5-Cent-Bargeldrundung anwenden (Vertrieb)', PrintName='5-Cent-Bargeldrundung anwenden (Vertrieb)',Updated=TO_TIMESTAMP('2024-10-14 10:57:58.302','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583244 AND AD_Language='de_DE'
+;
+
+-- 2024-10-14T07:57:58.303Z
+UPDATE AD_Element SET Name='5-Cent-Bargeldrundung anwenden (Vertrieb)', PrintName='5-Cent-Bargeldrundung anwenden (Vertrieb)' WHERE AD_Element_ID=583244
+;
+
+-- 2024-10-14T07:57:58.695Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(583244,'de_DE')
+;
+
+-- 2024-10-14T07:57:58.697Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583244,'de_DE')
+;
+
+-- Element: IsPOApply5CentCashRounding
+-- 2024-10-14T07:58:24.315Z
+UPDATE AD_Element_Trl SET Name='Apply 5 Cent Cash Rounding (Purchase)', PrintName='Apply 5 Cent Cash Rounding (Purchase)',Updated=TO_TIMESTAMP('2024-10-14 10:58:24.315','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583329 AND AD_Language='fr_CH'
+;
+
+-- 2024-10-14T07:58:24.317Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583329,'fr_CH')
+;
+
+-- Element: IsPOApply5CentCashRounding
+-- 2024-10-14T07:58:27.103Z
+UPDATE AD_Element_Trl SET Name='Apply 5 Cent Cash Rounding (Purchase)', PrintName='Apply 5 Cent Cash Rounding (Purchase)',Updated=TO_TIMESTAMP('2024-10-14 10:58:27.103','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583329 AND AD_Language='it_IT'
+;
+
+-- 2024-10-14T07:58:27.105Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583329,'it_IT')
+;
+
+-- Element: IsApply5CentCashRounding
+-- 2024-10-14T07:59:02.817Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Apply 5 Cent Cash Rounding (Sales)', PrintName='Apply 5 Cent Cash Rounding (Sales)',Updated=TO_TIMESTAMP('2024-10-14 10:59:02.817','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583244 AND AD_Language='en_US'
+;
+
+-- 2024-10-14T07:59:02.819Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583244,'en_US')
+;
+
+-- Element: IsApply5CentCashRounding
+-- 2024-10-14T07:59:06.223Z
+UPDATE AD_Element_Trl SET Name='Apply 5 Cent Cash Rounding (Sales)', PrintName='Apply 5 Cent Cash Rounding (Sales)',Updated=TO_TIMESTAMP('2024-10-14 10:59:06.223','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583244 AND AD_Language='fr_CH'
+;
+
+-- 2024-10-14T07:59:06.225Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583244,'fr_CH')
+;
+
+-- Element: IsApply5CentCashRounding
+-- 2024-10-14T07:59:14.321Z
+UPDATE AD_Element_Trl SET Name='Apply 5 Cent Cash Rounding (Sales)', PrintName='Apply 5 Cent Cash Rounding (Sales)',Updated=TO_TIMESTAMP('2024-10-14 10:59:14.321','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583244 AND AD_Language='it_IT'
+;
+
+-- 2024-10-14T07:59:14.324Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583244,'it_IT')
+;
+
+
+
+
