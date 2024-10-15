@@ -433,7 +433,11 @@ public class EDIDesadvPackService
 						.setParameter("M_InOutLine_ID", inOutLineRecord.getM_InOutLine_ID())
 						.setParameter("EDI_DesadvLin_ID", desadvLineRecord.getEDI_DesadvLine_ID()));
 
-		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(topLevelHU, productId);
+		// topLevelHU's quantity can be bigger than the inOutLine's quantity,
+		// if there are multiple lines with the same product and if those lines were picked onto the same LU.
+		// That's why we need to invoke min(..)
+		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(topLevelHU, productId)
+				.min(inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn));
 
 		final RequestParameters parameters = new RequestParameters(topLevelHU,
 																   bPartnerId,
