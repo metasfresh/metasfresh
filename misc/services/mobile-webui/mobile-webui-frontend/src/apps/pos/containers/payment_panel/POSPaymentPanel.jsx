@@ -18,6 +18,9 @@ import {
 } from '../../actions/orders';
 import PropTypes from 'prop-types';
 import PendingPaymentModal from './PendingPaymentModal';
+import { trl } from '../../../../utils/translations';
+
+const _ = (key) => trl(`pos.payment.${key}`);
 
 const POSPaymentPanel = ({ disabled }) => {
   const dispatch = useDispatch();
@@ -99,12 +102,12 @@ const POSPaymentPanel = ({ disabled }) => {
       />
       <div className="payment-summary">
         <div className="payment-summary-line totalAmt">
-          <div className="payment-summary-label">Total</div>
+          <div className="payment-summary-label">{_('totalAmt')}</div>
           <div className="payment-summary-value">{totalAmtStr}</div>
           <div className="payment-summary-actions" />
         </div>
         <div className="payment-summary-line openAmt">
-          <div className="payment-summary-label">Remaining</div>
+          <div className="payment-summary-label">{_('remainingAmt')}</div>
           <div className="payment-summary-value">{openAmtStr}</div>
           <div className="payment-summary-actions" />
         </div>
@@ -145,7 +148,7 @@ const POSPaymentPanel = ({ disabled }) => {
           <span className="icon is-medium">
             <i className="fa-solid fa-chevron-left" />
           </span>
-          <span>Back</span>
+          <span>{_('actions.back')}</span>
         </button>
         <button
           className={cx('button is-large validate', { 'is-disabled': !isAllowValidate })}
@@ -155,7 +158,7 @@ const POSPaymentPanel = ({ disabled }) => {
           <span className="icon is-medium">
             <i className="fa-solid fa-chevron-right" />
           </span>
-          <span>Validate</span>
+          <span>{_('actions.validate')}</span>
         </button>
       </div>
     </div>

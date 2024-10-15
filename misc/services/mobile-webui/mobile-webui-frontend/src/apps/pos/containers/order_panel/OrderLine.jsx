@@ -3,6 +3,9 @@ import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
 import cx from 'classnames';
 import PropTypes from 'prop-types';
+import { trl } from '../../../../utils/translations';
+
+const _ = (key) => trl(`pos.currentOrder.line.${key}`);
 
 export const OrderLine = ({
   disabled,
@@ -32,7 +35,7 @@ export const OrderLine = ({
     formatAmountToHumanReadableStr({ amount: price, currency: currencySymbol, precision: pricePrecision }) +
     '/' +
     priceUom;
-  const description = `${qtyStr}${catchWeightStr ? ', ' + catchWeightStr : ''} at ${priceStr}`;
+  const description = `${qtyStr}${catchWeightStr ? ', ' + catchWeightStr : ''} ${_('at')} ${priceStr}`;
 
   useEffect(() => {
     if (selected && elementRef?.current?.scrollIntoView) {

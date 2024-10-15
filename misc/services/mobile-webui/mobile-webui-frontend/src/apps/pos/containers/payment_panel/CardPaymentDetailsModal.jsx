@@ -6,6 +6,9 @@ import Spinner from '../../../../components/Spinner';
 import { NumericKeyboard, recomputeAmount, toEditingAmount } from '../NumericKeyboard';
 import cx from 'classnames';
 import { PAYMENT_STATUS_FAILED, PAYMENT_STATUS_NEW, PAYMENT_STATUS_PENDING } from '../../constants/paymentStatus';
+import { trl } from '../../../../utils/translations';
+
+const _ = (key) => trl(`pos.payment.modal.card.${key}`);
 
 const CardPaymentDetailsModal = ({
   currency,
@@ -53,20 +56,20 @@ const CardPaymentDetailsModal = ({
       <div className="modal-background"></div>
       <div className="modal-card">
         <header className="modal-card-head">
-          <p className="modal-card-title">Waiting card payment {status}</p>
+          <p className="modal-card-title">{_('title')}</p>
         </header>
         <section className="modal-card-body">
           <div className="detail-line" onClick={handleOpenAmountClick}>
-            <div className="detail-caption">Remaining amount to pay</div>
+            <div className="detail-caption">{_('orderOpenAmt')}</div>
             <div className="detail-value">{orderOpenAmountStr}</div>
           </div>
           <div className="detail-line">
-            <div className="detail-caption">Amount to pay</div>
+            <div className="detail-caption">{_('payAmt')}</div>
             <div className={cx('detail-value', { 'has-text-danger': !isPayAmountValid })}>{payAmountStr}</div>
           </div>
           {cardReaderName && (
             <div className="detail-line">
-              <div className="detail-caption">Card reader</div>
+              <div className="detail-caption">{_('cardReader')}</div>
               <div className="detail-value">{cardReaderName}</div>
             </div>
           )}
@@ -85,12 +88,12 @@ const CardPaymentDetailsModal = ({
           <div className="buttons">
             {isAllowCancel && (
               <button className="button is-large" disabled={!isAllowCancel} onClick={handleCancelClicked}>
-                Cancel
+                {_('actions.cancel')}
               </button>
             )}
             {isAllowCheckout && (
               <button className="button is-large" disabled={!isAllowCheckout} onClick={handleCheckoutClicked}>
-                Checkout
+                {_('actions.checkout')}
               </button>
             )}
           </div>

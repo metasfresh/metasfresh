@@ -1,1 +1,57 @@
-{}
+{
+  "header": {
+    "closeCashJournal": "Kasse schließen"
+  },
+  "products": {
+    "searchBar": {
+      "placeholder": "Produkte durchsuchen..."
+    }
+  },
+  "currentOrder": {
+    "line": {
+      "at": "à"
+    },
+    "totalAmt": "Summe",
+    "taxAmt": "Steuern",
+    "actions": {
+      "pay": "Bezahlen",
+      "new": "Neu",
+      "void": "Annullieren",
+      "deleteLine": "Delete line"
+    }
+  },
+  "payment": {
+    "totalAmt": "Summe",
+    "remainingAmt": "Restbetrag",
+    "method": {
+      "cash": "Bar",
+      "card": "Karte"
+    },
+    "actions": {
+      "back": "Zurück",
+      "validate": "Überprüfen"
+    },
+    "modal": {
+      "cash": {
+        "title": "Barzahlung",
+        "payAmt": "Amount to Pay",
+        "tenderedAmt": "Tendered Amount",
+        "changeBackAmt": "Change",
+        "actions": {
+          "ok": "OK",
+          "cancel": "Cancel"
+        }
+      },
+      "card": {
+        "title": "Karte",
+        "orderOpenAmt": "Restbetrag",
+        "payAmt": "Betrag",
+        "cardReader": "Card reader",
+        "actions": {
+          "checkout": "Checkout",
+          "cancel": "Cancel"
+        }
+      }
+    }
+  }
+}
