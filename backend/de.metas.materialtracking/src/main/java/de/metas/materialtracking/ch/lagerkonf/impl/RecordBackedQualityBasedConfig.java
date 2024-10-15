@@ -22,6 +22,7 @@ package de.metas.materialtracking.ch.lagerkonf.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.currency.Currency;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.materialtracking.ch.lagerkonf.IQualityInspLagerKonfDAO;
@@ -40,6 +41,7 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.MultiValueMap;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_UOM;
@@ -254,16 +256,28 @@ import java.util.TreeMap;
 		return witholdingProduct;
 	}
 
+	@NonNull
 	@Override
 	public List<IInvoicingItem> getProducedTotalWithoutByProductsAdditionalFeeProducts()
 	{
-		return type2AdditionalFeeProducts.get(QualityInspectionLineType.ProducedTotalWithoutByProducts);
+		final List<IInvoicingItem> invoicingItems = type2AdditionalFeeProducts.get(QualityInspectionLineType.ProducedTotalWithoutByProducts);
+		if (invoicingItems == null)
+		{
+			return ImmutableList.of();
+		}
+		return invoicingItems;
 	}
 
+	@NonNull
 	@Override
 	public List<IInvoicingItem> getRawAdditionalFeeProducts()
 	{
-		return type2AdditionalFeeProducts.get(QualityInspectionLineType.Raw);
+		final List<IInvoicingItem> invoicingItems = type2AdditionalFeeProducts.get(QualityInspectionLineType.Raw);
+		if(invoicingItems == null)
+		{
+			return ImmutableList.of();
+		}
+		return invoicingItems;
 	}
 
 	@Override
