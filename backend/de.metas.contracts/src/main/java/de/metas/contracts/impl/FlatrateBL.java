@@ -89,6 +89,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -111,6 +113,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductActivityProvider;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
@@ -197,53 +200,58 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 public class FlatrateBL implements IFlatrateBL
 {
-	private static final Logger logger = LogManager.getLogger(FlatrateBL.class);
+	@NonNull private static final Logger logger = LogManager.getLogger(FlatrateBL.class);
 
-	private static final AdMessageKey MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P = AdMessageKey.of("FlatrateBL_InvoicingEntry_Not_CO");
+	@NonNull private static final AdMessageKey MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P = AdMessageKey.of("FlatrateBL_InvoicingEntry_Not_CO");
 
-	private static final AdMessageKey MSG_FLATRATEBL_INVOICE_CANDIDATE_TO_RECOMPUTE_1P = AdMessageKey.of("FlatrateBL_InvoicingCand_ToRecompute");
+	@NonNull private static final AdMessageKey MSG_FLATRATEBL_INVOICE_CANDIDATE_TO_RECOMPUTE_1P = AdMessageKey.of("FlatrateBL_InvoicingCand_ToRecompute");
 
-	private static final AdMessageKey MSG_FLATRATEBL_INVOICE_CANDIDATE_QTY_TO_INVOICE_1P = AdMessageKey.of("FlatrateBL_InvoicingCand_QtyToInvoice");
+	@NonNull private static final AdMessageKey MSG_FLATRATEBL_INVOICE_CANDIDATE_QTY_TO_INVOICE_1P = AdMessageKey.of("FlatrateBL_InvoicingCand_QtyToInvoice");
 
-	private static final AdMessageKey MSG_DATA_ENTRY_CREATE_FLAT_FEE_3P = AdMessageKey.of("DataEntry_Create_FlatFee");
+	@NonNull private static final AdMessageKey MSG_DATA_ENTRY_CREATE_FLAT_FEE_3P = AdMessageKey.of("DataEntry_Create_FlatFee");
 
-	private static final AdMessageKey MSG_DATA_ENTRY_CREATE_HOLDING_FEE_3P = AdMessageKey.of("DataEntry_Create_HoldingFee");
+	@NonNull private static final AdMessageKey MSG_DATA_ENTRY_CREATE_HOLDING_FEE_3P = AdMessageKey.of("DataEntry_Create_HoldingFee");
 
-	private static final AdMessageKey MSG_TERM_NEW_UNCOMPLETED_0P = AdMessageKey.of("FlatrateTerm_New_Uncompleted_Term");
-	private static final AdMessageKey MSG_TERM_NEW_COMPLETED_0P = AdMessageKey.of("FlatrateTerm_New_Completed_Term");
-	private static final AdMessageKey MSG_TERM_NO_NEW_0P = AdMessageKey.of("FlatrateTerm_No_New_Term");
+	@NonNull private static final AdMessageKey MSG_TERM_NEW_UNCOMPLETED_0P = AdMessageKey.of("FlatrateTerm_New_Uncompleted_Term");
+	@NonNull private static final AdMessageKey MSG_TERM_NEW_COMPLETED_0P = AdMessageKey.of("FlatrateTerm_New_Completed_Term");
+	@NonNull private static final AdMessageKey MSG_TERM_NO_NEW_0P = AdMessageKey.of("FlatrateTerm_No_New_Term");
 
-	private static final AdMessageKey MSG_ORG_WAREHOUSE_MISSING = AdMessageKey.of("de.metas.flatrate.Org.Warehouse_Missing");
+	@NonNull private static final AdMessageKey MSG_ORG_WAREHOUSE_MISSING = AdMessageKey.of("de.metas.flatrate.Org.Warehouse_Missing");
 
 	/**
 	 * Message for announcing the user that there are overlapping terms for the term they want to complete
 	 */
-	public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm");
+	@NonNull public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm");
 
-	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
+	@NonNull public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
 
-	public final static String MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS = "@MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS@";
+	@NonNull public final static String MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS = "@MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS@";
 
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
-	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
-	private final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
+	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+    @NonNull private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
+    @NonNull private final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
-	public static final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository = SpringContextHolder.instance.getBean(ModularContractSettingsRepository.class);
+	@NonNull private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
+
+	@NonNull private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public I_C_Flatrate_Conditions getConditionsById(final ConditionsId flatrateConditionsId)
@@ -2471,8 +2479,7 @@ public class FlatrateBL implements IFlatrateBL
 		final ModularContractLogEntriesList receiptLogs = logs.subsetOf(LogEntryDocumentType.MATERIAL_RECEIPT);
 		final ModularContractLogEntriesList shipmentLogs = logs.subsetOf(LogEntryDocumentType.SHIPMENT);
 		final ModularContractLogEntriesList inventory = logs.subsetOf(LogEntryDocumentType.INVENTORY);
-		final ProductPrice productPrice = logs.getUniqueProductPriceOrErrorNotNull();
-		final UomId uomId = productPrice.getUomId();
+		final UomId uomId = productBL.getStockUOMId(logs.getSingleProductId());
 		final Quantity sourceQty = productionLogs.isEmpty() ? receiptLogs.getQtySum(uomId, uomConversionBL) : productionLogs.getQtySum(uomId, uomConversionBL);
 		final Quantity shippedQty = shipmentLogs.getQtySum(uomId, uomConversionBL);
 		final Quantity inventoryQty = inventory.getQtySum(uomId, uomConversionBL);
@@ -2645,12 +2652,21 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@NonNull
+	@Override
 	public Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull final OrderLineId orderLineId, @NonNull final TypeConditions typeConditions)
 	{
 		return flatrateDAO.getByOrderLineId(orderLineId, typeConditions);
 	}
 
 	@Nullable
+	@Override
+	public ProductPrice extractPriceActualById(@NonNull final FlatrateTermId flatrateTermId)
+	{
+	   return extractPriceActual(getById(flatrateTermId));
+	}
+
+	@Nullable
+	@Override
 	public ProductPrice extractPriceActual(@NonNull final I_C_Flatrate_Term contract)
 	{
 		final BigDecimal priceActual = contract.getPriceActual();
@@ -2674,6 +2690,7 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@NonNull
+	@Override
 	public Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull final ModularContractSettingsId modularContractSettingsId)
 	{
 		return flatrateDAO.streamCompletedConditionsBy(modularContractSettingsId);
@@ -2689,5 +2706,14 @@ public class FlatrateBL implements IFlatrateBL
 	public void reverseDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
 	{
 		flatrateDAO.reverseDefinitiveInvoice(contractIds);
+	}
+
+	@Override
+	public Optional<FlatrateTermId> getIdByInvoiceId(@NonNull final InvoiceId invoiceId)
+	{
+		return Optional.of(CollectionUtils.extractSingleElement(
+				invoiceBL.getLines(invoiceId).stream().map(org.compiere.model.I_C_InvoiceLine::getC_Flatrate_Term_ID).toList(),
+				FlatrateTermId::ofRepoIdOrNull
+				));
 	}
 }

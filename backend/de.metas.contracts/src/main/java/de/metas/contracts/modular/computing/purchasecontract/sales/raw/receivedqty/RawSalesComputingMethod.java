@@ -20,22 +20,22 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.sales.raw;
+package de.metas.contracts.modular.computing.purchasecontract.sales.raw.receivedqty;
 
-import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
+import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.ComputingMethodService;
+import de.metas.contracts.modular.computing.purchasecontract.AbstractReceiptComputingMethod;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RawSalesMaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
+public class RawSalesComputingMethod extends AbstractReceiptComputingMethod
 {
-	public RawSalesMaterialReceiptLineLog(
-			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final RawSalesComputingMethod computingMethod,
-			@NonNull final ModularContractService modularContractService)
+	public RawSalesComputingMethod(
+			@NonNull final ModularContractProvider contractProvider,
+			@NonNull final ComputingMethodService computingMethodService)
 	{
-		super(modCntrInvoicingGroupRepository, modularContractService, computingMethod);
+		super(contractProvider, computingMethodService, ComputingMethodType.SalesOnRawProduct);
 	}
 }

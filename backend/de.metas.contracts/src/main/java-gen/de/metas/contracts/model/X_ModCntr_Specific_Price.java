@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Specific_Price extends org.compiere.model.PO implements I_ModCntr_Specific_Price, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1022211860L;
+	private static final long serialVersionUID = 246491158L;
 
     /** Standard Constructor */
     public X_ModCntr_Specific_Price (final Properties ctx, final int ModCntr_Specific_Price_ID, @Nullable final String trxName)
@@ -105,6 +105,18 @@ public class X_ModCntr_Specific_Price extends org.compiere.model.PO implements I
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setIsAveragePrice (final boolean IsAveragePrice)
+	{
+		set_Value (COLUMNNAME_IsAveragePrice, IsAveragePrice);
+	}
+
+	@Override
+	public boolean isAveragePrice() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAveragePrice);
 	}
 
 	@Override

@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.settings;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
@@ -45,24 +46,32 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class ModularContractSettingsService
 {
-	public static final String AD_ELEMENT_DEFINITIVE_INVOICE = "DefinitiveInvoice";
+	@NonNull private static final AdMessageKey ERROR_MSG_NO_FLATRATE_TERM_CONDITIONS = AdMessageKey.of("de.metas.contracts.modular.settings.missingFlatrateTermCondition");
+	@NonNull private static final AdMessageKey MSG_ERROR_MODULARCONTRACTSETTINGS_ALREADY_USED = AdMessageKey.of("MSG_ModularContractSettings_AlreadyUsed");
+	@NonNull private static final String AD_ELEMENT_DEFINITIVE_INVOICE = "DefinitiveInvoice";
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private ModularContractSettingsRepository modularContractSettingsRepository;
 
-	private static final AdMessageKey ERROR_MSG_NO_FLATRATE_TERM_CONDITIONS = AdMessageKey.of("de.metas.contracts.modular.settings.missingFlatrateTermCondition");
-	public static final AdMessageKey MSG_ERROR_MODULARCONTRACTSETTINGS_ALREADY_USED = AdMessageKey.of("MSG_ModularContractSettings_AlreadyUsed");
+	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
+
+	public static ModularContractSettingsService newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ModularContractSettingsService(new ModularContractSettingsRepository());
+	}
 
 	public ConditionsId retrieveFlatrateConditionId(
 			@NonNull final ModularContractSettings modularContractSettings,
@@ -225,9 +234,27 @@ public class ModularContractSettingsService
 
 	public void updateModule(@NonNull final ModuleConfig moduleConfig, @Nullable final ModularContractTypeId modularContractTypeId, @NonNull final ProductId productId)
 	{
-		modularContractSettingsRepository.updateModule(moduleConfig.getId().getModularContractModuleId(), ModularContractModuleUpdateRequest.builder()
+		modularContractSettingsRepository.updateModule(moduleConfig.getModularContractModuleId(), ModularContractModuleUpdateRequest.builder()
 				.modularContractTypeId(modularContractTypeId)
 				.productId(productId)
 				.build());
+	}
+
+	@Nullable
+	public ModularContractSettings getByFlatrateTermIdOrNull(@NonNull final FlatrateTermId contractId)
+	{
+		return modularContractSettingsRepository.getByFlatrateTermIdOrNull(contractId);
+	}
+
+	@NonNull
+	public ImmutableMap<FlatrateTermId, ModularContractSettings> getOrLoadBy(@NonNull final Set<FlatrateTermId> termIds)
+	{
+		return modularContractSettingsRepository.getOrLoadBy(termIds);
+	}
+
+	@NonNull
+	public ModuleConfig getByModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
+	{
+		return modularContractSettingsRepository.getByModuleId(modularContractModuleId);
 	}
 }

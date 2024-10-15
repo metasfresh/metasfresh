@@ -169,6 +169,12 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public void save(@NonNull final I_M_InOutLine inoutLine)
+	{
+		inOutDAO.save(inoutLine);
+	}
+
+	@Override
 	public List<I_M_InOutLine> getLines(@NonNull final I_M_InOut inout)
 	{
 		return inOutDAO.retrieveLines(inout);
@@ -636,6 +642,12 @@ public class InOutBL implements IInOutBL
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
 
 		return orderLine.getC_Order();
+	}
+
+	@Override
+	public Optional<OrderId> getOrderIdForLineId(@NonNull final InOutLineId inoutLineId)
+	{
+		return inOutDAO.getOrderIdForLineId(inoutLineId);
 	}
 
 	private RequestTypeId getRequestTypeId(final SOTrx soTrx)

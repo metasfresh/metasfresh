@@ -57,8 +57,7 @@ import java.util.Optional;
 
 import static de.metas.contracts.modular.ComputingMethodType.AddValueOnProcessedProduct;
 import static de.metas.contracts.modular.ComputingMethodType.AddValueOnRawProduct;
-import static de.metas.contracts.modular.ComputingMethodType.SalesOnProcessedProduct;
-import static de.metas.contracts.modular.ComputingMethodType.SalesOnRawProduct;
+import static de.metas.contracts.modular.ComputingMethodType.PURCHASE_SALES_METHODS;
 import static de.metas.contracts.modular.ComputingMethodType.SubtractValueOnRawProduct;
 
 @Component
@@ -71,7 +70,7 @@ public class ModCntr_Module
 	private static final AdMessageKey ERROR_ComputingMethodRequiresRawProduct = AdMessageKey.of("ComputingMethodTypeRequiresRawProduct");
 	private static final AdMessageKey ERROR_ComputingMethodRequiresProcessedProduct = AdMessageKey.of("ComputingMethodTypeRequiresProcessedProduct");
 	private static final AdMessageKey ERROR_ComputingMethodRequiresCoProduct = AdMessageKey.of("ComputingMethodTypeRequiresCoProduct");
-	private static final AdMessageKey ERROR_SALES_RAW_AND_PROCESSED_PRODUCT_BOTH_SET = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnRawProductAndSalesOnProcessedProductError");
+	private static final AdMessageKey ERROR_MORE_THAN_ONE_SALES_COMPUTING_METHOD_SET = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnRawProductAndSalesOnProcessedProductError");
 	private static final AdMessageKey ERROR_SALES_RAW_PRODUCT_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnRawProductRequiredInvoicingGroup");
 	private static final AdMessageKey ERROR_SALES_PROCESSED_PRODUCT_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnProcessedProductRequiredInvoicingGroup");
 	private static final AdMessageKey ERROR_PRODUCT_NEEDS_SAME_STOCK_UOM_AS_RAW = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SettingLineProductNeedsSameStockUOMAsRaw");
@@ -141,10 +140,9 @@ public class ModCntr_Module
 					.setParameter("ComputingMethodType", type.getName());
 		}
 
-		final boolean bothSalesOnRawProductAndProcessedProductSet = settings.countMatchingAnyOf(SalesOnRawProduct, SalesOnProcessedProduct) > 1;
-		if (bothSalesOnRawProductAndProcessedProductSet)
+		if (settings.countMatchingAnyOf(PURCHASE_SALES_METHODS) > 1)
 		{
-			throw new AdempiereException(ERROR_SALES_RAW_AND_PROCESSED_PRODUCT_BOTH_SET);
+			throw new AdempiereException(ERROR_MORE_THAN_ONE_SALES_COMPUTING_METHOD_SET);
 		}
 
 		switch (computingMethodType)
@@ -164,7 +162,7 @@ public class ModCntr_Module
 				}
 			}
 
-			case SalesOnRawProduct ->
+			case SalesOnRawProduct, SalesOnRawProductShippedQty ->
 			{
 				if (!module.getInvoicingGroup().isServicesType())
 				{
@@ -179,7 +177,7 @@ public class ModCntr_Module
 						.ifPresent(definitiveInvoiceMethodType -> updateDefinitiveModuleName(definitiveInvoiceMethodType, module.getName()));
 			}
 
-			case SalesOnProcessedProduct ->
+			case SalesOnProcessedProduct, SalesOnProcessedProductShippedQty ->
 			{
 				if (!module.getInvoicingGroup().isServicesType())
 				{
@@ -217,7 +215,7 @@ public class ModCntr_Module
 
 	private void updateDefinitiveModuleName(@NonNull final ModuleConfig moduleConfig, @NonNull final String productName)
 	{
-		modularContractSettingsRepository.updateModule(moduleConfig.getId().getModularContractModuleId(), ModularContractModuleUpdateRequest.builder()
+		modularContractSettingsRepository.updateModule(moduleConfig.getModularContractModuleId(), ModularContractModuleUpdateRequest.builder()
 				.moduleName(productName)
 				.build());
 	}
