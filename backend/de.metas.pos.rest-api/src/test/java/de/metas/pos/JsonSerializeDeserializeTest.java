@@ -115,10 +115,12 @@ class JsonSerializeDeserializeTest
 										.amount(new BigDecimal("123.45"))
 										.details(ImmutableList.of(
 												JsonPaymentDetail.builder()
+														.type(JsonCashJournalSummary.JsonPaymentDetailType.OPENING_BALANCE)
 														.description("desc 1")
 														.amount(new BigDecimal("23.41"))
 														.build(),
 												JsonPaymentDetail.builder()
+														.type(JsonCashJournalSummary.JsonPaymentDetailType.CASH_PAYMENTS)
 														.description("desc 2")
 														.amount(new BigDecimal("100.04"))
 														.build()
