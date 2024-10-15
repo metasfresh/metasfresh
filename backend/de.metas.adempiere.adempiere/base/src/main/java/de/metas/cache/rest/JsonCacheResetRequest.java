@@ -22,7 +22,6 @@
 
 package de.metas.cache.rest;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import de.metas.util.StringUtils;
@@ -36,7 +35,6 @@ import java.util.HashMap;
 public class JsonCacheResetRequest
 {
 	@JsonAnySetter
-	@JsonAnyGetter
 	@NonNull private final HashMap<String, String> map = new HashMap<>();
 
 	public static JsonCacheResetRequest extractFrom(HttpServletRequest httpRequest)
