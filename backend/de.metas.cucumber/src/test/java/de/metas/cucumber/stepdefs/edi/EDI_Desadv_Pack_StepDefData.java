@@ -22,13 +22,35 @@
 
 package de.metas.cucumber.stepdefs.edi;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
+import lombok.NonNull;
 
 public class EDI_Desadv_Pack_StepDefData extends StepDefData<I_EDI_Desadv_Pack>
+		implements StepDefDataGetIdAware<EDIDesadvPackId, I_EDI_Desadv_Pack>
 {
 	public EDI_Desadv_Pack_StepDefData()
 	{
 		super(I_EDI_Desadv_Pack.class);
 	}
+
+	@Override
+	public EDIDesadvPackId extractIdFromRecord(final I_EDI_Desadv_Pack record)
+	{
+		return EDIDesadvPackId.ofRepoId(record.getEDI_Desadv_Pack_ID());
+	}
+
+	@NonNull
+	public ImmutableList<EDIDesadvPackId> getIds(@NonNull final String commaSeparatedIdentifiers)
+	{
+		return StepDefDataIdentifier.ofCommaSeparatedString(commaSeparatedIdentifiers)
+				.stream()
+				.map(this::getId)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 }

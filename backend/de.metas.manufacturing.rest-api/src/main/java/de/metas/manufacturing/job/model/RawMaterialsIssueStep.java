@@ -24,6 +24,7 @@ public class RawMaterialsIssueStep
 
 	@NonNull ProductId productId;
 	@NonNull ITranslatableString productName;
+	@With
 	@NonNull Quantity qtyToIssue;
 
 	//

@@ -21,7 +21,6 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.material.planning.IResourceProductService;
-import org.eevolution.api.PPOrderBOMLineId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -37,6 +36,7 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
@@ -110,6 +110,19 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 	@Override
 	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
+	{
+		final CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
+		if (existingCostDetail != null)
+		{
+			return Optional.of(utils.toCostDetailCreateResult(existingCostDetail));
+		}
+		else
+		{
+			return createCost(request);
+		}
+	}
+
+	private Optional<CostDetailCreateResult> createCost(final CostDetailCreateRequest request)
 	{
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId(PPCostCollectorId::ofRepoId);
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);

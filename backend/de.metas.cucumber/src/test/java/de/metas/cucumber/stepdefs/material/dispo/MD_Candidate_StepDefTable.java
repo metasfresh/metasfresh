@@ -24,36 +24,36 @@ package de.metas.cucumber.stepdefs.material.dispo;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
-import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.DateAndSeqNo;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.query.SimulatedQueryQualifier;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
+import de.metas.util.GuavaCollectors;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
-import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.function.ThrowingConsumer;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.Instant;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
-@Builder
 @Value
 public class MD_Candidate_StepDefTable
 {
-	@NonNull @Getter(AccessLevel.NONE) @Singular ImmutableMap<StepDefDataIdentifier, MaterialDispoTableRow> rows;
+	@NonNull @Getter(AccessLevel.NONE) ImmutableMap<StepDefDataIdentifier, MaterialDispoTableRow> rows;
+
+	private MD_Candidate_StepDefTable(@NonNull final List<MaterialDispoTableRow> rows)
+	{
+		this.rows = Maps.uniqueIndex(rows, MaterialDispoTableRow::getIdentifier);
+	}
+
+	public static Collector<MaterialDispoTableRow, ?, MD_Candidate_StepDefTable> collect()
+	{
+		return GuavaCollectors.collectUsingListAccumulator(MD_Candidate_StepDefTable::new);
+	}
 
 	public int size() {return rows.size();}
 
@@ -79,59 +79,6 @@ public class MD_Candidate_StepDefTable
 
 				consumer.accept(row);
 			});
-		}
-	}
-
-	@Value
-	@Builder
-	public static class MaterialDispoTableRow
-	{
-		@NonNull
-		StepDefDataIdentifier identifier;
-
-		@NonNull
-		CandidateType type;
-
-		@Nullable
-		CandidateBusinessCase businessCase;
-
-		@NonNull
-		ProductId productId;
-
-		@NonNull
-		BigDecimal qty;
-
-		@NonNull
-		BigDecimal atp;
-
-		@NonNull
-		Instant time;
-
-		@Nullable
-		StepDefDataIdentifier attributeSetInstanceId;
-
-		boolean simulated;
-
-		@Nullable
-		WarehouseId warehouseId;
-
-		public CandidatesQuery createQuery()
-		{
-			final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
-					.productId(productId.getRepoId())
-					.storageAttributesKey(AttributesKey.ALL) // don't restrict on ASI for now; we might use the row's attributeSetInstanceId in this query at a later time
-					.timeRangeEnd(DateAndSeqNo.builder()
-							.date(time)
-							.operator(DateAndSeqNo.Operator.INCLUSIVE)
-							.build())
-					.build();
-
-			return CandidatesQuery.builder()
-					.type(type)
-					.businessCase(businessCase)
-					.materialDescriptorQuery(materialDescriptorQuery)
-					.simulatedQueryQualifier(this.simulated ? SimulatedQueryQualifier.ONLY_SIMULATED : SimulatedQueryQualifier.EXCLUDE_SIMULATED)
-					.build();
 		}
 	}
 }

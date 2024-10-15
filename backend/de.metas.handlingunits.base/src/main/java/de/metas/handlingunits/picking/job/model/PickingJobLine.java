@@ -87,6 +87,7 @@ public class PickingJobLine
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final UomId catchUomId,
 			@NonNull final ImmutableList<PickingJobStep> steps,
+			@NonNull final PickingUnit pickingUnit,
 			final boolean isManuallyClosed)
 	{
 		this.id = id;
@@ -101,7 +102,7 @@ public class PickingJobLine
 		this.steps = steps;
 		this.isManuallyClosed = isManuallyClosed;
 
-		this.pickingUnit = computePickingUnit(this.catchUomId, this.packingInfo);
+		this.pickingUnit = pickingUnit;
 
 		this.qtyPicked = steps.stream().map(PickingJobStep::getQtyPicked).reduce(Quantity::add).orElseGet(qtyToPick::toZero);
 		this.qtyRejected = steps.stream().map(PickingJobStep::getQtyRejected).reduce(Quantity::add).orElseGet(qtyToPick::toZero);
@@ -127,18 +128,7 @@ public class PickingJobLine
 		this.progress = computeProgress(this.steps, this.isManuallyClosed);
 	}
 
-	private static PickingUnit computePickingUnit(@Nullable final UomId catchUomId, @NonNull final HUPIItemProduct packingInfo)
-	{
-		// If catch weight, always pick at CU level because user has to weight the products
-		if (catchUomId != null)
-		{
-			return PickingUnit.CU;
-		}
-
-		return packingInfo.isFiniteTU() ? PickingUnit.TU : PickingUnit.CU;
-	}
-
-	private static PickingJobProgress computeProgress(@NonNull ImmutableList<PickingJobStep> steps, final boolean isManuallyClosed)
+	private static PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobStep> steps, final boolean isManuallyClosed)
 	{
 		if (isManuallyClosed)
 		{

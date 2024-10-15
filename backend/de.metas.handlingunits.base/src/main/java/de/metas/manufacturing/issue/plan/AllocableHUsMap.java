@@ -93,7 +93,7 @@ class AllocableHUsMap
 					.sorted(PickFromHUsSupplier.getAllocationOrder(bestBeforePolicy))
 					.collect(ImmutableList.toImmutableList());
 		}
-		else
+		else if (!key.isSourceHUsOnly())
 		{
 			husEligibleToPick = pickFromHUsSupplier.getEligiblePickFromHUs(
 					PickFromHUsGetRequest.builder()
@@ -104,6 +104,10 @@ class AllocableHUsMap
 							.reservationRef(Optional.empty()) // TODO introduce some PP Order reservation
 							.enforceMandatoryAttributesOnPicking(false)
 							.build());
+		}
+		else
+		{
+			husEligibleToPick = ImmutableList.of();
 		}
 
 		final ImmutableList<AllocableHU> hus = CollectionUtils.map(husEligibleToPick, hu -> toAllocableHU(hu.getTopLevelHUId(), productId));

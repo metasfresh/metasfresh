@@ -23,14 +23,16 @@
 package de.metas.picking.rest_api;
 
 import de.metas.Profiles;
-import de.metas.handlingunits.picking.job.model.PickingTarget;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingJobAvailableTargets;
 import de.metas.picking.rest_api.json.JsonPickingLineCloseRequest;
 import de.metas.picking.rest_api.json.JsonPickingLineOpenRequest;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
-import de.metas.picking.rest_api.json.JsonPickingTarget;
+import de.metas.picking.rest_api.json.JsonTUPickingTarget;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.WorkflowRestController;
@@ -49,7 +51,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/picking")
 @RestController
@@ -72,19 +73,29 @@ public class PickingRestController
 		assertApplicationAccess();
 
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
-		final List<PickingTarget> targets = pickingMobileApplication.getAvailableTargets(wfProcessId, Env.getLoggedUserId());
-		return JsonPickingJobAvailableTargets.of(targets);
+		return pickingMobileApplication.getAvailableTargets(wfProcessId, Env.getLoggedUserId());
 	}
 
 	@PostMapping("/job/{wfProcessId}/target")
 	public JsonWFProcess setTarget(
 			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
-			@RequestBody(required = false) @Nullable final JsonPickingTarget jsonTarget)
+			@RequestBody(required = false) @Nullable final JsonLUPickingTarget jsonTarget)
+	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final LUPickingTarget target = jsonTarget != null ? jsonTarget.unbox() : null;
+		final WFProcess wfProcess = pickingMobileApplication.setPickTarget(wfProcessId, target, Env.getLoggedUserId());
+		return workflowRestController.toJson(wfProcess);
+	}
+
+	@PostMapping("/job/{wfProcessId}/target/tu")
+	public JsonWFProcess setTUTarget(
+			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
+			@RequestBody(required = false) @Nullable final JsonTUPickingTarget jsonTarget)
 	{
 		assertApplicationAccess();
 
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
-		final PickingTarget target = jsonTarget != null ? jsonTarget.unbox() : null;
+		final TUPickingTarget target = jsonTarget != null ? jsonTarget.unbox() : null;
 		final WFProcess wfProcess = pickingMobileApplication.setPickTarget(wfProcessId, target, Env.getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
 	}
@@ -96,7 +107,16 @@ public class PickingRestController
 		assertApplicationAccess();
 
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
-		final WFProcess wfProcess = pickingMobileApplication.closePickTarget(wfProcessId, Env.getLoggedUserId());
+		final WFProcess wfProcess = pickingMobileApplication.closeLUPickTarget(wfProcessId, Env.getLoggedUserId());
+		return workflowRestController.toJson(wfProcess);
+	}
+
+	@PostMapping("/job/{wfProcessId}/target/tu/close")
+	public JsonWFProcess closeTUTarget(
+			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr)
+	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final WFProcess wfProcess = pickingMobileApplication.closeTUPickTarget(wfProcessId, Env.getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
 	}
 

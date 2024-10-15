@@ -13,6 +13,8 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -33,6 +35,7 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -46,6 +49,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public I_C_BPartner getC_BPartner_Effective(@NonNull final I_C_OLCand olCand)
@@ -69,11 +73,13 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	@Override
 	public ZonedDateTime getDatePromised_Effective(@NonNull final I_C_OLCand olCand)
 	{
+		final ZoneId tz = orgDAO.getTimeZone(OrgId.ofRepoId(olCand.getAD_Org_ID()));
+
 		return CoalesceUtil.coalesceSuppliers(
-				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised_Override()),
-				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised()),
-				() -> TimeUtil.asZonedDateTime(olCand.getDateOrdered()),
-				() -> TimeUtil.asZonedDateTime(olCand.getDateCandidate()));
+				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised_Override(), tz),
+				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised(), tz),
+				() -> TimeUtil.asZonedDateTime(olCand.getDateOrdered(), tz),
+				() -> TimeUtil.asZonedDateTime(olCand.getDateCandidate(), tz));
 	}
 
 	@Override

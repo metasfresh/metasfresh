@@ -36,6 +36,7 @@ public final class UIComponentType
 {
 	private static final ConcurrentMap<String, UIComponentType> cache = new MapMaker().makeMap(); // IMPORTANT to have it before the constants
 	public static final UIComponentType SCAN_BARCODE = createAndCache("common/scanBarcode");
+	public static final UIComponentType SCAN_AND_VALIDATE_BARCODE = createAndCache("common/scanAndValidateBarcode");
 	public static final UIComponentType CONFIRM_BUTTON = createAndCache("common/confirmButton");
 
 	@JsonCreator

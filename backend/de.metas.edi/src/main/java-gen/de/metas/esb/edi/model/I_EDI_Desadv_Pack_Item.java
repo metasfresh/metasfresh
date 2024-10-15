@@ -1,8 +1,9 @@
 package de.metas.esb.edi.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for EDI_Desadv_Pack_Item
  *  @author metasfresh (generated) 
@@ -213,6 +214,27 @@ public interface I_EDI_Desadv_Pack_Item
 
 	ModelColumn<I_EDI_Desadv_Pack_Item, Object> COLUMN_IsActive = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setLine (int Line);
+
+	/**
+	 * Get SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getLine();
+
+	ModelColumn<I_EDI_Desadv_Pack_Item, Object> COLUMN_Line = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "Line", null);
+	String COLUMNNAME_Line = "Line";
 
 	/**
 	 * Set Lot number.

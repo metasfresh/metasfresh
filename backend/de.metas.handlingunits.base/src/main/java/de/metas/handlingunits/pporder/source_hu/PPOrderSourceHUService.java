@@ -106,6 +106,7 @@ public class PPOrderSourceHUService
 		return BooleanWithReason.TRUE;
 	}
 
+	@NonNull
 	public ImmutableSet<HuId> getSourceHUIds(@NonNull final PPOrderId ppOrderId)
 	{
 		return ppOrderSourceHURepository.getSourceHUIds(ppOrderId);

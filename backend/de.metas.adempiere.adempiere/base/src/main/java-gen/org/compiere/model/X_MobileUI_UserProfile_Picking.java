@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -393056167L;
+	private static final long serialVersionUID = 895391193L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -72,6 +72,30 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setIsAllowNewTU (final boolean IsAllowNewTU)
+	{
+		set_Value (COLUMNNAME_IsAllowNewTU, IsAllowNewTU);
+	}
+
+	@Override
+	public boolean isAllowNewTU()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowNewTU);
+	}
+
+	@Override
+	public void setIsAllowSkippingRejectedReason (final boolean IsAllowSkippingRejectedReason)
+	{
+		set_Value (COLUMNNAME_IsAllowSkippingRejectedReason, IsAllowSkippingRejectedReason);
+	}
+
+	@Override
+	public boolean isAllowSkippingRejectedReason()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowSkippingRejectedReason);
+	}
+
+	@Override
 	public void setIsAlwaysSplitHUsEnabled (final boolean IsAlwaysSplitHUsEnabled)
 	{
 		set_Value (COLUMNNAME_IsAlwaysSplitHUsEnabled, IsAlwaysSplitHUsEnabled);
@@ -81,6 +105,54 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isAlwaysSplitHUsEnabled() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAlwaysSplitHUsEnabled);
+	}
+
+	@Override
+	public void setIsCatchWeightTUPickingEnabled (final boolean IsCatchWeightTUPickingEnabled)
+	{
+		set_Value (COLUMNNAME_IsCatchWeightTUPickingEnabled, IsCatchWeightTUPickingEnabled);
+	}
+
+	@Override
+	public boolean isCatchWeightTUPickingEnabled()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCatchWeightTUPickingEnabled);
+	}
+
+	@Override
+	public void setIsConsiderSalesOrderCapacity (final boolean IsConsiderSalesOrderCapacity)
+	{
+		set_Value (COLUMNNAME_IsConsiderSalesOrderCapacity, IsConsiderSalesOrderCapacity);
+	}
+
+	@Override
+	public boolean isConsiderSalesOrderCapacity()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsConsiderSalesOrderCapacity);
+	}
+
+	@Override
+	public void setIsPickingWithNewLU (final boolean IsPickingWithNewLU)
+	{
+		set_Value (COLUMNNAME_IsPickingWithNewLU, IsPickingWithNewLU);
+	}
+
+	@Override
+	public boolean isPickingWithNewLU()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPickingWithNewLU);
+	}
+
+	@Override
+	public void setIsShowConfirmationPromptWhenOverPick (final boolean IsShowConfirmationPromptWhenOverPick)
+	{
+		set_Value (COLUMNNAME_IsShowConfirmationPromptWhenOverPick, IsShowConfirmationPromptWhenOverPick);
+	}
+
+	@Override
+	public boolean isShowConfirmationPromptWhenOverPick() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShowConfirmationPromptWhenOverPick);
 	}
 
 	@Override

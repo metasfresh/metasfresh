@@ -57,7 +57,9 @@ public class M_Locator_StepDef
 	@And("load M_Locator:")
 	public void loadLocators(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::loadLocator);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_Locator_ID)
+				.forEach(this::loadLocator);
 	}
 
 	private void loadLocator(final DataTableRow row)
@@ -73,7 +75,7 @@ public class M_Locator_StepDef
 				.create()
 				.firstNotNull(I_M_Locator.class);
 
-		row.getAsOptionalIdentifier(COLUMNNAME_M_Locator_ID)
+		row.getAsOptionalIdentifier()
 				.ifPresent(locatorIdentifier -> locatorTable.put(locatorIdentifier, locatorRecord));
 
 		row.getAsOptionalString("REST.Context.QRCode")
@@ -86,54 +88,56 @@ public class M_Locator_StepDef
 	@And("metasfresh contains M_Locator:")
 	public void create_M_Locator_Simple(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach((row) -> {
-			final String value = row.getAsString(I_M_Locator.COLUMNNAME_Value);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_Locator_ID)
+				.forEach((row) -> {
+					final String value = row.suggestValueAndName().getValue();
 
-			final StepDefDataIdentifier warehouseIdentifier = row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID);
-			final WarehouseId warehouseId = warehouseTable.getIdOptional(warehouseIdentifier)
-					.orElseGet(() -> warehouseIdentifier.getAsId(WarehouseId.class));
+					final StepDefDataIdentifier warehouseIdentifier = row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID);
+					final WarehouseId warehouseId = warehouseTable.getIdOptional(warehouseIdentifier)
+							.orElseGet(() -> warehouseIdentifier.getAsId(WarehouseId.class));
 
-			final I_M_Locator locatorRecord = CoalesceUtil.coalesceSuppliers(
-					() -> getExistingLocator(warehouseId, value),
-					() -> InterfaceWrapperHelper.newInstance(I_M_Locator.class));
-			assertThat(locatorRecord).isNotNull();
-			final boolean isNew = InterfaceWrapperHelper.isNew(locatorRecord);
+					final I_M_Locator locatorRecord = CoalesceUtil.coalesceSuppliers(
+							() -> getExistingLocator(warehouseId, value),
+							() -> InterfaceWrapperHelper.newInstance(I_M_Locator.class));
+					assertThat(locatorRecord).isNotNull();
+					final boolean isNew = InterfaceWrapperHelper.isNew(locatorRecord);
 
-			locatorRecord.setValue(value);
-			locatorRecord.setM_Warehouse_ID(warehouseId.getRepoId());
+					locatorRecord.setValue(value);
+					locatorRecord.setM_Warehouse_ID(warehouseId.getRepoId());
 
-			final OptionalBoolean isDefault = row.getAsOptionalBoolean(I_M_Locator.COLUMNNAME_IsDefault);
-			if (isNew || isDefault.isPresent())
-			{
-				locatorRecord.setIsDefault(isDefault.orElse(true));
-			}
+					final OptionalBoolean isDefault = row.getAsOptionalBoolean(I_M_Locator.COLUMNNAME_IsDefault);
+					if (isNew || isDefault.isPresent())
+					{
+						locatorRecord.setIsDefault(isDefault.orElse(true));
+					}
 
-			final OptionalInt priorityNo = row.getAsOptionalInt(I_M_Locator.COLUMNNAME_PriorityNo);
-			if (isNew || priorityNo.isPresent())
-			{
-				locatorRecord.setPriorityNo(priorityNo.orElse(50));
-			}
+					final OptionalInt priorityNo = row.getAsOptionalInt(I_M_Locator.COLUMNNAME_PriorityNo);
+					if (isNew || priorityNo.isPresent())
+					{
+						locatorRecord.setPriorityNo(priorityNo.orElse(50));
+					}
 
-			final Optional<String> x = row.getAsOptionalString(I_M_Locator.COLUMNNAME_X);
-			if (isNew || x.isPresent())
-			{
-				locatorRecord.setX(x.orElse("0"));
-			}
-			final Optional<String> y = row.getAsOptionalString(I_M_Locator.COLUMNNAME_X);
-			if (isNew || y.isPresent())
-			{
-				locatorRecord.setY(y.orElse("0"));
-			}
-			final Optional<String> z = row.getAsOptionalString(I_M_Locator.COLUMNNAME_Z);
-			if (isNew || z.isPresent())
-			{
-				locatorRecord.setZ(z.orElse("0"));
-			}
+					final Optional<String> x = row.getAsOptionalString(I_M_Locator.COLUMNNAME_X);
+					if (isNew || x.isPresent())
+					{
+						locatorRecord.setX(x.orElse("0"));
+					}
+					final Optional<String> y = row.getAsOptionalString(I_M_Locator.COLUMNNAME_X);
+					if (isNew || y.isPresent())
+					{
+						locatorRecord.setY(y.orElse("0"));
+					}
+					final Optional<String> z = row.getAsOptionalString(I_M_Locator.COLUMNNAME_Z);
+					if (isNew || z.isPresent())
+					{
+						locatorRecord.setZ(z.orElse("0"));
+					}
 
-			InterfaceWrapperHelper.saveRecord(locatorRecord);
+					InterfaceWrapperHelper.saveRecord(locatorRecord);
 
-			row.getAsIdentifier(COLUMNNAME_M_Locator_ID).put(locatorTable, locatorRecord);
-		});
+					row.getAsIdentifier().put(locatorTable, locatorRecord);
+				});
 	}
 
 	@Nullable

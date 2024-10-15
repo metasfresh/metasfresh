@@ -10,12 +10,14 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.product.IProductBL;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow.MainRowBuilder;
+import de.metas.ui.web.material.cockpit.QtyConvertorService;
 import de.metas.util.Services;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Warehouse;
 
 import java.util.LinkedHashMap;
@@ -60,6 +62,7 @@ public class MainRowWithSubRows
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final QtyConvertorService qtyConvertorService = SpringContextHolder.instance.getBean(QtyConvertorService.class);
 
 	public static MainRowWithSubRows create(@NonNull final MainRowBucketId productIdAndDate)
 	{
@@ -235,6 +238,7 @@ public class MainRowWithSubRows
 
 	public MaterialCockpitRow createMainRowWithSubRows()
 	{
+
 		final MainRowBuilder mainRowBuilder = MaterialCockpitRow.mainRowBuilder()
 				.productId(productIdAndDate.getProductId())
 				.date(productIdAndDate.getDate())
@@ -259,7 +263,8 @@ public class MainRowWithSubRows
 				.qtyStockEstimateSeqNo(mainRow.getQtyStockEstimateSeqNo())
 				.pmmQtyPromised(mainRow.getPmmQtyPromised())
 				.allIncludedCockpitRecordIds(mainRow.getCockpitRecordIds())
-				.allIncludedStockRecordIds(mainRow.getStockRecordIds());
+				.allIncludedStockRecordIds(mainRow.getStockRecordIds())
+				.qtyConvertor(qtyConvertorService.getQtyConvertorIfConfigured(productIdAndDate));
 
 		for (final CountingSubRowBucket subRowBucket : countingSubRows.values())
 		{
