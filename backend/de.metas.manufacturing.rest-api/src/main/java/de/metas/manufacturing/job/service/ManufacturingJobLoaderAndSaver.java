@@ -3,6 +3,7 @@ package de.metas.manufacturing.job.service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.device.accessor.DeviceId;
@@ -13,6 +14,7 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.manufacturing.job.model.FinishedGoodsReceive;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.HUInfo;
+import de.metas.manufacturing.job.model.IssueOnlyWhatWasReceivedConfig;
 import de.metas.manufacturing.job.model.LocatorInfo;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
@@ -21,19 +23,21 @@ import de.metas.manufacturing.job.model.RawMaterialsIssue;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ReceivingTarget;
+import de.metas.manufacturing.job.model.ValidateLocatorInfo;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.BOMIssueMethod;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
@@ -47,6 +51,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class ManufacturingJobLoaderAndSaver
@@ -63,6 +68,12 @@ public class ManufacturingJobLoaderAndSaver
 		this.supportingServices = supportingServices;
 	}
 
+	public ManufacturingJob load(@NonNull final I_PP_Order ppOrder)
+	{
+		addToCache(ppOrder);
+		return load(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()));
+	}
+
 	public ManufacturingJob load(final PPOrderId ppOrderId)
 	{
 		final I_PP_Order ppOrder = getPPOrderRecordById(ppOrderId);
@@ -73,7 +84,7 @@ public class ManufacturingJobLoaderAndSaver
 				.ppOrderId(ppOrderId)
 				.documentNo(ppOrder.getDocumentNo())
 				.customerId(BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID()))
-				.datePromised(InstantAndOrgId.ofTimestamp(ppOrder.getDatePromised(), ppOrder.getAD_Org_ID()).toZonedDateTime(supportingServices::getTimeZone))
+				.dateStartSchedule(InstantAndOrgId.ofTimestamp(ppOrder.getDateStartSchedule(), ppOrder.getAD_Org_ID()).toZonedDateTime(supportingServices::getTimeZone))
 				.responsibleId(extractResponsibleId(ppOrder))
 				.allowUserReporting(ppOrderDocStatus.isCompleted())
 				//
@@ -81,10 +92,11 @@ public class ManufacturingJobLoaderAndSaver
 				.currentScaleDeviceId(DeviceId.ofNullableString(ppOrder.getCurrentScaleDeviceId()))
 				//
 				.activities(routing.getActivities()
-						.stream()
-						.sorted(Comparator.comparing(activity -> activity.getCode().getAsString()))
-						.map(this::toJobActivity)
-						.collect(ImmutableList.toImmutableList()))
+									.stream()
+									.sorted(Comparator.comparing(activity -> activity.getCode().getAsString()))
+									.map(this::toJobActivity)
+									.filter(Objects::nonNull)
+									.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -121,11 +133,17 @@ public class ManufacturingJobLoaderAndSaver
 		return bomLines.computeIfAbsent(ppOrderId, supportingServices::getOrderBOMLines);
 	}
 
+	private boolean hasAnyLinesWithIssueMethod(@NonNull final PPOrderId ppOrderId, @NonNull final BOMIssueMethod method)
+	{
+		return getBOMLines(ppOrderId).stream().anyMatch(line -> method.getCode().equals(line.getIssueMethod()));
+	}
+
 	private ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> getIssueSchedules(final PPOrderId ppOrderId)
 	{
 		return issueSchedules.computeIfAbsent(ppOrderId, supportingServices::getIssueSchedules);
 	}
 
+	@Nullable
 	private ManufacturingJobActivity toJobActivity(@NonNull final PPOrderRoutingActivity from)
 	{
 		switch (from.getType())
@@ -138,10 +156,18 @@ public class ManufacturingJobLoaderAndSaver
 				return prepareJobActivity(from)
 						.finishedGoodsReceive(toFinishedGoodsReceive(from))
 						.build();
+			case ValidateLocator:
+				return toValidateLocatorInfoActivity(from)
+						.orElse(null);
+			case IssueOnlyWhatWasReceived:
+				return toIssueOnlyWhatWasReceivedActivity(from)
+						.orElse(null);
 			case WorkReport:
 			case ActivityConfirmation:
 			case GenerateHUQRCodes:
+			case PrintReceivedHUQRCodes:
 			case ScanScaleDevice:
+			case CallExternalSystem:
 			case RawMaterialsIssueAdjustment:
 				return prepareJobActivity(from)
 						.build();
@@ -159,17 +185,25 @@ public class ManufacturingJobLoaderAndSaver
 				.name(from.getName())
 				.type(from.getType())
 				.orderRoutingActivityId(from.getId())
-				.routingActivityStatus(from.getStatus());
+				.routingActivityStatus(from.getStatus())
+				.alwaysAvailableToUser(from.getAlwaysAvailableToUser())
+				.userInstructions(from.getUserInstructions())
+				.scannedQRCode(from.getScannedQRCode());
 	}
 
 	private RawMaterialsIssue toRawMaterialsIssue(final @NonNull PPOrderRoutingActivity from)
 	{
+		final PPOrderId ppOrderId = from.getOrderId();
+		final PPOrderRouting routing = getRouting(ppOrderId);
+		final ImmutableSet<ProductId> onlyProductIds = from.getId() != null ? routing.getProductIdsByActivityId(from.getId()) : ImmutableSet.of();
+
 		return RawMaterialsIssue.builder()
-				.lines(getBOMLines(from.getOrderId())
-						.stream()
-						.map(this::toRawMaterialsIssueLine)
-						.filter(Objects::nonNull)
-						.collect(ImmutableList.toImmutableList()))
+				.lines(getBOMLines(ppOrderId)
+							   .stream()
+							   .filter(bomLine -> onlyProductIds.isEmpty() || onlyProductIds.contains(ProductId.ofRepoId(bomLine.getM_Product_ID())))
+							   .map(this::toRawMaterialsIssueLine)
+							   .filter(Objects::nonNull)
+							   .collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -185,29 +219,24 @@ public class ManufacturingJobLoaderAndSaver
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(orderBOMLine.getPP_Order_ID());
 		final PPOrderBOMLineId ppOrderBOMLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		final OrderBOMLineQuantities bomLineQuantities = supportingServices.getQuantities(orderBOMLine);
+		final OrderBOMLineQuantities quantities = supportingServices.getQuantities(orderBOMLine);
+		final Quantity qtyToIssue = quantities.getQtyRequired();
+		final boolean isWeightable = !orderBOMLine.isManualQtyInput() && qtyToIssue.isWeightable();
 
 		return RawMaterialsIssueLine.builder()
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
-				.qtyToIssue(bomLineQuantities.getQtyRequired())
-				.qtyToIssueTolerance(extractQtyToIssueTolerance(orderBOMLine))
-				//.qtyIssued(bomLineQuantities.getQtyIssuedOrReceived())
+				.productValue(supportingServices.getProductValue(productId))
+				.isWeightable(isWeightable)
+				.qtyToIssue(qtyToIssue)
+				.issuingToleranceSpec(quantities.getIssuingToleranceSpec())
 				.steps(getIssueSchedules(ppOrderId)
-						.get(ppOrderBOMLineId)
-						.stream()
-						.sorted(Comparator.comparing(PPOrderIssueSchedule::getSeqNo))
-						.map(this::toRawMaterialsIssueStep)
-						.collect(ImmutableList.toImmutableList()))
+							   .get(ppOrderBOMLineId)
+							   .stream()
+							   .sorted(Comparator.comparing(PPOrderIssueSchedule::getSeqNo))
+							   .map(this::toRawMaterialsIssueStep)
+							   .collect(ImmutableList.toImmutableList()))
 				.build();
-	}
-
-	@Nullable
-	private static Percent extractQtyToIssueTolerance(final I_PP_Order_BOMLine orderBOMLine)
-	{
-		return orderBOMLine.isEnforceTolerance()
-				? Percent.of(orderBOMLine.getTolerance_Perc())
-				: null;
 	}
 
 	private RawMaterialsIssueStep toRawMaterialsIssueStep(final PPOrderIssueSchedule schedule)
@@ -219,15 +248,21 @@ public class ManufacturingJobLoaderAndSaver
 				.productName(supportingServices.getProductName(schedule.getProductId()))
 				.qtyToIssue(schedule.getQtyToIssue())
 				.issueFromLocator(LocatorInfo.builder()
-						.id(schedule.getIssueFromLocatorId())
-						.caption(supportingServices.getLocatorName(schedule.getIssueFromLocatorId()))
-						.build())
+										  .id(schedule.getIssueFromLocatorId())
+										  .caption(supportingServices.getLocatorName(schedule.getIssueFromLocatorId()))
+										  .build())
 				.issueFromHU(HUInfo.builder()
-						.id(schedule.getIssueFromHUId())
-						.barcode(supportingServices.getQRCodeByHuId(schedule.getIssueFromHUId()))
-						.build())
+									 .id(schedule.getIssueFromHUId())
+									 .barcode(supportingServices.getQRCodeByHuId(schedule.getIssueFromHUId()))
+									 .huCapacity(getHUCapacity(schedule))
+									 .build())
 				.issued(schedule.getIssued())
 				.build();
+	}
+
+	private Quantity getHUCapacity(@NonNull final PPOrderIssueSchedule schedule)
+	{
+		return supportingServices.getHUCapacity(schedule.getIssueFromHUId(), schedule.getProductId(), schedule.getQtyToIssue().getUOM());
 	}
 
 	private FinishedGoodsReceive toFinishedGoodsReceive(final @NonNull PPOrderRoutingActivity from)
@@ -241,7 +276,7 @@ public class ManufacturingJobLoaderAndSaver
 
 		return FinishedGoodsReceive.builder()
 				.linesById(Stream.concat(Stream.of(finishedGood), coProducts)
-						.collect(ImmutableMap.toImmutableMap(FinishedGoodsReceiveLine::getId, line -> line)))
+								   .collect(ImmutableMap.toImmutableMap(FinishedGoodsReceiveLine::getId, line -> line)))
 				.build();
 	}
 
@@ -255,6 +290,7 @@ public class ManufacturingJobLoaderAndSaver
 		return FinishedGoodsReceiveLine.builder()
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
+				.productValue(supportingServices.getProductValue(productId))
 				.attributes(supportingServices.getImmutableAttributeSet(AttributeSetInstanceId.ofRepoId(ppOrder.getM_AttributeSetInstance_ID())))
 				.qtyToReceive(orderQuantities.getQtyRequiredToProduce())
 				.qtyReceived(orderQuantities.getQtyReceived())
@@ -305,6 +341,7 @@ public class ManufacturingJobLoaderAndSaver
 		return FinishedGoodsReceiveLine.builder()
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
+				.productValue(supportingServices.getProductValue(productId))
 				.attributes(supportingServices.getImmutableAttributeSet(AttributeSetInstanceId.ofRepoId(orderBOMLine.getM_AttributeSetInstance_ID())))
 				.qtyToReceive(bomLineQuantities.getQtyRequired().negate())
 				.qtyReceived(bomLineQuantities.getQtyIssuedOrReceived().negate())
@@ -367,5 +404,26 @@ public class ManufacturingJobLoaderAndSaver
 		final I_PP_Order ppOrder = getPPOrderRecordById(job.getPpOrderId());
 		ppOrder.setCurrentScaleDeviceId(job.getCurrentScaleDeviceId() != null ? job.getCurrentScaleDeviceId().getAsString() : null);
 		InterfaceWrapperHelper.saveRecord(ppOrder);
+	}
+
+	@NonNull
+	private Optional<ManufacturingJobActivity> toValidateLocatorInfoActivity(final @NonNull PPOrderRoutingActivity from)
+	{
+		return Optional.of(supportingServices.getValidateSourceLocatorInfo(from.getOrderId()))
+				.filter(ValidateLocatorInfo::hasAnySourceLocators)
+				.map(sourceLocatorInfo -> prepareJobActivity(from).sourceLocatorValidate(sourceLocatorInfo).build());
+	}
+
+	@NonNull
+	private Optional<ManufacturingJobActivity> toIssueOnlyWhatWasReceivedActivity(final @NonNull PPOrderRoutingActivity from)
+	{
+		if (!hasAnyLinesWithIssueMethod(from.getOrderId(), BOMIssueMethod.Planning))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(prepareJobActivity(from)
+								   .issueOnlyWhatWasReceivedConfig(IssueOnlyWhatWasReceivedConfig.ofIssueStrategy(from.getRawMaterialsIssueStrategy()))
+								   .build());
 	}
 }

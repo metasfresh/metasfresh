@@ -38,24 +38,30 @@ import java.util.List;
 public class PPOrderCandidate
 {
 	int ppOrderCandidateId;
-
 	boolean simulated;
 
+	/**
+	 * USed if this candidate is about a sub-BOM
+	 */
+	@With
+	int parentPPOrderCandidateId;
+	
 	@With
 	PPOrderData ppOrderData;
-
 	List<PPOrderLineCandidate> lines;
-
+	
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrderCandidate(
 			@JsonProperty("ppOrderCandidateId") final int ppOrderCandidateId,
 			@JsonProperty("simulated") final boolean simulated,
+			@JsonProperty("parentPPOrderCandidateId") final int parentPPOrderCandidateId,
 			@JsonProperty("ppOrderData") @NonNull final PPOrderData ppOrderData,
 			@JsonProperty("lines") @Nullable final List<PPOrderLineCandidate> lines)
 	{
 		this.ppOrderCandidateId = ppOrderCandidateId;
 		this.simulated = simulated;
+		this.parentPPOrderCandidateId = parentPPOrderCandidateId;
 		this.ppOrderData = ppOrderData;
 		this.lines = lines;
 	}

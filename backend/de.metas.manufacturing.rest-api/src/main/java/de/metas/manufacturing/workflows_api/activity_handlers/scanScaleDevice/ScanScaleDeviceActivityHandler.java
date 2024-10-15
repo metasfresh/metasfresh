@@ -6,6 +6,7 @@ import de.metas.device.accessor.qrcode.DeviceQRCode;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
+import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupport;
@@ -46,25 +47,25 @@ public class ScanScaleDeviceActivityHandler implements WFActivityHandler, SetSca
 			final @NonNull JsonOpts jsonOpts)
 	{
 		return SetScannedBarcodeSupportHelper.uiComponent()
+				.alwaysAvailableToUser(wfActivity.getAlwaysAvailableToUser())
 				.currentValue(getCurrentScaleDevice(wfProcess)
 						.map(scaleDevice -> toJsonQRCode(scaleDevice, jsonOpts.getAdLanguage()))
 						.orElse(null))
 				.validOptions(streamAvailableScaleDevices(wfProcess)
 						.map(scaleDevice1 -> toJsonQRCode(scaleDevice1, jsonOpts.getAdLanguage()))
 						.collect(ImmutableList.toImmutableList()))
-				.isAlwaysAvailableToUser(true)
 				.build();
 	}
 
 	private Optional<ScaleDevice> getCurrentScaleDevice(final @NonNull WFProcess wfProcess)
 	{
-		final ManufacturingJob job = wfProcess.getDocumentAs(ManufacturingJob.class);
+		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(wfProcess);
 		return manufacturingJobService.getCurrentScaleDevice(job);
 	}
 
 	private Stream<ScaleDevice> streamAvailableScaleDevices(final @NonNull WFProcess wfProcess)
 	{
-		final ManufacturingJob job = wfProcess.getDocumentAs(ManufacturingJob.class);
+		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(wfProcess);
 		return manufacturingJobService.streamAvailableScaleDevices(job);
 	}
 
@@ -93,7 +94,9 @@ public class ScanScaleDeviceActivityHandler implements WFActivityHandler, SetSca
 	public WFProcess setScannedBarcode(final SetScannedBarcodeRequest request)
 	{
 		final DeviceId newScaleDeviceId = DeviceQRCode.ofGlobalQRCodeJsonString(request.getScannedBarcode()).getDeviceId();
-		final WFProcess wfProcess = request.getWfProcess();
-		return wfProcess.<ManufacturingJob>mapDocument(job -> manufacturingJobService.withCurrentScaleDevice(job, newScaleDeviceId));
+		return ManufacturingMobileApplication.mapDocument(
+				request.getWfProcess(),
+				job -> manufacturingJobService.withCurrentScaleDevice(job, newScaleDeviceId)
+		);
 	}
 }

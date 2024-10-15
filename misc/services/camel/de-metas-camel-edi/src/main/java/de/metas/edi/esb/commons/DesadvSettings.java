@@ -22,13 +22,16 @@
 
 package de.metas.edi.esb.commons;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.camel.CamelContext;
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.apache.camel.CamelContext;
+
+import java.util.Arrays;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -36,11 +39,20 @@ public class DesadvSettings
 {
 	private static final String ANY_MEASUREMENTUNIT = "<ANY>";
 
+	/**
+	 * @param recipientGLN if null, we assume {@link ClearingCenter#ecosio}.
+	 */
+	@NonNull
 	public static DesadvSettings forReceiverGLN(
 			@NonNull final CamelContext context,
-			@NonNull final String recipientGLN)
+			@Nullable final String recipientGLN)
 	{
 		final String clearingCenterProperty = "edi.recipientGLN." + recipientGLN + ".clearingCenter";
+		if(Check.isBlank(recipientGLN))
+		{
+			return DesadvSettings.builder().clearingCenter(ClearingCenter.ecosio).build();
+		}
+
 		final ClearingCenter clearingCenter = ClearingCenter.valueOf(Util.resolveProperty(context, clearingCenterProperty, "ecosio"));
 
 		final DesadvSettingsBuilder settings = DesadvSettings
@@ -64,7 +76,7 @@ public class DesadvSettings
 							.desadvLineCUTURequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.CUTU.required", "false"))
 
 							.desadvLineBUYRRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.BUYR.required", "false"))
-							.desadvLineGTINRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.GTIN.required", "false"))
+							.desadvLineGTINTURequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.GTIN.required", "false"))
 							.desadvLineEANCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.EANC.required", "false"))
 							.desadvLineEANTRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.EANT.required", "false"))
 							.desadvLineUPCCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.UPCC.required", "false"))
@@ -107,7 +119,7 @@ public class DesadvSettings
 
 	boolean desadvLineBUYRRequired;
 
-	boolean desadvLineGTINRequired;
+	boolean desadvLineGTINTURequired;
 
 	boolean desadvLineEANCRequired;
 	boolean desadvLineEANTRequired;

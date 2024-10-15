@@ -62,13 +62,13 @@ public class MetasfreshEventListener
 			final MaterialEvent lightWeightEvent = materialEventConverter.toMaterialEvent(event);
 			try (final MDCCloseable ignored = MDC.putCloseable("MaterialEventClass", lightWeightEvent.getClass().getName()))
 			{
-				logger.info("Received MaterialEvent={}", lightWeightEvent);
+				logger.debug("Received MaterialEvent={}", lightWeightEvent);
 
 				// make sure that every record we create has the correct AD_Client_ID and AD_Org_ID
 				final Properties temporaryCtx = Env.copyCtx(Env.getCtx());
 
-				Env.setClientId(temporaryCtx, lightWeightEvent.getEventDescriptor().getClientId());
-				Env.setOrgId(temporaryCtx, lightWeightEvent.getEventDescriptor().getOrgId());
+				Env.setClientId(temporaryCtx, lightWeightEvent.getClientId());
+				Env.setOrgId(temporaryCtx, lightWeightEvent.getOrgId());
 
 				try (final IAutoCloseable ignored1 = Env.switchContext(temporaryCtx))
 				{

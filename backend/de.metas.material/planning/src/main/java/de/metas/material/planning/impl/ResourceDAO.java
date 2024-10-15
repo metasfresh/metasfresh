@@ -1,36 +1,19 @@
 package de.metas.material.planning.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.time.DayOfWeek;
-import java.time.temporal.TemporalUnit;
-
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.material.planning.IResourceDAO;
+import de.metas.material.planning.ResourceType;
+import de.metas.material.planning.ResourceTypeId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ResourceId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -44,20 +27,16 @@ import org.compiere.model.X_M_Product;
 import org.compiere.model.X_S_Resource;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.collect.ImmutableSet;
+import java.time.DayOfWeek;
+import java.time.temporal.TemporalUnit;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.material.planning.IResourceDAO;
-import de.metas.material.planning.ResourceType;
-import de.metas.material.planning.ResourceTypeId;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductCategoryId;
-import de.metas.product.ResourceId;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+// TODO: merge it with modern de.metas.resource.ResourceRepository (so far not available in this branch)
 public class ResourceDAO implements IResourceDAO
 {
 	@Override
@@ -70,9 +49,15 @@ public class ResourceDAO implements IResourceDAO
 	@Override
 	public ResourceType getResourceTypeByResourceId(final ResourceId resourceId)
 	{
-		final I_S_Resource resource = getResourceById(resourceId);
-		final ResourceTypeId resourceTypeId = ResourceTypeId.ofRepoId(resource.getS_ResourceType_ID());
+		final ResourceTypeId resourceTypeId = getResourceTypeIdByResourceId(resourceId);
 		return getResourceTypeById(resourceTypeId);
+	}
+
+	@Override
+	public ResourceTypeId getResourceTypeIdByResourceId(final ResourceId resourceId)
+	{
+		final I_S_Resource resource = getResourceById(resourceId);
+		return ResourceTypeId.ofRepoId(resource.getS_ResourceType_ID());
 	}
 
 	public I_S_Resource getResourceById(@NonNull final ResourceId resourceId)
@@ -80,12 +65,16 @@ public class ResourceDAO implements IResourceDAO
 		return loadOutOfTrx(resourceId, I_S_Resource.class);
 	}
 
-	private ResourceType toResourceType(I_S_ResourceType record)
+	private static ResourceType toResourceType(I_S_ResourceType record)
 	{
+		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(record);
+
 		final UomId durationUomId = UomId.ofRepoId(record.getC_UOM_ID());
 		final TemporalUnit durationUnit = Services.get(IUOMDAO.class).getTemporalUnitByUomId(durationUomId);
 
 		return ResourceType.builder()
+				.id(ResourceTypeId.ofRepoId(record.getS_ResourceType_ID()))
+				.caption(trls.getColumnTrl(I_S_ResourceType.COLUMNNAME_Name, record.getName()))
 				.active(record.isActive())
 				.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
 				.durationUomId(durationUomId)
@@ -143,6 +132,12 @@ public class ResourceDAO implements IResourceDAO
 	public I_S_Resource getById(@NonNull final ResourceId resourceId)
 	{
 		return loadOutOfTrx(resourceId, I_S_Resource.class);
+	}
+
+	@Override
+	public List<I_S_Resource> getByIds(@NonNull final Set<ResourceId> resourceIds)
+	{
+		return InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx(resourceIds, I_S_Resource.class);
 	}
 
 	@Override
@@ -256,4 +251,32 @@ public class ResourceDAO implements IResourceDAO
 		product.setC_UOM_ID(from.getDurationUomId().getRepoId());
 		product.setM_Product_Category_ID(ProductCategoryId.toRepoId(from.getProductCategoryId()));
 	}
+
+	@Override
+	public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_S_Resource.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_AD_User_ID, userId)
+				.create()
+				.listIds(ResourceId::ofRepoId);
+	}
+
+	@Override
+	public ImmutableSet<ResourceId> getResourceIdsByResourceTypeIds(@NonNull final Collection<ResourceTypeId> resourceTypeIds)
+	{
+		if (resourceTypeIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_S_Resource.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_S_Resource.COLUMNNAME_S_ResourceType_ID, resourceTypeIds)
+				.create()
+				.listIds(ResourceId::ofRepoId);
+	}
+
 }

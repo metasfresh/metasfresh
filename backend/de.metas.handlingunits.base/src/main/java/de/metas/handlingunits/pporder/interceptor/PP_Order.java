@@ -22,8 +22,10 @@
 
 package de.metas.handlingunits.pporder.interceptor;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.impl.async.HUMaturingWorkpackageProcessor;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -33,6 +35,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
+import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.springframework.stereotype.Component;
 
 @Interceptor(I_PP_Order.class)
@@ -41,11 +45,14 @@ public class PP_Order
 {
 	private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 	private final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository;
+	private final PPOrderCandidateDAO ppOrderCandidateDAO;
 
 	public PP_Order(
-			@NonNull final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository)
+			@NonNull final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository,
+			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO)
 	{
 		this.ppOrderIssueScheduleRepository = ppOrderIssueScheduleRepository;
+		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_CLOSE)
@@ -70,6 +77,28 @@ public class PP_Order
 	{
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
 		reverseIssueSchedules(ppOrderId);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void onAfterComplete(@NonNull final I_PP_Order order)
+	{
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
+		final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getByOrderId(ppOrderId);
+
+		if (!ppOrderBL.isAtLeastOneCandidateMaturing(candidates))
+		{
+			return;
+		}
+
+		if (candidates.size() > 1)
+		{
+			throw new AdempiereException("More than one candidate found for maturing !");
+		}
+
+		// dev-note: use WorkPackage, otherwise PP_Cost_Collector is posted before PP_Order and therefore posting is failing
+		HUMaturingWorkpackageProcessor.prepareWorkpackage()
+				.ppOrder(order)
+				.enqueue();
 	}
 
 	private void reverseIssueSchedules(@NonNull final PPOrderId ppOrderId)

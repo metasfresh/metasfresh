@@ -2,22 +2,29 @@ package de.metas.manufacturing.job.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.ITranslatableString;
+import de.metas.manufacturing.job.model.LocatorInfo;
+import de.metas.manufacturing.job.model.ValidateLocatorInfo;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -25,6 +32,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -33,6 +41,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 @Builder
@@ -44,15 +53,20 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	@NonNull IAttributeDAO attributeDAO;
 	@NonNull IHUPPOrderBL ppOrderBL;
 	@NonNull IPPOrderBOMBL ppOrderBOMBL;
+	@NonNull final IHandlingUnitsBL handlingUnitsBL;
 	@NonNull IPPOrderRoutingRepository ppOrderRoutingRepository;
 	@NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	@NonNull HUQRCodesService huQRCodeService;
+	@NonNull PPOrderSourceHUService sourceHUService;
 
 	public ZoneId getTimeZone(final OrgId orgId) {return orgDAO.getTimeZone(orgId);}
 
 	public String getLocatorName(@NonNull final LocatorId locatorId) {return warehouseBL.getLocatorNameById(locatorId);}
 
 	public ITranslatableString getProductName(@NonNull final ProductId productId) {return productBL.getProductNameTrl(productId);}
+	
+	@NonNull
+	public String getProductValue(@NonNull final ProductId productId) {return productBL.getProductValue(productId);}
 
 	public I_PP_Order getPPOrderRecordById(@NonNull final PPOrderId ppOrderId) {return ppOrderBL.getById(ppOrderId);}
 
@@ -61,6 +75,12 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	public void saveOrderRouting(@NonNull final PPOrderRouting routing) {ppOrderRoutingRepository.save(routing);}
 
 	public ImmutableList<I_PP_Order_BOMLine> getOrderBOMLines(@NonNull final PPOrderId ppOrderId) {return ImmutableList.copyOf(ppOrderBOMBL.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class));}
+
+	@NonNull
+	public ZonedDateTime getDateStartSchedule(@NonNull final I_PP_Order ppOrder)
+	{
+		return InstantAndOrgId.ofTimestamp(ppOrder.getDateStartSchedule(), ppOrder.getAD_Org_ID()).toZonedDateTime(orgDAO::getTimeZone);
+	}
 
 	public PPOrderQuantities getQuantities(@NonNull final I_PP_Order order) {return ppOrderBOMBL.getQuantities(order);}
 
@@ -81,11 +101,6 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 		return huQRCodeService.getQRCodeByHuId(huId);
 	}
 
-	public HuId getHuIdByQRCode(@NonNull final JsonRenderedHUQRCode qrCode)
-	{
-		return huQRCodeService.getHuIdByQRCode(HUQRCode.fromGlobalQRCodeJsonString(qrCode.getCode()));
-	}
-
 	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final HUQRCode qrCode)
 	{
 		return huQRCodeService.getHuIdByQRCodeIfExists(qrCode);
@@ -94,5 +109,38 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	public void assignQRCode(@NonNull HUQRCode qrCode, @NonNull HuId huId)
 	{
 		huQRCodeService.assign(qrCode, huId);
+	}
+
+	public Quantity getHUCapacity(
+			@NonNull final HuId huId,
+			@NonNull final ProductId productId,
+			@NonNull final I_C_UOM uom)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		return handlingUnitsBL
+				.getStorageFactory()
+				.getStorage(hu)
+				.getQuantity(productId, uom);
+	}
+
+	@NonNull
+	public ValidateLocatorInfo getValidateSourceLocatorInfo(final @NonNull PPOrderId ppOrderId)
+	{
+		final ImmutableList<LocatorInfo> sourceLocatorList = getSourceLocatorIds(ppOrderId)
+				.stream()
+				.map(locatorId -> LocatorInfo.builder()
+						.id(locatorId)
+						.caption(getLocatorName(locatorId))
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
+		return ValidateLocatorInfo.ofSourceLocatorList(sourceLocatorList);
+	}
+
+	@NonNull
+	private ImmutableSet<LocatorId> getSourceLocatorIds(@NonNull final PPOrderId ppOrderId)
+	{
+		final ImmutableSet<HuId> huIds = sourceHUService.getSourceHUIds(ppOrderId);
+		return handlingUnitsBL.getLocatorIds(huIds);
 	}
 }

@@ -1,36 +1,6 @@
 package de.metas.handlingunits.allocation.strategy;
 
-import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Arrays;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -50,6 +20,11 @@ import de.metas.quantity.Quantity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 
 abstract class AbstractAllocationStrategy implements IAllocationStrategy
 {
@@ -182,7 +157,7 @@ abstract class AbstractAllocationStrategy implements IAllocationStrategy
 			return AllocationUtils.nullResult(); // might be that the actual request has zero qty because the parent item's storage is already "full"
 		}
 
-		final IHUContext huContext = request.getHUContext();
+		final IHUContext huContext = request.getHuContext();
 		final I_M_HU vhu = createVHU(huContext, requestActual, parentItem);
 		return allocateOnIncludedHU(vhu, requestActual);
 	}
@@ -260,7 +235,7 @@ abstract class AbstractAllocationStrategy implements IAllocationStrategy
 			@NonNull final I_M_HU_Item item,
 			@NonNull final IAllocationRequest request)
 	{
-		final IHUContext huContext = request.getHUContext();
+		final IHUContext huContext = request.getHuContext();
 		final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
 		return huStorageFactory.getStorage(item);
 	}

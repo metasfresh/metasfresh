@@ -34,19 +34,23 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 
 @Component
 public class PPOrderCandidateEnqueuer
 {
 	public static final String WP_PINSTANCE_ID_PARAM = "pInstanceId";
+	public static final String WP_COMPLETE_DOC_PARAM = "completeDoc";
+	public static final String WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION = "autoProcessCandidatesAfterProduction";
+	public static final String WP_AUTO_CLOSE_CANDIDATES_AFTER_PRODUCTION = "autoCloseCandidatesAfterProduction";
 
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -55,20 +59,36 @@ public class PPOrderCandidateEnqueuer
 	@NonNull
 	public Result enqueueCandidateIds(@NonNull final ImmutableList<PPOrderCandidateId> candidateIds)
 	{
-		final PInstanceId pInstanceId = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+		final PInstanceId selectionId = createSelection(candidateIds);
+		return enqueueSelection(EnqueuePPOrderCandidateRequest.of(selectionId, Env.getCtx()));
+	}
+
+	@NonNull
+	public PInstanceId createSelection(final @NonNull Collection<PPOrderCandidateId> candidateIds)
+	{
+		if (candidateIds.isEmpty())
+		{
+			throw new AdempiereException("At least one candidateId must be specified");
+		}
+
+		final PInstanceId selectionId = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID, candidateIds)
 				.create()
 				.createSelection();
+		if (candidateIds.isEmpty())
+		{
+			throw new AdempiereException("No candidates found");
+		}
 
-		return enqueueSelection(pInstanceId, Env.getCtx());
+		return selectionId;
 	}
 
 	@NonNull
-	public Result enqueueSelection(
-			@NonNull final PInstanceId adPInstanceId,
-			@NonNull final Properties ctx)
+	public Result enqueueSelection(@NonNull final EnqueuePPOrderCandidateRequest request)
 	{
+		final PInstanceId adPInstanceId = request.getAdPInstanceId();
+
 		final LockOwner lockOwner = LockOwner.newOwner(PPOrderCandidateEnqueuer.class.getSimpleName(), adPInstanceId.getRepoId());
 
 		final ILockCommand elementsLocker = lockManager
@@ -78,11 +98,14 @@ public class PPOrderCandidateEnqueuer
 				.setFailIfAlreadyLocked(true)
 				.setRecordsBySelection(I_PP_Order_Candidate.class, adPInstanceId);
 
-		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, GeneratePPOrderFromPPOrderCandidate.class);
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(request.getCtx(), GeneratePPOrderFromPPOrderCandidate.class);
 
 		final I_C_Queue_WorkPackage workPackage = queue
 				.newWorkPackage()
 				.parameter(WP_PINSTANCE_ID_PARAM, adPInstanceId)
+				.parameter(WP_COMPLETE_DOC_PARAM, request.getIsCompleteDocOverride())
+				.parameter(WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION, request.isAutoProcessCandidatesAfterProduction())
+				.parameter(WP_AUTO_CLOSE_CANDIDATES_AFTER_PRODUCTION, request.isAutoCloseCandidatesAfterProduction())
 				.setElementsLocker(elementsLocker)
 				.buildAndEnqueue();
 

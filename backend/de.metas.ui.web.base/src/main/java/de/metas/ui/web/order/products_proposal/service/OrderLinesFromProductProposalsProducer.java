@@ -1,20 +1,8 @@
 package de.metas.ui.web.order.products_proposal.service;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.HUPackingAwareCopy.ASICopyMode;
 import de.metas.adempiere.gui.search.IHUPackingAware;
@@ -36,6 +24,17 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -140,7 +139,7 @@ public final class OrderLinesFromProductProposalsProducer
 
 		huPackingAwareBL.prepareCopyFrom(rowPackingAware)
 				.overridePartner(false)
-				.asiCopyMode(ASICopyMode.CopyID) // because we just created the ASI
+				.asiCopyMode(ASICopyMode.Clone)
 				.copyTo(orderLinePackingAware);
 
 		final ProductProposalPrice price = fromRow.getPrice();
@@ -188,7 +187,7 @@ public final class OrderLinesFromProductProposalsProducer
 		final UomId uomId = productBL.getStockUOMId(fromRow.getProductId());
 		huPackingAware.setProductId(fromRow.getProductId());
 		huPackingAware.setUomId(uomId);
-		// huPackingAware.setM_AttributeSetInstance_ID(...);
+		huPackingAware.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(fromRow.getAsiId()));
 		huPackingAware.setPiItemProductId(fromRow.getPackingMaterialId());
 
 		return huPackingAware;

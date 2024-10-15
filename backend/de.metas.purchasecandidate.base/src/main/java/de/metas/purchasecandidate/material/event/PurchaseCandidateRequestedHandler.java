@@ -29,7 +29,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
@@ -103,7 +102,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				event.getSalesOrderLineRepoId());
 
 		final Product product = productRepository.getById(ProductId.ofRepoId(materialDescriptor.getProductId()));
-		final OrgId orgId = event.getEventDescriptor().getOrgId();
+		final OrgId orgId = event.getOrgId();
 
 		final VendorProductInfo vendorProductInfos = vendorProductInfosRepo
 				.getDefaultVendorProductInfo(product.getId(), orgId)
@@ -165,7 +164,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 			final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = createCandidateCreatedEvent(requestedEvent,
 					newPurchaseCandidate.getVendorId(),
 					newPurchaseCandidateId);
-			postMaterialEventService.postEventAfterNextCommit(purchaseCandidateCreatedEvent);
+			postMaterialEventService.enqueueEventAfterNextCommit(purchaseCandidateCreatedEvent);
 		}
 		finally
 		{
@@ -179,14 +178,13 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 			@NonNull final BPartnerId vendorId,
 			@NonNull final PurchaseCandidateId newPurchaseCandidateId)
 	{
-		final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofEventDescriptor(requestedEvent.getEventDescriptor()))
+		return PurchaseCandidateCreatedEvent.builder()
+				.eventDescriptor(requestedEvent.getEventDescriptor().withNewEventId())
 				.purchaseCandidateRepoId(newPurchaseCandidateId.getRepoId())
 				.vendorId(vendorId.getRepoId())
 				.purchaseMaterialDescriptor(requestedEvent.getPurchaseMaterialDescriptor())
 				.supplyCandidateRepoId(requestedEvent.getSupplyCandidateRepoId())
 				.build();
-		return purchaseCandidateCreatedEvent;
 	}
 
 }

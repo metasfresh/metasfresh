@@ -47,6 +47,7 @@ public interface IUOMDAO extends ISingletonService
 
 	List<I_C_UOM> getByIds(Collection<UomId> uomIds);
 
+	@NonNull
 	UomId getUomIdByX12DE355(X12DE355 x12de355);
 
 	X12DE355 getX12DE355ById(UomId uomId);
@@ -78,4 +79,6 @@ public interface IUOMDAO extends ISingletonService
 
 	@NonNull
 	UOMType getUOMTypeById(UomId uomId);
+
+	ITranslatableString getUOMSymbolById(@NonNull UomId uomId);
 }

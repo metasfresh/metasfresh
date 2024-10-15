@@ -5,10 +5,10 @@ import numeral from 'numeral';
 import * as types from '../constants/ActionTypes';
 import { setCurrentActiveLocale } from '../utils/locale';
 import {
-  getNotificationsRequest,
   getNotificationsEndpointRequest,
-  getUserSession,
+  getNotificationsRequest,
 } from '../api';
+import { getUserSession } from '../api/userSession';
 
 // TODO: All requests should be moved to API
 
