@@ -37,13 +37,13 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -71,11 +71,10 @@ public class ModularContractSettings
 	@NonNull LocalDateAndOrgId storageCostStartDate;
 	int freeStorageCostDays;
 	int additionalInterestDays;
-	@Builder.Default @Getter
-	@NonNull Percent interestPercent = Percent.ZERO;
 
-	@Builder.Default @Getter
-	@NonNull Percent interimPricePercent = Percent.ZERO;
+	@NonNull Percent interestPercent;
+	@NonNull Percent interimPricePercent;
+	@NonNull BigDecimal tradeMargin;
 
 	private static final AdMessageKey MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Flatrate_Conditions.INVALID_MODULAR_CONTRACT_SETTINGS");
 
@@ -150,10 +149,10 @@ public class ModularContractSettings
 				.count();
 	}
 
-	public long countMatchingAnyOf(@NonNull final ComputingMethodType computingMethodType1, @NonNull final ComputingMethodType computingMethodType2)
+	public long countMatchingAnyOf(@NonNull final Collection<ComputingMethodType> computingMethodTypes)
 	{
 		return moduleConfigs.stream()
-				.filter(config -> config.isMatchingAnyOf(computingMethodType1, computingMethodType2))
+				.filter(config -> config.isMatchingAnyOf(computingMethodTypes))
 				.count();
 	}
 

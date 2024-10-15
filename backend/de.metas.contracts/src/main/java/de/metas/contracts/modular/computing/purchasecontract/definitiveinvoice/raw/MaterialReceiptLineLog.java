@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice.raw;
 
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.purchasecontract.sales.raw.RawSalesComputingMethod;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
 import lombok.NonNull;

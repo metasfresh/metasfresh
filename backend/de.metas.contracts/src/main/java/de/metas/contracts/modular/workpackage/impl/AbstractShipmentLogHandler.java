@@ -46,6 +46,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -131,7 +132,7 @@ public abstract class AbstractShipmentLogHandler extends AbstractModularContract
 		final LocalDateAndOrgId transactionDate = extractTransactionDate(inOutRecord);
 		final LocalDateAndOrgId physicalClearanceDate = extractPhysicalClearanceDate(orderBL.getById(OrderId.ofRepoId(inOutRecord.getC_Order_ID())));
 
-		final ProductPrice contractSpecificPrice = getContractSpecificPriceWithFlags(createLogRequest).toProductPrice();
+		final ProductPrice productPrice = getProductPrice(createLogRequest, OrderLineId.ofRepoId(inOutLineRecord.getC_OrderLine_ID()));
 
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
@@ -156,10 +157,10 @@ public abstract class AbstractShipmentLogHandler extends AbstractModularContract
 				.isBillable(true)
 				.quantity(quantity)
 				.storageDays(storageDays)
-				.amount(computeAmount(contractSpecificPrice, quantity, storageDays, uomConversionBL))
+				.amount(computeAmount(productPrice, quantity, storageDays, uomConversionBL))
 				.transactionDate(transactionDate)
 				.physicalClearanceDate(physicalClearanceDate)
-				.priceActual(contractSpecificPrice)
+				.priceActual(productPrice)
 				.year(yearAndCalendarId.yearId())
 				.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs()))
 				.modularContractTypeId(createLogRequest.getTypeId())
@@ -183,6 +184,12 @@ public abstract class AbstractShipmentLogHandler extends AbstractModularContract
 		return physicalClearanceDate != null ? LocalDateAndOrgId.ofTimestamp(orderRecord.getPhysicalClearanceDate(),
 																			 OrgId.ofRepoId(orderRecord.getAD_Org_ID()),
 																			 orgDAO::getTimeZone) : null;
+	}
+
+	@NotNull
+	protected ProductPrice getProductPrice(@NonNull final CreateLogRequest createLogRequest, @NonNull final OrderLineId orderLineId)
+	{
+		return getContractSpecificPriceWithFlags(createLogRequest).toProductPrice();
 	}
 
 	@Nullable

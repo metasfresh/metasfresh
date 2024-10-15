@@ -110,12 +110,12 @@ public abstract class AbstractShipmentComputingMethod extends AbstractComputingM
 				.build();
 	}
 
-	private static InOutLineId getShipmentLineId(final @NotNull TableRecordReference recordRef)
+	protected static InOutLineId getShipmentLineId(final @NotNull TableRecordReference recordRef)
 	{
 		return recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
 	}
 
-	private I_M_InOutLine getShipmentLine(final @NotNull TableRecordReference recordRef)
+	protected I_M_InOutLine getShipmentLine(final @NotNull TableRecordReference recordRef)
 	{
 		final InOutLineId shipmentLineId = getShipmentLineId(recordRef);
 		return inOutBL.getLineByIdInTrx(shipmentLineId);

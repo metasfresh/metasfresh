@@ -29,6 +29,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -39,6 +40,12 @@ public class ModularLogCreateStatusService
 
 	@NonNull
 	private final ModularLogCreateStatusRepository statusRepository;
+
+	public static ModularLogCreateStatusService newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ModularLogCreateStatusService(new ModularLogCreateStatusRepository());
+	}
 
 	public void setStatusEnqueued(@NonNull final QueueWorkPackageId workPackageId, @NonNull final TableRecordReference recordRef)
 	{

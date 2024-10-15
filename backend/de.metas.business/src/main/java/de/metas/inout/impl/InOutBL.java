@@ -27,6 +27,7 @@ import de.metas.lang.SOTrx;
 import de.metas.material.MovementType;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -140,6 +141,12 @@ public class InOutBL implements IInOutBL
 	public void save(@NonNull final I_M_InOut inout)
 	{
 		inOutDAO.save(inout);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_InOutLine inoutLine)
+	{
+		inOutDAO.save(inoutLine);
 	}
 
 	@Override
@@ -604,6 +611,12 @@ public class InOutBL implements IInOutBL
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
 
 		return orderLine.getC_Order();
+	}
+
+	@Override
+	public Optional<OrderId> getOrderIdForLineId(@NonNull final InOutLineId inoutLineId)
+	{
+		return inOutDAO.getOrderIdForLineId(inoutLineId);
 	}
 
 	private RequestTypeId getRequestTypeId(final SOTrx soTrx)

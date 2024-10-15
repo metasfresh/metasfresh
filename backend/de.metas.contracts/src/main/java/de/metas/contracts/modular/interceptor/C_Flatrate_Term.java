@@ -26,6 +26,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
 import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
@@ -56,16 +57,17 @@ import static de.metas.contracts.modular.ModelAction.COMPLETED;
 @RequiredArgsConstructor
 public class C_Flatrate_Term
 {
-	private final BPartnerInterimContractService bPartnerInterimContractService;
-	private final ModularContractService modularContractService;
-	private final ModularContractSettingsRepository modularContractSettingsRepository;
-	private final ModularContractPriceService modularContractPriceService;
-	private final InterimFlatrateTermService interimFlatrateTermService;
+	@NonNull private final BPartnerInterimContractService bPartnerInterimContractService;
+	@NonNull private final ModularContractService modularContractService;
+	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
+	@NonNull private final ModularContractPriceService modularContractPriceService;
+	@NonNull private final InterimFlatrateTermService interimFlatrateTermService;
+	@NonNull private final ModularContractComputingMethodHandlerRegistry computingMethodHandlerRegistry;
 
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
-	private final static String SYS_CONFIG_INTERIM_CONTRACT_AUTO_CREATE = "de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete";
+	@NonNull private final static String SYS_CONFIG_INTERIM_CONTRACT_AUTO_CREATE = "de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete";
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createInterimContractIfNeeded(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
@@ -172,7 +174,7 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		modularContractPriceService.createModularContractSpecificPricesFor(flatrateTermRecord);
+		modularContractPriceService.createModularContractSpecificPricesFor(flatrateTermRecord, computingMethodHandlerRegistry);
 	}
 
 }

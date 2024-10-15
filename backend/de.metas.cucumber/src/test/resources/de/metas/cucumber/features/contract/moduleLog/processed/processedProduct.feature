@@ -346,9 +346,9 @@ Feature: Modular contract log from purchase order for processed product
     And after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName   | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.ProductName                    | OPT.IsBillable |
       | log_inout_1_1             | so_ioline_1          | ModularContract | bp_moduleLogPO                             | warehouse_06062024_1          | processedProduct               | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | M_InOutLine | moduleLogContract_1           | modCntr_type_1             | false         | Shipment                     | EUR                        | PCE                   | 20000      | y2022                             | definitive_module                | 20.00           | PCE                       | salesOnProcessedProduct_06062024_1 | Y              |
-      | log_inout_1_2             | so_ioline_1          | ModularContract | bp_moduleLogPO                             | warehouse_06062024_1          | storageCostForProcessedProduct | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | M_InOutLine | moduleLogContract_1           | modCntr_type_7             | false         | Shipment                     | EUR                        | PCE                   | -1680      | y2022                             | storageCost_module               | -0.06           | PCE                       | storageCost_06062024_1             | Y              |
+      | log_inout_1_2             | so_ioline_1          | ModularContract | bp_moduleLogPO                             | warehouse_06062024_1          | storageCostForProcessedProduct | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | M_InOutLine | moduleLogContract_1           | modCntr_type_7             | false         | Shipment                     | EUR                        | PCE                   | -1800      | y2022                             | storageCost_module               | -0.06           | PCE                       | storageCost_06062024_1             | Y              |
       | log_inout_2_1             | so_ioline_2          | ModularContract | bp_moduleLogPO                             | warehouse_06062024_1          | processedProduct               | bp_moduleLogPO                      | bp_moduleLogPO                  | 50   | M_InOutLine | moduleLogContract_1           | modCntr_type_1             | false         | Shipment                     | EUR                        | PCE                   | 1000       | y2022                             | definitive_module                | 20.00           | PCE                       | salesOnProcessedProduct_06062024_1 | Y              |
-      | log_inout_2_2             | so_ioline_2          | ModularContract | bp_moduleLogPO                             | warehouse_06062024_1          | storageCostForProcessedProduct | bp_moduleLogPO                      | bp_moduleLogPO                  | 50   | M_InOutLine | moduleLogContract_1           | modCntr_type_7             | false         | Shipment                     | EUR                        | PCE                   | -84        | y2022                             | storageCost_module               | -0.06           | PCE                       | storageCost_06062024_1             | Y              |
+      | log_inout_2_2             | so_ioline_2          | ModularContract | bp_moduleLogPO                             | warehouse_06062024_1          | storageCostForProcessedProduct | bp_moduleLogPO                      | bp_moduleLogPO                  | 50   | M_InOutLine | moduleLogContract_1           | modCntr_type_7             | false         | Shipment                     | EUR                        | PCE                   | -90        | y2022                             | storageCost_module               | -0.06           | PCE                       | storageCost_06062024_1             | Y              |
 
     And load AD_User:
       | AD_User_ID.Identifier | Login      |
@@ -397,15 +397,15 @@ Feature: Modular contract log from purchase order for processed product
       | candidate_addValueOnProcessedProduct_2 | 0            | 1000           | 1000             | I               | -6              | 0                   | -6000              | Y             |
       | candidate_addValueOnInterim            | 0            | 1              | 1                | I               | -40             | 0                   | -40                | Y             |
       | candidate_subValueOnInterim            | 0            | 1              | 1                | I               | 18.96           | 0                   | 18.96              | Y             |
-      | candidate_storageCost                  | 0            | 1              | 1                | I               | -1764           | 0                   | -1764              | Y             |
+      | candidate_storageCost                  | 0            | 1              | 1                | I               | -1890           | 0                   | -1890              | Y             |
 
     And after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus | OPT.TotalLines |
-      | candidate_receipt                 | invoice_1               | CO            | 20214.96       |
+      | candidate_receipt                 | invoice_1               | CO            | 20088.96       |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_1               | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 24055.80       | final                       |
+      | invoice_1               | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 23905.86       | final                       |
 
     And validate created modular invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier        | ProductName                           | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
@@ -415,7 +415,7 @@ Feature: Modular contract log from purchase order for processed product
       | invoiceLine_1_4             | invoice_1               | addValueOnProcessed_PO_2       | addValueOnProcessedProduct_06062024_2 | 1000        | true      | -6               | -6              | -6000          | PCE                   | PCE                       |
       | invoiceLine_1_5             | invoice_1               | addValueOnInterim              | addValueOnInterim_06062024_1          | 1           | true      | -40              | -40             | -40            | PCE                   | PCE                       |
       | invoiceLine_1_6             | invoice_1               | subValueOnInterim              | subValueOnInterim_06062024_1          | 1           | true      | 18.96            | 18.96           | 18.96          | PCE                   | PCE                       |
-      | invoiceLine_1_7             | invoice_1               | storageCostForProcessedProduct | storageCost_06062024_1                | 1           | true      | -1764            | -1764           | -1764          | PCE                   | PCE                       |
+      | invoiceLine_1_7             | invoice_1               | storageCostForProcessedProduct | storageCost_06062024_1                | 1           | true      | -1890            | -1890           | -1890          | PCE                   | PCE                       |
 
     And create definitive invoice
       | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier | OPT.DateInvoiced | OPT.DateAcct |
@@ -431,19 +431,19 @@ Feature: Modular contract log from purchase order for processed product
 
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
-      | candidate_definitive              | 0            | 50             | 50               | I               | 20              | 0                   | 1000               | Y             |
+      | candidate_definitive              | 0            | 50             | 50               | I               | 19              | 0                   | 950               | Y             |
 
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus | OPT.TotalLines |
-      | candidate_definitive              | defInv                  | CO            | 1000           |
+      | candidate_definitive              | defInv                  | CO            | 950           |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | defInv                  | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 1190           | definitive                  |
+      | defInv                  | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 1130.5         | definitive                  |
 
     And validate created modular invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | ProductName                        | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
-      | invoiceLine_2_1             | defInv                  | processedProduct        | salesOnProcessedProduct_06062024_1 | 50          | true      | 20.00            | 20.00           | 1000           | PCE                   | PCE                       |
+      | invoiceLine_2_1             | defInv                  | processedProduct        | salesOnProcessedProduct_06062024_1 | 50          | true      | 19.00            | 19.00           | 950            | PCE                   | PCE                       |
 
     And update AD_Ref_Lists:
       | AD_Ref_List_ID.Identifier | IsActive |

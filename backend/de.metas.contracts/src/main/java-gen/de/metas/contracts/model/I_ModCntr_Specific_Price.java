@@ -192,6 +192,27 @@ public interface I_ModCntr_Specific_Price
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Average Price.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAveragePrice (boolean IsAveragePrice);
+
+	/**
+	 * Get Average Price.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAveragePrice();
+
+	ModelColumn<I_ModCntr_Specific_Price, Object> COLUMN_IsAveragePrice = new ModelColumn<>(I_ModCntr_Specific_Price.class, "IsAveragePrice", null);
+	String COLUMNNAME_IsAveragePrice = "IsAveragePrice";
+
+	/**
 	 * Set Scale Price.
 	 *
 	 * <br>Type: YesNo

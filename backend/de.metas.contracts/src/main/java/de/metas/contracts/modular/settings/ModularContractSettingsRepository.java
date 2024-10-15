@@ -237,6 +237,7 @@ public class ModularContractSettingsRepository
 						OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
 						orgDAO::getTimeZone))
 				.freeStorageCostDays(settingsRecord.getFreeStorageCostDays())
+				.tradeMargin(settingsRecord.getTradeMargin())
 				.moduleConfigs(moduleRecords.stream()
 						.map(moduleRecord -> fromRecord(moduleRecord, contractTypes))
 						.collect(ImmutableList.toImmutableList()))

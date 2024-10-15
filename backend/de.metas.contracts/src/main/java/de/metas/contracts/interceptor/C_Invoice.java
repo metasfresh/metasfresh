@@ -1,8 +1,6 @@
 package de.metas.contracts.interceptor;
 
 import de.metas.contracts.impl.CustomerRetentionRepository;
-import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +37,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class C_Invoice
 {
-	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final CustomerRetentionRepository customerRetentionRepo;
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -48,11 +45,5 @@ public class C_Invoice
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 
 		customerRetentionRepo.updateCustomerRetentionOnInvoiceComplete(invoiceId);
-	}
-
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_VOID })
-	public void unprocessModularContractLogs(final I_C_Invoice invoice)
-	{
-		modularContractLogService.unprocessModularContractLogs(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()), DocTypeId.ofRepoId(invoice.getC_DocType_ID()));
 	}
 }

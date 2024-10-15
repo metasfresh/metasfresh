@@ -119,7 +119,7 @@ public class LogEntryCreateRequest
 	@Nullable
 	String description;
 
-	@Nullable
+	@NonNull
 	ModularContractTypeId modularContractTypeId;
 
 	@NonNull
@@ -190,7 +190,7 @@ public class LogEntryCreateRequest
 			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final YearId year,
 			@Nullable final String description,
-			@Nullable final ModularContractTypeId modularContractTypeId,
+			@NonNull final ModularContractTypeId modularContractTypeId,
 			@NonNull final ModularContractModuleId configModuleId,
 			@Nullable final ProductPrice priceActual,
 			@Nullable final InvoicingGroupId invoicingGroupId,
