@@ -1,7 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
 import de.metas.cache.CCache;
-import de.metas.cache.CCache.CCacheStats;
+import de.metas.cache.CCacheStats;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -13,6 +13,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * #L%
  */
 
+@Component
 public final class LookupDataSourceFactory
 {
 	public static final transient LookupDataSourceFactory instance = new LookupDataSourceFactory();

@@ -88,6 +88,12 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return getPOInfoMap().getByTableNameOrNull(tableName);
 	}
 
+	@NonNull
+	public static POInfo getPOInfoNotNull(@NonNull final String tableName)
+	{
+		return getPOInfoMap().getByTableName(tableName);
+	}
+	
 	public static Optional<POInfo> getPOInfoIfPresent(@NonNull final String tableName)
 	{
 		return Optional.ofNullable(getPOInfoMap().getByTableNameOrNull(tableName));
@@ -1403,6 +1409,17 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		public POInfo getByTableNameOrNull(@NonNull final String tableName)
 		{
 			return byTableNameUC.get(tableName.toUpperCase());
+		}
+
+		@NonNull
+		public POInfo getByTableName(@NonNull final String tableName)
+		{
+			final POInfo poInfo = getByTableNameOrNull(tableName);
+			if (poInfo == null)
+			{
+				throw new AdempiereException("No POInfo found for " + tableName);
+			}
+			return poInfo;
 		}
 	}
 }   // POInfo
