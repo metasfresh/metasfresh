@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.Adempiere;
@@ -109,6 +110,10 @@ class MessagesMapRepository
 				}
 
 				final String adLanguage = rs.getString("AD_Language");
+				if (Check.isBlank(adLanguage))
+				{
+					continue;
+				}
 				msgTextBuilder.trl(adLanguage, normalizeToJavaMessageFormat(rs.getString("trl_MsgText")));
 				msgTipBuilder.trl(adLanguage, normalizeToJavaMessageFormat(rs.getString("trl_MsgTip")));
 			}
