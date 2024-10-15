@@ -32,6 +32,8 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
+import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -118,6 +120,27 @@ public class DesadvDAO implements IDesadvDAO
 		return InterfaceWrapperHelper.load(ediDesadvLineId, I_EDI_DesadvLine.class);
 	}
 
+	@Override
+	public int retrieveMaxDesadvPackSeqNo(@NonNull final EDIDesadvId desadvId)
+	{
+		return queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
+				.create()
+				.maxInt(I_EDI_Desadv_Pack.COLUMNNAME_SeqNo);
+	}
+
+	@Override
+	public int retrieveMaxDesadvPackItemLine(@NonNull final EDIDesadvId desadvId)
+	{
+		return queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
+				.andCollectChildren(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID, I_EDI_Desadv_Pack_Item.class)
+				.create()
+				.maxInt(I_EDI_Desadv_Pack_Item.COLUMNNAME_Line);
+	}
+	
 	@Override
 	public List<I_M_InOut> retrieveAllInOuts(final I_EDI_Desadv desadv)
 	{

@@ -34,12 +34,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
-import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -53,6 +52,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTMENT_CODE_19;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTMENT_CODE_67;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTMENT_CODE_90;
@@ -60,6 +60,7 @@ import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.DOCUMEN
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.DOC_PREFIX;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.GLN_PREFIX;
 import static de.metas.edi.esb.remadvimport.ecosio.JsonRemittanceAdviceLineProducer.InvoiceType.CREDIT_MEMO;
+import static java.math.BigDecimal.ZERO;
 
 @Value
 public class JsonRemittanceAdviceLineProducer
@@ -93,10 +94,10 @@ public class JsonRemittanceAdviceLineProducer
 			final BigDecimal paymentDiscountAmount = getPaymentDiscountAmount(monetaryAmounts);
 
 			// the difference might be a few cents, rappen etc. we will add it to the discount
-			final BigDecimal difference = CoalesceUtil.coalesce(invoiceGrossAmount, BigDecimal.ZERO)
+			final BigDecimal difference = coalesceNotNull(invoiceGrossAmount, ZERO)
 					.subtract(remittedAmount)
-					.subtract(serviceFeeAmount)
-					.subtract(paymentDiscountAmount);
+					.subtract(coalesceNotNull(serviceFeeAmount, ZERO))
+					.subtract(coalesceNotNull(paymentDiscountAmount, ZERO));
 
 			return JsonRemittanceAdviceLine.builder()
 					.invoiceIdentifier(getInvoiceIdentifier())
@@ -105,7 +106,7 @@ public class JsonRemittanceAdviceLineProducer
 					.dateInvoiced(getDateInvoiced().orElse(null))
 					.remittedAmount(remittedAmount)
 					.invoiceGrossAmount(invoiceGrossAmount)
-					.paymentDiscountAmount(paymentDiscountAmount.add(difference))
+					.paymentDiscountAmount(sumNullableBigDecimals(paymentDiscountAmount, difference))
 					.serviceFeeAmount(serviceFeeAmount)
 					.serviceFeeVatRate(getServiceFeeVATRate(monetaryAmounts).orElse(null))
 					.build();
@@ -146,7 +147,7 @@ public class JsonRemittanceAdviceLineProducer
 
 		final BigDecimal paymentDiscountTotalAmount = sumNullableBigDecimals(paymentDiscountAmount, adjustmentDiscountAmount);
 
-		return paymentDiscountTotalAmount != null ? paymentDiscountTotalAmount.abs() : paymentDiscountTotalAmount;
+		return paymentDiscountTotalAmount != null ? paymentDiscountTotalAmount.abs() : null;
 	}
 
 	@Nullable
@@ -184,13 +185,13 @@ public class JsonRemittanceAdviceLineProducer
 			return Optional.empty();
 		}
 
-		return Optional.of(adjustmentTypeList.stream().reduce(BigDecimal.ZERO, BigDecimal::add));
+		return Optional.of(adjustmentTypeList.stream().reduce(ZERO, BigDecimal::add));
 	}
 
 	@NonNull
 	private String getInvoiceIdentifier()
 	{
-		if (StringUtils.isEmpty(remadvLineItemExtension.getDocumentNumber()))
+		if (Check.isBlank(remadvLineItemExtension.getDocumentNumber()))
 		{
 			throw new RuntimeException("getInvoiceIdentifier: Missing invoice identifier!");
 		}
@@ -209,7 +210,7 @@ public class JsonRemittanceAdviceLineProducer
 			return Optional.empty();
 		}
 
-		if (!StringUtils.isEmpty(customer.getGLN()))
+		if (Check.isNotBlank(customer.getGLN()))
 		{
 			return Optional.of(GLN_PREFIX + customer.getGLN());
 		}
@@ -232,7 +233,7 @@ public class JsonRemittanceAdviceLineProducer
 	@NonNull
 	private Optional<String> getInvoiceDocType()
 	{
-		if (StringUtils.isEmpty(remadvLineItemExtension.getDocumentName()))
+		if (Check.isBlank(remadvLineItemExtension.getDocumentName()))
 		{
 			logger.log(Level.INFO, "getInvoiceDocType no invoiceDocType found for line! Line: " + remadvLineItemExtension);
 			return Optional.empty();

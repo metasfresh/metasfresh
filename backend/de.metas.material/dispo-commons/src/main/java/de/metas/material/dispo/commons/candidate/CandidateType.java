@@ -7,7 +7,10 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Set;
 
 /*
@@ -35,10 +38,11 @@ import java.util.Set;
 /**
  * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_TYPE_AD_Reference_ID}
  */
+@Getter
+@RequiredArgsConstructor
 public enum CandidateType implements ReferenceListAwareEnum
 {
 	DEMAND(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND),
-
 	SUPPLY(X_MD_Candidate.MD_CANDIDATE_TYPE_SUPPLY),
 
 	STOCK_UP(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK_UP),
@@ -49,7 +53,6 @@ public enum CandidateType implements ReferenceListAwareEnum
 	 * Example: you have a supply record for a material receipt schedule with AttributesKey=NONE; then the actual receipt has a different timestamp and ASI, but still belongs to the existing material receipt schedule.
 	 */
 	UNEXPECTED_INCREASE(X_MD_Candidate.MD_CANDIDATE_TYPE_UNEXPECTED_INCREASE),
-
 	/**
 	 * Analog to {@link #UNEXPECTED_INCREASE}.
 	 * Might or might not be related to a {@link #DEMAND}; at any rate it's attributesKey and/or timestamp are different from any existing record
@@ -57,35 +60,38 @@ public enum CandidateType implements ReferenceListAwareEnum
 	UNEXPECTED_DECREASE(X_MD_Candidate.MD_CANDIDATE_TYPE_UNEXPECTED_DECREASE),
 
 	INVENTORY_DOWN(X_MD_Candidate.MD_CANDIDATE_TYPE_INVENTORY_DOWN),
-
 	INVENTORY_UP(X_MD_Candidate.MD_CANDIDATE_TYPE_INVENTORY_UP),
 
-	/** TODO: remove this type; instead, "just" add an ATP column to candidate. */
+	/**
+	 * TODO: remove this type; instead, "just" add an ATP column to candidate.
+	 */
 	STOCK(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK),
 
 	ATTRIBUTES_CHANGED_FROM(X_MD_Candidate.MD_CANDIDATE_TYPE_ATTRIBUTES_CHANGED_FROM),
-
-	ATTRIBUTES_CHANGED_TO(X_MD_Candidate.MD_CANDIDATE_TYPE_ATTRIBUTES_CHANGED_TO);
+	ATTRIBUTES_CHANGED_TO(X_MD_Candidate.MD_CANDIDATE_TYPE_ATTRIBUTES_CHANGED_TO),
+	;
 
 	private final static Set<CandidateType> INCREASING_STOCK_TYPES = ImmutableSet.of(SUPPLY, UNEXPECTED_INCREASE, INVENTORY_UP, ATTRIBUTES_CHANGED_TO);
+	private final static Set<CandidateType> DECREASING_STOCK_TYPES = ImmutableSet.of(DEMAND, UNEXPECTED_DECREASE, INVENTORY_DOWN, ATTRIBUTES_CHANGED_FROM);
 
-	@Getter
-	private final String code;
+	private static final ValuesIndex<CandidateType> index = ReferenceListAwareEnums.index(values());
 
-	CandidateType(final String code)
-	{
-		this.code = code;
-	}
+	@NonNull private final String code;
 
 	public static CandidateType ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
 	}
 
-	private static final ValuesIndex<CandidateType> index = ReferenceListAwareEnums.index(values());
-
 	public final boolean isIncreasingStock()
 	{
 		return INCREASING_STOCK_TYPES.contains(this);
 	}
+
+	public final boolean isDecreasingStock()
+	{
+		return DECREASING_STOCK_TYPES.contains(this);
+	}
+
+	public static boolean equals(@Nullable final CandidateType type1, @Nullable final CandidateType type2) {return Objects.equals(type1, type2);}
 }

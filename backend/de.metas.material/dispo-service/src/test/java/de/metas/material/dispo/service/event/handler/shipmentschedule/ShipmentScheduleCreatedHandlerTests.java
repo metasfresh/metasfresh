@@ -1,7 +1,6 @@
 package de.metas.material.dispo.service.event.handler.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
@@ -34,14 +33,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -77,23 +75,19 @@ public class ShipmentScheduleCreatedHandlerTests
 	private ShipmentScheduleCreatedHandler shipmentScheduleCreatedHandler;
 	private AvailableToPromiseRepository atpRepository;
 
-	private DimensionService dimensionService;
-
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
@@ -166,7 +160,7 @@ public class ShipmentScheduleCreatedHandlerTests
 
 	public static ShipmentScheduleCreatedEvent createShipmentScheduleTestEvent()
 	{
-		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
+		return ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.materialDescriptor(MaterialDescriptor.builder()
 						.date(NOW)
@@ -182,6 +176,5 @@ public class ShipmentScheduleCreatedHandlerTests
 						.orderId(30)
 						.build())
 				.build();
-		return event;
 	}
 }

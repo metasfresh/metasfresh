@@ -29,6 +29,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
@@ -848,7 +849,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	/**
-	 * task https://github.com/metasfresh/metasfresh/issues/4535
+	 * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/4535">task</a>
 	 */
 	@Override
 	public void updateProductDescriptionFromProductBOMIfConfigured(final org.compiere.model.I_C_OrderLine orderLine)
@@ -1012,6 +1013,20 @@ public class OrderLineBL implements IOrderLineBL
 	public boolean isCatchWeight(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		return InvoicableQtyBasedOn.ofNullableCodeOrNominal(orderLine.getInvoicableQtyBasedOn()).isCatchWeight();
+	}
+
+	@Override
+	public Optional<BPartnerId> getBPartnerId(@NonNull final OrderLineId orderLineId)
+	{
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
+		return BPartnerId.optionalOfRepoId(orderLine.getC_BPartner_ID());
+	}
+
+	@Override
+	public Optional<BPartnerId> getBPartnerId(@NonNull final OrderAndLineId orderLineId)
+	{
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
+		return BPartnerId.optionalOfRepoId(orderLine.getC_BPartner_ID());
 	}
 
 }

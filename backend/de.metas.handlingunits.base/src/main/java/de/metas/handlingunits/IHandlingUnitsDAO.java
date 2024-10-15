@@ -25,7 +25,6 @@ package de.metas.handlingunits;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
@@ -47,7 +46,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
@@ -301,15 +299,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(I_M_HU hu);
 
 	/**
-	 * The special network distribution that is defined for empties (Gebinde) It contains lines that link the non-empties warehouses with the empties ones that the packing materials shall be moved to
-	 * when empty
-	 *
-	 * @param product (NOT USED); here just in case the requirements will change later and there will be gebinde network distributions based on product
-	 */
-	@Nullable
-	I_DD_NetworkDistribution retrieveEmptiesDistributionNetwork(Properties ctx, I_M_Product product, String trxName);
-
-	/**
 	 * Create or return a <b>HU</b> item. Other item types generally exist already, or should not exist.
 	 *
 	 * @return a pair of the item that was created or retrieved on the left and a boolean that is {@code true} if the item was created and {@code false} if it was retrieved.
@@ -344,6 +333,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIs(
 			@NonNull Set<HuPackingInstructionsItemId> piItemIds,
 			@Nullable BPartnerId bpartnerId);
+
+	@NonNull
+	ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds);
 
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);

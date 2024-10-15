@@ -8,6 +8,7 @@ import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
+import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
 import de.metas.material.planning.pporder.UserInstructions;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -113,6 +114,8 @@ public final class PPOrderRoutingActivity
 	//
 	// Data needed for PPRoutingActivityType.CallExternalSystem and other steps which are about scanning QR codes
 	@Setter @Nullable private GlobalQRCode scannedQRCode;
+
+	@NonNull private RawMaterialsIssueStrategy rawMaterialsIssueStrategy;
 
 	public PPOrderRoutingActivity copy() {return toBuilder().build();}
 

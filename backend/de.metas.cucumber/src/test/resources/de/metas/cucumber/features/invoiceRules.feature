@@ -42,7 +42,7 @@ Feature: invoice rules
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
-    And 'generate shipments' process is invoked
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -232,7 +232,7 @@ Feature: invoice rules
     And the following qty is picked
       | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | QtyPicked | M_HU_ID.Identifier |
       | s_s_3                            | p_3                     | 5         | hu_2               |
-    And after not more than 60s locate invoice candidates by order line:
+    And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_3                      |
     And recompute invoice candidates if required
@@ -272,8 +272,8 @@ Feature: invoice rules
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_3                            |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver_Override | QtyToDeliver | QtyDelivered | QtyOrdered | QtyPickList | Processed |
-      | s_s_3                            |                       | 0            | 10           | 10         | 5           | false     |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyPickList | OPT.Processed |
+      | s_s_3                            |                           | 0                | 10               | 10             | 5               | false         |
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier  | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | shipment_1, shipment_2 | s_s_3                            | P                 | Y                  |
@@ -290,8 +290,8 @@ Feature: invoice rules
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_3                            |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver_Override | QtyToDeliver | QtyDelivered | QtyOrdered | QtyPickList | Processed |
-      | s_s_3                            |                       | 0            | 15           | 10         | 0           | true      |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyPickList | OPT.Processed |
+      | s_s_3                            |                           | 0                | 15               | 10             | 0               | true          |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endcustomer_3               | p_3                     | 100                 |

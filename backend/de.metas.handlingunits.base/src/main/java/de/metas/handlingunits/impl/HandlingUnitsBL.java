@@ -103,6 +103,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -138,6 +139,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
 
@@ -1361,9 +1363,38 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	@NonNull
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds)
+	{
+		return handlingUnitsRepo.retrievePIInfo(piItemIds);
+	}
+
+	@Override
+	@Nullable
+	public I_M_HU_PI retrievePIDefaultForPicking()
+	{
+		return handlingUnitsRepo.retrievePIDefaultForPicking();
+	}
+
+	@Override
 	public boolean isTUIncludedInLU(@NonNull final I_M_HU tu, @NonNull final I_M_HU expectedLU)
 	{
 		final I_M_HU actualLU = getLoadingUnitHU(tu);
 		return actualLU != null && actualLU.getM_HU_ID() == expectedLU.getM_HU_ID();
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<LocatorId> getLocatorIds(@NonNull final Collection<HuId> huIds)
+	{
+		final List<I_M_HU> hus = handlingUnitsRepo.getByIds(huIds);
+
+		final ImmutableSet<Integer> locatorIds = hus
+				.stream()
+				.map(I_M_HU::getM_Locator_ID)
+				.filter(locatorId -> locatorId > 0)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return warehouseBL.getLocatorIdsByRepoId(locatorIds);
 	}
 }
