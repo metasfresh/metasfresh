@@ -626,6 +626,16 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
+		final BigDecimal cashRoundingAmt = getAmount(Doc.AMTTYPE_CashRounding);
+		if (cashRoundingAmt.signum() != 0)
+		{
+			fact.createLine()
+					.setAccount(as.getGeneralLedger().getCashRoundingAcct())
+					.setCurrencyId(getCurrencyId())
+					.setAmtSource(cashRoundingAmt, null)
+					.buildAndAdd();
+		}
+
 		//
 		// Expense/InventoryClearing DR
 		for (final DocLine_Invoice line : getDocLines())
@@ -794,6 +804,16 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.setAccount(getAccountProvider().getChargeAccount(chargeId, as.getId(), chargeAmt))
 					.setCurrencyId(currencyId)
 					.setAmtSource(null, chargeAmt)
+					.buildAndAdd();
+		}
+
+		final BigDecimal cashRoundingAmt = getAmount(Doc.AMTTYPE_CashRounding);
+		if (cashRoundingAmt.signum() != 0)
+		{
+			fact.createLine()
+					.setAccount(as.getGeneralLedger().getCashRoundingAcct())
+					.setCurrencyId(getCurrencyId())
+					.setAmtSource(null, cashRoundingAmt)
 					.buildAndAdd();
 		}
 
