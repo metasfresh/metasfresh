@@ -798,7 +798,10 @@ public class CCache<K, V> implements CacheInterface
 		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
 		{
 			logger.debug("Running finalize");
-			cache.invalidateAll();
+			if (cache != null)
+			{
+				cache.invalidateAll();
+			}
 		}
 	}
 

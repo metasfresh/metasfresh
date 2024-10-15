@@ -25,7 +25,6 @@ package de.metas.ui.web.window.model.lookup;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.impl.TooltipType;
-import de.metas.cache.CCacheStats;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.WindowConstants;
@@ -133,12 +132,6 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	@Override
 	public void cacheInvalidate()
 	{
-	}
-
-	@Override
-	public List<CCacheStats> getCacheStats()
-	{
-		return ImmutableList.of();
 	}
 
 	@Override

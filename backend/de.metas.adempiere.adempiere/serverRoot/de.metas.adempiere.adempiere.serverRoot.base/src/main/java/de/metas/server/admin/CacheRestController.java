@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.adempiere.adempiere.serverRoot.base
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,24 +20,20 @@
  * #L%
  */
 
-package de.metas.cache.rest;
+package de.metas.server.admin;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
+import de.metas.Profiles;
+import de.metas.cache.rest.CacheRestControllerTemplate;
+import de.metas.util.web.MetasfreshRestAPIConstants;
+import org.springframework.context.annotation.Profile;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-
-@EqualsAndHashCode
-@ToString
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-public class JsonCacheResetResponse
+@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/cache")
+@RestController
+@Profile(Profiles.PROFILE_App)
+public class CacheRestController extends CacheRestControllerTemplate
 {
-	@NonNull private final ArrayList<String> logs = new ArrayList<>();
-
-	public void addLog(@NonNull final String log)
-	{
-		logs.add(log);
-	}
+	@Override
+	protected void assertAuth() {}
 }
