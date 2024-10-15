@@ -90,7 +90,7 @@ public class SumUpEventsDispatcher
 
 		// NOTE: we don't have to fireLocalListeners 
 		// because we assume we will also get back this event and then we will handle it
-		events.forEach(eventBus::postObject);
+		events.forEach(eventBus::enqueueObject);
 	}
 
 	public void fireNewTransaction(@NonNull final SumUpTransaction trx)

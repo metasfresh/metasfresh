@@ -20,7 +20,7 @@ public class Topic
 	Type type;
 	String fullName;
 
-	public static Topic distributed(final String name)
+	public static Topic remote(final String name)
 	{
 		return builder().name(name).type(Type.DISTRIBUTED).build();
 	}

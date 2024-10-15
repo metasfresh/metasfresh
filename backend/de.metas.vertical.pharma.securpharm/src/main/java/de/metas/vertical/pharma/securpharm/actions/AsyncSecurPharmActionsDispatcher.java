@@ -38,7 +38,7 @@ import java.util.concurrent.Executors;
 @Primary
 public class AsyncSecurPharmActionsDispatcher implements SecurPharmActionsDispatcher
 {
-	private static final Topic TOPIC = Topic.distributed("de.metas.vertical.pharma.securpharm.actions");
+	private static final Topic TOPIC = Topic.remote("de.metas.vertical.pharma.securpharm.actions");
 
 	private final IEventBus eventBus;
 	private final Executor executor;
