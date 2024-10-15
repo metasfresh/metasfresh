@@ -9,15 +9,17 @@ import {
 import { usePOSTerminal } from '../../actions/posTerminal';
 import PropTypes from 'prop-types';
 
-const CurrentOrderActions = ({ disabled }) => {
+const CurrentOrderActions = ({ disabled: disabledParam }) => {
   const dispatch = useDispatch();
   const posTerminal = usePOSTerminal();
   const posTerminalId = posTerminal.id;
   const currentOrder = useCurrentOrder({ posTerminalId });
 
-  const isNewOrderAllowed = !disabled && !currentOrder.isLoading && currentOrder.lines?.length > 0;
-  const isVoidAllowed = !disabled && !currentOrder.isLoading && currentOrder.lines?.length > 0;
-  const isPayAllowed = !disabled && !currentOrder.isLoading && currentOrder.lines?.length > 0;
+  const disabled = disabledParam || currentOrder.isLoading;
+  const hasLines = currentOrder.lines?.length > 0;
+  const isNewOrderAllowed = !disabled && hasLines;
+  const isVoidAllowed = !disabled && currentOrder.allowVoid && hasLines;
+  const isPayAllowed = !disabled && currentOrder.allowWaitPayment;
   const isDeleteCurrentLineAllowed = !disabled && !!currentOrder.selectedLineUUID;
 
   const onNewOrderClick = () => {

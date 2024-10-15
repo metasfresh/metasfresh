@@ -41,6 +41,7 @@ public class POSOrder
 {
 	@NonNull @Getter private final POSOrderExternalId externalId;
 	@Nullable @Getter @Setter private POSOrderId localId;
+	@Nullable @Getter @Setter private String documentNo;
 
 	@NonNull @Getter private POSOrderStatus status;
 	@NonNull @Getter private final DocTypeId salesOrderDocTypeId;
@@ -69,6 +70,7 @@ public class POSOrder
 	private POSOrder(
 			@NonNull final POSOrderExternalId externalId,
 			@Nullable final POSOrderId localId,
+			@Nullable final String documentNo,
 			@Nullable final POSOrderStatus status,
 			@NonNull final DocTypeId salesOrderDocTypeId,
 			@NonNull final PricingSystemAndListId pricingSystemAndListId,
@@ -86,6 +88,7 @@ public class POSOrder
 	{
 		this.externalId = externalId;
 		this.localId = localId;
+		this.documentNo = documentNo;
 		this.status = status != null ? status : POSOrderStatus.Drafted;
 		this.salesOrderDocTypeId = salesOrderDocTypeId;
 		this.pricingSystemAndListId = pricingSystemAndListId;
@@ -147,6 +150,15 @@ public class POSOrder
 
 	public Stream<POSPayment> streamPaymentsNotDeleted() {return payments.stream().filter(payment -> !payment.isDeleted());}
 
+	public BooleanWithReason checkUserCanAddPayment()
+	{
+		if (getOpenAmt().signum() <= 0)
+		{
+			return BooleanWithReason.falseBecause("Already completely paid");
+		}
+		return BooleanWithReason.TRUE;
+	}
+
 	public void changeStatusTo(
 			@NonNull final POSOrderStatus targetStatus,
 			@NonNull final POSOrderProcessingServices services)
@@ -156,13 +168,12 @@ public class POSOrder
 			return;
 		}
 
-		this.status.assertCanTransitionTo(targetStatus);
-
 		POSOrderStatus newStatus;
 		switch (targetStatus)
 		{
 			case Drafted:
 			{
+				changeStatusTo_Drafted();
 				newStatus = POSOrderStatus.Drafted;
 				break;
 			}
@@ -174,12 +185,19 @@ public class POSOrder
 			}
 			case WaitingPayment:
 			{
+				changeStatusTo_WaitingPayment();
 				newStatus = POSOrderStatus.WaitingPayment;
 				break;
 			}
 			case Completed:
 			{
 				newStatus = changeStatusTo_Complete(services);
+				break;
+			}
+			case Closed:
+			{
+				changeStatusTo_Closed();
+				newStatus = POSOrderStatus.Closed;
 				break;
 			}
 			default:
@@ -191,18 +209,71 @@ public class POSOrder
 		this.status = newStatus;
 	}
 
-	private void changeStatusTo_Void()
+	public BooleanWithReason checkCanTransitionToDrafted()
 	{
-		if (salesOrderId != null)
-		{
-			throw new AdempiereException("Voiding POS orders with generated sales orders is not allowed");
-		}
-		streamPaymentsNotDeleted().forEach(POSPayment::assertAllowVoid);
+		return status.checkCanTransitionTo(POSOrderStatus.Drafted);
 	}
 
-	public BooleanWithReason checkCanTryComplete()
+	private void changeStatusTo_Drafted()
 	{
-		final BooleanWithReason canComplete = this.status.checkCanTransitionTo(POSOrderStatus.Completed);
+		checkCanTransitionToDrafted().assertTrue();
+	}
+
+	public BooleanWithReason checkCanTransitionToWaitingPayment()
+	{
+		final BooleanWithReason canTransition = status.checkCanTransitionTo(POSOrderStatus.WaitingPayment);
+		if (canTransition.isFalse())
+		{
+			return canTransition;
+		}
+
+		if (lines.isEmpty())
+		{
+			return BooleanWithReason.falseBecause(AdempiereException.MSG_NoLines);
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
+	private void changeStatusTo_WaitingPayment()
+	{
+		checkCanTransitionToWaitingPayment().assertTrue();
+	}
+
+	private void changeStatusTo_Void()
+	{
+		checkCanTransitionToVoided().assertTrue();
+	}
+
+	public BooleanWithReason checkCanTransitionToVoided()
+	{
+		final BooleanWithReason canVoid = status.checkCanTransitionTo(POSOrderStatus.Voided);
+		if (canVoid.isFalse())
+		{
+			return canVoid;
+		}
+
+		if (salesOrderId != null)
+		{
+			return BooleanWithReason.falseBecause("Voiding POS orders with generated sales orders is not allowed");
+		}
+
+		final BooleanWithReason allowVoidingPayments = streamPaymentsNotDeleted()
+				.map(POSPayment::checkAllowVoid)
+				.filter(BooleanWithReason::isFalse)
+				.findFirst()
+				.orElse(BooleanWithReason.TRUE);
+		if (allowVoidingPayments.isFalse())
+		{
+			return allowVoidingPayments;
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
+	public BooleanWithReason checkCanTryTransitionToCompleted()
+	{
+		final BooleanWithReason canComplete = status.checkCanTransitionTo(POSOrderStatus.Completed);
 		if (canComplete.isFalse())
 		{
 			return canComplete;
@@ -222,7 +293,7 @@ public class POSOrder
 
 	private POSOrderStatus changeStatusTo_Complete(@NonNull final POSOrderProcessingServices services)
 	{
-		checkCanTryComplete().assertTrue();
+		checkCanTryTransitionToCompleted().assertTrue();
 
 		services.processPOSPayments(this);
 		if (!isPaymentsProcessedSuccessfully())
@@ -233,6 +304,16 @@ public class POSOrder
 		services.scheduleCreateSalesOrderInvoiceAndShipment(getLocalIdNotNull(), getCashierId());
 
 		return POSOrderStatus.Completed;
+	}
+
+	private void changeStatusTo_Closed()
+	{
+		checkCanTransitionToClosed().assertTrue();
+	}
+
+	private BooleanWithReason checkCanTransitionToClosed()
+	{
+		return status.checkCanTransitionTo(POSOrderStatus.Closed);
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")

@@ -314,6 +314,73 @@ public interface I_SUMUP_Transaction
 	String COLUMNNAME_Status = "Status";
 
 	/**
+	 * Set Card Reader External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSUMUP_CardReader_ExternalId (@Nullable java.lang.String SUMUP_CardReader_ExternalId);
+
+	/**
+	 * Get Card Reader External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSUMUP_CardReader_ExternalId();
+
+	ModelColumn<I_SUMUP_Transaction, Object> COLUMN_SUMUP_CardReader_ExternalId = new ModelColumn<>(I_SUMUP_Transaction.class, "SUMUP_CardReader_ExternalId", null);
+	String COLUMNNAME_SUMUP_CardReader_ExternalId = "SUMUP_CardReader_ExternalId";
+
+	/**
+	 * Set Card Reader.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSUMUP_CardReader_ID (int SUMUP_CardReader_ID);
+
+	/**
+	 * Get Card Reader.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSUMUP_CardReader_ID();
+
+	@Nullable de.metas.payment.sumup.repository.model.I_SUMUP_CardReader getSUMUP_CardReader();
+
+	void setSUMUP_CardReader(@Nullable de.metas.payment.sumup.repository.model.I_SUMUP_CardReader SUMUP_CardReader);
+
+	ModelColumn<I_SUMUP_Transaction, de.metas.payment.sumup.repository.model.I_SUMUP_CardReader> COLUMN_SUMUP_CardReader_ID = new ModelColumn<>(I_SUMUP_Transaction.class, "SUMUP_CardReader_ID", de.metas.payment.sumup.repository.model.I_SUMUP_CardReader.class);
+	String COLUMNNAME_SUMUP_CardReader_ID = "SUMUP_CardReader_ID";
+
+	/**
+	 * Set Card Reader Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSUMUP_CardReader_Name (@Nullable java.lang.String SUMUP_CardReader_Name);
+
+	/**
+	 * Get Card Reader Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSUMUP_CardReader_Name();
+
+	ModelColumn<I_SUMUP_Transaction, Object> COLUMN_SUMUP_CardReader_Name = new ModelColumn<>(I_SUMUP_Transaction.class, "SUMUP_CardReader_Name", null);
+	String COLUMNNAME_SUMUP_CardReader_Name = "SUMUP_CardReader_Name";
+
+	/**
 	 * Set Client Transaction Id.
 	 *
 	 * <br>Type: String

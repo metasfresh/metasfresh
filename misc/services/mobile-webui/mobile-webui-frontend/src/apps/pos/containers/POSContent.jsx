@@ -10,6 +10,7 @@ import {
 } from '../constants/orderStatus';
 import POSOrderPanel from './order_panel/POSOrderPanel';
 import POSPaymentPanel from './payment_panel/POSPaymentPanel';
+import OrderSummary from './order_summary/OrderSummary';
 
 export const POSContent = ({ disabled }) => {
   const posTerminal = usePOSTerminal();
@@ -20,8 +21,9 @@ export const POSContent = ({ disabled }) => {
     case ORDER_STATUS_VOIDED:
       return <POSOrderPanel disabled={disabled} />;
     case ORDER_STATUS_WAITING_PAYMENT:
-    case ORDER_STATUS_COMPLETED:
       return <POSPaymentPanel disabled={disabled} />;
+    case ORDER_STATUS_COMPLETED:
+      return <OrderSummary disabled={disabled} />;
     default:
       return <></>;
   }

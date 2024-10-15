@@ -178,11 +178,17 @@ public class SumUpService
 	{
 		final SumUpClientTransactionId clientTransactionId = checkoutResponse.getData().getClient_transaction_id();
 
+		final SumUpCardReader cardReader = config.getCardReaderById(request.getCardReaderId());
+
 		return SumUpTransaction.builder()
 				.configId(config.getId())
 				.externalId(SumUpTransactionExternalId.ofString("UNKNOWN-" + clientTransactionId))
 				.clientTransactionId(clientTransactionId)
 				.merchantCode(config.getMerchantCode())
+				.cardReader(SumUpTransaction.CardReader.builder()
+						.externalId(cardReader.getExternalId())
+						.name(cardReader.getName())
+						.build())
 				.timestamp(SystemTime.asInstant())
 				.status(SumUpTransactionStatus.PENDING)
 				.amount(request.getAmount())

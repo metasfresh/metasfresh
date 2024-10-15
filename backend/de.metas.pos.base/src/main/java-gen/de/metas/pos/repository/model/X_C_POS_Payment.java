@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Payment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1345166671L;
+	private static final long serialVersionUID = 663180181L;
 
     /** Standard Constructor */
     public X_C_POS_Payment (final Properties ctx, final int C_POS_Payment_ID, @Nullable final String trxName)
@@ -45,6 +45,32 @@ public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Pa
 	public BigDecimal getAmount() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Amount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setAmountTendered (final BigDecimal AmountTendered)
+	{
+		set_Value (COLUMNNAME_AmountTendered, AmountTendered);
+	}
+
+	@Override
+	public BigDecimal getAmountTendered() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_AmountTendered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setChangeBackAmount (final BigDecimal ChangeBackAmount)
+	{
+		set_Value (COLUMNNAME_ChangeBackAmount, ChangeBackAmount);
+	}
+
+	@Override
+	public BigDecimal getChangeBackAmount() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChangeBackAmount);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -115,6 +141,30 @@ public class X_C_POS_Payment extends org.compiere.model.PO implements I_C_POS_Pa
 	public java.lang.String getExternalId() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
+	public void setPOS_CardReader_ExternalId (final @Nullable java.lang.String POS_CardReader_ExternalId)
+	{
+		set_Value (COLUMNNAME_POS_CardReader_ExternalId, POS_CardReader_ExternalId);
+	}
+
+	@Override
+	public java.lang.String getPOS_CardReader_ExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_POS_CardReader_ExternalId);
+	}
+
+	@Override
+	public void setPOS_CardReader_Name (final @Nullable java.lang.String POS_CardReader_Name)
+	{
+		set_Value (COLUMNNAME_POS_CardReader_Name, POS_CardReader_Name);
+	}
+
+	@Override
+	public java.lang.String getPOS_CardReader_Name() 
+	{
+		return get_ValueAsString(COLUMNNAME_POS_CardReader_Name);
 	}
 
 	/** 

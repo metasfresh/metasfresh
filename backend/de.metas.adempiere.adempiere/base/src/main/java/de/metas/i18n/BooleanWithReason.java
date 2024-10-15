@@ -76,7 +76,7 @@ public final class BooleanWithReason
 		return falseBecause(TranslatableStrings.adMessage(adMessage, msgParameters));
 	}
 
-	private static ITranslatableString toTrl(@Nullable final String reasonStr)
+	 private static ITranslatableString toTrl(@Nullable final String reasonStr)
 	{
 		if (reasonStr == null || Check.isBlank(reasonStr))
 		{

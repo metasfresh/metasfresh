@@ -3,9 +3,11 @@ package de.metas.pos;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.order.OrderId;
+import de.metas.pos.repository.model.I_C_POS_Order;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -48,4 +50,6 @@ public class POSOrderId implements RepoIdAware
 	{
 		return Objects.equals(id1, id2);
 	}
+
+	public TableRecordReference toRecordRef() {return TableRecordReference.of(I_C_POS_Order.Table_Name, repoId);}
 }

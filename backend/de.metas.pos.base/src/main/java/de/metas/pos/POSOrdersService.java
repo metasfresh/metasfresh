@@ -12,8 +12,10 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,6 +28,7 @@ public class POSOrdersService
 	@NonNull private static final Logger logger = LogManager.getLogger(POSOrdersService.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	@NonNull private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final POSOrdersRepository ordersRepository;
 	@NonNull private final CurrencyRepository currencyRepository;
@@ -71,21 +74,24 @@ public class POSOrdersService
 	{
 		try
 		{
-			ordersRepository.updateById(posOrderId, order -> {
-				final BooleanWithReason canComplete = order.checkCanTryComplete();
-				if (canComplete.isTrue())
-				{
-					order.changeStatusTo(POSOrderStatus.Completed, posOrderProcessingServices);
-				}
-				else
-				{
-					logger.debug("Skip completing {} because {}", posOrderId, canComplete.getReason());
-				}
-			});
+			ordersRepository.updateById(posOrderId, this::tryCompleteNoFail);
 		}
 		catch (final Exception ex)
 		{
 			logger.warn("Failed completing order {}. Ignored.", posOrderId, ex);
+		}
+	}
+
+	private void tryCompleteNoFail(@NonNull final POSOrder order)
+	{
+		final BooleanWithReason canComplete = order.checkCanTryTransitionToCompleted();
+		if (canComplete.isTrue())
+		{
+			order.changeStatusTo(POSOrderStatus.Completed, posOrderProcessingServices);
+		}
+		else
+		{
+			logger.debug("Skip completing {} because {}", order.getLocalId(), canComplete.getReason());
 		}
 	}
 
@@ -137,6 +143,7 @@ public class POSOrdersService
 			@NonNull final UserId userId)
 	{
 		final POSTerminal posTerminal = posTerminalService.getPOSTerminalById(posTerminalId);
+
 		return POSOrder.builder()
 				.externalId(externalId)
 				.status(POSOrderStatus.Drafted)
@@ -153,17 +160,38 @@ public class POSOrdersService
 				.build();
 	}
 
-	public POSOrder checkoutPayment(
-			@NonNull final POSTerminalId posTerminalId,
-			@NonNull final POSOrderExternalId posOrderExternalId,
-			@NonNull final POSPaymentExternalId posPaymentExternalId,
-			@NonNull final UserId userId)
+	public POSOrder checkoutPayment(@NonNull POSPaymentCheckoutRequest request)
 	{
+		final POSTerminalId posTerminalId = request.getPosTerminalId();
+		final POSOrderExternalId posOrderExternalId = request.getPosOrderExternalId();
+		final POSPaymentExternalId posPaymentExternalId = request.getPosPaymentExternalId();
+		final UserId userId = request.getUserId();
+
 		return ordersRepository.updateByExternalId(posOrderExternalId, posOrder -> {
 			assertCanEdit(posTerminalId, posOrder, userId);
 			posOrder.assertWaitingForPayment();
-			posOrder.updatePaymentByExternalId(posPaymentExternalId, posPayment -> posOrderProcessingServices.processPOSPayment(posPayment, posOrder));
+
+			posOrder.updatePaymentByExternalId(posPaymentExternalId, posPayment -> checkoutPayment(request, posPayment, posOrder));
+			tryCompleteNoFail(posOrder);
 		});
+	}
+
+	private POSPayment checkoutPayment(@NonNull POSPaymentCheckoutRequest request, @NonNull final POSPayment posPaymentToProcess, @NonNull final POSOrder posOrder)
+	{
+		POSPayment posPayment = posPaymentToProcess;
+
+		if (posPayment.getPaymentMethod().isCard() && request.getCardPayAmount() != null)
+		{
+			posPayment = posPayment.withCardPayAmount(request.getCardPayAmount());
+		}
+
+		if (posPayment.getPaymentMethod().isCash() && request.getCashTenderedAmount() != null)
+		{
+			posPayment = posPayment.withCashTenderedAmount(request.getCashTenderedAmount());
+		}
+
+		return posOrderProcessingServices.processPOSPayment(posPayment, posOrder);
+
 	}
 
 	public POSOrder refundPayment(
@@ -182,4 +210,9 @@ public class POSOrdersService
 		});
 	}
 
+	public Optional<Resource> getReceiptPdf(final @NonNull POSOrderExternalId externalId)
+	{
+		final POSOrderId id = ordersRepository.getIdByExternalId(externalId);
+		return archiveBL.getLastArchiveBinaryData(id.toRecordRef());
+	}
 }
