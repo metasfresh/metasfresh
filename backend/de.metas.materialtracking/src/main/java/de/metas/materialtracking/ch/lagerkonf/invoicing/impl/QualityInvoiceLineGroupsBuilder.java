@@ -138,12 +138,8 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		return new ArrayList<>(_createdInvoiceLineGroups);
 	}
 
-	private void addCreatedInvoiceLineGroup(final IQualityInvoiceLineGroup invoiceLineGroup)
+	private void addCreatedInvoiceLineGroup(@NonNull final IQualityInvoiceLineGroup invoiceLineGroup)
 	{
-		//
-		// Validate the invoice line group (before adding)
-		Check.assumeNotNull(invoiceLineGroup, "invoiceLineGroup not null");
-
 		//
 		// Validate the invoiceable line
 		final IQualityInvoiceLine invoiceableLine = invoiceLineGroup.getInvoiceableLine();
@@ -271,7 +267,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		// Raw Additional Fees
 		// e.g.
 		// Abzug ungewaschene BIO Karotten
-		firstItem = true; //
 		for (final IInvoicingItem feeItem : getQualityBasedConfig().getRawAdditionalFeeProducts())
 		{
 			createQualityInvoiceLineGroup_AdditionalFees(feeItem, QualityInspectionLineType.Raw, firstItem); // is called with firstItem==true only one time
@@ -336,8 +331,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 	/**
 	 * Returns the first {@link IQualityInvoiceLineGroup} that is supposed to be displayed
-	 *
-	 * @return
 	 */
 	private IQualityInvoiceLineGroup getFirstDisplayedGroupOrNull()
 	{
