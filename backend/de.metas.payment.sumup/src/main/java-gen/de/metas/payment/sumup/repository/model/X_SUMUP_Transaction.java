@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMUP_Transaction, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1530438573L;
+	private static final long serialVersionUID = -8861295L;
 
     /** Standard Constructor */
     public X_SUMUP_Transaction (final Properties ctx, final int SUMUP_Transaction_ID, @Nullable final String trxName)
@@ -161,6 +161,57 @@ public class X_SUMUP_Transaction extends org.compiere.model.PO implements I_SUMU
 	public java.lang.String getStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_Status);
+	}
+
+	@Override
+	public void setSUMUP_CardReader_ExternalId (final @Nullable java.lang.String SUMUP_CardReader_ExternalId)
+	{
+		set_Value (COLUMNNAME_SUMUP_CardReader_ExternalId, SUMUP_CardReader_ExternalId);
+	}
+
+	@Override
+	public java.lang.String getSUMUP_CardReader_ExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_SUMUP_CardReader_ExternalId);
+	}
+
+	@Override
+	public de.metas.payment.sumup.repository.model.I_SUMUP_CardReader getSUMUP_CardReader()
+	{
+		return get_ValueAsPO(COLUMNNAME_SUMUP_CardReader_ID, de.metas.payment.sumup.repository.model.I_SUMUP_CardReader.class);
+	}
+
+	@Override
+	public void setSUMUP_CardReader(final de.metas.payment.sumup.repository.model.I_SUMUP_CardReader SUMUP_CardReader)
+	{
+		set_ValueFromPO(COLUMNNAME_SUMUP_CardReader_ID, de.metas.payment.sumup.repository.model.I_SUMUP_CardReader.class, SUMUP_CardReader);
+	}
+
+	@Override
+	public void setSUMUP_CardReader_ID (final int SUMUP_CardReader_ID)
+	{
+		if (SUMUP_CardReader_ID < 1) 
+			set_Value (COLUMNNAME_SUMUP_CardReader_ID, null);
+		else 
+			set_Value (COLUMNNAME_SUMUP_CardReader_ID, SUMUP_CardReader_ID);
+	}
+
+	@Override
+	public int getSUMUP_CardReader_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SUMUP_CardReader_ID);
+	}
+
+	@Override
+	public void setSUMUP_CardReader_Name (final @Nullable java.lang.String SUMUP_CardReader_Name)
+	{
+		set_Value (COLUMNNAME_SUMUP_CardReader_Name, SUMUP_CardReader_Name);
+	}
+
+	@Override
+	public java.lang.String getSUMUP_CardReader_Name() 
+	{
+		return get_ValueAsString(COLUMNNAME_SUMUP_CardReader_Name);
 	}
 
 	@Override

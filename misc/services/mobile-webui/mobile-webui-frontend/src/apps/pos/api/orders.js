@@ -41,6 +41,11 @@ export const changeOrderStatusToComplete = ({ posTerminalId, order_uuid }) => {
     .post(`${posApiBase}/orders/complete`, { posTerminalId, order_uuid })
     .then((response) => unboxAxiosResponse(response));
 };
+export const changeOrderStatusToClosed = ({ posTerminalId, order_uuid }) => {
+  return axios
+    .post(`${posApiBase}/orders/close`, { posTerminalId, order_uuid })
+    .then((response) => unboxAxiosResponse(response));
+};
 
 export const useOrdersWebsocket = ({ posTerminalId, onWebsocketMessage }) => {
   useEffect(() => {
@@ -70,9 +75,15 @@ export const useOrdersWebsocket = ({ posTerminalId, onWebsocketMessage }) => {
   }, [posTerminalId]);
 };
 
-export const checkoutPayment = ({ posTerminalId, order_uuid, payment_uuid }) => {
+export const checkoutPayment = ({ posTerminalId, order_uuid, payment_uuid, cardPayAmount, cashTenderedAmount }) => {
   return axios
-    .post(`${posApiBase}/orders/checkoutPayment`, { posTerminalId, order_uuid, payment_uuid })
+    .post(`${posApiBase}/orders/checkoutPayment`, {
+      posTerminalId,
+      order_uuid,
+      payment_uuid,
+      cardPayAmount,
+      cashTenderedAmount,
+    })
     .then((response) => unboxAxiosResponse(response));
 };
 
@@ -80,4 +91,11 @@ export const refundPayment = ({ posTerminalId, order_uuid, payment_uuid }) => {
   return axios
     .post(`${posApiBase}/orders/refundPayment`, { posTerminalId, order_uuid, payment_uuid })
     .then((response) => unboxAxiosResponse(response));
+};
+
+export const getReceiptPdf = ({ order_uuid }) => {
+  return axios.get(toUrl(`${posApiBase}/orders/receipt/receipt.pdf`, { id: order_uuid }), {
+    responseType: 'arraybuffer',
+    validateStatus: false,
+  });
 };

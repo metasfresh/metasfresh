@@ -17,6 +17,7 @@ import {
   useCurrentOrder,
 } from '../../actions/orders';
 import PropTypes from 'prop-types';
+import PendingPaymentModal from './PendingPaymentModal';
 
 const POSPaymentPanel = ({ disabled }) => {
   const dispatch = useDispatch();
@@ -42,10 +43,15 @@ const POSPaymentPanel = ({ disabled }) => {
     precision: currencyPrecision,
   });
 
+  const isAllowAddPayment = !disabled && currentOrder.allowAddPayment;
+  const isAllowValidate = !disabled && currentOrder.allowTryComplete;
+  const isAllowBack = !disabled && currentOrder.allowDraft;
+
   const payments = currentOrder?.payments ?? [];
 
-  const isAllowAddPayment = !disabled && openAmt > 0;
-  const isAllowValidate = !disabled && openAmt === 0;
+  //
+  //
+  //
 
   const onAddPaymentClick = ({ paymentMethod }) => {
     if (!isAllowAddPayment) return;
@@ -68,7 +74,7 @@ const POSPaymentPanel = ({ disabled }) => {
   };
 
   const onBackClick = () => {
-    if (disabled) return;
+    if (!isAllowBack) return;
     dispatch(changeOrderStatusToDraft({ posTerminalId: posTerminal.id, order_uuid }));
   };
 
@@ -77,8 +83,20 @@ const POSPaymentPanel = ({ disabled }) => {
     dispatch(changeOrderStatusToComplete({ posTerminalId: posTerminal.id, order_uuid }));
   };
 
+  //
+  //
+  //
+
   return (
     <div className="pos-content pos-payment-panel">
+      <PendingPaymentModal
+        posTerminalId={posTerminal.id}
+        order_uuid={currentOrder.uuid}
+        orderTotalAmount={totalAmt}
+        payments={payments}
+        currency={currency}
+        currencyPrecision={currencyPrecision}
+      />
       <div className="payment-summary">
         <div className="payment-summary-line totalAmt">
           <div className="payment-summary-label">Total</div>
@@ -123,7 +141,7 @@ const POSPaymentPanel = ({ disabled }) => {
         ))}
       </div>
       <div className="payment-bottom">
-        <button className="button is-large back" onClick={onBackClick}>
+        <button className="button is-large back" disabled={!isAllowBack} onClick={onBackClick}>
           <span className="icon is-medium">
             <i className="fa-solid fa-chevron-left" />
           </span>

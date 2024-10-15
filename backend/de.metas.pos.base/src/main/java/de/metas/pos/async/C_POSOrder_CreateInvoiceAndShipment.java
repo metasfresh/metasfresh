@@ -67,13 +67,15 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 	@NonNull private final AsyncBatchService asyncBatchService = SpringContextHolder.instance.getBean(AsyncBatchService.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
+	private POSOrderId _posOrderId = null; // lazy
+
 	@Override
 	public boolean isRunInTransaction() {return false;}
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, @Nullable final String localTrxName)
 	{
-		final POSOrder posOrder = getPOSOrder();
+		final POSOrder posOrder = posOrdersRepository.getById(getPOSOrderId());
 		if (posOrder.getSalesOrderId() != null)
 		{
 			Loggables.addLog("Sales order already generated. Doing nothing");
@@ -83,31 +85,40 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 
 		final List<OLCand> olCands = createOLCands(posOrder);
 		Check.assumeNotEmpty(olCands, "No OLCands created for {}", posOrder);
-
 		final OrderId salesOrderId = processOLCands(olCands);
-		posOrder.setSalesOrderId(salesOrderId);
 
-		allocatePayments(posOrder);
-
-		posOrdersRepository.save(posOrder);
+		updatePOSOrderAndAllocatePayments(salesOrderId);
 
 		return Result.SUCCESS;
 	}
 
-	private POSOrder getPOSOrder()
+	private void updatePOSOrderAndAllocatePayments(@NonNull final OrderId salesOrderId)
 	{
-		final Set<Integer> posOrderRepoIds = retrieveAllItemIds();
-		if (posOrderRepoIds.isEmpty())
+		posOrdersRepository.updateById(getPOSOrderId(), posOrder -> {
+			posOrder.setSalesOrderId(salesOrderId);
+			allocatePayments(posOrder);
+		});
+	}
+
+	private @NonNull POSOrderId getPOSOrderId()
+	{
+		POSOrderId posOrderId = this._posOrderId;
+		if (posOrderId == null)
 		{
-			throw new AdempiereException("No elements found");
-		}
-		else if (posOrderRepoIds.size() > 1)
-		{
-			throw new AdempiereException("More than one elements found");
+			final Set<Integer> posOrderRepoIds = retrieveAllItemIds();
+			if (posOrderRepoIds.isEmpty())
+			{
+				throw new AdempiereException("No elements found");
+			}
+			else if (posOrderRepoIds.size() > 1)
+			{
+				throw new AdempiereException("More than one elements found");
+			}
+
+			posOrderId = this._posOrderId = POSOrderId.ofRepoId(posOrderRepoIds.iterator().next());
 		}
 
-		final POSOrderId posOrderId = POSOrderId.ofRepoId(posOrderRepoIds.iterator().next());
-		return posOrdersRepository.getById(posOrderId);
+		return posOrderId;
 	}
 
 	private List<OLCand> createOLCands(@NonNull final POSOrder posOrder)
@@ -236,11 +247,8 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 
 	private void allocatePayments(final POSOrder posOrder)
 	{
-		trxManager.runInThreadInheritedTrx(() -> allocatePaymentsInTrx(posOrder));
-	}
-
-	private void allocatePaymentsInTrx(final POSOrder posOrder)
-	{
+		trxManager.assertThreadInheritedTrxExists();
+		
 		final I_C_Invoice invoice = getSingleInvoice(posOrder);
 
 		for (final POSPayment posPayment : posOrder.getPaymentsNotDeleted())

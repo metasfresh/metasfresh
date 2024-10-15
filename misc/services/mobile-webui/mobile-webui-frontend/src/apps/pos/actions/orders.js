@@ -3,16 +3,23 @@ import {
   ADD_ORDER_LINE,
   ADD_PAYMENT,
   NEW_ORDER,
-  ORDERS_LIST_UPDATE,
   REMOVE_ORDER_LINE,
   REMOVE_PAYMENT,
+  SET_CURRENT_ORDER,
   SET_SELECTED_ORDER_LINE,
   UPDATE_ORDER,
 } from '../actionTypes';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
-import { getCurrentOrderFromGlobalState, getOrderByUUID } from '../reducers/orderUtils';
+import {
+  getCurrentOrderFromGlobalState,
+  getOpenOrdersArrayFromGlobalState,
+  getOrderByUUID,
+} from '../reducers/orderUtils';
 
+export const useOpenOrdersArray = () => {
+  return useSelector((globalState) => getOpenOrdersArrayFromGlobalState(globalState));
+};
 export const useCurrentOrderOrNew = ({ posTerminalId }) => {
   const dispatch = useDispatch();
   const [loadingStatus, setLoadingStatus] = useState('to-load');
@@ -87,6 +94,15 @@ export const addNewOrderAction = ({ posTerminalId }) => {
     payload: { posTerminalId },
   };
 };
+export const setCurrentOrder = ({ order_uuid }) => {
+  return (dispatch) => dispatch(setCurrentOrderAction({ order_uuid }));
+};
+const setCurrentOrderAction = ({ order_uuid }) => {
+  return {
+    type: SET_CURRENT_ORDER,
+    payload: { order_uuid },
+  };
+};
 export const changeOrderStatusToDraft = ({ posTerminalId, order_uuid }) => {
   return async (dispatch) => {
     const order = await ordersAPI.changeOrderStatusToDraft({ posTerminalId, order_uuid });
@@ -108,6 +124,12 @@ export const changeOrderStatusToWaitingPayment = ({ posTerminalId, order_uuid })
 export const changeOrderStatusToComplete = ({ posTerminalId, order_uuid }) => {
   return async (dispatch) => {
     const order = await ordersAPI.changeOrderStatusToComplete({ posTerminalId, order_uuid });
+    dispatch(updateOrderFromBackendAction({ order }));
+  };
+};
+export const changeOrderStatusToClosed = ({ posTerminalId, order_uuid }) => {
+  return async (dispatch) => {
+    const order = await ordersAPI.changeOrderStatusToClosed({ posTerminalId, order_uuid });
     dispatch(updateOrderFromBackendAction({ order }));
   };
 };
@@ -207,21 +229,7 @@ const syncOrderToBackend = ({ order_uuid }) => {
     ordersAPI.updateOrder({ order }).then((order) => dispatch(updateOrderFromBackendAction({ order })));
   };
 };
-export const updateOrderFromBackend = ({ posTerminalId, order_uuid }) => {
-  return (dispatch) => {
-    ordersAPI
-      .getOpenOrders({ posTerminalId, ids: [order_uuid] })
-      .then(({ list, missingIds }) =>
-        dispatch(updateOrdersArrayFromBackendAction({ posTerminalId, list, missingIds, isUpdateOnly: true }))
-      );
-  };
-};
-const updateOrdersArrayFromBackendAction = ({ posTerminalId, list, missingIds, isUpdateOnly }) => {
-  return {
-    type: ORDERS_LIST_UPDATE,
-    payload: { posTerminalId, ordersArray: list, missingIds, isUpdateOnly },
-  };
-};
+
 export const updateOrderFromBackendAction = ({ order }) => {
   return {
     type: UPDATE_ORDER,
@@ -233,6 +241,33 @@ export const setSelectedOrderLineAction = ({ order_uuid, selectedLineUUID }) => 
     type: SET_SELECTED_ORDER_LINE,
     payload: { order_uuid, selectedLineUUID },
   };
+};
+
+export const getReceiptPdf = async ({ order_uuid, retryCount = 10, retryDelayMillis = 1000 }) => {
+  return retryIf404({
+    httpCall: () => ordersAPI.getReceiptPdf({ order_uuid }),
+    retryCount,
+    retryDelayMillis,
+  }).then((response) => Buffer.from(response.data, 'binary').toString('base64'));
+};
+
+const retryIf404 = ({ httpCall, retryCount, retryDelayMillis }) => {
+  const recursiveCall = (resolve, reject, count = 1) => {
+    return httpCall().then((response) => {
+      if (response.status === 200) {
+        console.log(`Got 200 OK answer after ${count} tries. Accepting.`, { response });
+        resolve(response);
+      } else if (response.status === 404 && count < retryCount) {
+        console.log(`Got 404 after ${count}/${retryCount} tries. Recheduling...`, { response });
+        setTimeout(() => recursiveCall(resolve, reject, count + 1), retryDelayMillis);
+      } else {
+        console.log(`Got no 200 answer after ${count} tries. Rejecting.`, { response });
+        reject(response);
+      }
+    });
+  };
+
+  return new Promise((resolve, reject) => recursiveCall(resolve, reject));
 };
 
 //
@@ -260,12 +295,18 @@ export const removePayment = ({ order_uuid, payment_uuid }) => {
     dispatch(syncOrderToBackend({ order_uuid }));
   };
 };
-export const removePaymentAction = ({ order_uuid, payment_uuid }) => {
+const removePaymentAction = ({ order_uuid, payment_uuid }) => {
   return { type: REMOVE_PAYMENT, payload: { order_uuid, payment_uuid } };
 };
-export const checkoutPayment = ({ posTerminalId, order_uuid, payment_uuid }) => {
+export const checkoutPayment = ({ posTerminalId, order_uuid, payment_uuid, cardPayAmount, cashTenderedAmount }) => {
   return async (dispatch) => {
-    const order = await ordersAPI.checkoutPayment({ posTerminalId, order_uuid, payment_uuid });
+    const order = await ordersAPI.checkoutPayment({
+      posTerminalId,
+      order_uuid,
+      payment_uuid,
+      cardPayAmount,
+      cashTenderedAmount,
+    });
     dispatch(updateOrderFromBackendAction({ order }));
   };
 };

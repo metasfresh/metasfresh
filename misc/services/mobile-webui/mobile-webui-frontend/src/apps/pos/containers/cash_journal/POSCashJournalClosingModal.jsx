@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import { getJournalSummary } from '../../api/posJournal';
-import { PAYMENT_METHOD_CASH } from '../../utils/paymentMethods';
+import { PAYMENT_METHOD_CASH } from '../../constants/paymentMethods';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import PropTypes from 'prop-types';
 import useEscapeKey from '../../../../hooks/useEscapeKey';

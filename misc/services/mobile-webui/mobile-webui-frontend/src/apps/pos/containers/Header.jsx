@@ -5,16 +5,24 @@ import { getUserFullnameFromState } from '../../../reducers/appHandler';
 import './Header.scss';
 
 import { usePOSTerminal } from '../actions/posTerminal';
-import { MODAL_POSTerminalSelect, showModalAction } from '../actions/ui';
+import { MODAL_POSTerminalSelect, MODAL_SelectOrders, showModalAction } from '../actions/ui';
+import { useOpenOrdersArray } from '../actions/orders';
 
 const Header = () => {
   const dispatch = useDispatch();
   const posTerminal = usePOSTerminal();
   const userFullname = useSelector(getUserFullnameFromState);
+  const openOrders = useOpenOrdersArray();
   const avatarLetter = userFullname ? userFullname.charAt(0).toUpperCase() : '';
 
-  const onCloseJournalClick = () => {
+  const onCloseJournalClicked = () => {
     posTerminal.changeStatusToClosing();
+  };
+  const onOrdersClicked = () => {
+    dispatch(showModalAction({ modal: MODAL_SelectOrders }));
+  };
+  const onTerminalClicked = () => {
+    dispatch(showModalAction({ modal: MODAL_POSTerminalSelect }));
   };
 
   return (
@@ -24,17 +32,18 @@ const Header = () => {
       </div>
       <div className="center">
         {posTerminal?.cashJournalOpen && (
-          <div className="pos-header-button" onClick={onCloseJournalClick}>
+          <div className="pos-header-button" onClick={onCloseJournalClicked}>
             <span className="text">Close register</span>
           </div>
         )}
       </div>
       <div className="right">
+        <div className="pos-header-button" onClick={onOrdersClicked}>
+          <div className="icon-letter"></div>
+          <div className="text">Orders ({openOrders?.length ?? 0})</div>
+        </div>
         {posTerminal.id && (
-          <div
-            className="pos-header-button posTerminal"
-            onClick={() => dispatch(showModalAction({ modal: MODAL_POSTerminalSelect }))}
-          >
+          <div className="pos-header-button posTerminal" onClick={onTerminalClicked}>
             <div className="icon-letter">
               <i className="fa-solid fa-display" />
             </div>

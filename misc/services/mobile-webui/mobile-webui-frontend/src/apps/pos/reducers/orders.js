@@ -6,11 +6,13 @@ import {
   POS_TERMINAL_LOAD_DONE,
   REMOVE_ORDER_LINE,
   REMOVE_PAYMENT,
+  SET_CURRENT_ORDER,
   SET_SELECTED_ORDER_LINE,
   UPDATE_ORDER,
 } from '../actionTypes';
 import { v4 as uuidv4 } from 'uuid';
 import { isOpenOrderStatus, ORDER_STATUS_DRAFTED } from '../constants/orderStatus';
+import { PAYMENT_STATUS_NEW } from '../constants/paymentStatus';
 
 export function ordersReducer(applicationState, action) {
   switch (action.type) {
@@ -55,6 +57,10 @@ export function ordersReducer(applicationState, action) {
       const { posTerminalId } = action.payload;
       return addNewOrderAndSetCurrent({ applicationState, posTerminalId });
     }
+    case SET_CURRENT_ORDER: {
+      const { order_uuid } = action.payload;
+      return setCurrentOrder({ applicationState, order_uuid });
+    }
     case ADD_ORDER_LINE: {
       return addOrderLine({ applicationState, newOrderLineRequest: action.payload });
     }
@@ -97,7 +103,7 @@ export function ordersReducer(applicationState, action) {
 const changeOrdersStateInApplicationState = ({ applicationState, mapper }) => {
   const ordersState = applicationState.orders;
   const ordersStateChanged = mapper(ordersState);
-  if (ordersState === ordersStateChanged) {
+  if (ordersStateChanged === undefined || ordersState === ordersStateChanged) {
     return applicationState;
   } else {
     return { ...applicationState, orders: ordersStateChanged };
@@ -212,6 +218,28 @@ const addNewOrderAndSetCurrent = ({ applicationState, posTerminalId }) => {
         current_uuid: order.uuid,
         byUUID: { ...ordersState?.byUUID, [order.uuid]: order },
       };
+    },
+  });
+};
+
+const setCurrentOrder = ({ applicationState, order_uuid }) => {
+  return changeOrdersStateInApplicationState({
+    applicationState,
+    mapper: (ordersState) => {
+      if (ordersState.current_uuid === order_uuid) {
+        // no change
+        return ordersState;
+      } else if (!ordersState.byUUID?.[order_uuid]) {
+        console.warn(`cannot set order_uuid '${order_uuid}' as current because there no such order`, {
+          byUUID: ordersState.byUUID,
+        });
+        return ordersState;
+      } else {
+        return {
+          ...ordersState,
+          current_uuid: order_uuid,
+        };
+      }
     },
   });
 };
@@ -373,7 +401,16 @@ const updatePaymentAmounts = (order) => {
 };
 
 const addPayment = ({ applicationState, order_uuid, paymentMethod, amount }) => {
-  const newPayment = { uuid: uuidv4(), paymentMethod, amount };
+  const newPayment = {
+    uuid: uuidv4(),
+    paymentMethod,
+    amount,
+    cashTenderedAmount: 0,
+    status: PAYMENT_STATUS_NEW,
+    allowCheckout: false,
+    allowDelete: true,
+    allowRefund: false,
+  };
   return changePayment({
     applicationState,
     order_uuid,

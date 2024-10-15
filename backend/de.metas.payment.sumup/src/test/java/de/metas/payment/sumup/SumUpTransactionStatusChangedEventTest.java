@@ -25,6 +25,10 @@ class SumUpTransactionStatusChangedEventTest
 								.externalId(SumUpTransactionExternalId.ofString(UUID.randomUUID().toString()))
 								.clientTransactionId(SumUpClientTransactionId.ofString(UUID.randomUUID().toString()))
 								.merchantCode(SumUpMerchantCode.ofString("merchant code"))
+								.cardReader(SumUpTransaction.CardReader.builder()
+										.externalId(SumUpCardReaderExternalId.ofString(UUID.randomUUID().toString()))
+										.name("card reader 1")
+										.build())
 								.timestamp(SystemTime.asInstant())
 								.status(SumUpTransactionStatus.SUCCESSFUL)
 								.amount(Amount.of("123.45", CurrencyCode.EUR))
@@ -58,7 +62,7 @@ class SumUpTransactionStatusChangedEventTest
 	void testSerializeDeserialize(SumUpTransactionStatusChangedEvent event) throws JsonProcessingException
 	{
 		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
-		
+
 		System.out.println(" event: " + event);
 
 		final String json = jsonObjectMapper.writeValueAsString(event);
