@@ -676,32 +676,6 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public boolean isProductUsed(@NonNull final ProductId productId)
-	{
-		return queryBL
-				.createQueryBuilder(I_C_OrderLine.class)
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.anyMatch()
-				||
-				queryBL
-						.createQueryBuilder(I_C_InvoiceLine.class)
-						.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
-						.addOnlyActiveRecordsFilter()
-						.create()
-						.anyMatch()
-				||
-				queryBL
-						.createQueryBuilder(I_M_InOutLine.class)
-						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
-						.addOnlyActiveRecordsFilter()
-						.create()
-						.anyMatch();
-	}
-
-
-	@Override
 	public Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
