@@ -27,10 +27,13 @@
 
             .productName {
               flex-grow: 1;
+              overflow: hidden;
+              text-overflow: ellipsis;
             }
 
             .amount {
               flex-grow: 0;
+              white-space: nowrap;
             }
           }
 
@@ -71,6 +74,7 @@
         display: flex;
         flex-flow: row nowrap;
         background-color: #a0a0a0;
+        border: 1px solid #a0a0a0;
 
         button {
           font-size: 1.5rem;
@@ -94,9 +98,8 @@
           display: flex;
           flex-flow: column nowrap;
           row-gap: 1px;
-
+          
           button {
-
           }
         }
 

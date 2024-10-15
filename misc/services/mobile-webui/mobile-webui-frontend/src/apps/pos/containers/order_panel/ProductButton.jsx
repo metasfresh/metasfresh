@@ -7,8 +7,10 @@ const ProductButton = ({ name, price, currencySymbol, uomSymbol, disabled, onCli
 
   return (
     <button className="product-button" disabled={disabled} onClick={onClick}>
-      <div className="name">{name}</div>
-      <div className="price">{priceStr}</div>
+      <div className="line1">
+        <span>{name}</span>
+      </div>
+      <div className="line2">{priceStr}</div>
     </button>
   );
 };
