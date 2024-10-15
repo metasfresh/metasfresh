@@ -7,7 +7,6 @@ import lombok.Singular;
 
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 /*
@@ -75,11 +74,6 @@ public final class ImmutableTranslatableString implements ITranslatableString
 			ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
 			trls.forEach((adLanguage, trl) -> builder.put(adLanguage, trl != null ? trl : ""));
 			return builder.build();
-		}
-		else if (trls.containsKey(null))
-		{
-			trls.keySet().removeIf(Objects::isNull);
-			return ImmutableMap.copyOf(trls);
 		}
 		else
 		{
