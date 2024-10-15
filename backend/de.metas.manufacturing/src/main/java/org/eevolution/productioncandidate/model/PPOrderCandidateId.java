@@ -48,6 +48,11 @@ public class PPOrderCandidateId implements RepoIdAware
 		return repoId != null && repoId > 0 ? new PPOrderCandidateId(repoId) : null;
 	}
 
+	public static int toRepoId(@Nullable final PPOrderCandidateId ppOrderCandidateId)
+	{
+		return ppOrderCandidateId != null ? ppOrderCandidateId.getRepoId() : -1;
+	}
+	
 	private PPOrderCandidateId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "PP_Order_Candidate_ID");

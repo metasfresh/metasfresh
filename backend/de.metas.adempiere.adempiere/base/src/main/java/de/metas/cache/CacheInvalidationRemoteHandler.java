@@ -18,10 +18,14 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L

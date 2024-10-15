@@ -23,6 +23,7 @@
 package de.metas.edi.api.impl.pack;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.SimpleSequence;
@@ -32,6 +33,7 @@ import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOutLine;
+import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.handlingunits.HuId;
@@ -71,6 +73,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -94,7 +98,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.util.Check.isEmpty;
 import static de.metas.util.Check.isNotBlank;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
@@ -127,6 +130,24 @@ public class EDIDesadvPackService
 	}
 
 	@NonNull
+	public EDIDesadvPackService.Sequences createSequences(@NonNull final I_EDI_Desadv desadv)
+	{
+		final EDIDesadvId desadvId = EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID());
+
+		final int maxDesadvPackSeqNo = desadvDAO.retrieveMaxDesadvPackSeqNo(desadvId);
+		final SimpleSequence packSeqNoSequence = SimpleSequence.builder()
+				.initial(maxDesadvPackSeqNo)
+				.increment(1).build();
+
+		final int maxDesadvPackItemLine = desadvDAO.retrieveMaxDesadvPackItemLine(desadvId);
+		final SimpleSequence packItemLineSequence = SimpleSequence.builder()
+				.initial(maxDesadvPackItemLine)
+				.increment(10).build();
+
+		return new EDIDesadvPackService.Sequences(packSeqNoSequence, packItemLineSequence);
+	}
+	
+	@NonNull
 	public I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine)
 	{
 		final I_M_HU_PI_Item_Product materialItemProduct;
@@ -155,10 +176,10 @@ public class EDIDesadvPackService
 		ediDesadvPackRepository.removePackAndItemRecords(inOutLineRecord);
 	}
 
-	public void createPacks(
+	public void createOrExtendPacks(
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final BPartnerId recipientBPartnerId,
-			@NonNull final SimpleSequence packLineSequence)
+			@NonNull final Sequences sequences)
 	{
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLineRecord.getC_OrderLine(), I_C_OrderLine.class);
 
@@ -181,33 +202,33 @@ public class EDIDesadvPackService
 		StockQtyAndUOMQty remainingQtyToAdd = inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
 		final BigDecimal uomToStockRatio = remainingQtyToAdd.getUOMToStockRatio();
 		// note that if inOutLineRecord has catch-weight, then logically we can't have HUs
-		final List<I_M_HU> topLevelHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLineRecord);
+		final List<I_M_HU> topLevelHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLineRecord); // TODO see if we can't use the HURepo *here*, to get HUs right away instead of records
 
 		for (final I_M_HU topLevelHU : topLevelHUs)
 		{
-			final StockQtyAndUOMQty addedPackQty = createPackUsingHU(
+			final StockQtyAndUOMQty addedPackQty = createOrExtendPackUsingHU(
 					desadvLineRecord, 
 					inOutLineRecord, 
 					topLevelHU, 
-					recipientBPartnerId, 
+					recipientBPartnerId,
 					desadvLineWithDraftedPackItems, 
 					invoicableQtyBasedOn, 
 					uomToStockRatio,
-					packLineSequence);
+					sequences);
 			remainingQtyToAdd = StockQtyAndUOMQtys.subtract(remainingQtyToAdd, addedPackQty);
 		}
 
 		if (remainingQtyToAdd.getStockQty().signum() > 0)
 		{
 			createPackUsingJustInOutLine(
-					inOutLineRecord, 
-					orderLineRecord, 
-					desadvLineRecord, 
-					remainingQtyToAdd, 
-					desadvLineWithDraftedPackItems, 
-					invoicableQtyBasedOn, 
+					inOutLineRecord,
+					orderLineRecord,
+					desadvLineRecord,
+					remainingQtyToAdd,
+					desadvLineWithDraftedPackItems,
+					invoicableQtyBasedOn,
 					uomToStockRatio,
-					packLineSequence);
+					sequences);
 		}
 	}
 
@@ -219,7 +240,7 @@ public class EDIDesadvPackService
 			@NonNull final DesadvLineWithDraftedPackItems desadvLineWithPacks,
 			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn,
 			@Nullable final BigDecimal uomToStockRatio,
-			@NonNull final SimpleSequence packLineSequence)
+			@NonNull final Sequences sequences)
 	{
 		Check.assume(qtyToAdd.getStockQty().signum() > 0, "Parameter 'qtyToAdd' needs to be >0 for all this to make sense");
 
@@ -283,13 +304,14 @@ public class EDIDesadvPackService
 		for (int i = 0; i < requiredLUCount; i++)
 		{
 			final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder = CreateEDIDesadvPackRequest.builder()
-					.line(packLineSequence.next())
+					.seqNo(sequences.getPackSeqNoSequence().next())
 					.orgId(OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()))
 					.ediDesadvId(EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID()));
 
-			final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder =
-					CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
+			final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder =
+					CreateEDIDesadvPackItemRequest.builder()
 							.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLineRecord.getEDI_DesadvLine_ID()))
+							.line(sequences.getPackItemLineSequence().next())
 							.qtyItemCapacity(lutuConfigurationInStockUOM.getQtyCUsPerTU())
 							.inOutId(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()))
 							.inOutLineId(InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()));
@@ -309,8 +331,8 @@ public class EDIDesadvPackService
 
 			// PackagingCodes and PackagingGTINs
 			final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
-			createEDIDesadvPackRequestBuilder.huPackagingCodeLUID(PackagingCodeId.ofRepoIdOrNull(packagingCodeLU_ID));
-			createEDIDesadvPackRequestBuilder.gtinLUPackingMaterial(tuPIItemProduct.getGTIN_LU_PackingMaterial_Fallback());
+			createEDIDesadvPackRequestBuilder.huPackagingCodeID(PackagingCodeId.ofRepoIdOrNull(packagingCodeLU_ID));
+			createEDIDesadvPackRequestBuilder.gtinPackingMaterial(tuPIItemProduct.getGTIN_LU_PackingMaterial_Fallback());
 
 			final int packagingCodeTU_ID = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID();
 			createEDIDesadvPackItemRequestBuilder.huPackagingCodeTUID(PackagingCodeId.ofRepoIdOrNull(packagingCodeTU_ID));
@@ -391,48 +413,60 @@ public class EDIDesadvPackService
 	}
 
 	@NonNull
-	private StockQtyAndUOMQty createPackUsingHU(
+	private StockQtyAndUOMQty createOrExtendPackUsingHU(
 			@NonNull final I_EDI_DesadvLine desadvLineRecord,
 			@NonNull final I_M_InOutLine inOutLineRecord,
-			@NonNull final I_M_HU huRecord,
+			@NonNull final I_M_HU topLevelHURecord,
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final DesadvLineWithDraftedPackItems desadvLineWithPacks,
 			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn,
 			@Nullable final BigDecimal uomToStockRatio,
-			@NonNull final SimpleSequence packLineSequence)
+			@NonNull final Sequences sequences)
 	{
 		final ProductId productId = ProductId.ofRepoId(desadvLineRecord.getM_Product_ID());
 
-		final HU rootLU = huRepository
-				.getById(HuId.ofRepoId(huRecord.getM_HU_ID()))
+		final HU topLevelHU = huRepository
+				.getById(HuId.ofRepoId(topLevelHURecord.getM_HU_ID()))
 				.retainProduct(productId) // no need to blindly hope that the HU is homogenous
-				.filter(hu -> hu.getType().isLU())
-				.orElse(null);
+				.orElseThrow(() -> new AdempiereException("Missing M_HU").appendParametersToMessage()
+						.setParameter("M_HU_ID", topLevelHURecord.getM_HU_ID())
+						.setParameter("M_InOutLine_ID", inOutLineRecord.getM_InOutLine_ID())
+						.setParameter("EDI_DesadvLin_ID", desadvLineRecord.getEDI_DesadvLine_ID()));
 
-		if (rootLU == null)
+		// topLevelHU's quantity can be bigger than the inOutLine's quantity,
+		// if there are multiple lines with the same product and if those lines were picked onto the same LU.
+		// That's why we need to invoke min(..)
+		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(topLevelHU, productId)
+				.min(inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn));
+
+		final RequestParameters parameters = new RequestParameters(topLevelHU,
+																   bPartnerId,
+				qtyCUsPerTopLevelHU,
+																   productId,
+																   desadvLineRecord,
+																   inOutLineRecord,
+																   desadvLineWithPacks,
+																   invoicableQtyBasedOn,
+																   uomToStockRatio,
+																   sequences.getPackSeqNoSequence(),
+																   sequences.getPackItemLineSequence());
+
+		final EDIDesadvPack packByHUId = ediDesadvPackRepository.getPackByDesadvLineAndHUId(topLevelHU.getId());
+
+		if (packByHUId == null)
 		{
-			// we don't do HU-related stuffs if the HU is not an LU.
-			final UomId desadvUomId = UomId.ofRepoId(desadvLineRecord.getC_UOM_ID());
-			return StockQtyAndUOMQtys.createZero(productId, desadvUomId);
+			final CreateEDIDesadvPackRequest createPackRequest = buildCreateDesadvPackRequest(parameters);
+
+			ediDesadvPackRepository.createDesadvPack(createPackRequest);
 		}
+		else
+		{
+			final CreateEDIDesadvPackItemRequest createPackItemRequest = buildCreateDesadvPackItemRequest(parameters)
+					.withEdiDesadvPackId(packByHUId.getEdiDesadvPackId());
 
-		final StockQtyAndUOMQty qtyCUsPerLU = getQuantity(rootLU, productId);
-
-		final CreateEDIDesadvPackRequest createEDIDesadvPackRequest = buildCreateDesadvPackRequest(
-				rootLU,
-				bPartnerId,
-				qtyCUsPerLU,
-				productId,
-				desadvLineRecord,
-				inOutLineRecord,
-				desadvLineWithPacks,
-				invoicableQtyBasedOn,
-				uomToStockRatio,
-				packLineSequence);
-
-		ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequest);
-
-		return qtyCUsPerLU;
+			ediDesadvPackRepository.createDesadvPackItem(createPackItemRequest);
+		}
+		return qtyCUsPerTopLevelHU;
 	}
 
 	@NonNull
@@ -462,66 +496,77 @@ public class EDIDesadvPackService
 
 	@NonNull
 	private CreateEDIDesadvPackRequest buildCreateDesadvPackRequest(
-			@NonNull final HU rootHU,
-			@NonNull final BPartnerId bPartnerId,
-			@NonNull final StockQtyAndUOMQty quantity,
-			@NonNull final ProductId productId,
-			@NonNull final I_EDI_DesadvLine desadvLineRecord,
-			@NonNull final I_M_InOutLine inOutLineRecord,
-			@NonNull final DesadvLineWithDraftedPackItems desadvLineWithPacks,
-			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn,
-			@Nullable final BigDecimal uomToStockRatio,
-			@NonNull final SimpleSequence packLineSequence)
+			@NonNull final RequestParameters parameters)
 	{
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createDesadvPackRequestBuilder = CreateEDIDesadvPackRequest.builder()
-				.line(packLineSequence.next())
-				.orgId(OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()))
-				.ediDesadvId(EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID()))
-				.huId(rootHU.getId());
+				.seqNo(parameters.packSeqNoSequence.next())
+				.orgId(OrgId.ofRepoId(parameters.desadvLineRecord.getAD_Org_ID()))
+				.ediDesadvId(EDIDesadvId.ofRepoId(parameters.desadvLineRecord.getEDI_Desadv_ID()))
+				.huId(parameters.topLevelHU.getId());
 
-		final Quantity qtyCUInStockUOM = rootHU.extractMedianCUQtyPerChildHU(productId);
+		setPackagingCodeToPack(parameters.topLevelHU, createDesadvPackRequestBuilder);
+		setPackagingGTINsToPack(parameters.topLevelHU, parameters.bPartnerId, createDesadvPackRequestBuilder);
+		setSSCC18ToPack(parameters.topLevelHU, createDesadvPackRequestBuilder);
 
-		// get minimum best before of all HUs and sub-HUs
-		final Date bestBefore = rootHU.extractSingleAttributeValue(
-				attrSet -> attrSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate) ? attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate) : null,
-				TimeUtil::min);
-
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder =
-				CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
-						.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLineRecord.getEDI_DesadvLine_ID()))
-						.inOutId(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()))
-						.inOutLineId(InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()))
-						.qtyItemCapacity(qtyCUInStockUOM.toBigDecimal())
-						.bestBeforeDate(TimeUtil.asTimestamp(bestBefore))
-						.qtyTu(rootHU.getChildHUs().size());
-
-		// Lot
-		final String lotNumber = rootHU.getAttributes().getValueAsString(AttributeConstants.ATTR_LotNumber);
-		if (!isEmpty(lotNumber, true))
-		{
-			createEDIDesadvPackItemRequestBuilder.lotNumber(lotNumber);
-		}
-
-		final UomId stockUomId = UomId.ofRepoId(desadvLineRecord.getC_UOM_ID());
-		final UomId invoiceUomId = UomId.ofRepoIdOrNull(desadvLineRecord.getC_UOM_Invoice_ID());
-
-		final BigDecimal movementQty = quantity.getStockQty().toBigDecimal();
-
-		desadvLineWithPacks.popFirstMatching(movementQty).ifPresent(createEDIDesadvPackItemRequestBuilder::ediDesadvPackItemId);
-
-		setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUInStockUOM, quantity, stockUomId, invoiceUomId, movementQty, invoicableQtyBasedOn, uomToStockRatio);
-
-		extractAndSetPackagingCodes(rootHU, createDesadvPackRequestBuilder, createEDIDesadvPackItemRequestBuilder);
-		extractAndSetPackagingGTINs(rootHU, bPartnerId, createDesadvPackRequestBuilder, createEDIDesadvPackItemRequestBuilder);
-
-		setSSCC18(rootHU, createDesadvPackRequestBuilder);
-
-		createDesadvPackRequestBuilder.createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequestBuilder.build());
+		final CreateEDIDesadvPackItemRequest packItemRequest = buildCreateDesadvPackItemRequest(parameters);
+		createDesadvPackRequestBuilder.createEDIDesadvPackItemRequest(packItemRequest);
 
 		return createDesadvPackRequestBuilder.build();
 	}
 
-	private void setSSCC18(
+	/**
+	 * Creates a "complete" request, just without a pack-ID
+	 */
+	private CreateEDIDesadvPackItemRequest buildCreateDesadvPackItemRequest(
+			@NonNull final RequestParameters parameters)
+	{
+		final Quantity qtyCUInStockUOM = parameters.topLevelHU.extractMedianCUQtyPerChildHU(parameters.productId);
+
+		// get minimum best before of all HUs and sub-HUs
+		final Date bestBefore = parameters.topLevelHU.extractSingleAttributeValue(
+				attrSet -> attrSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate) ? attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate) : null,
+				TimeUtil::min);
+
+		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createPackItemRequestBuilder =
+				CreateEDIDesadvPackItemRequest.builder()
+						.ediDesadvLineId(EDIDesadvLineId.ofRepoId(parameters.desadvLineRecord.getEDI_DesadvLine_ID()))
+						.inOutId(InOutId.ofRepoId(parameters.inOutLineRecord.getM_InOut_ID()))
+						.inOutLineId(InOutLineId.ofRepoId(parameters.inOutLineRecord.getM_InOutLine_ID()))
+						.line(parameters.packItemLineSequence.next())
+						.qtyItemCapacity(qtyCUInStockUOM.toBigDecimal())
+						.bestBeforeDate(TimeUtil.asTimestamp(bestBefore))
+						.qtyTu(parameters.topLevelHU.getChildHUs().size());
+
+		final String lotNumber = parameters.topLevelHU.getAttributes().getValueAsString(AttributeConstants.ATTR_LotNumber);
+		if (Check.isNotBlank(lotNumber))
+		{
+			createPackItemRequestBuilder.lotNumber(lotNumber);
+		}
+
+		final UomId stockUomId = UomId.ofRepoId(parameters.desadvLineRecord.getC_UOM_ID());
+		final UomId invoiceUomId = UomId.ofRepoIdOrNull(parameters.desadvLineRecord.getC_UOM_Invoice_ID());
+
+		final BigDecimal movementQty = parameters.quantity.getStockQty().toBigDecimal();
+
+		parameters.desadvLineWithPacks.popFirstMatching(movementQty).ifPresent(createPackItemRequestBuilder::ediDesadvPackItemId);
+
+		setQty(createPackItemRequestBuilder,
+			   parameters.productId,
+			   qtyCUInStockUOM,
+			   parameters.quantity,
+			   stockUomId,
+			   invoiceUomId,
+			   movementQty,
+			   parameters.invoicableQtyBasedOn,
+			   parameters.uomToStockRatio);
+
+		setPackagingCodeToPackItem(parameters.topLevelHU.getChildHUs(), createPackItemRequestBuilder);
+		setPackagingGTINsToPackItem(parameters.topLevelHU.getChildHUs(), parameters.bPartnerId, createPackItemRequestBuilder);
+
+		return createPackItemRequestBuilder.build();
+	}
+
+	private void setSSCC18ToPack(
 			@NonNull final HU rootHU,
 			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder)
 	{
@@ -543,7 +588,7 @@ public class EDIDesadvPackService
 
 	@VisibleForTesting
 	public void setQty(
-			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder,
+			@NonNull final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder,
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyCUsPerTUInStockUOM,
 			@NonNull final StockQtyAndUOMQty qtyCUsPerLU,
@@ -638,15 +683,25 @@ public class EDIDesadvPackService
 				.build();
 	}
 
-	private static void extractAndSetPackagingCodes(
+	/**
+	 * If rootHU has a packaging-code, then set it to the packRequestBuilder
+	 */
+	private static void setPackagingCodeToPack(
 			@NonNull final HU rootHU,
-			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder,
-			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder)
+			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder)
 	{
-		rootHU.getPackagingCode().ifPresent(code -> createEDIDesadvPackRequestBuilder.huPackagingCodeLUID(code.getId()));
+		rootHU.getPackagingCode().ifPresent(code -> createEDIDesadvPackRequestBuilder.huPackagingCodeID(code.getId()));
+	}
 
+	/**
+	 * If all childHUs have the same packingCode, then set that to the packItemRequestBuilder
+	 */
+	private static void setPackagingCodeToPackItem(
+			@NonNull final ImmutableList<HU> childHUs,
+			@NonNull final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder)
+	{
 		final PackagingCode tuPackagingCode = CollectionUtils.extractSingleElementOrDefault(
-				rootHU.getChildHUs(), // don't iterate all HUs; we just care for the level below our LU (aka TU level).
+				childHUs, // don't iterate all HUs; we just care for the level below our LU (aka TU level).
 				hu -> hu.getPackagingCode().orElse(PackagingCode.NONE), // don't use null because CollectionUtils runs with ImmutableList
 				PackagingCode.NONE);
 
@@ -656,26 +711,75 @@ public class EDIDesadvPackService
 		}
 	}
 
-	private static void extractAndSetPackagingGTINs(
+	private static void setPackagingGTINsToPack(
 			@NonNull final HU rootHU,
 			@NonNull final BPartnerId bPartnerId,
-			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder,
-			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder)
+			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder)
 	{
-		final String packagingGTIN = rootHU.getPackagingGTINs().get(bPartnerId);
+		final String packagingGTIN = rootHU.getPackagingGTIN(bPartnerId);
 		if (isNotBlank(packagingGTIN))
 		{
-			createEDIDesadvPackRequestBuilder.gtinLUPackingMaterial(packagingGTIN);
+			createEDIDesadvPackRequestBuilder.gtinPackingMaterial(packagingGTIN);
 		}
+	}
 
+	private static void setPackagingGTINsToPackItem(
+			@NonNull final ImmutableList<HU> childHUs,
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder)
+	{
 		final String tuPackagingGTIN = CollectionUtils.extractSingleElementOrDefault(
-				rootHU.getChildHUs(), // don't iterate all HUs; we just care for the level below our LU (aka TU level).
-				hu -> coalesce(hu.getPackagingGTINs().get(bPartnerId), ""),
+				childHUs, // don't iterate all HUs; we just care for the level below our LU (aka TU level).
+				hu -> coalesce(hu.getPackagingGTIN(bPartnerId), ""),
 				"");
 
 		if (isNotBlank(tuPackagingGTIN))
 		{
 			createEDIDesadvPackItemRequestBuilder.gtinTUPackingMaterial(tuPackagingGTIN);
 		}
+	}
+
+	/**
+	 * Sequences needed when creating new DESADV-Packs and DESADV-Pack-Items
+	 */
+	@Value
+	@RequiredArgsConstructor
+	public static class Sequences
+	{
+		@NonNull
+		SimpleSequence packSeqNoSequence;
+		@NonNull
+		SimpleSequence packItemLineSequence;
+	}
+
+	/**
+	 * All thast needed to create with a pack-request that includes a pack-item-request or just a single pack-item-request.
+	 */
+	@Value
+	@RequiredArgsConstructor
+	public static class RequestParameters
+	{
+		@NonNull
+		HU topLevelHU;
+		@NonNull
+		BPartnerId bPartnerId;
+		@NonNull
+		StockQtyAndUOMQty quantity;
+		@NonNull
+		ProductId productId;
+		@NonNull
+		I_EDI_DesadvLine desadvLineRecord;
+		@NonNull
+		I_M_InOutLine inOutLineRecord;
+		@NonNull
+		DesadvLineWithDraftedPackItems desadvLineWithPacks;
+		@NonNull
+		InvoicableQtyBasedOn invoicableQtyBasedOn;
+		@Nullable
+		BigDecimal uomToStockRatio;
+		@NonNull
+		SimpleSequence packSeqNoSequence;
+		@NonNull
+		SimpleSequence packItemLineSequence;
 	}
 }

@@ -107,8 +107,13 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>de.metas.aggregation</groupId>
+            <artifactId>de.metas.aggregation</artifactId>
+            <version>10.0.0</version>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<plugins>

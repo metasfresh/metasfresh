@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-material-event
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,30 +20,24 @@
  * #L%
  */
 
-package de.metas.material.event;
+package de.metas.cucumber.stepdefs.hu;
 
-import de.metas.util.JSONObjectMapper;
-import org.springframework.stereotype.Service;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.handlingunits.HUPIAttributeId;
+import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 
-@Service
-public class JacksonMaterialEventSerializer
+public class M_HU_PI_Attribute_StepDefData extends StepDefData<I_M_HU_PI_Attribute>
+		implements StepDefDataGetIdAware<HUPIAttributeId, I_M_HU_PI_Attribute>
 {
-	public static final transient JacksonMaterialEventSerializer instance = new JacksonMaterialEventSerializer();
-
-	private final JSONObjectMapper<MaterialEvent> delegate;
-
-	private JacksonMaterialEventSerializer()
+	public M_HU_PI_Attribute_StepDefData()
 	{
-		delegate = JSONObjectMapper.forClass(MaterialEvent.class);
+		super(I_M_HU_PI_Attribute.class);
 	}
 
-	public String toString(final MaterialEvent event)
+	@Override
+	public HUPIAttributeId extractIdFromRecord(final I_M_HU_PI_Attribute record)
 	{
-		return delegate.writeValueAsString(event);
-	}
-
-	public MaterialEvent fromString(final String eventStr)
-	{
-		return delegate.readValue(eventStr);
+		return HUPIAttributeId.ofRepoId(record.getM_HU_PI_Attribute_ID());
 	}
 }

@@ -970,7 +970,7 @@ public class DB
 
 	public int executeUpdateEx(final String sql,
 							   final Object[] params,
-							   final String trxName,
+							   @Nullable final String trxName,
 							   final int timeOut,
 							   final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{

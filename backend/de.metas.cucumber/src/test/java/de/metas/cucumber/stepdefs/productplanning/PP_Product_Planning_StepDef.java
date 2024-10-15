@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.productplanning;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMVersions_StepDefData;
 import de.metas.cucumber.stepdefs.distribution.DD_NetworkDistribution_StepDefData;
@@ -62,6 +63,7 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.WORKFLOW_ID;
+import static org.assertj.core.api.Assertions.*;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_AD_Workflow_ID;
 
 @RequiredArgsConstructor
@@ -128,6 +130,7 @@ public class PP_Product_Planning_StepDef
 		getResourceId(row).ifPresent(builder::plantId);
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_Workflow_ID).map(workflowTable::getId).ifPresent(builder::workflowId);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan).ifPresent(builder::isCreatePlan);
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsDocComplete).ifPresent(builder::isDocComplete);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).ifPresent(builder::isAttributeDependant);
 
 		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
@@ -206,7 +209,10 @@ public class PP_Product_Planning_StepDef
 			return Optional.of(productPlanning);
 		}
 
-		final I_M_Product productRecord = row.getAsIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Product_ID).lookupIn(productTable);
+		final StepDefDataIdentifier identifier = row.getAsIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Product_ID);
+		final I_M_Product productRecord = identifier.lookupIn(productTable);
+		assertThat(productRecord).as("Missing M_Product for identifier=%s", identifier.getAsString()).isNotNull();
+
 		final OrgId orgId = OrgId.ofRepoIdOrAny(productRecord.getAD_Org_ID());
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
 		final WarehouseId warehouseId = row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID).map(warehouseTable::getId).orElse(null);

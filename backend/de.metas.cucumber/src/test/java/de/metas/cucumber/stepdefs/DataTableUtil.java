@@ -30,6 +30,8 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -107,7 +109,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : Integer.parseInt(string);
 		}
 		catch (final NumberFormatException e)
@@ -188,10 +189,11 @@ public class DataTableUtil
 		return dataTableRow.get(columnName);
 	}
 
+	@Contract("null -> null")
 	@Nullable
 	public String nullToken2Null(@Nullable final String value)
 	{
-		return value == null || NULL_STRING.equals(value) ? null : value;
+		return Check.isBlank(value) || NULL_STRING.equals(value) ? null : value;
 	}
 
 	@NonNull
@@ -350,7 +352,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : new BigDecimal(string);
 		}
 		catch (final NumberFormatException e)
@@ -419,6 +420,7 @@ public class DataTableUtil
 		return extractBooleanForColumnNameOr(dataTableRow.asMap(), columnName, defaultValue);
 	}
 
+	@Contract("_, _, !null -> !null")
 	@Nullable
 	public static Boolean extractBooleanForColumnNameOr(
 			@NonNull final Map<String, String> dataTableRow,
@@ -472,7 +474,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : Double.parseDouble(string);
 		}
 		catch (final NumberFormatException e)

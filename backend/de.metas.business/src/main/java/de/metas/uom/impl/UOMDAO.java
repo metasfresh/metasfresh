@@ -91,6 +91,7 @@ public class UOMDAO implements IUOMDAO
 		return loadByRepoIdAwaresOutOfTrx(uomIds, I_C_UOM.class); // assume it's cached on table level
 	}
 
+	@NonNull
 	@Override
 	public UomId getUomIdByX12DE355(@NonNull final X12DE355 x12de355)
 	{

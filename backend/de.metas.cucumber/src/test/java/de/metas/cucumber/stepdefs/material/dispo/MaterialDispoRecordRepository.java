@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-material-dispo-commons
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
