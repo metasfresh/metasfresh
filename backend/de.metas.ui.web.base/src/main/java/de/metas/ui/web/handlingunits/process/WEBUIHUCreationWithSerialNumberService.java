@@ -6,6 +6,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -168,11 +169,11 @@ public class WEBUIHUCreationWithSerialNumberService
 						newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getHuId().getRepoId();
 
 				splitCUIDs.addAll(createdCUs
-										  .stream()
-										  .filter(newCUisDifferentFromInputHU)
-										  .map(I_M_HU::getM_HU_ID)
-										  .map(HuId::ofRepoId)
-										  .collect(ImmutableSet.toImmutableSet()));
+						.stream()
+						.filter(newCUisDifferentFromInputHU)
+						.map(I_M_HU::getM_HU_ID)
+						.map(HuId::ofRepoId)
+						.collect(ImmutableSet.toImmutableSet()));
 			}
 		}
 		else
@@ -197,10 +198,10 @@ public class WEBUIHUCreationWithSerialNumberService
 				final List<I_M_HU> createdCUs = newHUTransformation().cuToExistingTU(huToSplit, Quantity.of(BigDecimal.ONE, cuRow.getC_UOM()), parentHU);
 
 				splitCUIDs.addAll(createdCUs
-										  .stream()
-										  .map(I_M_HU::getM_HU_ID)
-										  .map(HuId::ofRepoId)
-										  .collect(ImmutableSet.toImmutableSet()));
+						.stream()
+						.map(I_M_HU::getM_HU_ID)
+						.map(HuId::ofRepoId)
+						.collect(ImmutableSet.toImmutableSet()));
 			}
 		}
 
@@ -222,7 +223,7 @@ public class WEBUIHUCreationWithSerialNumberService
 
 	private I_M_HU createNonAggregatedTU(final HUEditorRow tuRow, final HUEditorRow luRow)
 	{
-		final I_M_HU newTU = newHUTransformation().tuToNewTUs(tuRow.getM_HU(), BigDecimal.ONE).get(0);
+		final I_M_HU newTU = newHUTransformation().tuToNewTUs(tuRow.getM_HU(), QtyTU.ONE).getSingleTopLevelTURecord();
 
 		if (luRow != null)
 		{
@@ -232,7 +233,7 @@ public class WEBUIHUCreationWithSerialNumberService
 			{
 				final I_M_HU_PI_Item luPIItem = oldLU.getM_HU_LUTU_Configuration().getM_LU_HU_PI_Item();
 
-				final List<I_M_HU> tuToNewLUs = newHUTransformation().tuToNewLUs(newTU, BigDecimal.ONE, luPIItem, false);
+				final List<I_M_HU> tuToNewLUs = newHUTransformation().tuToNewLUs(newTU, QtyTU.ONE, luPIItem, false).getLURecords();
 
 				huIDsToRemove.add(HuId.ofRepoId(oldLU.getM_HU_ID()));
 				huIDsAdded.add(HuId.ofRepoId(tuToNewLUs.get(0).getM_HU_ID()));
@@ -251,7 +252,7 @@ public class WEBUIHUCreationWithSerialNumberService
 	private void moveTUToLU(final int tuId, final HUEditorRow luRow, final HUEditorRow tuRow)
 	{
 		final I_M_HU newTU = create(Env.getCtx(), tuId, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
-		newHUTransformation().tuToExistingLU(newTU, BigDecimal.ONE, luRow.getM_HU());
+		newHUTransformation().tuToExistingLU(newTU, QtyTU.ONE, luRow.getM_HU());
 	}
 
 	private void assignSerialNumbersToCUs(final Set<HuId> cuIDs, final List<String> availableSerialNumbers)

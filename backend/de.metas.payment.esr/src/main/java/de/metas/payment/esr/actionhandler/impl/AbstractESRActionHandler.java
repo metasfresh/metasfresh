@@ -22,13 +22,6 @@ package de.metas.payment.esr.actionhandler.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
@@ -38,6 +31,11 @@ import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+
+import java.math.BigDecimal;
 
 /**
  * This handler allocates the payment against the invoice

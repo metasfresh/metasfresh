@@ -23,7 +23,6 @@
 package de.metas.scheduler;
 
 import de.metas.process.AdProcessId;
-import de.metas.scheduler.SchedulerDao;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;

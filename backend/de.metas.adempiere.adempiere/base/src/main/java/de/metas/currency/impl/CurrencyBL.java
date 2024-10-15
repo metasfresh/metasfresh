@@ -30,7 +30,6 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
-import de.metas.currency.CurrencyConversionResult.CurrencyConversionResultBuilder;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
@@ -357,7 +356,7 @@ public class CurrencyBL implements ICurrencyBL
 		return currencyDAO.getCurrencyCodeById(currencyId);
 	}
 
-	private static CurrencyConversionResultBuilder prepareCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)
+	private static CurrencyConversionResult.CurrencyConversionResultBuilder prepareCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)
 	{
 		return CurrencyConversionResult.builder()
 				.clientId(conversionCtx.getClientId())

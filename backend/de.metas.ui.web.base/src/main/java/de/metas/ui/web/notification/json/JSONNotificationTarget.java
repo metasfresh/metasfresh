@@ -1,21 +1,19 @@
 package de.metas.ui.web.notification.json;
 
-import java.io.Serializable;
-
-import org.slf4j.Logger;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.logging.LogManager;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationTargetType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.slf4j.Logger;
+
+import java.io.Serializable;
 
 /*
  * #%L

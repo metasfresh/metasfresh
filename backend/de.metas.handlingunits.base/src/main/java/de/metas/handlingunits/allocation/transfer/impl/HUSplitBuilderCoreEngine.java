@@ -187,12 +187,9 @@ public class HUSplitBuilderCoreEngine
 					final List<I_M_HU> splitHUsInTrx = performSplit0(localHuContextCopy);
 
 					//
-					// Make created HUs to be out-of-transaction to be used elsewhere
-					for (final I_M_HU splitHU : splitHUsInTrx)
-					{
-						InterfaceWrapperHelper.setTrxName(splitHU, ITrx.TRXNAME_None);
-						splitHUs.add(splitHU);
-					}
+					// Make created HUs to be thread-inherited-transaction to be used elsewhere
+					InterfaceWrapperHelper.setThreadInheritedTrxName(splitHUsInTrx);
+					splitHUs.addAll(splitHUsInTrx);
 
 					return IHUContextProcessor.NULL_RESULT; // we don't care about the result
 				});

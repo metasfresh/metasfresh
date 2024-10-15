@@ -96,7 +96,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 	{
 		final AbstractReceiptScheduleEvent event = createReceiptScheduleEvent(schedule, timing);
 
-		postMaterialEventService.postEventAfterNextCommit(event);
+		postMaterialEventService.enqueueEventAfterNextCommit(event);
 	}
 
 	@VisibleForTesting

@@ -23,11 +23,6 @@ package de.metas.adempiere.gui.search.impl;
  * #L%
  */
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
-
-import java.math.BigDecimal;
-
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_C_OLCand;
@@ -37,6 +32,11 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 
 /**
  * Wraps an {@link I_C_OLCand} and makes it behave like an {@link IHUPackingAware}.
@@ -75,14 +75,14 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	@Override
 	public void setQty(final BigDecimal qty)
 	{
-		olCand.setQtyEntered(qty);
+		olCand.setQtyEntered_Override(qty);
 		values.setQty(qty);
 	}
 
 	@Override
 	public BigDecimal getQty()
 	{
-		return olCand.getQtyEntered();
+		return olCandEffectiveValuesBL.getEffectiveQtyEntered(olCand);
 	}
 
 	@Override

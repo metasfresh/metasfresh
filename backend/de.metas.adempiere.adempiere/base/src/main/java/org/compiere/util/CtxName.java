@@ -1,23 +1,23 @@
 package org.compiere.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.Check;
-import lombok.NonNull;
-
 /**
  * Immutable Context Name. Use the methods for {@link CtxNames} to obtain instances.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class CtxName
 {
@@ -127,8 +127,8 @@ public final class CtxName
 	}
 
 	/**
-	 * @name context name
 	 * @return true if this context name is an explicit global variable (i.e. starts with # or $)
+	 * @name context name
 	 */
 	public static boolean isExplicitGlobal(final String name)
 	{
@@ -141,7 +141,7 @@ public final class CtxName
 
 	/**
 	 * Evaluates this context name and gets it's value from given source/context.
-	 *
+	 * <p>
 	 * In case the source/context is <code>null</code> then {@link #getDefaultValue()} will be returned.
 	 *
 	 * @param source evaluation context/source; <code>null</code> is accept
@@ -192,6 +192,19 @@ public final class CtxName
 			{
 				return "'" + sourceResult + "'";
 			}
+
+			if (hasModifier(CtxNames.MODIFIER_AsJsonString))
+			{
+				try
+				{
+					return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(sourceResult);
+				}
+				catch (JsonProcessingException e)
+				{
+					throw new AdempiereException("Failed to json escape context variable `" + this + "`: `" + sourceResult + "`");
+				}
+			}
+
 			return sourceResult;
 		}
 

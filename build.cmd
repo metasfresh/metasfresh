@@ -75,6 +75,7 @@ docker build -f docker-builds/Dockerfile.procurement.frontend -t %pubregistry%/m
 @echo --------------------------
 @echo building classic-compatible deployables
 @echo --------------------------
+
 docker build -f docker-builds/Dockerfile.backend.api.compat -t %pubregistry%/metas-api:%qualifier%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.backend.app.compat -t %pubregistry%/metas-app:%qualifier%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.mobile.compat -t %pubregistry%/metas-mobile:%qualifier%-compat . || @goto error

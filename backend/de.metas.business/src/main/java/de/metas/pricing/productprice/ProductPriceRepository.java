@@ -130,6 +130,13 @@ public class ProductPriceRepository
 	}
 
 	@NonNull
+	 public <T extends I_M_ProductPrice> T getRecordById(@NonNull final ProductPriceId productPriceId, @NonNull final Class<T> productPriceClass)
+	{
+
+		return InterfaceWrapperHelper.load(productPriceId, productPriceClass);
+	}
+
+	@NonNull
 	private ProductPrice toProductPrice(@NonNull final I_M_ProductPrice record)
 	{
 		return ProductPrice.builder()

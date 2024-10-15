@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import lombok.Builder;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

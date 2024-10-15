@@ -15,16 +15,18 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
+import de.metas.ui.web.material.cockpit.QtyConvertorService;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -93,6 +95,7 @@ public class MaterialCockpitRowFactoryTest
 	{
 		AdempiereTestHelper.get().init();
 		attributesTestHelper = new AttributesTestHelper();
+		SpringContextHolder.registerJUnitBean(new QtyConvertorService());
 
 		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
 		productCategory.setName("productCategoryName");

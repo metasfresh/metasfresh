@@ -22,7 +22,6 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.document.DocTypeQuery;
@@ -35,7 +34,6 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -51,18 +49,14 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -70,12 +64,10 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -83,13 +75,11 @@ import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class HUInOutBL implements IHUInOutBL
 {
@@ -98,27 +88,29 @@ public class HUInOutBL implements IHUInOutBL
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
-	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ISerialNoBL serialNoBL = Services.get(ISerialNoBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
-	public I_M_InOut getById(@NonNull final InOutId inoutId)
+	public de.metas.handlingunits.model.I_M_InOut getById(@NonNull final InOutId inoutId)
 	{
-		return inOutDAO.getById(inoutId);
+		return inOutDAO.getById(inoutId, de.metas.handlingunits.model.I_M_InOut.class);
 	}
 
 	@Override
 	public <T extends I_M_InOut> T getById(@NonNull final InOutId inoutId, @NonNull final Class<T> type)
 	{
 		return inOutDAO.getById(inoutId, type);
+	}
+
+	@Override
+	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
+	{
+		return inOutDAO.getLineById(inoutLineId, I_M_InOutLine.class);
 	}
 
 	@Override
@@ -344,15 +336,6 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public void moveHUsToQualityReturnWarehouse(final List<I_M_HU> husToReturn)
-	{
-		final List<I_M_Warehouse> warehouses = huWarehouseDAO.retrieveQualityReturnWarehouses();
-		final WarehouseId qualityReturnWarehouseId = WarehouseId.ofRepoId(warehouses.get(0).getM_Warehouse_ID());
-
-		huMovementBL.moveHUsToWarehouse(husToReturn, qualityReturnWarehouseId);
-	}
-
-	@Override
 	public void setAssignedHandlingUnits(final org.compiere.model.I_M_InOut inout, final List<I_M_HU> hus)
 	{
 		huAssignmentBL.setAssignedHandlingUnits(inout, hus);
@@ -377,8 +360,8 @@ public class HUInOutBL implements IHUInOutBL
 		for (final I_M_InOutLine lineRecord : lineRecords)
 		{
 			Check.errorIf(lineRecord.getReversalLine_ID() <= 0,
-						  "copyAssignmentsToReversal - current M_InOutLine_ID={} has no reversal line; M_InOut={}",
-						  lineRecord.getM_InOutLine_ID(), inOutRecord);
+					"copyAssignmentsToReversal - current M_InOutLine_ID={} has no reversal line; M_InOut={}",
+					lineRecord.getM_InOutLine_ID(), inOutRecord);
 
 			huAssignmentBL.copyHUAssignments(lineRecord, lineRecord.getReversalLine());
 		}
@@ -405,18 +388,17 @@ public class HUInOutBL implements IHUInOutBL
 						Map.Entry::getValue));
 	}
 
-	public ImmutableSetMultimap<InOutLineId, HuId> getHUIdsByInOutIds(@NonNull final Set<InOutId> inoutIds)
+	@Override
+	public Set<HuId> getHUIdsByInOutIds(@NonNull final Set<InOutId> inoutIds)
 	{
 		if (inoutIds.isEmpty())
 		{
-			return ImmutableSetMultimap.of();
+			return ImmutableSet.of();
 		}
-		final Set<InOutLineId> inoutLineIds = inoutIds.stream()
-				.map(inOutDAO::retrieveLinesForInOutId)
-				.flatMap(Collection::stream)
-				.map(InOutAndLineId::getInOutLineId)
-				.collect(Collectors.toSet());
-		return getHUIdsByInOutLineIds(inoutLineIds);
+
+		final ImmutableSet<InOutLineId> inoutLineIds = inOutDAO.retrieveActiveLineIdsByInOutIds(inoutIds);
+		final ImmutableSetMultimap<InOutLineId, HuId> huIds = getHUIdsByInOutLineIds(inoutLineIds);
+		return ImmutableSet.copyOf(huIds.values());
 	}
 
 	@Override
@@ -438,7 +420,7 @@ public class HUInOutBL implements IHUInOutBL
 			return false;
 		}
 
-		final ImmutableCollection<HuId> huIds = getHUIdsByInOutIds(Collections.singleton(inOutId)).values();
+		final Set<HuId> huIds = getHUIdsByInOutIds(Collections.singleton(inOutId));
 		if (huIds.isEmpty())
 		{
 			return true;

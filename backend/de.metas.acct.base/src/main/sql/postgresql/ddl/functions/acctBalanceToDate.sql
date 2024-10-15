@@ -3,18 +3,6 @@ DROP FUNCTION IF EXISTS de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_
 DROP FUNCTION IF EXISTS de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, ad_org_id numeric, p_IncludePostingTypeStatistical char(1));
 DROP FUNCTION IF EXISTS de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, ad_org_id numeric, p_IncludePostingTypeStatistical char(1), p_ExcludePostingTypeYearEnd char(1));
 
-/*
-
--- This type shall be already in the database. Do not create it again
-
-CREATE TYPE de_metas_acct.BalanceAmt AS
-(
-	Balance numeric
-    , Debit numeric
-    , Credit numeric
-);
-
- */
 CREATE OR REPLACE FUNCTION de_metas_acct.acctBalanceToDate(p_Account_ID numeric,
                                                            p_C_AcctSchema_ID numeric,
                                                            p_DateAcct date,

@@ -22,6 +22,8 @@
 
 package de.metas.edi.esb.desadvexport.compudata;
 
+import de.metas.edi.esb.desadvexport.helper.DesadvLines;
+import de.metas.edi.esb.desadvexport.helper.DesadvParser;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import org.apache.camel.Exchange;
@@ -55,7 +57,8 @@ public class CompuDataDesadvValidation
 		validateObject(xmlDesadv.getBillLocationID().getGLN(), "@FillMandatory@ @Bill_Location_ID@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @GLN@");
 
 		// Evaluate EDI_DesadvLines
-		final List<EDIExpDesadvLineType> ediExpDesadvLines = xmlDesadv.getEDIExpDesadvLine();
+		final DesadvLines desadvLines = DesadvParser.getDesadvLinesEnforcingSinglePacks(xmlDesadv);
+		final List<EDIExpDesadvLineType> ediExpDesadvLines = desadvLines.getAllLines();
 		if (ediExpDesadvLines.isEmpty())
 		{
 			throw new RuntimeCamelException("@EDI.DESADV.ContainsDesadvLines@");

@@ -13,6 +13,7 @@ import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsData;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_AddProductFromBasePriceList;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;
+import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewCloseAction;
@@ -58,12 +59,15 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
 	private final BPartnerProductStatsService bpartnerProductStatsService;
+	private final OrderProductProposalsService orderProductProposalsService;
 
-	protected BasePLVProductsProposalViewFactory(final BPartnerProductStatsService bpartnerProductStatsService)
+	protected BasePLVProductsProposalViewFactory(final BPartnerProductStatsService bpartnerProductStatsService,
+			final OrderProductProposalsService orderProductProposalsService)
 	{
 		super(WINDOW_ID);
 
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
+		this.orderProductProposalsService = orderProductProposalsService;
 	}
 
 	@Override
@@ -97,6 +101,7 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 
 		final ProductsProposalRowsData rowsData = ProductsProposalRowsLoader.builder()
 				.bpartnerProductStatsService(bpartnerProductStatsService)
+				.orderProductProposalsService(orderProductProposalsService)
 				//
 				.priceListVersionId(basePriceListVersionId)
 				.productIdsToExclude(parentView.getProductIds())

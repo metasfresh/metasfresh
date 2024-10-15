@@ -22,24 +22,18 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import de.metas.common.util.time.SystemTime;
+import de.metas.dao.selection.pagination.PageDescriptor;
+import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.money.Money;
+import de.metas.process.PInstanceId;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.UIDStringUtil;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -56,18 +50,22 @@ import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-
-import de.metas.dao.selection.pagination.PageDescriptor;
-import de.metas.dao.selection.pagination.QueryResultPage;
-import de.metas.money.Money;
-import de.metas.process.PInstanceId;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.UIDStringUtil;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 
 public class POJOQuery<T> extends AbstractTypedQuery<T>
 {

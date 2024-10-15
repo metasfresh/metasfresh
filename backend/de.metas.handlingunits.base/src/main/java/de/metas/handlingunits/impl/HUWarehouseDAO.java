@@ -25,11 +25,11 @@ package de.metas.handlingunits.impl;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -37,31 +37,31 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 
 public class HUWarehouseDAO implements IHUWarehouseDAO
 {
-	private static final String MSG_NoQualityWarehouse = "NoQualityWarehouse";
-
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+
+	private static final AdMessageKey MSG_NoQualityWarehouse = AdMessageKey.of("NoQualityWarehouse");
+
+	@Override
+	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId) {return warehouseDAO.getById(warehouseId);}
 
 	@Override
 	public List<I_M_Warehouse> retrievePickingWarehouses()
 	{
-		final Properties ctx = Env.getCtx();
-
 		// 06902: We only take warehouses that have at least one *active* after picking locator.
-		final IQuery<I_M_Locator> subQuery = Services.get(IQueryBL.class).createQueryBuilder(I_M_Locator.class, ctx, ITrx.TRXNAME_None)
+		final IQuery<I_M_Locator> subQuery = queryBL.createQueryBuilder(I_M_Locator.class)
 				.addEqualsFilter(I_M_Locator.COLUMNNAME_IsAfterPickingLocator, true)
 				.addOnlyActiveRecordsFilter()
 				.create();
 
-		final Set<WarehouseId> warehouseIds = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
+		final Set<WarehouseId> warehouseIds = queryBL.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
 				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsPickingWarehouse, true)
 				.addInSubQueryFilter(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Locator.COLUMNNAME_M_Warehouse_ID, subQuery)
 				.addOnlyActiveRecordsFilter()
@@ -71,7 +71,7 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 				.map(WarehouseId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return Services.get(IWarehouseDAO.class).getByIds(warehouseIds);
+		return warehouseDAO.getByIds(warehouseIds);
 	}
 
 	@Override
@@ -115,17 +115,16 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 	}
 
 	@Override
-	public List<de.metas.handlingunits.model.I_M_Warehouse> retrieveQualityReturnWarehouses()
+	@NonNull
+	public WarehouseId retrieveFirstQualityReturnWarehouseId()
 	{
 		final Set<WarehouseId> warehouseIds = retrieveQualityReturnWarehouseIds();
-
-		return Services.get(IWarehouseDAO.class).getByIds(warehouseIds, de.metas.handlingunits.model.I_M_Warehouse.class);
+		return warehouseIds.iterator().next();
 	}
 
-	public Set<WarehouseId> retrieveQualityReturnWarehouseIds()
+	private Set<WarehouseId> retrieveQualityReturnWarehouseIds()
 	{
-		final Set<WarehouseId> warehouseIds = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(de.metas.handlingunits.model.I_M_Warehouse.class)
+		final Set<WarehouseId> warehouseIds = queryBL.createQueryBuilderOutOfTrx(de.metas.handlingunits.model.I_M_Warehouse.class)
 				.addEqualsFilter(de.metas.handlingunits.model.I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, true)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -133,8 +132,9 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 
 		if (warehouseIds.isEmpty())
 		{
-			throw new AdempiereException("@" + MSG_NoQualityWarehouse + "@");
+			throw new AdempiereException(MSG_NoQualityWarehouse);
 		}
+
 		return warehouseIds;
 	}
 }

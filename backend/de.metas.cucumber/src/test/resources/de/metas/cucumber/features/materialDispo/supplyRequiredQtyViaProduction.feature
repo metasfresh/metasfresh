@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: Disposal is correctly considered in Material Dispo. Stock shortage solved via production
 
   Background:
@@ -101,7 +102,6 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | -5                     |                                 |
       | c_5        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 5   | 0                      |                                 |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -50 | -50                    |                                 |
-      | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 50  | 0                      |                                 |
 
   @from:cucumber
   Scenario: Disposal is correctly considered in Material Dispo when the product is Manufactured
@@ -178,7 +178,6 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_3        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10  | -10                    |                                 |
       | c_4        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10   | 0                      |                                 |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100 | -100                   |                                 |
-      | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100  | 0                      |                                 |
 
 
   @from:cucumber
@@ -262,7 +261,6 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | -5                     |                                 |
       | c_5        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 5   | 0                      |                                 |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -50 | -50                    |                                 |
-      | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 50  | 0                      |                                 |
 
   @from:cucumber
   Scenario: Disposal is correctly considered in Material Dispo when the product is Manufactured

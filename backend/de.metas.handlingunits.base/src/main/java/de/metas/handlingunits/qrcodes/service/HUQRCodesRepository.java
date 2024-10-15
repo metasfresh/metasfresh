@@ -1,5 +1,6 @@
 package de.metas.handlingunits.qrcodes.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
@@ -16,7 +17,9 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Repository
 public class HUQRCodesRepository
@@ -105,6 +108,15 @@ public class HUQRCodesRepository
 				.map(HUQRCodesRepository::toHUQRCode);
 	}
 
+	public List<HUQRCode> getQRCodesByHuId(@NonNull final HuId huId)
+	{
+		return queryByHuId(huId)
+				.create()
+				.stream()
+				.map(HUQRCodesRepository::toHUQRCode)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	private IQueryBuilder<I_M_HU_QRCode> queryByHuId(final @NonNull HuId sourceHuId)
 	{
 		return queryBL.createQueryBuilder(I_M_HU_QRCode.class)
@@ -133,5 +145,16 @@ public class HUQRCodesRepository
 	private static HUQRCode toHUQRCode(final I_M_HU_QRCode record)
 	{
 		return HUQRCode.fromGlobalQRCodeJsonString(record.getRenderedQRCode());
+	}
+
+	public Stream<HUQRCode> streamQRCodesLike(@NonNull final String like)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_QRCode.class)
+				.addOnlyActiveRecordsFilter()
+				.addStringLikeFilter(I_M_HU_QRCode.COLUMNNAME_RenderedQRCode, like, false)
+				.orderBy(I_M_HU_QRCode.COLUMNNAME_M_HU_QRCode_ID)
+				.create()
+				.stream()
+				.map(HUQRCodesRepository::toHUQRCode);
 	}
 }

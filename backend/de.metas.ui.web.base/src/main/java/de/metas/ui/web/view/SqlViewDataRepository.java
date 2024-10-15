@@ -52,6 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -604,23 +605,34 @@ class SqlViewDataRepository implements IViewDataRepository
 			@NonNull final DocumentIdsSelection rowIds,
 			@NonNull final Class<T> modelClass)
 	{
+		return retrieveModelsByIdsAsStream(viewId, rowIds, modelClass)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	@NonNull
+	public <T> Stream<T> retrieveModelsByIdsAsStream(
+			@NonNull final ViewId viewId,
+			@NonNull final DocumentIdsSelection rowIds,
+			@NonNull final Class<T> modelClass)
+	{
 		if (rowIds.isEmpty())
 		{
-			return ImmutableList.of();
+			return Stream.empty();
 		}
 
 		final SqlViewRowsWhereClause sqlWhereClause = getSqlWhereClause(viewId, DocumentFilterList.EMPTY, rowIds, SqlOptions.usingTableAlias(getTableAlias()));
 		if (sqlWhereClause.isNoRecords())
 		{
 			logger.warn("Could get the SQL where clause for {}/{}. Returning empty", viewId, rowIds);
-			return ImmutableList.of();
+			return Stream.empty();
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(modelClass, getTableName(), PlainContextAware.createUsingOutOfTransaction())
 				.filter(sqlWhereClause.toQueryFilter())
 				.create()
-				.list(modelClass);
+				.iterateAndStream();
 	}
 
 	@Override

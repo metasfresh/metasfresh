@@ -88,7 +88,7 @@ public class CustomerReturnInOutRecordFactory
 		returnLine.setMovementQty(movementQty.toBigDecimal());
 
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(returnHeader.getM_Warehouse_ID());
-		returnLine.setM_Locator_ID(warehouseBL.getDefaultLocatorId(warehouseId).getRepoId());
+		returnLine.setM_Locator_ID(warehouseBL.getOrCreateDefaultLocatorId(warehouseId).getRepoId());
 
 		if (request.getAttributeSetInstanceId() != null)
 		{

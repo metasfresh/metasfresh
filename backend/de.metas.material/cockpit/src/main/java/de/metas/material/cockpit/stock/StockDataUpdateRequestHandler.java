@@ -12,7 +12,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
@@ -152,6 +152,7 @@ public class StockDataUpdateRequestHandler
 				.changeDate(TimeUtil.asInstant(dataRecord.getUpdated()))
 				.build();
 
-		postMaterialEventService.postEventAsync(event);
+		// the event is about an I_MD_Stock record. better wait until it was committed to DB
+		postMaterialEventService.enqueueEventAfterNextCommit(event); 
 	}
 }

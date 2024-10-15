@@ -61,14 +61,13 @@ public class SupplyProposalEvaluator
 
 	public boolean isProposalAccepted(@NonNull final SupplyProposal proposal)
 	{
+		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetailOrNull(proposal.getDemandDetail());
+		
 		final CandidatesQuery proposedDemandExistsQuery = CandidatesQuery
 				.builder()
 				.type(CandidateType.DEMAND)
-				.demandDetailsQuery(DemandDetailsQuery.ofDemandDetailOrNull(proposal.getDemandDetail()))
-				.materialDescriptorQuery(MaterialDescriptorQuery
-						.builder()
-						.warehouseId(proposal.getDemandWarehouseId())
-						.build())
+				.demandDetailsQuery(demandDetailsQuery)
+				.materialDescriptorQuery(MaterialDescriptorQuery.builder().warehouseId(proposal.getSupplyWarehouseId()).build())
 				.build();
 		final Candidate existingDemandCandidate = candidateRepository.retrieveLatestMatchOrNull(proposedDemandExistsQuery);
 		if (existingDemandCandidate == null)
@@ -79,11 +78,8 @@ public class SupplyProposalEvaluator
 		final CandidatesQuery proposedSupplyExistsQuery = CandidatesQuery
 				.builder()
 				.type(CandidateType.SUPPLY)
-				.demandDetailsQuery(DemandDetailsQuery.ofDemandDetailOrNull(proposal.getDemandDetail()))
-				.materialDescriptorQuery(MaterialDescriptorQuery
-						.builder()
-						.warehouseId(proposal.getSupplyWarehouseId())
-						.build())
+				.demandDetailsQuery(demandDetailsQuery)
+				.materialDescriptorQuery(MaterialDescriptorQuery.builder().warehouseId(proposal.getDemandWarehouseId()).build())
 				.build();
 		final Candidate existingsupplyCandidate = candidateRepository.retrieveLatestMatchOrNull(proposedSupplyExistsQuery);
 		if (existingsupplyCandidate == null)
