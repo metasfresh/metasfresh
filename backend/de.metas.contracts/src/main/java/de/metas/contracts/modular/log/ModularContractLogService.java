@@ -339,7 +339,7 @@
 		 InterfaceWrapperHelper.saveAll(invoiceCandidates);
 		 if (docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId))
 		 {
-			 flatrateBL.reverseDefinitiveInvoice(ImmutableSet.of(Check.assumePresent(flatrateBL.getIdForInvoice(invoiceId), "FlatrateTermId should be present")));
+			 flatrateBL.reverseDefinitiveInvoice(ImmutableSet.of(Check.assumePresent(flatrateBL.getIdByInvoiceId(invoiceId), "FlatrateTermId should be present")));
 		 }
 	 }
 
@@ -402,7 +402,7 @@
 				 .modularContractModuleId(modularContractModuleId)
 				 .build();
 		 modularContractPriceService.updateAveragePrice(contractSpecificPriceRequest, averagePrice);
-		 final ModularContractLogEntriesList logsToUpdate = logs.subsetOfNot(LogEntryDocumentType.SHIPMENT).subsetOf(false);
+		 final ModularContractLogEntriesList logsToUpdate = logs.subsetOfExcluding(LogEntryDocumentType.SHIPMENT).subsetOf(false);
 		 modularContractLogDAO.save(logsToUpdate.withPriceActualAndCalculateAmount(averagePrice, uomConversionBL, logHandlerRegistry));
 	 }
 

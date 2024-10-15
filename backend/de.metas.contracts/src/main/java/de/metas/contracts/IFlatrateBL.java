@@ -126,7 +126,7 @@ public interface IFlatrateBL extends ISingletonService
 
 	void reverseDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
 
-	Optional<FlatrateTermId> getIdForInvoice(@NonNull InvoiceId invoiceId);
+	Optional<FlatrateTermId> getIdByInvoiceId(@NonNull InvoiceId invoiceId);
 
 	/**
 	 * term to extend

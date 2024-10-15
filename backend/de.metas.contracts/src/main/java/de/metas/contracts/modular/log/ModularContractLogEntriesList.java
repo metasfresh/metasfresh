@@ -73,7 +73,7 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		);
 	}
 
-	public ModularContractLogEntriesList subsetOfNot(@NonNull final LogEntryDocumentType documentType)
+	public ModularContractLogEntriesList subsetOfExcluding(@NonNull final LogEntryDocumentType documentType)
 	{
 		return ModularContractLogEntriesList.ofCollection(
 				list.stream()

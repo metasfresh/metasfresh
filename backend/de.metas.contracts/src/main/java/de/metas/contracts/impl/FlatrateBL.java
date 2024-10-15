@@ -111,6 +111,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductActivityProvider;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
@@ -239,6 +240,7 @@ public class FlatrateBL implements IFlatrateBL
 	@NonNull private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
 
 	@NonNull private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public I_C_Flatrate_Conditions getConditionsById(final ConditionsId flatrateConditionsId)
@@ -2461,8 +2463,7 @@ public class FlatrateBL implements IFlatrateBL
 		final ModularContractLogEntriesList receiptLogs = logs.subsetOf(LogEntryDocumentType.MATERIAL_RECEIPT);
 		final ModularContractLogEntriesList shipmentLogs = logs.subsetOf(LogEntryDocumentType.SHIPMENT);
 		final ModularContractLogEntriesList inventory = logs.subsetOf(LogEntryDocumentType.INVENTORY);
-		final ProductPrice productPrice = logs.getUniqueProductPriceOrErrorNotNull();
-		final UomId uomId = productPrice.getUomId();
+		final UomId uomId = productBL.getStockUOMId(logs.getSingleProductId());
 		final Quantity sourceQty = productionLogs.isEmpty() ? receiptLogs.getQtySum(uomId, uomConversionBL) : productionLogs.getQtySum(uomId, uomConversionBL);
 		final Quantity shippedQty = shipmentLogs.getQtySum(uomId, uomConversionBL);
 		final Quantity inventoryQty = inventory.getQtySum(uomId, uomConversionBL);
@@ -2693,7 +2694,7 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public Optional<FlatrateTermId> getIdForInvoice(@NonNull final InvoiceId invoiceId)
+	public Optional<FlatrateTermId> getIdByInvoiceId(@NonNull final InvoiceId invoiceId)
 	{
 		return Optional.of(CollectionUtils.extractSingleElement(
 				invoiceBL.getLines(invoiceId).stream().map(org.compiere.model.I_C_InvoiceLine::getC_Flatrate_Term_ID).toList(),

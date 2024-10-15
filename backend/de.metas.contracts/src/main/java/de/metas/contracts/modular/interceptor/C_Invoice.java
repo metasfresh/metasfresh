@@ -81,7 +81,7 @@ public class C_Invoice
 		{
 			return;
 		}
-		final FlatrateTermId flatrateTermId = Check.assumePresent(flatrateBL.getIdForInvoice(invoiceId), "FlatrateTermId should be present");
+		final FlatrateTermId flatrateTermId = Check.assumePresent(flatrateBL.getIdByInvoiceId(invoiceId), "FlatrateTermId should be present");
 
 		modularContractSettingsService.getById(modularContractSettingsId).getModuleConfigs().stream()
 				.filter(config -> config.isMatchingAnyOf(AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS))
