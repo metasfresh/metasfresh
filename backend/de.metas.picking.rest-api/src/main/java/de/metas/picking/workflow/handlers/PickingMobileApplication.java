@@ -67,8 +67,6 @@
 	import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 	import de.metas.user.UserId;
 	import de.metas.util.StringUtils;
-	import de.metas.workflow.rest_api.model.MobileApplicationId;
-	import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 	import de.metas.workflow.rest_api.model.WFActivity;
 	import de.metas.workflow.rest_api.model.WFActivityId;
 	import de.metas.workflow.rest_api.model.WFProcess;
