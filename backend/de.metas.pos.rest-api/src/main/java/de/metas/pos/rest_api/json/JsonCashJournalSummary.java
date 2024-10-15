@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSCashJournalLine;
 import de.metas.pos.POSPaymentMethod;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,7 +38,7 @@ public class JsonCashJournalSummary
 		{
 			final ArrayList<JsonPaymentDetail> details = new ArrayList<>();
 			details.add(JsonPaymentDetail.builder()
-					.description("Opening")
+					.type(JsonPaymentDetailType.OPENING_BALANCE)
 					.amount(cashJournal.getCashBeginningBalance().toBigDecimal())
 					.build());
 
@@ -50,15 +51,17 @@ public class JsonCashJournalSummary
 						cashPaymentAmount = cashPaymentAmount.add(line.getAmount().toBigDecimal());
 						break;
 					case CASH_IN_OUT:
-						final String type = line.getAmount().signum() >= 0 ? "Cash In" : "Cash Out";
+						final boolean isCashIn = line.getAmount().signum() >= 0;
 						details.add(JsonPaymentDetail.builder()
-								.description(type + " - " + line.getDescription())
+								.type(isCashIn ? JsonPaymentDetailType.CASH_IN : JsonPaymentDetailType.CASH_OUT)
+								.description(StringUtils.trimBlankToNull(line.getDescription()))
 								.amount(line.getAmount().toBigDecimal())
 								.build());
 						break;
 					case CASH_CLOSING_DIFFERENCE:
 						details.add(JsonPaymentDetail.builder()
-								.description("Closing Difference - " + line.getDescription())
+								.type(JsonPaymentDetailType.CLOSING_DIFFERENCE)
+								.description(StringUtils.trimBlankToNull(line.getDescription()))
 								.amount(line.getAmount().toBigDecimal())
 								.build());
 						break;
@@ -66,7 +69,7 @@ public class JsonCashJournalSummary
 			}
 
 			details.add(JsonPaymentDetail.builder()
-					.description("Cash Payments")
+					.type(JsonPaymentDetailType.CASH_PAYMENTS)
 					.amount(cashPaymentAmount)
 					.build());
 
@@ -108,12 +111,25 @@ public class JsonCashJournalSummary
 	//
 	//
 
+	/**
+	 * @implSpec keep in sync with misc/services/mobile-webui/mobile-webui-frontend/src/apps/pos/containers/cash_journal/paymentDetailType.js
+	 */
+	public enum JsonPaymentDetailType
+	{
+		OPENING_BALANCE,
+		CLOSING_DIFFERENCE,
+		CASH_PAYMENTS,
+		CASH_IN,
+		CASH_OUT,
+	}
+
 	@Value
 	@Builder
 	@Jacksonized
 	public static class JsonPaymentDetail
 	{
-		@NonNull String description;
+		@NonNull JsonPaymentDetailType type;
+		@Nullable String description;
 		@NonNull BigDecimal amount;
 	}
 

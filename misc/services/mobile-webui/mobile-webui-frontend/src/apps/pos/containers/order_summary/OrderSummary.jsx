@@ -10,6 +10,9 @@ import cx from 'classnames';
 import printJS from 'print-js';
 import './OrderSummary.scss';
 import Spinner from '../../../../components/Spinner';
+import { trl } from '../../../../utils/translations';
+
+const _ = (key) => trl(`pos.summary.${key}`);
 
 const OrderSummary = () => {
   const dispatch = useDispatch();
@@ -44,12 +47,12 @@ const OrderSummary = () => {
       <div className="modal-background"></div>
       <div className="modal-card">
         <header className="modal-card-head">
-          <p className="modal-card-title">Summary</p>
+          <p className="modal-card-title">{_('title')}</p>
         </header>
         <section className="modal-card-body">
           <div className="detail-center">
             <div className="detail-line">
-              <div className="detail-caption">Total</div>
+              <div className="detail-caption">{_('totalAmt')}</div>
               <div className="detail-value">{totalAmtStr}</div>
             </div>
             {cardPayments.map((payment) => (
@@ -61,11 +64,11 @@ const OrderSummary = () => {
             {(cashTenderedAmount !== 0 || cashGiveBackAmount !== 0) && (
               <>
                 <div className="detail-line">
-                  <div className="detail-caption">Cash Tendered</div>
+                  <div className="detail-caption">{_('tenderedAmt')}</div>
                   <div className="detail-value">{cashTenderedAmountStr}</div>
                 </div>
                 <div className="detail-line">
-                  <div className="detail-caption">Change</div>
+                  <div className="detail-caption">{_('changeBackAmt')}</div>
                   <div className={cx('detail-value', { 'has-text-danger': cashGiveBackAmount !== 0 })}>
                     {cashGiveBackAmountStr}
                   </div>
@@ -81,10 +84,10 @@ const OrderSummary = () => {
         <footer className="modal-card-foot">
           <div className="buttons">
             <button className="button is-large" disabled={!receiptPdfData} onClick={onPrint}>
-              Print
+              {_('actions.print')}
             </button>
             <button className="button is-large" onClick={onClose}>
-              Close
+              {_('actions.close')}
             </button>
           </div>
         </footer>

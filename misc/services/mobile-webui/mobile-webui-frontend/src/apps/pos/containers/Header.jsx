@@ -7,6 +7,9 @@ import './Header.scss';
 import { usePOSTerminal } from '../actions/posTerminal';
 import { MODAL_POSTerminalSelect, MODAL_SelectOrders, showModalAction } from '../actions/ui';
 import { useOpenOrdersArray } from '../actions/orders';
+import { trl } from '../../../utils/translations';
+
+const _ = (key) => trl(`pos.header.${key}`);
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -33,14 +36,16 @@ const Header = () => {
       <div className="center">
         {posTerminal?.cashJournalOpen && (
           <div className="pos-header-button" onClick={onCloseJournalClicked}>
-            <span className="text">Close register</span>
+            <span className="text">{_('closeCashJournal')}</span>
           </div>
         )}
       </div>
       <div className="right">
         <div className="pos-header-button" onClick={onOrdersClicked}>
           <div className="icon-letter"></div>
-          <div className="text">Orders ({openOrders?.length ?? 0})</div>
+          <div className="text">
+            {_('orders')} ({openOrders?.length ?? 0})
+          </div>
         </div>
         {posTerminal.id && (
           <div className="pos-header-button posTerminal" onClick={onTerminalClicked}>

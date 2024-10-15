@@ -1,1 +1,97 @@
-{}
+{
+  "header": {
+    "closeCashJournal": "Kasse schließen",
+    "orders": "Aufträge"
+  },
+  "openCashJournal": {
+    "title": "Kassenbuch eröffnen",
+    "openingBalance": "Eröffnungssaldo",
+    "openingNote": "Eröffnungsvermerk",
+    "actions": {
+      "open": "Eröffnen"
+    }
+  },
+  "closeCashJournal": {
+    "title": "Kassenbuch abschließen",
+    "paymentMethod": "Zahlungsart",
+    "bookedAmt": "Gebucht",
+    "countedAmt": "Erfasst",
+    "differenceAmt": "Differenz",
+    "closingNote": "Abschlussvermerk",
+    "details": {
+      "type": {
+        "OPENING_BALANCE": "Eröffnungssaldo",
+        "CLOSING_DIFFERENCE": "Closing differene",
+        "CASH_PAYMENTS": "Barzahlungen",
+        "CASH_IN": "Cash In",
+        "CASH_OUT": "Cash Out"
+      }
+    },
+    "actions": {
+      "close": "Close",
+      "cancel": "Cancel"
+    }
+  },
+  "products": {
+    "searchBar": {
+      "placeholder": "Produkte durchsuchen..."
+    }
+  },
+  "currentOrder": {
+    "line": {
+      "at": "à"
+    },
+    "totalAmt": "Summe",
+    "taxAmt": "Steuern",
+    "actions": {
+      "pay": "Bezahlen",
+      "new": "Neu",
+      "void": "Annullieren",
+      "deleteLine": "Delete line"
+    }
+  },
+  "payment": {
+    "totalAmt": "Summe",
+    "remainingAmt": "Restbetrag",
+    "method": {
+      "cash": "Bar",
+      "card": "Karte"
+    },
+    "actions": {
+      "back": "Zurück",
+      "validate": "Überprüfen"
+    },
+    "modal": {
+      "cash": {
+        "title": "Barzahlung",
+        "payAmt": "Betrag ",
+        "tenderedAmt": "Angebotsbetrag",
+        "changeBackAmt": "Rückzahlbetrag",
+        "actions": {
+          "ok": "OK",
+          "cancel": "abbrechen"
+        }
+      },
+      "card": {
+        "title": "Karte",
+        "orderOpenAmt": "Restbetrag",
+        "payAmt": "Betrag",
+        "cardReader": "Kartenleser",
+        "actions": {
+          "checkout": "Checkout",
+          "cancel": "abbrechen"
+        }
+      }
+    }
+  },
+  "summary": {
+    "title": "Zahlung erfolgreich",
+    "totalAmt": "Summe",
+    "tenderedAmt": "Angebotsbetrag",
+    "changeBackAmt": "Rückzahlbetrag",
+    "actions": {
+      "close": "schließen",
+      "print": "Kassenbon ausdrucken"
+    }
+  }
+}
