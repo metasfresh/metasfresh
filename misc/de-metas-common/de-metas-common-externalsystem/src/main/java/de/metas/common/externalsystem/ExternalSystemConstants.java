@@ -106,7 +106,4 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_TARGET_DIRECTORY = "TargetDirectory";
 	public static final String PARAM_PRINTING_QUEUE_ID = "PrintingQueueId";
-	public static final String PARAM_JSON_AVAILABLE_FOR_SALES = "JsonAvailableForSales";
-
-	public static final int DEFAULT_SW6_ORDER_PAGE_SIZE = 100;
 }
