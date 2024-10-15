@@ -14,6 +14,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.pporder.PPOrderRef;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -81,6 +82,7 @@ final class PPOrderLineCandidatesCreateCommand
 		this.pickDirectlyIfFeasible = pickDirectlyIfFeasible;
 	}
 
+	@SuppressWarnings("unused")
 	public static class PPOrderLineCandidatesCreateCommandBuilder
 	{
 		public void create()
@@ -109,6 +111,7 @@ final class PPOrderLineCandidatesCreateCommand
 
 		final CandidateType candidateType = PPOrderHandlerUtils.extractCandidateType(ppOrderLine);
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(ppOrderLine);
+		//noinspection UnnecessaryLocalVariable
 		final DemandDetail lineCandidateDemandDetail = headerDemandDetail;
 
 		final ProductionDetail productionDetail = createProductionDetail(ppOrderLine);
@@ -164,13 +167,12 @@ final class PPOrderLineCandidatesCreateCommand
 				.pickDirectlyIfFeasible(pickDirectlyIfFeasible)
 				.plantId(ppOrder.getPpOrderData().getPlantId())
 				.workstationId(ppOrder.getPpOrderData().getWorkstationId())
-				.qty(ppOrderLine.getPpOrderLineData().getQtyRequired())
+				.qty(ppOrderLine.getPpOrderLineData().getQtyOpenNegateIfReceipt())
 				.productPlanningId(ppOrder.getPpOrderData().getProductPlanningId())
 				.productBomLineId(ppOrderLine.getPpOrderLineData().getProductBomLineId())
 				.description(ppOrderLine.getPpOrderLineData().getDescription())
-				.ppOrderId(ppOrder.getPpOrderId())
+				.ppOrderRef(PPOrderRef.ofPPOrderBOMLineId(ppOrder.getPpOrderId(), ppOrderLine.getPpOrderLineId()))
 				.ppOrderDocStatus(ppOrder.getDocStatus())
-				.ppOrderLineId(ppOrderLine.getPpOrderLineId())
 				.build();
 	}
 

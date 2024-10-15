@@ -85,7 +85,7 @@ public final class EventBusConfig
 	/**
 	 * Topic used for general notifications. To be used mainly for broadcasting messages to everybody.
 	 */
-	public static final Topic TOPIC_GeneralUserNotifications = Topic.remote("de.metas.event.GeneralNotifications");
+	public static final Topic TOPIC_GeneralUserNotifications = Topic.distributed("de.metas.event.GeneralNotifications");
 
 	/**
 	 * Topic used for general notifications inside this JVM instance.
@@ -112,13 +112,14 @@ public final class EventBusConfig
 	/**
 	 * @return true of calls to {@link IEventBus#postEvent(Event)} shall be performed asynchronously
 	 */
+	/** @return true of calls to {@link IEventBus#processEvent(Event)} shall be performed asynchronously */
 	public static boolean isEventBusPostAsync(@NonNull final Topic topic)
 	{
 		if (alwaysConsiderAsyncTopics.contains(topic))
 		{
 			return true;
 		}
-		
+
 		// NOTE: in case of unit tests which are checking what notifications were arrived,
 		// allowing the events to be posted async could be a problem because the event might arrive after the check.
 		if (Adempiere.isUnitTestMode())

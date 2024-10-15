@@ -44,6 +44,7 @@ public class PPOrderSourceHURepository
 				.firstOnlyOptional(I_PP_Order_SourceHU.class);
 	}
 
+	@NonNull
 	public ImmutableSet<HuId> getSourceHUIds(final PPOrderId ppOrderId)
 	{
 		final List<HuId> huIds = queryBL.createQueryBuilder(I_PP_Order_SourceHU.class)

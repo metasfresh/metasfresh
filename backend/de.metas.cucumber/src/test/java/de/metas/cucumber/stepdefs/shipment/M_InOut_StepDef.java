@@ -98,7 +98,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
@@ -198,7 +198,7 @@ public class M_InOut_StepDef
 		softly.assertAll();
 	}
 
-	@And("'generate shipments' process is invoked")
+	@And("'generate shipments' process is invoked individually for each M_ShipmentSchedule")
 	public void invokeGenerateShipmentsProcess(@NonNull final DataTable table)
 	{
 		final List<Map<String, String>> dataTable = table.asMaps();

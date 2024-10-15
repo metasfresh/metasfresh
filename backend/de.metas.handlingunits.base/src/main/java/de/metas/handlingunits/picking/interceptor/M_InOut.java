@@ -23,13 +23,16 @@
 package de.metas.handlingunits.picking.interceptor;
 
 import de.metas.handlingunits.picking.job.service.PickingJobService;
+import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.shippertransportation.ShipperDeliveryService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -41,14 +44,28 @@ public class M_InOut
 {
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final PickingJobService pickingJobService;
+	private final ShipperDeliveryService shipperDeliveryService;
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(@NonNull final I_M_InOut shipment)
 	{
-		trxManager.runAfterCommit(() -> shipmentScheduleAllocDAO.retrieveOrderIds(shipment)
-				.forEach(pickingJobService::abortNotStartedForSalesOrderId));
+		trxManager.runAfterCommit(() -> {
+			shipmentScheduleAllocDAO.retrieveOrderIds(shipment).forEach(pickingJobService::abortNotStartedForSalesOrderId);
+			addToShipperTransportationOrderIfNeeded(shipment);
+		});
+	}
+
+	private void addToShipperTransportationOrderIfNeeded(@NonNull final I_M_InOut shipment)
+	{
+		final boolean automaticallyAddToDailyShipperTransportationOrder = sysConfigBL
+				.getBooleanValue("de.metas.handlingunits.picking.addToDailyShipperTransportationOrder", false);
+
+		if (automaticallyAddToDailyShipperTransportationOrder)
+		{
+			shipperDeliveryService.addToDailyTransportationOrder(InOutId.ofRepoId(shipment.getM_InOut_ID()));
+		}
 	}
 }

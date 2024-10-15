@@ -34,6 +34,7 @@ import lombok.NonNull;
 import org.adempiere.util.api.IParams;
 import org.compiere.SpringContextHolder;
 import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.productioncandidate.agg.key.impl.PPOrderCandidateAggregationFactory;
 import org.eevolution.productioncandidate.service.PPOrderCandidateProcessRequest;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 import org.eevolution.productioncandidate.service.produce.PPOrderCandidateToAllocate;
@@ -51,6 +52,9 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsLast;
 import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_AUTO_CLOSE_CANDIDATES_AFTER_PRODUCTION;
 import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION;
 import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_COMPLETE_DOC_PARAM;
@@ -59,6 +63,7 @@ import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.
 public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAdapter
 {
 	private final PPOrderCandidateService ppOrderCandidateService = SpringContextHolder.instance.getBean(PPOrderCandidateService.class);
+	private final PPOrderCandidateAggregationFactory aggregationFactory = SpringContextHolder.instance.getBean(PPOrderCandidateAggregationFactory.class);
 
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workPackage, @Nullable final String localTrxName)
@@ -105,7 +110,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 		candidateStream
 				.filter(orderCandidate -> !orderCandidate.isProcessed())
 				.sorted(Comparator.comparingInt(I_PP_Order_Candidate::getPP_Order_Candidate_ID))
-				.map(PPOrderCandidateToAllocate::of)
+				.map(ppOrderCandidate -> PPOrderCandidateToAllocate.of(ppOrderCandidate, aggregationFactory.buildAggregationKey(ppOrderCandidate)))
 				.forEach(cand -> addPPOrderCandidateToGroup(headerAgg2PPOrderCandGroup, cand));
 
 		final ImmutableList.Builder<PPOrderCandidateToAllocate> sortedCandidates = new ImmutableList.Builder<>();
@@ -113,7 +118,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 		headerAgg2PPOrderCandGroup.values()
 				.stream()
 				.filter(Objects::nonNull)
-				.sorted(Comparator.nullsLast(Comparator.comparing(PPOrderCandidatesGroup::getGroupSeqNo)))
+				.sorted(comparing(PPOrderCandidatesGroup::getGroupSeqNo, nullsLast(naturalOrder())))
 				.map(PPOrderCandidatesGroup::getPpOrderCandidateToAllocateList)
 				.forEach(sortedCandidates::addAll);
 

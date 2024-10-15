@@ -40,6 +40,7 @@ import java.util.Objects;
 
 public class ReceiveGoodsCommand
 {
+
 	//
 	// Services
 	private final IHandlingUnitsBL handlingUnitsBL;
@@ -88,7 +89,7 @@ public class ReceiveGoodsCommand
 	@Nullable
 	public ReceivingTarget execute()
 	{
-		@Nullable ReceivingTarget receivingTarget;
+		@Nullable final ReceivingTarget receivingTarget;
 		if (this.receivingTarget.getNewLU() != null)
 		{
 			receivingTarget = receiveToNewLU(this.receivingTarget.getNewLU());

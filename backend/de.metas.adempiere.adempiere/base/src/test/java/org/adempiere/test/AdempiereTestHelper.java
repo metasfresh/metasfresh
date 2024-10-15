@@ -214,7 +214,8 @@ public class AdempiereTestHelper
 
 		// Logging
 		LogManager.setLevel(Level.WARN);
-		Loggables.temporarySetLoggable(Loggables.nop());
+		//noinspection resource
+		Loggables.temporarySetLoggable(Loggables.console(">>> "));
 
 		// JSON
 		JsonObjectMapperHolder.resetSharedJsonObjectMapper();
@@ -226,7 +227,7 @@ public class AdempiereTestHelper
 
 	private static void log(final String methodName, final String message)
 	{
-		System.out.println("" + AdempiereTestHelper.class.getSimpleName() + "." + methodName + ": " + message);
+		System.out.println(AdempiereTestHelper.class.getSimpleName() + "." + methodName + ": " + message);
 	}
 
 	private static Properties setupContext()

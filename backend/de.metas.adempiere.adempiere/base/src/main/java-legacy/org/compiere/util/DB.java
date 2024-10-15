@@ -970,7 +970,7 @@ public class DB
 
 	public int executeUpdateEx(final String sql,
 							   final Object[] params,
-							   final String trxName,
+							   @Nullable final String trxName,
 							   final int timeOut,
 							   final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
@@ -1697,7 +1697,7 @@ public class DB
 	 * @param trxName optional Transaction Name
 	 * @return next primary key number
 	 */
-	public int getNextID(final int AD_Client_ID, final String TableName, final String trxName)
+	public int getNextID(final int AD_Client_ID, @NonNull final String TableName, @Nullable final String trxName)
 	{
 		if (Adempiere.isUnitTestMode())
 		{

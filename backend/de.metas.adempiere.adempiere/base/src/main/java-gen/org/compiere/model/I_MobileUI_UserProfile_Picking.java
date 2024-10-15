@@ -142,7 +142,52 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
 
 	/**
+	 * Set Allow new TU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowNewTU (boolean IsAllowNewTU);
+
+	/**
+	 * Get Allow new TU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowNewTU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowNewTU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowNewTU", null);
+	String COLUMNNAME_IsAllowNewTU = "IsAllowNewTU";
+
+	/**
+	 * Set Allow picking with no rejected qty reason.
+	 * If activated, a smaller quantity may be picked. An additional option then appears in the picking dialog.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowSkippingRejectedReason (boolean IsAllowSkippingRejectedReason);
+
+	/**
+	 * Get Allow picking with no rejected qty reason.
+	 * If activated, a smaller quantity may be picked. An additional option then appears in the picking dialog.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowSkippingRejectedReason();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowSkippingRejectedReason = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowSkippingRejectedReason", null);
+	String COLUMNNAME_IsAllowSkippingRejectedReason = "IsAllowSkippingRejectedReason";
+
+	/**
 	 * Set Always split HU.
+	 * If checked, the selected HU is always split before picking.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -152,6 +197,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	/**
 	 * Get Always split HU.
+	 * If checked, the selected HU is always split before picking.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -161,6 +207,94 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAlwaysSplitHUsEnabled = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAlwaysSplitHUsEnabled", null);
 	String COLUMNNAME_IsAlwaysSplitHUsEnabled = "IsAlwaysSplitHUsEnabled";
+
+	/**
+	 * Set Allow picking TU with catch weight.
+	 * If activated and a packing instruction is included in the order line, it is assumed that it is a TU when Catch Weight is picked. Otherwise metasfresh assumes that it is a CU
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCatchWeightTUPickingEnabled (boolean IsCatchWeightTUPickingEnabled);
+
+	/**
+	 * Get Allow picking TU with catch weight.
+	 * If activated and a packing instruction is included in the order line, it is assumed that it is a TU when Catch Weight is picked. Otherwise metasfresh assumes that it is a CU
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCatchWeightTUPickingEnabled();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsCatchWeightTUPickingEnabled = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsCatchWeightTUPickingEnabled", null);
+	String COLUMNNAME_IsCatchWeightTUPickingEnabled = "IsCatchWeightTUPickingEnabled";
+
+	/**
+	 * Set Consider sales order capacity.
+	 * If not activated, the quantity allocation for TU Catch Weight is taken from the master data of the product
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsConsiderSalesOrderCapacity (boolean IsConsiderSalesOrderCapacity);
+
+	/**
+	 * Get Consider sales order capacity.
+	 * If not activated, the quantity allocation for TU Catch Weight is taken from the master data of the product
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isConsiderSalesOrderCapacity();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsConsiderSalesOrderCapacity = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsConsiderSalesOrderCapacity", null);
+	String COLUMNNAME_IsConsiderSalesOrderCapacity = "IsConsiderSalesOrderCapacity";
+
+	/**
+	 * Set Pick with LU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickingWithNewLU (boolean IsPickingWithNewLU);
+
+	/**
+	 * Get Pick with LU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPickingWithNewLU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsPickingWithNewLU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsPickingWithNewLU", null);
+	String COLUMNNAME_IsPickingWithNewLU = "IsPickingWithNewLU";
+
+	/**
+	 * Set Ask User when Over Picking.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShowConfirmationPromptWhenOverPick (boolean IsShowConfirmationPromptWhenOverPick);
+
+	/**
+	 * Get Ask User when Over Picking.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShowConfirmationPromptWhenOverPick();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowConfirmationPromptWhenOverPick = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowConfirmationPromptWhenOverPick", null);
+	String COLUMNNAME_IsShowConfirmationPromptWhenOverPick = "IsShowConfirmationPromptWhenOverPick";
 
 	/**
 	 * Set Mobile UI Picking Profile.

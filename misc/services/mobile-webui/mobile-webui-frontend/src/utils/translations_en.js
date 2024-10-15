@@ -97,6 +97,7 @@ const translations = {
       switchToQrCodeInput: 'Scan QR',
       skip: 'Skip',
       scanTargetHU: 'Scan target HU',
+      qtyRejectedIgnoreReason: 'Do not record a reason',
       qrcode: {
         missingQty: 'The scanned QR, has no qty information!',
         differentUOM: 'The scanned QR UOM does not match the target!',
@@ -108,6 +109,13 @@ const translations = {
         Current: 'Current',
         CloseTarget: 'Close',
       },
+      tuPickingTarget: {
+        New: 'New TU',
+        Select: 'Select Target',
+        Current: 'Current',
+        CloseTarget: 'Close',
+      },
+      overPickConfirmationPrompt: 'Do you really want to pick more than was ordered?',
     },
     distribution: {
       DistributionLine: 'Distribution Line',
@@ -160,6 +168,11 @@ const translations = {
         newHU: 'New HU',
         target: 'To receive',
         picked: 'Received',
+      },
+      validateSourceLocator: {
+        noValidOption: 'No valid option available',
+        qrMatches: `OK!`,
+        qrDoesNotMatch: `Scanned QR doesn't match the source Locator!`,
       },
     },
   },

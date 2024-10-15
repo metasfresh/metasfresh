@@ -30,6 +30,13 @@ import org.compiere.model.I_C_DocType_Sequence;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -49,11 +56,28 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 			+ " WHERE " + I_AD_Sequence.COLUMNNAME_AD_Sequence_ID + "=?";
 	private static final String SQL_AD_Sequence_No_CurrentNext = "SELECT " + I_AD_Sequence_No.COLUMNNAME_CurrentNext
 			+ " FROM " + I_AD_Sequence_No.Table_Name
-			+ " WHERE " + I_AD_Sequence_No.COLUMNNAME_AD_Sequence_ID + "=? AND " + I_AD_Sequence_No.COLUMNNAME_CalendarYear + "=?";
+			+ " WHERE " + I_AD_Sequence_No.COLUMNNAME_AD_Sequence_ID + "=? AND "
+			+ I_AD_Sequence_No.COLUMNNAME_CalendarYear + "=? AND "
+			+ I_AD_Sequence_No.COLUMNNAME_CalendarMonth + "= '1' AND "
+			+ I_AD_Sequence_No.COLUMNNAME_CalendarDay + "= '1'";
+
+	private static final String SQL_AD_SEQUENCE_NO_BY_YEAR_MONTH = "SELECT " + I_AD_Sequence_No.COLUMNNAME_CurrentNext
+			+ " FROM " + I_AD_Sequence_No.Table_Name
+			+ " WHERE " + I_AD_Sequence_No.COLUMNNAME_AD_Sequence_ID + "=? AND "
+			+ I_AD_Sequence_No.COLUMNNAME_CalendarYear + "=? AND "
+			+ I_AD_Sequence_No.COLUMNNAME_CalendarMonth + "=? AND "
+			+ I_AD_Sequence_No.COLUMNNAME_CalendarDay + "= '1'";
+
+	private static final String SQL_AD_SEQUENCE_NO_BY_YEAR_MONTH_DAY = "SELECT " + I_AD_Sequence_No.COLUMNNAME_CurrentNext
+			+ " FROM " + I_AD_Sequence_No.Table_Name
+			+ " WHERE " + I_AD_Sequence_No.COLUMNNAME_AD_Sequence_ID + "=? AND "
+			+ I_AD_Sequence_No.COLUMNNAME_CalendarYear + "=? AND "
+			+ I_AD_Sequence_No.COLUMNNAME_CalendarMonth + "=? AND "
+			+ I_AD_Sequence_No.COLUMNNAME_CalendarDay + "=?";
 
 	@Override
 	@Cached(cacheName = I_AD_Sequence.Table_Name + "#DocumentSequenceInfo#By#SequenceName")
-	public DocumentSequenceInfo retriveDocumentSequenceInfo(final String sequenceName, final int adClientId, final int adOrgId)
+	public DocumentSequenceInfo retriveDocumentSequenceInfo(@NonNull final String sequenceName, final int adClientId, final int adOrgId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_AD_Sequence.class)
@@ -79,6 +103,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		return toDocumentSequenceInfo(record);
 	}    // MSequence;
 
+	@Nullable
 	@Override
 	@Cached(cacheName = I_AD_Sequence.Table_Name + "#DocumentSequenceInfo#By#AD_Sequence_ID")
 	public DocumentSequenceInfo retriveDocumentSequenceInfo(@NonNull final DocSequenceId sequenceId)
@@ -109,7 +134,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 				.suffix(compileStringExpressionOrUseItAsIs(record.getSuffix()))
 				.decimalPattern(record.getDecimalPattern())
 				.autoSequence(record.isAutoSequence())
-				.startNewYear(record.isStartNewYear())
+				.restartFrequency(SequenceRestartFrequencyEnum.ofNullableCode(record.getRestartFrequency()))
 				.dateColumn(record.getDateColumn())
 				//
 				.customSequenceNoProvider(createCustomSequenceNoProviderOrNull(record))
@@ -123,14 +148,15 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		{
 			return StringExpressionCompiler.instance.compile(expr);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed compiling '{}' string expression. Using it as is", expr, ex);
 			return ConstantStringExpression.ofNullable(expr);
 		}
 	}
 
-	private static CustomSequenceNoProvider createCustomSequenceNoProviderOrNull(final I_AD_Sequence adSequence)
+	@Nullable
+	private CustomSequenceNoProvider createCustomSequenceNoProviderOrNull(final I_AD_Sequence adSequence)
 	{
 		if (adSequence.getCustomSequenceNoProvider_JavaClass_ID() <= 0)
 		{
@@ -165,6 +191,41 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		final String calendarYear = sdf.format(date);
 
 		return DB.getSQLValueStringEx(ITrx.TRXNAME_None, SQL_AD_Sequence_No_CurrentNext, AD_Sequence_ID, calendarYear);
+	}
+
+	@Override
+	public String retrieveDocumentNoByYearAndMonth(final int AD_Sequence_ID, java.util.Date date)
+	{
+		if (date == null)
+		{
+			date = new Date();
+		}
+		final SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+		final String calendarYear = yearFormat.format(date);
+
+		final SimpleDateFormat monthFormat = new SimpleDateFormat("M");
+		final String calendarMonth = monthFormat.format(date);
+
+		return DB.getSQLValueStringEx(ITrx.TRXNAME_None, SQL_AD_SEQUENCE_NO_BY_YEAR_MONTH, AD_Sequence_ID, calendarYear, calendarMonth);
+	}
+
+	@Override
+	public String retrieveDocumentNoByYearMonthAndDay(final int AD_Sequence_ID, java.util.Date date)
+	{
+		if (date == null)
+		{
+			date = new Date();
+		}
+		final SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+		final String calendarYear = yearFormat.format(date);
+
+		final SimpleDateFormat monthFormat = new SimpleDateFormat("M");
+		final String calendarMonth = monthFormat.format(date);
+
+		final SimpleDateFormat dayFormat = new SimpleDateFormat("d");
+		final String calendarDay = dayFormat.format(date);
+
+		return DB.getSQLValueStringEx(ITrx.TRXNAME_None, SQL_AD_SEQUENCE_NO_BY_YEAR_MONTH_DAY, AD_Sequence_ID, calendarYear, calendarMonth, calendarDay);
 	}
 
 	@Override

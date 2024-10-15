@@ -16,7 +16,6 @@ import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.ManufacturingOrderQuery;
@@ -85,18 +84,6 @@ public class PPOrderDAO implements IPPOrderDAO
 	public Stream<I_PP_Order> streamManufacturingOrders(@NonNull final ManufacturingOrderQuery query)
 	{
 		return toSqlQueryBuilder(query).create().iterateAndStream();
-	}
-
-	@Override
-	public int getLastSeqNoPerOrderDate(@NonNull final I_PP_Order ppOrder)
-	{
-		final int lastSeqNo = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Order.class, ppOrder)
-				.addEqualsFilter(I_PP_Order.COLUMN_DateOrdered, ppOrder.getDateOrdered(), DateTruncQueryFilterModifier.DAY)
-				.create()
-				.aggregate(I_M_ProductPrice.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, Integer.class);
-
-		return SeqNo.ofInt(lastSeqNo).next().toInt();
 	}
 
 	private IQueryBuilder<I_PP_Order> toSqlQueryBuilder(final ManufacturingOrderQuery query)
@@ -174,6 +161,19 @@ public class PPOrderDAO implements IPPOrderDAO
 	}
 
 	@Override
+	public SeqNo getNextSeqNoPerDateStartSchedule(@NonNull final I_PP_Order ppOrder)
+	{
+		final SeqNo lastSeqNo = SeqNo.ofInt(queryBL
+				.createQueryBuilder(I_PP_Order.class, ppOrder)
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_DateStartSchedule, ppOrder.getDateStartSchedule(), DateTruncQueryFilterModifier.DAY)
+				.create()
+				.aggregate(I_PP_Order.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, Integer.class)
+		);
+
+		return lastSeqNo.next();
+	}
+
+	@Override
 	public PPOrderId retrievePPOrderIdByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		return queryBL
@@ -235,7 +235,7 @@ public class PPOrderDAO implements IPPOrderDAO
 		}
 
 		final HashMultimap<APIExportStatus, PPOrderId> orderIdsByExportStatus = HashMultimap.create();
-		for (Map.Entry<PPOrderId, APIExportStatus> entry : exportStatuses.entrySet())
+		for (final Map.Entry<PPOrderId, APIExportStatus> entry : exportStatuses.entrySet())
 		{
 			orderIdsByExportStatus.put(entry.getValue(), entry.getKey());
 		}

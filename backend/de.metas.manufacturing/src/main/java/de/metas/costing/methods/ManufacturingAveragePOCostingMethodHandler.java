@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
@@ -96,6 +97,19 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 
 	@Override
 	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
+	{
+		final CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
+		if (existingCostDetail != null)
+		{
+			return Optional.of(utils.toCostDetailCreateResult(existingCostDetail));
+		}
+		else
+		{
+			return createCost(request);
+		}
+	}
+
+	private Optional<CostDetailCreateResult> createCost(final CostDetailCreateRequest request)
 	{
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId(PPCostCollectorId::ofRepoId);
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);

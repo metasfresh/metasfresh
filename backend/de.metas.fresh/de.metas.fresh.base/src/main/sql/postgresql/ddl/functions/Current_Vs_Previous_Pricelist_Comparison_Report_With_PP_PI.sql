@@ -62,7 +62,7 @@ WITH plvvr AS
                      AND plv.issotrx = p_IsSoTrx
                      AND (p_C_BPartner_ID IS NULL OR plv.c_bpartner_id = p_C_BPartner_ID)
                      AND (p_C_BP_Group_ID IS NULL OR plv.c_bpartner_id IN (SELECT bpg.c_bpartner_id FROM bpg))
-                   order by
+                   ORDER BY --TRUE,
                             plv.validfrom DESC,
                             plv.m_pricelist_version_id DESC) t
              WHERE t.rank <= 2
@@ -132,7 +132,7 @@ SELECT --
        r.AD_Org_ID,
        p_show_product_price_pi_flag as show_product_price_pi_flag
 FROM result r
-order by
+ORDER BY --TRUE,
          r.bp_value,
          r.productCategory,
          r.value
