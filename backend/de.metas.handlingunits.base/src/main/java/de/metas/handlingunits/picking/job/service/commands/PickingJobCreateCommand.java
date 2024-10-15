@@ -25,7 +25,6 @@ import de.metas.handlingunits.picking.plan.model.PickingPlanLine;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
@@ -45,7 +44,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
 
 import java.util.Objects;
 
@@ -53,7 +51,6 @@ public class PickingJobCreateCommand
 {
 	private static final AdMessageKey MSG_NotAllItemsAreAvailableToBePicked = AdMessageKey.of("PickingJobCreateCommand.notAllItemsAreAvailableToBePicked");
 	private static final AdMessageKey MORE_THAN_ONE_JOB_ERROR_MSG = AdMessageKey.of("PickingJobCreateCommand.MORE_THAN_ONE_JOB_ERROR_MSG");
-	private static final Logger logger = LogManager.getLogger(PickingJobCreateCommand.class);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
