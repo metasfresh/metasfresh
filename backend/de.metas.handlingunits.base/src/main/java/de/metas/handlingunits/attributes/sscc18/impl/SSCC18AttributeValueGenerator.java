@@ -39,7 +39,7 @@ import java.util.Properties;
 public class SSCC18AttributeValueGenerator extends AbstractAttributeValueGenerator
 {
 
-	private ISSCC18CodeBL sscc18CodeBL = Services.get(ISSCC18CodeBL.class);
+	private final ISSCC18CodeBL sscc18CodeBL = Services.get(ISSCC18CodeBL.class);
 
 	@Override
 	public String getAttributeValueType()
