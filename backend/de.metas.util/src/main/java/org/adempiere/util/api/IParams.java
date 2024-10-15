@@ -22,8 +22,10 @@ package org.adempiere.util.api;
  * #L%
  */
 
+import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -87,5 +89,18 @@ public interface IParams
 		return value != null
 				? Optional.of(ReferenceListAwareEnums.ofEnumCode(value, enumType))
 				: Optional.empty();
+	}
+
+	@Nullable
+	default Boolean getParameterAsBoolean(@NonNull final String parameterName)
+	{
+		final Object value = getParameterAsObject(parameterName);
+
+		if (value == null)
+		{
+			return null;
+		}
+
+		return StringUtils.toBoolean(value);
 	}
 }

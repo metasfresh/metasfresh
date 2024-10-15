@@ -15,10 +15,13 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.OrgId;
+import de.metas.product.OnMaterialReceiptWithDestWarehouse;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -35,14 +38,12 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.model.X_PP_Product_Planning;
 
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 /*
@@ -73,7 +74,7 @@ import java.util.Properties;
 public class OrderLineReceiptScheduleProducer extends AbstractReceiptScheduleProducer
 {
 
-	private final static String DEFAULT_OnMaterialReceiptWithDestWarehouse = X_PP_Product_Planning.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateMovement;
+	private final static OnMaterialReceiptWithDestWarehouse DEFAULT_OnMaterialReceiptWithDestWarehouse = OnMaterialReceiptWithDestWarehouse.CREATE_MOVEMENT;
 
 	@Override
 	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
@@ -158,7 +159,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		receiptSchedule.setC_BPartner_Location_ID(line.getC_BPartner_Location_ID());
 		final I_C_Order order = line.getC_Order();
 		receiptSchedule.setAD_User_ID(order.getAD_User_ID());
-
+		receiptSchedule.setPOReference(order.getPOReference());
 		//
 		// Delivery rule, Priority rule
 		{
@@ -200,8 +201,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			//
 			// Destination Warehouse
 
-			final I_M_Warehouse warehouseDest = getWarehouseDest(ctx, line);
-			receiptSchedule.setM_Warehouse_Dest_ID(warehouseDest == null ? 0 : warehouseDest.getM_Warehouse_ID());
+			final WarehouseId warehouseDestId = getWarehouseDest(ctx, line).orElse(null);
+			receiptSchedule.setM_Warehouse_Dest_ID(WarehouseId.toRepoId(warehouseDestId));
 		}
 
 		//
@@ -241,7 +242,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		receiptSchedule.setHeaderAggregationKey(headerAggregationKey);
 
 		// #3549
-		receiptSchedule.setOnMaterialReceiptWithDestWarehouse(getOnMaterialReceiptWithDestWarehouse(line));
+		receiptSchedule.setOnMaterialReceiptWithDestWarehouse(getOnMaterialReceiptWithDestWarehouse(line).getCode());
 
 		final Dimension orderLineDimension = dimensionService.getFromRecord(line);
 		dimensionService.updateRecord(receiptSchedule, orderLineDimension);
@@ -252,7 +253,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		return receiptSchedule;
 	}
 
-	private String getOnMaterialReceiptWithDestWarehouse(final I_C_OrderLine orderLine)
+	@NonNull
+	private OnMaterialReceiptWithDestWarehouse getOnMaterialReceiptWithDestWarehouse(final I_C_OrderLine orderLine)
 	{
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
@@ -267,24 +269,20 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 				.attributeSetInstanceId(asiId)
 				// no warehouse, no plant
 				.build();
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query).orElse(null);
+		final ProductPlanning productPlanning = productPlanningDAO.find(query).orElse(null);
 		if (productPlanning == null)
 		{
 			// fallback to old behavior -> a movement is created instead of dd_Order
 			return DEFAULT_OnMaterialReceiptWithDestWarehouse;
 		}
 
-		final String onMaterialReceiptWithDestWarehouse = productPlanning.getOnMaterialReceiptWithDestWarehouse();
+		final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse = productPlanning.getOnMaterialReceiptWithDestWarehouse();
 
-		return Check.isEmpty(onMaterialReceiptWithDestWarehouse) ? DEFAULT_OnMaterialReceiptWithDestWarehouse : onMaterialReceiptWithDestWarehouse;
-
+		return onMaterialReceiptWithDestWarehouse != null ? onMaterialReceiptWithDestWarehouse : DEFAULT_OnMaterialReceiptWithDestWarehouse;
 	}
 
 	/**
 	 * Create LotNumberDate Attribute instance and set it in the receipt shcedule's ASI
-	 *
-	 * @param receiptSchedule
-	 * @param order
 	 */
 	private void createLotNumberDateAI(final I_M_ReceiptSchedule receiptSchedule, final I_C_Order order)
 	{
@@ -367,16 +365,16 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	}
 
 	/**
-	 * @return destination warehouse for given order line or <code>null</code>
+	 * @return destination warehouse for given order line
 	 */
-	private I_M_Warehouse getWarehouseDest(final Properties ctx, final org.compiere.model.I_C_OrderLine line)
+	private Optional<WarehouseId> getWarehouseDest(final Properties ctx, final org.compiere.model.I_C_OrderLine line)
 	{
 		//
 		// If we deal with a drop shipment we shall not have any destination warehouse where we need to move after receipt (08402)
 		final I_C_Order order = line.getC_Order();
 		if (order.isDropShip())
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		final IReceiptScheduleWarehouseDestProvider warehouseDestProvider = getWarehouseDestProvider();
@@ -409,9 +407,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	 * <li>order's C_DocType.C_DocType_Shipment_ID if set
 	 * <li>standard Material Receipt document type
 	 * </ul>
-	 *
-	 * @param orderLine
-	 * @return
 	 */
 	private int retrieveReceiptDocTypeId(final org.compiere.model.I_C_OrderLine orderLine)
 	{

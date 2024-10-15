@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.CreatePickingCandidatesCommand;
@@ -37,6 +38,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingConfigRepository;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -84,19 +86,22 @@ public class PickingCandidateService
 	private final HUReservationService huReservationService;
 	private final IBPartnerBL bpartnersService;
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final InventoryService inventoryService;
 
 	public PickingCandidateService(
 			@NonNull final PickingConfigRepository pickingConfigRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final HUReservationService huReservationService,
-			@NonNull final IBPartnerBL bpartnersService)
+			@NonNull final IBPartnerBL bpartnersService,
+			@NonNull final InventoryService inventoryService)
 	{
 		this.pickingConfigRepository = pickingConfigRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.huReservationService = huReservationService;
 		this.bpartnersService = bpartnersService;
+		this.inventoryService = inventoryService;
 	}
 
 	public List<PickingCandidate> getByIds(final Set<PickingCandidateId> pickingCandidateIds)
@@ -253,6 +258,7 @@ public class PickingCandidateService
 	{
 		return ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
+				.inventoryService(inventoryService)
 				.request(request)
 				.build()
 				.execute();
@@ -376,5 +382,22 @@ public class PickingCandidateService
 	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
 	{
 		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+	}
+
+	/**
+	 * @return true, if all drafted picking candidates have been removed from the slot, false otherwise
+	 */
+	public boolean clearPickingSlot(@NonNull final PickingSlotId pickingSlotId, final boolean removeUnprocessedHUsFromSlot)
+	{
+		if (removeUnprocessedHUsFromSlot)
+		{
+			RemoveHUFromPickingSlotCommand.builder()
+					.pickingCandidateRepository(pickingCandidateRepository)
+					.pickingSlotId(pickingSlotId)
+					.build()
+					.perform();
+		}
+
+		return !pickingCandidateRepository.hasDraftCandidatesForPickingSlot(pickingSlotId);
 	}
 }

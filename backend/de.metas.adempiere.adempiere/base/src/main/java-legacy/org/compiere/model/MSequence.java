@@ -453,7 +453,7 @@ public class MSequence extends X_AD_Sequence
 			setIncrementNo(1);
 			setIsAutoSequence(true);
 			setIsAudited(false);
-			setStartNewYear(false);
+			setRestartFrequency(null);
 		}
 	}	// MSequence
 

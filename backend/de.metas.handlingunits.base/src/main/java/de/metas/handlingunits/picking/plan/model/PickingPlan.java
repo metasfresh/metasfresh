@@ -25,6 +25,7 @@ package de.metas.handlingunits.picking.plan.model;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFromsList;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
@@ -49,5 +50,13 @@ public class PickingPlan
 				.map(PickingPlanLine::getProductId)
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Expected the plan to contain only one product")));
+	}
+
+	public Quantity getQtyToPick()
+	{
+		return lines.stream()
+				.map(PickingPlanLine::getQty)
+				.reduce(Quantity::add)
+				.orElseThrow(() -> new AdempiereException("No QtyToPick found in " + lines));
 	}
 }

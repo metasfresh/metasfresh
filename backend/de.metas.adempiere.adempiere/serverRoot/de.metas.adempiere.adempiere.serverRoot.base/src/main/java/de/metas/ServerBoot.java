@@ -88,6 +88,8 @@ public class ServerBoot implements InitializingBean
 	 */
 	public static final String SYSTEM_PROPERTY_HEADLESS = "app-server-run-headless";
 
+	private static final String SYSTEM_PROPERTY_APP_NAME = "spring.application.name";
+
 	private static final Logger logger = LogManager.getLogger(ServerBoot.class);
 
 	private static final String SYSCONFIG_PREFIX_APP_SPRING_PROFILES_ACTIVE = "de.metas.spring.profiles.active";
@@ -125,6 +127,8 @@ public class ServerBoot implements InitializingBean
 			activeProfiles.add(Profiles.PROFILE_ReportService);
 			activeProfiles.add(Profiles.PROFILE_PrintService);
 			activeProfiles.add(Profiles.PROFILE_AccountingService);
+
+			setDefaultProperties();
 
 			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 			new SpringApplicationBuilder(ServerBoot.class)
@@ -192,6 +196,14 @@ public class ServerBoot implements InitializingBean
 					TimeUnit.SECONDS // timeUnit
 			);
 			logger.info("Clearing query selection tables each {} seconds", clearQuerySelectionsRateInSeconds);
+		}
+	}
+
+	private static void setDefaultProperties()
+	{
+		if (Check.isBlank(System.getProperty(SYSTEM_PROPERTY_APP_NAME)))
+		{
+			System.setProperty(SYSTEM_PROPERTY_APP_NAME, ServerBoot.class.getSimpleName());
 		}
 	}
 }

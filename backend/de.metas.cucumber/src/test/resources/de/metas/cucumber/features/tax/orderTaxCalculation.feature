@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: Validate tax calculation for orders taking into account dropship location
 
   Background:

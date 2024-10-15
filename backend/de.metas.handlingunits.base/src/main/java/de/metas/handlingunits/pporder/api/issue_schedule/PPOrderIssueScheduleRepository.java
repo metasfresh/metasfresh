@@ -10,6 +10,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,7 +38,7 @@ public class PPOrderIssueScheduleRepository
 		final I_PP_Order_IssueSchedule record = InterfaceWrapperHelper.newInstance(I_PP_Order_IssueSchedule.class);
 		record.setPP_Order_ID(request.getPpOrderId().getRepoId());
 		record.setPP_Order_BOMLine_ID(request.getPpOrderBOMLineId().getRepoId());
-		record.setSeqNo(request.getSeqNo());
+		record.setSeqNo(request.getSeqNo().toInt());
 
 		record.setM_Product_ID(request.getProductId().getRepoId());
 		record.setC_UOM_ID(request.getQtyToIssue().getUomId().getRepoId());
@@ -49,7 +50,15 @@ public class PPOrderIssueScheduleRepository
 		record.setIsAlternativeHU(request.isAlternativeIssue());
 
 		// Issued:
-		record.setQtyIssued(BigDecimal.ZERO);
+		if (request.getQtyIssued() != null)
+		{
+			record.setQtyIssued(request.getQtyIssued().toBigDecimal());
+			record.setProcessed(true);
+		}
+		else
+		{
+			record.setQtyIssued(BigDecimal.ZERO);
+		}
 		// record.setQtyReject(null);
 		// record.setRejectReason(null);
 
@@ -65,7 +74,7 @@ public class PPOrderIssueScheduleRepository
 				.id(PPOrderIssueScheduleId.ofRepoId(record.getPP_Order_IssueSchedule_ID()))
 				.ppOrderId(PPOrderId.ofRepoId(record.getPP_Order_ID()))
 				.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoId(record.getPP_Order_BOMLine_ID()))
-				.seqNo(record.getSeqNo())
+				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				//
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.qtyToIssue(Quantitys.create(record.getQtyToIssue(), uomId))
@@ -140,10 +149,14 @@ public class PPOrderIssueScheduleRepository
 		final Quantity qtyIssued = issued != null ? issued.getQtyIssued() : null;
 		final QtyRejectedWithReason qtyRejected = issued != null ? issued.getQtyRejected() : null;
 
+		record.setSeqNo(issueSchedule.getSeqNo().toInt());
 		record.setProcessed(processed);
 		record.setQtyIssued(qtyIssued != null ? qtyIssued.toBigDecimal() : BigDecimal.ZERO);
 		record.setQtyReject(qtyRejected != null ? qtyRejected.toBigDecimal() : BigDecimal.ZERO);
 		record.setRejectReason(qtyRejected != null ? qtyRejected.getReasonCode().getCode() : null);
+
+		record.setQtyToIssue(issueSchedule.getQtyToIssue().toBigDecimal());
+		record.setC_UOM_ID(issueSchedule.getQtyToIssue().getUomId().getRepoId());
 
 		InterfaceWrapperHelper.save(record);
 	}
@@ -156,6 +169,16 @@ public class PPOrderIssueScheduleRepository
 				.create()
 				.delete();
 	}
+
+	public void deleteNotProcessedById(@NonNull final PPOrderIssueScheduleId issueScheduleId)
+	{
+		queryBL.createQueryBuilder(I_PP_Order_IssueSchedule.class)
+				.addEqualsFilter(I_PP_Order_IssueSchedule.COLUMNNAME_PP_Order_IssueSchedule_ID, issueScheduleId)
+				.addEqualsFilter(I_PP_Order_IssueSchedule.COLUMNNAME_Processed, false)
+				.create()
+				.delete();
+	}
+
 
 	public boolean matchesByOrderId(@NonNull final PPOrderId ppOrderId)
 	{

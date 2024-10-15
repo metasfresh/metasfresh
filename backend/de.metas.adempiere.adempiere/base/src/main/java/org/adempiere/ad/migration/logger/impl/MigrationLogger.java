@@ -22,14 +22,12 @@ package org.adempiere.ad.migration.logger.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-
+import de.metas.dao.selection.model.I_T_Query_Selection;
+import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
+import de.metas.logging.LogManager;
+import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.logger.IMigrationLoggerContext;
 import org.adempiere.ad.migration.model.I_AD_Migration;
@@ -76,12 +74,13 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import de.metas.dao.selection.model.I_T_Query_Selection;
-import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
-import de.metas.logging.LogManager;
-import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class MigrationLogger implements IMigrationLogger
 {
@@ -106,9 +105,6 @@ public class MigrationLogger implements IMigrationLogger
 		initTablesIgnoreList();
 	}
 
-	/**
-	 * Initializes {@link #tablesIgnoreSystem} with default tables that shall be ignored
-	 */
 	private void initTablesIgnoreList()
 	{
 		final List<String> tablesIgnoreListDefault = Arrays.asList(
@@ -292,7 +288,7 @@ public class MigrationLogger implements IMigrationLogger
 	{
 		// ignore statistic updates
 		// TODO: metas: 02662: shall be deleted because it's handled by AD_Column.IsCalculated flag
-		if (pinfo.getTableName().equalsIgnoreCase("AD_Process") && !po.is_new() && po.is_ValueChanged("Statistic_Count"))
+			if (pinfo.getTableName().equalsIgnoreCase("AD_Process") && !po.is_new() && po.is_ValueChanged("Statistic_Count"))
 		{
 			return false;
 		}
@@ -369,10 +365,6 @@ public class MigrationLogger implements IMigrationLogger
 
 	/**
 	 * Create and set a short description about what was changed in this step
-	 *
-	 * @param po
-	 * @param migrationStep
-	 * @param stepDataList
 	 */
 	protected void setComments(final PO po, final I_AD_MigrationStep migrationStep, final List<I_AD_MigrationData> stepDataList)
 	{

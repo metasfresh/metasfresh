@@ -1,17 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import { getActivityById, getQtyRejectedReasonsFromActivity, getStepById } from '../../../reducers/wfProcesses';
+import {
+  getActivityById,
+  getLineById,
+  getQtyRejectedReasonsFromActivity,
+  getStepById,
+} from '../../../reducers/wfProcesses';
 import { toastError } from '../../../utils/toast';
-import { getPickFrom, getQtyToPick } from '../../../utils/picking';
+import { getPickFromForStep, getQtyToPickForStep } from '../../../utils/picking';
 import { postStepPicked } from '../../../api/picking';
-import { updatePickingStepQty } from '../../../actions/PickingActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import { toQRCodeString } from '../../../utils/huQRCodes';
+import { toQRCodeString } from '../../../utils/qrCode/hu';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { toNumberOrZero } from '../../../utils/numberUtils';
 
 const PickStepScanScreen = () => {
   const {
@@ -19,9 +25,20 @@ const PickStepScanScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId, stepId, altStepId },
   } = useRouteMatch();
 
-  const { eligibleQRCode, qtyToPick, uom, qtyRejectedReasons } = useSelector(
-    (state) => getPropsFromState({ state, wfProcessId, activityId, lineId, stepId, altStepId }),
-    shallowEqual
+  const { eligibleQRCode, qtyToPick, uom, qtyRejectedReasons, qtyRemainingToPick, isShowPromptWhenOverPicking } =
+    useSelector(
+      (state) => getPropsFromState({ state, wfProcessId, activityId, lineId, stepId, altStepId }),
+      shallowEqual
+    );
+
+  const getConfirmationPromptForQty = useCallback(
+    (qtyInput) => {
+      if (qtyRemainingToPick !== undefined && toNumberOrZero(qtyInput) > qtyRemainingToPick) {
+        return trl('activities.picking.overPickConfirmationPrompt');
+      }
+      return undefined;
+    },
+    [qtyRemainingToPick]
   );
 
   const dispatch = useDispatch();
@@ -42,25 +59,15 @@ const PickStepScanScreen = () => {
     postStepPicked({
       wfProcessId,
       activityId,
+      lineId,
       stepId,
       huQRCode: scannedBarcode,
       qtyPicked: qty,
       qtyRejectedReasonCode: reason,
       qtyRejected,
     })
+      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
       .then(() => {
-        dispatch(
-          updatePickingStepQty({
-            wfProcessId,
-            activityId,
-            lineId,
-            stepId,
-            altStepId,
-            qtyPicked: qty,
-            qtyRejected,
-            qtyRejectedReasonCode: reason,
-          })
-        );
         history.go(-2); // go to picking line screen
       })
       .catch((axiosError) => toastError({ axiosError }));
@@ -69,12 +76,13 @@ const PickStepScanScreen = () => {
   return (
     <ScanHUAndGetQtyComponent
       eligibleBarcode={eligibleQRCode}
-      qtyCaption={trl('general.QtyToPick')}
+      qtyTargetCaption={trl('general.QtyToPick')}
+      qtyMax={qtyToPick}
       qtyTarget={qtyToPick}
-      qtyInitial={qtyToPick}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
       //
+      getConfirmationPromptForQty={isShowPromptWhenOverPicking ? getConfirmationPromptForQty : undefined}
       onResult={onResult}
     />
   );
@@ -84,15 +92,18 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId, alt
   const activity = getActivityById(state, wfProcessId, activityId);
   const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
 
+  const lineProps = getLineById(state, wfProcessId, activityId, lineId);
   const stepProps = getStepById(state, wfProcessId, activityId, lineId, stepId);
-  const eligibleQRCode = toQRCodeString(getPickFrom({ stepProps, altStepId }).huQRCode);
-  const qtyToPick = getQtyToPick({ stepProps, altStepId });
+  const eligibleQRCode = toQRCodeString(getPickFromForStep({ stepProps, altStepId }).huQRCode);
+  const qtyToPick = getQtyToPickForStep({ stepProps, altStepId });
 
   return {
     eligibleQRCode,
     qtyToPick,
     uom: stepProps.uom,
     qtyRejectedReasons,
+    qtyRemainingToPick: lineProps.qtyRemainingToPick,
+    isShowPromptWhenOverPicking: activity?.dataStored?.isShowPromptWhenOverPicking,
   };
 };
 

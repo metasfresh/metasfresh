@@ -22,11 +22,11 @@ package de.metas.adempiere.callout;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.model.I_M_Inventory;
+import de.metas.inventory.IInventoryBL;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -36,11 +36,9 @@ import org.compiere.model.GridTab;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_M_Inventory;
-import de.metas.inventory.IInventoryBL;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Properties;
 
 /**
  * Callout for {@link I_M_Inventory} table
@@ -141,7 +139,7 @@ public class M_Inventory extends CalloutEngine
 		final int chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId();
 
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(inventory.getM_Warehouse_ID());
-		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouseId);
+		final I_M_Locator locator = Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(warehouseId);
 
 		final I_M_InventoryLine line = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class, inventory);
 		line.setAD_Org_ID(inventory.getAD_Org_ID());

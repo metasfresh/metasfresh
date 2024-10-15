@@ -1,12 +1,12 @@
 package de.metas.document.archive.mailrecipient.process;
 
+import de.metas.common.util.Check;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.SelectionSize;
-import de.metas.util.Check;
 import lombok.NonNull;
 
 public class C_Doc_Outbound_Log_SendPDFMails
@@ -31,8 +31,7 @@ public class C_Doc_Outbound_Log_SendPDFMails
 		}
 
 		final boolean atLeastOneRecordHasEmail = context
-				.getSelectedModels(I_C_Doc_Outbound_Log.class)
-				.stream()
+				.streamSelectedModels(I_C_Doc_Outbound_Log.class)
 				.anyMatch(record -> !Check.isEmpty(record.getCurrentEMailAddress(), true));
 		if (!atLeastOneRecordHasEmail)
 		{

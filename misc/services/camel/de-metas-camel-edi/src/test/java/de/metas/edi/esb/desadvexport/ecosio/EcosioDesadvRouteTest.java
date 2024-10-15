@@ -116,6 +116,21 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 				"./src/test/resources/de/metas/edi/esb/desadvexport/ecosio/DESADV_1023358_1611220554035_expected_output.xml");
 	}
 
+	@Test
+	void noPacks_desadv() throws Exception
+	{
+		testAndValidateResult(
+				"/de/metas/edi/esb/desadvexport/ecosio/DESADV_noPacks.xml",
+				"./src/test/resources/de/metas/edi/esb/desadvexport/ecosio/DESADV_noPacks_expected_output.xml");
+	}
+
+	@Test
+	void with_and_without_packs_desadv() throws Exception
+	{
+		testAndValidateResult(
+				"/de/metas/edi/esb/desadvexport/ecosio/DESADV_with_and_without_packs.xml",
+				"./src/test/resources/de/metas/edi/esb/desadvexport/ecosio/DESADV_with_and_without_packs_expected_output.xml");
+	}
 
 	private void testAndValidateResult(
 			@NonNull final String inputStrPath,

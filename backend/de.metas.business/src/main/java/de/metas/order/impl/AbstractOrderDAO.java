@@ -15,6 +15,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderQuery;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -32,7 +33,6 @@ import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -418,7 +418,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 
 	@Override
 	public void allocatePOLineToSOLine(
-			@NonNull final OrderLineId purchaseOrderLineId, 
+			@NonNull final OrderLineId purchaseOrderLineId,
 			@NonNull final OrderLineId salesOrderLineId)
 	{
 		final I_C_PO_OrderLine_Alloc poLineAllocation = InterfaceWrapperHelper.newInstance(I_C_PO_OrderLine_Alloc.class);
@@ -426,5 +426,16 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		poLineAllocation.setC_SO_OrderLine_ID(salesOrderLineId.getRepoId());
 
 		InterfaceWrapperHelper.save(poLineAllocation);
+	}
+
+	@NonNull
+	public List<OrderId> getUnprocessedIdsBy(@NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_Processed, false)
+				.create()
+				.listDistinct(I_C_OrderLine.COLUMNNAME_C_Order_ID, OrderId.class);
 	}
 }

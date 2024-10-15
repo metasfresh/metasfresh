@@ -614,7 +614,7 @@ public interface I_AD_User
 	String COLUMNNAME_EMail3 = "EMail3";
 
 	/**
-	 * Set EMail Nutzer-ID.
+	 * Set EMail User ID.
 	 * User Name (ID) in the Mail System
 	 *
 	 * <br>Type: String
@@ -974,6 +974,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsDefaultContact = new ModelColumn<>(I_AD_User.class, "IsDefaultContact", null);
 	String COLUMNNAME_IsDefaultContact = "IsDefaultContact";
+
+	/**
+	 * Set Dunning contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsDunningContact (boolean IsDunningContact);
+
+	/**
+	 * Get Dunning contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isDunningContact();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsDunningContact = new ModelColumn<>(I_AD_User.class, "IsDunningContact", null);
+	String COLUMNNAME_IsDunningContact = "IsDunningContact";
 
 	/**
 	 * Set Full BP Access.

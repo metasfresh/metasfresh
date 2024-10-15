@@ -12,6 +12,7 @@ import {
   openModal,
   setPrintingOptions,
   resetPrintingOptions,
+  openPrintingOptionsModal,
 } from '../../actions/WindowActions';
 import { setBreadcrumb } from '../../actions/MenuActions';
 
@@ -345,7 +346,7 @@ class Header extends PureComponent {
    * @param {string} docNo
    */
   handlePrint = async (windowId, docId, docNo) => {
-    const { dispatch, viewId } = this.props;
+    const { dispatch } = this.props;
 
     try {
       const response = await getPrintingOptions({
@@ -372,14 +373,11 @@ class Header extends PureComponent {
         } else {
           // otherwise we open the modal and we will reset the printing options in the store after the doc is printed
           dispatch(
-            openModal({
+            openPrintingOptionsModal({
               title: caption,
               windowId,
-              modalType: 'static',
-              viewId,
-              viewDocumentIds: [docNo],
-              dataId: docId,
-              staticModalType: 'printing',
+              documentId: docId,
+              documentNo: docNo,
             })
           );
         }
@@ -572,6 +570,7 @@ class Header extends PureComponent {
       handleEditModeToggle,
       plugins,
       indicator,
+      saveStatus,
       hasComments,
     } = this.props;
 
@@ -793,7 +792,12 @@ class Header extends PureComponent {
           </div>
 
           {showIndicator && (
-            <Indicator {...{ isDocumentNotSaved, indicator }} />
+            <Indicator
+              indicator={indicator}
+              isDocumentNotSaved={isDocumentNotSaved}
+              error={saveStatus?.error ? saveStatus?.reason : ''}
+              exception={saveStatus?.error ? saveStatus?.exception : null}
+            />
           )}
         </nav>
 
@@ -955,23 +959,31 @@ Header.propTypes = {
   siteName: PropTypes.any,
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   indicator: PropTypes.string,
+  saveStatus: PropTypes.object,
   hasComments: PropTypes.bool,
 };
 
 const mapStateToProps = (state) => {
-  const { master } = state.windowHandler;
-  const { docActionElement, documentSummaryElement } = master.layout;
+  const {
+    indicator,
+    master: {
+      layout: { docActionElement, documentSummaryElement },
+      data,
+      saveStatus,
+    },
+  } = state.windowHandler;
+
   const docSummaryData =
-    documentSummaryElement &&
-    master.data[documentSummaryElement.fields[0].field];
+    documentSummaryElement && data[documentSummaryElement.fields[0].field];
 
   return {
     inbox: state.appHandler.inbox,
     me: state.appHandler.me,
     plugins: state.pluginsHandler.files,
-    indicator: state.windowHandler.indicator,
     docStatus: docActionElement,
     docSummaryData,
+    indicator,
+    saveStatus,
   };
 };
 

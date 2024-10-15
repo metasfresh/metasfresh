@@ -148,6 +148,7 @@ public class CompositeAttributeStorageFactory implements IAttributeStorageFactor
 					.setParameter("model", model)
 					.setParameter("this instance", this);
 		}
+
 		return storage;
 	}
 

@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: Shipping HUs interaction with material schedule
 
   Background:
@@ -61,7 +62,7 @@ Feature: Shipping HUs interaction with material schedule
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
-    And 'generate shipments' process is invoked
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
     And after not more than 60s, M_InOut is found:

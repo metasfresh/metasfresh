@@ -27,7 +27,7 @@ import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -70,7 +70,7 @@ public class NotificationRepositoryTest
 		createAD_Message("contentADMessage");
 
 		final UserNotification notificationSaved = notificationRepo.save(UserNotificationRequest.builder()
-				.topic(Topic.builder().name("topic1").type(Type.REMOTE).build())
+				.topic(Topic.builder().name("topic1").type(Type.DISTRIBUTED).build())
 				.recipientUserId(UserId.ofRepoId(123))
 				.important(true)
 				//

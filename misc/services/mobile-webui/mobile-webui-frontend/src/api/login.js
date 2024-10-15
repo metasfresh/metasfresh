@@ -1,9 +1,20 @@
 import axios from 'axios';
 import { apiBasePath } from '../constants';
+import { unboxAxiosResponse } from '../utils';
 
-export function loginRequest(username, password) {
-  return axios.post(`${apiBasePath}/auth`, {
-    username,
-    password,
-  });
-}
+export const loginRequest = (username, password) => {
+  return axios
+    .post(`${apiBasePath}/auth`, {
+      username,
+      password,
+    })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const loginByQrCode = (qrCode) => {
+  return axios.post(`${apiBasePath}/auth/by-qrcode`, { qrCode }).then((response) => unboxAxiosResponse(response));
+};
+
+export const logoutRequest = () => {
+  return axios.post(`${apiBasePath}/userWorkflows/logout`).then((response) => unboxAxiosResponse(response));
+};

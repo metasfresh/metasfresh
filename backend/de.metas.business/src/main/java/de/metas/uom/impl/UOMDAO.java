@@ -91,6 +91,7 @@ public class UOMDAO implements IUOMDAO
 		return loadByRepoIdAwaresOutOfTrx(uomIds, I_C_UOM.class); // assume it's cached on table level
 	}
 
+	@NonNull
 	@Override
 	public UomId getUomIdByX12DE355(@NonNull final X12DE355 x12de355)
 	{
@@ -191,7 +192,13 @@ public class UOMDAO implements IUOMDAO
 	@Override
 	public boolean isUOMForTUs(@NonNull final UomId uomId)
 	{
-		final X12DE355 x12de355 = getX12DE355ById(uomId);
+		final I_C_UOM uom = getById(uomId);
+		return isUOMForTUs(uom);
+	}
+
+	public static boolean isUOMForTUs(@NonNull final I_C_UOM uom)
+	{
+		final X12DE355 x12de355 = X12DE355.ofCode(uom.getX12DE355());
 		return X12DE355.COLI.equals(x12de355) || X12DE355.TU.equals(x12de355);
 	}
 
@@ -200,5 +207,12 @@ public class UOMDAO implements IUOMDAO
 	{
 		final I_C_UOM uom = getById(uomId);
 		return UOMType.ofNullableCodeOrOther(uom.getUOMType());
+	}
+
+	@Override
+	public ITranslatableString getUOMSymbolById(@NonNull final UomId uomId)
+	{
+		final I_C_UOM uom = getById(uomId);
+		return InterfaceWrapperHelper.getModelTranslationMap(uom).getColumnTrl(I_C_UOM.COLUMNNAME_UOMSymbol, uom.getUOMSymbol());
 	}
 }

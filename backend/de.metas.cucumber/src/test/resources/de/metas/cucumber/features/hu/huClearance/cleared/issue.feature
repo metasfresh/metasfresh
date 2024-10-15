@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Cleared HU can be issued to production order
 
   Scenario: Cleared HUs can be issued to a production order
@@ -8,21 +9,21 @@ Feature: Cleared HU can be issued to production order
 
     And destroy existing M_HUs
     And metasfresh contains M_Products:
-      | Identifier              | Value                                | Name                                 |
-      | huProduct               | huProduct                            | huProduct                            |
-      | manufacturingProduct_HU | manufacturingProduct_IssueClearedHUs | manufacturingProduct_IssueClearedHUs |
+      | Identifier              |
+      | huProduct               |
+      | manufacturingProduct_HU |
     And load M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value        |
-      | warehouseStd              | StdWarehouse |
+      | Identifier   | Value        |
+      | warehouseStd | StdWarehouse |
     And load M_Locator:
-      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier | Value      |
-      | locatorHauptlager       | warehouseStd              | Hauptlager |
+      | Identifier        | M_Warehouse_ID | Value      |
+      | locatorHauptlager | warehouseStd   | Hauptlager |
 
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier | Name            |
-      | huPackingLU           | huPackingLU     |
-      | huPackingTU           | huPackingTU     |
-      | huPackingVirtualPI    | No Packing Item |
+      | M_HU_PI_ID         | Name            |
+      | huPackingLU        | huPackingLU     |
+      | huPackingTU        | huPackingTU     |
+      | huPackingVirtualPI | No Packing Item |
     And metasfresh contains M_HU_PI_Version:
       | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
       | packingVersionLU              | huPackingLU           | packingVersionLU | LU          | Y         |
@@ -37,8 +38,8 @@ Feature: Cleared HU can be issued to production order
       | huProductTU                        | huPiItemTU                 | huProduct               | 10  | 2022-01-01 |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo      |
-      | huProduct_inventory       | 2022-03-20T00:00:00Z | inventoryDocNo2 |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
+      | huProduct_inventory       | 2022-03-20   | inventoryDocNo2 |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 10       |
@@ -49,7 +50,7 @@ Feature: Cleared HU can be issued to production order
       | huProduct_inventoryLine       | createdCU          |
 
     And transform CU to new TUs
-      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier | OPT.resultedNewCUs.Identifier |
       | createdCU           | 10    | huProductTU                        | createdTU                 | newCreatedCU              |
 
     And after not more than 60s, M_HUs should have
@@ -65,11 +66,11 @@ Feature: Cleared HU can be issued to production order
       | createdLU          | Cleared         | Cleared HU        |
 
     And metasfresh contains PP_Product_BOM
-      | Identifier        | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
-      | bom_manufacturing | manufacturingProduct_HU | 2021-01-02 | bomVersions_manufacturing            |
+      | Identifier        | M_Product_ID            | PP_Product_BOMVersions_ID |
+      | bom_manufacturing | manufacturingProduct_HU | bomVersions_manufacturing |
     And metasfresh contains PP_Product_BOMLines
-      | Identifier           | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
-      | bom_l_manufacturing1 | bom_manufacturing            | huProduct               | 2021-01-02 | 10       |
+      | Identifier           | PP_Product_BOM_ID | M_Product_ID | QtyBatch |
+      | bom_l_manufacturing1 | bom_manufacturing | huProduct    | 10       |
 
     And the PP_Product_BOM identified by bom_manufacturing is completed
 
@@ -82,8 +83,8 @@ Feature: Cleared HU can be issued to production order
       | ppOrder_manufacturing  | MOP         | manufacturingProduct_HU | 10         | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                |
 
     And after not more than 60s, PP_Order_BomLines are found
-      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | ppOrderBOMLine_1               | ppOrder_manufacturing  | ppol_1     | huProduct               | 100          | false           | PCE               | CO            |
+      | Identifier       | PP_Order_ID           | M_Product_ID | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppOrderBOMLine_1 | ppOrder_manufacturing | huProduct    | 100          | false           | PCE               | CO            |
 
     And select M_HU to be issued for productionOrder
       | M_HU_ID.Identifier | PP_Order_Qty_ID.Identifier | PP_Order_BOMLine_ID.Identifier | OPT.MovementDate     |
@@ -98,7 +99,8 @@ Feature: Cleared HU can be issued to production order
       | ppOrder_manufacturing  |
 
     Then validate M_HUs:
-      | M_HU_ID.Identifier | M_HU_PI_Version_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | HUStatus | OPT.M_Locator_ID.Identifier | OPT.ClearanceStatus | OPT.ClearanceNote |
-      | createdLU          | packingVersionLU              |                                        | D        | locatorHauptlager           | C                   | Cleared HU        |
-      | createdTU          | packingVersionTU              | huProductTU                            | D        | locatorHauptlager           | C                   | Cleared HU        |
-      | newCreatedCU       | packingVersionCU              |                                        | D        | locatorHauptlager           | C                   | Cleared HU        |
+      | M_HU_ID      | M_HU_PI_Version_ID | M_HU_PI_Item_Product_ID | HUStatus | M_Locator_ID      | ClearanceStatus | ClearanceNote |
+      | createdLU    | packingVersionLU   |                         | D        | locatorHauptlager | C               | Cleared HU    |
+      | createdTU    | packingVersionTU   | huProductTU             | D        | locatorHauptlager | C               | Cleared HU    |
+      | newCreatedCU | packingVersionCU   |                         | D        | locatorHauptlager | C               | Cleared HU    |
+

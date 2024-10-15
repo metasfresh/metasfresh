@@ -31,6 +31,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
@@ -102,6 +103,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -435,7 +437,7 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final I_PP_Order orderRecord = ppOrdersRepo.getById(orderId);
 		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(orderRecord.getDocBaseType());
-		if(docBaseType.isRepairOrder())
+		if (docBaseType.isRepairOrder())
 		{
 			return;
 		}
@@ -618,6 +620,23 @@ public class PPOrderBL implements IPPOrderBL
 				.directlyPickIfFeasible(PPOrderUtil.pickIfFeasible(ppOrderPojo.getPpOrderData()))
 				.build();
 
-		materialEventService.postEventAfterNextCommit(ppOrderCreatedEvent);
+		materialEventService.enqueueEventAfterNextCommit(ppOrderCreatedEvent);
 	}
+
+	@Override
+	public void completeDocument(@NonNull final I_PP_Order ppOrder)
+	{
+		documentBL.processEx(ppOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+
+		Loggables.addLog(
+				"Completed ppOrder; PP_Order_ID={}; DocumentNo={}",
+				ppOrder.getPP_Order_ID(), ppOrder.getDocumentNo());
+	}
+
+	@Override
+	public Set<ProductId> getProductIdsToIssue(@NonNull final PPOrderId ppOrderId)
+	{
+		return orderBOMService.getProductIdsToIssue(ppOrderId);
+	}
+
 }

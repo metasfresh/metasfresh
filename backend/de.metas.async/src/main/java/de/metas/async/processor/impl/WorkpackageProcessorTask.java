@@ -628,7 +628,7 @@ class WorkpackageProcessorTask implements Runnable
 				.workPackageId(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()))
 				.status(status)
 				.build();
-		eventBusFactory.getEventBus(Async_Constants.WORKPACKAGE_LIFECYCLE_TOPIC).postObject(processingDoneEvent);
+		eventBusFactory.getEventBus(Async_Constants.WORKPACKAGE_LIFECYCLE_TOPIC).enqueueObject(processingDoneEvent);
 	}
 
 	private void notifyErrorAfterCommit(final I_C_Queue_WorkPackage workpackage, final AdempiereException ex)

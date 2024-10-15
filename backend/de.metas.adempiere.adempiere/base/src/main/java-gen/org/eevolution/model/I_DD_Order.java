@@ -1,9 +1,8 @@
 package org.eevolution.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for DD_Order
  *  @author metasfresh (generated) 
@@ -206,8 +205,7 @@ public interface I_DD_Order
 	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
-	 * Set Kosten.
-	 * Additional document charges
+	 * Set Costs.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -216,8 +214,7 @@ public interface I_DD_Order
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Kosten.
-	 * Additional document charges
+	 * Get Costs.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -248,6 +245,29 @@ public interface I_DD_Order
 	int getC_DocType_ID();
 
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
+	 * Set Charge amount.
+	 * Charge Amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
+
+	/**
+	 * Get Charge amount.
+	 * Charge Amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getChargeAmt();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_DD_Order.class, "ChargeAmt", null);
+	String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
 	 * Set Invoice.
@@ -326,28 +346,8 @@ public interface I_DD_Order
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Set Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
-
-	/**
-	 * Get Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getChargeAmt();
-
-	ModelColumn<I_DD_Order, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_DD_Order.class, "ChargeAmt", null);
-	String COLUMNNAME_ChargeAmt = "ChargeAmt";
-
-	/**
-	 * Set Create Confirm.
+	 * Set Create Confirmation.
+	 * Create Confirmations for the Document
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -356,7 +356,8 @@ public interface I_DD_Order
 	void setCreateConfirm (@Nullable java.lang.String CreateConfirm);
 
 	/**
-	 * Get Create Confirm.
+	 * Get Create Confirmation.
+	 * Create Confirmations for the Document
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -393,8 +394,8 @@ public interface I_DD_Order
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Position(en) kopieren von.
-	 * Process which will generate a new document lines based on an existing document
+	 * Set Create From ....
+	 * Prozess, der die Position(en) aus einem bestehenden Beleg kopiert
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -403,8 +404,8 @@ public interface I_DD_Order
 	void setCreateFrom (@Nullable java.lang.String CreateFrom);
 
 	/**
-	 * Get Position(en) kopieren von.
-	 * Process which will generate a new document lines based on an existing document
+	 * Get Create From ....
+	 * Prozess, der die Position(en) aus einem bestehenden Beleg kopiert
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -462,7 +463,7 @@ public interface I_DD_Order
 	String COLUMNNAME_DatePrinted = "DatePrinted";
 
 	/**
-	 * Set Zugesagter Termin.
+	 * Set Date Promised.
 	 * Date Order was promised
 	 *
 	 * <br>Type: Date
@@ -472,7 +473,7 @@ public interface I_DD_Order
 	void setDatePromised (java.sql.Timestamp DatePromised);
 
 	/**
-	 * Get Zugesagter Termin.
+	 * Get Date Promised.
 	 * Date Order was promised
 	 *
 	 * <br>Type: Date
@@ -485,7 +486,7 @@ public interface I_DD_Order
 	String COLUMNNAME_DatePromised = "DatePromised";
 
 	/**
-	 * Set Eingangsdatum.
+	 * Set Date received.
 	 * Date a product was received
 	 *
 	 * <br>Type: Date
@@ -495,7 +496,7 @@ public interface I_DD_Order
 	void setDateReceived (@Nullable java.sql.Timestamp DateReceived);
 
 	/**
-	 * Get Eingangsdatum.
+	 * Get Date received.
 	 * Date a product was received
 	 *
 	 * <br>Type: Date
@@ -529,7 +530,7 @@ public interface I_DD_Order
 	String COLUMNNAME_DD_Order_ID = "DD_Order_ID";
 
 	/**
-	 * Set Lieferart.
+	 * Set Delivery Rule.
 	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
@@ -539,7 +540,7 @@ public interface I_DD_Order
 	void setDeliveryRule (java.lang.String DeliveryRule);
 
 	/**
-	 * Get Lieferart.
+	 * Get Delivery Rule.
 	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
@@ -597,7 +598,7 @@ public interface I_DD_Order
 
 	/**
 	 * Set Process Batch.
-	 * The targeted status of the document
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -607,7 +608,7 @@ public interface I_DD_Order
 
 	/**
 	 * Get Process Batch.
-	 * The targeted status of the document
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -663,7 +664,57 @@ public interface I_DD_Order
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set Frachtbetrag.
+	 * Set Forward Manufacturing Order BOM Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setForward_PP_Order_BOMLine_ID (int Forward_PP_Order_BOMLine_ID);
+
+	/**
+	 * Get Forward Manufacturing Order BOM Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getForward_PP_Order_BOMLine_ID();
+
+	@Nullable org.eevolution.model.I_PP_Order_BOMLine getForward_PP_Order_BOMLine();
+
+	void setForward_PP_Order_BOMLine(@Nullable org.eevolution.model.I_PP_Order_BOMLine Forward_PP_Order_BOMLine);
+
+	ModelColumn<I_DD_Order, org.eevolution.model.I_PP_Order_BOMLine> COLUMN_Forward_PP_Order_BOMLine_ID = new ModelColumn<>(I_DD_Order.class, "Forward_PP_Order_BOMLine_ID", org.eevolution.model.I_PP_Order_BOMLine.class);
+	String COLUMNNAME_Forward_PP_Order_BOMLine_ID = "Forward_PP_Order_BOMLine_ID";
+
+	/**
+	 * Set Forward Manufacturing Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setForward_PP_Order_ID (int Forward_PP_Order_ID);
+
+	/**
+	 * Get Forward Manufacturing Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getForward_PP_Order_ID();
+
+	@Nullable org.eevolution.model.I_PP_Order getForward_PP_Order();
+
+	void setForward_PP_Order(@Nullable org.eevolution.model.I_PP_Order Forward_PP_Order);
+
+	ModelColumn<I_DD_Order, org.eevolution.model.I_PP_Order> COLUMN_Forward_PP_Order_ID = new ModelColumn<>(I_DD_Order.class, "Forward_PP_Order_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_Forward_PP_Order_ID = "Forward_PP_Order_ID";
+
+	/**
+	 * Set Freight Amount.
 	 * Freight Amount
 	 *
 	 * <br>Type: Amount
@@ -673,7 +724,7 @@ public interface I_DD_Order
 	void setFreightAmt (@Nullable BigDecimal FreightAmt);
 
 	/**
-	 * Get Frachtbetrag.
+	 * Get Freight Amount.
 	 * Freight Amount
 	 *
 	 * <br>Type: Amount
@@ -686,7 +737,7 @@ public interface I_DD_Order
 	String COLUMNNAME_FreightAmt = "FreightAmt";
 
 	/**
-	 * Set Frachtkostenberechnung.
+	 * Set Freight Cost Rule.
 	 * Method for charging Freight
 	 *
 	 * <br>Type: List
@@ -696,7 +747,7 @@ public interface I_DD_Order
 	void setFreightCostRule (java.lang.String FreightCostRule);
 
 	/**
-	 * Get Frachtkostenberechnung.
+	 * Get Freight Cost Rule.
 	 * Method for charging Freight
 	 *
 	 * <br>Type: List
@@ -709,8 +760,8 @@ public interface I_DD_Order
 	String COLUMNNAME_FreightCostRule = "FreightCostRule";
 
 	/**
-	 * Set Generate To.
-	 * Generate To
+	 * Set Generate Invoice from Receipt.
+	 * Create and process Invoice from this receipt.  The receipt should be correct and completed.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -719,8 +770,8 @@ public interface I_DD_Order
 	void setGenerateTo (@Nullable java.lang.String GenerateTo);
 
 	/**
-	 * Get Generate To.
-	 * Generate To
+	 * Get Generate Invoice from Receipt.
+	 * Create and process Invoice from this receipt.  The receipt should be correct and completed.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -778,7 +829,7 @@ public interface I_DD_Order
 	String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
-	 * Set Zugestellt.
+	 * Set Is Delivered.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -787,7 +838,7 @@ public interface I_DD_Order
 	void setIsDelivered (boolean IsDelivered);
 
 	/**
-	 * Get Zugestellt.
+	 * Get Is Delivered.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -799,7 +850,7 @@ public interface I_DD_Order
 	String COLUMNNAME_IsDelivered = "IsDelivered";
 
 	/**
-	 * Set Streckengeschäft.
+	 * Set Different shipping address.
 	 * Drop Shipments are sent from the Vendor directly to the Customer
 	 *
 	 * <br>Type: YesNo
@@ -809,7 +860,7 @@ public interface I_DD_Order
 	void setIsDropShip (boolean IsDropShip);
 
 	/**
-	 * Get Streckengeschäft.
+	 * Get Different shipping address.
 	 * Drop Shipments are sent from the Vendor directly to the Customer
 	 *
 	 * <br>Type: YesNo
@@ -866,7 +917,7 @@ public interface I_DD_Order
 	String COLUMNNAME_IsInTransit = "IsInTransit";
 
 	/**
-	 * Set andrucken.
+	 * Set Printed.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -876,7 +927,7 @@ public interface I_DD_Order
 	void setIsPrinted (boolean IsPrinted);
 
 	/**
-	 * Get andrucken.
+	 * Get Printed.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -889,7 +940,7 @@ public interface I_DD_Order
 	String COLUMNNAME_IsPrinted = "IsPrinted";
 
 	/**
-	 * Set Selektiert.
+	 * Set Selected.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -898,7 +949,7 @@ public interface I_DD_Order
 	void setIsSelected (boolean IsSelected);
 
 	/**
-	 * Get Selektiert.
+	 * Get Selected.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -952,6 +1003,75 @@ public interface I_DD_Order
 
 	ModelColumn<I_DD_Order, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_DD_Order.class, "IsSOTrx", null);
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
+	 * Set MRP Allow Cleanup.
+	 * MRP is allowed to remove this document
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMRP_AllowCleanup (boolean MRP_AllowCleanup);
+
+	/**
+	 * Get MRP Allow Cleanup.
+	 * MRP is allowed to remove this document
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isMRP_AllowCleanup();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_MRP_AllowCleanup = new ModelColumn<>(I_DD_Order.class, "MRP_AllowCleanup", null);
+	String COLUMNNAME_MRP_AllowCleanup = "MRP_AllowCleanup";
+
+	/**
+	 * Set MRP Generated Document.
+	 * This document was generated by MRP
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMRP_Generated (boolean MRP_Generated);
+
+	/**
+	 * Get MRP Generated Document.
+	 * This document was generated by MRP
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isMRP_Generated();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_MRP_Generated = new ModelColumn<>(I_DD_Order.class, "MRP_Generated", null);
+	String COLUMNNAME_MRP_Generated = "MRP_Generated";
+
+	/**
+	 * Set To be deleted (MRP).
+	 * Indicates if this document is scheduled to be deleted by MRP
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMRP_ToDelete (boolean MRP_ToDelete);
+
+	/**
+	 * Get To be deleted (MRP).
+	 * Indicates if this document is scheduled to be deleted by MRP
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isMRP_ToDelete();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_MRP_ToDelete = new ModelColumn<>(I_DD_Order.class, "MRP_ToDelete", null);
+	String COLUMNNAME_MRP_ToDelete = "MRP_ToDelete";
 
 	/**
 	 * Set Shipper.
@@ -1043,77 +1163,8 @@ public interface I_DD_Order
 	String COLUMNNAME_M_Warehouse_To_ID = "M_Warehouse_To_ID";
 
 	/**
-	 * Set MRP Allow Cleanup.
-	 * MRP is allowed to remove this document
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMRP_AllowCleanup (boolean MRP_AllowCleanup);
-
-	/**
-	 * Get MRP Allow Cleanup.
-	 * MRP is allowed to remove this document
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isMRP_AllowCleanup();
-
-	ModelColumn<I_DD_Order, Object> COLUMN_MRP_AllowCleanup = new ModelColumn<>(I_DD_Order.class, "MRP_AllowCleanup", null);
-	String COLUMNNAME_MRP_AllowCleanup = "MRP_AllowCleanup";
-
-	/**
-	 * Set MRP Generated Document.
-	 * This document was generated by MRP
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMRP_Generated (boolean MRP_Generated);
-
-	/**
-	 * Get MRP Generated Document.
-	 * This document was generated by MRP
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isMRP_Generated();
-
-	ModelColumn<I_DD_Order, Object> COLUMN_MRP_Generated = new ModelColumn<>(I_DD_Order.class, "MRP_Generated", null);
-	String COLUMNNAME_MRP_Generated = "MRP_Generated";
-
-	/**
-	 * Set To be deleted (MRP).
-	 * Indicates if this document is scheduled to be deleted by MRP
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMRP_ToDelete (boolean MRP_ToDelete);
-
-	/**
-	 * Get To be deleted (MRP).
-	 * Indicates if this document is scheduled to be deleted by MRP
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isMRP_ToDelete();
-
-	ModelColumn<I_DD_Order, Object> COLUMN_MRP_ToDelete = new ModelColumn<>(I_DD_Order.class, "MRP_ToDelete", null);
-	String COLUMNNAME_MRP_ToDelete = "MRP_ToDelete";
-
-	/**
-	 * Set Kommissionier-Datum.
-	 * Datum/Zeit der Kommissionierung für die Lieferung
+	 * Set Pick Date.
+	 * Date/Time when picked for Shipment
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1122,8 +1173,8 @@ public interface I_DD_Order
 	void setPickDate (@Nullable java.sql.Timestamp PickDate);
 
 	/**
-	 * Get Kommissionier-Datum.
-	 * Datum/Zeit der Kommissionierung für die Lieferung
+	 * Get Pick Date.
+	 * Date/Time when picked for Shipment
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1201,7 +1252,7 @@ public interface I_DD_Order
 	String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
 
 	/**
-	 * Set Produktionsstätte.
+	 * Set Plant.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1210,7 +1261,7 @@ public interface I_DD_Order
 	void setPP_Plant_ID (int PP_Plant_ID);
 
 	/**
-	 * Get Produktionsstätte.
+	 * Get Plant.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1227,6 +1278,7 @@ public interface I_DD_Order
 
 	/**
 	 * Set Product Planning.
+	 * Product Planning
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1236,6 +1288,7 @@ public interface I_DD_Order
 
 	/**
 	 * Get Product Planning.
+	 * Product Planning
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1243,15 +1296,10 @@ public interface I_DD_Order
 	 */
 	int getPP_Product_Planning_ID();
 
-	@Nullable org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning();
-
-	void setPP_Product_Planning(@Nullable org.eevolution.model.I_PP_Product_Planning PP_Product_Planning);
-
-	ModelColumn<I_DD_Order, org.eevolution.model.I_PP_Product_Planning> COLUMN_PP_Product_Planning_ID = new ModelColumn<>(I_DD_Order.class, "PP_Product_Planning_ID", org.eevolution.model.I_PP_Product_Planning.class);
 	String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
 
 	/**
-	 * Set Priorität.
+	 * Set Priority.
 	 * Priority of a document
 	 *
 	 * <br>Type: List
@@ -1261,7 +1309,7 @@ public interface I_DD_Order
 	void setPriorityRule (java.lang.String PriorityRule);
 
 	/**
-	 * Get Priorität.
+	 * Get Priority.
 	 * Priority of a document
 	 *
 	 * <br>Type: List
@@ -1365,7 +1413,7 @@ public interface I_DD_Order
 	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
-	 * Set E-Mail senden.
+	 * Set Send EMail.
 	 * Enable sending Document EMail
 	 *
 	 * <br>Type: YesNo
@@ -1375,7 +1423,7 @@ public interface I_DD_Order
 	void setSendEMail (boolean SendEMail);
 
 	/**
-	 * Get E-Mail senden.
+	 * Get Send EMail.
 	 * Enable sending Document EMail
 	 *
 	 * <br>Type: YesNo
