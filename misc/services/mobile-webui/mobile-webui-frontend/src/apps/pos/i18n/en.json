@@ -3,6 +3,35 @@
     "closeCashJournal": "Close register",
     "orders": "Orders"
   },
+  "openCashJournal": {
+    "title": "Opening cash",
+    "openingBalance": "Opening cash",
+    "openingNote": "Opening note",
+    "actions": {
+      "open": "Open"
+    }
+  },
+  "closeCashJournal": {
+    "title": "Closing cash journal",
+    "paymentMethod": "Payment Method",
+    "bookedAmt": "Booked",
+    "countedAmt": "Counted",
+    "differenceAmt": "Difference",
+    "closingNote": "Closing note",
+    "details": {
+      "type": {
+        "OPENING_BALANCE": "Opening balance",
+        "CLOSING_DIFFERENCE": "Closing difference",
+        "CASH_PAYMENTS": "Cash payments",
+        "CASH_IN": "Cash In",
+        "CASH_OUT": "Cash Out"
+      }
+    },
+    "actions": {
+      "close": "Close",
+      "cancel": "Cancel"
+    }
+  },
   "products": {
     "searchBar": {
       "placeholder": "Search products..."

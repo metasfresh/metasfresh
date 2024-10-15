@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { usePOSTerminal } from '../../actions/posTerminal';
 
 import './POSCashJournalOpenModal.scss';
+import { trl } from '../../../../utils/translations';
+
+const _ = (key) => trl(`pos.openCashJournal.${key}`);
 
 const POSCashJournalOpenModal = () => {
   const posTerminal = usePOSTerminal();
@@ -17,11 +20,11 @@ const POSCashJournalOpenModal = () => {
       <div className="modal-background"></div>
       <div className="modal-card">
         <header className="modal-card-head">
-          <p className="modal-card-title">Opening cash</p>
+          <p className="modal-card-title">{_('title')}</p>
         </header>
         <section className="modal-card-body">
           <div className="line">
-            <div className="caption">Opening cash</div>
+            <div className="caption">{_('openingBalance')}</div>
             <div className="field">
               <input
                 type="number"
@@ -33,7 +36,7 @@ const POSCashJournalOpenModal = () => {
             </div>
           </div>
           <div className="line">
-            <div className="caption">Opening note</div>
+            <div className="caption">{_('openingNote')}</div>
             <div className="field">
               <textarea value={openingNote} onChange={(e) => setOpeningNote(e.target.value)} />
             </div>
@@ -42,7 +45,7 @@ const POSCashJournalOpenModal = () => {
         <footer className="modal-card-foot">
           <div className="buttons">
             <button className="button is-large" onClick={onOpenClick}>
-              Open
+              {_('actions.open')}
             </button>
           </div>
         </footer>

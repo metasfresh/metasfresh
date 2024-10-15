@@ -3,6 +3,35 @@
     "closeCashJournal": "Kasse schließen",
     "orders": "Aufträge"
   },
+  "openCashJournal": {
+    "title": "Kassenbuch eröffnen",
+    "openingBalance": "Eröffnungssaldo",
+    "openingNote": "Eröffnungsvermerk",
+    "actions": {
+      "open": "Eröffnen"
+    }
+  },
+  "closeCashJournal": {
+    "title": "Kassenbuch abschließen",
+    "paymentMethod": "Zahlungsart",
+    "bookedAmt": "Gebucht",
+    "countedAmt": "Erfasst",
+    "differenceAmt": "Differenz",
+    "closingNote": "Abschlussvermerk",
+    "details": {
+      "type": {
+        "OPENING_BALANCE": "Eröffnungssaldo",
+        "CLOSING_DIFFERENCE": "Closing differene",
+        "CASH_PAYMENTS": "Barzahlungen",
+        "CASH_IN": "Cash In",
+        "CASH_OUT": "Cash Out"
+      }
+    },
+    "actions": {
+      "close": "Close",
+      "cancel": "Cancel"
+    }
+  },
   "products": {
     "searchBar": {
       "placeholder": "Produkte durchsuchen..."
