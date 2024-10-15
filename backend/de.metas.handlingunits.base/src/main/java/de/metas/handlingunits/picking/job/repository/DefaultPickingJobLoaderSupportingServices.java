@@ -30,7 +30,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -57,7 +56,6 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPartnerBL bpartnerBL;
 	private final PickingJobSlotService pickingSlotService;
-	private final WorkplaceService workplaceService;
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
