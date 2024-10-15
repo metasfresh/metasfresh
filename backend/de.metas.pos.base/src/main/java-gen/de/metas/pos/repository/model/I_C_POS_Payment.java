@@ -75,6 +75,48 @@ public interface I_C_POS_Payment
 	String COLUMNNAME_Amount = "Amount";
 
 	/**
+	 * Set Tendered Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAmountTendered (BigDecimal AmountTendered);
+
+	/**
+	 * Get Tendered Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getAmountTendered();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_AmountTendered = new ModelColumn<>(I_C_POS_Payment.class, "AmountTendered", null);
+	String COLUMNNAME_AmountTendered = "AmountTendered";
+
+	/**
+	 * Set Change.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setChangeBackAmount (BigDecimal ChangeBackAmount);
+
+	/**
+	 * Get Change.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getChangeBackAmount();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_ChangeBackAmount = new ModelColumn<>(I_C_POS_Payment.class, "ChangeBackAmount", null);
+	String COLUMNNAME_ChangeBackAmount = "ChangeBackAmount";
+
+	/**
 	 * Set Payment.
 	 * Payment identifier
 	 *
@@ -210,6 +252,48 @@ public interface I_C_POS_Payment
 
 	ModelColumn<I_C_POS_Payment, Object> COLUMN_IsActive = new ModelColumn<>(I_C_POS_Payment.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Card Reader External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOS_CardReader_ExternalId (@Nullable java.lang.String POS_CardReader_ExternalId);
+
+	/**
+	 * Get Card Reader External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOS_CardReader_ExternalId();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_POS_CardReader_ExternalId = new ModelColumn<>(I_C_POS_Payment.class, "POS_CardReader_ExternalId", null);
+	String COLUMNNAME_POS_CardReader_ExternalId = "POS_CardReader_ExternalId";
+
+	/**
+	 * Set Card Reader Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOS_CardReader_Name (@Nullable java.lang.String POS_CardReader_Name);
+
+	/**
+	 * Get Card Reader Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOS_CardReader_Name();
+
+	ModelColumn<I_C_POS_Payment, Object> COLUMN_POS_CardReader_Name = new ModelColumn<>(I_C_POS_Payment.class, "POS_CardReader_Name", null);
+	String COLUMNNAME_POS_CardReader_Name = "POS_CardReader_Name";
 
 	/**
 	 * Set POS Payment Method.

@@ -1,5 +1,6 @@
 package de.metas.pos;
 
+import de.metas.i18n.BooleanWithReason;
 import de.metas.pos.repository.model.X_C_POS_Payment;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
@@ -53,29 +54,28 @@ public enum POSPaymentProcessingStatus implements ReferenceListAwareEnum
 		}
 	}
 
-	public boolean isAllowDeleteFromDB()
+	public BooleanWithReason checkAllowDeleteFromDB()
 	{
-		return isNew();
+		return isNew() ? BooleanWithReason.TRUE : BooleanWithReason.falseBecause("Payments with status " + this + " cannot be deleted from DB");
 	}
 
-	public void assertAllowDeleteFromDB()
+	public BooleanWithReason checkAllowDelete(final POSPaymentMethod paymentMethod)
 	{
-		if (!isAllowDeleteFromDB())
+		if (checkAllowDeleteFromDB().isTrue())
 		{
-			throw new AdempiereException("Payments with status " + this + " cannot be deleted from DB");
+			return BooleanWithReason.TRUE;
 		}
-	}
-
-	public boolean isAllowDelete()
-	{
-		return isAllowDeleteFromDB() || isCanceled() || isFailed();
-	}
-
-	public void assertAllowDelete()
-	{
-		if (!isAllowDelete())
+		else if (paymentMethod.isCash() && isPending())
 		{
-			throw new AdempiereException("Payments with status " + this + " cannot be deleted");
+			return BooleanWithReason.TRUE;
+		}
+		else if (isCanceled() || isFailed())
+		{
+			return BooleanWithReason.TRUE;
+		}
+		else
+		{
+			return BooleanWithReason.falseBecause("Payments with status " + this + " cannot be deleted");
 		}
 	}
 

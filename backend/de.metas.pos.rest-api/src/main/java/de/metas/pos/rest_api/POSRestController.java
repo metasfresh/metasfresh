@@ -10,6 +10,7 @@ import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
 import de.metas.pos.POSOrderStatus;
+import de.metas.pos.POSPaymentCheckoutRequest;
 import de.metas.pos.POSProductsSearchResult;
 import de.metas.pos.POSService;
 import de.metas.pos.POSTerminal;
@@ -34,8 +35,14 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
+import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -181,7 +188,7 @@ public class POSRestController
 	}
 
 	@PostMapping("/orders/draft")
-	public JsonPOSOrder changeStatusToDraft(@RequestBody JsonChangeOrderStatusRequest request)
+	public JsonPOSOrder changeStatusToDrafted(@RequestBody JsonChangeOrderStatusRequest request)
 	{
 		return changeStatusTo(request, POSOrderStatus.Drafted);
 	}
@@ -193,15 +200,21 @@ public class POSRestController
 	}
 
 	@PostMapping("/orders/void")
-	public JsonPOSOrder changeStatusToVoid(@RequestBody JsonChangeOrderStatusRequest request)
+	public JsonPOSOrder changeStatusToVoided(@RequestBody JsonChangeOrderStatusRequest request)
 	{
 		return changeStatusTo(request, POSOrderStatus.Voided);
 	}
 
 	@PostMapping("/orders/complete")
-	public JsonPOSOrder changeStatusToComplete(@RequestBody JsonChangeOrderStatusRequest request)
+	public JsonPOSOrder changeStatusToCompleted(@RequestBody JsonChangeOrderStatusRequest request)
 	{
 		return changeStatusTo(request, POSOrderStatus.Completed);
+	}
+
+	@PostMapping("/orders/close")
+	public JsonPOSOrder changeStatusToClosed(@RequestBody JsonChangeOrderStatusRequest request)
+	{
+		return changeStatusTo(request, POSOrderStatus.Closed);
 	}
 
 	private JsonPOSOrder changeStatusTo(@NonNull JsonChangeOrderStatusRequest request, @NonNull final POSOrderStatus nextStatus)
@@ -223,7 +236,14 @@ public class POSRestController
 	@PostMapping("/orders/checkoutPayment")
 	public JsonPOSOrder checkoutPayment(@RequestBody JsonPOSPaymentCheckoutRequest request)
 	{
-		final POSOrder order = posService.checkoutPayment(request.getPosTerminalId(), request.getOrder_uuid(), request.getPayment_uuid(), getLoggedUserId());
+		final POSOrder order = posService.checkoutPayment(POSPaymentCheckoutRequest.builder()
+				.posTerminalId(request.getPosTerminalId())
+				.posOrderExternalId(request.getOrder_uuid())
+				.posPaymentExternalId(request.getPayment_uuid())
+				.userId(getLoggedUserId())
+				.cardPayAmount(request.getCardPayAmount())
+				.cashTenderedAmount(request.getCashTenderedAmount())
+				.build());
 		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
 	}
 
@@ -234,5 +254,26 @@ public class POSRestController
 		return JsonPOSOrder.from(order, newJsonContext()::getCurrencySymbol);
 	}
 
+	@GetMapping("/orders/receipt/{filename:.*}")
+	@PostMapping("/orders/receipt/{filename:.*}")
+	public ResponseEntity<Resource> getReceiptPdf(
+			@PathVariable("filename") final String filename,
+			@RequestParam(value = "id") final String idStr)
+	{
+		final POSOrderExternalId posOrderExternalId = POSOrderExternalId.ofString(idStr);
+		return posService.getReceiptPdf(posOrderExternalId)
+				.map(resource -> createPDFResponseEntry(resource, filename))
+				.orElseGet(() -> ResponseEntity.notFound().build());
+	}
+
+	private static ResponseEntity<Resource> createPDFResponseEntry(@NonNull final Resource resource, @NonNull final String filename)
+	{
+		final HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MimeType.getMediaType(filename));
+		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
+		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+		return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+	}
 }
 

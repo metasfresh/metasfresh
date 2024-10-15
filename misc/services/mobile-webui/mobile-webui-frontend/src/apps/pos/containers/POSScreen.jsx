@@ -8,9 +8,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateOrderFromBackendAction } from '../actions/orders';
 import POSTerminalSelectModal from './select_terminal/POSTerminalSelectModal';
 import { usePOSTerminal } from '../actions/posTerminal';
-import { MODAL_POSTerminalSelect } from '../actions/ui';
+import { MODAL_POSTerminalSelect, MODAL_SelectOrders } from '../actions/ui';
 import { getModalFromState } from '../reducers/uiUtils';
 import { POSContent } from './POSContent';
+import SelectOrderModal from './select_order/SelectOrderModal';
 
 const POSScreen = () => {
   const dispatch = useDispatch();
@@ -64,6 +65,8 @@ const useModal = () => {
   if (modal) {
     if (modal === MODAL_POSTerminalSelect) {
       return <POSTerminalSelectModal allowCancel={true} />;
+    } else if (modal === MODAL_SelectOrders) {
+      return <SelectOrderModal />;
     }
   }
 

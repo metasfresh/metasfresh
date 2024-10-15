@@ -27,6 +27,7 @@ public class SumUpTransaction
 	@NonNull SumUpTransactionExternalId externalId;
 	@NonNull SumUpClientTransactionId clientTransactionId;
 	@NonNull SumUpMerchantCode merchantCode;
+	@Nullable CardReader cardReader;
 	@NonNull Instant timestamp;
 
 	@NonNull SumUpTransactionStatus status;
@@ -48,6 +49,7 @@ public class SumUpTransaction
 			@NonNull final SumUpTransactionExternalId externalId,
 			@NonNull final SumUpClientTransactionId clientTransactionId,
 			@NonNull final SumUpMerchantCode merchantCode,
+			@Nullable final CardReader cardReader,
 			@NonNull final Instant timestamp,
 			@NonNull final SumUpTransactionStatus status,
 			@NonNull final Amount amount,
@@ -62,6 +64,7 @@ public class SumUpTransaction
 		this.externalId = externalId;
 		this.clientTransactionId = clientTransactionId;
 		this.merchantCode = merchantCode;
+		this.cardReader = cardReader;
 		this.timestamp = timestamp;
 		this.status = status;
 		this.amount = amount;
@@ -79,6 +82,22 @@ public class SumUpTransaction
 	public boolean isRefunded()
 	{
 		return amount.signum() != 0 && amountRefunded.signum() != 0;
+	}
+
+	//
+	//
+	//
+	//
+	//
+	//
+	@Value
+	@Builder
+	@Jacksonized
+	@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+	public static class CardReader
+	{
+		@NonNull SumUpCardReaderExternalId externalId;
+		@NonNull String name;
 	}
 
 	//

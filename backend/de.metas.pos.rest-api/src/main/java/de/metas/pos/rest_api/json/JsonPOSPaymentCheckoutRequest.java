@@ -9,6 +9,9 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
 @Value
 @Builder
 @Jacksonized
@@ -17,4 +20,7 @@ public class JsonPOSPaymentCheckoutRequest
 	@NonNull POSTerminalId posTerminalId;
 	@NonNull @JsonProperty("order_uuid") POSOrderExternalId order_uuid;
 	@NonNull @JsonProperty("payment_uuid") POSPaymentExternalId payment_uuid;
+
+	@Nullable BigDecimal cardPayAmount;
+	@Nullable BigDecimal cashTenderedAmount;
 }
