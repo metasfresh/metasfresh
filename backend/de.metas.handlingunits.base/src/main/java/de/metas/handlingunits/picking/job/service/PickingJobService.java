@@ -53,7 +53,6 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -94,7 +93,6 @@ public class PickingJobService
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
-	@NonNull private final WorkplaceService workplaceService;
 
 	public PickingJob getById(final PickingJobId pickingJobId)
 	{
@@ -118,7 +116,6 @@ public class PickingJobService
 				.pickingJobHUReservationService(pickingJobHUReservationService)
 				.pickingConfigRepo(pickingConfigRepo)
 				.loadingSupportServices(pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices())
-				.workplaceService(workplaceService)
 				//
 				.request(request)
 				//
