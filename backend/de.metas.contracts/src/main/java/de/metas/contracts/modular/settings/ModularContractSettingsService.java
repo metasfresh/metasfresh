@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.settings;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
@@ -51,6 +52,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -236,5 +238,23 @@ public class ModularContractSettingsService
 				.modularContractTypeId(modularContractTypeId)
 				.productId(productId)
 				.build());
+	}
+
+	@Nullable
+	public ModularContractSettings getByFlatrateTermIdOrNull(@NonNull final FlatrateTermId contractId)
+	{
+		return modularContractSettingsRepository.getByFlatrateTermIdOrNull(contractId);
+	}
+
+	@NonNull
+	public ImmutableMap<FlatrateTermId, ModularContractSettings> getOrLoadBy(@NonNull final Set<FlatrateTermId> termIds)
+	{
+		return modularContractSettingsRepository.getOrLoadBy(termIds);
+	}
+
+	@NonNull
+	public ModuleConfig getByModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
+	{
+		return modularContractSettingsRepository.getByModuleId(modularContractModuleId);
 	}
 }
