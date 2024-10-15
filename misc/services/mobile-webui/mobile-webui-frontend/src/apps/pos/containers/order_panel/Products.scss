@@ -5,14 +5,19 @@
       background-color: #f0f0f0;
 
       .search-container {
-        background-color: white;
-        padding: 10px;
-        margin: 10px;
 
         display: flex;
-        flex-flow: column nowrap;
+        flex-flow: row nowrap;
+        justify-content: center;
+        align-items: center;
 
         .search-line {
+          background-color: white;
+          max-width: 50%;
+          padding: 10px;
+          margin: 10px;
+          border-radius: 4px;
+          
           display: flex;
           flex-flow: row nowrap;
           font-size: 1.5rem;
@@ -44,15 +49,35 @@
           border-radius: 4px;
           background-color: #ffffff;
           font-size: 1.5rem;
-          max-height: 200px;
+          height: 7rem;
           cursor: pointer;
 
-          .name {
+          display: flex;
+          flex-flow: column nowrap;
+
+          .line1 {
+            flex-grow: 1;
+            flex-shrink: 1;
+            width: 100%;
             padding: 4px;
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
           }
 
-          .price {
+          .line2 {
+            color: dimgray;
+            flex-grow: 0;
+            flex-shrink: 0;
+            width: 100%;
             padding: 4px;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
           }
         }
 
