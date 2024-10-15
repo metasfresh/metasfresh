@@ -5,14 +5,19 @@
       background-color: #f0f0f0;
 
       .search-container {
-        background-color: white;
-        padding: 10px;
-        margin: 10px;
 
         display: flex;
-        flex-flow: column nowrap;
+        flex-flow: row nowrap;
+        justify-content: center;
+        align-items: center;
 
         .search-line {
+          background-color: white;
+          max-width: 50%;
+          padding: 10px;
+          margin: 10px;
+          border-radius: 4px;
+          
           display: flex;
           flex-flow: row nowrap;
           font-size: 1.5rem;
