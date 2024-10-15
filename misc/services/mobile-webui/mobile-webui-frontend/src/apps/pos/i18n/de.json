@@ -1,6 +1,7 @@
 {
   "header": {
-    "closeCashJournal": "Kasse schließen"
+    "closeCashJournal": "Kasse schließen",
+    "orders": "Aufträge"
   },
   "products": {
     "searchBar": {
@@ -34,24 +35,34 @@
     "modal": {
       "cash": {
         "title": "Barzahlung",
-        "payAmt": "Amount to Pay",
-        "tenderedAmt": "Tendered Amount",
-        "changeBackAmt": "Change",
+        "payAmt": "Betrag ",
+        "tenderedAmt": "Angebotsbetrag",
+        "changeBackAmt": "Rückzahlbetrag",
         "actions": {
           "ok": "OK",
-          "cancel": "Cancel"
+          "cancel": "abbrechen"
         }
       },
       "card": {
         "title": "Karte",
         "orderOpenAmt": "Restbetrag",
         "payAmt": "Betrag",
-        "cardReader": "Card reader",
+        "cardReader": "Kartenleser",
         "actions": {
           "checkout": "Checkout",
-          "cancel": "Cancel"
+          "cancel": "abbrechen"
         }
       }
+    }
+  },
+  "summary": {
+    "title": "Zahlung erfolgreich",
+    "totalAmt": "Summe",
+    "tenderedAmt": "Angebotsbetrag",
+    "changeBackAmt": "Rückzahlbetrag",
+    "actions": {
+      "close": "schließen",
+      "print": "Kassenbon ausdrucken"
     }
   }
 }

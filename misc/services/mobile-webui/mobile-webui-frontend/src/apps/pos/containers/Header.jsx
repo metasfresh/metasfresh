@@ -43,7 +43,9 @@ const Header = () => {
       <div className="right">
         <div className="pos-header-button" onClick={onOrdersClicked}>
           <div className="icon-letter"></div>
-          <div className="text">Orders ({openOrders?.length ?? 0})</div>
+          <div className="text">
+            {_('orders')} ({openOrders?.length ?? 0})
+          </div>
         </div>
         {posTerminal.id && (
           <div className="pos-header-button posTerminal" onClick={onTerminalClicked}>

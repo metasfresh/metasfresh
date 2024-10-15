@@ -1,6 +1,7 @@
 {
   "header": {
-    "closeCashJournal": "Close register"
+    "closeCashJournal": "Close register",
+    "orders": "Orders"
   },
   "products": {
     "searchBar": {
@@ -52,6 +53,15 @@
           "cancel": "Cancel"
         }
       }
+    }
+  },
+  "summary": {
+    "title": "Payment successful",
+    "totalAmt": "Total",
+    "changeBackAmt": "Change",
+    "actions": {
+      "close": "Close",
+      "print": "Print receipt"
     }
   }
 }
