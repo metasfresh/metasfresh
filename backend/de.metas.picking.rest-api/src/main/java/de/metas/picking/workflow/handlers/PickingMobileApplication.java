@@ -109,7 +109,6 @@
 		public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("A1");
 		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("A2");
 		public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("A3");
-		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
 
 		private final PickingJobRestService pickingJobRestService;
 		private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
