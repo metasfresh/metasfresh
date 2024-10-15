@@ -18,9 +18,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
-import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -52,7 +49,7 @@ import javax.annotation.Nullable;
 /** Bidirectional binding between local cache system and remote cache systems */
 final class CacheInvalidationRemoteHandler implements IEventListener
 {
-	public static final CacheInvalidationRemoteHandler instance = new CacheInvalidationRemoteHandler();
+	public static final transient CacheInvalidationRemoteHandler instance = new CacheInvalidationRemoteHandler();
 
 	private static final Logger logger = LogManager.getLogger(CacheInvalidationRemoteHandler.class);
 
@@ -149,7 +146,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 			logger.debug("Broadcasting cacheInvalidateMultiRequest={}", request);
 			Services.get(IEventBusFactory.class)
 					.getEventBus(TOPIC_CacheInvalidation)
-					.postEvent(event);
+					.enqueueEvent(event);
 		}
 	}
 
