@@ -4,6 +4,9 @@ import PropTypes from 'prop-types';
 import './PaymentDetailsModal.scss';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import { NumericKeyboard, recomputeAmount, toEditingAmount } from '../NumericKeyboard';
+import { trl } from '../../../../utils/translations';
+
+const _ = (key) => trl(`pos.payment.modal.cash.${key}`);
 
 const CashPaymentDetailsModal = ({
   currency,
@@ -45,19 +48,19 @@ const CashPaymentDetailsModal = ({
       <div className="modal-background"></div>
       <div className="modal-card">
         <header className="modal-card-head">
-          <p className="modal-card-title">Cash payment</p>
+          <p className="modal-card-title">{_('title')}</p>
         </header>
         <section className="modal-card-body">
           <div className="detail-line">
-            <div className="detail-caption">Amount to pay</div>
+            <div className="detail-caption">{_('payAmt')}</div>
             <div className="detail-value">{payAmountStr}</div>
           </div>
           <div className="detail-line">
-            <div className="detail-caption">Tendered Amount</div>
+            <div className="detail-caption">{_('tenderedAmt')}</div>
             <div className={cx('detail-value', { 'has-text-danger': !isTenderedAmountValid })}>{tenderedAmountStr}</div>
           </div>
           <div className="detail-line">
-            <div className="detail-caption">Change</div>
+            <div className="detail-caption">{_('changeBackAmt')}</div>
             <div className={cx('detail-value', { 'has-text-danger': !isChangeBackAmountValid })}>
               {changeBackAmountStr}
             </div>
@@ -69,11 +72,11 @@ const CashPaymentDetailsModal = ({
         <footer className="modal-card-foot">
           <div className="buttons">
             <button className="button is-large" disabled={!isValid} onClick={fireOK}>
-              OK
+              {_('actions.ok')}
             </button>
             {isAllowCancel && (
               <button className="button is-large" onClick={fireCancel}>
-                Cancel
+                {_('actions.cancel')}
               </button>
             )}
           </div>

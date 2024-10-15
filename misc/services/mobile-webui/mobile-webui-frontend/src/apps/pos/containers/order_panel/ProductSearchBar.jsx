@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import BarcodeReader from './BarcodeReader';
+import { trl } from '../../../../utils/translations';
+
+const _ = (key) => trl(`pos.products.searchBar.${key}`);
 
 const ProductSearchBar = ({ queryString, onQueryStringChanged, isEnabled }) => {
   const [isBarcodeScannerDisplayed, setBarcodeScannerDisplayed] = useState(false);
@@ -46,7 +49,7 @@ const ProductSearchBar = ({ queryString, onQueryStringChanged, isEnabled }) => {
           ref={queryStringRef}
           type="text"
           value={queryString}
-          placeholder="search products..."
+          placeholder={_('placeholder')}
           disabled={!isEnabled}
           onFocus={handleQueryStringFocus}
           onBlur={handleQueryStringBlur}

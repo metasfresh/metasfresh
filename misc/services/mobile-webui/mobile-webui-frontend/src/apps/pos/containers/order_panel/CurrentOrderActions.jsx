@@ -8,6 +8,9 @@ import {
 } from '../../actions/orders';
 import { usePOSTerminal } from '../../actions/posTerminal';
 import PropTypes from 'prop-types';
+import { trl } from '../../../../utils/translations';
+
+const _ = (key) => trl(`pos.currentOrder.actions.${key}`);
 
 const CurrentOrderActions = ({ disabled: disabledParam }) => {
   const dispatch = useDispatch();
@@ -43,18 +46,18 @@ const CurrentOrderActions = ({ disabled: disabledParam }) => {
     <div className="current-order-actions">
       <div className="other-actions-container">
         <button className="button" onClick={onNewOrderClick} disabled={!isNewOrderAllowed}>
-          New
+          {_('new')}
         </button>
         <button className="button" onClick={onVoidCurrentOrderClick} disabled={!isVoidAllowed}>
-          Void
+          {_('void')}
         </button>
         <button className="button" onClick={onDeleteCurrentLine} disabled={!isDeleteCurrentLineAllowed}>
-          Delete line
+          {_('deleteLine')}
         </button>
       </div>
       <button className="button is-large pay-action" onClick={onPayClick} disabled={!isPayAllowed}>
         <i className="fas fa-regular fa-money-bill-1"></i>
-        <span>Pay</span>
+        <span>{_('pay')}</span>
       </button>
     </div>
   );

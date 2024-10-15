@@ -1,11 +1,13 @@
+import { trl } from '../../../utils/translations';
+
 export const PAYMENT_METHOD_CASH = 'CASH';
 export const PAYMENT_METHOD_CARD = 'CARD';
 
 export const getPaymentMethodCaption = ({ paymentMethod }) => {
   if (paymentMethod === PAYMENT_METHOD_CASH) {
-    return 'Cash';
+    return trl('pos.payment.method.cash');
   } else if (paymentMethod === PAYMENT_METHOD_CARD) {
-    return 'Card';
+    return trl('pos.payment.method.card');
   }
 };
 

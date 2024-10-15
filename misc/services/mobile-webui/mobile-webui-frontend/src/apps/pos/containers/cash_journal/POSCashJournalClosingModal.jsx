@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import { getJournalSummary } from '../../api/posJournal';
-import { PAYMENT_METHOD_CASH } from '../../constants/paymentMethods';
+import { getPaymentMethodCaption, PAYMENT_METHOD_CASH } from '../../constants/paymentMethods';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import PropTypes from 'prop-types';
 import useEscapeKey from '../../../../hooks/useEscapeKey';
 import { usePOSTerminal } from '../../actions/posTerminal';
 
 import './POSCashJournalClosingModal.scss';
+import { trl } from '../../../../utils/translations';
+import { getPaymentDetailTypeCaption } from './paymentDetailType';
+
+const _ = (key) => trl(`pos.closeCashJournal.${key}`);
 
 const POSCashJournalClosingModal = () => {
   const posTerminal = usePOSTerminal();
@@ -28,7 +32,7 @@ const POSCashJournalClosingModal = () => {
       <div className="modal-background"></div>
       <div className="modal-card">
         <header className="modal-card-head">
-          <p className="modal-card-title">Closing cash journal</p>
+          <p className="modal-card-title">{_('title')}</p>
           <button className="delete" aria-label="close" onClick={onCancelClick}></button>
         </header>
         <section className="modal-card-body">
@@ -42,7 +46,7 @@ const POSCashJournalClosingModal = () => {
             </div>
           </div>
           <div className="line">
-            <div className="caption">Closing note</div>
+            <div className="caption">{_('closingNote')}</div>
             <div className="field">
               <textarea value={closingNote} onChange={(e) => setClosingNote(e.target.value)} />
             </div>
@@ -51,10 +55,10 @@ const POSCashJournalClosingModal = () => {
         <footer className="modal-card-foot">
           <div className="buttons">
             <button className="button is-large" onClick={onCloseClick}>
-              Close
+              {_('actions.close')}
             </button>
             <button className="button is-large" onClick={onCancelClick}>
-              Cancel
+              {_('actions.cancel')}
             </button>
           </div>
         </footer>
@@ -76,10 +80,10 @@ const PaymentSummary = ({ posTerminalId, cashAmountExpected, onCashAmountExpecte
     <table className="payment-summary">
       <thead>
         <tr>
-          <th>Payment Method</th>
-          <th className="amt">Booked</th>
-          <th className="amt">Counted</th>
-          <th className="amt">Difference</th>
+          <th>{_('paymentMethod')}</th>
+          <th className="amt">{_('bookedAmt')}</th>
+          <th className="amt">{_('countedAmt')}</th>
+          <th className="amt">{_('differenceAmt')}</th>
         </tr>
       </thead>
       <tbody>
@@ -134,7 +138,7 @@ const PaymentMethod = ({
   return (
     <>
       <tr className="line-level1">
-        <td className="description-col">{paymentMethod}</td>
+        <td className="description-col">{getPaymentMethodCaption({ paymentMethod })}</td>
         <td className="amt">{amountExpectedStr}</td>
         {isRenderCountedField && (
           <>
@@ -154,6 +158,7 @@ const PaymentMethod = ({
       {details?.map?.((detail, idx) => (
         <PaymentDetail
           key={idx}
+          type={detail.type}
           description={detail.description}
           amount={detail.amount}
           currency={currency}
@@ -179,16 +184,19 @@ PaymentMethod.propTypes = {
 //
 //
 
-const PaymentDetail = ({ description, amount, currency, precision }) => {
+const PaymentDetail = ({ type, description, amount, currency, precision }) => {
   const amountStr = formatAmountToHumanReadableStr({ amount, currency, precision });
+  const descriptionEff = getPaymentDetailTypeCaption(type) + (description ? ' ' + description : '');
   return (
     <tr className="line-level2">
-      <td className="description-col">{description}</td>
+      <td className="description-col">{descriptionEff}</td>
       <td className="amt">{amountStr}</td>
     </tr>
   );
 };
+
 PaymentDetail.propTypes = {
+  type: PropTypes.string.isRequired,
   description: PropTypes.string,
   amount: PropTypes.number.isRequired,
   currency: PropTypes.string.isRequired,

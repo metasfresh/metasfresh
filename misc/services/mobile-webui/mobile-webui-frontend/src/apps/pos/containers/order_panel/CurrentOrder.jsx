@@ -7,6 +7,9 @@ import { OrderLine } from './OrderLine';
 import { usePOSTerminal } from '../../actions/posTerminal';
 import { setSelectedOrderLineAction, useCurrentOrderOrNew } from '../../actions/orders';
 import PropTypes from 'prop-types';
+import { trl } from '../../../../utils/translations';
+
+const _ = (key) => trl(`pos.currentOrder.${key}`);
 
 const CurrentOrder = ({ disabled }) => {
   const dispatch = useDispatch();
@@ -58,8 +61,12 @@ const CurrentOrder = ({ disabled }) => {
         ))}
       </div>
       <div className="summary">
-        <div className="summary-line totalAmt">Total: {totalAmtStr}</div>
-        <div className="summary-line taxAmt">Taxes: {taxAmtStr}</div>
+        <div className="summary-line totalAmt">
+          {_('totalAmt')}: {totalAmtStr}
+        </div>
+        <div className="summary-line taxAmt">
+          {_('taxAmt')}: {taxAmtStr}
+        </div>
       </div>
       <CurrentOrderActions />
     </div>
