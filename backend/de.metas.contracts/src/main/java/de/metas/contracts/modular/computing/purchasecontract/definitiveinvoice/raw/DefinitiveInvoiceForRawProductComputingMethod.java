@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice.raw;
 
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice.AbstractDefinitiveInvoiceComputingMethod;
@@ -36,9 +37,10 @@ public class DefinitiveInvoiceForRawProductComputingMethod extends AbstractDefin
 {
 	public DefinitiveInvoiceForRawProductComputingMethod(
 			@NonNull final ModularContractProvider contractProvider,
-			@NonNull final ComputingMethodService computingMethodService)
+			@NonNull final ComputingMethodService computingMethodService,
+			@NonNull final ModularContractPriceService modularContractPriceService)
 	{
-		super(contractProvider, computingMethodService);
+		super(contractProvider, computingMethodService, modularContractPriceService);
 	}
 
 	@Override

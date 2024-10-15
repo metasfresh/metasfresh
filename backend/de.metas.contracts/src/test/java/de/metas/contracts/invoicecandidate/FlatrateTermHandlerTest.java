@@ -1,6 +1,5 @@
 package de.metas.contracts.invoicecandidate;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
@@ -20,16 +19,13 @@ import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.contracts.modular.log.status.ModularLogCreateStatusRepository;
-import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
-import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
-import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
@@ -66,11 +62,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.sql.Timestamp;
-import java.util.Collections;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class FlatrateTermHandlerTest extends ContractsTestBase
 {
@@ -88,18 +83,13 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	{
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsService(new ModularContractSettingsRepository()));
-		final ModularContractLogService modularContractLogService = new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository());
-		SpringContextHolder.registerJUnitBean(modularContractLogService);
-		SpringContextHolder.registerJUnitBean(new ModularContractComputingMethodHandlerRegistry(ImmutableList.of()));
-		SpringContextHolder.registerJUnitBean(new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())));
-		SpringContextHolder.registerJUnitBean(new ComputingMethodService(modularContractLogService));
+		SpringContextHolder.registerJUnitBean(ModularContractLogService.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(ModularContractSettingsService.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(ModularContractComputingMethodHandlerRegistry.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(ProcessModularLogsEnqueuer.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(ComputingMethodService.newInstanceForJUnitTesting());
 		SpringContextHolder.registerJUnitBean(new ModularContractPriceRepository());
-		SpringContextHolder.registerJUnitBean(new ModularContractService(new ModularContractComputingMethodHandlerRegistry(Collections.emptyList()),
-																		 new ModularContractSettingsRepository(),
-																		 new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
-																		 new ComputingMethodService(modularContractLogService),
-																		 new ModularContractPriceRepository()));
+		SpringContextHolder.registerJUnitBean(ModularContractService.newInstanceForJUnitTesting());
 	}
 
 	@BeforeAll

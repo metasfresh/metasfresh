@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCntr_Settings, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1836463509L;
+	private static final long serialVersionUID = -316277356L;
 
     /** Standard Constructor */
     public X_ModCntr_Settings (final Properties ctx, final int ModCntr_Settings_ID, @Nullable final String trxName)
@@ -257,5 +257,18 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	public java.sql.Timestamp getStorageCostStartDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_StorageCostStartDate);
+	}
+
+	@Override
+	public void setTradeMargin (final BigDecimal TradeMargin)
+	{
+		set_Value (COLUMNNAME_TradeMargin, TradeMargin);
+	}
+
+	@Override
+	public BigDecimal getTradeMargin() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TradeMargin);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

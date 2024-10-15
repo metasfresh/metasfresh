@@ -118,7 +118,7 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 	@Override
 	protected String doIt()
 	{
-		retrieveContractSpecificPricesFromSelection()
+		retrieveContractSpecificPricesFromSelectionWithoutAveragePrices()
 				.forEach(this::updatePrice);
 
 		return MSG_OK;
@@ -168,14 +168,15 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 				logHandlerRegistry);
 	}
 
-	public ImmutableSet<ModCntrSpecificPriceId> retrieveContractSpecificPricesFromSelection()
+	public ImmutableSet<ModCntrSpecificPriceId> retrieveContractSpecificPricesFromSelectionWithoutAveragePrices()
 	{
 		final IQueryBuilder<I_ModCntr_Specific_Price> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_M_Product_ID, p_M_Product_ID)
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_UOM_ID, p_C_UOM_ID)
 				.addInArrayFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, getSelectedContracts())
-				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Currency_ID, p_C_Currency_ID);
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Currency_ID, p_C_Currency_ID)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_IsAveragePrice, false);
 
 		if (p_ModCntr_Type_ID != null)
 		{

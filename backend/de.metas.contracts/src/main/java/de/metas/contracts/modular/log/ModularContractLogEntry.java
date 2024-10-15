@@ -76,7 +76,7 @@ public class ModularContractLogEntry
 	ProductId initialProductId;
 	@NonNull
 	String productName;
-	@Nullable
+	@NonNull
 	ModularContractTypeId modularContractTypeId;
 
 	@NonNull
@@ -146,7 +146,7 @@ public class ModularContractLogEntry
 			@Nullable final ProductId productId,
 			@Nullable final ProductId initialProductId,
 			@NonNull final String productName,
-			@Nullable final ModularContractTypeId modularContractTypeId,
+			@NonNull final ModularContractTypeId modularContractTypeId,
 			@NonNull final TableRecordReference referencedRecord,
 			@Nullable final BPartnerId collectionPointBPartnerId,
 			@Nullable final BPartnerId producerBPartnerId,

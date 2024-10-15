@@ -36,6 +36,7 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoice.InvoiceId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.process.PInstanceId;
@@ -121,6 +122,8 @@ public interface IFlatrateBL extends ISingletonService
 	void prepareForDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
 
 	void reverseDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
+
+	Optional<FlatrateTermId> getIdByInvoiceId(@NonNull InvoiceId invoiceId);
 
 	/**
 	 * term to extend
@@ -263,6 +266,9 @@ public interface IFlatrateBL extends ISingletonService
 
 	@NonNull
 	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId, @NonNull TypeConditions typeConditions);
+
+	@Nullable
+	ProductPrice extractPriceActualById(@NonNull FlatrateTermId flatrateTermId);
 
 	@Nullable
 	ProductPrice extractPriceActual(@NonNull I_C_Flatrate_Term contract);

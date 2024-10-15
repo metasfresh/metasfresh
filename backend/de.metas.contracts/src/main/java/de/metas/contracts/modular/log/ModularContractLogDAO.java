@@ -96,6 +96,7 @@ public class ModularContractLogDAO
 
 	private final static AdMessageKey ERR_MSG_ON_REVERSE_PROCESSED = AdMessageKey.of("de.metas.contracts.modular.reverseNotAllowedIfProcessed");
 
+	@NonNull
 	public ModularContractLogEntry getById(@NonNull final ModularContractLogEntryId id)
 	{
 		return fromRecord(load(ModularContractLogEntryId.toRepoId(id), I_ModCntr_Log.class));

@@ -67,6 +67,8 @@ public interface IInOutBL extends ISingletonService
 
 	void save(I_M_InOut inout);
 
+	void save(@NonNull I_M_InOutLine inoutLine);
+
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
 
 	Quantity getQtyEntered(@NonNull I_M_InOutLine inoutLine);
@@ -195,6 +197,8 @@ public interface IInOutBL extends ISingletonService
 	void invalidateStatistics(I_M_InOutLine inoutLine);
 
 	I_C_Order getOrderByInOutLine(I_M_InOutLine inoutLine);
+
+	Optional<OrderId> getOrderIdForLineId(@NonNull InOutLineId inoutLineId);
 
 	Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(I_M_InOut inOut);
 
