@@ -87,7 +87,6 @@ public interface IOLCandBL extends ISingletonService
 
 	FreightCostRule getFreightCostRule(@Nullable BPartnerOrderParams params, @Nullable OLCandOrderDefaults orderDefaults);
 
-	InvoiceRule getInvoiceRule(final I_C_OLCand olCandRecord, BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
 	InvoiceRule getInvoiceRule(@Nullable BPartnerOrderParams params, @Nullable OLCandOrderDefaults orderDefaults);
 
 	PaymentRule getPaymentRule(@Nullable BPartnerOrderParams params, @Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand olCandRecord);
