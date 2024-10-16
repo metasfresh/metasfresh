@@ -551,7 +551,7 @@ public class ManufacturingOrderAPIServiceTest
 		@BeforeEach
 		public void beforeEach()
 		{
-			SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService()));s
+			SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService()));
 			huTestHelper = HUTestHelper.newInstanceOutOfTrx();
 			uomEach = huTestHelper.uomEach;
 
