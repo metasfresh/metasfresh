@@ -143,8 +143,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		try (final MDCCloseable ignored = EventMDC.putEvent(event))
 		{
 			logger.debug("Broadcasting cacheInvalidateMultiRequest={}", request);
-			final IEventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(IEventBusFactory.class);
-			eventBusFactory
+			Services.get(IEventBusFactory.class)
 					.getEventBus(TOPIC_CacheInvalidation)
 					.enqueueEvent(event);
 		}
