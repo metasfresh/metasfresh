@@ -45,7 +45,7 @@ export const qtyInfos = {
     }
     // QtyInfo data structure
     else if (typeof qtyObj === 'object') {
-      return qtyObj.qty;
+      return qtyObj.qty || Number(qtyObj.qtyStr);
     }
     // Case: possible string
     else if (!Array.isArray(qtyObj)) {
