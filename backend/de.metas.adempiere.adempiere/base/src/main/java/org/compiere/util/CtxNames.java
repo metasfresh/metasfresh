@@ -119,6 +119,13 @@ public class CtxNames
 		}
 
 		final List<String> modifiers = new ArrayList<>();
+		return parseNotNull(contextWithoutMarkers);
+	}
+
+	@NonNull
+	public static CtxName parseNotNull(@NonNull final String contextWithoutMarkers)
+	{
+		final ArrayList<String> modifiers = new ArrayList<>();
 		final String name = extractNameAndModifiers(contextWithoutMarkers, modifiers);
 
 		final String defaultValue = extractDefaultValue(modifiers);
@@ -127,7 +134,7 @@ public class CtxNames
 	}
 
 	/**
-	 * @param modifiers             found modifiers are added to this list
+	 * @param modifiers found modifiers are added to this list
 	 */
 	private static String extractNameAndModifiers(
 			@NonNull final String contextWithoutMarkers,

@@ -249,7 +249,13 @@ public final class NumberUtils
 		{
 			try
 			{
-				final BigDecimal bd = new BigDecimal(value.toString());
+				final String valueStr = StringUtils.trimBlankToNull(value.toString());
+				if (valueStr == null)
+				{
+					return defaultValue;
+				}
+
+				final BigDecimal bd = new BigDecimal(valueStr);
 				return bd.intValue();
 			}
 			catch (final NumberFormatException e)
