@@ -46,7 +46,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.document.engine.DocStatus;
 import de.metas.error.AdIssueId;
-import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
 import de.metas.handlingunits.HuId;
@@ -62,8 +61,6 @@ import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -75,7 +72,6 @@ import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditIte
 import de.metas.manufacturing.rest_api.ExportSequenceNumberProvider;
 import de.metas.manufacturing.rest_api.ManufacturingOrderExportAuditRepository;
 import de.metas.manufacturing.rest_api.ManufacturingOrderReportAuditRepository;
-import org.compiere.SpringContextHolder;
 import org.eevolution.api.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
@@ -145,7 +141,6 @@ public class ManufacturingOrderAPIServiceTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService()));
 
 		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		productBL = Services.get(IProductBL.class);
@@ -554,7 +549,6 @@ public class ManufacturingOrderAPIServiceTest
 		{
 			huTestHelper = HUTestHelper.newInstanceOutOfTrx();
 			uomEach = huTestHelper.uomEach;
-			SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService()));
 
 			plantId = createPlant("plant");
 
