@@ -18,53 +18,8 @@
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         column-gap: 3px;
         row-gap: 3px;
-
-
-        .product-button {
-          outline: none;
-          border: 0;
-          border-radius: 0.2rem;
-          background-color: #ffffff;
-          font-size: 1.5rem;
-          height: 7rem;
-          cursor: pointer;
-
-          display: flex;
-          flex-flow: column nowrap;
-
-          .line1 {
-            flex-grow: 1;
-            flex-shrink: 1;
-            width: 100%;
-            padding: 4px;
-
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-          }
-
-          .line2 {
-            color: dimgray;
-            flex-grow: 0;
-            flex-shrink: 0;
-            width: 100%;
-            padding: 4px;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-          }
-        }
-
-        .product-button:focus {
-          outline: none;
-        }
-
-        .product-button:active {
-          background-color: #e6e6e6;
-        }
+        
+        overflow-y: auto;
       }
     }
   }
