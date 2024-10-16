@@ -5,6 +5,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
 import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogsRepository;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
@@ -20,6 +21,8 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
@@ -145,6 +148,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	protected void initialize()
 	{
 		SpringContextHolder.registerJUnitBean(new EventLogService(mock(EventLogsRepository.class)));
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService()));
 
 		// Services
 		final MRPTestHelper mrpTestHelper = new MRPTestHelper(false); // initEnv=false

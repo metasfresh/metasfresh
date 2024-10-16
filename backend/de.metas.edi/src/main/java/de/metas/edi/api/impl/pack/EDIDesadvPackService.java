@@ -146,7 +146,7 @@ public class EDIDesadvPackService
 
 		return new EDIDesadvPackService.Sequences(packSeqNoSequence, packItemLineSequence);
 	}
-	
+
 	@NonNull
 	public I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine)
 	{
@@ -421,42 +421,46 @@ public class EDIDesadvPackService
 			@NonNull final DesadvLineWithDraftedPackItems desadvLineWithPacks,
 			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn,
 			@Nullable final BigDecimal uomToStockRatio,
-			@NonNull final Sequences sequences)
+			@NonNull final SimpleSequence packLineSequence)
 	{
 		final ProductId productId = ProductId.ofRepoId(desadvLineRecord.getM_Product_ID());
 
-		final HU topLevelHU = huRepository
+		final HU rootLU = huRepository
 				.getById(HuId.ofRepoId(topLevelHURecord.getM_HU_ID()))
 				.retainProduct(productId) // no need to blindly hope that the HU is homogenous
-				.orElseThrow(() -> new AdempiereException("Missing M_HU").appendParametersToMessage()
-						.setParameter("M_HU_ID", topLevelHURecord.getM_HU_ID())
-						.setParameter("M_InOutLine_ID", inOutLineRecord.getM_InOutLine_ID())
-						.setParameter("EDI_DesadvLin_ID", desadvLineRecord.getEDI_DesadvLine_ID()));
+				.filter(hu -> hu.getType().isLU())
+				.orElse(null);
+
+		if (rootLU == null)
+		{
+			// we don't do HU-related stuffs if the HU is not an LU.
+			final UomId desadvUomId = UomId.ofRepoId(desadvLineRecord.getC_UOM_ID());
+			return StockQtyAndUOMQtys.createZero(productId, desadvUomId);
+		}
 
 		// topLevelHU's quantity can be bigger than the inOutLine's quantity,
 		// if there are multiple lines with the same product and if those lines were picked onto the same LU.
 		// That's why we need to invoke min(..)
-		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(topLevelHU, productId)
+		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(rootLU, productId)
 				.min(inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn));
 
-		final RequestParameters parameters = new RequestParameters(topLevelHU,
-																   bPartnerId,
+		final CreateEDIDesadvPackRequest createEDIDesadvPackRequest = buildCreateDesadvPackRequest(
+				rootLU,
+				bPartnerId,
 				qtyCUsPerTopLevelHU,
-																   productId,
-																   desadvLineRecord,
-																   inOutLineRecord,
-																   desadvLineWithPacks,
-																   invoicableQtyBasedOn,
-																   uomToStockRatio,
-																   sequences.getPackSeqNoSequence(),
-																   sequences.getPackItemLineSequence());
+				productId,
+				desadvLineRecord,
+				inOutLineRecord,
+				desadvLineWithPacks,
+				invoicableQtyBasedOn,
+				uomToStockRatio,
+				packLineSequence);
 
 		final EDIDesadvPack packByHUId = ediDesadvPackRepository.getPackByDesadvLineAndHUId(topLevelHU.getId());
 
 		if (packByHUId == null)
 		{
 			final CreateEDIDesadvPackRequest createPackRequest = buildCreateDesadvPackRequest(parameters);
-
 			ediDesadvPackRepository.createDesadvPack(createPackRequest);
 		}
 		else
@@ -466,6 +470,7 @@ public class EDIDesadvPackService
 
 			ediDesadvPackRepository.createDesadvPackItem(createPackItemRequest);
 		}
+
 		return qtyCUsPerTopLevelHU;
 	}
 

@@ -1,5 +1,8 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
+import de.metas.event.log.EventLogService;
+import de.metas.event.log.EventLogsRepository;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
@@ -11,6 +14,8 @@ import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -19,6 +24,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -34,6 +40,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /*
  * #%L
@@ -67,6 +74,7 @@ public class ProcessPickingCandidatesCommand_PickFromPickingOrder_Test
 	public void init()
 	{
 		helper = new ProcessPickingCandidatesCommandTestHelper();
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService()));
 	}
 
 	@Builder(builderMethodName = "preparePickingCandidate", buildMethodName = "createAndProcess", builderClassName = "PickingCandidateBuilder")
