@@ -66,7 +66,7 @@ const CurrentOrder = ({ disabled }) => {
           {_('totalAmt')}: {totalAmtStr}
         </div>
         <div className="summary-line taxAmt">
-          {_('taxAmt')}: {taxAmtStr}
+          {_('taxAmt')} {taxAmtStr}
         </div>
       </div>
       <CurrentOrderActions />

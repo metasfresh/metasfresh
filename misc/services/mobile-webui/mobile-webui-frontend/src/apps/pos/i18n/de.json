@@ -29,7 +29,7 @@
     },
     "actions": {
       "close": "Close",
-      "cancel": "Cancel"
+      "cancel": "Abbrechen"
     }
   },
   "selectTerminal": {
@@ -55,7 +55,7 @@
       }
     },
     "totalAmt": "Summe",
-    "taxAmt": "Steuern",
+    "taxAmt": "MwSt.",
     "actions": {
       "pay": "Bezahlen",
       "new": "Neu",
@@ -82,7 +82,7 @@
         "changeBackAmt": "Rückzahlbetrag",
         "actions": {
           "ok": "OK",
-          "cancel": "abbrechen"
+          "cancel": "Abbrechen"
         }
       },
       "card": {
@@ -92,7 +92,7 @@
         "cardReader": "Kartenleser",
         "actions": {
           "checkout": "Checkout",
-          "cancel": "abbrechen"
+          "cancel": "Abbrechen"
         }
       }
     }
@@ -103,7 +103,7 @@
     "tenderedAmt": "Angebotsbetrag",
     "changeBackAmt": "Rückzahlbetrag",
     "actions": {
-      "close": "schließen",
+      "close": "Schließen",
       "print": "Kassenbon ausdrucken"
     }
   }

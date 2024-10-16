@@ -55,7 +55,7 @@
       }
     },
     "totalAmt": "Total",
-    "taxAmt": "Taxes",
+    "taxAmt": "VAT",
     "actions": {
       "pay": "Pay",
       "new": "New",
