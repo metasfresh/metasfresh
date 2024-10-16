@@ -4,90 +4,22 @@
       width: 100%;
       background-color: #f0f0f0;
 
-      .search-container {
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: flex-start;
+      align-items: center;
 
-        display: flex;
-        flex-flow: row nowrap;
-        justify-content: center;
-        align-items: center;
-
-        .search-line {
-          background-color: white;
-          max-width: 50%;
-          padding: 10px;
-          margin: 10px;
-          border-radius: 4px;
-          
-          display: flex;
-          flex-flow: row nowrap;
-          font-size: 1.5rem;
-
-          input {
-            flex-grow: 1;
-            font-size: 1.5rem;
-          }
-
-          .button {
-            border: 0;
-          }
-        }
-      }
 
       .products {
-        padding: 10px;
-        flex-grow: 1;
+        padding: 0.5rem;
+        flex-grow: 0;
 
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        column-gap: 3px;
-        row-gap: 3px;
+        grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+        column-gap: 0.2rem;
+        row-gap: 0.2rem;
 
-
-        .product-button {
-          outline: none;
-          border: 0;
-          border-radius: 4px;
-          background-color: #ffffff;
-          font-size: 1.5rem;
-          height: 7rem;
-          cursor: pointer;
-
-          display: flex;
-          flex-flow: column nowrap;
-
-          .line1 {
-            flex-grow: 1;
-            flex-shrink: 1;
-            width: 100%;
-            padding: 4px;
-
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-          }
-
-          .line2 {
-            color: dimgray;
-            flex-grow: 0;
-            flex-shrink: 0;
-            width: 100%;
-            padding: 4px;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-          }
-        }
-
-        .product-button:focus {
-          outline: none;
-        }
-
-        .product-button:active {
-          background-color: #e6e6e6;
-        }
+        overflow-y: auto;
       }
     }
   }
