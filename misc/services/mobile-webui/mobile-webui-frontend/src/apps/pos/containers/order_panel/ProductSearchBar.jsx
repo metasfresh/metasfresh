@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import BarcodeReader from './BarcodeReader';
 import { trl } from '../../../../utils/translations';
+import './ProductSearchBar.scss';
 
 const _ = (key) => trl(`pos.products.searchBar.${key}`);
 
@@ -43,8 +44,8 @@ const ProductSearchBar = ({ queryString, onQueryStringChanged, isEnabled }) => {
   };
 
   return (
-    <div className="search-container">
-      <div className="search-line">
+    <div className="searchbar-container">
+      <div className="searchbar-line">
         <input
           ref={queryStringRef}
           type="text"
