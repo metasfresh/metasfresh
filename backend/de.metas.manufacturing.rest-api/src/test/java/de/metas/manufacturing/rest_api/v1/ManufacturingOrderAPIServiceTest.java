@@ -46,6 +46,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.document.engine.DocStatus;
 import de.metas.error.AdIssueId;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
 import de.metas.handlingunits.HuId;
@@ -61,6 +62,8 @@ import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -89,6 +92,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
@@ -163,6 +167,8 @@ public class ManufacturingOrderAPIServiceTest
 				.huReservationService(huReservationService)
 				.exportSequenceNumberProvider(exportSequenceNumberProvider)
 				.build();
+
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService()));
 	}
 
 	private String toJsonString(final Object obj)
