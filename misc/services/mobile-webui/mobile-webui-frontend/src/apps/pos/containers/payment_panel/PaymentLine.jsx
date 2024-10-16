@@ -23,7 +23,7 @@ const PaymentLine = ({
 }) => {
   const icon = getPaymentMethodIcon({ paymentMethod });
   const iconClassName = `fa-regular ${icon}`;
-  const caption = getPaymentSummaryLine({ paymentMethod, statusDetails });
+  const caption = getPaymentSummaryLine({ paymentMethod, status, statusDetails });
   const amountStr = formatAmountToHumanReadableStr({
     amount: amount,
     currency: currency,
@@ -43,7 +43,7 @@ const PaymentLine = ({
   return (
     <div className="payment-line">
       <div className="payment-line-label">
-        <i className={iconClassName} /> {caption} ({status})
+        <i className={iconClassName} /> {caption}
       </div>
       <div className="payment-line-value">{amountStr}</div>
       <div className="payment-line-actions">
