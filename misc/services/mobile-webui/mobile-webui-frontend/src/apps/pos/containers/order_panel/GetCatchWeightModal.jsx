@@ -1,6 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import useEscapeKey from '../../../../hooks/useEscapeKey';
+import { trl } from '../../../../utils/translations';
+
+const _ = (key, args = {}) => trl(`pos.currentOrder.getWeightModal.${key}`, args);
 
 const GetCatchWeightModal = ({ catchWeightUomSymbol, onOk, onCancel }) => {
   const weightRef = useRef();
@@ -16,12 +19,12 @@ const GetCatchWeightModal = ({ catchWeightUomSymbol, onOk, onCancel }) => {
       <div className="modal-background"></div>
       <div className="modal-card">
         <header className="modal-card-head">
-          <p className="modal-card-title">Weight ({catchWeightUomSymbol})</p>
+          <p className="modal-card-title">{_('title', { uom: catchWeightUomSymbol })}</p>
           <button className="delete" aria-label="close" onClick={onCancel}></button>
         </header>
         <section className="modal-card-body">
           <div className="control">
-            <input ref={weightRef} className="input is-large" type="text" placeholder="Catch weight" />
+            <input ref={weightRef} className="input is-large" type="text" placeholder={_('weightPlaceholder')} />
           </div>
         </section>
         <footer className="modal-card-foot">
@@ -32,7 +35,7 @@ const GetCatchWeightModal = ({ catchWeightUomSymbol, onOk, onCancel }) => {
                 onOk({ catchWeight: Number(weightRef.current.value) });
               }}
             >
-              OK
+              {_('actions.ok')}
             </button>
           </div>
         </footer>

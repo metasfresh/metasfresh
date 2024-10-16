@@ -32,6 +32,12 @@
       "cancel": "Cancel"
     }
   },
+  "selectTerminal": {
+    "title": "Select terminal"
+  },
+  "selectOrder": {
+    "title": "Select order"
+  },
   "products": {
     "searchBar": {
       "placeholder": "Produkte durchsuchen..."
@@ -40,6 +46,13 @@
   "currentOrder": {
     "line": {
       "at": "à"
+    },
+    "getWeightModal": {
+      "title": "Gewicht (%(uom)s)",
+      "weightPlaceholder": "Gewicht...",
+      "actions": {
+        "ok": "OK"
+      }
     },
     "totalAmt": "Summe",
     "taxAmt": "Steuern",

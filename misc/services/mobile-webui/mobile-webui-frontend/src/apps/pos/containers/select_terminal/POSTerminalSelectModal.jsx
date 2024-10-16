@@ -8,6 +8,9 @@ import { useDispatch } from 'react-redux';
 
 import './POSTerminalSelectModal.scss';
 import useEscapeKey from '../../../../hooks/useEscapeKey';
+import { trl } from '../../../../utils/translations';
+
+const _ = (key) => trl(`pos.selectTerminal.${key}`);
 
 const POSTerminalSelectModal = ({ allowCancel }) => {
   const dispatch = useDispatch();
@@ -46,7 +49,7 @@ const POSTerminalSelectModal = ({ allowCancel }) => {
       <div className="modal-background"></div>
       <div className="modal-card">
         <header className="modal-card-head">
-          <p className="modal-card-title">Select terminal</p>
+          <p className="modal-card-title">{_('title')}</p>
           {allowCancel && <button className="delete" aria-label="close" onClick={onCancel}></button>}
         </header>
         <section className="modal-card-body">

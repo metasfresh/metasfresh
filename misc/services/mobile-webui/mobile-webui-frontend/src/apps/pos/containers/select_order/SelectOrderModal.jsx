@@ -6,6 +6,9 @@ import { closeModalAction, MODAL_SelectOrders } from '../../actions/ui';
 import useEscapeKey from '../../../../hooks/useEscapeKey';
 import { setCurrentOrder, useCurrentOrder, useOpenOrdersArray } from '../../actions/orders';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
+import { trl } from '../../../../utils/translations';
+
+const _ = (key) => trl(`pos.selectOrder.${key}`);
 
 const SelectOrderModal = () => {
   const dispatch = useDispatch();
@@ -35,7 +38,7 @@ const SelectOrderModal = () => {
       <div className="modal-background"></div>
       <div className="modal-card">
         <header className="modal-card-head">
-          <p className="modal-card-title">Select terminal</p>
+          <p className="modal-card-title">{_('title')}</p>
           <button className="delete" aria-label="close" onClick={onCancel}></button>
         </header>
         <section className="modal-card-body">
