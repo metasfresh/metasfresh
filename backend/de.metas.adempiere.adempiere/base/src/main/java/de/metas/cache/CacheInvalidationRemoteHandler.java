@@ -13,7 +13,6 @@ import de.metas.event.impl.EventMDC;
 import de.metas.event.remote.RabbitMQEventBusConfiguration;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
 import org.compiere.SpringContextHolder;
@@ -144,7 +143,8 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		try (final MDCCloseable ignored = EventMDC.putEvent(event))
 		{
 			logger.debug("Broadcasting cacheInvalidateMultiRequest={}", request);
-			Services.get(IEventBusFactory.class)
+			final IEventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(IEventBusFactory.class);
+			eventBusFactory
 					.getEventBus(TOPIC_CacheInvalidation)
 					.enqueueEvent(event);
 		}
