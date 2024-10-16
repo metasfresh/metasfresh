@@ -145,6 +145,7 @@ public class ManufacturingOrderAPIServiceTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService()));
 
 		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		productBL = Services.get(IProductBL.class);
@@ -551,9 +552,9 @@ public class ManufacturingOrderAPIServiceTest
 		@BeforeEach
 		public void beforeEach()
 		{
-			SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService()));
 			huTestHelper = HUTestHelper.newInstanceOutOfTrx();
 			uomEach = huTestHelper.uomEach;
+			SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService()));
 
 			plantId = createPlant("plant");
 
