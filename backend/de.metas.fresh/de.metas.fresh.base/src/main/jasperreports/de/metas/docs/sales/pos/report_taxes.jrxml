@@ -77,14 +77,6 @@
 		<property name="com.jaspersoft.studio.field.name" value="grandtotal"/>
 		<property name="com.jaspersoft.studio.field.label" value="grandtotal"/>
 	</field>
-	<field name="paidamt" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.name" value="paidamt"/>
-		<property name="com.jaspersoft.studio.field.label" value="paidamt"/>
-	</field>
-	<field name="returnamount" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.name" value="returnamount"/>
-		<property name="com.jaspersoft.studio.field.label" value="returnamount"/>
-	</field>
 	<field name="totaltax" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="totaltax"/>
 		<property name="com.jaspersoft.studio.field.label" value="totaltax"/>
