@@ -1,0 +1,30 @@
+.searchbar-container {
+  width: max(50%, 23rem);
+  background-color: white;
+  padding: 0.5rem;
+  margin: 0.5rem;
+  border-radius: 0.2rem;
+
+  display: flex;
+  flex-flow: column nowrap;
+
+  .searchbar-line {
+    display: flex;
+    flex-flow: row nowrap;
+    font-size: 1.5rem;
+
+    input {
+      flex-grow: 1;
+      font-size: 1.5rem;
+    }
+
+    .button {
+      flex-grow: 0;
+      border: 0;
+    }
+  }
+
+  video {
+    padding-top: 0.5rem;
+  }
+}

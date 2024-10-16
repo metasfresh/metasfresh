@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 
+import './ProductButton.scss';
+
 const ProductButton = ({ name, price, currencySymbol, uomSymbol, disabled, onClick }) => {
   const priceStr = formatAmountToHumanReadableStr({ amount: price, currency: currencySymbol }) + '/' + uomSymbol;
 

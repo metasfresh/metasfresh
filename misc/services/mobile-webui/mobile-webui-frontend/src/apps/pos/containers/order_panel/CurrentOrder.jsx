@@ -49,6 +49,7 @@ const CurrentOrder = ({ disabled }) => {
             pricePrecision={pricePrecision}
             currencyPrecision={currencyPrecision}
             selected={line.uuid === currentOrder.selectedLineUUID}
+            isNew={!!line.isNew}
             onClick={() => {
               dispatch(
                 setSelectedOrderLineAction({
@@ -65,7 +66,7 @@ const CurrentOrder = ({ disabled }) => {
           {_('totalAmt')}: {totalAmtStr}
         </div>
         <div className="summary-line taxAmt">
-          {_('taxAmt')}: {taxAmtStr}
+          {_('taxAmt')} {taxAmtStr}
         </div>
       </div>
       <CurrentOrderActions />

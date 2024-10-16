@@ -77,11 +77,14 @@ const setPOSTerminalToState = ({ applicationState, newTerminal }) => {
   const isCashJournalClosing =
     currentTerminal.isCashJournalClosing && newTerminal?.cashJournalOpen && newTerminal.id === currentTerminal.id;
 
+  const products = newTerminal?.products ? newTerminal?.products : currentTerminal.products ?? {};
+
   const newTerminalEffective = {
     ...newTerminal,
     isCashJournalClosing,
     isLoading: false,
     isLoaded: true,
+    products,
   };
   delete newTerminalEffective.openOrders;
 
