@@ -13,6 +13,7 @@
       .products {
         padding: 0.5rem;
         flex-grow: 0;
+        width: 100%;
 
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
