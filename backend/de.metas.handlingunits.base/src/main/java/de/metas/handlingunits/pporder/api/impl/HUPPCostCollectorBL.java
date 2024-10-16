@@ -23,6 +23,7 @@ package de.metas.handlingunits.pporder.api.impl;
  */
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUStatusBL;
@@ -30,17 +31,21 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.ReceiptCostCollectorCandidate;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class HUPPCostCollectorBL implements IHUPPCostCollectorBL
 {
@@ -72,6 +77,14 @@ public class HUPPCostCollectorBL implements IHUPPCostCollectorBL
 	{
 		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 		huAssignmentBL.assignHUs(cc, husToAssign);
+
+		// generate QR codes
+		final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+		final Set<HuId> huIds = new HashSet<>();
+		husToAssign.forEach(
+				hu -> huIds.add(HuId.ofRepoId(hu.getM_HU_ID()))
+		);
+		huQRCodesService.generateForExistingHUs(huIds);
 	}
 
 	@Override
