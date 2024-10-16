@@ -3,22 +3,22 @@
     .products-container {
       width: 100%;
       background-color: #f0f0f0;
-      
+
       display: flex;
       flex-flow: column nowrap;
       justify-content: flex-start;
       align-items: center;
-  
+
 
       .products {
-        padding: 10px;
+        padding: 0.5rem;
         flex-grow: 0;
 
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        column-gap: 3px;
-        row-gap: 3px;
-        
+        grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+        column-gap: 0.2rem;
+        row-gap: 0.2rem;
+
         overflow-y: auto;
       }
     }
