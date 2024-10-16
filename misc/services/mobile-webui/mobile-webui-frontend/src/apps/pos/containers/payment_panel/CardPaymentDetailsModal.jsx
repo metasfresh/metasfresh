@@ -86,14 +86,14 @@ const CardPaymentDetailsModal = ({
         </section>
         <footer className="modal-card-foot">
           <div className="buttons">
-            {isAllowCancel && (
-              <button className="button is-large" disabled={!isAllowCancel} onClick={handleCancelClicked}>
-                {_('actions.cancel')}
-              </button>
-            )}
             {isAllowCheckout && (
               <button className="button is-large" disabled={!isAllowCheckout} onClick={handleCheckoutClicked}>
                 {_('actions.checkout')}
+              </button>
+            )}
+            {isAllowCancel && (
+              <button className="button is-large" disabled={!isAllowCancel} onClick={handleCancelClicked}>
+                {_('actions.cancel')}
               </button>
             )}
           </div>

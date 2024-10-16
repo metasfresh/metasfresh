@@ -4,7 +4,7 @@
     "orders": "Orders"
   },
   "openCashJournal": {
-    "title": "Opening cash",
+    "title": "Open register",
     "openingBalance": "Opening cash",
     "openingNote": "Opening note",
     "actions": {
@@ -12,7 +12,7 @@
     }
   },
   "closeCashJournal": {
-    "title": "Closing cash journal",
+    "title": "Close register",
     "paymentMethod": "Payment Method",
     "bookedAmt": "Booked",
     "countedAmt": "Counted",
@@ -32,6 +32,12 @@
       "cancel": "Cancel"
     }
   },
+  "selectTerminal": {
+    "title": "Select terminal"
+  },
+  "selectOrder": {
+    "title": "Select order"
+  },
   "products": {
     "searchBar": {
       "placeholder": "Search products..."
@@ -41,8 +47,15 @@
     "line": {
       "at": "at"
     },
+    "getWeightModal": {
+      "title": "Weight (%(uom)s)",
+      "weightPlaceholder": "weight...",
+      "actions": {
+        "ok": "OK"
+      }
+    },
     "totalAmt": "Total",
-    "taxAmt": "Taxes",
+    "taxAmt": "VAT",
     "actions": {
       "pay": "Pay",
       "new": "New",
@@ -57,6 +70,12 @@
       "cash": "Cash",
       "card": "Card"
     },
+    "status": {
+      "SUCCESSFUL": "Successful",
+      "FAILED": "Failed",
+      "PENDING": "Pending",
+      "NEW": "New"
+    },
     "actions": {
       "back": "Back",
       "validate": "Validate"
@@ -68,14 +87,14 @@
         "tenderedAmt": "Tendered Amount",
         "changeBackAmt": "Change",
         "actions": {
-          "ok": "OK",
+          "ok": "Confirm",
           "cancel": "Cancel"
         }
       },
       "card": {
         "title": "Card payment",
-        "orderOpenAmt": "Remaining Amount to Pay",
-        "payAmt": "Amount to Pay",
+        "orderOpenAmt": "Amount (open)",
+        "payAmt": "Payment amount",
         "cardReader": "Card reader",
         "actions": {
           "checkout": "Checkout",

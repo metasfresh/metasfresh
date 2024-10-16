@@ -18,9 +18,12 @@ const POSCashJournalClosingModal = () => {
   const [cashClosingBalance, setCashClosingBalance] = useState(0);
   const [closingNote, setClosingNote] = useState('');
 
+  const isValid = cashClosingBalance >= 0;
+
   useEscapeKey(() => onCancelClick());
 
   const onCloseClick = () => {
+    if (!isValid) return;
     posTerminal.closeJournal({ cashClosingBalance, closingNote });
   };
   const onCancelClick = () => {
@@ -54,7 +57,7 @@ const POSCashJournalClosingModal = () => {
         </section>
         <footer className="modal-card-foot">
           <div className="buttons">
-            <button className="button is-large" onClick={onCloseClick}>
+            <button className="button is-large" disabled={!isValid} onClick={onCloseClick}>
               {_('actions.close')}
             </button>
             <button className="button is-large" onClick={onCancelClick}>

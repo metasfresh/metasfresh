@@ -275,6 +275,7 @@ const addOrderLine = ({ applicationState, newOrderLineRequest }) => {
     catchWeightUomSymbol,
     catchWeight,
     ...otherOrderLineFields,
+    isNew: true,
   };
 
   return changeOrderInApplicationState({

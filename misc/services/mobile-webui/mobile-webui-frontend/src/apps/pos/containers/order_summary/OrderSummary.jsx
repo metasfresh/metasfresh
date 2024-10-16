@@ -19,6 +19,7 @@ const OrderSummary = () => {
   const { id: posTerminalId, currencyPrecision: precision } = usePOSTerminal();
   const { uuid: order_uuid, currencySymbol: currency, totalAmt, payments } = useCurrentOrder({ posTerminalId });
   const [receiptPdfData, setReceiptPdfData] = useState();
+  const [isPrinted, setIsPrinted] = useState(false);
 
   const {
     totalAmtStr,
@@ -30,12 +31,22 @@ const OrderSummary = () => {
   } = computePaymentDetails({ totalAmt, currency, precision, payments });
 
   useEffect(() => {
-    getReceiptPdf({ order_uuid }).then(setReceiptPdfData);
+    getReceiptPdf({ order_uuid, retryCount: 60, retryDelayMillis: 1000 }).then((data) => {
+      setReceiptPdfData(data);
+      setIsPrinted(false);
+    });
   }, [order_uuid]);
+
+  useEffect(() => {
+    if (!isPrinted && receiptPdfData) {
+      onPrint();
+    }
+  }, [receiptPdfData, isPrinted]);
 
   const onPrint = () => {
     if (!receiptPdfData) return;
     printJS({ printable: receiptPdfData, type: 'pdf', base64: true });
+    setIsPrinted(true);
   };
 
   const onClose = () => {
