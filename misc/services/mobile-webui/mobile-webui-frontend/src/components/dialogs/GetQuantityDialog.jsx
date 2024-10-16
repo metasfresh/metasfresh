@@ -131,7 +131,7 @@ const GetQuantityDialog = ({
     if (isProcessing) return;
 
     if (allValid) {
-      const inputQtyEnteredAndValidated = qtyInfos.toNumberOrString(qtyInfo);
+      const inputQtyEnteredAndValidated = qtyInfos.toNumber(qtyInfo);
 
       const qtyToIssue = inputQtyEnteredAndValidated + tempQtyStorage.qty;
 
@@ -144,7 +144,7 @@ const GetQuantityDialog = ({
         qtyEnteredAndValidated: qtyEnteredAndValidated,
         qtyRejected,
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
-        catchWeight: useCatchWeight ? qtyInfos.toNumberOrString(catchWeight) : null,
+        catchWeight: useCatchWeight ? qtyInfos.toNumber(catchWeight) : null,
         catchWeightUom: useCatchWeight ? catchWeightUom : null,
         bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
         lotNo: isShowLotNo ? lotNo : null,
