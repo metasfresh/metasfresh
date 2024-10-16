@@ -7,6 +7,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_POS_Pay
             (
                 C_POS_Payment_id numeric(10, 0),
                 paidamt          numeric,
+                ChangeBackAmount   numeric,
                 cursymbol        varchar,
                 paymentrule      varchar,
                 ad_org_id        numeric
@@ -14,9 +15,10 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_POS_Pay
 AS
 $$
 SELECT posp.C_POS_Payment_id,
-       posp.amount                   as paydamount,
+       (CASE WHEN posp.POSPaymentMethod = 'CASH' THEN posp.amounttendered ELSE posp.amount END) AS paidamt,
+       posp.ChangeBackAmount,
        c.cursymbol,
-       coalesce(rflt.name, rfl.name) as paymentrule,
+       COALESCE(rflt.name, rfl.name) || ' ' || coalesce(posp.POSPaymentProcessingSummary, '')   as paymentrule,
        pos.ad_org_id
 
 FROM C_POS_Order pos
