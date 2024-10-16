@@ -20,6 +20,7 @@ export const OrderLine = ({
   pricePrecision,
   currencyPrecision,
   selected,
+  isNew,
   onClick,
 }) => {
   const elementRef = useRef();
@@ -50,7 +51,11 @@ export const OrderLine = ({
   };
 
   return (
-    <div className={cx('line', { 'line-selected': selected })} ref={elementRef} onClick={fireOnClick}>
+    <div
+      className={cx('line', { 'line-selected': selected, 'line-new': isNew })}
+      ref={elementRef}
+      onClick={fireOnClick}
+    >
       <div className="main">
         <div className="productName">{productName}</div>
         <div className="amount">{amountStr}</div>
@@ -73,6 +78,7 @@ OrderLine.propTypes = {
   pricePrecision: PropTypes.number,
   currencyPrecision: PropTypes.number,
   selected: PropTypes.bool.isRequired,
+  isNew: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
 };
 

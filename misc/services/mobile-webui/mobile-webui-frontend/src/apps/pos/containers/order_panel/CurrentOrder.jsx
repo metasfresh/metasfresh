@@ -49,6 +49,7 @@ const CurrentOrder = ({ disabled }) => {
             pricePrecision={pricePrecision}
             currencyPrecision={currencyPrecision}
             selected={line.uuid === currentOrder.selectedLineUUID}
+            isNew={!!line.isNew}
             onClick={() => {
               dispatch(
                 setSelectedOrderLineAction({
