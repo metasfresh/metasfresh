@@ -38,4 +38,20 @@ export const qtyInfos = {
       throw 'Invalid qtyObj: ' + JSON.stringify(qtyObj);
     }
   },
+
+  toNumber: (qtyObj) => {
+    if (!qtyObj) {
+      return null;
+    }
+    // QtyInfo data structure
+    else if (typeof qtyObj === 'object') {
+      return qtyObj.qty;
+    }
+    // Case: possible string
+    else if (!Array.isArray(qtyObj)) {
+      return Number(qtyObj);
+    } else {
+      throw 'Invalid qtyObj: ' + JSON.stringify(qtyObj);
+    }
+  },
 };
