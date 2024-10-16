@@ -146,6 +146,8 @@ public class ManufacturingOrderAPIServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService()));
+
 		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		productBL = Services.get(IProductBL.class);
 		warehouseBL = Services.get(IWarehouseBL.class);
@@ -167,8 +169,6 @@ public class ManufacturingOrderAPIServiceTest
 				.huReservationService(huReservationService)
 				.exportSequenceNumberProvider(exportSequenceNumberProvider)
 				.build();
-
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService()));
 	}
 
 	private String toJsonString(final Object obj)
@@ -554,6 +554,7 @@ public class ManufacturingOrderAPIServiceTest
 		{
 			huTestHelper = HUTestHelper.newInstanceOutOfTrx();
 			uomEach = huTestHelper.uomEach;
+			SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService()));
 
 			plantId = createPlant("plant");
 
