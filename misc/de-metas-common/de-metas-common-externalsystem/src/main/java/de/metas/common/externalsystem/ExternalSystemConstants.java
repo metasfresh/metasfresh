@@ -93,10 +93,6 @@ public class ExternalSystemConstants
 
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
-
-	public static final String PARAM_TARGET_DIRECTORY = "TargetDirectory";
-	public static final String PARAM_PRINTING_QUEUE_ID = "PrintingQueueId";
-
 	public static final String PARAM_JSON_AVAILABLE_FOR_SALES = "JsonAvailableForSales";
 
 	public static final int DEFAULT_SW6_ORDER_PAGE_SIZE = 100;
@@ -107,6 +103,9 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_FEEDBACK_RESOURCE_URL = "FeedbackResourceURL";
 	public static final String PARAM_FEEDBACK_RESOURCE_AUTH_TOKEN = "FeedbackResourceAuthToken";
+
+	public static final String PARAM_TARGET_DIRECTORY = "TargetDirectory";
+	public static final String PARAM_PRINTING_QUEUE_ID = "PrintingQueueId";
 
 	public static final String PARAM_LOCAL_FILE_ROOT_LOCATION = "LocalFileRootLocation";
 	public static final String PARAM_LOCAL_FILE_PROCESSED_DIRECTORY = "LocalFileProcessedDirectory";

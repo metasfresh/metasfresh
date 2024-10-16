@@ -167,7 +167,7 @@ FROM (
          LEFT JOIN C_Country c ON c.C_Country_ID = l.C_Country_ID
          LEFT JOIN AD_User u ON u.AD_User_ID = lookup.CreatedBy
 WHERE TRUE
-  AND p.VATaxID IS NOT NULL
+--  AND p.VATaxID IS NOT NULL -- VATaxIDs are not needed in general, but only if the customer is in a different country or if the customer explicitly requests them to be in their INVOICs
   AND (l.Address1 IS NOT NULL OR l.Address2 IS NOT NULL)
 ORDER BY (
           lookup.C_Invoice_ID,
