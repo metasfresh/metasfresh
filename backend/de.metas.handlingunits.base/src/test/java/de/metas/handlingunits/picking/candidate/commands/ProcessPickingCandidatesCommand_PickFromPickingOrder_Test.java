@@ -1,7 +1,5 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import de.metas.event.log.EventLogService;
-import de.metas.event.log.EventLogsRepository;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
@@ -16,7 +14,12 @@ import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.printing.DoNothingMassPrintingService;
+import de.metas.printing.IMassPrintingService;
+import de.metas.printing.adapter.MassPrintingService;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -74,7 +77,11 @@ public class ProcessPickingCandidatesCommand_PickFromPickingOrder_Test
 	public void init()
 	{
 		helper = new ProcessPickingCandidatesCommandTestHelper();
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService()));
+
+		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
+		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), qrCodeConfigurationService));
+
 	}
 
 	@Builder(builderMethodName = "preparePickingCandidate", buildMethodName = "createAndProcess", builderClassName = "PickingCandidateBuilder")
