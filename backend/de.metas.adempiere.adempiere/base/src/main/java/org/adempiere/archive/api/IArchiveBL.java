@@ -75,5 +75,5 @@ public interface IArchiveBL extends ISingletonService
 	I_AD_Archive retrieveArchive(@NonNull ArchiveId archiveId);
 
 	@Nullable
-	DocTypeId getOverride_DocType_ID(@NonNull ArchiveId archiveId);
+	DocTypeId getOverrideDocTypeId(@NonNull ArchiveId archiveId);
 }

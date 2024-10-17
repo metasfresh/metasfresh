@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
-import de.metas.document.archive.model.I_AD_Archive;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -72,7 +71,7 @@ public class DocOutboundUtils
 		final DocStatus docStatus = documentBL.getDocStatusOrNull(reference);
 		docOutboundLogLineRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
-		final DocTypeId overrideDocTypeId = archiveBL.getOverride_DocType_ID(ArchiveId.ofRepoId(docOutboundLog.getAD_Archive_ID()));
+		final DocTypeId overrideDocTypeId = archiveBL.getOverrideDocTypeId(ArchiveId.ofRepoId(docOutboundLog.getAD_Archive_ID()));
 		final DocTypeId doctypeID = DocTypeId.ofRepoId(documentBL.getC_DocType_ID(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID()));
 		docOutboundLogLineRecord.setC_DocType_ID(CoalesceUtil.coalesce(overrideDocTypeId, doctypeID).getRepoId());
 

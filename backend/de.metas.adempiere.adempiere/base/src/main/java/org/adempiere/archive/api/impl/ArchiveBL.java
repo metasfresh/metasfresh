@@ -356,7 +356,7 @@ public class ArchiveBL implements IArchiveBL
 
 	@Override
 	@Nullable
-	public DocTypeId getOverride_DocType_ID(final ArchiveId archiveId)
+	public DocTypeId getOverrideDocTypeId(final ArchiveId archiveId)
 	{
 		final I_AD_Archive archive = retrieveArchive(archiveId);
 		return DocTypeId.ofRepoIdOrNull(archive.getOverride_DocType_ID());
