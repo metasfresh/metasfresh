@@ -161,28 +161,28 @@ public class DefaultModelArchiver
 		{
 			final List<PrintFormatId> printFormatIdList = getPrintFormatIds();
 
-			for (final PrintFormatId printFormatId : printFormatIdList)
+			final DocOutboundConfigId docOutboundConfigId = getDocOutboundConfigId();
+			if (docOutboundConfigId != null)
 			{
-				final DocOutboundConfigId docOutboundConfigId = DocOutboundConfigId.ofRepoIdOrNull(getDocOutboundConfig().map(I_C_Doc_Outbound_Config::getC_Doc_Outbound_Config_ID).orElse(-1));
-				final DocOutboundConfig docOutboundConfig = docOutboundConfigService.getById(docOutboundConfigId);
-
-				final Optional<DocOutboundConfigCC> docOutboundConfigCC = docOutboundConfig.getCCByPrintFormatId(printFormatId);
-				DocTypeId docTypeId = null;
-				if (docOutboundConfigCC.isPresent())
+				for (final PrintFormatId printFormatId : printFormatIdList)
 				{
-					docTypeId = docOutboundConfigCC.get().getOverrideDocTypeId();
+					final DocOutboundConfig docOutboundConfig = docOutboundConfigService.getById(docOutboundConfigId);
+
+					final DocTypeId docTypeId = docOutboundConfig.getCCByPrintFormatId(printFormatId)
+							.map(DocOutboundConfigCC::getOverrideDocTypeId)
+							.orElse(null);
+
+					final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, printFormatId, docTypeId);
+					sendToCCPathIfAvailable(recordRef, archiveResult);
+					result.add(archiveResult);
 				}
 
-				final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, printFormatId, docTypeId);
-				sendToCCPathIfAvailable(recordRef, archiveResult);
-				result.add(archiveResult);
-			}
-
-			if (printFormatIdList.isEmpty())
-			{
-				final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, null, null);
-				sendToCCPathIfAvailable(recordRef, archiveResult);
-				result.add(archiveResult);
+				if (printFormatIdList.isEmpty())
+				{
+					final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, null, null);
+					sendToCCPathIfAvailable(recordRef, archiveResult);
+					result.add(archiveResult);
+				}
 			}
 		}
 
@@ -342,6 +342,14 @@ public class DefaultModelArchiver
 		}
 		return _docOutboundConfig;
 	}
+
+	private DocOutboundConfigId getDocOutboundConfigId()
+	{
+		return DocOutboundConfigId.ofRepoIdOrNull(getDocOutboundConfig()
+				.map(I_C_Doc_Outbound_Config::getC_Doc_Outbound_Config_ID)
+				.orElse(-1));
+	}
+
 
 	private Optional<I_C_Doc_Outbound_Config> retrieveDocOutboundConfig()
 	{
