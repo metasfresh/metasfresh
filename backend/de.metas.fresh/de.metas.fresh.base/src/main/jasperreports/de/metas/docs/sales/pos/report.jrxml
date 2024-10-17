@@ -80,14 +80,6 @@
 		<property name="com.jaspersoft.studio.field.name" value="grandtotal"/>
 		<property name="com.jaspersoft.studio.field.label" value="grandtotal"/>
 	</field>
-	<field name="paidamt" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.name" value="paidamt"/>
-		<property name="com.jaspersoft.studio.field.label" value="paidamt"/>
-	</field>
-	<field name="returnamount" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.name" value="returnamount"/>
-		<property name="com.jaspersoft.studio.field.label" value="returnamount"/>
-	</field>
 	<field name="totaltax" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="totaltax"/>
 		<property name="com.jaspersoft.studio.field.label" value="totaltax"/>
@@ -375,9 +367,9 @@
 		</band>
 	</detail>
 	<summary>
-		<band height="66">
+		<band height="62">
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="20" y="43" width="54" height="22" uuid="93b88471-cc0e-41a1-ab9e-2e4ba6ac3f04">
+				<reportElement key="subreport-8" x="20" y="38" width="54" height="22" uuid="93b88471-cc0e-41a1-ab9e-2e4ba6ac3f04">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -412,28 +404,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{grandtotal}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="9" y="36" width="46" height="6" forecolor="#000000" uuid="1f28a6eb-80b6-492e-97b2-5e5134922b71">
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="Arial" size="3" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{return}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="55" y="36" width="19" height="6" forecolor="#000000" uuid="8db20181-63c3-4944-bb8e-61bb59b1629f">
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-				</reportElement>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="Arial" size="3" isBold="false"/>
-					<paragraph rightIndent="3"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{returnamount}]]></textFieldExpression>
-			</textField>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="0" y="10" width="79" height="22" uuid="30c6c12a-b252-4c61-bd5f-b167020439d5">
+				<reportElement key="subreport-8" x="0" y="6" width="79" height="22" uuid="30c6c12a-b252-4c61-bd5f-b167020439d5">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
