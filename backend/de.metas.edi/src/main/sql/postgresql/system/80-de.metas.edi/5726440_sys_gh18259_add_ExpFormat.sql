@@ -1,24 +1,76 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+DO
+$$
+    BEGIN
+        IF NOT EXISTS(SELECT 1 FROM AD_Element WHERE AD_Element_ID = 581020) THEN
+            -- 2022-06-10T09:30:27.789825Z
+            -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+            INSERT INTO AD_Element (AD_Client_ID, AD_Element_ID, AD_Org_ID, ColumnName, Created, CreatedBy, EntityType, IsActive, Name, PrintName, Updated, UpdatedBy)
+            VALUES (0, 581020, 0, 'IsDeliveryClosed', TO_TIMESTAMP('2022-06-10 12:30:27', 'YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'Y', 'Lieferung geschlossen', 'Lieferung geschlossen', TO_TIMESTAMP('2022-06-10 12:30:27', 'YYYY-MM-DD HH24:MI:SS'), 100);
+
+            -- 2022-06-10T09:30:27.792926900Z
+            -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+            INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, CommitWarning, Description, Help, Name, PO_Description, PO_Help, PO_Name, PO_PrintName, PrintName, WEBUI_NameBrowse, WEBUI_NameNew, WEBUI_NameNewBreadcrumb, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy, IsActive)
+            SELECT l.AD_Language,
+                   t.AD_Element_ID,
+                   t.CommitWarning,
+                   t.Description,
+                   t.Help,
+                   t.Name,
+                   t.PO_Description,
+                   t.PO_Help,
+                   t.PO_Name,
+                   t.PO_PrintName,
+                   t.PrintName,
+                   t.WEBUI_NameBrowse,
+                   t.WEBUI_NameNew,
+                   t.WEBUI_NameNewBreadcrumb,
+                   'N',
+                   t.AD_Client_ID,
+                   t.AD_Org_ID,
+                   t.Created,
+                   t.Createdby,
+                   t.Updated,
+                   t.UpdatedBy,
+                   'Y'
+            FROM AD_Language l,
+                 AD_Element t
+            WHERE l.IsActive = 'Y'
+              AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
+              AND t.AD_Element_ID = 581020
+              AND NOT EXISTS(SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = t.AD_Element_ID);
+
+            -- 2022-06-10T09:30:33.364616400Z
+            -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+            UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2022-06-10 12:30:33', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID = 581020 AND AD_Language = 'de_CH';
+
+            -- 2022-06-10T09:30:33.407354400Z
+            -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+            /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(581020, 'de_CH');
+
+            -- 2022-06-10T09:30:36.425277300Z
+            -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+            UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2022-06-10 12:30:36', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID = 581020 AND AD_Language = 'de_DE';
+
+            -- 2022-06-10T09:30:36.426314Z
+            -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+            /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(581020, 'de_DE');
+
+            -- 2022-06-10T09:30:36.435100800Z
+            -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+            /* DDL */ SELECT update_ad_element_on_ad_element_trl_update(581020, 'de_DE');
+
+            -- 2022-06-10T09:30:43.561692Z
+            -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+            UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Delivery Closed', PrintName='Delivery Closed', Updated=TO_TIMESTAMP('2022-06-10 12:30:43', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID = 581020 AND AD_Language = 'en_US';
+
+            -- 2022-06-10T09:30:43.562727300Z
+            -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+            /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(581020, 'en_US');
+
+        END IF;
+    END;
+$$
+;
 
 -- 2024-06-17T07:11:17.956Z
 INSERT INTO EXP_Format (AD_Client_ID,AD_Org_ID,AD_Table_ID,CopyColumnsFromTable,Created,CreatedBy,EntityType,EXP_Format_ID,IsActive,IsAlwaysFlagWithIssue,Name,Processing,TestExportModel,TestImportModel,Updated,UpdatedBy,Value,Version) VALUES (0,0,542414,'N',TO_TIMESTAMP('2024-06-17 07:11:17.846000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U',540428,'Y','N','M_InOut_Desadv_V','N','N','N',TO_TIMESTAMP('2024-06-17 07:11:17.846000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M_InOut_Desadv_V','*')
