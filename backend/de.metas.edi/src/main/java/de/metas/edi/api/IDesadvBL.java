@@ -34,6 +34,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.report.ReportResultData;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 
 import java.util.Collection;
 import java.util.List;
@@ -107,4 +108,6 @@ public interface IDesadvBL extends ISingletonService
 	List<I_M_InOutLine> retrieveAllInOutLines(I_EDI_DesadvLine desadvLine);
 
 	void propagateEDIStatus(@NonNull I_EDI_Desadv desadv);
+	
+	boolean isMatchUsingOrderId(@NonNull ClientId clientId);
 }

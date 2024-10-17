@@ -34,7 +34,6 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inout.InOutId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.util.lang.IContextAware;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -44,12 +43,12 @@ import java.util.List;
 public interface IDesadvDAO extends ISingletonService
 {
 	/**
-	 * Retrieves the desadv record with the given POReference. If there is none, it returns <code>null</code>.
+	 * Retrieves the desadv record for the given query. If there is none, it returns <code>null</code>.
 	 *
-	 * @return the desadv for the given <code>poReference</code>, or <code>null</code> if none exists.
+	 * @return the desadv for the given <code>de.metas.edi.api.EDIDesadvQuery</code>, or <code>null</code> if none exists.
 	 */
 	@Nullable
-	I_EDI_Desadv retrieveMatchingDesadvOrNull(String poReference, IContextAware ctxAware);
+	I_EDI_Desadv retrieveMatchingDesadvOrNull(@NonNull EDIDesadvQuery request);
 
 	I_EDI_Desadv retrieveById(@NonNull EDIDesadvId ediDesadvId);
 
