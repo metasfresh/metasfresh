@@ -91,6 +91,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		final I_C_Doc_Outbound_Log log = docExchangeLine.getC_Doc_Outbound_Log();
 		log.setDateLastPrint(SystemTime.asTimestamp());
+		log.setC_DocType_ID(archive.getOverride_DocType_ID());
 		save(log);
 	}
 
@@ -240,8 +241,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogRecord.setC_BPartner_ID(archiveRecord.getC_BPartner_ID());
 		docOutboundLogRecord.setC_Async_Batch_ID(archiveRecord.getC_Async_Batch_ID());
 		docOutboundLogRecord.setAD_Archive_ID(archiveRecord.getAD_Archive_ID());
-		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
-		docOutboundLogRecord.setC_DocType_ID(doctypeID);
+		final DocTypeId doctypeID = findDocTypeId(archiveRecord);
+		docOutboundLogRecord.setC_DocType_ID(DocTypeId.toRepoId(doctypeID));
 
 		docOutboundLogRecord.setDateLastEMail(null);
 		docOutboundLogRecord.setDateLastPrint(null);
@@ -265,6 +266,23 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		shareDocumentAttachmentsWithDocoutBoundLog(archiveRecord, docOutboundLogRecord);
 
 		return docOutboundLogRecord;
+	}
+
+	@Nullable
+	private DocTypeId findDocTypeId(@NonNull final I_AD_Archive archiveRecord)
+	{
+		DocTypeId doctypeID =  DocTypeId.ofRepoIdOrNull(archiveRecord.getOverride_DocType_ID());
+
+		if (doctypeID == null)
+		{
+			final TableRecordReference reference = DocOutboundDAO.extractRecordRef(archiveRecord);
+			final int adTableId = reference.getAD_Table_ID();
+			final int recordId = reference.getRecord_ID();
+
+			final Properties ctx = InterfaceWrapperHelper.getCtx(archiveRecord);
+			doctypeID = DocTypeId.ofRepoIdOrNull(Services.get(IDocumentBL.class).getC_DocType_ID(ctx, adTableId, recordId));
+		}
+		return doctypeID;
 	}
 
 	private void setMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)

@@ -9,10 +9,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.archive.ArchiveId;
-import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Properties;
 
@@ -67,23 +64,10 @@ public class DocOutboundUtils
 		final DocStatus docStatus = documentBL.getDocStatusOrNull(reference);
 		docOutboundLogLineRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
-		final DocTypeId doctypeID = findDocTypeId(docOutboundLog);
+		final DocTypeId doctypeID = DocTypeId.ofRepoIdOrNull(documentBL.getC_DocType_ID(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID()));
 
 		docOutboundLogLineRecord.setC_DocType_ID(DocTypeId.toRepoId(doctypeID));
 
 		return docOutboundLogLineRecord;
-	}
-
-	@Nullable
-	private DocTypeId findDocTypeId(final @NonNull I_C_Doc_Outbound_Log docOutboundLog)
-	{
-		final Properties ctx = getCtx(docOutboundLog);
-		DocTypeId doctypeID = Services.get(IArchiveBL.class).getOverrideDocTypeId(ArchiveId.ofRepoId(docOutboundLog.getAD_Archive_ID()));
-
-		if (doctypeID == null)
-		{
-			doctypeID = DocTypeId.ofRepoIdOrNull(Services.get(IDocumentBL.class).getC_DocType_ID(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID()));
-		}
-		return doctypeID;
 	}
 }
