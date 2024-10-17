@@ -21,6 +21,8 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /*
  * #%L
@@ -69,15 +71,22 @@ public class DocOutboundUtils
 		final DocStatus docStatus = documentBL.getDocStatusOrNull(reference);
 		docOutboundLogLineRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
+		final DocTypeId doctypeID = findDocTypeId(docOutboundLog, documentBL, ctx);
+
+		docOutboundLogLineRecord.setC_DocType_ID(DocTypeId.toRepoId(doctypeID));
+
+		return docOutboundLogLineRecord;
+	}
+
+	@Nullable
+	private DocTypeId findDocTypeId(final @NotNull I_C_Doc_Outbound_Log docOutboundLog, final IDocumentBL documentBL, final Properties ctx)
+	{
 		DocTypeId doctypeID = Services.get(IArchiveBL.class).getOverrideDocTypeId(ArchiveId.ofRepoId(docOutboundLog.getAD_Archive_ID()));
 
 		if (doctypeID == null)
 		{
 			doctypeID = DocTypeId.ofRepoIdOrNull(documentBL.getC_DocType_ID(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID()));
 		}
-
-		docOutboundLogLineRecord.setC_DocType_ID(DocTypeId.toRepoId(doctypeID));
-
-		return docOutboundLogLineRecord;
+		return doctypeID;
 	}
 }
