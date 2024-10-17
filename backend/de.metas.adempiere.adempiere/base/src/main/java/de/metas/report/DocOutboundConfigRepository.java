@@ -24,6 +24,7 @@ package de.metas.report;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
+import de.metas.document.DocTypeId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -217,6 +218,7 @@ public class DocOutboundConfigRepository
 				.docOutboundConfigId(DocOutboundConfigId.ofRepoId(record.getC_Doc_Outbound_Config_ID()))
 				.columnId(AdColumnId.ofRepoId(record.getBPartner_ColumnName_ID()))
 				.printFormatId(PrintFormatId.ofRepoId(record.getAD_PrintFormat_ID()))
+				.overrideDocTypeId(DocTypeId.ofRepoIdOrNull(record.getOverride_DocType_ID()))
 				.build();
 	}
 }
