@@ -284,6 +284,7 @@ public class DefaultModelArchiver
 
 		// 09417: reference the config and it's settings will decide if a printing queue item shall be created
 		archive.setC_Doc_Outbound_Config_ID(getDocOutboundConfigId().map(DocOutboundConfigId::getRepoId).orElse(-1));
+		archive.setOverride_DocType_ID(DocTypeId.toRepoId(report.getOverrideDocTypeId()));
 
 		// https://github.com/metasfresh/metasfresh/issues/1240
 		// store the printInfos number of copies for this archive record. It doesn't make sense to persist this value,
