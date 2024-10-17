@@ -790,8 +790,8 @@ public class DesadvBL implements IDesadvBL
 		desadvInOutLineBuilder.qtyDeliveredInUOM(inoutQtyDeliveredInUOM);
 
 		final Optional<Quantity> newQtyEnteredInBPartnerUOM = orderLine != null
-				? computeDeliveredQtyInBPartnerUOM(orderLine, inoutQtyDeliveredInUOM)
-				: computeDeliveredQtyInBPartnerUOM(desadvLineRecord, inoutQtyDeliveredInUOM);
+				? computeDeliveredQtyInBPartnerUOM(orderLine, inOutLineStockQty)
+				: computeDeliveredQtyInBPartnerUOM(desadvLineRecord, inOutLineStockQty);
 
 		newQtyEnteredInBPartnerUOM.ifPresent(desadvInOutLineBuilder::qtyEnteredInBPartnerUOM);
 
