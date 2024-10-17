@@ -3,7 +3,7 @@ package de.metas.quantity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
- import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
@@ -76,6 +76,7 @@ public final class Quantity implements Comparable<Quantity>
 		return QTY_INFINITE.compareTo(qty) == 0;
 	}
 
+	@Nullable
 	public static Quantity addNullables(@Nullable final Quantity qty1, @Nullable final Quantity qty2)
 	{
 		if (qty1 == null)
@@ -168,6 +169,7 @@ public final class Quantity implements Comparable<Quantity>
 	@JsonIgnore // TODO: better map to the uom' X12DE355 code or similar
 	private final I_C_UOM uom;
 
+	@NonNull
 	private final BigDecimal sourceQty;
 
 	@JsonIgnore // TODO: better map to the uom' X12DE355 code or similar
@@ -220,7 +222,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	@Override
 	@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
@@ -330,6 +332,7 @@ public final class Quantity implements Comparable<Quantity>
 		return uom.getC_UOM_ID();
 	}
 
+	@NonNull
 	public UomId getUomId()
 	{
 		return UomId.ofRepoId(uom.getC_UOM_ID());
@@ -348,6 +351,7 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return source quantity; never null
 	 */
+	@NonNull
 	public BigDecimal getSourceQty()
 	{
 		return sourceQty;
@@ -788,7 +792,7 @@ public final class Quantity implements Comparable<Quantity>
 	private Quantity multiply(
 			@NonNull final Percent percent,
 			final int precision,
-			@NonNull RoundingMode roundingMode)
+			@NonNull final RoundingMode roundingMode)
 	{
 		final BigDecimal newQty = percent.computePercentageOf(this.qty, precision, roundingMode);
 
