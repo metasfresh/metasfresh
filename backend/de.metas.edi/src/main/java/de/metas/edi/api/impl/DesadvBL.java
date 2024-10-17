@@ -455,30 +455,32 @@ public class DesadvBL implements IDesadvBL
 		final Quantity newQtyDeliveredInUOM = desadvLineQtyDelivered.add(inoutLineQtyDeliveredInUOM);
 		desadvLineRecord.setQtyDeliveredInUOM(newQtyDeliveredInUOM.toBigDecimal());
 
-		if (desadvLineRecord.getC_UOM_BPartner_ID() > 0)
+		final UomId desadvLineBPartnerUOMId = UomId.ofRepoIdOrNull(desadvLineRecord.getC_UOM_BPartner_ID());
+		if (desadvLineBPartnerUOMId != null)
 		{
 			final Quantity inoutLineQtyDeliveredInBPartnerUOM = Optional.ofNullable(desadvInOutLine.getQtyEnteredInBPartnerUOM())
 					.map(qty -> qty.negateIfNot(add))
-					.orElseGet(() -> Quantity.zero(uomDAO.getById(desadvLineRecord.getC_UOM_BPartner_ID())));
+					.orElseGet(() -> Quantity.zero(uomDAO.getById(desadvLineBPartnerUOMId)));
 
 			final Quantity desadvLineQtyDeliveredBPartnerUOM = Quantitys.create(
 					desadvLineRecord.getQtyEnteredInBPartnerUOM(),
-					UomId.ofRepoId(desadvLineRecord.getC_UOM_BPartner_ID()));
+					desadvLineBPartnerUOMId);
 
 			final Quantity newQtyDeliveredInBPartnerUOM = desadvLineQtyDeliveredBPartnerUOM.add(inoutLineQtyDeliveredInBPartnerUOM);
 			desadvLineRecord.setQtyEnteredInBPartnerUOM(newQtyDeliveredInBPartnerUOM.toBigDecimal());
 		}
 
 		// convert the delivered qty (which *might* also be in catch-weight!) to the invoicing-UOM
-		final UomId invoiceUomId = UomId.ofRepoIdOrNull(desadvLineRecord.getC_UOM_Invoice_ID());
-		if (invoiceUomId != null)
+		final UomId desadvLineInvoiceUomId = UomId.ofRepoIdOrNull(desadvLineRecord.getC_UOM_Invoice_ID());
+		if (desadvLineInvoiceUomId != null)
 		{
-			final Quantity inoutLineQtyDeliveredInInvoiceUOM = Optional.ofNullable(desadvInOutLine.getQtyDeliveredInInvoiceUOM())
+			final Quantity inoutLineQtyDeliveredInInvoiceUOM = Optional
+					.ofNullable(desadvInOutLine.getQtyDeliveredInInvoiceUOM())
 					.map(qty -> qty.negateIfNot(add))
-					.orElseGet(() -> Quantity.zero(uomDAO.getById(invoiceUomId)));
+					.orElseGet(() -> Quantity.zero(uomDAO.getById(desadvLineInvoiceUomId)));
 			final Quantity desadvLineQtyInInvoiceUOM = Quantitys.create(
 					desadvLineRecord.getQtyDeliveredInInvoiceUOM(),
-					UomId.ofRepoId(desadvLineRecord.getC_UOM_Invoice_ID()));
+					desadvLineInvoiceUomId);
 
 			final Quantity newQtyDeliveredInInvoiceUOM = desadvLineQtyInInvoiceUOM.add(inoutLineQtyDeliveredInInvoiceUOM);
 			desadvLineRecord.setQtyDeliveredInInvoiceUOM(newQtyDeliveredInInvoiceUOM.toBigDecimal());
@@ -497,7 +499,7 @@ public class DesadvBL implements IDesadvBL
 
 	private Quantity getInOutLineQtyInDesadvLineQtyUOM(
 			@NonNull final StockQtyAndUOMQty inOutLineQty,
-			@NonNull final Quantity desadvLineQtyToAugment,
+			@NonNull final UomId desadvLineQtyUomId,
 			@NonNull final I_EDI_DesadvLine desadvLineRecord)
 	{
 		final Quantity inOutLineStockQty = inOutLineQty.getStockQty();
@@ -505,7 +507,7 @@ public class DesadvBL implements IDesadvBL
 
 		final Quantity augentQtyDeliveredInUOM;
 
-		final boolean desadvLineQtyIsUOMForTUS = uomDAO.isUOMForTUs(desadvLineQtyToAugment.getUomId());
+		final boolean desadvLineQtyIsUOMForTUS = uomDAO.isUOMForTUs(desadvLineQtyUomId);
 		final boolean inOutLineQtyIsUOMForTUS = uomDAO.isUOMForTUs(inOutLineLineQtyDelivered.getUomId());
 		if (desadvLineQtyIsUOMForTUS && !inOutLineQtyIsUOMForTUS)
 		{
@@ -513,12 +515,12 @@ public class DesadvBL implements IDesadvBL
 			final BigDecimal cusPerTU = desadvLineRecord.getQtyItemCapacity();
 			if (cusPerTU.signum() <= 0)
 			{
-				throw new AdempiereException("desadvLineRecord with TU-UOM C_UOM_ID=" + desadvLineQtyToAugment.getUomId().getRepoId() + " needs to have a QtyItemCapacity in order to convert the quantity")
+				throw new AdempiereException("desadvLineRecord with TU-UOM C_UOM_ID=" + desadvLineQtyUomId.getRepoId() + " needs to have a QtyItemCapacity in order to convert the quantity")
 						.appendParametersToMessage().setParameter("desadvLineRecord", desadvLineRecord);
 			}
 			augentQtyDeliveredInUOM = Quantitys.create(
 					inOutLineStockQty.toBigDecimal().divide(cusPerTU, RoundingMode.CEILING),
-					desadvLineQtyToAugment.getUomId());
+					desadvLineQtyUomId);
 		}
 		else if (!desadvLineQtyIsUOMForTUS && inOutLineQtyIsUOMForTUS)
 		{
@@ -533,7 +535,7 @@ public class DesadvBL implements IDesadvBL
 
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(desadvLineRecord.getM_Product_ID());
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		return uomConversionBL.convertQuantityTo(augentQtyDeliveredInUOM, conversionCtx, desadvLineQtyToAugment.getUomId());
+		return uomConversionBL.convertQuantityTo(augentQtyDeliveredInUOM, conversionCtx, desadvLineQtyUomId);
 	}
 
 	@Override
@@ -785,8 +787,9 @@ public class DesadvBL implements IDesadvBL
 		final Quantity inOutLineStockQty = inOutLineQty.getStockQty();
 		desadvInOutLineBuilder.qtyDeliveredInStockingUOM(inOutLineStockQty);
 
-		final Quantity desadvLineQtyDelivered = Quantitys.create(desadvLineRecord.getQtyDeliveredInUOM(), UomId.ofRepoId(desadvLineRecord.getC_UOM_ID()));
-		final Quantity inoutQtyDeliveredInUOM = getInOutLineQtyInDesadvLineQtyUOM(inOutLineQty, desadvLineQtyDelivered, desadvLineRecord);
+		final Quantity inoutQtyDeliveredInUOM = getInOutLineQtyInDesadvLineQtyUOM(
+				inOutLineQty, UomId.ofRepoId(desadvLineRecord.getC_UOM_ID()), desadvLineRecord);
+
 		desadvInOutLineBuilder.qtyDeliveredInUOM(inoutQtyDeliveredInUOM);
 
 		final Optional<Quantity> newQtyEnteredInBPartnerUOM = orderLine != null
@@ -799,8 +802,8 @@ public class DesadvBL implements IDesadvBL
 		final UomId invoiceUomId = UomId.ofRepoIdOrNull(desadvLineRecord.getC_UOM_Invoice_ID());
 		if (invoiceUomId != null)
 		{
-			final Quantity desadvLineQtyInInvoiceUOM = Quantitys.create(desadvLineRecord.getQtyDeliveredInInvoiceUOM(), UomId.ofRepoId(desadvLineRecord.getC_UOM_Invoice_ID()));
-			final Quantity newQtyDeliveredInInvoiceUOM = getInOutLineQtyInDesadvLineQtyUOM(inOutLineQty, desadvLineQtyInInvoiceUOM, desadvLineRecord);
+			final Quantity newQtyDeliveredInInvoiceUOM =
+					getInOutLineQtyInDesadvLineQtyUOM(inOutLineQty, invoiceUomId, desadvLineRecord);
 
 			desadvInOutLineBuilder.qtyDeliveredInInvoiceUOM(newQtyDeliveredInInvoiceUOM);
 		}
