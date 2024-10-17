@@ -1,28 +1,24 @@
 package de.metas.document.archive;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.isNew;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
-import java.util.Properties;
-
-import org.adempiere.archive.ArchiveId;
-import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.adempiere.archive.ArchiveId;
+import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.isNew;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /*
  * #%L
@@ -79,7 +75,7 @@ public class DocOutboundUtils
 	}
 
 	@Nullable
-	private DocTypeId findDocTypeId(final @NotNull I_C_Doc_Outbound_Log docOutboundLog, final IDocumentBL documentBL, final Properties ctx)
+	private DocTypeId findDocTypeId(final @NonNull I_C_Doc_Outbound_Log docOutboundLog, final IDocumentBL documentBL, final Properties ctx)
 	{
 		DocTypeId doctypeID = Services.get(IArchiveBL.class).getOverrideDocTypeId(ArchiveId.ofRepoId(docOutboundLog.getAD_Archive_ID()));
 
