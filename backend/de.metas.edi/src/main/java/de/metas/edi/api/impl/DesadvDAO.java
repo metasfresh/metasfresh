@@ -23,8 +23,10 @@
 package de.metas.edi.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
+import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
@@ -34,7 +36,6 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
-import de.metas.esb.edi.model.X_EDI_Desadv;
 import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Check;
@@ -274,12 +275,12 @@ public class DesadvDAO implements IDesadvDAO
 
 	@Override
 	@NonNull
-	public List<I_M_InOut> retrieveShipmentsPendingExport(@NonNull final I_EDI_Desadv desadv)
+	public List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull final I_EDI_Desadv desadv, @NonNull final ImmutableSet<EDIExportStatus> statusSet)
 	{
 		return queryBL.createQueryBuilder(I_M_InOut.class, desadv)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
-				.addInArrayFilter(I_M_InOut.COLUMNNAME_EDI_ExportStatus, I_M_InOut.EDI_EXPORTSTATUS_Pending, X_EDI_Desadv.EDI_EXPORTSTATUS_Error)
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_EDI_ExportStatus, statusSet)
 				.create()
 				.list(I_M_InOut.class);
 	}

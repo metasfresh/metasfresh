@@ -43,6 +43,8 @@ import java.util.List;
 @Component
 public class EDI_Desadv
 {
+	private final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onDesadvDelete(final I_EDI_Desadv desadv)
 	{
@@ -82,6 +84,8 @@ public class EDI_Desadv
 
 		final boolean processed = I_EDI_Document.EDI_EXPORTSTATUS_Sent.equals(exportStatus) || I_EDI_Document.EDI_EXPORTSTATUS_DontSend.equals(exportStatus);
 		desadv.setProcessed(processed);
+
+		desadvBL.propagateEDIStatus(desadv);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_EDI_Desadv.COLUMNNAME_EDIErrorMsg })

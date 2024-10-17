@@ -3,6 +3,7 @@ package de.metas.edi.api.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -12,6 +13,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.SimpleSequence;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
+import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
@@ -665,6 +667,14 @@ public class DesadvBL implements IDesadvBL
 	public List<I_M_InOutLine> retrieveAllInOutLines(final I_EDI_DesadvLine desadvLine)
 	{
 		return desadvDAO.retrieveAllInOutLines(desadvLine);
+	}
+
+	public void propagateEDIStatus(@NonNull final I_EDI_Desadv desadv)
+	{
+		desadvDAO.retrieveShipmentsWithStatus(desadv, ImmutableSet.of(EDIExportStatus.SendingStarted))
+				.stream()
+				.peek(shipment -> shipment.setEDI_ExportStatus(desadv.getEDI_ExportStatus()))
+				.forEach(inOutBL::save);
 	}
 
 	private Optional<ITranslatableString> createSingleMsg(

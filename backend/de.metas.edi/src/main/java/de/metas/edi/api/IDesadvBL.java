@@ -33,6 +33,7 @@ import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.i18n.ITranslatableString;
 import de.metas.report.ReportResultData;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 import java.util.Collection;
 import java.util.List;
@@ -104,4 +105,6 @@ public interface IDesadvBL extends ISingletonService
 	 * @return all <code>M_InOutLine</code>s (incl inactive ones) that reference the given <code>desadvLine</code>.
 	 */
 	List<I_M_InOutLine> retrieveAllInOutLines(I_EDI_DesadvLine desadvLine);
+
+	void propagateEDIStatus(@NonNull I_EDI_Desadv desadv);
 }
