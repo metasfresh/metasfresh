@@ -271,7 +271,7 @@ public class DefaultModelArchiver
 				.bpartnerId(report.getBpartnerId())
 				.language(report.getLanguage())
                 .isMainReport(report.isMainReport())
-			    .override_DocTypeId(report.getOverride_DocTypeId())
+			    .overrideDocTypeId(report.getOverrideDocTypeId())
 				.build());
 
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(

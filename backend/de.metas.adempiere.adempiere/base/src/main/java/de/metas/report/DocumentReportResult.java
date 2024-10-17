@@ -76,7 +76,7 @@ public class DocumentReportResult
 	ArchiveResult lastArchive;
 
 	@Nullable
-	DocTypeId override_DocTypeId;
+	DocTypeId overrideDocTypeId;
 
 	@Nullable
 	Integer asyncBatchId;

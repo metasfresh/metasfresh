@@ -47,8 +47,6 @@ import de.metas.util.Services;
 @UtilityClass
 public class DocOutboundUtils
 {
-	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
-
 	public I_C_Doc_Outbound_Log_Line createOutboundLogLineRecord(@NonNull final I_C_Doc_Outbound_Log docOutboundLog)
 	{
 		Check.assume(!isNew(docOutboundLog), "The given docOutboundLog needs to be saved; docOutboundLog={}", docOutboundLog);
@@ -71,9 +69,14 @@ public class DocOutboundUtils
 		final DocStatus docStatus = documentBL.getDocStatusOrNull(reference);
 		docOutboundLogLineRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
-		final DocTypeId overrideDocTypeId = archiveBL.getOverrideDocTypeId(ArchiveId.ofRepoId(docOutboundLog.getAD_Archive_ID()));
-		final DocTypeId doctypeID = DocTypeId.ofRepoId(documentBL.getC_DocType_ID(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID()));
-		docOutboundLogLineRecord.setC_DocType_ID(CoalesceUtil.coalesce(overrideDocTypeId, doctypeID).getRepoId());
+		DocTypeId doctypeID = Services.get(IArchiveBL.class).getOverrideDocTypeId(ArchiveId.ofRepoId(docOutboundLog.getAD_Archive_ID()));
+
+		if (doctypeID == null)
+		{
+			doctypeID = DocTypeId.ofRepoId(documentBL.getC_DocType_ID(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID()));
+		}
+
+		docOutboundLogLineRecord.setC_DocType_ID(doctypeID.getRepoId());
 
 		return docOutboundLogLineRecord;
 	}

@@ -43,11 +43,9 @@ public class DocOutboundConfigService
 		final DocOutboundConfig config = docOutboundConfigRepository.getById(docOutboundConfigId);
 		return config.getLines()
 				.stream()
-				.filter(configCC -> configCC.getPrintFormatId().getRepoId() == printFormatId.getRepoId())
+				.filter(configCC -> printFormatId.equals(configCC.getPrintFormatId()))
 				.findFirst()
-				.map(configCC -> configCC)
 				.orElse(null);
-
 	}
 
 }

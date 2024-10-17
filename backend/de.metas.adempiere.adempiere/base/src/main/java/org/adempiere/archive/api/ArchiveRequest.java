@@ -80,7 +80,7 @@ public class ArchiveRequest
 	@Nullable
 	BPartnerId bpartnerId;
 	@Nullable
-	DocTypeId override_DocTypeId;
+	DocTypeId overrideDocTypeId;
 	@Nullable
 	String documentNo;
 

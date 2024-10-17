@@ -72,7 +72,7 @@ public interface IArchiveBL extends ISingletonService
 
 	Optional<Resource> getLastArchiveBinaryData(@NonNull TableRecordReference reference);
 
-	I_AD_Archive retrieveArchive(@NonNull ArchiveId archiveId);
+	I_AD_Archive getRecordById(@NonNull ArchiveId archiveId);
 
 	@Nullable
 	DocTypeId getOverrideDocTypeId(@NonNull ArchiveId archiveId);

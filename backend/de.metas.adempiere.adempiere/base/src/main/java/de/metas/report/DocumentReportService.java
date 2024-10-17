@@ -157,7 +157,7 @@ public class DocumentReportService
 
 			return DocumentReportResult.builder()
 					.isMainReport(lastArchiveRecord.isMainArchive())
-					.override_DocTypeId(request.getOverrideDocTypeId())
+					.overrideDocTypeId(request.getOverrideDocTypeId())
 					.lastArchive(lastArchive)
 					.build();
 		}
@@ -224,7 +224,7 @@ public class DocumentReportService
 				.language(request.getReportLanguage())
 				.copies(request.getPrintCopies())
 				.isMainReport(request.isMainReport())
-				.override_DocTypeId(request.getOverrideDocTypeId())
+				.overrideDocTypeId(request.getOverrideDocTypeId())
 				//
 				.build();
 	}

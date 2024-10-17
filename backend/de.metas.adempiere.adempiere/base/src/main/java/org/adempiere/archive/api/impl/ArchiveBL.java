@@ -349,7 +349,7 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	@Override
-	public I_AD_Archive retrieveArchive(@NonNull final ArchiveId archiveId)
+	public I_AD_Archive getRecordById(@NonNull final ArchiveId archiveId)
 	{
 		return archiveDAO.retrieveArchive(archiveId);
 	}
@@ -358,7 +358,7 @@ public class ArchiveBL implements IArchiveBL
 	@Nullable
 	public DocTypeId getOverrideDocTypeId(final ArchiveId archiveId)
 	{
-		final I_AD_Archive archive = retrieveArchive(archiveId);
+		final I_AD_Archive archive = getRecordById(archiveId);
 		return DocTypeId.ofRepoIdOrNull(archive.getOverride_DocType_ID());
 	}
 }
