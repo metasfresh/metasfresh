@@ -8,12 +8,14 @@ import { usePOSTerminal } from '../actions/posTerminal';
 import { MODAL_POSTerminalSelect, MODAL_SelectOrders, showModalAction } from '../actions/ui';
 import { useOpenOrdersArray } from '../actions/orders';
 import { trl } from '../../../utils/translations';
+import { useAuth } from '../../../hooks/useAuth';
 
 const _ = (key) => trl(`pos.header.${key}`);
 
 const Header = () => {
   const dispatch = useDispatch();
   const posTerminal = usePOSTerminal();
+  const auth = useAuth();
   const userFullname = useSelector(getUserFullnameFromState);
   const openOrders = useOpenOrdersArray();
   const avatarLetter = userFullname ? userFullname.charAt(0).toUpperCase() : '';
@@ -26,6 +28,9 @@ const Header = () => {
   };
   const onTerminalClicked = () => {
     dispatch(showModalAction({ modal: MODAL_POSTerminalSelect }));
+  };
+  const onLogoutClicked = () => {
+    auth.logout();
   };
 
   return (
@@ -58,6 +63,12 @@ const Header = () => {
         <div className="pos-header-button userFullname">
           <div className="icon-letter">{avatarLetter}</div>
           <div className="text">{userFullname}</div>
+        </div>
+        <div className="pos-header-button logout" onClick={onLogoutClicked}>
+          <div className="icon-letter">
+            <i className="fa-solid fa-right-from-bracket"></i>
+          </div>
+          <div className="text"></div>
         </div>
       </div>
     </div>
