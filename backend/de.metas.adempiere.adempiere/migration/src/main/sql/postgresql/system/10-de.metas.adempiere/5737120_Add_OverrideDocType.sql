@@ -93,3 +93,25 @@ ALTER TABLE C_Doc_Outbound_Config_CC ADD CONSTRAINT OverrideDocType_CDocOutbound
 UPDATE AD_Column SET AD_Reference_ID=18,Updated=TO_TIMESTAMP('2024-10-16 18:13:36.905','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589308
 ;
 
+
+-- Column: AD_Archive.Override_DocType_ID
+-- 2024-10-17T06:39:04.485Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,589332,583331,0,18,170,754,'Override_DocType_ID',TO_TIMESTAMP('2024-10-17 09:39:04.332','YYYY-MM-DD HH24:MI:SS.US'),100,'N','Dokumenttypnamen überschreiben','de.metas.document',0,10,'','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Dokumenttypnamen überschreiben',0,0,TO_TIMESTAMP('2024-10-17 09:39:04.332','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-10-17T06:39:04.488Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=589332 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-10-17T06:39:04.492Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583331)
+;
+
+-- 2024-10-17T06:39:06.322Z
+/* DDL */ SELECT public.db_alter_table('AD_Archive','ALTER TABLE public.AD_Archive ADD COLUMN Override_DocType_ID NUMERIC(10)')
+;
+
+-- 2024-10-17T06:39:06.448Z
+ALTER TABLE AD_Archive ADD CONSTRAINT OverrideDocType_ADArchive FOREIGN KEY (Override_DocType_ID) REFERENCES public.C_DocType DEFERRABLE INITIALLY DEFERRED
+;
+

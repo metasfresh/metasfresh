@@ -22,6 +22,7 @@
 
 package de.metas.report;
 
+import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
@@ -45,6 +46,8 @@ public class DocumentReportRequest
 	AdProcessId reportProcessId;
 	@Nullable
 	PrintFormatId printFormatIdToUse;
+	@Nullable
+	DocTypeId override_DocTypeId;
 	@NonNull
 	@Builder.Default
 	DocumentReportFlavor flavor = DocumentReportFlavor.PRINT;
@@ -104,6 +107,13 @@ public class DocumentReportRequest
 	{
 		return this.isMainReport != isMainReport
 				? toBuilder().isMainReport(isMainReport).build()
+				: this;
+	}
+
+	public DocumentReportRequest withOverride_DocTypeId(final DocTypeId override_DocTypeId)
+	{
+		return this.override_DocTypeId != override_DocTypeId
+				? toBuilder().override_DocTypeId(override_DocTypeId).build()
 				: this;
 	}
 }

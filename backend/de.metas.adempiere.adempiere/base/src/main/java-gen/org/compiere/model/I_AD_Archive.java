@@ -517,6 +517,26 @@ public interface I_AD_Archive
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Override Doc TYpe.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOverride_DocType_ID (int Override_DocType_ID);
+
+	/**
+	 * Get Override Doc TYpe.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOverride_DocType_ID();
+
+	String COLUMNNAME_Override_DocType_ID = "Override_DocType_ID";
+
+	/**
 	 * Set Record ID.
 	 * Direct internal record ID
 	 *

@@ -22,6 +22,7 @@ package org.adempiere.archive.api;
  * #L%
  */
 
+import de.metas.document.DocTypeId;
 import de.metas.report.PrintCopies;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -32,6 +33,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.springframework.core.io.Resource;
 
+import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.util.Optional;
 
@@ -69,4 +71,9 @@ public interface IArchiveBL extends ISingletonService
 	Optional<I_AD_Archive> getLastArchiveRecord(@NonNull TableRecordReference reference);
 
 	Optional<Resource> getLastArchiveBinaryData(@NonNull TableRecordReference reference);
+
+	I_AD_Archive retrieveArchive(@NonNull ArchiveId archiveId);
+
+	@Nullable
+	DocTypeId getOverride_DocType_ID(@NonNull ArchiveId archiveId);
 }

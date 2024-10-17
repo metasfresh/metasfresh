@@ -6,6 +6,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.document.DocTypeId;
 import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
@@ -14,8 +15,10 @@ import de.metas.document.sequence.spi.IDocumentNoAware;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
+import de.metas.report.DocOutboundConfigCC;
 import de.metas.report.DocOutboundConfigId;
 import de.metas.report.DocOutboundConfigRepository;
+import de.metas.report.DocOutboundConfigService;
 import de.metas.report.DocumentReportFlavor;
 import de.metas.report.DocumentReportRequest;
 import de.metas.report.DocumentReportResult;
@@ -93,6 +96,7 @@ public class DefaultModelArchiver
 	private final transient IDocumentNoBL documentNoBL = Services.get(IDocumentNoBL.class);
 	private DocumentReportService _documentReportService; // lazy
 	private DocOutboundConfigRepository docOutboundConfigRepository = SpringContextHolder.instance.getBean(DocOutboundConfigRepository.class);
+	private DocOutboundConfigService docOutboundConfigService = SpringContextHolder.instance.getBean(DocOutboundConfigService.class);
 
 	//
 	// Parameters
@@ -147,7 +151,7 @@ public class DefaultModelArchiver
 
 		if (printFormatId != null)
 		{
-			final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, printFormatId);
+			final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, printFormatId, null);
 			sendToCCPathIfAvailable(recordRef, archiveResult);
 			result.add(archiveResult);
 		}
@@ -158,14 +162,22 @@ public class DefaultModelArchiver
 
 			for (final PrintFormatId printFormatId : printFormatIdList)
 			{
-				final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, printFormatId);
+				final DocOutboundConfigId docOutboundConfigId = DocOutboundConfigId.ofRepoIdOrNull(getDocOutboundConfig().map(I_C_Doc_Outbound_Config::getC_Doc_Outbound_Config_ID).orElse(-1));
+
+				final DocOutboundConfigCC docOutboundConfigCC = docOutboundConfigService.getDocOutboundConfigCC(docOutboundConfigId, printFormatId);
+				DocTypeId docTypeId = null;
+				if (docOutboundConfigCC !=null)
+				{
+					docTypeId = docOutboundConfigCC.getOverrideDocTypeId();
+				}
+				final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, printFormatId, docTypeId);
 				sendToCCPathIfAvailable(recordRef, archiveResult);
 				result.add(archiveResult);
 			}
 
 			if (printFormatIdList.isEmpty())
 			{
-				final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, null);
+				final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, null, null);
 				sendToCCPathIfAvailable(recordRef, archiveResult);
 				result.add(archiveResult);
 			}
@@ -174,7 +186,9 @@ public class DefaultModelArchiver
 		return result;
 	}
 
-	private ArchiveResult createArchiveResultMethod(final TableRecordReference recordRef, final Integer asyncBatchId, @Nullable final PrintFormatId printFormatId)
+	private ArchiveResult createArchiveResultMethod(final TableRecordReference recordRef, final Integer asyncBatchId,
+													@Nullable final PrintFormatId printFormatId,
+													@Nullable DocTypeId override_DocTypeId)
 	{
 
 		final DocumentReportResult report = getDocumentReportService()
@@ -183,6 +197,7 @@ public class DefaultModelArchiver
 						.documentRef(recordRef)
 						.reportProcessId(reportProcessId)
 						.printFormatIdToUse(printFormatId)
+						.override_DocTypeId(override_DocTypeId)
 						.printPreview(true)
 						.asyncBatchId(asyncBatchId)
 						//
@@ -256,6 +271,7 @@ public class DefaultModelArchiver
 				.bpartnerId(report.getBpartnerId())
 				.language(report.getLanguage())
                 .isMainReport(report.isMainReport())
+			    .override_DocTypeId(report.getOverride_DocTypeId())
 				.build());
 
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(

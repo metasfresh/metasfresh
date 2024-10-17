@@ -4,11 +4,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
+import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocTypeId;
+import de.metas.document.archive.model.I_AD_Archive;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import java.util.Properties;
 
+import org.adempiere.archive.ArchiveId;
+import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -43,6 +48,8 @@ import de.metas.util.Services;
 @UtilityClass
 public class DocOutboundUtils
 {
+	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+
 	public I_C_Doc_Outbound_Log_Line createOutboundLogLineRecord(@NonNull final I_C_Doc_Outbound_Log docOutboundLog)
 	{
 		Check.assume(!isNew(docOutboundLog), "The given docOutboundLog needs to be saved; docOutboundLog={}", docOutboundLog);
@@ -65,8 +72,9 @@ public class DocOutboundUtils
 		final DocStatus docStatus = documentBL.getDocStatusOrNull(reference);
 		docOutboundLogLineRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
-		final int doctypeID = documentBL.getC_DocType_ID(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID());
-		docOutboundLogLineRecord.setC_DocType_ID(doctypeID);
+		final DocTypeId overrideDocTypeId = archiveBL.getOverride_DocType_ID(ArchiveId.ofRepoId(docOutboundLog.getAD_Archive_ID()));
+		final DocTypeId doctypeID = DocTypeId.ofRepoId(documentBL.getC_DocType_ID(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID()));
+		docOutboundLogLineRecord.setC_DocType_ID(CoalesceUtil.coalesce(overrideDocTypeId, doctypeID).getRepoId());
 
 		return docOutboundLogLineRecord;
 	}

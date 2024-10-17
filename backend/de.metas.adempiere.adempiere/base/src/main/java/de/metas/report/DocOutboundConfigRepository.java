@@ -24,7 +24,6 @@ package de.metas.report;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -219,6 +218,19 @@ public class DocOutboundConfigRepository
 				.columnId(AdColumnId.ofRepoId(record.getBPartner_ColumnName_ID()))
 				.printFormatId(PrintFormatId.ofRepoId(record.getAD_PrintFormat_ID()))
 				.build();
+	}
+
+	@Nullable
+	public DocOutboundConfigCC retrieveDocOutboundConfigCC(@NonNull final DocOutboundConfigId docOutboundConfigId, @NonNull PrintFormatId printFormatId)
+	{
+		final DocOutboundConfig config = getById(docOutboundConfigId);
+		return config.getLines()
+				.stream()
+				.filter(configCC -> configCC.getPrintFormatId().getRepoId() == printFormatId.getRepoId())
+				.findFirst()
+				.map(configCC -> configCC)
+				.orElse(null);
+
 	}
 
 }
