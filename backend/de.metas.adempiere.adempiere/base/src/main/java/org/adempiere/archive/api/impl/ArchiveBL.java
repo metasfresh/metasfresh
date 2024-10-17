@@ -70,7 +70,7 @@ public class ArchiveBL implements IArchiveBL
 	@Override
 	public AdArchive getById(@NonNull final ArchiveId id)
 	{
-		return toAdArchive(archiveDAO.getArchiveRecordById(id));
+		return toAdArchive(archiveDAO.getRecordById(id));
 	}
 
 	@Override
@@ -351,7 +351,7 @@ public class ArchiveBL implements IArchiveBL
 	@Override
 	public I_AD_Archive getRecordById(@NonNull final ArchiveId archiveId)
 	{
-		return archiveDAO.retrieveArchive(archiveId);
+		return archiveDAO.getRecordById(archiveId);
 	}
 
 	@Override

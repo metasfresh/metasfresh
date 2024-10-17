@@ -161,28 +161,31 @@ public class DefaultModelArchiver
 		{
 			final List<PrintFormatId> printFormatIdList = getPrintFormatIds();
 
-			final DocOutboundConfigId docOutboundConfigId = getDocOutboundConfigId();
-			if (docOutboundConfigId != null)
+
+
+			for (final PrintFormatId printFormatId : printFormatIdList)
 			{
-				for (final PrintFormatId printFormatId : printFormatIdList)
+				final DocOutboundConfigId docOutboundConfigId = getDocOutboundConfigId();
+				DocTypeId docTypeId = null;
+				if (docOutboundConfigId != null)
 				{
 					final DocOutboundConfig docOutboundConfig = docOutboundConfigService.getById(docOutboundConfigId);
 
-					final DocTypeId docTypeId = docOutboundConfig.getCCByPrintFormatId(printFormatId)
+					docTypeId = docOutboundConfig.getCCByPrintFormatId(printFormatId)
 							.map(DocOutboundConfigCC::getOverrideDocTypeId)
 							.orElse(null);
 
-					final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, printFormatId, docTypeId);
-					sendToCCPathIfAvailable(recordRef, archiveResult);
-					result.add(archiveResult);
 				}
+				final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, printFormatId, docTypeId);
+				sendToCCPathIfAvailable(recordRef, archiveResult);
+				result.add(archiveResult);
+			}
 
-				if (printFormatIdList.isEmpty())
-				{
-					final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, null, null);
-					sendToCCPathIfAvailable(recordRef, archiveResult);
-					result.add(archiveResult);
-				}
+			if (printFormatIdList.isEmpty())
+			{
+				final ArchiveResult archiveResult = createArchiveResultMethod(recordRef, asyncBatchId, null, null);
+				sendToCCPathIfAvailable(recordRef, archiveResult);
+				result.add(archiveResult);
 			}
 		}
 
