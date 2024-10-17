@@ -34,9 +34,9 @@ public class POSOrderId implements RepoIdAware
 		return repoId > 0 ? new POSOrderId(repoId) : null;
 	}
 
-	public static int toRepoId(@Nullable final OrderId orderId)
+	public static int toRepoId(@Nullable final POSOrderId id)
 	{
-		return orderId != null ? orderId.getRepoId() : -1;
+		return id != null ? id.getRepoId() : -1;
 	}
 
 	@Override

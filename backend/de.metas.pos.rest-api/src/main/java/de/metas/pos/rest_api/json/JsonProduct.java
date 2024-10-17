@@ -1,7 +1,8 @@
 package de.metas.pos.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.pos.POSProduct;
+import de.metas.pos.product.POSProduct;
+import de.metas.pos.product.POSProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
@@ -14,6 +15,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 @Value
 @Builder
@@ -30,6 +32,7 @@ public class JsonProduct
 	@Nullable String catchWeightUomSymbol;
 	@Nullable BigDecimal catchWeight;
 	@NonNull TaxCategoryId taxCategoryId;
+	@NonNull Set<POSProductCategoryId> categoryIds;
 
 	public static JsonProduct from(@NonNull final POSProduct product, @NonNull final String adLanguage)
 	{
@@ -44,6 +47,7 @@ public class JsonProduct
 				.catchWeightUomSymbol(product.getCatchWeightUom() != null ? product.getCatchWeightUom().getUomSymbol() : null)
 				.catchWeight(product.getCatchWeight())
 				.taxCategoryId(product.getTaxCategoryId())
+				.categoryIds(product.getCategoryIds())
 				.build();
 	}
 

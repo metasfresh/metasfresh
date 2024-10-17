@@ -1,6 +1,6 @@
 package de.metas.pos.rest_api.json;
 
-import de.metas.pos.POSProductsSearchResult;
+import de.metas.pos.product.POSProductsSearchResult;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

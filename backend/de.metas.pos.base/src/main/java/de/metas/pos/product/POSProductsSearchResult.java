@@ -1,6 +1,7 @@
-package de.metas.pos;
+package de.metas.pos.product;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -41,4 +42,11 @@ public class POSProductsSearchResult
 	public Stream<POSProduct> stream() {return products.stream();}
 
 	public List<POSProduct> toList() {return products;}
+
+	public ImmutableSet<POSProductCategoryId> getProductCategoryIds()
+	{
+		return stream()
+				.flatMap(product -> product.getCategoryIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }

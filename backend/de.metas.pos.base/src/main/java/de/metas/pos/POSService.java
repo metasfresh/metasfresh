@@ -1,6 +1,11 @@
 package de.metas.pos;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.money.Money;
+import de.metas.pos.product.POSProductCategory;
+import de.metas.pos.product.POSProductCategoryId;
+import de.metas.pos.product.POSProductsSearchResult;
+import de.metas.pos.product.POSProductsService;
 import de.metas.pos.remote.RemotePOSOrder;
 import de.metas.user.UserId;
 import lombok.NonNull;
@@ -85,6 +90,11 @@ public class POSService
 			@Nullable final String queryString)
 	{
 		return productsService.getProducts(posTerminalId, evalDate, queryString);
+	}
+
+	public ImmutableSet<POSProductCategory> getActiveProductCategoriesByIds(final Collection<POSProductCategoryId> ids)
+	{
+		return productsService.getActiveCategoriesByIds(ids);
 	}
 
 	public List<POSOrder> getOpenOrders(

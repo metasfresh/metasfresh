@@ -34,6 +34,9 @@ public class JsonPOSTerminal
 	@Nullable List<JsonProduct> products;
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable List<JsonProductCategory> productCategories;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Nullable List<JsonPOSOrder> openOrders;
 
 	@NonNull

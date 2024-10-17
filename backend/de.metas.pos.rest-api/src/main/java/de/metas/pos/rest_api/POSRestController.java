@@ -11,12 +11,13 @@ import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
 import de.metas.pos.POSOrderStatus;
 import de.metas.pos.POSPaymentCheckoutRequest;
-import de.metas.pos.POSProductsSearchResult;
 import de.metas.pos.POSService;
 import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalCloseJournalRequest;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalOpenJournalRequest;
+import de.metas.pos.product.POSProductCategory;
+import de.metas.pos.product.POSProductsSearchResult;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonChangeOrderStatusRequest;
 import de.metas.pos.rest_api.json.JsonContext;
@@ -28,6 +29,7 @@ import de.metas.pos.rest_api.json.JsonPOSTerminal;
 import de.metas.pos.rest_api.json.JsonPOSTerminalCloseJournalRequest;
 import de.metas.pos.rest_api.json.JsonPOSTerminalOpenJournalRequest;
 import de.metas.pos.rest_api.json.JsonProduct;
+import de.metas.pos.rest_api.json.JsonProductCategory;
 import de.metas.pos.rest_api.json.JsonProductsSearchResult;
 import de.metas.user.UserId;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -86,11 +88,13 @@ public class POSRestController
 		final POSTerminalId posTerminalId = POSTerminalId.ofString(posTerminalIdStr);
 		final POSTerminal posTerminal = posService.getPOSTerminalById(posTerminalId);
 		final POSProductsSearchResult products = posService.getProducts(posTerminalId, date, null);
+		final ImmutableSet<POSProductCategory> productCategories = posService.getActiveProductCategoriesByIds(products.getProductCategoryIds());
 
 		final List<POSOrder> orders = posService.getOpenOrders(posTerminalId, loggedUserId, null);
 
 		return JsonPOSTerminal.builderFrom(posTerminal, adLanguage)
 				.products(JsonProduct.fromList(products.toList(), adLanguage))
+				.productCategories(JsonProductCategory.fromCollection(productCategories))
 				.openOrders(JsonPOSOrder.fromList(orders, jsonContext::getCurrencySymbol))
 				.build();
 	}
