@@ -91,7 +91,6 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		final I_C_Doc_Outbound_Log log = docExchangeLine.getC_Doc_Outbound_Log();
 		log.setDateLastPrint(SystemTime.asTimestamp());
-		log.setC_DocType_ID(archive.getOverride_DocType_ID());
 		save(log);
 	}
 

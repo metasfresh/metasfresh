@@ -353,4 +353,12 @@ public class ArchiveBL implements IArchiveBL
 	{
 		return archiveDAO.getRecordById(archiveId);
 	}
+
+	@Override
+	@Nullable
+	public DocTypeId getOverrideDocTypeId(final ArchiveId archiveId)
+	{
+		final I_AD_Archive archive = getRecordById(archiveId);
+		return DocTypeId.ofRepoIdOrNull(archive.getOverride_DocType_ID());
+	}
 }
