@@ -73,10 +73,10 @@ public class DocOutboundUtils
 
 		if (doctypeID == null)
 		{
-			doctypeID = DocTypeId.ofRepoId(documentBL.getC_DocType_ID(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID()));
+			doctypeID = DocTypeId.ofRepoIdOrNull(documentBL.getC_DocType_ID(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID()));
 		}
 
-		docOutboundLogLineRecord.setC_DocType_ID(doctypeID.getRepoId());
+		docOutboundLogLineRecord.setC_DocType_ID(DocTypeId.toRepoId(doctypeID));
 
 		return docOutboundLogLineRecord;
 	}
