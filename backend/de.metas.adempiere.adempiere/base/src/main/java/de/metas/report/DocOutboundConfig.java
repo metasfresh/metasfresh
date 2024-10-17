@@ -49,7 +49,7 @@ public class DocOutboundConfig
 	{
 		return getLines()
 				.stream()
-				.filter(configCC -> printFormatId.equals(configCC.getPrintFormatId()))
+				.filter(configCC -> PrintFormatId.equals(printFormatId, configCC.getPrintFormatId()))
 				.findFirst();
 	}
 }

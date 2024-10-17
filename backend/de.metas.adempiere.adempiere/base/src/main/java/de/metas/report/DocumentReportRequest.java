@@ -110,10 +110,10 @@ public class DocumentReportRequest
 				: this;
 	}
 
-	public DocumentReportRequest withOverrideDocTypeId(@Nullable final DocTypeId override_DocTypeId)
+	public DocumentReportRequest withOverrideDocTypeId(@Nullable final DocTypeId overrideDocTypeId)
 	{
-		return DocTypeId.equals(this.overrideDocTypeId, override_DocTypeId)
+		return DocTypeId.equals(this.overrideDocTypeId, overrideDocTypeId)
 				? this
-				: toBuilder().overrideDocTypeId(override_DocTypeId).build();
+				: toBuilder().overrideDocTypeId(overrideDocTypeId).build();
 	}
 }
