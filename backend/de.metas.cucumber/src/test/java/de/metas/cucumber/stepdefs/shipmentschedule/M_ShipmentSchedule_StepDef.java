@@ -42,6 +42,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -51,6 +52,7 @@ import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
+import de.metas.document.dimension.Dimension;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
@@ -65,10 +67,15 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepositor
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Split;
+import de.metas.inoutcandidate.split.ShipmentScheduleSplit;
+import de.metas.inoutcandidate.split.ShipmentScheduleSplitRepository;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderId;
+import de.metas.quantity.Quantity;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -77,6 +84,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
@@ -99,12 +107,14 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -118,11 +128,12 @@ import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_Prep
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit.COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+@RequiredArgsConstructor
 public class M_ShipmentSchedule_StepDef
 {
 	private final static Logger logger = LogManager.getLogger(M_ShipmentSchedule_StepDef.class);
@@ -131,11 +142,14 @@ public class M_ShipmentSchedule_StepDef
 	private static final String BILL_BPARTNER = "billBPartner";
 
 	private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
+	private final ShipmentScheduleSplitRepository shipmentScheduleSplitRepository = SpringContextHolder.instance.getBean(ShipmentScheduleSplitRepository.class);
+
 	private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final AD_User_StepDefData userTable;
 	private final C_BPartner_StepDefData bpartnerTable;
@@ -148,45 +162,16 @@ public class M_ShipmentSchedule_StepDef
 	private final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final M_InOut_StepDefData shipmentTable;
+	private final M_ShipmentSchedule_Split_StepDefData splitShipmentScheduleTable;
 
 	private final TestContext testContext;
-	private final JsonAttributeService jsonAttributeService;
+	private final JsonAttributeService jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
 
 	final ObjectMapper mapper = new ObjectMapper()
 			.findAndRegisterModules()
 			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 			.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
 			.enable(MapperFeature.USE_ANNOTATIONS);
-
-	public M_ShipmentSchedule_StepDef(
-			@NonNull final AD_User_StepDefData userTable,
-			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
-			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
-			@NonNull final M_Shipper_StepDefData shipperTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final M_InOut_StepDefData shipmentTable,
-			@NonNull final TestContext testContext)
-	{
-		this.userTable = userTable;
-		this.bpartnerTable = bpartnerTable;
-		this.bpartnerLocationTable = bpartnerLocationTable;
-		this.orderTable = orderTable;
-		this.orderLineTable = orderLineTable;
-		this.shipmentScheduleTable = shipmentScheduleTable;
-		this.shipperTable = shipperTable;
-		this.productTable = productTable;
-		this.shipmentScheduleExportAuditTable = shipmentScheduleExportAuditTable;
-		this.attributeSetInstanceTable = attributeSetInstanceTable;
-		this.shipmentTable = shipmentTable;
-		this.testContext = testContext;
-
-		this.jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
-	}
 
 	/**
 	 * Match the shipment scheds and load them with their identifier into the shipmentScheduleTable.
@@ -292,6 +277,41 @@ public class M_ShipmentSchedule_StepDef
 				throw e;
 			}
 		}
+	}
+
+	@And("the shipment schedule is split")
+	public void upsertShipmentScheduleSplit(@NonNull final DataTable table)
+	{
+		DataTableRow.toRows(table)
+				.forEach(this::upsertShipmentScheduleSplit);
+	}
+
+	private void upsertShipmentScheduleSplit(@NonNull final DataTableRow row)
+	{
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentScheduleTable.get(row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID)).getM_ShipmentSchedule_ID());
+		final String uomColumnName = I_M_ShipmentSchedule_Split.COLUMNNAME_C_UOM_ID + "." + I_C_UOM.COLUMNNAME_X12DE355;
+		final Quantity qty = row.getAsOptionalQuantityByX12DE355(I_M_ShipmentSchedule_Split.COLUMNNAME_QtyToDeliver, uomColumnName, uomDAO::getByX12DE355)
+				.orElseThrow(() -> new AdempiereException("Qty could not be found for split"));
+		final LocalDate deliveryDate = TimeUtil.asLocalDate(row.getAsTimestamp(I_M_ShipmentSchedule_Split.COLUMNNAME_DeliveryDate));
+
+		final Dimension.DimensionBuilder dimensionBuilder = Dimension.builder();
+		row.getAsOptionalBigDecimal("OPT." + I_M_ShipmentSchedule_Split.COLUMNNAME_UserElementNumber1)
+				.ifPresent(dimensionBuilder::userElementNumber1);
+		row.getAsOptionalBigDecimal("OPT." + I_M_ShipmentSchedule_Split.COLUMNNAME_UserElementNumber2)
+				.ifPresent(dimensionBuilder::userElementNumber2);
+
+		final ShipmentScheduleSplit split = ShipmentScheduleSplit.builder()
+				.shipmentScheduleId(shipmentScheduleId)
+				.qtyToDeliver(qty)
+				.processed(false)
+				.deliveryDate(deliveryDate)
+				.dimension(dimensionBuilder.build())
+				.build();
+		shipmentScheduleSplitRepository.save(split);
+
+		assertThat(split.getId()).isNotNull();
+
+		splitShipmentScheduleTable.putOrReplace(row.getAsIdentifier(), InterfaceWrapperHelper.load(split.getId(), I_M_ShipmentSchedule_Split.class));
 	}
 
 	@And("update shipment schedules")

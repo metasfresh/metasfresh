@@ -41,6 +41,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_M_Product;
@@ -147,10 +148,20 @@ public class ModCntr_Specific_Price_StepDef
 		final I_ModCntr_Module moduleRecord = modCntrModuleTable.get(moduleIdentifier);
 		assertThat(productRecord).isNotNull();
 
-		final Optional<I_ModCntr_Specific_Price> specificPrice = queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
+		final IQueryBuilder<I_ModCntr_Specific_Price> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, contractRecord.getC_Flatrate_Term_ID())
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
-				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, moduleRecord.getModCntr_Module_ID())
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, moduleRecord.getModCntr_Module_ID());
+
+		final boolean isScalePrice = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_ModCntr_Specific_Price.COLUMNNAME_IsScalePrice, false);
+		if (isScalePrice)
+		{
+			final BigDecimal minValue = DataTableUtil.extractBigDecimalForColumnName(tableRow, "OPT." + I_ModCntr_Specific_Price.COLUMNNAME_MinValue);
+			queryBuilder.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_IsScalePrice, true)
+					.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_MinValue, minValue);
+		}
+
+		final Optional<I_ModCntr_Specific_Price> specificPrice = queryBuilder
 				.create()
 				.firstOnlyOptional(I_ModCntr_Specific_Price.class);
 
