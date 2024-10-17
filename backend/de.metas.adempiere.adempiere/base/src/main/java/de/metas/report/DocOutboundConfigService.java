@@ -24,7 +24,12 @@ package de.metas.report;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.table.api.AdTableId;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Properties;
 
 @Service
 @RequiredArgsConstructor
@@ -36,5 +41,16 @@ public class DocOutboundConfigService
 	public DocOutboundConfig getById(@NonNull final DocOutboundConfigId id)
 	{
 		return docOutboundConfigRepository.getById(id);
+	}
+
+	@Nullable
+	public DocOutboundConfig getByTableId(@NonNull final Properties ctx, @NonNull final AdTableId adTableId)
+	{
+		return docOutboundConfigRepository.retrieveConfig(ctx, adTableId);
+	}
+
+	public Collection<PrintFormatId> getAllPrintFormatIds(final DocOutboundConfigId docOutboundConfigId)
+	{
+		return docOutboundConfigRepository.retrieveAllPrintFormatIds(docOutboundConfigId);
 	}
 }
