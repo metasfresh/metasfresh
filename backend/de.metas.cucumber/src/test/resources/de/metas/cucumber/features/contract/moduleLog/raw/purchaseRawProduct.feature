@@ -18,10 +18,6 @@ Feature: Modular contract log from purchase order for raw product
       | moduleLogPLV_PO | moduleLogPL_PO            | moduleLogPLV_PO_06032024_1 | 2021-02-01 |
       | moduleLogPLV_SO | moduleLogPL_SO            | moduleLogPLV_SO_06032024_1 | 2021-02-01 |
 
-    And load AD_Ref_Lists:
-      | AD_Ref_List_ID.Identifier | Value           |
-      | list_1                    | InformativeLogs |
-
     And update AD_Ref_Lists:
       | AD_Ref_List_ID.Identifier | IsActive |
       | list_1                    | Y        |
@@ -391,7 +387,3 @@ Feature: Modular contract log from purchase order for raw product
     And validate created modular invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | ProductName                  | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | invoiceLine_2_1             | invoice_2               | rawProduct              | salesOnRawProduct_06032024_1 | 50          | true      | -19              | 19              | 950            | PCE                   | PCE                       |
-
-    And update AD_Ref_Lists:
-      | AD_Ref_List_ID.Identifier | IsActive |
-      | list_1                    | N        |
