@@ -191,7 +191,7 @@ public class DefaultModelArchiver
 
 	private ArchiveResult createArchiveResultMethod(final TableRecordReference recordRef, final Integer asyncBatchId,
 													@Nullable final PrintFormatId printFormatId,
-													@Nullable DocTypeId override_DocTypeId)
+													@Nullable DocTypeId overrideDocTypeId)
 	{
 
 		final DocumentReportResult report = getDocumentReportService()
@@ -200,7 +200,7 @@ public class DefaultModelArchiver
 						.documentRef(recordRef)
 						.reportProcessId(reportProcessId)
 						.printFormatIdToUse(printFormatId)
-						.overrideDocTypeId(override_DocTypeId)
+						.overrideDocTypeId(overrideDocTypeId)
 						.printPreview(true)
 						.asyncBatchId(asyncBatchId)
 						//
