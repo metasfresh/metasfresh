@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.quantity.Quantity;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.OptionalBoolean;
@@ -138,7 +139,8 @@ public class DataTableRow
 		return DataTableUtil.extractBigDecimalForColumnName(map, columnName);
 	}
 
-	public Timestamp getAsTimestamp(@NonNull final String columnName) {
+	public Timestamp getAsTimestamp(@NonNull final String columnName)
+	{
 		return DataTableUtil.extractDateTimestampForColumnName(map, columnName);
 	}
 
@@ -207,6 +209,28 @@ public class DataTableRow
 		}
 
 		final I_C_UOM uom = uomMapper.apply(uomString);
+
+		return Optional.of(Quantity.of(valueBD, uom));
+	}
+
+	public Optional<Quantity> getAsOptionalQuantityByX12DE355(
+			@NonNull final String valueColumnName,
+			@NonNull final String uomColumnName,
+			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
+	{
+		final BigDecimal valueBD = getAsOptionalBigDecimal(valueColumnName).orElse(null);
+		if (valueBD == null)
+		{
+			return Optional.empty();
+		}
+
+		final String uomString = getAsOptionalString(uomColumnName).orElse(null);
+		if (uomString == null)
+		{
+			return Optional.empty();
+		}
+
+		final I_C_UOM uom = uomMapper.apply(X12DE355.ofCode(uomString));
 
 		return Optional.of(Quantity.of(valueBD, uom));
 	}
